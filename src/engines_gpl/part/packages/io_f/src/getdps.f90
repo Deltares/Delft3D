@@ -21,8 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
-     &                    nosegl , dps    , cellpnt, ltrack )
+subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
+                    nosegl , dps    , cellpnt, ltrack )
 !
 !     programmer : antoon koster
 !     function   : read bathymetry from *.dps file,
@@ -74,7 +74,7 @@
       if ( ltrack ) then
 
 !        for particle tracking, get depth
-         
+
          inquire (file = trim(lnam), exist = ex)
          if (ex) then
             call openfl ( lundp, lnam, 0 )
@@ -86,26 +86,22 @@
             allocate ( depwrk(nosegl) )
             read (lundp, iostat = iocond) depwrk
             close(lundp)
-            if (iocond  .ne.  0 ) goto 100
-            dps(cellpnt(:)) = depwrk(:)
+            if (iocond == 0 ) then
+               dps(cellpnt(:)) = depwrk(:)
+            else
+               write (lunpr, *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
+               write (lunpr, *) '            Depths not read correctly, the calculation is terminated'
+               write (*,     *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
+               write (*,     *) '            Depths not read correctly, the calculation is terminated'
+               call stop_exit(1)
+            endif
          else
-            write ( lunpr, * ) 'WARNING: Depths file does not exist. Will continue assuming'
-            write ( lunpr, * ) '         uniform bathymetry of 0.0 for particle tracks.'
-            write ( lunpr, * ) '         z-values in the particle tracks file are not absolute!'
+            write ( lunpr, * ) 'ERROR: Depth file does not exist. The calculation is terminated'
+            write ( *,     * ) 'ERROR: Depth file does not exist. The calculation is terminated'
+            call stop_exit(1)
          endif
       endif
 
       if ( timon ) call timstop ( ithndl )
-      return
 
-  100 write (lunpr, *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
-      write (lunpr, *) '            (file maybe missing ??)      '
-      write (*,  *)   'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
-      write (lunpr, * ) 'WARNING: Depths not read correctly, will continue assuming'
-      write (lunpr, * ) '         uniform bathymetry of 0.0 for particle tracks.'
-      write (lunpr, * ) '         z-values in the particle tracks file are not absolute!'
-      write (*, * ) 'WARNING: Depths not read correctly, will continue assuming'
-      write (*, * ) '         uniform bathymetry of 0.0 for particle tracks.'
-      write (*, * ) '         z-values in the particle tracks file are not absolute!'
-      return
-      end subroutine
+end subroutine

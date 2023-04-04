@@ -189,6 +189,7 @@ contains
       integer :: m
       integer :: icrs1
       integer :: icrs2
+      integer :: L
       
       double precision                   :: f
       double precision                   :: chainage1
@@ -197,6 +198,7 @@ contains
       double precision                   :: chainageg
       type(t_administration_1d), pointer          :: adm
       type(t_branch), pointer            :: pbran
+      type(t_CrossSection), pointer      :: C1, C2
       integer, allocatable, dimension(:) :: crossOrder
       integer, allocatable, dimension(:) :: lastAtBran
       integer                            :: icrsBeg
@@ -414,6 +416,27 @@ contains
          enddo
          call timstop(timerhandle)
          
+         call resetMaxerrorLevel()
+         do L = 1, linall_1d
+            do i = 1,3
+               if (adm%line2cross(L,i)%C1 > 0 .and. adm%line2cross(L,i)%C2 > 0) then
+                  c1 => network%crs%cross(adm%line2cross(L,i)%C1)
+                  c2 => network%crs%cross(adm%line2cross(L,i)%C2)
+                  if (c1%crosstype /= c2%crosstype) then
+                     call SetMessage(LEVEL_WARN, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
+                        '''. CrossSections must be of the same type!')
+                  endif
+                  if (c1%closed /= c2%closed) then
+                     call SetMessage(LEVEL_WARN, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
+                        '''. CrossSections must have same closed state!')
+                  endif
+               endif
+            enddo
+         enddo
+         if (getMaxErrorLevel() > 0) then
+            call SetMessage(LEVEL_FATAL, 'Incompatible CrossSections have been detected, see previous messages.')
+         endif
+
          ! Cross-Section indices for gridpoints
          timerHandle = 0
          call timstrt('Interpolation to grid points', timerHandle)

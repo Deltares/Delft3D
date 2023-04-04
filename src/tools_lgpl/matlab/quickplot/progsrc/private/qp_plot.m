@@ -433,6 +433,9 @@ if strcmp(Ops.presentationtype,'vector') || ...
         if isfield(data,'XYZ')
             data(i).X = data(i).XYZ(:,:,:,1);
             data(i).Y = data(i).XYZ(:,:,:,2);
+            if size(data(i).XYZ,4)>2
+                data(i).Z = data(i).XYZ(:,:,:,3);
+            end
         elseif isfield(data,'XY')
             if iscell(data(i).XY)
                 data(i).X = NaN(size(data(i).XY));

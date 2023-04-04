@@ -373,6 +373,7 @@
       call rdfnam ( lun     , ifnam   , fname   , nfiles  , 2       ,    &
                     1       , alone   )
       lunpr = lun(2)
+      call setmlu( lunpr )
 
       hyd%file_hyd%name = fname(18)
       call read_hyd(hyd)

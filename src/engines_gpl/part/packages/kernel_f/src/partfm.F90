@@ -3191,7 +3191,8 @@ endif
    character(len = 3), dimension(nosubs)  :: unit          !< Unit of this variable (CF-compliant) (use empty string for dimensionless quantities).
    integer                          :: ifract, isub
 
-
+   character(len=len(substi))       :: substnc
+   integer                          :: i
 
    !   character(len=*)                 :: var_name      !< Variable name for in NetCDF variable, will be prefixed with mesh name.
    !   character(len=*)                 :: standard_name !< Standard name (CF-compliant) for 'standard_name' attribute in this variable.
@@ -3255,13 +3256,21 @@ endif
     endif
 
    do isub = 1, nosubs
+      substnc = substi(isub)
+
+      do i = 1,len_trim(substnc)
+         if ( substnc(i:i) == ' ' ) then
+            substnc(i:i) = '_'
+         endif
+      enddo
+
       if ( nolay == 1 ) then
          ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_timedim], nf90_double, UG_LOC_FACE, &
-                    trim(meshgeom%meshName), substi(isub), 'depth_averaged_particle_concentration', &
+                    trim(meshgeom%meshName), substnc, 'depth_averaged_particle_concentration', &
                     substi(isub), unit(isub), cell_method, cell_measures, crs, ifill=-999, dfill=dmiss)
       else
          ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_layersdim, id_map_timedim], nf90_double, UG_LOC_FACE, &
-                    trim(meshgeom%meshName), substi(isub), 'particle_concentration', &
+                    trim(meshgeom%meshName), substnc, 'particle_concentration', &
                     substi(isub), unit(isub), cell_method, cell_measures, crs, ifill=-999, dfill=dmiss)
       endif
    end do
