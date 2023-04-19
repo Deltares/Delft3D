@@ -30,6 +30,9 @@
 ! 
 ! 
 
+ module m_julday
+ 
+ contains
  integer function julday(mm,id,iyyy)
  implicit none
  integer :: igreg
@@ -52,3 +55,4 @@
  endif
  return
  end function julday
+ end module m_julday

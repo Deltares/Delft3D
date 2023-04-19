@@ -540,11 +540,11 @@ contains
    !> 
    subroutine settimespacerefdat(refda, jul00, tz, timjan)
    use m_itdate
+   use m_julday
    character (len=8) :: refda
    integer           :: jul00
    double precision  :: tz, timjan
    
-   integer, external :: julday
    integer           :: juljan
    
    refdat = refda

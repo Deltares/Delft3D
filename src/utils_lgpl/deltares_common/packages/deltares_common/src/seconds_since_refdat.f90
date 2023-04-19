@@ -34,13 +34,13 @@
  !! The input datetime is in separate year/month/../seconds values.
  !! \see datetimestring_to_seconds
  subroutine seconds_since_refdat(iyear, imonth, iday, ihour, imin, isec, refdat, timsec)
+  use m_julday
  implicit none
  integer,          intent(in)  :: iyear, iday, imonth, ihour, imin, isec !< Input absolute date time components
  character (len=8), intent(in) :: refdat                                 !< reference date
  double precision, intent(out) :: timsec                                 !< Output seconds since refdate for the specified input datetime.
 
  integer :: jul, jul0, iyear0, imonth0, iday0
- integer, external :: julday
 
      read(refdat(1:4),*) iyear0
      read(refdat(5:6),*) imonth0

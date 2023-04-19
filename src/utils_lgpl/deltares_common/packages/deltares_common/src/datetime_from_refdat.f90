@@ -33,6 +33,7 @@
  !> Calculate absolute date time values, given a time in seconds since refdat.
  !! \see seconds_to_datetimestring
  subroutine datetime_from_refdat(timsec, refdat, iyear, imonth, iday, ihour, imin, isec)
+ use m_julday
  implicit none
  double precision,  intent(in)  :: timsec                                 !< Time in seconds since refdate
  character (len=8), intent(in)  :: refdat                                 !< reference date
@@ -42,7 +43,6 @@
  double precision :: tnr, tsec
  integer :: ndag
 
- integer, external :: julday
 
  read(refdat(1:4),*) iyear0
  read(refdat(5:6),*) imonth0

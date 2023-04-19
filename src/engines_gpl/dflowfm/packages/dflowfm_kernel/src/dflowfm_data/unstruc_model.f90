@@ -215,6 +215,7 @@ implicit none
                                                  !! Created if non-existent.
 
     integer            :: md_jaAutoStart     = MD_NOAUTOSTART !< Autostart simulation after loading or not.
+    integer            :: md_input_specific  = 0 !< use (0: no, 1: yes) specific hardcoded input.
     integer            :: md_snapshot_seqnr  = 0 !< Sequence number of last snapshot file written.
 !   partitioning command line options
     integer            :: md_japartition     = 0   !< partition (1) or not (0)
@@ -822,6 +823,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_string(md_ptr, bnam, 'Version', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
 
     call prop_get_integer(md_ptr, bnam, 'AutoStart',  md_jaAutoStart)
+    call prop_get_integer(md_ptr, bnam, 'InputSpecific',  md_input_specific)
     call prop_get_string(md_ptr,  bnam, 'ModelSpecific',  md_specific)
     call prop_get_integer(md_ptr, bnam, 'PathsRelativeToParent',  md_paths_relto_parent)
 
@@ -2655,6 +2657,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     write(tmpstr, '(i0,".",i2.2)') MDUFormatMajorVersion, MDUFormatMinorVersion
     call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr),      'File format version (do not edit this)')
     call prop_set(prop_ptr, 'General', 'AutoStart', md_jaAutoStart,      'Autostart simulation after loading MDU (0: no, 1: autostart, 2: autostartstop)')
+    call prop_set(prop_ptr, 'General', 'InputSpecific', md_jaAutoStart,  'Use of hardcoded specific inputs, shall not be used by users (0: no, 1: yes)')
     call prop_set(prop_ptr, 'General', 'ModelSpecific',  md_specific,    'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
     call prop_set(prop_ptr, 'General', 'PathsRelativeToParent',  md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
 

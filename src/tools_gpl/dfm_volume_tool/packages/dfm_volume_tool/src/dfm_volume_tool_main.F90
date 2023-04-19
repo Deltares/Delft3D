@@ -135,6 +135,7 @@ call cli%add(switch='--gridoutputfile',switch_ab='-g', help='name of the per-gri
 
 ! parsing Command Line Interface
 call cli%parse(error=ierr)
+call cli%errored(error=ierr)
 
 if (ierr /= 0) then
    call SetMessage(LEVEL_ERROR, 'Error reading input parameters')

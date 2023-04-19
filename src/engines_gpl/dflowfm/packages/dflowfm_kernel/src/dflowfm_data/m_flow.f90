@@ -332,7 +332,6 @@
  double precision, allocatable     :: Windspeedfac(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
  double precision, allocatable     :: z0ucur(:)   !< current related roughness, moved from waves, always needed
  double precision, allocatable     :: z0urou(:)   !< current and wave related roughness
- double precision, allocatable, target :: sul(:)  !< water level on flow links (needed in fourier_analysis)
 
  double precision, allocatable     :: frcuroofs(:)!< temp
 

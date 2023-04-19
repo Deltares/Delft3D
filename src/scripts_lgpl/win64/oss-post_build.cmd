@@ -1208,7 +1208,8 @@ rem ==========================
         call :makeDir !dest_bin!
 
         rem copy binaries and dll
-        call :copyFile "!build_dir!\delpar\!configuration!\delpar.*"                                !dest_bin!
+        call :copyDwaqDependentRuntimeLibraries                                                 !dest_share!
+        call :copyFile "!build_dir!\delpar\!configuration!\delpar.*"                            !dest_bin!
     )
 
     if "%configuration%" == "Release" (
@@ -1224,9 +1225,10 @@ rem ==========================
         call :makeAllDirs
 
         rem copy binaries and dll
-        call :copyFile "!build_dir!\delpar\!configuration!\delpar.exe"                            !dest_bin!
+        call :copyDwaqDependentRuntimeLibraries                                                 !dest_share!
+        call :copyFile "!build_dir!\delpar\!configuration!\delpar.exe"                          !dest_bin!
 
-        call :copyFile "!checkout_src_root!\engines_gpl\part\scripts\run_dpart.bat"                 !dest_scripts!
+        call :copyFile "!checkout_src_root!\engines_gpl\part\scripts\run_dpart.bat"             !dest_scripts!
     )
 
 goto :endproc
