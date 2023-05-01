@@ -16,6 +16,25 @@ endfunction()
 
 
 
+    message(STATUS "Adding prebuild event step for ${library_name}")
+
+    if (UNIX)
+        execute_process(COMMAND /bin/bash ${update_version_script_path} ${fortran_version_file} ${svn_version_path} ${version_file} ${checkout_src_root} ${CMAKE_BINARY_DIR})
+    endif(UNIX)
+    if (WIN32)
+       IF(DEFINED ARGV4 AND ARGV4)
+            add_custom_command( TARGET ${library_name}
+                              PRE_BUILD
+                              COMMAND  call ${update_version_script_path} ${fortran_version_file} ${svn_version_path} ${version_file} --onlyifmissing)
+        ELSE()
+           add_custom_command( TARGET ${library_name}
+                               PRE_BUILD
+                               COMMAND  call ${update_version_script_path} ${fortran_version_file} ${svn_version_path} ${version_file})
+        ENDIF()
+    endif(WIN32)
+endfunction()
+
+
 # oss_include_libraries
 # Adds oss dependencies to the specified library.
 #

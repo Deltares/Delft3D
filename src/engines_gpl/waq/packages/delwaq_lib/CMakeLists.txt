@@ -124,12 +124,8 @@ post_build_target (${library_name}
                    ${library_name})
 
 install(TARGETS ${library_name} DESTINATION lib)
-if (UNIX)
-    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/bloom.spe          DESTINATION share/delft3d)
-    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.dat       DESTINATION share/delft3d)
-    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.def       DESTINATION share/delft3d)
-    install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/csvFiles      DESTINATION share/delft3d)
-    install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/subFiles      DESTINATION share/delft3d)
-endif(UNIX)
-
-
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/bloom.spe          DESTINATION share)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.dat       DESTINATION share)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.def       DESTINATION share)
+install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/csvFiles      DESTINATION share)
+install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/subFiles      DESTINATION share)
