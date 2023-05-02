@@ -130,14 +130,14 @@ endif(WIN32)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
+#post_build_target (${executable_name}
+#                   ${install_dir}
+#                   ${build_dir}
+#                   ${checkout_src_root}
+#                   ${executable_name})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.sh  DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.sh  DESTINATION scripts)
 endif(UNIX)
 
