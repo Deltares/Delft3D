@@ -70,16 +70,10 @@ set(oss_dependencies    deltares_common
                         triangle_c
                         gridgeom)
 oss_include_libraries(${library_name} oss_dependencies)
+target_link_libraries(${library_name} ${oss_dependencies})
 
-if (UNIX)
-    message(STATUS "Setting oss_target_link_libraries in Unix")
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
 
 if (WIN32)
-    target_link_libraries(${library_name} ${oss_dependencies}
-                                          triangle_c)
-
     # Set additional compilation properties
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")
 endif(WIN32)
@@ -96,40 +90,14 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
 # A simple change of the output name of the gridgeom_dll project to gridgeom does not work
 # because CMake then gives an error when trying to replace the static library artifacts from the gridgeom project
 # Another solution would be to split gridgeom and gridgeom_dll in two separate components with their own CMakeLists.txt
+# Actual rename is done in the install step below
 if(WIN32)
-    if (CMAKE_GENERATOR MATCHES "Visual Studio") # for visual studio
-      SET(library_renamed ${CMAKE_BINARY_DIR}/gridgeom/$<CONFIG>/gridgeom.dll)
-      ADD_CUSTOM_COMMAND(TARGET gridgeom_dll POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E rename
-                       $<TARGET_FILE:${library_name}>
-                       ${library_renamed}
-                   COMMENT "Renaming '${library_name}' library to '${library_renamed}'")
-    else() # for Ninja generator on Windows
-      SET(library_renamed ${CMAKE_BINARY_DIR}/gridgeom/gridgeom.dll)
-    endif()
-
+      SET(library_renamed gridgeom.dll)
 endif(WIN32)
-
 if(UNIX)
-    SET(library_renamed libgridgeom.so)
-    # Actual rename is done in the the install step below
+    SET(library_renamed libgridgeom.so)   
 endif(UNIX)
 
-if(WIN32)
-    # post-build
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
-    set(build_project ${library_name})
 
-    post_build_target( ${library_name}
-                       ${install_dir}
-                       ${build_dir} 
-                       ${checkout_src_root} 
-                       ${build_project} )
-
-endif(WIN32)
-
-if ((CMAKE_GENERATOR MATCHES "Visual Studio") OR UNIX)
-    # Install the shared library in the lib folder with rename
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)  
-endif()
+# Install the shared library in the lib folder with rename
+install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)  
