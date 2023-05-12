@@ -117,13 +117,9 @@ set_target_properties (${library_name} PROPERTIES OUTPUT_NAME delwaq)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-#post_build_target (${library_name}
-#                   ${install_dir}
-#                   ${build_dir}
-#                   ${checkout_src_root}
-#                   ${library_name})
 
-install(TARGETS ${library_name} DESTINATION lib)
+
+install(TARGETS ${library_name} DESTINATION bin)
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/bloom.spe          DESTINATION share)
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.dat       DESTINATION share)
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.def       DESTINATION share)
