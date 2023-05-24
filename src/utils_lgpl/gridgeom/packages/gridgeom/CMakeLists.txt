@@ -4,6 +4,8 @@ set(src_path src)
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to the location of where this CMakeLists file is defined in.
 set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/gridgeom_version.F90")
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(rc_dir ${CMAKE_SOURCE_DIR}/../utils_lgpl/version)
+set(rc_version_file ${rc_dir}/gridgeom_version_number.rc)
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
@@ -26,7 +28,7 @@ set(oss_dependencies    deltares_common
                         triangle_c)
 oss_include_libraries(${library_name} oss_dependencies)
 
-target_include_directories(${library_name}  PRIVATE ${version_include_dir})
+target_include_directories(${library_name}  PRIVATE ${version_include_dir} ${rc_dir})
 
 if (UNIX)
     message(STATUS "Setting oss_target_link_libraries in Unix")
@@ -56,7 +58,8 @@ set(library_name gridgeom_dll)
 set(library_output_name gridgeom)
 
 # Add dynamic gridgeom library
-add_library(${library_name} SHARED ${src_path}/gridgeom_api.F90)
+add_library(${library_name} SHARED ${src_path}/gridgeom_api.F90 ${rc_version_file})
+include_directories(${version_include_dir})
 
 # Set the dependencies of this library
 set(oss_dependencies    deltares_common

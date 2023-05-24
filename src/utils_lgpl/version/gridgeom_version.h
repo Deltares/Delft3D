@@ -5,9 +5,9 @@
 #define REVISION 00
 
 #define MAJOR_STR "1"
-#define MINOR_STR "1"
+#define MINOR_STR "01"
 #define REVISION_STR "0"
 
 #define VERSION_FULL MAJOR_STR "." MINOR_STR "." REVISION_STR "-" BUILD_NR
 
-#define PROGRAM "io_netcdf" 
+#define PROGRAM "gridgeom" 
