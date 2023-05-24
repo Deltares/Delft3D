@@ -51,7 +51,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "-\0"
             VALUE "CompanyName", COMPANY_NAME
-            VALUE "FileDescription", "io netcdf library\0"
+            VALUE "FileDescription", "io_netcdf library\0"
             VALUE "FileVersion", VERSION_FULL
             VALUE "InternalName", PROGRAM
             VALUE "LegalCopyright", LEGAL_COPYRIGHT
