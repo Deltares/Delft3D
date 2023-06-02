@@ -170,9 +170,10 @@ function(post_build_target target_name install_dir build_dir checkout_src_root b
 
       if (DEFINED ENV{ONEAPI_ROOT})  
          set(oneapi_root $ENV{ONEAPI_ROOT})
-         set(compiler_redist_dir "${oneapi_root}/compiler/latest/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "${oneapi_root}/mkl/latest/redist/intel64/")   
-         set(mpi_redist_dir "${oneapi_root}/mpi/latest/")
+# UNST-6985: temporary fix to force Intel21 on machines that have multiple versions of Intel Fortran installed:
+         set(compiler_redist_dir "${oneapi_root}/compiler/2021.2.0/windows/redist/intel64_win/compiler/")
+         set(mkl_redist_dir   "${oneapi_root}/mkl/2021.2.0/redist/intel64/")   
+         set(mpi_redist_dir "${oneapi_root}/mpi/2021.2.0/")
       else()
          set(compiler_redist_dir "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/compiler/")
          set(mkl_redist_dir   "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/mkl/")   
