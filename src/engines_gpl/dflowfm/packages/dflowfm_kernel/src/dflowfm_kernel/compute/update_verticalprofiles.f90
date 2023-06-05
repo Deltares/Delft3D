@@ -345,6 +345,15 @@ double precision, external :: setrhofixedp
      ck(0:kxL) = 0.d0
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
+     if (faclaxturkin > 0) then 
+        do L  = Lb,Lt-1
+           k1 = ln(1,L) ; k2 = ln(2,L) 
+           if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+              dk(L-Lb+1) = dtiL*( (1d0-faclaxturkin)*turkin0(L) +  0.5d0*faclaxturkin*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+           endif
+        enddo
+     endif
+
      vicu      = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigtkei        !
 
      ! Calculate turkin source from wave dissipation: preparation
@@ -705,6 +714,14 @@ double precision, external :: setrhofixedp
      dk(0:kxL) = dtiL*tureps0(Lb0:Lt)
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
+     if (faclaxtureps > 0) then 
+        do L  = Lb,Lt-1
+           k1 = ln(1,L) ; k2 = ln(2,L) 
+           if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+              dk(L-Lb+1) = dtiL*( (1d0-faclaxtureps)*tureps0(L) +  0.5d0*faclaxturkin*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+           endif
+        enddo
+     endif
 
      vicu  = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigepsi
 
