@@ -217,10 +217,12 @@ contains
    use m_flow
    use m_flowexternalforcings
    use m_structures
+   use m_observations, only: valobs
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
       type(t_output_quantity_config_set), intent(in)  :: output_config !> output config for which an output set is needed.
       
+      double precision, pointer, dimension(:) :: temp_pointer
       integer :: i
       
       if (jahisbal > 0) then
@@ -433,20 +435,40 @@ contains
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
       endif
-      !if ( kmx.gt.0 ) then
-      !   if (iturbulencemodel >= 3 .and. jahistur > 0) then
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TKE                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VICWW                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EPS                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAU                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDX                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDX_SFERIC                                              )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDY                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDY_SFERIC                                              )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RAIN                                                      )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INFILTRATION_CAP                                          )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL                          )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TEMPERATURE                                               )
+      if ( kmx.gt.0 ) then
+         if (iturbulencemodel >= 3 .and. jahistur > 0) then
+            call c_f_pointer (c_loc(valobs(IPNT_TKIN +1:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
+         endif
+         if (iturbulencemodel == 3 .and. jahistur >0) then
+            call c_f_pointer (c_loc(valobs(IDX_HIS_EPS +1:IDX_HIS_EPS+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EPS      ),temp_pointer                     )
+         endif
+         if (iturbulencemodel > 1) then
+            call c_f_pointer (c_loc(valobs(IPNT_VICWW +1:IPNT_VICWW+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VICWW    ),temp_pointer                         )
+         endif
+         if (iturbulencemodel == 4 .and. jahistur > 0) then
+            call c_f_pointer (c_loc(valobs(id_tureps +1:id_tureps+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
+         endif
+      endif
+      if (jawind > 0 .and. jahiswind > 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDX         ),valobs(IPNT_wx,:)                )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDX_SFERIC  ),valobs(IPNT_wx,:)                )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDY         ),valobs(IPNT_wy,:)                )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDY_SFERIC  ),valobs(IPNT_wy,:)                )
+      endif
+      if (jarain > 0 .and. jahisrain > 0) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RAIN            ),valobs(IPNT_rain,:)                      )
+      endif
+      if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INFILTRATION_CAP)                 ,valobs(IPNT_infiltcap,:)                                          )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(IPNT_infiltact,:)            )
+      endif
+
+      
+
       !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WIND                                                      )
       !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAIR                                                      )
       !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RHUM                                                      )
