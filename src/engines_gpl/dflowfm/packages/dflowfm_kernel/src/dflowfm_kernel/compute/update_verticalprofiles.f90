@@ -64,7 +64,7 @@ subroutine update_verticalprofiles()
 
  double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
 
- double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq
+ double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf 
 
  double precision :: wk,wke,vk,um,tauinv,tauinf,xlveg,rnv, diav,ap1,alf,c2esqcmukep,teps,tkin
 
@@ -345,11 +345,15 @@ double precision, external :: setrhofixedp
      ck(0:kxL) = 0.d0
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
-     if (faclaxturkin > 0) then 
+     if (facLaxturb > 0) then 
         do L  = Lb,Lt-1
-           k1 = ln(1,L) ; k2 = ln(2,L) 
-           if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-              dk(L-Lb+1) = dtiL*( (1d0-faclaxturkin)*turkin0(L) +  0.5d0*faclaxturkin*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+           zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+           if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+              k1 = ln(1,L) ; k2 = ln(2,L) 
+              if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+                 faclax = facLaxturb*zf
+                 dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+              endif
            endif
         enddo
      endif
@@ -714,11 +718,16 @@ double precision, external :: setrhofixedp
      dk(0:kxL) = dtiL*tureps0(Lb0:Lt)
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
-     if (faclaxtureps > 0 ) then 
+
+     if (facLaxturb > 0) then 
         do L  = Lb,Lt-1
-           k1 = ln(1,L) ; k2 = ln(2,L) 
-           if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-              dk(L-Lb+1) = dtiL*( (1d0-faclaxtureps)*tureps0(L) +  0.5d0*faclaxturkin*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+           zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+           if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+              k1 = ln(1,L) ; k2 = ln(2,L) 
+              if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+                 faclax = facLaxturb*zf
+                 dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+              endif
            endif
         enddo
      endif

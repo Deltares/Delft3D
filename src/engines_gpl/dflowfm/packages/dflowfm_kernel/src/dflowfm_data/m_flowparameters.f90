@@ -307,6 +307,7 @@
  double precision                  :: eps6              !<
  double precision                  :: eps8              !< implicit diffusion
  double precision                  :: eps10             !<
+ double precision                  :: eps20             !< faxlac
  double precision                  :: epshsdif=1d-2     !< hs < epshsdif: no vertical diffusion if hs < epshsdif
  double precision                  :: s01max            !< water level threshold (m) between s0 and s1 in validation routine
  double precision                  :: u01max            !< velocity threshold (m/s) between u0 and u1 in validation routine
@@ -844,6 +845,7 @@ subroutine default_flowparameters()
     eps6       = 1d-6    !
     eps8       = 1d-8    ! implicit diffusion
     eps10      = 1d-10   !
+    eps20      = 1d-20   ! facLax
 
     s01max     = 0d0     ! max. water level change: off
     u01max     = 0d0     ! max. velocity change: off
