@@ -38,6 +38,7 @@ subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icg
    use m_polygon
    use dfm_error
    use gridoperations
+   use MessageHandling
 
 
    implicit none
@@ -83,6 +84,11 @@ subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icg
    call cosphiunetcheck(1)
 
    if ( md_Ndomains.gt.0 ) then ! use METIS
+      if (npl > 0) then
+         write (msgbuf, '(a,i0,a)') '--partition command should not be called with both `ndomains` and a polygon file. Partitioning will ignore the polygon file and use METIS with ndomains=', md_ndomains, ' instead.'
+         call warn_flush()
+      end if
+
       call partition_METIS_to_idomain(md_Ndomains, md_jacontiguous, md_pmethod, md_partseed)
 !     generate partitioning polygons
       Ndomains = md_Ndomains
