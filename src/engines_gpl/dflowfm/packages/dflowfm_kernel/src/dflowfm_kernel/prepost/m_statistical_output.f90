@@ -23,9 +23,9 @@
    
 module QSCallBack
    abstract interface
-      double precision function QS_callbackiface(igrid)
-         integer, intent(in) :: igrid !grid number
-      end function QS_callbackiface
+      subroutine QS_callbackiface(datapointer)
+         double precision, pointer, dimension(:), intent(inout) :: datapointer !grid number
+      end subroutine QS_callbackiface
    end interface
 end module QSCallBack
    
@@ -39,7 +39,7 @@ private
 
    public realloc
    public dealloc
-   public update_statistical_output
+   public update_statistical_output, update_source_data
 
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
@@ -162,13 +162,29 @@ contains
 
    end subroutine add_statistical_output_sample
 
+   ! some variables without a pointer need a separate subroutine call to update their source_data array
+   subroutine update_source_data(output_set)
+   type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that we wish to update
+   type(t_output_variable_item), pointer  :: i
+   
+   integer :: j
+   
+   do j = 1, output_set%count
+      i => output_set%statout(j)
+      if (associated(i%function_pointer)) then
+         call i%function_pointer(i%source_input)
+      endif
+   enddo
+   
+   end subroutine update_source_data
+   
    !> updates a stat_output_item using the stat_input array, depending on the operation_id
    !  stat_input is filled elsewhere and can be a moving average or a pointer to an input variable.
    elemental subroutine update_statistical_output(i,dts)
       
       type(t_output_variable_item), intent(inout) :: i   !< statistical output item to update
       double precision,             intent(in)    :: dts !< current timestep
-
+   
       if (i%operation_id == SO_MIN .or. i%operation_id == SO_MAX ) then ! max/min of moving average requested
          call add_statistical_output_sample(i,dts)
          call update_moving_average(i)
@@ -223,17 +239,105 @@ contains
 
    end subroutine reset_statistical_output
    
+   subroutine add_stat_output_item(output_set, output_config, data_pointer, function_pointer)
+   use QSCallBack
+   
+      type(t_output_variable_set), intent(inout) :: output_set             !> output set that items need to be added to
+      type(t_output_quantity_config), pointer, intent(in) :: output_config !> output quantity config linked to output item
+      double precision, pointer, dimension(:), intent(in) :: data_pointer  !> pointer to output quantity data
+      procedure(QS_callbackiface), optional, pointer, intent(in) :: function_pointer
+      
+      type(t_output_variable_item) :: item !> new item to be added
+      
+      output_set%count = output_set%count + 1
+      if (output_set%count > output_set%size) then
+         call realloc_stat_output(output_set)
+      endif
+      
+      item%output_config => output_config
+      item%operation_id = set_operation_id(output_config)
+      item%source_input => data_pointer
+      if (present(function_pointer)) then
+         item%function_pointer => function_pointer
+      endif
+      
+      output_set%statout(output_set%count) = item
+      
+   end subroutine add_stat_output_item
+   
+   integer function set_operation_id(output_config)
+   use string_module, only: str_tolower
+   
+      type(t_output_quantity_config), intent(in) :: output_config          !> output quantity config linked to output item
+      
+      set_operation_id = -1
+      
+      if      (trim(str_tolower(output_config%input_value)) == 'current' ) then
+         set_operation_id = SO_CURRENT
+      else if (trim(str_tolower(output_config%input_value)) == 'average' ) then
+         set_operation_id = SO_AVERAGE
+      else if (trim(str_tolower(output_config%input_value)) == 'max' ) then
+         set_operation_id = SO_MAX
+      else if (trim(str_tolower(output_config%input_value)) == 'min' ) then
+         set_operation_id = SO_MIN
+      endif
+         
+   end function set_operation_id
+      
+   !> For every item in output_set, allocate arrays depending on operation id
+   subroutine initialize_statistical_output(output_set)
+   
+      type(t_output_variable_set), intent(inout) :: output_set !> output set that needs to be initialized
+
+      type(t_output_variable_item), pointer  :: i
+      integer :: j, inputsize
+      logical :: success
+      
+      do j = 1, output_set%count
+         i => output_set%statout(j)
+         input_size = size(i%source_input)
+         if (associated(i%function_pointer)) then
+            call i%function_pointer(i%source_input)
+         endif
+
+         select case (i%operation_id)
+         case (SO_CURRENT)
+            i%stat_output => i%source_input
+         case (SO_AVERAGE)
+            allocate(i%stat_output(input_size))
+            i%stat_input => i%source_input
+         case (SO_MIN, SO_MAX)
+            allocate(i%stat_output(input_size),i%moving_average_sum(input_size), &
+               i%samples(input_size,window_size),i%timesteps(window_size),i%stat_input(input_size))
+
+            i%moving_average_sum = 0
+            i%samples = 0
+            i%timesteps = 0
+            i%timestep_sum = 0
+            case default
+            call mess(LEVEL_ERROR, 'initialize_statistical_output: invalid operation_id')
+         end select
+
+         call reset_statistical_output(i)
+      enddo
+
+   end subroutine initialize_statistical_output
+   
+      
    subroutine flow_init_statistical_output_his(output_config,output_set)
    use m_flow
    use m_flowexternalforcings
    use m_structures
    use m_observations
    use m_sediment, only: stm_included
+   use fm_statistical_output, only: aggregate_constituent_data
    USE, INTRINSIC :: ISO_C_BINDING
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
       type(t_output_quantity_config_set), intent(in)  :: output_config !> output config for which an output set is needed.
       double precision, pointer, dimension(:) :: temp_pointer
+      procedure(QS_callbackiface),  pointer :: function_pointer => NULL()
+      
       integer :: i, ntot
       
       ntot = numobs + nummovobs
@@ -586,8 +690,11 @@ contains
          call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
+      if (ncrs > 0 .and. NUMCONST_MDU > 0) then
+         function_pointer => aggregate_constituent_data
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS),temp_pointer,function_pointer                                 )
+      endif
       
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS                                              )
       if (jahislateral > 0 .and. numlatsg > 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
@@ -785,90 +892,5 @@ contains
       call initialize_statistical_output(output_set)
          
    end subroutine flow_init_statistical_output_his
-   
-   subroutine add_stat_output_item(output_set, output_config, data_pointer, function_pointer)
-   use QSCallBack
-   
-      type(t_output_variable_set), intent(inout) :: output_set             !> output set that items need to be added to
-      type(t_output_quantity_config), pointer, intent(in) :: output_config !> output quantity config linked to output item
-      double precision, pointer, dimension(:), intent(in) :: data_pointer  !> pointer to output quantity data
-      procedure(QS_callbackiface), optional, pointer, intent(in) :: function_pointer
-      
-      type(t_output_variable_item) :: item !> new item to be added
-      
-      output_set%count = output_set%count + 1
-      if (output_set%count > output_set%size) then
-         call realloc_stat_output(output_set)
-      endif
-      
-      item%output_config => output_config
-      item%operation_id = set_operation_id(output_config)
-      item%source_input => data_pointer
-      if (present(function_pointer)) then
-         item%function_pointer => function_pointer
-      endif
-      
-      output_set%statout(output_set%count) = item
-      
-   end subroutine add_stat_output_item
-   
-   integer function set_operation_id(output_config)
-   use string_module, only: str_tolower
-   
-      type(t_output_quantity_config), intent(in) :: output_config          !> output quantity config linked to output item
-      
-      set_operation_id = -1
-      
-      if      (trim(str_tolower(output_config%input_value)) == 'current' ) then
-         set_operation_id = SO_CURRENT
-      else if (trim(str_tolower(output_config%input_value)) == 'average' ) then
-         set_operation_id = SO_AVERAGE
-      else if (trim(str_tolower(output_config%input_value)) == 'max' ) then
-         set_operation_id = SO_MAX
-      else if (trim(str_tolower(output_config%input_value)) == 'min' ) then
-         set_operation_id = SO_MIN
-      endif
-         
-   end function set_operation_id
-      
-   !> For every item in output_set, allocate arrays depending on operation id
-   subroutine initialize_statistical_output(output_set)
-   
-      type(t_output_variable_set), intent(inout) :: output_set !> output set that needs to be initialized
-
-      type(t_output_variable_item), pointer  :: i
-      integer :: j, inputsize
-      logical :: success
-      
-      do j = 1, output_set%count
-         i => output_set%statout(j)
-         input_size = size(i%source_input)
-         
-         !call set_statistical_output_pointer(i,success)
-         if (success) then
-            select case (i%operation_id)
-            case (SO_CURRENT)
-               i%stat_output => i%stat_input
-            case (SO_AVERAGE)
-               allocate(i%stat_output(input_size))
-               i%stat_input => i%source_input
-            case (SO_MIN, SO_MAX)
-               allocate(i%stat_output(input_size),i%moving_average_sum(input_size), &
-                        i%samples(input_size,window_size),i%timesteps(window_size),i%stat_input(input_size))
-
-               i%moving_average_sum = 0
-               i%samples = 0
-               i%timesteps = 0
-               i%timestep_sum = 0
-            case default
-               call mess(LEVEL_ERROR, 'update_statistical_output: invalid operation_id')
-            end select
-
-            call reset_statistical_output(i)
-         endif
-      enddo
-
-   end subroutine initialize_statistical_output
-   
 
 end module

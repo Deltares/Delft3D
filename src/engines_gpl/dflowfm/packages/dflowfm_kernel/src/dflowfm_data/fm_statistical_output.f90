@@ -1,7 +1,7 @@
 !> Module for the statistical output with FM specifics
 module fm_statistical_output
    use m_output_config
-   use m_statistical_output
+   use m_statistical_output, only: t_output_quantity_config_set, t_output_variable_set
    use messagehandling
    implicit none
    
@@ -15,10 +15,53 @@ private
    type(t_output_variable_set), allocatable, public :: out_variable_set_map
    type(t_output_variable_set), allocatable, public :: out_variable_set_clm
    
-   public default_fm_statistical_output
-
-contains
+   double precision, dimension(:), allocatable, target, public :: constituent_data !> actual constituent data we plan to write
    
+   public default_fm_statistical_output, aggregate_constituent_data
+
+   contains
+   
+   subroutine aggregate_constituent_data(data_pointer)
+   use m_monitoring_crosssections
+   use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
+   use m_sediment, only: sedtot2sedsus, stmpar
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !> pointer to output quantity data
+
+   integer :: i, IP, num, l
+   double precision :: rhol
+   
+   if (ncrs > 0) then
+      if (.not. allocated(constituent_data)) then
+         allocate(constituent_data(NUMCONST_MDU*ncrs))
+      endif
+      if (.not. associated(data_pointer))then
+         data_pointer => constituent_data
+      endif
+      
+      do i=1,ncrs
+         IP = IPNT_HUA
+         do num = 1,NUMCONST_MDU
+            IP = IP + 1
+            if (num >= ISED1 .and. num <= ISEDN) then
+               l = sedtot2sedsus(num-ISED1+1)
+               select case(stmpar%morpar%moroutput%transptype)
+               case (0)
+                  rhol = 1d0
+               case (1)
+                  rhol = stmpar%sedpar%cdryb(l)
+               case (2)
+                  rhol = stmpar%sedpar%rhosol(l)
+               end select
+               constituent_data((num-1)*NUMCONST_MDU+i) = crs(i)%sumvalcur(IP)/rhol
+            else
+               constituent_data((num-1)*NUMCONST_MDU+i) = crs(i)%sumvalcur(IP)
+            endif
+         end do
+      enddo
+   endif
+
+   end subroutine
+
    !> set all possible statistical quantity items
    subroutine default_fm_statistical_output()
       use coordinate_reference_system, only: nc_attribute
