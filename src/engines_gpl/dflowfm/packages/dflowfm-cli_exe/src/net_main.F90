@@ -120,7 +120,7 @@
    integer                   :: mklok
    double precision          :: tstartall , tstopall ! just checking...
 
-   call klok(tstartall)
+   call clock(tstartall)
 
 !  call checkunesco83()
 
@@ -464,7 +464,7 @@
 !  finalize before exit in case we did "normal" computation
    call partition_finalize()
 
-   call klok(tstopall)
+   call clock(tstopall)
 
    !call newfil(mklok, 'wallclock')
    !write(mklok,*) tstopall - tstartall, ' s'

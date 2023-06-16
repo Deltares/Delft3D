@@ -16172,7 +16172,7 @@ subroutine find_flownodesorlinks_merge(n, x, y, n_loc, n_own, iloc_own, iloc_mer
    character(len=128)                              :: mesg
    double precision, allocatable                   :: x_tmp(:), y_tmp(:)
 
-   call klok(t0)
+   call clock(t0)
    if (present(inode_merge2loc)) then
       jamerge2own = 1
    else
@@ -16261,7 +16261,7 @@ subroutine find_flownodesorlinks_merge(n, x, y, n_loc, n_own, iloc_own, iloc_mer
         endif
    end do
 
-   call klok(t1)
+   call clock(t1)
 
    write(mesg, "('done in ', F12.5, ' sec.')") t1-t0
    call mess(LEVEL_INFO, trim(mesg))

@@ -2716,7 +2716,7 @@
       ipar(1) = 0
 
      ! time = dtime(dt)
-     ! call klok(cp0)
+     ! call clock(cp0)
 
  10   if ( jabcgstab.eq.1 ) then
          call BCGSTAB(n,rhs,sol,ipar,fpar,wk)
@@ -2840,7 +2840,7 @@
       iou = 6
       ipar(1) = 0
 !      time = dtime(dt)
-      call klok(cp0)
+      call clock(cp0)
  10   call solver(n,rhs,sol,ipar,fpar,wk)
 
 !

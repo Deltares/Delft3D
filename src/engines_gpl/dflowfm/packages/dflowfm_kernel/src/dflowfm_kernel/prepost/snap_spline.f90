@@ -158,11 +158,11 @@ subroutine snap_spline(ispline)
 
    do
 !     compute projected sample points
-      call klok(t0)
+      call clock(t0)
       do i=1,Numnew
          call toland(xf(i), yf(i), 1, MXLAN, 2, xb(i), yb(i), dis, j, rL)
       end do
-      call klok(t1)
+      call clock(t1)
 
       write(6,"('elapsed time:', F7.2, ' sec.')") t1-t0
 

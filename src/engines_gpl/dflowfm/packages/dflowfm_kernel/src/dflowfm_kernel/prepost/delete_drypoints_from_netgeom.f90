@@ -88,7 +88,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
 
    call mess(LEVEL_INFO, 'removing dry cells...')
 
-   call klok(t0)
+   call clock(t0)
 
    do ifil=1,size(fnames)
 
@@ -159,7 +159,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
       end if
    end do
 
-   call klok(t1)
+   call clock(t1)
 
    write(mesg, "('done in ', F12.5, ' sec.')") t1-t0
    call mess(LEVEL_INFO, trim(mesg))

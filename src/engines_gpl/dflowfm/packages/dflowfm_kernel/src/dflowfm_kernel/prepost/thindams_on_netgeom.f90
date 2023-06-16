@@ -66,7 +66,7 @@ subroutine thindams_on_netgeom()
        ierror = 1
 
        if ( jakdtree.eq.1 ) then
-          call klok(t0)
+          call clock(t0)
 
 !         determine set of links that are connected by a path
           allocate(iLink(numL))
@@ -122,13 +122,13 @@ subroutine thindams_on_netgeom()
              end do ! do iL=1,numcrossedlinks
           end if
 
-          call klok(t1)
+          call clock(t1)
           write(mesg,"('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1-t0
           call mess(LEVEL_INFO, trim(mesg))
        end if
 
        if ( jakdtree.eq.0 ) then ! no kdtree, or kdtree gave error
-          call klok(t0)
+          call clock(t0)
           do ic=1,nthd
              call crspath_on_netgeom(thd(ic))
              do L=1,thd(ic)%lnx
@@ -138,7 +138,7 @@ subroutine thindams_on_netgeom()
                 end if
              end do
           end do
-          call klok(t1)
+          call clock(t1)
           write(mesg,"('thin dams without kdtree2, elapsed time: ', G15.5)") t1-t0
           call mess(LEVEL_INFO, trim(mesg))
        end if ! if ( jakdtree.eq.1 ) then

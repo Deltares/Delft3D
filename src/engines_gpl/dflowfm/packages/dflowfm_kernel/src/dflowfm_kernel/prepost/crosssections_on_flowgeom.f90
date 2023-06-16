@@ -294,7 +294,7 @@ subroutine crosssections_on_flowgeom()
     idum = 0
 
     if ( jakdtree.eq.1 ) then
-        call klok(t0)
+        call clock(t0)
 
         call copyCachedCrossSections( iLink, ipol, success )
 
@@ -380,7 +380,7 @@ subroutine crosssections_on_flowgeom()
         if ( allocated(istartcrs) ) deallocate(istartcrs)
         if ( allocated(xx)        ) deallocate(xx,yy)
 
-        call klok(t1)
+        call clock(t1)
         write(mesg,"('cross sections with kdtree2, elapsed time: ', G15.5, 's.')") t1-t0
         call mess(LEVEL_INFO, trim(mesg))
     end if

@@ -60,7 +60,7 @@
 
       IF (NDRAW(2) .LE. 0 .or. NUML == 0 ) RETURN
 
-!      call klok(t0)
+!      call clock(t0)
 
      if (ndraw(2) .ne. 3) then  ! net zelf
 
@@ -216,7 +216,7 @@
         end do
       end if
 
-!      call klok(t1)
+!      call clock(t1)
 
 !      write(6,"('time elapsed in teknet: ', F15.5, 'seconds')") t1-t0
 

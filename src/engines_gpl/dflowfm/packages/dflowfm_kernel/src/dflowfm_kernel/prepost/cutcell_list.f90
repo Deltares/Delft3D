@@ -152,7 +152,7 @@
      end if
 
      do ipoly=1,numpols
-        call klok(t0)
+        call clock(t0)
 
         ipol_stored = ipol_stored + 1
         call delpol()
@@ -179,7 +179,7 @@
            CALL CUTCELWU(n12, jamasks, ipol_stored) ! calls SAVEPOL via split_pol
         endif
 
-        call klok(t1)
+        call clock(t1)
 
         write(mesg, "('done in ', F12.5, ' sec.')") t1-t0
         call mess(LEVEL_INFO, trim(mesg))
@@ -342,7 +342,7 @@
         allocate(polynum(num))
         allocate(polysec(num))
 
-        call klok(t0)
+        call clock(t0)
         num = 0
         do i=1,numpols
 !          copy i-the tpoly-type polygon
@@ -408,7 +408,7 @@
 
   1234  continue
 
-        call klok(t1)
+        call clock(t1)
         write(mesg,"('cutcell with kdtree2, elapsed time: ', G15.5, 's.')") t1-t0
         call mess(LEVEL_INFO, trim(mesg))
 !       deallocate

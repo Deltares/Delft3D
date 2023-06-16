@@ -300,7 +300,7 @@ end subroutine api_loadmodel
       return                                ! No valid flow network was initialized
     endif
     
-    call klok(cpuall0)
+    call clock(cpuall0)
 
     inner_timerhandle = 0
     call timstrt('Update various', inner_timerhandle)

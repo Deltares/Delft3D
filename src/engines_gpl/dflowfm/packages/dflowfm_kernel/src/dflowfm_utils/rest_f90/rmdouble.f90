@@ -77,7 +77,7 @@
       !   jakdtree=0
       !end if
 
-      call klok(t0)
+      call clock(t0)
 
       if ( jakdtree.eq.1 ) then
 !        force Cartesian coordinates
@@ -190,7 +190,7 @@
 
       end if
 
-      call klok(t1)
+      call clock(t1)
 
 !     remove double samples
       K = 0
@@ -205,7 +205,7 @@
          ENDIF
    20 CONTINUE
 
-      call klok(t2)
+      call clock(t2)
 
 !     update permutation array
       k = 0
@@ -217,7 +217,7 @@
          end if
       end do
 
-      call klok(t3)
+      call clock(t3)
 
 !     set new number of samples
       NS = K
@@ -230,7 +230,7 @@
          ! CALL QNERROR('NUMBER OF DOUBLE POINTS REMOVED',OUD,' ')
       ENDIF
 
-      call klok(t4)
+      call clock(t4)
 
 !     output message
       if ( jakdtree.eq.1 ) then

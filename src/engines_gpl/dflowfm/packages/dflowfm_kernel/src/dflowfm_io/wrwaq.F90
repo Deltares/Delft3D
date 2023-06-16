@@ -760,9 +760,9 @@ subroutine waq_write_waqgeom_filepointer_ugrid(igeomfile)
          call check_error(ierr)
 
          ! Aggregate.
-         call klok(startTime)
+         call clock(startTime)
          success = aggregate_ugrid_geometry(meshgeom, aggregated_meshgeom, edge_type, aggregated_edge_type, waqpar%iapnt)
-         call klok(endTime)
+         call clock(endTime)
          if (success) then ! If no errors occurred.
             write(message, "('Aggregated grid for waq geometry file, elapsed time: ', F10.3, ' s.')") endTime - startTime
             call mess(LEVEL_INFO, trim(message))

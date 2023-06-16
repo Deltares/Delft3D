@@ -793,7 +793,7 @@ contains
    Nj = j2-j1+1
    
    if (ini ==0) then 
-      call klok(t0)
+      call clock(t0)
       
       allocate ( jasea(i1:i2,j1:j2), stat=ierr) 
       
@@ -888,7 +888,7 @@ contains
          end do
       end if
       
-      call klok(t1)
+      call clock(t1)
       write(str,"('SAL/aggregate waterlevels, elapsed time: ', G15.5, 's.')") t1-t0
       call mess(LEVEL_INFO, trim(str))
 

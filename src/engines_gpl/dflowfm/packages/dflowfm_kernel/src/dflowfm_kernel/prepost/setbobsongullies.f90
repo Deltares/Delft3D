@@ -63,7 +63,7 @@
  call reapol (minp, 0)
 
  if ( jakdtree.eq.1 ) then
-    call klok(t0)
+    call clock(t0)
     allocate(iLink(Lnx),ipol(Lnx),dSL(Lnx))
     call find_crossed_links_kdtree2(treeglob,NPL,XPL,YPL,2,numL,0,numcrossedLinks, iLink, iPol, dSL, ierror)
     numLL = numcrossedLinks
@@ -71,7 +71,7 @@
        deallocate(iLink,ipoL,dSL)
        jakdtree = 0
     end if
-    call klok(t1)
+    call clock(t1)
     write(mesg,"('set bobs (on gullies) with kdtree2, elapsed time: ', G15.5, 's.')") t1-t0
     call mess(LEVEL_INFO, trim(mesg))
  else

@@ -129,7 +129,7 @@ implicit none
          write (6,'("starttimer: status error for timer ", I0)') itvar
       end if
 
-      call klok(tloc)
+      call clock(tloc)
       t(1,itvar) = tloc
 
       call cpu_time(tcpu(1,itvar))
@@ -154,7 +154,7 @@ implicit none
       if ( itstat(itvar).ne.1 ) then
          write (6,'("stoptimer: status error for timer ", I0)') itvar
       else
-         call klok(tloc)
+         call clock(tloc)
          t(2,itvar) = tloc
          t(3,itvar) = t(3,itvar) + tloc - t(1,itvar)
 

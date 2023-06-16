@@ -107,7 +107,7 @@ subroutine setfixedweirs()      ! override bobs along pliz's, jadykes == 0: only
  allocate (ifirstweir(lnx)) ; ifirstweir = 1                       ! added to check whether fixed weir data is set for the first time at a net link (1=true, 0=false)
 
 
- call klok(t0)
+ call clock(t0)
  t_extra(1,1) = t0
 
  ! Load fixed weirs polygons from file.
@@ -141,16 +141,16 @@ subroutine setfixedweirs()      ! override bobs along pliz's, jadykes == 0: only
        call reapol(minp, jadoorladen)
        jadoorladen = 1
     enddo
-    call klok(t_extra(2,1))
-    call klok(t_extra(1,2))
+    call clock(t_extra(2,1))
+    call clock(t_extra(1,2))
     call pol_to_flowlinks(xpl, ypl, zpl, npl, nfxw, fxw)
-    call klok(t_extra(2,2))
+    call clock(t_extra(2,2))
     deallocate(fnames)
  end if
 
  kint = max(lnxi/1000,1)
 
- call klok(t_extra(1,3))
+ call clock(t_extra(1,3))
  allocate (iLink(Lnx))
  allocate (iLcr(Lnx))     ; Ilcr = 0
  allocate (ipol(Lnx))
@@ -165,9 +165,9 @@ subroutine setfixedweirs()      ! override bobs along pliz's, jadykes == 0: only
     call find_crossed_links_kdtree2(treeglob,NPL,XPL,YPL,2,Lnx,1,numcrossedLinks, iLink, iPol, dSL, ierror)
     call cacheFixedWeirs( npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL )
  endif
- call klok(t_extra(2,3))
+ call clock(t_extra(2,3))
 
- call klok(t_extra(1,4))
+ call clock(t_extra(1,4))
  if ( ierror == 0) then
     do iL = 1,numcrossedlinks
        L  = iLink(il)
@@ -220,9 +220,9 @@ subroutine setfixedweirs()      ! override bobs along pliz's, jadykes == 0: only
     enddo
     numcrossedlinks = n
  endif
- call klok(t_extra(2,4))
+ call clock(t_extra(2,4))
 
- call klok(t1)
+ call clock(t1)
  write(mesg,"('fixed weirs with kdtree2, elapsed time: ', G15.5, 's.')") t1-t0
  call mess(LEVEL_INFO, trim(mesg))
  write(mesg,"('fixed weirs: read files,  elapsed time: ', G15.5, 's.')") t_extra(2,1)-t_extra(1,1)

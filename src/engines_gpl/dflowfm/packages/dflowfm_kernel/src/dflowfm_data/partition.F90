@@ -6020,7 +6020,7 @@ end module m_partitioninfo
       
       double precision, parameter                      :: dtol = 1d-4
       
-      call klok(t0)
+      call clock(t0)
       
       ierror = 1
       
@@ -6124,7 +6124,7 @@ end module m_partitioninfo
 !        realloc
          call realloc(jafound, num, keepExisting=.false., fill=0)
          numfound = 0
-         call klok(t2)
+         call clock(t2)
    Lloop:do L=1,numL
             if ( kce(L).ne.1 ) cycle  ! boundary links only
             if ( idomain(ke(L)).ne.my_rank ) cycle  ! in own domain only
@@ -6150,7 +6150,7 @@ end module m_partitioninfo
                end if
             end do
          end do Lloop
-         call klok(t3)
+         call clock(t3)
          timefind2 = timefind2+t3-t2
          
          
@@ -6235,7 +6235,7 @@ end module m_partitioninfo
          call mess(LEVEL_INFO, trim(str))
       end if
       
-      call klok(t1)
+      call clock(t1)
       
       write(str,"('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1-t0
       call mess(LEVEL_INFO, trim(str))
