@@ -2898,7 +2898,7 @@
 !      write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)
 !
 
-      CALL KLOK(CP1)
+      call clock(CP1)
       WRITE (*,'(A,F8.4,A,I4)') ' CPU time =', cp1 - cp0,       &
                              '   nbr of iterations =', its
       call watisdefout(n,sol,sol0)
