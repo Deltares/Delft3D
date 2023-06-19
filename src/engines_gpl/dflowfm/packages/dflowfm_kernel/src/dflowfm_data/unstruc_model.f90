@@ -2460,14 +2460,15 @@ logical function isobsolete(chap, key)
       end select
    case ('numerics')
       select case (trim(key))
-      case ('hkad','ithindykescheme','thindykecontraction', 'transportmethod', 'transporttimestepping')
+      ! case ('hkad','ithindykescheme','thindykecontraction', 'transportmethod', 'transporttimestepping')
+      case ('hkad','ithindykescheme','thindykecontraction', 'transporttimestepping')
          isobsolete = .true.
       end select
-   case ('output')
-      select case (trim(key))
-      case ('writebalancefile')
-         isobsolete = .true.
-      end select
+   ! case ('output')
+   !    select case (trim(key))
+   !    case ('writebalancefile')
+   !       isobsolete = .true.
+   !    end select
    end select
 end function isobsolete
     
