@@ -1058,7 +1058,7 @@ module time_module
      subroutine datetimestring_to_seconds(dateandtime,refdat,timsec,stat)
          implicit none
 
-         character,         intent(in)  :: dateandtime*(*) !< Input datetime string, format '201201010000', note that seconds are ignored.
+         character,         intent(in)  :: dateandtime*(*) !< Input datetime string, format '20120101_0000', note that seconds are ignored.
          character (len=8), intent(in)  :: refdat          !< reference date
          integer,           intent(out) :: stat
  
@@ -1076,11 +1076,11 @@ module time_module
          if (ierr /= 0) goto 999
          read(dateandtime( 7:8 ),'(i2.2)',iostat=ierr) iday
          if (ierr /= 0) goto 999
-         read(dateandtime( 9:10),'(i2.2)',iostat=ierr) ihour
+         read(dateandtime( 10:11),'(i2.2)',iostat=ierr) ihour
          if (ierr /= 0) goto 999
-         read(dateandtime(11:12),'(i2.2)',iostat=ierr) imin
+         read(dateandtime(12:13),'(i2.2)',iostat=ierr) imin
          if (ierr /= 0) goto 999
-         read(dateandtime(13:14),'(i2.2)',iostat=ierr) isec
+         read(dateandtime(14:15),'(i2.2)',iostat=ierr) isec
          if (ierr /= 0) goto 999
          
          call seconds_since_refdat(iyear, imonth, iday, ihour, imin, isec, refdat, timsec)
@@ -1095,7 +1095,6 @@ module time_module
      end subroutine datetimestring_to_seconds
       
      !> Given time in seconds from refdat, fill dateandtime string
-     !! NOTE: seconds_to_datetimestring and datetimestring_to_seconds are not compatible, because of minutes versus seconds, and different format string.
      subroutine seconds_to_datetimestring(dateandtime,refdat,tim)
          implicit none
 
@@ -1106,7 +1105,6 @@ module time_module
          integer          :: iday, imonth, iyear, ihour, imin, isec
 
          dateandtime = '20000101_000000'
-         ! TODO: AvD: seconds_to_datetimestring and datetimestring_to_seconds are now inconsistent since the addition of this '_'
 
          call datetime_from_refdat(tim, refdat, iyear, imonth, iday, ihour, imin, isec)
 

@@ -12516,7 +12516,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     tok2 = index( filename, '_map.nc', .true. )
 
     ! Convert the refdat from the mdu to seconds w.r.t. an absolute t0
-    call datetimestring_to_seconds(refdat//'000000', refdat, trefdat_mdu, iostat)
+    call datetimestring_to_seconds(refdat//'_000000', refdat, trefdat_mdu, iostat)
 
     call readyy('Reading map data',0d0)
 
@@ -12672,7 +12672,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call readyy('Reading map data',0.10d0)
 
     iostat = 0
-    call datetimestring_to_seconds(restartdatetime(1:14), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
+    tmpstr = ''
+    tmpstr = restartdatetime(1:8)//'_'//restartdatetime(9:14)
+    call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
     mdu_has_date = (iostat==0)
 
     ! Restart from *yyyymmdd_hhmmss_rst.nc
@@ -12684,8 +12686,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
        fname_has_date = .false.
        if (tok1 .gt. 15) then
-          tmpstr  = filename(tok1-15:tok1-8)//filename(tok1-6:tok1-1)
-          call datetimestring_to_seconds(tmpstr(1:14), refdat, trefdat_rst, iostat)
+          tmpstr  = filename(tok1-15:tok1-8)//'_'//filename(tok1-6:tok1-1)
+          call datetimestring_to_seconds(tmpstr(1:15), refdat, trefdat_rst, iostat)
           fname_has_date = (iostat==0)
           tok3    = index( filename(tok1-15:tok1-1), '_')
           fname_has_date = fname_has_date .and. (tok3 > 0)                    ! require connecting underscore between date and time
@@ -12734,7 +12736,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
         refdat_map = ''
         ierr = ncu_get_att(imapfile, id_time, "units", refdat_map)
         tmpstr = ' '
-        tmpstr  = refdat_map(15:18)//refdat_map(20:21)//refdat_map(23:24)//refdat_map(26:27)//refdat_map(29:30)//refdat_map(32:33)
+        tmpstr  = refdat_map(15:18)//refdat_map(20:21)//refdat_map(23:24)//'_'//refdat_map(26:27)//refdat_map(29:30)//refdat_map(32:33)
         call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_map, iostat)             ! result: refdatold in seconds  w.r.t. absolute t0
         deallocate(refdat_map)
         
