@@ -227,11 +227,11 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 set(build_project dflowfm-cli)
 
-post_build_target( ${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${build_project} )
+# post_build_target( ${executable_name}
+                   # ${install_dir} 
+                   # ${build_dir} 
+                   # ${checkout_src_root} 
+                   # ${build_project} )
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
