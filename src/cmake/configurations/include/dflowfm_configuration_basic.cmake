@@ -220,8 +220,6 @@ if(NOT WITH_INTERACTER)
     endif()
 endif(NOT WITH_INTERACTER)
 
+# install
+add_subdirectory(${checkout_src_root}/${install_dflowfm_module} install_dflowfm)
 
-if(UNIX)
-    # install
-    add_subdirectory(${checkout_src_root}/${install_dflowfm_module} install_dflowfm)
-endif()
