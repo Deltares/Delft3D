@@ -2543,11 +2543,11 @@ else if (i012 == 0) then                                ! look at u points, mom.
    nr = convtab%nru                                    ! number of table entries
    i  = convtab%last_position                                ! last index found
 
-   do while ( i + 1 < nr .and. convtab%water_depth(i+1) < dpt ) ! look up, imax = nr - 1
+   do while ( i + 1 < nr .and. convtab%height(i+1) < dpt ) ! look up, imax = nr - 1
       i = i + 1
    enddo
 
-   do while ( i     > 1  .and. convtab%water_depth(i)   > dpt ) ! look down, imin = 1
+   do while ( i     > 1  .and. convtab%height(i)   > dpt ) ! look down, imin = 1
       i = i - 1   
    enddo
    convtab%iolu = i                                    ! and store last index found
@@ -2558,9 +2558,9 @@ else if (i012 == 0) then                                ! look at u points, mom.
    
    i1  = i                                            ! so i1, i2 always inside table
    i2  = i+1
-   hu2 = convtab%water_depth(i2) ; dh2 = hu2 - dpt
-   if (dpt .LE. convtab%water_depth(i2) ) then !  .and. convtab%jopen .eq. 0) then     ! weightfactors. If profile closed no extrapolation
-      hu1 = convtab%water_depth(i1) ; dh1 = dpt - hu1
+   hu2 = convtab%height(i2) ; dh2 = hu2 - dpt
+   if (dpt .LE. convtab%height(i2) ) then !  .and. convtab%jopen .eq. 0) then     ! weightfactors. If profile closed no extrapolation
+      hu1 = convtab%height(i1) ; dh1 = dpt - hu1
       a1  = dh2 / ( hu2-hu1)                          ! eis parser: hu = wel monotoon stijgend
       a2 = 1d0 - a1
       !
@@ -2671,22 +2671,22 @@ else                                                      ! look at left or righ
    nr = convtab%nru                                  ! number of entries
    i  = convtab%last_position                                  ! last found
 
-   do while ( i + 1 < nr .and. convtab%water_depth(i+1) < dpt ) ! look up
+   do while ( i + 1 < nr .and. convtab%height(i+1) < dpt ) ! look up
       i = i + 1
    enddo
 
-   do while ( i     > 1  .and. convtab%water_depth(i) > dpt ) ! look down
+   do while ( i     > 1  .and. convtab%height(i) > dpt ) ! look down
       i = i - 1
    enddo
    convtab%last_position = i
 
    i1 = i                                                  ! so i1, i2 always inside table
    i2 = i+1
-   hh2 = convtab%water_depth(i2) ; dh2 = hh2 - dpt
-   if (i2 .eq. nr .and. dpt .ge. convtab%water_depth(i2) ) then ! Weightfactors. If profile closed no extrapolation
+   hh2 = convtab%height(i2) ; dh2 = hh2 - dpt
+   if (i2 .eq. nr .and. dpt .ge. convtab%height(i2) ) then ! Weightfactors. If profile closed no extrapolation
       a1 = 0d0 ; dh1 = 0
    else
-      hh1 = convtab%water_depth(i1) ; dh1 = dpt - hh1
+      hh1 = convtab%height(i1) ; dh1 = dpt - hh1
       a1  = dh2 / ( hh2-hh1 )                              ! parser: hh = wel monotoon stijgend
    endif
    a2 = 1d0 - a1
@@ -2733,10 +2733,8 @@ use messageHandling
    enddo
 
    if (associated(crs%tabDef)) then
-      nc = crs%tabDef%levelsCount
-      call generateConvtab(convtab, crs%tabDef%levelsCount, crs%shift, crs%tabDef%groundLayer%thickness, crs%tabDef%crossType, &
-                        nc, crs%tabDef%frictionSectionsCount, crs%branchid, crs%frictionTypePos(1),                               &
-                        crs%groundFriction, crs%tabdef%y, crs%tabdef%z,                                                        &
+      call generateConvtab(convtab, crs%tabDef%levelsCount, crs%tabDef%groundLayer%thickness, &
+                        crs%tabDef%frictionSectionsCount, crs%csid, crs%tabdef%y, crs%tabdef%z,     &
                         crs%tabDef%segmentToSectionIndex, crs%frictionTypePos,              &
                         crs%frictionValuePos, crs%frictionTypeNeg, crs%frictionValueNeg )
       convTab%conveyType = crs%tabDef%conveyanceType
@@ -2787,7 +2785,7 @@ double precision function getHighest1dLevelSingle(cross)
          getHighest1dLevelSingle = 1.5d0 * cross%tabdef%diameter + cross%bedlevel
       case (CS_YZ_PROF)
          levelsCount = cross%convtab1%nru
-         getHighest1dLevelSingle = cross%convtab1%water_depth(levelsCount) + cross%bedlevel
+         getHighest1dLevelSingle = cross%convtab1%height(levelsCount) + cross%bedlevel
       case default
          call SetMessage(LEVEL_ERROR, 'INTERNAL ERROR: Unknown type of cross-section in getHighest1dLevelSingle')
    end select
@@ -2995,9 +2993,9 @@ type(t_crsu) function CopyCrossConv(CrossConvFrom)
 
    if (CrossConvFrom%nru > 0) then
       
-      if (allocated(CrossConvFrom%water_depth)) then
-         allocate(CopyCrossConv%water_depth(CrossConvFrom%nru))
-         CopyCrossConv%water_depth = CrossConvFrom%water_depth
+      if (allocated(CrossConvFrom%height)) then
+         allocate(CopyCrossConv%height(CrossConvFrom%nru))
+         CopyCrossConv%height = CrossConvFrom%height
       endif
          
       if (allocated(CrossConvFrom%flow_area)) then
@@ -3035,9 +3033,9 @@ type(t_crsu) function CopyCrossConv(CrossConvFrom)
          CopyCrossConv%chezy_neg = CrossConvFrom%chezy_neg
       endif
          
-      if (allocated(CrossConvFrom%water_depth)) then
-         allocate(CopyCrossConv%water_depth(CrossConvFrom%nru))
-         CopyCrossConv%water_depth = CrossConvFrom%water_depth
+      if (allocated(CrossConvFrom%height)) then
+         allocate(CopyCrossConv%height(CrossConvFrom%nru))
+         CopyCrossConv%height = CrossConvFrom%height
       endif
          
       if (allocated(CrossConvFrom%total_area)) then

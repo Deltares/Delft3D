@@ -37,76 +37,74 @@ private
 public CalcConveyanceTables
 public ConveyanceTables
 public generateConvtab
-public regulatehlv
+public regulate_levels
 public dealloc
 public write_conv_tab
 public regulate_yz_coordinates
 
- integer, parameter                                     :: ncx = 144
  integer, parameter, public                             :: CS_LUMPED    = 0 !< Lumped option for yz-type conveyance calculation.
  integer, parameter, public                             :: CS_VERT_SEGM = 1 !< Vertically segmented option for yz-type conveyance calculation.
- integer, public     :: lcnvmax
+ integer, public     :: lcnvmax                                             !< Estimated maximum number of levels in a conveyance table.  
  
  interface dealloc
     module procedure deallocCru
  end interface dealloc
 
+!> Conveyance tabel definition.
 type, public :: t_crsu
-   integer                                         :: jopen                      !< open/closed profile, 1/0
-   integer                                         :: msec                       !< number of friction sections (horreur only for postpro)
-   integer                                         :: nru                        !< number of levels in u tables
-   integer                                         :: iolu   = 1                 !< latest level found, initialise total_area bottom
-   integer                                         :: negcon = 0                 !< different conveyance for negative flow? 0/1
-   integer                                         :: conveyType = CS_VERT_SEGM  !< calculation type for conveyance (lumped or vertically segmented)
-   double precision                                :: a_pos_extr                 !< Extrapolation Factor for YZ-Profiles
-   double precision                                :: a_neg_extr                 !< Extrapolation Factor for YZ-Profiles
-   double precision                                :: b_pos_extr                 !< Extrapolation Factor for YZ-Profiles
-   double precision                                :: b_neg_extr                 !< Extrapolation Factor for YZ-Profiles
-   double precision                                :: bedlevel                   !< Lowest point of the YZ cross setction
-   double precision, allocatable                   :: water_depth (:)            !< heights for next (u) tables:
-   double precision, allocatable                   :: flow_area (:)              !< flow area  ft of h, for all sections
-   double precision, allocatable                   :: flow_width (:)             !< flow width (not double precisionly needed)
-   double precision, allocatable                   :: perimeter (:)              !< wet perimeter (only postpro)
-   double precision, allocatable                   :: conveyance_pos(:)          !< conveyance positive flow direction
-   double precision, allocatable                   :: conveyance_neg(:)          !< conveyance negative flow direction
-   double precision, allocatable                   :: chezy_pos(:)               !< chezy posflow
-   double precision, allocatable                   :: chezy_neg(:)               !< chezy negflow
-   double precision, allocatable                   :: total_area(:)              !< total area 
-   double precision, allocatable                   :: total_width(:)             !< total width
+   integer                                         :: jopen                      !< Open/closed profile, 1/0.
+   integer                                         :: msec                       !< Number of friction sections (horreur only for postpro).
+   integer                                         :: nru                        !< Number of levels in u tables.
+   integer                                         :: iolu   = 1                 !< Latest level found, initialise total_area bottom.
+   integer                                         :: negcon = 0                 !< Different conveyance for negative flow? 0/1.
+   integer                                         :: conveyType = CS_VERT_SEGM  !< Calculation type for conveyance (lumped or vertically segmented).
+   double precision                                :: a_pos_extr                 !< Extrapolation Factor for YZ-Profiles.
+   double precision                                :: a_neg_extr                 !< Extrapolation Factor for YZ-Profiles.
+   double precision                                :: b_pos_extr                 !< Extrapolation Factor for YZ-Profiles.
+   double precision                                :: b_neg_extr                 !< Extrapolation Factor for YZ-Profiles.
+   double precision                                :: bedlevel                   !< Lowest point of the YZ cross setction.
+   double precision, allocatable                   :: height (:)            !< Heights for next (u) tables:.
+   double precision, allocatable                   :: flow_area (:)              !< Flow area  ft of h, for all sections.
+   double precision, allocatable                   :: flow_width (:)             !< Flow width (not double precisionly needed).
+   double precision, allocatable                   :: perimeter (:)              !< Wet perimeter (only postpro).
+   double precision, allocatable                   :: conveyance_pos(:)          !< Conveyance positive flow direction.
+   double precision, allocatable                   :: conveyance_neg(:)          !< Conveyance negative flow direction.
+   double precision, allocatable                   :: chezy_pos(:)               !< Chezy posflow.
+   double precision, allocatable                   :: chezy_neg(:)               !< Chezy negflow.
+   double precision, allocatable                   :: total_area(:)              !< Total area .
+   double precision, allocatable                   :: total_width(:)             !< Total width.
 
-   integer                                         :: last_position              !< last position used for interpolation
-   double precision                                :: chezy_act                  !< Actual Chezy
-                                                                                 !< here stored for output
-                                                                                 !< used in function ChezyFromConveyance
+   integer                                         :: last_position              !< Last position used for interpolation.
+   double precision                                :: chezy_act                  !< Actual Chezy.
+                                                                                 !< Here stored for output.
+                                                                                 !< Used in function ChezyFromConveyance.
    
 end type t_crsu
 
-double precision, allocatable, public::    &
-         ihlev (:),      &
-         iwft  (:),      &
-         iaft  (:),      &
-         ipft  (:),      &
-         ikpt  (:),      &
-         iknt  (:),      &
-         ifcp  (:),      &
-         ifcn  (:),      &
-         iwtt  (:),      &
-         iatt  (:),      &
-         crsn_lc(:)
-integer, allocatable, save, public :: cvip_cp(:,:)
+double precision, allocatable, dimension(:), public   :: levels
+double precision, allocatable, dimension(:), public   :: flow_widths
+double precision, allocatable, dimension(:), public   :: flow_areas
+double precision, allocatable, dimension(:), public   :: perimeters
+double precision, allocatable, dimension(:), public   :: conveyances_posdir
+double precision, allocatable, dimension(:), public   :: conveyances_negdir
+double precision, allocatable, dimension(:), public   :: chezy_posdir
+double precision, allocatable, dimension(:), public   :: chezy_negdir
+double precision, allocatable, dimension(:), public   :: total_widths
+double precision, allocatable, dimension(:), public   :: total_areas
 
 integer, public                                        :: nupt
 integer, public                                        :: msect
 
 contains
 
+!> Deallocate conveyance table
 subroutine deallocCru(cru)
    ! Modules
    
    implicit none
    
    ! Input/output parameters
-   type(t_crsu), pointer, intent(inout)     :: cru
+   type(t_crsu), pointer, intent(inout)     :: cru    !< conveyance table
    
    ! Local variables
 
@@ -119,7 +117,7 @@ subroutine deallocCru(cru)
       if (allocated(cru%conveyance_neg))  deallocate(cru%conveyance_neg)
       if (allocated(cru%chezy_pos))       deallocate(cru%chezy_pos)
       if (allocated(cru%chezy_neg))       deallocate(cru%chezy_neg)
-      if (allocated(cru%water_depth ))    deallocate(cru%water_depth )
+      if (allocated(cru%height ))    deallocate(cru%height )
       if (allocated(cru%total_area ))     deallocate(cru%total_area )
       if (allocated(cru%total_width ))    deallocate(cru%total_width )
       deallocate(cru)
@@ -127,37 +125,32 @@ subroutine deallocCru(cru)
       
 end subroutine deallocCru
 
-subroutine generateConvtab(convtab, levelsCount, href, grndlyr, typ, &
-                           nc, nbo, branchid, bedFrictionType, groundFriction, &
+!> Generate conveyance table.
+subroutine generateConvtab(convtab, levelsCount, grndlyr, &
+                           frictionSectionsCount, crosssection_id, &
                            yin, z, segmentToSectionIndex, frictionTypePos, &
                            frictionValuePos, frictionTypeNeg, frictionValueNeg)
 
    implicit none
+   type (t_crsu), pointer, intent(inout)     :: convtab          !< Conveyance table.
+   integer               , intent(in   )     :: levelsCount                 !< Number of levels in yz cross section definition.
+   double precision      , intent(in   )     :: grndlyr                     !< Groundlayer thickness.
+   double precision      , intent(in   )     :: yin(:)                      !< Y-offsets in cross section definition.
+   double precision      , intent(in   )     :: z(:)                        !< Z-levels in cross section definition (positive upwards).
+   integer               , intent(in   )     :: frictionSectionsCount       !< Number of friction sections.
+   character(len=*)      , intent(in   )     :: crosssection_id             !< Id of the cross section. This is used for an error message
+   integer               , intent(in   )     :: segmentToSectionIndex(:)    !< Table returns frictionIndex for segment (i)
+   integer               , intent(in   )     :: frictionTypePos(:)          !< Friction type in positive flow direction for segment
+   double precision      , intent(in   )     :: frictionValuePos(:)         !< Friction type in negative flow direction for segment
+   integer               , intent(in   )     :: frictionTypeNeg(:)          !< Friction value in positive flow direction for segment
+   double precision      , intent(in   )     :: frictionValueNeg(:)         !< Friction value in negative flow direction for segment
    
-   type (t_crsu), pointer, intent(inout) :: convtab
-   integer, intent(in)        :: levelsCount
-   double precision           :: href
-   double precision           :: grndlyr
-   double precision           :: yin(:)
-   double precision           :: z(:)
-   double precision           :: groundfriction
-   integer                    :: typ
-   integer                    :: nbo
-   integer                    :: nc
-   integer                    :: branchid
-   integer                    :: bedfrictiontype
-   integer                    :: segmentToSectionIndex(:)
-   integer                    :: frictionTypePos(:)
-   double precision           :: frictionValuePos(:)
-   integer                    :: frictionTypeNeg(:)
-   double precision           :: frictionValueNeg(:)
- 
-   double precision, allocatable :: vf(:), vg(:)
-   double precision, allocatable :: y(:), d(:), hlv(:)
-   integer, allocatable          :: frictype(:), jg(:)
-   integer, allocatable          :: indx  (:)
+   double precision, allocatable :: friction_value_per_segment(:)
+   double precision, allocatable :: y(:)
+   integer, allocatable          :: frictype(:)
    integer                       ::  jgetlevels, nnlev, ierr
-
+   integer                    :: nc                          !< 
+   
    ! Variables for calculating extrapolation coefficients:
    integer              :: i1 ! one but last index
    integer              :: i2 ! last index
@@ -165,56 +158,52 @@ subroutine generateConvtab(convtab, levelsCount, href, grndlyr, typ, &
    double precision     :: h_2
    double precision     :: K_1
    double precision     :: K_2
-
-   double precision ::  zminprof ! absolute z level lowest profile point  
-!
+   
+   nc = levelsCount
    if (.not. associated(convtab)) then
       allocate(convtab)
    endif
 
-   lcnvmax = max(400, levelsCount * 4)
-  
-   allocate (ihlev(lcnvmax) ,      &
-             iwft(lcnvmax) ,   &
-             iaft(lcnvmax) ,   &
-             ipft(lcnvmax) ,   &
-             ifcp(lcnvmax) ,   &
-             ifcn(lcnvmax) ,   &
-             ikpt(lcnvmax) ,   &
-             iknt(lcnvmax) ,   &
-             iwtt(lcnvmax) ,    &
-             iatt(lcnvmax) ,    &
-             indx(lcnvmax) , stat=ierr )
+   if (.not. allocated(levels)) then
+      lcnvmax = max(400, levelsCount * 4)
    
-   allocate (vf(lcnvmax),  &
-             vg(lcnvmax),  &
-             y(lcnvmax),   &
-             d(lcnvmax*2), &
-             frictype(lcnvmax),  &
-             jg(lcnvmax),  &
-             hlv(lcnvmax*2), &
-             stat=ierr )
-
-   iwft = 0 !-9
-   iaft = 0 !-9
-   ipft = 0 !-9
-   ifcp = 0 !-9
-   ifcn = 0 !-9
-   ikpt = 0 !-9
-   iknt = 0 !-9
-   iwtt = 0 !-9
-   iatt = 0 !-9
-   indx = 9 !-9
-   zminprof = 0
-
+      allocate (levels(lcnvmax*2) ,      &
+      flow_widths(lcnvmax) ,   &
+      flow_areas(lcnvmax) ,   &
+      perimeters(lcnvmax) ,   &
+      chezy_posdir(lcnvmax) ,   &
+      chezy_negdir(lcnvmax) ,   &
+      conveyances_posdir(lcnvmax) ,   &
+      conveyances_negdir(lcnvmax) ,   &
+      total_widths(lcnvmax) ,    &
+      total_areas(lcnvmax) ,    &
+      stat=ierr )
+      
+      allocate (friction_value_per_segment(lcnvmax),  &
+      y(lcnvmax),   &
+      frictype(lcnvmax),  &
+      stat=ierr )
+      
+   endif
+   
+   flow_widths          = 0
+   flow_areas           = 0
+   perimeters           = 0
+   chezy_posdir         = 0
+   chezy_negdir         = 0
+   conveyances_posdir   = 0
+   conveyances_negdir   = 0
+   total_widths         = 0
+   total_areas          = 0
+   
    nnlev = 2
    jgetlevels = 1
+   
+   
+   call calcConveyanceTables(frictype, friction_value_per_segment, yin, z, levels, nc,  jgetlevels, grndlyr, nbo,               &
+   segmentToSectionIndex, frictionTypePos, frictionValuePos,  &
+   frictionTypeNeg, frictionValueNeg, nhmax)
 
-
-   call ConveyanceTables(href, grndlyr, typ, yin, z, nbo, branchid, bedFrictionType,   &
-                         groundFriction, segmentToSectionIndex, frictionTypePos, frictionValuePos,         &
-                         frictionTypeNeg, frictionValueNeg, frictype, vf, y, d, hlv,         &
-                         nc,  jgetlevels, zminprof, nnlev)
 
    convTab%jopen  = 1
    convTab%msec   = 1 
@@ -223,7 +212,7 @@ subroutine generateConvtab(convtab, levelsCount, href, grndlyr, typ, &
    convTab%negcon = 0
    
    
-   allocate(convTab%water_depth (nnlev)    )
+   allocate(convTab%height (nnlev)    )
    allocate(convTab%flow_area (nnlev)  )
    allocate(convTab%flow_width (nnlev)  )
    allocate(convTab%perimeter (nnlev)  )
@@ -234,16 +223,16 @@ subroutine generateConvtab(convtab, levelsCount, href, grndlyr, typ, &
    allocate(convTab%total_area(nnlev)   )
    allocate(convTab%total_width(nnlev)   )
    
-   convTab%water_depth     = hlv(1:nnlev)
-   convTab%flow_area       = iaft(1:nnlev)
-   convTab%flow_width      = iwft(1:nnlev)
-   convTab%perimeter       = ipft(1:nnlev)
-   convTab%conveyance_pos  = ikpt(1:nnlev)
-   convTab%conveyance_neg  = iknt(1:nnlev)
-   convTab%chezy_pos       = ifcp(1:nnlev)
-   convTab%chezy_neg       = ifcn(1:nnlev)
-   convTab%total_area      = iatt(1:nnlev)
-   convTab%total_width     = iwtt(1:nnlev)
+   convTab%height          = levels(1:nnlev)
+   convTab%flow_area       = flow_areas(1:nnlev)
+   convTab%flow_width      = flow_widths(1:nnlev)
+   convTab%perimeter       = perimeters(1:nnlev)
+   convTab%conveyance_pos  = conveyances_posdir(1:nnlev)
+   convTab%conveyance_neg  = conveyances_negdir(1:nnlev)
+   convTab%chezy_pos       = chezy_posdir(1:nnlev)
+   convTab%chezy_neg       = chezy_negdir(1:nnlev)
+   convTab%total_area      = total_areas(1:nnlev)
+   convTab%total_width     = total_widths(1:nnlev)
    
    ! calculate the coefficients for extrapolation of conveyance above specified profile
   !(*)   !  document SOBEK-21942: Change of roughness formulations in "Y-Z" and
@@ -252,8 +241,8 @@ subroutine generateConvtab(convtab, levelsCount, href, grndlyr, typ, &
    i1  = convTab%nru - 1     ! so i1, i2 always inside table
    i2  = i1 + 1
    !
-   h_1 = convTab%water_depth(i1)
-   h_2 = convTab%water_depth(i2)
+   h_1 = convTab%height(i1)
+   h_2 = convTab%height(i2)
    !
    K_1 = convTab%conveyance_pos(i1)
    K_2 = convTab%conveyance_pos(i2)
@@ -277,24 +266,26 @@ subroutine generateConvtab(convtab, levelsCount, href, grndlyr, typ, &
    endif
    
    
-   deallocate (ihlev ,     &
-               iwft  ,     &
-               iaft  ,     &
-               ipft  ,     &
-               ikpt  ,     &
-               iknt  ,     &
-               ifcp  ,     &
-               ifcn  ,     &
-               iatt  ,     &
-               iwtt  , stat=ierr )
-   deallocate( vf, vg, y, d, frictype, jg, hlv)
+   deallocate (levels ,     &
+               flow_widths  ,     &
+               flow_areas  ,     &
+               perimeters  ,     &
+               conveyances_posdir  ,     &
+               conveyances_negdir  ,     &
+               chezy_posdir  ,     &
+               chezy_negdir  ,     &
+               total_areas  ,     &
+               total_widths  , stat=ierr )
+   deallocate( friction_value_per_segment, y, frictype)
 
 end subroutine generateConvtab
 
-subroutine CalcConveyanceTables(frictype, vf, y, z, hlv, nc,  jgetlevels, zminpr,                        &
+!!TODO >>
+!> Calculate the con
+subroutine CalcConveyanceTables(frictype, friction_value_per_segment, y, z, levels, nc,  jgetlevels,                        &
                                 grndlyr, nbo, segmentToSectionIndex,                  &
                                 frictionTypePos, frictionValuePos, frictionTypeNeg, frictionValueNeg,  &
-                                cg, nhmax)
+                                nhmax)
     use MessageHandling
     
     implicit none
@@ -302,13 +293,12 @@ subroutine CalcConveyanceTables(frictype, vf, y, z, hlv, nc,  jgetlevels, zminpr
     ! Input output
     integer, intent(  out)            :: frictype(lcnvmax)        !< friction type at the segments (segment i is between y(i) and y(i+1))
     
-    integer  nh,  jgetlevels, lu_dump
+    integer  nh,  jgetlevels
     integer          nc
     integer          nbo
     
-    double precision           ::  vf(lcnvmax)
-    double precision           ::  cg(2)
-    double precision           :: hlv(lcnvmax*2), y(lcnvmax), z(lcnvmax*2), zminpr
+    double precision           ::  friction_value_per_segment(lcnvmax)
+    double precision           :: levels(lcnvmax*2), y(lcnvmax), z(lcnvmax*2)
     double precision           :: grndlyr
     integer                    :: segmentToSectionIndex(:)
     integer                    :: frictionTypePos(nbo)
@@ -319,15 +309,11 @@ subroutine CalcConveyanceTables(frictype, vf, y, z, hlv, nc,  jgetlevels, zminpr
     ! Local variables
 
     integer numt, nump, nhi, nhmax
-    integer ierr, k, j, ncc, i, io, num
-    integer ja, k2, numpunt, k1
-    integer nbn
-    double precision               :: yya, yyb
-    double precision               :: cp(2), cn(2)
-    double precision               :: zmin, zh, zl, zr, dy, dz, zground, yy, f
-    double precision               :: area, ar1, ar2, a, dda
-    double precision               :: w, p, co, total_area, total_width, conv, accuracy, width
-    double precision               :: dif1, dif2, hlvz
+    integer ierr, k, j, i, io, num
+    double precision               :: zh, dz
+    double precision               :: a
+    double precision               :: w, p, co, total_area, total_width, conv, accuracy
+    double precision               :: dif2
     double precision               :: sl
     integer, allocatable           :: ik1(:)
     double precision,  allocatable :: yh(:), dh(:)
@@ -354,90 +340,90 @@ subroutine CalcConveyanceTables(frictype, vf, y, z, hlv, nc,  jgetlevels, zminpr
    do k = 1, nc                        !hk: do over the friction sections
       i = segmentToSectionIndex(k)
       frictype(k) = frictionTypePos(i)
-      vf(k)       = frictionValuePos(i)
+      friction_value_per_segment(k)       = frictionValuePos(i)
    enddo
 
     if (jgetlevels .eq. 1) then ! hier wordt eerste hoogtetabel opgebouwd
       do k = 1,nc
-        hlv(k) = z(k)
+        levels(k) = z(k)
       enddo          
       
       do k = 2,nc
         if ( z(k) .eq. z(k-1) ) then  ! floodplane, til verticaal tabelpunt iets op
-          hlv(k) = hlv(k) + 1d-4      ! voor scherper zien van breekpunt in tabel
+          levels(k) = levels(k) + 1d-4      ! voor scherper zien van breekpunt in tabel
         endif
       enddo
       nh = nc
-      call regulatehlv(hlv,nh)
+      call regulate_levels(levels,nh)
     endif
 
     nhi = nh
 
-    iwft(:) = 0
-    iaft(:) = 0
-    ipft(:) = 0
-    ikpt(:) = 0
-    iknt(:) = 0
-    iatt(:)   = 0
-    iwtt(:)   = 0
+    flow_widths(:) = 0
+    flow_areas(:) = 0
+    perimeters(:) = 0
+    conveyances_posdir(:) = 0
+    conveyances_negdir(:) = 0
+    total_areas(:)   = 0
+    total_widths(:)   = 0
 
     num = 0
     j   = 0
     io  = 0
 
     do j = 1, nh
-      call ConveyYZ(nc,y,z,frictype,vf,hlv(j),a,total_area,w,total_width,p,co)
-      iwft(j) = total_width
-      iaft(j) = total_area
-      ipft(j) = p
-      ikpt(j) = co
-      iknt(j) = co
-      iatt(j) = total_area
-      iwtt(j) = total_width
+      call ConveyYZ(nc,y,z,frictype,friction_value_per_segment,levels(j),a,total_area,w,total_width,p,co)
+      flow_widths(j) = total_width
+      flow_areas(j) = total_area
+      perimeters(j) = p
+      conveyances_posdir(j) = co
+      conveyances_negdir(j) = co
+      total_areas(j) = total_area
+      total_widths(j) = total_width
     enddo
     
     ! for the number of levels
     j = 2
     do while (j .le. nh)
-      dz = hlv(j) - hlv(j-1)
+      dz = levels(j) - levels(j-1)
       
       if (dz .gt. 3.0d-3) then
          
-         zh = ( hlv(j)+hlv(j-1) )*0.5d0
-         call ConveyYZ(nc,y,z,frictype,vf,zh,a,total_area,w,total_width,p,co)
+         zh = ( levels(j)+levels(j-1) )*0.5d0
+         call ConveyYZ(nc,y,z,frictype,friction_value_per_segment,zh,a,total_area,w,total_width,p,co)
 
-         conv = 0.5d0*ikpt(j) + 0.5d0*ikpt(j-1)
+         conv = 0.5d0*conveyances_posdir(j) + 0.5d0*conveyances_posdir(j-1)
          co = max(co,1d-6)
          dif2 = abs(conv - co)/(co)
          accuracy = 0.01d0
 
-         if ( dif2 .gt. accuracy ) then  ! hk: en zolang (nh .lt. size(hlv) )
+         if ( dif2 .gt. accuracy ) then  ! hk: en zolang (nh .lt. size(levels) )
 
             do k = nh+1, j+1,-1
-               hlv (k) = hlv(k-1)
-               iwft(k) = iwft (k-1)
-               iaft(k) = iaft (k-1)
-               ipft(k) = ipft (k-1)
-               ikpt(k) = ikpt (k-1)
-               iknt(k) = iknt (k-1)
-               iatt(k) = iatt (k-1) 
-               iwtt(k) = iwtt (k-1) 
+               levels (k) = levels(k-1)
+               flow_widths(k) = flow_widths (k-1)
+               flow_areas(k) = flow_areas (k-1)
+               perimeters(k) = perimeters (k-1)
+               conveyances_posdir(k) = conveyances_posdir (k-1)
+               conveyances_negdir(k) = conveyances_negdir (k-1)
+               total_areas(k) = total_areas (k-1) 
+               total_widths(k) = total_widths (k-1) 
             enddo
 
-            hlv(j) = zh
+            levels(j) = zh
             nh = nh + 1
             if (nh == nhmax) then
                ! no more space in conveyance table
                j = nh+1
             endif
 
-            iwft(j) = total_width
-            iaft(j) = total_area
-            ipft(j) = p
-            ikpt(j) = co
-            iknt(j) = co
-            iatt(j) = total_area
-            iwtt(j) = total_width
+            flow_widths(j) = total_width
+            flow_areas(j) = total_area
+            perimeters(j) = p
+            conveyances_posdir(j) = co
+            conveyances_negdir(j) = co
+            total_areas(j) = total_area
+            total_widths(j) = total_width
          else
             ! Goto next level
             j = j+1
@@ -451,16 +437,16 @@ subroutine CalcConveyanceTables(frictype, vf, y, z, hlv, nc,  jgetlevels, zminpr
       if (j==nh) then
          ! check if previous conveyance is large enough
          
-         if (j==1 .or. ikpt(max(1,j-1)) < MINCONV) then
-            hlv(j+1) = hlv(j)+EXTRA_HEIGHT
-            call ConveyYZ(nc,y,z,frictype,vf,hlv(j+1),a,total_area,w,total_width,p,co)
-            iwft(j+1) = total_width
-            iaft(j+1) = total_area
-            ipft(j+1) = p
-            ikpt(j+1) = co
-            iknt(j+1) = co
-            iatt(j+1) = total_area
-            iwtt(j+1) = total_width
+         if (j==1 .or. conveyances_posdir(max(1,j-1)) < MINCONV) then
+            levels(j+1) = levels(j)+EXTRA_HEIGHT
+            call ConveyYZ(nc,y,z,frictype,friction_value_per_segment,levels(j+1),a,total_area,w,total_width,p,co)
+            flow_widths(j+1) = total_width
+            flow_areas(j+1) = total_area
+            perimeters(j+1) = p
+            conveyances_posdir(j+1) = co
+            conveyances_negdir(j+1) = co
+            total_areas(j+1) = total_area
+            total_widths(j+1) = total_width
             nh = nh+1
          endif
          
@@ -674,22 +660,20 @@ subroutine regulate_yz_coordinates(y, z, bedlevel, segmentToSectionIndex, nc, fr
 
 end subroutine regulate_yz_coordinates
 
-subroutine ConveyanceTables(href, grndlyr, typ, yin, z, nbo, branchid, bedFrictionType,  &
-                            groundFriction, segmentToSectionIndex, frictionTypePos, frictionValuePos,        &
-                            frictionTypeNeg, frictionValueNeg, frictype, vf, y, d, hlv,        &
-                            nc,  jgetlevels, zminpr, nhmax)
+subroutine ConveyanceTables(grndlyr, yin, z, nbo, crosssection_id, segmentToSectionIndex, &
+                            frictionTypePos, frictionValuePos,        &
+                            frictionTypeNeg, frictionValueNeg, frictype, friction_value_per_segment, levels,        &
+                            nc,  jgetlevels, nhmax)
 
    use MessageHandling
    implicit none
    
-   double precision :: href
    double precision :: grndlyr
    double precision :: yin(:)
    double precision :: z(:)
-   integer          :: bedFrictionType
    integer          :: nhmax
    integer          :: nbo
-   integer          :: branchid
+   character(len=*) :: crosssection_id
    double precision groundfriction
    
    integer                    :: frictionTypePos(:)
@@ -698,14 +682,12 @@ subroutine ConveyanceTables(href, grndlyr, typ, yin, z, nbo, branchid, bedFricti
    double precision           :: frictionValueNeg(:)
    integer                    :: segmentToSectionIndex(:)
 
-   integer nc, ind, typ
+   integer nc, ind
    integer frictype(:), icrds
-   integer j, jgetlevels
-   double precision              :: vf(:)
-   double precision              :: cg(2)
-   double precision              :: hlv(:), d(:), y(:), zminpr
+   integer jgetlevels
+   double precision              :: friction_value_per_segment(:)
+   double precision              :: levels(:)
    logical                       :: prtout
-   character*10                  :: id
 
    double precision, parameter         :: eps = 1d-4
 
@@ -715,51 +697,38 @@ subroutine ConveyanceTables(href, grndlyr, typ, yin, z, nbo, branchid, bedFricti
    nbo = max(nbo,1)  ! please check
    
    IF (NBO .LE. 0) THEN
-      write(id, '(i0)') branchid
-      call setMessage (LEVEL_ERROR, 'Zero friction value in branch '// trim(id))
+      call setMessage (LEVEL_ERROR, 'Zero friction value for cross section: '// trim(crosssection_id))
       return
    ENDIF
    
-   cg(1) = 0.
-   cg(2) = 0.
-   
-   if (grndlyr .gt. 0.5) then    ! ground layer coeffs
-      cg(1) = bedFrictionType
-      cg(2) = groundFriction
-   endif
-     
-   if (typ.ge.10) then
       prtout = .false.
-      call calcConveyanceTables(frictype, vf, yin, z, hlv, nc,  jgetlevels, zminpr, grndlyr, nbo,               &
+      call calcConveyanceTables(frictype, friction_value_per_segment, yin, z, levels, nc,  jgetlevels, grndlyr, nbo,               &
                                 segmentToSectionIndex, frictionTypePos, frictionValuePos,  &
-                                frictionTypeNeg, frictionValueNeg, cg, nhmax)
-
-   endif
-
+                                frictionTypeNeg, frictionValueNeg, nhmax)
    return
 
    end subroutine
                  
      
-subroutine regulatehlv(hlv, nh)  ! sorteren en dubbele entries weghalen
+subroutine regulate_levels(levels, nh)  ! sorteren en dubbele entries weghalen
 
    use qsort
 
    integer nh, ja, k, j
 
-   double precision hlv(nh)
+   double precision levels(nh)
 
-   call d_qsort(hlv, nh)
+   call d_qsort(levels, nh)
 
    ja  = 1                                ! en dubbele entries weghalen
    do while (ja .eq. 1)
       ja = 0
       do k = 2,nh
-      if (k .le. nh .and. abs(hlv(k) - hlv(k-1)) < 1e-8 ) then
+      if (k .le. nh .and. abs(levels(k) - levels(k-1)) < 1e-8 ) then
          ja   = 1
          nh   = nh - 1
          do j = k,nh
-            hlv(j) = hlv(j+1)
+            levels(j) = levels(j+1)
          enddo
       endif
       enddo
@@ -767,7 +736,7 @@ subroutine regulatehlv(hlv, nh)  ! sorteren en dubbele entries weghalen
 
    return
 
-end subroutine regulatehlv
+end subroutine regulate_levels
     
 subroutine ConveyYZ(n,y,z,frictype,cf,hw,flow_area,total_area,w,total_width,p,co) ! conveyance computation for a YZ profile
 ! in
@@ -1056,7 +1025,7 @@ subroutine write_conv_tab(convtab)
 
    nlevels = convtab%nru
    do i = 1, nlevels
-      write(msgbuf, '(11g17.6)') convtab%water_depth (i) , convtab%total_width(i), convtab%flow_width (i), convtab%total_area(i), convtab%flow_area (i), &
+      write(msgbuf, '(11g17.6)') convtab%height (i) , convtab%total_width(i), convtab%flow_width (i), convtab%total_area(i), convtab%flow_area (i), &
                                  convtab%conveyance_pos(i), convtab%conveyance_neg(i), convtab%perimeter (i)
       call msg_flush()
    enddo 
