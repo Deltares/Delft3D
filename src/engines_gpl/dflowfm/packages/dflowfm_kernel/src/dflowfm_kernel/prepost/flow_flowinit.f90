@@ -29,876 +29,1318 @@
 
 ! 
 ! 
+module m_flow_flowinit
 
+   use m_netw, only : zk
+   use m_flowgeom
+   use m_flow
+   use m_flowtimes
+   use m_sferic
+   use unstruc_model
+   use unstruc_files
+   use m_reduce, only : nodtot, lintot
+   use m_samples, only : ns, savesam, restoresam
+   use m_missing
+   use m_partitioninfo, only : jampi, reduce_int1_max
+   use m_sediment
+   use m_transport
+   use dfm_error
+   use m_monitoring_crosssections, only : crs, ReallocCrosssectionSums
+   use m_alloc
+   use m_1d_structures, only: initialize_structures_actual_params, t_structure
+   use m_oned_functions, only: set_max_volume_for_1d_nodes
+   use m_waves 
+   use m_structures
+   use m_longculverts
+   use unstruc_channel_flow, only: useVolumeTables
+   use m_VolumeTables
+   use timers
+   use m_setucxcuy_leastsquare, only: reconst2nd
+   use mathconsts, only: sqrt2_hp
+
+implicit none
+
+private
+
+integer, parameter :: OFF = 0
+integer, parameter :: ON  = 1
+integer, parameter :: INITIALIZE = 1
+integer, parameter :: LATERAL_1D2D_LINK = 3
+integer, parameter :: STREET_INLET_1D2D_LINK = 5
+integer, parameter :: ROOF_GUTTER_1D2D_LINK  = 7
+integer, parameter :: ORIGINAL_LATERAL_OVERFLOW_ADVECTION = 8
+
+public :: flow_flowinit
+
+contains
+    
  !> Initialise flow model time dependent parameters
  !! @return Integer error status (0) if succesful.
- integer function flow_flowinit() result(iresult)
- use m_netw, only : zk
- use m_flowgeom
- use m_flow
- use m_flowtimes
- use m_sferic
- use unstruc_model
- use unstruc_files
- use m_reduce, only : nodtot, lintot
- use m_samples, only : ns, savesam, restoresam
- use m_missing
- use m_partitioninfo, only : jampi, reduce_error
- use m_sediment
- use m_transport
- use dfm_error
- use m_monitoring_crosssections, only : crs, ReallocCrosssectionSums
- use m_alloc
- use m_1d_structures, only: initialize_structures_actual_params, t_structure
- use m_oned_functions, only: set_max_volume_for_1d_nodes
- use m_waves 
- use m_structures
- use m_longculverts
- use unstruc_channel_flow, only: useVolumeTables
- use m_VolumeTables
- use timers
- use m_setucxcuy_leastsquare, only: reconst2nd
- use mathconsts, only: sqrt2_hp
+ integer function flow_flowinit() result(error)
 
- implicit none
+   implicit none
 
- ! locals
- integer :: k, L, k1, k2, n, jw, msam
- integer :: kb, kt, ki, LL
+   integer           :: ierror
+   logical           :: jawelrestart
 
- double precision :: ss
- double precision :: zz, slope
- double precision :: bobmin
- double precision :: blm, hunsat, fac
- double precision, allocatable:: u1_tmp(:)
+   double precision  :: upot, ukin, ueaa
+   
+   integer, external :: flow_initexternalforcings
 
- integer              :: ierr, mrst, kk, j, nq, ierror, N1, N2, Lb, Lt, nat, ntmp
- integer :: ihandle
- double precision     :: rr
- character(len=255) :: rstfile
- character(len=Idlen) :: fileName
- character(len=4)   :: EXT
- logical :: jawel, jawelrestart
- integer :: nstrucsg, L0, istru
- type(t_structure), pointer :: pstru
- integer, external :: flow_initexternalforcings
- double precision, external :: setrho
+   error = DFM_GENERICERROR
 
- double precision  :: trshcorioi
- double precision  :: Ds
- double precision  :: hw,tw,csw,snw, uorbi,rkw,ustt,hh, upot, ukin, ueaa
+   if (ndx == 0) then
+      error = DFM_MODELNOTINITIALIZED
+   end if
+   if( is_error_at_any_processor(error) ) then
+       return
+   end if
 
- iresult = DFM_GENERICERROR
+   Lnmax = 0
+   Lnmin = 0
+   ndmax = 0
+   ndmin = 0
 
- if (ndx == 0) then
-    iresult = DFM_MODELNOTINITIALIZED
-    goto 888
- end if
-
- Lnmax = 0 ; Lnmin = 0
- ndmax = 0 ; ndmin = 0
-
- call inisferic()                                    ! also set coriolis :<
- if (icorio > 0) then
-    call inifcori()
- endif
- if (Corioadamsbashfordfac > 0) then
-    if (allocated(fvcoro) ) deallocate(fvcoro)
-    allocate ( fvcoro(lnkx), stat = ierr ) ; fvcoro = 0d0
-    call aerr('fvcoro(lnkx)', ierr, lnkx  )
- endif
- if (jsferic == 0) then
-    if (jatidep > 0) then
-       ! call qnerror('Tide generating potential only supported for sferical models ' ,' ',' ')
-       jatidep = 0
-    endif
-    if (jaselfal > 0) then
-       ! call qnerror('Self attraction and loading only supported for sferical models ' ,' ',' ')
-       jaselfal = 0
-    end if
- endif
- call inidensconstants()                             ! Some density parameters
-
-if (ti_waq > 0d0 .and. max(limtypmom, limtypsa, limtypTM) <= 0) then
-    call qnerror('DELWAQ requires at least one limiter (Numerical Parameters). DELWAQ output disabled for now.', ' ', ' ')
-    ti_waq = 0d0
-end if
-
- s1  = sini                                  ! initial values
- if (waterdepthini1D > 0) then
-    do k = ndx2D+1, ndxi
-       s1(k) = bl(k) + waterdepthini1D
-    enddo
- endif
-
- u1  = uini
- if (jasal > 0) then
-    sa1 = salini
- endif
- if (jatem > 0) then
-    tem1 = temini
- endif
-
- ! spiral flow
- if (jasecflow > 0 ) then
-    spirint = spirini
- endif
-
- if (jased > 0 .and. jased < 4) then
-    do k = 1,ndkx
-       do j = 1,mxgr
-          sed(j,k) = sedini(j)
-       enddo
-    enddo
- endif
-
- if (jasal == 0 .and. jatem == 0 .and. jased == 0) then
-    idensform = 0
- endif
- volerror = 0d0 ; squ = 0 ; sqi = 0
-
- call str_lower(md_netfile) ! INTERACTOR!
-
- if (md_input_specific > 0 ) then
-     call apply_hardcoded_specific_input()
- end if 
-
- call statisticsini()
-
- call setkbotktop(1)                                 ! prior to correctblforzlayerpoints, setting kbot
-
- call mess(LEVEL_INFO, 'Start initializing external forcings...')
- call timstrt('Initialise external forcings', handle_iniext)
- iresult = flow_initexternalforcings()               ! this is the general hook-up to wind and boundary conditions
- call timstop(handle_iniext)
-
- ! from hereon, the processes are in sync
- if (jampi == 1) then
-    ! globally reduce the error
-    call reduce_error(iresult)
- end if
- if (iresult /= DFM_NOERR) then
-    call qnerror('Error occurred while initializing external forcings, please inspect the preceding lines in the diagnostic output for more details.',' ', ' ')
-    if (jampi == 1) then
-        call qnerror('Error occurs on one or more processes when initializing external forcings.',' ', ' ')
-    end if
-   goto 888
- end if
- call mess(LEVEL_INFO, 'Done initializing external forcings.')
-
- ! Set ihorvic related to horizontal viscosity
- ihorvic = 0
- if (vicouv > 0 .or. javiusp == 1 .or. Smagorinsky > 0 .or. Elder > 0) then
-    ihorvic = 1
- endif
-
- ! If constituents have been added at this point, the sum-arrays in crs require redimensioning
- if (allocated(crs)) then
-    call ReallocCrossSectionSums(crs)
- endif
-
- if (isimplefixedweirs == 0) then
-    call setbobs_fixedweirs()
- else
-    call setfixedweirs()
- endif
-
- call delpol()
-
- if (Slopedrop2D > 0) then !todo, uitsluitende test maken
-    do L  = lnx1D+1,lnxi
-       k1 = ln(1,L) ; k2 = ln(2,L)
-       if (iadv(L) /=0 .and. .not. (iadv(L) >= 21 .and. iadv(L) <=25) .and. dxi(L)*abs(bl(k1) - bl(k2)) > Slopedrop2D) then ! Not for fixed weirs itself.
-           iadv(L) = 8
-       endif
-    enddo
- endif
-
- do L  = 1,lnxi
-    if (iadv(L) /= 0) then
-       ! only when advection calculation is on, change the advection type
-       if (kcu(L) == 3) then         ! lateral overflow
-          if (iadveccorr1D2D == 2) then ! Switch off advection on 1D2D lateral/embedded links
-             iadv(L) = 0
-          else
-             iadv(L) = 8                ! Original lateral overflow
-          endif
-       else if (kcu(L) == 5 .or. kcu(L) == 7) then   ! pipe connection
-          iadv(L) = 8
-       endif
-    endif
- enddo
-
- if (japure1D > 0) then
-    call setiadvpure1D()
- endif
-
-! check if at most one structure claims a flowlink
- call check_structures_and_fixed_weirs()
-
- ! First call to setexternalforcingsonboundaries, here only for the structure timeseries (prior to adjust_bobs_for_dams_and_structs())
- call setzminmax()                                 ! our side of preparation for 3D ec module
- call setsigmabnds()
- call flow_setexternalforcingsonboundaries(tstart_user, iresult)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds.
- call initialize_structures_actual_params(network%sts)            ! After structure time series, and prior to adjust_bobs, to use proper crest levels.
-
-
- call adjust_bobs_for_dams_and_structs()
- call setup_structures_and_weirs_list()
-
- ! Floodfill water levels based on sample file.
- if (len_trim(md_s1inifile) > 0) then
-    call savesam()
-    NS = 0
-    call oldfil(msam, md_s1inifile)
-    if (msam /= 0) then
-        call reasam(msam, 0)
-        if (jampi > 0) then
-            call mess(LEVEL_WARN, 'Filling water level using [geometry] WaterLevIniFile in .mdu does not exchange information between partitions')
-        endif
-        call flow_initfloodfill()
-    end if
-    call restoresam()
- end if
-
- if (allocated(ibot)) then
-    deallocate(ibot)                                    ! after meteoiniti of ibedlevtype
- end if
-
- call setFrictionForLongculverts()
-
- do L = 1,lnx
-    if (frcu(L) == dmiss) then
-       if (L <= lnx1D) then
-          if (kcu(L) == 3) then
-             frcu(L)  = frcuni1d2d
-          else if (kcu(L) == 5) then       ! 1D2D internal link pipe streetinlet
-             ! Because frcunistreetinlet is not available in the mdu file, the friction type is
-             ! always manning.
-             frcu(L)  = frcunistreetinlet
-             ifrcutp(L) = 1
-          else if (kcu(L) == 7) then       ! 1D2D internal link pipe roofgutterpipe
-             ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is
-             ! always manning
-             frcu(L)  = frcuniroofgutterpipe
-             ifrcutp(L) = 1
-          else
-             frcu(L)  = frcuni1d
-          endif
-       else
-          frcu(L) =  frcuni
-       endif
-    endif
-    if (ifrcutp(L) == -999) then
-        ifrcutp(L) = ifrctypuni
-    endif
-    if (frcu(L) > frcmax) then
-        frcmax = frcu(L)
-    endif
- enddo
-
- if (jafrculin == 1) then                           ! plus uniform value on not found
-    do L = 1,lnx
-       if (frculin(L) == dmiss) then
-           frculin(L) =  frcunilin
-       endif
-    enddo
- endif
-
- if ( jaFrcInternalTides2D.eq.1 ) then
-    do k=1,Ndx
-       if ( frcInternalTides2D(k).eq.DMISS ) then
-          frcInternalTides2D(k) = 0d0
-       end if
-    end do
- end if
-
- call setupwslopes()                                   ! set upwind slope pointers and weightfactors
-
- if (iuvfield > 0) call setvelocityfield()           ! only when testing
-
- ! remember initial water levels at the water level boundaries
- ! so that reading rst file won't influence it. This is used for restart a model with Riemann boundary conditions.
- do n=1,nbndz
-    k2 = kbndz(2,n)
-    zbndz0(n) = max(bl(k2), s1(k2)) ! NOTE: the s1=max(bl, s1) step can only be done later, so do it here as well.
- end do
-
-   ihandle = 0
- call timstrt('makeVolumeTables', ihandle)
- if (useVolumeTables) then
-     filename = defaultFilename('volumeTables')
-     call makeVolumeTables(filename)
- endif
- call timstop(ihandle)
+   call inisferic()
  
- ! Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
- jawel = .false.
- if (len_trim(md_restartfile) > 0 ) then
-!    Find file extension based on first full stop symbol '.' at the back of the string.
-     N1  = INDEX (md_restartfile,'.', .true.)
-     N2  = len_trim(md_restartfile)
-     EXT = ' '
-     EXT = md_restartfile(N1:N2)
-     ! Restart from *.rst:
-     if ( index(md_restartfile, '.rst') > 0 .or. index(md_restartfile, '.RST') > 0) then
-         INQUIRE(FILE = rstFILE, EXIST=JAWEL)
-         IF (JAWEL) THEN
-            call oldfil(mrst, rstfile)
-            call rearst(mrst, jw)
-            JAWEL = (jw == 1)
-         endif
-     else ! Restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
-       call read_restart_from_map(md_restartfile, iresult)
-       if (jased > 0 .and. stm_included) then
-          call setbobs()
-       end if
+   if (icorio > OFF ) then
+      call inifcori()
+   end if
+ 
+   call initialize_for_coriolis_Adams_Bashforth()
 
-       if (jampi == 1) then
-          ! globally reduce the error
-          call reduce_error(iresult)
-       end if
-       if (iresult /= DFM_NOERR) then
-          if (jampi == 1) then
-              call qnerror('Error occurs on one or more processes when reading the restart file.',' ', ' ')
-          else
-              call qnerror('Error occurs when reading the restart file.',' ', ' ')
-          end if
+   if (jsferic == OFF) then
+   !Tide generating potential and Self attraction and loading are only supported for sferical models
+      jatidep  = OFF
+      jaselfal = OFF
+   end if
+ 
+   call inidensconstants()                             ! Some density parameters
 
-          goto 888
-       else
-          JAWEL = .true.
-       end if
+   if (ti_waq > 0d0 .and. max(limtypmom, limtypsa, limtypTM) <= 0) then
+      call qnerror('DELWAQ requires at least one limiter (Numerical Parameters). DELWAQ output disabled for now.', ' ', ' ')
+      ti_waq = 0d0
+   end if
 
-       ntmp = size(u1)
-       allocate(u1_tmp(ntmp))
-       u1_tmp = u1
-       u1     = u0
-       hs     = s0 - bl
-      if (iperot == -1) then
-         call reconst2nd ()
-      endif
-       call fill_onlyWetLinks()
-       call setucxucyucxuucyunew() !reconstruct cell-center velocities
-       u1     = u1_tmp
-       deallocate(u1_tmp)
-     end if
- end if
+   call initialize_water_level()
+   call initialize_velocity_with_uniform_value()
+   call initialize_salinity_for_SAL_with_uniform_value()
+   call initialize_temperature_with_uniform_value()
+   call initialize_spiral_flow_with_uniform_value()
+   call initialize_sediment()
 
- jawelrestart = jawel
- if (jawel) jarestart = 1                                       ! in the module
+   if (jasal == OFF .and. jatem == OFF .and. jased == OFF) then
+      idensform = OFF
+   endif
+ 
+   volerror(:) = 0d0
+   squ(:)      = 0
+   sqi(:)      = 0
 
- call flow_setstarttime()                                       ! the flow time0 and time1 are managed by flow
+   call str_lower(md_netfile) ! INTERACTOR!
+
+   if (md_input_specific > 0 ) then
+       call apply_hardcoded_specific_input()
+   end if 
+
+   call statisticsini()
+
+   call setkbotktop(1)                               ! prior to correctblforzlayerpoints, setting kbot
+
+   call mess(LEVEL_INFO, 'Start initializing external forcings...')
+   call timstrt('Initialise external forcings', handle_iniext)
+   error = flow_initexternalforcings()               ! this is the general hook-up to wind and boundary conditions
+   if( is_error_at_any_processor(error) ) then
+      call qnerror('Error occurred while initializing external forcings.',&
+          ' Please inspect the preceding lines in the diagnostic output for more details.', ' ')
+      return
+   end if
+   call timstop(handle_iniext)
+   call mess(LEVEL_INFO, 'Done initializing external forcings.')
+
+   call set_ihorvic_related_to_horizontal_viscosity()
+   call redimension_summ_arrays_in_crs()
+   call set_fixed_weirs()
+   call delpol() 
+   call set_advection_type_for_slope_large_than_Slopedrop2D()
+   call set_advection_type_for_lateral_flow_and_pipes()
+
+   if (japure1D /= OFF) then
+      call setiadvpure1D()
+   end if
+
+  ! check if at most one structure claims a flowlink
+   call check_structures_and_fixed_weirs()
+
+   ! First call to setexternalforcingsonboundaries, here only for the structure timeseries (prior to adjust_bobs_for_dams_and_structs())
+   call setzminmax()                                 ! our side of preparation for 3D ec module
+   call setsigmabnds()
+   call flow_setexternalforcingsonboundaries(tstart_user, error)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds. 
+   call initialize_structures_actual_params(network%sts)          ! After structure time series, and prior to adjust_bobs, to use proper crest levels.
+
+   call adjust_bobs_for_dams_and_structs()
+   call setup_structures_and_weirs_list()
+   call set_floodfill_water_levels_based_on_sample_file()
+
+   if (allocated(ibot)) then
+      deallocate(ibot)                                    ! after meteoiniti of ibedlevtype
+   end if
+
+   call setFrictionForLongculverts()
+   call set_friction_coefficient_by_initial_fields()
+   call set_friction_uniform_value_on_links_where_friction_is_not_set()
+   call set_internal_tides_friction_coefficient()
+   call setupwslopes()                                   ! set upwind slope pointers and weightfactors
+
+   if (iuvfield /= OFF) then
+       call setvelocityfield()           ! only when testing
+   end if
+
+   call remember_initial_water_levels_at_water_level_boundaries()
+   call make_volume_tables()
+   call load_restart_file(jawelrestart, error)
+   if( is_error_at_any_processor(error) ) then
+       call qnerror('Error occurs when reading the restart file.',' ', ' ')
+       return
+   end if
+   if (jawelrestart) jarestart = ON                                       ! in the module
+
+   call flow_setstarttime()                                     ! the flow time0 and time1 are managed by flow
                                                                 ! this is the only function that a user can use to influence the flow times
                                                                 ! TSTART MAY BE OVERWRITTEN IN REARST
 
- if (jased > 0 .and. stm_included) then
-    if (stmpar%morpar%morft < eps10) then
-        !
-        ! if the morphological start time is not set to some positive value due
-        ! to restart from mapfile, then make sure that the morphological start
-        ! time corresponds to the hydrodynamic start time. This includes TStart!
-        !
-        stmpar%morpar%morft  = tstart_user/86400d0
-        stmpar%morpar%morft0 = stmpar%morpar%morft
-    endif
- endif
+   call initialize_morphological_start_time()
 
- call setkbotktop(1)                                            ! set sigmabnds for ec
+   call setkbotktop(1)                                            ! set sigmabnds for ec
 
- if ( janudge.eq.1 ) call setzcs()
- call flow_setexternalforcings(tstart_user, .true., iresult)             ! set field oriented external forcings, flag that the call is from the initialization phase
+   if ( janudge == ON ) then
+       call setzcs()
+   end if
+   call flow_setexternalforcings(tstart_user, .true., error)    ! set field oriented external forcings, flag that the call is from the initialization phase
+   if( is_error_at_any_processor(error) ) then
+       call qnerror('Error occurred when setting external forcings.',' ', ' ')
+       return
+   end if
 
- if (iresult /= DFM_NOERR) then
-    goto 888
- end if
+   ! Actual boundary forcing (now that initial water levels, etc. are also known):
+   call flow_setexternalforcingsonboundaries(tstart_user, error)         ! set bnd   oriented external forcings
+   if( is_error_at_any_processor(error) ) then
+       call qnerror('Error occurred when setting external forcings on boundaries.',' ', ' ')
+       return
+   end if
+   tim1bnd = tstart_user
+   tim1fld = tstart_user
 
- ! Actual boundary forcing (now that initial water levels, etc. are also known):
- call flow_setexternalforcingsonboundaries(tstart_user, iresult)         ! set bnd   oriented external forcings
- if (jampi == 1) then
-    ! globally reduce the error
-    call reduce_error(iresult)
- end if
- if (iresult /= DFM_NOERR) then
-    if (jampi == 1) then
-        call qnerror('Error occurs on one or more processes when setting external forcings on boundaries.',' ', ' ')
-    end if
-    goto 888
- end if
- tim1bnd = tstart_user
- tim1fld = tstart_user
+   if (jaoldrstfile == ON) then ! If the restart file is of old version (which does not have waterlevel etc info on boundaries), then need to set.
+      call sets01zbnd(0, 0)
+   end if
+   call sets01zbnd(1, 1)
 
- if (jaoldrstfile==1) then ! If the restart file is of old version (which does not have waterlevel etc info on boundaries), then need to set.
-    call sets01zbnd(0, 0)
- endif
- call sets01zbnd(1, 1)
+   call initialize_values_at_normal_velocity_boundaries()
+   call initialize_values_at_discharge_boundaries()
+   call copy_boundary_friction_and_skewness_into_flow_links()
+   call set_boundaries_implicit()
+   call set_structure_links_implicit()
 
- do n  = 1, nbndn                                  ! for normal velocity boundaries, also initialise velocity on link
-    LL = kbndn(3,n)
-    call getLbotLtop(LL,Lb,Lt)
-    do L = Lb, Lt
-       u1(L) = zbndn(n)
-    enddo
- enddo
+   if (.not. jawelrestart) then
+      call correction_s1_for_atmospheric_pressure()
+      call correction_s1init_for_self_attraction()
+      u0(:) = u1(:)
+   end if
 
- do nq = 1,nqbnd                                    ! discharge boundaries
-    nat = 0 ; bobmin = huge(1d0)
-    do n   = L1qbnd(nq), L2qbnd(nq)                 ! initially only
-       kb  = kbndu(1,n)
-       k2  = kbndu(2,n)
-       L   = kbndu(3,n)
-       blm = min( bob(1,L), bob(2,L) )
-       if (s1(k2) - blm > epshu) then
-          nat = 1
-       endif
-       bobmin = min(bobmin,blm)
-    enddo
+   s1(:)  = max(bl(:), s1(:))
+   s00(:) = s1(:)
 
-!   boundary is dry: add 1 cm of water above lowest bed level
-    if (nat == 0) then
-       do n   = L1qbnd(nq), L2qbnd(nq)             ! initially only
-          kb  = kbndu(1,n)
-          k2  = kbndu(2,n)
-          s1(k2) = max(s1(k2), bobmin + 0.01d0)
-          s1(kb) = s1(k2)
-       enddo
-    else
-       do n   = L1qbnd(nq), L2qbnd(nq)             ! initially only
-          kb  = kbndu(1,n)
-          k2  = kbndu(2,n)
-          s1(kb) = s1(k2)
-       enddo
-    endif
- enddo
+   nonlin = max(nonlin1D, nonlin2D)
+   if (nonlin >= 2) then
+      if (allocated(s1m) ) deallocate (s1m, a1m)
+      allocate ( s1m(ndx), a1m(ndx) , STAT=ierror)
+      call aerr('s1m(ndx), a1m(ndx)', ierror, ndx)
+      s1m(:) = s1(:)
+   end if
 
+   call set_data_for_ship_modelling()
 
- Do L = Lnxi+1, Lnx   ! copy 1D bnd arrays to that of internal attached link
-    if (kcu(L) == -1) then
-        LL         = Lbnd1D(L)
-        frcu(L)    = frcu(LL)
-        ifrcutp(L) = ifrcutp(LL)
-        IF (jaconveyance2D > 0) aifu(L)    = aifu(LL)
-    endif
- enddo
+   call setkbotktop(1)
 
- if (lnx > lnxi) then                               ! boundaries always implicit
-    teta(lnxi+1:lnx) = 1d0
- endif
+   call update_s0_and_hs(jawelrestart)
 
- if (nonlin1d == 2 .or. nonlin1d == 3 .or.nonlin2D == 2) then
-    if (allocated(s1mini) ) deallocate(s1mini)
-    allocate  ( s1mini(ndx) , stat= ierr)
-    call aerr ('s1mini(ndx)', ierr, ndx ) ; s1mini = bl
-    do L = 1,lnx1D
-       k1 = ln(1,L) ; k2 = ln(2,L)
-       if ( abs(PROF1D(3,L)) == 1 ) then
-          teta(L)    = 1d0                          ! closed pipes always implicit
-          s1mini(k1) = max( s1mini(k1), bl(k1) + prof1D(1,L) )
-          s1mini(k2) = max( s1mini(k2), bl(k2) + prof1D(1,L) )
-       else if ( abs(PROF1D(3,L)) == 2 .or. abs(PROF1D(3,L)) == 3 ) then
-          if ( prof1D(2,L) .ne. dmiss ) then
-              teta(L) = 1d0
-          endif
-       endif
-    enddo
-    do LL = lnxi+1, lnx
-       if (kcu(LL) == -1 ) then
-          k1 = ln(1,LL) ; k2 = ln(2,LL)
-          L  = LBND1D(LL)
-          if ( abs(PROF1D(3,L)) == 1 ) then
-             teta(LL)   = 1d0                          ! closed pipes always implicit
-             s1mini(k1) = max( s1mini(k1), bl(k1) + prof1D(1,L) )
-             s1mini(k2) = max( s1mini(k2), bl(k2) + prof1D(1,L) )
-          else if ( abs(PROF1D(3,L)) == 2 .or. abs(PROF1D(3,L)) == 3 ) then
-             if ( prof1D(2,L) .ne. dmiss ) then
-                 teta(L) = 1d0
-             endif
-          endif
-       endif
-    enddo
+   if ( jaselfal /= OFF ) then
+  !  with hs available: recompute SAL potential
+     call flow_settidepotential(tstart_user/60d0)
+   end if
 
- endif
+   call include_ground_water()
+   call include_infiltration_model()
 
-! Set teta for all structure links to 1.0 (implicit)
- nstrucsg = network%sts%count
- do istru = 1, nstrucsg
-    pstru => network%sts%struct(istru)
-    do L0 = 1, pstru%numlinks
-       L = iabs(pstru%linknumbers(L0))
-       teta(L) = 1d0
-    enddo
- enddo
+   call sethu(1)
+   call temporary_fix_for_sepr_3D()
 
- if (.not. jawelrestart) then
-    if (japatm > 0 .and. PavIni > 0) then
-       if ( trshcorio.gt.0d0 ) then
-          trshcorioi = 1d0/trshcorio
-       end if
-       do k = 1,ndxi
-!          ss    = min( 1d0,  max(s1(k),bl(k)) - bl(k) )        ! reduced correction values at low depths
-          Ds = - ( patm(k) - PavIni ) / (ag*rhomean)
-          s1(k) = s1(k) + Ds
-       end do
-    endif
+   call volsur()
+   call a1vol1tot()
+   vol0tot = vol1tot
+   a0tot   = a1tot
+   vol0(:) = vol1(:)
 
-    if  ( jaselfal.gt.0 .and. jaSELFALcorrectWLwithIni.eq.1 ) then
-       do k=1,Ndxi
-           s1init(k) = max(s1(k), bl(k))
-       end do
-    end if
+   call set_initial_velocity_in_3D()
+   call set_wave_modelling()
+   call initialize_salinity_from_bottom_or_top()
 
-    u0 = u1
- endif
+   call question1()
 
- s1  = max(bl, s1)
- s00 = s1
-
- nonlin = max(nonlin1D, nonlin2D)
- 
- if (nonlin >= 2) then
-    if (allocated(s1m) ) deallocate (s1m, a1m)
-    allocate ( s1m(ndx), a1m(ndx) , STAT=ierr) ; s1m = s1
-    call aerr('s1m(ndx), a1m(ndx)', ierr, ndx)
- endif
-
- if (nshiptxy > 0) then
-    call setship()                               ! in flowinit
-    if (kmx > 0 .and. jasal > 0) then
-       inquire(file = 'verticalsalinityprofile.pli', exist=success )
-       call setkbotktop(1)
-       if (success) then
-          call setinitialverticalprofile(sa1 , ndkx, 'verticalsalinityprofile.pli') ; success = .true.
-       endif
-    endif
- endif
-
- call setkbotktop(1)
-
- if (.not. jawelrestart) then
-    s0 = s1
-    hs = s1 - bl
- else ! If one restarts a simulation, then use s0 to compute hs
-    s0 = max(s0,bl)
-    hs = s0 - bl
- endif
-
- if ( jaselfal.gt.0 ) then
-!  with hs available: recompute SAL potential
-   call flow_settidepotential(tstart_user/60d0)
- end if
-
-
- if (jagrw > 0) then
-    do k = 1,ndx
-
-       if (hs(k) > epshs) then
-           sgrw1(k) = bl(k)
-       else
-           if (allocated(h_unsat) ) then
-               sgrw1(k) = bl(k) - h_unsat(k)
-           else if (infiltrationmodel == 1) then
-               sgrw1(k) = bl(k) - Hinterceptionlayer
-           else if (h_unsatini > 0d0) then
-               sgrw1(k) = bl(k) - h_unsatini
-           else
-               sgrw1(k) = sgrwini
-           endif
-       endif
-       sgrw1(k) = min( bl(k), sgrw1(k) )
-       bgrw(k)  = min( bl(k), bgrw (k) )
-       hunsat   = bl(k) - sgrw1(k)
-       fac      = min ( 1d0, max(0d0,  hunsat / h_transfer  )  )      ! 0 at bed, 1 at sgrw
-       pgrw(k)  = sgrw1(k)*fac + s1(k)*(1d0-fac)
-
-    enddo
-
-    if (allocated(h_unsat) ) deallocate(h_unsat)
-    sgrw0 = sgrw1
-
- endif
-
- if (infiltrationmodel ==  DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_DARCY) then  ! set infiltcap=0 for closed links only
-    call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
-    do L = 1,lnx  ! only one connected open profile will open surface runoff
-       n1 = ln(1,L) ; n2 = ln(2,L)
-       if (L <= lnx1D) then
-          if (prof1D(3,L) < 0) then ! closed profile
-          else
-              kcsini(n1) = 1 ; kcsini(n2) = 1
-          endif
-       else
-          kcsini(n1) = 1 ; kcsini(n2) = 1
-       endif
-    enddo
-    do n = 1,ndx
-       infiltcap(n) = infiltcap(n)*kcsini(n)  ! 0 for all links closed
-    enddo
-    if (allocated(kcsini)) deallocate(kcsini)
- endif
-
- call sethu(1)
- if (kmx > 0) then ! temporary fix for sepr 3D
-    do L = 1,lnx
-       if (abs(kcu(L)) == 1) then
-          call addlink1D(L,1)
-          if (hu(L) > 0d0) then
-             wu(L) = au(L) / hu(L)
-          endif
-       endif
-    enddo
- endif
-
- call volsur()          ! flowinit
- call a1vol1tot()
- vol0tot = vol1tot
- a0tot   = a1tot
- vol0    = vol1
-
- ! initial velocity in 3D (needs Lbot, Ltop)
- if ( inivel.eq.1 .and. kmx.gt.0 ) then
-    do L=1,lnx
-       call getLbotLtop(L,Lb,Lt)
-       u1(Lb:Lt) = u1(L)
-    end do
- end if
-
-  if ((jawave==3 .or. jawave==6) .and. .not. flowWithoutWaves) then
-    ! Normal situation: use wave info in FLOW
-    hs = max(hs, 0d0)
-    if (jawave == 6) then
-      ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-      hwav = hwavcom / sqrt2_hp
-    else
-      hwav = hwavcom
-    endif
-    hwav = min(hwav, gammax*hs)
-    !
-    call wave_uorbrlabda()                      
-    if( kmx == 0 ) then
-       call wave_comp_stokes_velocities()
-       call tauwave()
-    end if
-    call setwavfu()
-    call setwavmubnd()
- end if
-
- if ((jawave==3 .or. jawave==6) .and. flowWithoutWaves) then
-    ! Exceptional situation: use wave info not in FLOW, only in WAQ
-    ! Only compute uorb
-    ! Works both for 2D and 3D
-    if (jawave == 6) then
-      ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-      hwav = hwavcom / sqrt2_hp
-    else
-      hwav = hwavcom
-    endif
-    hwav = min(hwav, gammax*hs)
-    call wave_uorbrlabda()                       ! hwav gets depth-limited here
- end if
-
- if (jawave==5 .and. .not. flowWithoutWaves) then
-    hs = max(hs, 0d0)
-    hwav = min(hwavcom, gammax*hs)
-    call wave_uorbrlabda()
-    if( kmx == 0 ) then
-       do L=1,lnx
-          k1=ln(1,L); k2=ln(2,L)
-          hh = hu(L); hw=0.5d0*(hwav(k1)+hwav(k2));tw=.5d0*(twav(k1)+twav(k2))
-          csw = 0.5*(cos(phiwav(k1)*dg2rd)+cos(phiwav(k2)*dg2rd))
-          snw = 0.5*(sin(phiwav(k1)*dg2rd)+sin(phiwav(k2)*dg2rd))
-          call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
-          ustokes(L) = ustt*(csu(L)*csw + snu(L)*snw)
-          vstokes(L) = ustt*(-snu(L)*csw + csu(L)*snw)
-       enddo
-       call tauwave()
-    endif
- endif
-
- if (jasal > 0) then
-    if (kmx > 0 .and. inisal2D >= 1 .and. jarestart.eq.0 ) then
-    do kk = 1,ndx
-       call getkbotktop(kk,kb,kt)
-       if (inisal2D == 2) then
-          do k = kb, kt
-             if (kt == kb) then
-                rr  = 1d0
-             else
-                rr  = dble(k-kb)/dble(kt-kb)
-             endif
-             sa1(k) = (1d0 - rr)*sa1(kb) + rr*satop(kk)
-          enddo
-       else if (inisal2D == 3) then          ! uniform below is specified
-          do k = kb, kt
-             zz = 0.5d0*( zws(k) + zws(k-1) )
-             if (zz < uniformsalinitybelowz .and. sabot(kk) .ne. dmiss) then
-                sa1(k) = sabot(kk)
-             else
-                sa1(k) = sa1(kk)
-             endif
-          enddo
-       endif
-       do k = kt+1, kb+kmxn(kk)-1
-          sa1(k) = sa1(max(kt,kb))
-       enddo
-    enddo
-
-    if ( allocated(satop) ) then
-       deallocate (satop)
-    endif
-    if ( allocated(sabot) ) then
-       deallocate (sabot)
-    endif
- endif
-
-    do k = 1,ndkx
-       sa1(k) = max( 0d0,  sa1(k) )
-    enddo
-
-    if (Sal0abovezlev .ne. dmiss) then
-    do kk = 1,ndx
-       call getkbotktop(kk,kb,kt)
-       do k = kb, kt
-             if (zws(k) > Sal0abovezlev) then
-                 sa1(k) = 0d0
-             endif
-       enddo
-    enddo
- endif
-
-    salmax = maxval(sa1)
-
- endif
-
- if (kmx > 0 .and. inised2D > 0 ) then
-    do kk = 1,ndx
-       if (sedh(kk) .ne. dmiss) then
-          call getkbotktop(kk,kb,kt)
-          do k = kb, kt
-              sed(1:mxgr,k) = sedh(kk)
-          enddo
-       endif
-    enddo
-    deallocate(sedh)
-    inised2D = 0
- endif
-
-  ! When restart, initialize salinity, temperature, sed on waterlevel boundaries
- ! NOTE: keep this identical to how it's done at the end of transport()
  ! hk: and, make sure this is done prior to fill constituents
- if (jarestart > 0) then
-    do LL = lnxi + 1, lnx                           ! copy on outflow
-        call getLbotLtop(LL,Lb,Lt)
-        if (Lt < Lb) then
-            cycle
-        endif
-        do L = Lb, Lt
-           if (q1(L) <= 0d0) then
-              kb = ln(1,L) ; ki = ln(2,L)
-              if (jasal > 0) then
-                  sa1(kb)  = sa1(ki)
-              endif
-              if (jatem > 0) then
-                  tem1(kb)  = tem1(ki)
-              endif
-              if (jased > 0) then
-                 do j = 1,mxgr
-                    sed(j,kb) = sed(j,ki)
-                 enddo
-              endif
-           endif
-        enddo
-    enddo
-    call restore_au_q1_3D_for_1st_history_record()
- endif
+   if (jarestart /= OFF) then
+      call initialize_salinity_temperature_sediment_on_boundary()
+      call restore_au_q1_3D_for_1st_history_record()
+   end if
 
- if ( janudge.eq.1 ) then  ! and here last actions on sal/tem nudging, before we set rho
-    call set_nudgerate()
-    if ( jainiwithnudge > 0 ) then
-       call set_saltem_nudge()
-       if (jainiwithnudge == 2) then
-           janudge = 0
-           deallocate (nudge_tem, nudge_sal, nudge_rate , nudge_time)
-       endif
-    end if
- end if
+   call initialize_salinity_and_temperature_with_nudge_variables()
 
- if (jasal > 0) then ! used to be in fill_constituents each step
-         do k = 1,ndkx
-       constituents(isalt,k) = max( 0d0,  sa1(k) )
-    enddo
- endif
+   if (jasal /= OFF) then 
+       call fill_constituents_with(isalt, sa1)
+   end if
+   if (itemp /= OFF) then 
+      call fill_constituents_with(itemp, tem1)
+   end if
 
- if (itemp > 0) then ! used to be in fill_constituents each step
-    do k = 1,ndkx
-            constituents(itemp,k) = tem1(k)
-         enddo
-     endif
+   call initialise_density_at_cell_centres()
 
- if (jainirho == 1) then
-    do kk = 1,ndx  ! initialise rho's
-       call setrhokk(kk)
-       call getkbotktop(kk,kb,kt)
-       do k = kt+1 , kb + kmxn(kk) - 1
-          if (stm_included) rhowat(k) = rhowat(kt)   ! UNST-5170
-       enddo
-    enddo
- endif
+   if (allocated (rho0))  then
+      rho0(:) = rho(:)
+   end if
 
- if (allocated (rho0))  then
-    rho0 = rho
- endif
-
- if (jaFlowNetChanged == 1 .or. nodtot /= ndx .or. lintot /= lnx) then
+   if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
        call reducept(Ndx,Ndxi,Lnx)                              ! also alloc arrays for reduce
        if (icgsolver == 10) then
           call alloc_jacobi(ndx,lnx)
-       endif
- end if
+       end if
+   end if
 
- if (kmx < 2) then                    ! in 2D, use 1
-    if ( ja_timestep_auto.ne.-123 ) then
-       ja_timestep_auto = 1
-    else
-       ja_timestep_auto = 0
-    end if
- endif
+   if (kmx < 2) then                    ! in 2D, use 1
+      if ( ja_timestep_auto /= -123 ) then
+         ja_timestep_auto = ON
+      else
+         ja_timestep_auto = OFF
+      end if
+   end if
 
- if ( jaimplicit.eq.1 ) then
-    call inisolver_advec(ierror)
- end if
+   if ( jaimplicit == ON ) then
+      call inisolver_advec(ierror)
+   end if
 
- call ini_filter(jafilter, filterorder, jacheckmonitor, ierror)
+   call ini_filter(jafilter, filterorder, jacheckmonitor, ierror)
 
- if (jabarrieradvection == 3) then
-    call setstruclink()
- endif
+   if (jabarrieradvection == 3) then
+      call setstruclink()
+   end if
 
- if (japillar > 0) then
-    call setpillars()
- endif
+   if (japillar /= OFF) then
+      call setpillars()
+   end if
 
- ! for 1D only
- if (network%loaded .and. ndxi-ndx2d > 0) then
-    if (jamapVolOnGround > 0) then
-       call set_max_volume_for_1d_nodes() ! set maximal volume, it will be used to update the volume on ground level for the output
-    end if
- end if
+   ! for 1D only
+   if (network%loaded .and. ndxi-ndx2d > 0) then
+      if (jamapVolOnGround > 0) then
+         call set_max_volume_for_1d_nodes() ! set maximal volume, it will be used to update the volume on ground level for the output
+      end if
+   end if
 
- call upotukinueaa(upot, ukin, ueaa)
+   call upotukinueaa(upot, ukin, ueaa)
 
- iresult = DFM_NOERR
- return
-
-888 continue  ! Some error occurred, prevent further flow
- ndx = 0
-
- if (nonlin>=2) then
-    s1m = bl
- endif
+   error = DFM_NOERR
 
 end function flow_flowinit
+ 
 
-!> apply hradcoded specific input    
+!> is_error_at_any_processor
+logical function is_error_at_any_processor(error)
+
+   implicit none
+
+   integer, intent(inout) :: error
+   
+   is_error_at_any_processor = .false.
+   if (jampi == ON) then
+      call reduce_int1_max(error)
+   end if
+   if (error /= DFM_NOERR) then
+      is_error_at_any_processor = .true.
+      ndx = 0 ! to be consistent with the old way
+      if (jampi == ON) then
+          call qnerror('Error occurs on one or more processes with ...',' ', ' ')
+      end if
+   end if
+   
+end function is_error_at_any_processor
+ 
+!> initialize fvcoro array for Adams/Bashforth
+subroutine initialize_for_coriolis_Adams_Bashforth()
+
+   implicit none
+
+   integer :: error
+
+   if (Corioadamsbashfordfac /= OFF) then
+      if (allocated(fvcoro) ) deallocate(fvcoro)
+      allocate ( fvcoro(lnkx), stat = error )
+      call aerr('fvcoro(lnkx)', error, lnkx ) 
+      fvcoro(:) = 0d0
+   end if
+ 
+end  subroutine initialize_for_coriolis_Adams_Bashforth
+ 
+
+!> initialize_water_level
+subroutine initialize_water_level()
+
+   implicit none
+
+   integer :: cell
+
+   s1(:)  = sini
+   if (waterdepthini1D > OFF ) then
+      do cell = ndx2D + 1, ndxi
+         s1(cell) = bl(cell) + waterdepthini1D
+      end do
+   end if
+ 
+end subroutine initialize_water_level
+
+!> initialize_velocity_with_uniform_value
+subroutine initialize_velocity_with_uniform_value()
+
+   implicit none
+
+   u1(:)  = uini
+
+end subroutine initialize_velocity_with_uniform_value
+
+!> initialize salinity with uniform value when SAL is used
+subroutine initialize_salinity_for_SAL_with_uniform_value()
+
+   implicit none
+
+   if (jasal /= OFF) then
+       sa1(:) = salini
+   end if
+
+end subroutine initialize_salinity_for_SAL_with_uniform_value
+
+
+!> initialize_temperature_with_uniform_value
+subroutine initialize_temperature_with_uniform_value()
+
+   implicit none
+
+   if (jatem /= OFF) then
+       tem1(:) = temini
+   end if
+
+end subroutine initialize_temperature_with_uniform_value
+
+
+!> initialize spiral flow
+subroutine initialize_spiral_flow_with_uniform_value()
+
+   implicit none
+
+    if (jasecflow /= OFF ) then
+       spirint(:) = spirini
+    end if
+ 
+end subroutine initialize_spiral_flow_with_uniform_value
+
+!> initialize sediment
+subroutine initialize_sediment()
+
+   implicit none
+
+   integer, parameter :: KRONE = 1
+   integer, parameter :: SVR = 2
+   integer, parameter :: ENGELUND = 3
+  
+   integer :: cell
+   integer :: grain
+
+   if (jased == KRONE .or. jased == SVR .or. jased == ENGELUND) then
+      do cell = 1, ndkx
+         do grain = 1, mxgr
+            sed(grain,cell) = sedini(grain)
+         end do
+      end do
+   end if
+
+end subroutine initialize_sediment
+ 
+!> Set ihorvic related to horizontal viscosity
+subroutine set_ihorvic_related_to_horizontal_viscosity()
+
+   implicit none
+
+   ihorvic = OFF
+   if (vicouv /= OFF .or. javiusp == ON .or. Smagorinsky /= OFF .or. Elder /= OFF) then
+      ihorvic = ON
+   end if
+ 
+end subroutine set_ihorvic_related_to_horizontal_viscosity
+
+
+!> If constituents have been added at this point, the sum-arrays in crs require redimensioning
+subroutine redimension_summ_arrays_in_crs()
+
+   implicit none
+
+   if (allocated(crs)) then
+      call ReallocCrossSectionSums(crs)
+   end if
+
+end subroutine redimension_summ_arrays_in_crs
+
+!> set fixed weirs
+subroutine set_fixed_weirs()
+
+   implicit none
+
+   integer, parameter :: COMPLETE_CROSSECTION_PATHS_STORED = 0
+
+   if (isimplefixedweirs == COMPLETE_CROSSECTION_PATHS_STORED) then
+      call setbobs_fixedweirs()
+   else
+      call setfixedweirs()
+   end if
+ 
+end subroutine set_fixed_weirs
+
+
+!> set advection type for slope large than Slopedrop2D
+subroutine set_advection_type_for_slope_large_than_Slopedrop2D()
+
+   implicit none
+
+   integer            :: link
+
+   if (Slopedrop2D > 0) then !todo, uitsluitende test maken
+      do link  = lnx1D + 1, lnxi
+         if (iadv(link) /= OFF .and. &
+             .not. (iadv(link) >= 21 .and. iadv(link) <=25) .and. &
+             dxi(link)*abs(bl(ln(1,link)) - bl(ln(2,link))) > Slopedrop2D) then ! Not for fixed weirs itself.
+            iadv(link) = ORIGINAL_LATERAL_OVERFLOW_ADVECTION
+         end if
+      end do
+   end if
+
+end subroutine set_advection_type_for_slope_large_than_Slopedrop2D
+ 
+!> set advection type for slope large than Slopedrop2D
+subroutine set_advection_type_for_lateral_flow_and_pipes()
+
+   implicit none
+
+   integer            :: link
+
+   do link  = 1, lnxi
+       if (iadv(link) /= OFF) then
+          if (kcu(link) == LATERAL_1D2D_LINK) then
+             if (iadveccorr1D2D == 2) then
+                iadv(link) = OFF
+             else
+                iadv(link) = ORIGINAL_LATERAL_OVERFLOW_ADVECTION
+             end if
+          else if (kcu(link) == STREET_INLET_1D2D_LINK .or. kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+             iadv(link) = ORIGINAL_LATERAL_OVERFLOW_ADVECTION
+          end if
+       end if
+    end do
+ 
+end subroutine set_advection_type_for_lateral_flow_and_pipes
+
+!> Floodfill water levels based on sample file.
+subroutine set_floodfill_water_levels_based_on_sample_file()
+
+   implicit none
+
+   integer :: msam
+
+   if (len_trim(md_s1inifile) > 0) then
+      call savesam()
+      NS = 0
+      call oldfil(msam, md_s1inifile)
+      if (msam /= 0) then
+          call reasam(msam, 0)
+          if (jampi == ON ) then
+              call mess(LEVEL_WARN, 'Filling water level using [geometry] WaterLevIniFile in .mdu does not exchange information between partitions')
+          end if
+          call flow_initfloodfill()
+      end if
+      call restoresam()
+   end if
+
+end subroutine set_floodfill_water_levels_based_on_sample_file
+
+!> sert friction coefficient by initial fields
+subroutine set_friction_coefficient_by_initial_fields()
+
+   implicit none
+
+   integer, parameter :: MANNING = 1
+
+   integer            :: link 
+
+    do link = 1, lnx
+       if (frcu(link) == dmiss) then
+          if (link <= lnx1D) then
+             if (kcu(link) == LATERAL_1D2D_LINK) then
+                frcu(link)  = frcuni1d2d
+             else if (kcu(link) == STREET_INLET_1D2D_LINK) then
+                ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
+                frcu(link)    = frcunistreetinlet
+                ifrcutp(link) = MANNING
+             else if (kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+                ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
+                frcu(link)    = frcuniroofgutterpipe
+                ifrcutp(link) = MANNING
+             else
+                frcu(link)  = frcuni1d
+             end if
+          else
+             frcu(link) =  frcuni
+          end if
+       end if
+       if (ifrcutp(link) == imiss) then
+           ifrcutp(link) = ifrctypuni
+       end if
+       if (frcu(link) > frcmax) then
+           frcmax = frcu(link)
+       end if
+    end do
+ 
+end subroutine set_friction_coefficient_by_initial_fields
+
+
+!> set friction uniform value on links where_friction_is_not_set
+subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()
+
+   implicit none
+
+   integer, parameter ::  USE_LINEAR_FRICTION = 1
+
+   integer            :: link 
+
+   if (jafrculin == USE_LINEAR_FRICTION) then
+       do link = 1, lnx
+          if (frculin(link) == dmiss) then
+              frculin(link) =  frcunilin
+          end if
+       end do
+   end if
+
+end subroutine set_friction_uniform_value_on_links_where_friction_is_not_set
+
+!> set internal tides friction coefficient
+subroutine set_internal_tides_friction_coefficient()
+
+   implicit none
+
+   integer, parameter :: USE_INTERNAL_TIDES_FRICTION = 1
+
+   integer            :: cell 
+
+   if ( jaFrcInternalTides2D == USE_INTERNAL_TIDES_FRICTION ) then
+      do cell = 1, Ndx
+         if ( frcInternalTides2D(cell) == dmiss ) then
+            frcInternalTides2D(cell) = 0d0
+         end if
+      end do
+   end if
+ 
+end subroutine set_internal_tides_friction_coefficient
+
+
+ !> remember initial water levels at the water level boundaries
+ !! so that reading rst file won't influence it. This is used for restart a model with Riemann boundary conditions.
+subroutine remember_initial_water_levels_at_water_level_boundaries()
+
+   implicit none
+
+   integer :: index 
+
+    do index = 1, nbndz
+       zbndz0(index) = max(bl(kbndz(2,index)), s1(kbndz(2,index))) ! NOTE: the s1=max(bl, s1) step can only be done later, so do it here as well.
+    end do
+ 
+end subroutine remember_initial_water_levels_at_water_level_boundaries
+
+!> make volume tables 
+subroutine make_volume_tables()
+
+   implicit none
+
+   integer              :: ihandle
+   character(len=Idlen) :: fileName
+
+   ihandle = 0
+   call timstrt('makeVolumeTables', ihandle)
+   if (useVolumeTables) then
+       filename = defaultFilename('volumeTables')
+       call makeVolumeTables(filename)
+   end if
+   call timstop(ihandle)
+
+end subroutine make_volume_tables
+ 
+!> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
+subroutine load_restart_file(file_exist, error)
+
+   implicit none
+
+   logical, intent(out)          :: file_exist
+   integer, intent(out)          :: error
+
+   integer, parameter            :: NOT_DEFINED = -1
+   character(len=255)            :: rstfile
+   integer                       :: mrst
+   integer                       :: jw
+   double precision, allocatable :: u1_tmp(:)
+
+   file_exist = .false.
+
+   if (len_trim(md_restartfile) > 0 ) then
+      ! Restart from *.rst:
+      if ( index(md_restartfile, '.rst') > 0 .or. index(md_restartfile, '.RST') > 0) then
+          inquire(FILE = rstfile, EXIST=file_exist)
+          if (file_exist) then
+             call oldfil(mrst, rstfile)
+             call rearst(mrst, jw)
+             file_exist = (jw == ON)
+          end if
+      else ! Restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
+         call read_restart_from_map(md_restartfile, error)
+         if (error /= DFM_NOERR) then
+            return
+         else
+            file_exist = .true.
+         end if
+         
+         if (jased /= OFF .and. stm_included) then
+            call setbobs()
+         end if
+
+         u1_tmp(:)  = u1(:)
+         u1(:)      = u0(:)
+         hs(:)      = s0(:) - bl(:)
+         if (iperot == NOT_DEFINED ) then
+            call reconst2nd ()
+         end if
+         call fill_onlyWetLinks()
+         call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         u1(:) = u1_tmp(:)
+       end if
+   end if
+
+end subroutine load_restart_file
+
+
+!> if the morphological start time is not set to some positive value due
+!! to restart from mapfile, then make sure that the morphological start
+!! time corresponds to the hydrodynamic start time. This includes TStart!
+subroutine initialize_morphological_start_time()
+
+   implicit none
+
+   if (jased /= OFF .and. stm_included) then
+      if (stmpar%morpar%morft < eps10) then
+          stmpar%morpar%morft  = tstart_user/86400d0
+          stmpar%morpar%morft0 = stmpar%morpar%morft
+      end if
+   end if
+
+end subroutine initialize_morphological_start_time
+ 
+ 
+!> for normal velocity boundaries, also initialise velocity on link
+subroutine initialize_values_at_normal_velocity_boundaries()
+
+   implicit none
+
+   integer   :: velocity_point
+   integer   :: link
+   integer   :: flow_link
+   integer   :: bottom_link
+   integer   :: top_link
+
+   do velocity_point  = 1, nbndn                                  
+       flow_link      = kbndn(3, velocity_point)
+       call getLbotLtop(flow_link, bottom_link, top_link)
+       do link        = bottom_link, top_link
+          u1(link)    = zbndn(velocity_point)
+       end do
+   end do
+
+end subroutine initialize_values_at_normal_velocity_boundaries
+
+!> initialize discharge boundaries
+subroutine initialize_values_at_discharge_boundaries()
+
+   implicit none
+
+   integer          :: discharge_boundary
+   integer          :: point
+   integer          :: flow_link
+
+   logical          :: dry
+
+   double precision :: bob_local_min
+   double precision :: bob_global_min
+
+   do discharge_boundary = 1, nqbnd
+      dry = .true.
+      bob_global_min = huge(1d0)
+      do point      = L1qbnd(discharge_boundary), L2qbnd(discharge_boundary)             
+         flow_link  = kbndu(3,point)
+         bob_local_min = min( bob(1,flow_link), bob(2,flow_link) )
+          if (s1(kbndu(2,point)) - bob_local_min > epshu) then
+             dry = .false.
+          end if
+          bob_global_min = min(bob_global_min, bob_local_min)
+       end do
+
+       do point = L1qbnd(discharge_boundary), L2qbnd(discharge_boundary)  
+          if ( dry ) then
+           !   boundary is dry: add 1 cm of water above lowest bed level
+             s1(kbndu(2,point)) = max(s1(kbndu(2,point)), bob_global_min + 0.01d0)
+          end if
+          s1(kbndu(1,point)) = s1(kbndu(2,point))
+       end do
+   end do
+ 
+end subroutine initialize_values_at_discharge_boundaries
+
+!>  copy 1D bnd arrays to that of internal attached link
+subroutine copy_boundary_friction_and_skewness_into_flow_links()
+
+   implicit none
+
+   integer, parameter :: BOUNDARY_1D = -1
+
+   integer            :: flow_link
+   integer            :: boundary_link
+
+   do flow_link = lnxi + 1, lnx  
+      if ( kcu(flow_link) == BOUNDARY_1D ) then
+         boundary_link      = Lbnd1D(flow_link)
+         frcu(flow_link)    = frcu(boundary_link)
+         ifrcutp(flow_link) = ifrcutp(boundary_link)
+         if (jaconveyance2D /= OFF) then
+             aifu(flow_link) = aifu(boundary_link)
+         end if
+      end if
+   end do
+ 
+end subroutine copy_boundary_friction_and_skewness_into_flow_links
+
+!> boundaries always implicit
+subroutine set_boundaries_implicit()
+
+   implicit none
+
+   if (lnx > lnxi) then                               
+      teta(lnxi+1:lnx) = 1d0
+   endif
+ 
+end subroutine set_boundaries_implicit
+
+
+!> Set teta for all structure links to 1.0 (implicit)
+subroutine set_structure_links_implicit()
+
+   implicit none
+
+   integer                    :: structure_number
+   integer                    :: link
+   integer                    :: link_index
+   type(t_structure), pointer :: pstru
+
+   do structure_number = 1, network%sts%count
+      pstru => network%sts%struct(structure_number)
+      do link_index = 1, pstru%numlinks
+         link = iabs(pstru%linknumbers(link_index))
+         teta(link) = 1d0
+      end do
+   end do
+
+end subroutine set_structure_links_implicit
+
+!> correction_s1_for_atmospheric_pressure
+subroutine correction_s1_for_atmospheric_pressure()
+
+   implicit none
+
+   double precision, parameter :: ZERO_AMBIENT_PRESSURE  = 0d0
+
+   integer           :: cell
+   double precision  :: ds
+
+   if (japatm /= OFF .and. PavIni > ZERO_AMBIENT_PRESSURE ) then
+       do cell     = 1, ndxi
+          ds       = - ( patm(cell) - PavIni ) / (ag*rhomean)
+          s1(cell) = s1(cell) + ds
+       end do
+    end if
+    
+end subroutine correction_s1_for_atmospheric_pressure
+
+
+!> correction_s1_for_atmospheric_pressure
+subroutine correction_s1init_for_self_attraction()
+
+   implicit none
+
+   integer    :: cell
+
+    if  ( jaselfal /= OFF .and. &
+          jaSELFALcorrectWLwithIni == ON ) then
+       do cell = 1, Ndxi
+           s1init(cell) = max(s1(cell), bl(cell))
+       end do
+   end if
+ 
+end subroutine correction_s1init_for_self_attraction
+
+!> set_data_for_ship_modelling
+subroutine set_data_for_ship_modelling()
+
+   implicit none
+
+   if (nshiptxy > 0) then
+       call setship()                               ! in flowinit
+       if (kmx > 0 .and. jasal /= OFF ) then
+          inquire(file = 'verticalsalinityprofile.pli', exist=success )
+          call setkbotktop(1)
+          if (success) then
+             call setinitialverticalprofile(sa1 , ndkx, 'verticalsalinityprofile.pli')
+          end if
+       end if
+   end if
+
+end subroutine set_data_for_ship_modelling
+
+!> update_s0_and_hs
+subroutine update_s0_and_hs(jawelrestart)
+
+   implicit none
+
+   logical, intent(in) :: jawelrestart
+
+   if (.not. jawelrestart) then
+      s0(:) = s1(:)
+   else ! If one restarts a simulation, then use s0 to compute hs
+      s0(:) = max(s0(:),bl(:))
+   end if
+
+   hs(:) = s0(:) - bl(:)
+ 
+end subroutine update_s0_and_hs
+
+!> include_ground_water
+subroutine include_ground_water()
+
+   implicit none
+
+   integer            :: cell
+   double precision   :: hunsat
+   double precision   :: fac
+
+   if (jagrw == OFF ) then
+       return
+   end if 
+
+   do cell = 1, ndx
+
+      if (hs(cell) > epshs) then
+          sgrw1(cell) = bl(cell)
+      else
+          if (allocated(h_unsat) ) then
+             sgrw1(cell) = bl(cell) - h_unsat(cell)
+          else if (infiltrationmodel == ON) then
+             sgrw1(cell) = bl(cell) - Hinterceptionlayer
+          else if (h_unsatini > 0d0) then
+              sgrw1(cell) = bl(cell) - h_unsatini
+          else
+             sgrw1(cell) = sgrwini
+          end if
+      end if
+      sgrw1(cell) = min( bl(cell), sgrw1(cell) )
+      bgrw(cell)  = min( bl(cell), bgrw (cell) )
+      hunsat      = bl(cell) - sgrw1(cell)
+      fac         = min ( 1d0, max(0d0,  hunsat / h_transfer  )  )      ! 0 at bed, 1 at sgrw
+      pgrw(cell)  = sgrw1(cell)*fac + s1(cell)*(1d0-fac)
+
+   end do
+
+   if (allocated(h_unsat) ) deallocate(h_unsat)
+   sgrw0(:) = sgrw1(:)
+
+end subroutine include_ground_water
+ 
+!> include_infiltration_model
+subroutine include_infiltration_model()
+
+   implicit none
+
+   integer     :: link
+   integer     :: cell
+   integer     :: left_cell
+   integer     :: right_cell
+
+   if (infiltrationmodel ==  DFM_HYD_INFILT_CONST .or. &
+       infiltrationmodel == DFM_HYD_INFILT_DARCY) then  ! set infiltcap=0 for closed links only
+       call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
+       do link = 1, lnx  ! only one connected open profile will open surface runoff
+          left_cell  = ln(1,link)
+          right_cell = ln(2,link)
+          if (link <= lnx1D) then
+             if (prof1D(3,link) < 0) then ! closed profile
+             else
+                 kcsini(left_cell)  = 1
+                 kcsini(right_cell) = 1
+             end if
+          else
+             kcsini(left_cell)  = 1
+             kcsini(right_cell) = 1
+          end if
+       end do
+       do cell = 1, ndx
+          infiltcap(cell) = infiltcap(cell)*kcsini(cell)  ! 0 for all links closed
+       end do
+       if (allocated(kcsini)) deallocate(kcsini)
+   end if
+ 
+end subroutine include_infiltration_model
+
+!> temporary fix for sepr 3D
+subroutine temporary_fix_for_sepr_3D()
+
+   implicit none
+
+   integer, parameter :: link_1D = 1
+
+   integer            :: link
+
+   if (kmx > 0) then 
+      do link = 1, lnx
+         if (abs(kcu(link)) == link_1D) then
+            call addlink1D(link,1)
+            if (hu(link) > 0d0) then
+               wu(link) = au(link) / hu(link)
+            end if
+         end if
+      end do
+   end if
+ 
+end subroutine temporary_fix_for_sepr_3D
+
+
+
+!> set initial velocity in 3D (needs Lbot, Ltop)
+subroutine set_initial_velocity_in_3D()
+
+   implicit none
+
+   integer            :: link
+   integer            :: bottom_link
+   integer            :: top_link
+
+   if ( inivel == INITIALIZE .and. kmx > 0 ) then
+       do link = 1, lnx
+          call getLbotLtop(link, bottom_link, top_link)
+          u1(bottom_link:top_link) = u1(link)
+       end do
+   end if
+ 
+end subroutine set_initial_velocity_in_3D
+
+!> set wave modelling
+subroutine set_wave_modelling()
+
+   implicit none
+   
+   integer, parameter :: SWAN  = 3
+   integer, parameter :: CONST = 5
+   integer, parameter :: SWAN_NetCDF = 6
+
+   integer            :: link
+   integer            :: left_node
+   integer            :: right_node
+
+   double precision   :: hw
+   double precision   :: tw
+   double precision   :: csw
+   double precision   :: snw
+   double precision   :: uorbi
+   double precision   :: rkw
+   double precision   :: ustt
+   double precision   :: hh
+
+   if ((jawave == SWAN .or. jawave == SWAN_NetCDF ) .and. .not. flowWithoutWaves) then
+      ! Normal situation: use wave info in FLOW
+      hs = max(hs, 0d0)
+      if (jawave == SWAN_NetCDF) then
+        ! HSIG is read from SWAN NetCDF file. Convert to HRMS
+        hwav = hwavcom / sqrt2_hp
+      else
+        hwav = hwavcom
+      end if
+      hwav = min(hwav, gammax*hs)
+   !
+      call wave_uorbrlabda()                      
+      if( kmx == 0 ) then
+         call wave_comp_stokes_velocities()
+         call tauwave()
+      end if
+      call setwavfu()
+      call setwavmubnd()
+   end if
+
+   if ((jawave == SWAN .or. jawave == SWAN_NetCDF ) .and. flowWithoutWaves) then
+      ! Exceptional situation: use wave info not in FLOW, only in WAQ
+      ! Only compute uorb
+      ! Works both for 2D and 3D
+      if (jawave == SWAN_NetCDF ) then
+        ! HSIG is read from SWAN NetCDF file. Convert to HRMS
+        hwav = hwavcom / sqrt2_hp
+      else
+        hwav = hwavcom
+      end if
+      hwav = min(hwav, gammax*hs)
+      call wave_uorbrlabda()                       ! hwav gets depth-limited here
+   end if
+
+   if (jawave == CONST .and. .not. flowWithoutWaves) then
+      hs = max(hs, 0d0)
+      hwav = min(hwavcom, gammax*hs)
+      call wave_uorbrlabda()
+      if( kmx == 0 ) then
+         do link = 1, lnx
+            left_node  = ln(1,link)
+            right_node = ln(2,link)
+            hh         = hu(link)
+            hw         = 0.5d0*(hwav(left_node) + hwav(right_node))
+            tw         = 0.5d0*(twav(left_node) + twav(right_node))
+            csw        = 0.5*(cos(phiwav(left_node)*dg2rd) + cos(phiwav(right_node)*dg2rd))
+            snw        = 0.5*(sin(phiwav(left_node)*dg2rd) + sin(phiwav(right_node)*dg2rd))
+            call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+            ustokes(link) = ustt*(csu(link)*csw + snu(link)*snw)
+            vstokes(link) = ustt*(-snu(link)*csw + csu(link)*snw)
+         end do
+         call tauwave()
+      end if
+   end if
+
+end subroutine set_wave_modelling
+ 
+
+!> initialize_salinity_from_bottom_or_top
+subroutine initialize_salinity_from_bottom_or_top()
+
+   implicit none
+
+   integer, parameter :: SALINITY_TOP = 2
+   integer, parameter :: SALINITY_BOT = 3
+
+   integer            :: cell 
+   integer            :: bottom_cell 
+   integer            :: top_cell 
+   integer            :: cell3D
+
+   double precision   :: rr
+   double precision   :: zz
+
+
+   if (jasal == OFF ) then
+       return
+   end if
+
+   if (kmx > 0 .and. inisal2D /= OFF .and. jarestart == OFF ) then
+       do cell = 1, ndx
+          call getkbotktop(cell, bottom_cell, top_cell)
+          if (inisal2D == SALINITY_TOP ) then
+             do cell3D = bottom_cell, top_cell
+                if (top_cell == bottom_cell) then
+                   rr  = 1d0
+                else
+                   rr  = dble(cell3D-bottom_cell)/dble(top_cell-bottom_cell)
+                end if
+                sa1(cell3D) = (1d0 - rr)*sa1(bottom_cell) + rr*satop(cell)
+             end do
+          else if (inisal2D == SALINITY_BOT ) then          ! uniform below is specified
+             do cell3D = bottom_cell, top_cell
+                zz = 0.5d0*( zws(cell3D) + zws(cell3D-1) )
+                if (zz < uniformsalinitybelowz .and. sabot(cell) /= dmiss) then
+                   sa1(cell3D) = sabot(cell)
+                else
+                   sa1(cell3D) = sa1(cell)
+                end if
+             end do
+          end if
+          do cell3D = top_cell + 1, bottom_cell + kmxn(cell) - 1
+             sa1(cell3D) = sa1(max(top_cell,bottom_cell))
+          end do
+       end do
+
+       if ( allocated(satop) ) then
+          deallocate (satop)
+       end if
+       if ( allocated(sabot) ) then
+          deallocate (sabot)
+       end if
+   end if
+
+   where(sa1 < 0d0 )
+       sa1 = 0d0
+   end where
+
+   if (Sal0abovezlev /= dmiss) then
+       do cell = 1, ndx
+          call getkbotktop(cell, bottom_cell, top_cell)
+          do cell3D = bottom_cell, top_cell
+             if (zws(cell3D) > Sal0abovezlev) then
+                 sa1(cell3D) = 0d0
+             end if
+          end do
+       end do
+    end if
+
+   salmax = maxval(sa1)
+
+end subroutine initialize_salinity_from_bottom_or_top
+
+
+subroutine question1()
+
+   implicit none
+
+   integer            :: cell 
+   integer            :: bottom_cell 
+   integer            :: top_cell 
+   integer            :: cell3D
+
+   if (kmx > 0 .and. inised2D > 0 ) then
+      do cell = 1, ndx
+         if (sedh(cell) /= dmiss) then
+            call getkbotktop(cell, bottom_cell, top_cell)
+            do cell3D = bottom_cell, top_cell
+                sed(1:mxgr,cell3D) = sedh(cell)
+            end do
+         end if
+      end do
+      deallocate(sedh)
+      inised2D = 0
+   end if
+ 
+end subroutine question1
+
+!> initialize salinity, temperature, sediment on boundary
+subroutine initialize_salinity_temperature_sediment_on_boundary()
+
+   implicit none
+
+   integer   :: link
+   integer   :: bottom_link
+   integer   :: top_link
+   integer   :: link3D
+
+   integer   :: boundary_cell
+   integer   :: internal_cell
+   integer   :: grain
+
+   do link = lnxi + 1, lnx                           ! copy on outflow
+       call getLbotLtop(link,bottom_link,top_link)
+       if (top_link < bottom_link) then
+           cycle
+       end if
+       do link3D = bottom_link, top_link
+           if (q1(link3D) <= 0d0) then
+               boundary_cell = ln(1,link3D)
+               internal_cell = ln(2,link3D)
+               if (jasal /= OFF) then
+                   sa1(boundary_cell)  = sa1(internal_cell)
+               end if
+               if (jatem /= OFF) then
+                   tem1(boundary_cell)  = tem1(internal_cell)
+               end if
+               if (jased /= OFF) then
+                   do grain = 1, mxgr
+                      sed(grain,boundary_cell) = sed(grain,internal_cell)
+                   end do
+               end if
+           end if
+       end do
+   end do
+
+end subroutine initialize_salinity_temperature_sediment_on_boundary
+
+
+!> initialize salinity and temperature with nudge variables
+subroutine initialize_salinity_and_temperature_with_nudge_variables()
+
+   implicit none
+
+   if ( janudge == ON ) then  ! and here last actions on sal/tem nudging, before we set rho
+       call set_nudgerate()
+       if ( jainiwithnudge /= OFF ) then
+          call set_saltem_nudge()
+          if (jainiwithnudge == 2) then
+              janudge = OFF
+              deallocate (nudge_tem, nudge_sal, nudge_rate , nudge_time)
+          end if
+       end if
+   end if
+
+end subroutine initialize_salinity_and_temperature_with_nudge_variables
+
+
+!> fill_constituents_with
+subroutine fill_constituents_with(item, input)
+
+   implicit none
+
+   integer,          intent(in) :: item
+   double precision, intent(in) :: input(:)
+
+   integer                      :: node3D
+
+   do node3D = 1, ndkx
+       constituents(item,node3D) = max( 0d0,  input(node3D) )
+   end do
+
+end subroutine fill_constituents_with
+
+
+!> initialise_density_at_cell_centres
+subroutine initialise_density_at_cell_centres()
+
+   implicit none
+
+   integer            :: cell 
+   integer            :: bottom_cell 
+   integer            :: top_cell 
+   integer            :: cell3D
+
+   if (jainirho == INITIALIZE) then
+       do cell = 1, ndx
+          call setrhokk(cell)
+          if (stm_included) then
+             call getkbotktop(cell, bottom_cell, top_cell)
+             do cell3D = top_cell + 1, bottom_cell + kmxn(cell) - 1
+                rhowat(cell3D) = rhowat(top_cell)   ! UNST-5170
+             end do
+           end if
+       end do
+   end if
+
+end subroutine initialise_density_at_cell_centres
+
+!> apply hardcoded specific input    
 subroutine apply_hardcoded_specific_input()
  use m_netw
  use m_flowgeom
@@ -925,21 +1367,21 @@ subroutine apply_hardcoded_specific_input()
 
  double precision, external :: rho_Eckart
 
- CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)
- CALL DMINMAX(   xk, numk, xkmin, xkmax, numk)
+ call dminmax(   xz, ndx, xzmin, xzmax, ndx)
+ call dminmax(   xk, numk, xkmin, xkmax, numk)
 
 
  if (md_IDENT(1:6) == 'wetbed' .or. md_IDENT(1:6) == 'drybed') then  ! wetbed, drybed
     call setbobs()
-    jw = 1
+    jw = ON
     if (md_IDENT(1:6) == 'drybed') then
-       jw = 0
+       jw = OFF
     endif
 
     do k = 1, ndx
        if (xz(k) .le. 0.5d0*(xzmin+xzmax) ) then
           s1(k)  = bl(k) + 2d0
-       else if (jw == 1) then
+       else if (jw == ON) then
           s1(k)  = bl(k) + hwetbed
        else
           s1(k)  = bl(k)
@@ -948,7 +1390,7 @@ subroutine apply_hardcoded_specific_input()
 
     if (kmx > 0) then
        call setkbotktop(1)  ! wetbed
-       if (jasal > 0) then
+       if (jasal /= OFF) then
           do k = 1,ndx
              if (xz(k) .le. 0.5d0*(xzmin+xzmax) ) then
                 call getkbotktop(k,kb,kt)
@@ -1088,7 +1530,7 @@ subroutine apply_hardcoded_specific_input()
 
  else if (index(md_ident,'lockexchange') > 0) then                   !
 
-    CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)
+    call dminmax(   xz, ndx, xzmin, xzmax, ndx)
     call setkbotktop(1) ! inisaltwedge
 
     do k = 1,ndx
@@ -1103,9 +1545,9 @@ subroutine apply_hardcoded_specific_input()
     enddo
  else if (index(md_ident,'locxx') > 0 .or. index(md_ident,'t0st') > 0 .or. trim(md_specific) == 'lockexchange') then                   ! Commented: It triggers on mdu-names that just include 'loc' in the name
                                                             !            For instance: 'locationDelft.mdu',
-    CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)             !                          'normalvelocities.mdu',   etc.
+    call dminmax(   xz, ndx, xzmin, xzmax, ndx)             !                          'normalvelocities.mdu',   etc.
 
-    if ( jampi.eq.1 ) then
+    if ( jampi == ON) then
        call reduce_double_min(xzmin)
        call reduce_double_max(xzmax)
     end if
@@ -1163,7 +1605,7 @@ subroutine apply_hardcoded_specific_input()
     enddo
 
   else if (trim(md_specific) == 'splitter') then
-     jamodelspecific = 1
+     jamodelspecific = ON
   else if (index(md_ident,'canal-lake') > 0 ) then
 
     call setkbotktop(1) ! inisaltwedge
@@ -1180,7 +1622,7 @@ subroutine apply_hardcoded_specific_input()
 
   else if (index(md_ident,'internalwave') > 0) then                   !
 
-    CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)
+    call dminmax(   xz, ndx, xzmin, xzmax, ndx)
     call setkbotktop(1) ! inisaltwedge
 
     do k = 1,ndx
@@ -1192,7 +1634,7 @@ subroutine apply_hardcoded_specific_input()
 
  else if (index(md_ident,'slope1_5') > 0) then                   !
 
-    CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)
+    call dminmax(   xz, ndx, xzmin, xzmax, ndx)
     call setkbotktop(1) ! inisaltwedge
     sa1 = 5d0
 
@@ -1200,7 +1642,7 @@ subroutine apply_hardcoded_specific_input()
 
  else if (index(md_ident,'huump3d') > 0) then                         !
 
-    CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)
+    call dminmax(   xz, ndx, xzmin, xzmax, ndx)
     call setkbotktop(1) !inihump3D
 
     do k = 1,ndx
@@ -1243,7 +1685,7 @@ subroutine apply_hardcoded_specific_input()
     bl    = 0d0
     ibedlevtyp   = 1 ; call setbobs()
 
-    CALL DMINMAX(   xk, numk, xkmin, xkmax, numk)
+    call dminmax(   xk, numk, xkmin, xkmax, numk)
 
     n   = 2
     if (index(md_ident,'4') > 0 ) n = 4
@@ -1258,18 +1700,9 @@ subroutine apply_hardcoded_specific_input()
        k1 = ln(1,L) ; k2 = ln(2,L)
        xx = 0.5d0* ( xz(k1) + xz(k2) ) * xli
        yy = 0.5d0* ( yz(k1) + yz(k2) ) * xli
-       !k1 = lncn(1,L) ; k2 = lncn(2,L)
-       !xx1 = xk(k1) ; yy1 = yk(k1)
-       !xx2 = xk(k2) ; yy2 = yk(k2)
-        ux  = 0d0 ; uy = 0d0
-       !do j = 1,10
-       !   aa  = dble(j-1)/9d0
-       !   xx  = (1d0-aa)*xx1 + aa*xx2
-       !   yy  = (1d0-aa)*yy1 + aa*yy2
-          ux  =  ux + amp*sin(pin*xx)*cos(pin*yy)          ! poisson
-          uy  =  uy - amp*cos(pin*xx)*sin(pin*yy)
-       !enddo
-       !ux = 0.1d0*ux ; uy = 0.1d0*uy
+       ux  = 0d0 ; uy = 0d0
+       ux  =  ux + amp*sin(pin*xx)*cos(pin*yy)          ! poisson
+       uy  =  uy - amp*cos(pin*xx)*sin(pin*yy)
        u1(L) = csu(L)*ux + snu(L)*uy
     enddo
 
@@ -1318,8 +1751,8 @@ subroutine apply_hardcoded_specific_input()
 
  else if (index(md_netfile,'kelvin') > 0 ) then
 
-    CALL DMINMAX(   xz, ndx, xzmin, xzmax, ndx)
-    CALL DMINMAX(   yz, ndx, yzmin, yzmax, ndx)
+    call dminmax(   xz, ndx, xzmin, xzmax, ndx)
+    call dminmax(   yz, ndx, yzmin, yzmax, ndx)
     r0  = 0.5d0* (xzmax - xzmin)
     x0  = 0.5d0* (xzmax + xzmin)
     y0  = 0.5d0* (yzmax + yzmin)
@@ -1435,8 +1868,8 @@ subroutine apply_hardcoded_specific_input()
      enddo
      u0 = u1
 
-     CALL DMINMAX(   xk, numk, xkmin, xkmax, numk)
-     CALL DMINMAX(   yk, numk, ykmin, ykmax, numk)
+     call dminmax(   xk, numk, xkmin, xkmax, numk)
+     call dminmax(   yk, numk, ykmin, ykmax, numk)
 
      x0  = 0.50d0
      y0  = 0.75d0
@@ -1458,13 +1891,12 @@ subroutine apply_hardcoded_specific_input()
      itstep = 0
  else if (md_ident(1:6) == 'teacup') then
 
-     CALL DMINMAX(   xk, numk, xkmin, xkmax, numk)
-     CALL DMINMAX(   yk, numk, ykmin, ykmax, numk)
+     call dminmax(   xk, numk, xkmin, xkmax, numk)
+     call dminmax(   yk, numk, ykmin, ykmax, numk)
 
      call half(xkmin,ykmin,xkmax,ykmin, xx1,yy1,  jsferic, jasfer3D)
      call half(xkmin,ykmax,xkmax,ykmax, xx2,yy2,  jsferic, jasfer3D)
      rmx = 0.5d0*dbdistance(xx1,yy1,xx2,yy2, jsferic, jasfer3D, dmiss)
-     ! rmx = 0.5d0*dbdistance(xkmin,ykmin,xkmax,ykmax, jsferic, jasfer3D, dmiss)
      call half(xx1,yy1,xx2,yy2,x0,y0,  jsferic, jasfer3D)
 
      do L   = 1, lnx
@@ -1624,32 +2056,33 @@ end subroutine apply_hardcoded_specific_input
     
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
-use m_flow,                 only : q1, LBot, kmx, kmxL
-use m_flowexternalforcings, only : fusav, rusav, ausav
-use m_flowgeom,             only : lnx
+   use m_flow,                 only : q1, LBot, kmx, kmxL   
+   use m_flowexternalforcings, only : fusav, rusav, ausav
+   use m_flowgeom,             only : lnx
 
-implicit none
+   implicit none
 
-integer                       :: i_q1_v, i_q1_0
-double precision, allocatable :: fu_temp(:,:), ru_temp(:,:), au_temp(:,:)
+   integer                       :: i_q1_v, i_q1_0
+   double precision, allocatable :: fu_temp(:,:), ru_temp(:,:), au_temp(:,:)
 
-if ( kmx > 0 ) then
-   fu_temp = fusav
-   ru_temp = rusav
-   au_temp = ausav
-   call furusobekstructures() ! to have correct au values but it provides incorrect q1 values for structures
-   fusav = fu_temp
-   rusav = ru_temp
-   ausav = au_temp
+   if ( kmx > 0 ) then
+      fu_temp = fusav
+      ru_temp = rusav
+      au_temp = ausav
+      call furusobekstructures() ! to have correct au values but it provides incorrect q1 values for structures
+      fusav = fu_temp
+      rusav = ru_temp
+      ausav = au_temp
 !  restore correct discharge values
-   do i_q1_0 = 1, lnx
-      q1(i_q1_0) = 0d0 
-      do i_q1_v = Lbot(i_q1_0), Lbot(i_q1_0) - 1 + kmxL(i_q1_0)
-         q1(i_q1_0) = q1(i_q1_0) + q1(i_q1_v)       ! depth integrated result
+      do i_q1_0 = 1, lnx
+         q1(i_q1_0) = 0d0 
+         do i_q1_v = Lbot(i_q1_0), Lbot(i_q1_0) - 1 + kmxL(i_q1_0)
+            q1(i_q1_0) = q1(i_q1_0) + q1(i_q1_v)       ! depth integrated result
+         end do
       end do
-   end do
-end if
+   end if
     
 end subroutine restore_au_q1_3D_for_1st_history_record
     
+end module m_flow_flowinit
     

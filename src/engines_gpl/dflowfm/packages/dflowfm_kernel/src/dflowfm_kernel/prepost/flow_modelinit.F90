@@ -69,6 +69,7 @@
  use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
  use unstruc_display, only : ntek, jaGUI
  use m_debug
+ use m_flow_flowinit
  
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -78,7 +79,6 @@
  implicit none
 
  integer              :: istat, L, ierr
- integer, external    :: flow_flowinit
  integer, external    :: init_openmp
  integer, external    :: set_model_boundingbox
  !
