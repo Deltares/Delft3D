@@ -107,11 +107,6 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 message(STATUS "build_config ${build_config}")
 
-post_build_target( ${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${executable_name}  )
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)

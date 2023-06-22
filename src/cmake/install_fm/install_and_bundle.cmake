@@ -7,8 +7,8 @@ IF(WIN32)
 set(BUILD_LIBRARIES
    ${CMAKE_INSTALL_PREFIX}/lib/libdflowfm.dll
 )
-)
 ENDIF(WIN32)
+
 set(THIRDPARTY_x64_LIB_FOLDERS
   ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_INSTALL_PREFIX}/bin
@@ -41,5 +41,5 @@ set_rpath("${CMAKE_INSTALL_PREFIX}/scripts" "$ORIGIN/../scripts:$ORIGIN")
 
 execute_process(COMMAND find "${CMAKE_INSTALL_PREFIX}/lib" -type l -exec echo "remove destination of symlink:" {} \; -exec bash -c "cp --remove-destination $(readlink {}) {};"  {} \; WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib" )
 
-file(RENAME ${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli ${CMAKE_INSTALL_PREFIX}/bin/dflowfm)
+#file(RENAME ${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli ${CMAKE_INSTALL_PREFIX}/bin/dflowfm)
 

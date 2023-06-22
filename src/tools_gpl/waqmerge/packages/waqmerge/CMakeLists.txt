@@ -96,12 +96,6 @@ target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
-
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/waqmerge/scripts/run_waqmerge.sh  DESTINATION bin)

@@ -1,6 +1,9 @@
+IF(UNIX)
 set(BUILD_LIBRARIES
    ${CMAKE_INSTALL_PREFIX}/lib/libdimr_lib.so
 )
+ENDIF(UNIX)
+
 set(THIRDPARTY_x64_LIB_FOLDERS
   ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_INSTALL_PREFIX}/bin
@@ -25,11 +28,12 @@ set(BU_CHMOD_BUNDLE_ITEMS 1)
 
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/dimr" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 
-# Ugly way to rename file "libdimr_lib.so" to "libdimr.so", repairing the reference in dimr
-message("Renaming libdimr_lib.so to libdimr.so, repairing reference in dimr")
-file(RENAME ${CMAKE_INSTALL_PREFIX}/lib/libdimr_lib.so ${CMAKE_INSTALL_PREFIX}/lib/libdimr.so)
-execute_process(COMMAND bash -c "patchelf --replace-needed libdimr_lib.so libdimr.so ${CMAKE_INSTALL_PREFIX}/bin/dimr")
-
+#ugly way to rename file "libdimr_lib.so" to "libdimr.so", repairing the reference in dimr
+message("renaming libdimr_lib.so to libdimr.so, repairing reference in dimr")
+IF(UNIX)
+   file(rename ${cmake_install_prefix}/lib/libdimr_lib.so ${cmake_install_prefix}/lib/libdimr.so) 
+   execute_process(command bash -c "patchelf --replace-needed libdimr_lib.so libdimr.so ${cmake_install_prefix}/bin/dimr")
+ENDIF(UNIX)
 
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")

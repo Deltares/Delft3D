@@ -55,6 +55,10 @@ set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../install/${configuration_type} CACHE PATH "default" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
 #set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")

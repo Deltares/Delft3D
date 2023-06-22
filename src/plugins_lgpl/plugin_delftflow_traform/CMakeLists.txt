@@ -23,7 +23,7 @@ set_target_properties (${library_name} PROPERTIES FOLDER plugins_lgpl/plugin_del
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-post_build_target (${library_name}
+ 
                    ${install_dir} 
                    ${build_dir} 
                    ${checkout_src_root} 

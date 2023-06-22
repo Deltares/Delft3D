@@ -12,6 +12,9 @@ install_*/**
 # folders to exclude
 /src/**/obj/**
 
+/build/**
+/install/**
+
 # ignore files created by updating process definition files
 src/engines_gpl/waq/default/csvFiles/coefedit.dat
 src/engines_gpl/waq/default/csvFiles/*.pptex

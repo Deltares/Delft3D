@@ -45,6 +45,4 @@ set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/waq)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-
-
-install(TARGETS ${library_name} DESTINATION bin)
+install(TARGETS ${library_name} DESTINATION lib)
