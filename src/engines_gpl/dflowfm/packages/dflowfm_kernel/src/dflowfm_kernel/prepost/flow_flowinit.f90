@@ -96,7 +96,7 @@ contains
    call initialize_for_coriolis_Adams_Bashforth()
 
    if (jsferic == OFF) then
-   !Tide generating potential and Self attraction and loading are only supported for sferical models
+   !Tide generating potential and Self attraction and loading are only supported for spherical models
       jatidep  = OFF
       jaselfal = OFF
    end if
@@ -136,12 +136,12 @@ contains
    call mess(LEVEL_INFO, 'Start initializing external forcings...')
    call timstrt('Initialise external forcings', handle_iniext)
    error = flow_initexternalforcings()               ! this is the general hook-up to wind and boundary conditions
+   call timstop(handle_iniext)
    if( is_error_at_any_processor(error) ) then
       call qnerror('Error occurred while initializing external forcings.',&
           ' Please inspect the preceding lines in the diagnostic output for more details.', ' ')
       return
    end if
-   call timstop(handle_iniext)
    call mess(LEVEL_INFO, 'Done initializing external forcings.')
 
    call set_ihorvic_related_to_horizontal_viscosity()
@@ -151,7 +151,7 @@ contains
    call set_advection_type_for_slope_large_than_Slopedrop2D()
    call set_advection_type_for_lateral_flow_and_pipes()
 
-   if (japure1D /= OFF) then
+   if (japure1D > OFF) then
       call setiadvpure1D()
    end if
 
@@ -178,7 +178,7 @@ contains
    call set_internal_tides_friction_coefficient()
    call setupwslopes()                                   ! set upwind slope pointers and weightfactors
 
-   if (iuvfield /= OFF) then
+   if (iuvfield > OFF) then
        call setvelocityfield()           ! only when testing
    end if
 
@@ -251,7 +251,7 @@ contains
 
    call update_s0_and_hs(jawelrestart)
 
-   if ( jaselfal /= OFF ) then
+   if ( jaselfal > OFF ) then
   !  with hs available: recompute SAL potential
      call flow_settidepotential(tstart_user/60d0)
    end if
@@ -275,17 +275,17 @@ contains
    call initialize_sediment_3D()
 
  ! hk: and, make sure this is done prior to fill constituents
-   if (jarestart /= OFF) then
+   if (jarestart > OFF) then
       call initialize_salinity_temperature_sediment_on_boundary()
       call restore_au_q1_3D_for_1st_history_record()
    end if
 
    call initialize_salinity_and_temperature_with_nudge_variables()
 
-   if (jasal /= OFF) then 
+   if (jasal > OFF) then 
        call fill_constituents_with(isalt, sa1)
    end if
-   if (itemp /= OFF) then 
+   if (itemp > OFF) then 
       call fill_constituents_with(itemp, tem1)
    end if
 
@@ -320,7 +320,7 @@ contains
       call setstruclink()
    end if
 
-   if (japillar /= OFF) then
+   if (japillar > OFF) then
       call setpillars()
    end if
 
@@ -370,7 +370,7 @@ subroutine initialize_for_coriolis_Adams_Bashforth()
 
    integer :: error
 
-   if (Corioadamsbashfordfac /= OFF) then
+   if (Corioadamsbashfordfac > OFF) then
       if (allocated(fvcoro) ) deallocate(fvcoro)
       allocate ( fvcoro(lnkx), stat = error )
       call aerr('fvcoro(lnkx)', error, lnkx ) 
@@ -417,7 +417,7 @@ subroutine initialize_salinity_for_SAL_with_uniform_value()
    
    implicit none
 
-   if (jasal /= OFF) then
+   if (jasal > OFF) then
        sa1(:) = salini
    end if
 
@@ -431,7 +431,7 @@ subroutine initialize_temperature_with_uniform_value()
    
    implicit none
 
-   if (jatem /= OFF) then
+   if (jatem > OFF) then
        tem1(:) = temini
    end if
 
@@ -445,7 +445,7 @@ subroutine initialize_spiral_flow_with_uniform_value()
    
    implicit none
 
-    if (jasecflow /= OFF ) then
+    if (jasecflow > OFF ) then
        spirint(:) = spirini
     end if
  
@@ -459,8 +459,8 @@ subroutine initialize_sediment()
    
    implicit none
 
-   integer, parameter :: KRONE = 1
-   integer, parameter :: SVR = 2
+   integer, parameter :: KRONE    = 1
+   integer, parameter :: SVR      = 2
    integer, parameter :: ENGELUND = 3
   
    integer :: cell
@@ -484,7 +484,7 @@ subroutine set_ihorvic_related_to_horizontal_viscosity()
    implicit none
 
    ihorvic = OFF
-   if (vicouv /= OFF .or. javiusp == ON .or. Smagorinsky /= OFF .or. Elder /= OFF) then
+   if (vicouv > OFF .or. javiusp == ON .or. Smagorinsky > OFF .or. Elder > OFF) then
       ihorvic = ON
    end if
  
@@ -761,16 +761,15 @@ subroutine load_restart_file(file_exist, error)
           end if
       else ! Restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
          call read_restart_from_map(md_restartfile, error)
+         if (jased > OFF .and. stm_included) then
+            call setbobs()
+         end if
          if (error /= DFM_NOERR) then
             return
          else
             file_exist = .true.
          end if
          
-         if (jased /= OFF .and. stm_included) then
-            call setbobs()
-         end if
-
          u1_tmp  = u1
          u1(:)   = u0(:)
          hs(:)   = s0(:) - bl(:)
@@ -796,7 +795,7 @@ subroutine initialize_morphological_start_time()
 
    implicit none
 
-   if (jased /= OFF .and. stm_included) then
+   if (jased > OFF .and. stm_included) then
       if (stmpar%morpar%morft < eps10) then
           stmpar%morpar%morft  = tstart_user/86400d0
           stmpar%morpar%morft0 = stmpar%morpar%morft
@@ -946,7 +945,7 @@ subroutine correction_s1_for_atmospheric_pressure()
    integer           :: cell
    double precision  :: ds
 
-   if (japatm /= OFF .and. PavIni > ZERO_AMBIENT_PRESSURE ) then
+   if (japatm > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE ) then
        do cell     = 1, ndxi
           ds       = - ( patm(cell) - PavIni ) / (ag*rhomean)
           s1(cell) = s1(cell) + ds
@@ -966,7 +965,7 @@ subroutine correction_s1init_for_self_attraction()
 
    integer    :: cell
 
-    if  ( jaselfal /= OFF .and. &
+    if  ( jaselfal > OFF .and. &
           jaSELFALcorrectWLwithIni == ON ) then
        do cell = 1, ndxi
            s1init(cell) = max(s1(cell), bl(cell))
@@ -986,7 +985,7 @@ subroutine set_data_for_ship_modelling()
 
    if (nshiptxy > 0) then
        call setship()                               ! in flowinit
-       if (kmx > 0 .and. jasal /= OFF ) then
+       if (kmx > 0 .and. jasal > OFF ) then
           inquire(file = 'verticalsalinityprofile.pli', exist=success )
           call setkbotktop(1)
           if (success) then
@@ -1032,7 +1031,7 @@ subroutine include_ground_water()
    double precision   :: hunsat
    double precision   :: fac
 
-   if (jagrw == OFF ) then
+   if (jagrw <= OFF ) then
        return
    end if 
 
@@ -1257,11 +1256,11 @@ subroutine initialize_salinity_from_bottom_or_top()
    double precision   :: zz
 
 
-   if (jasal == OFF ) then
+   if (jasal <= OFF ) then
        return
    end if
 
-   if (kmx > 0 .and. inisal2D /= OFF .and. jarestart == OFF ) then
+   if (kmx > 0 .and. inisal2D > OFF .and. jarestart == OFF ) then
        do cell = 1, ndx
           call getkbotktop(cell, bottom_cell, top_cell)
           if (inisal2D == SALINITY_TOP ) then
@@ -1396,13 +1395,13 @@ subroutine initialize_salinity_temperature_sediment_on_boundary()
            if (q1(link3D) <= 0d0) then
                boundary_cell = ln(1,link3D)
                internal_cell = ln(2,link3D)
-               if (jasal /= OFF) then
+               if (jasal > OFF) then
                    sa1(boundary_cell)  = sa1(internal_cell)
                end if
-               if (jatem /= OFF) then
+               if (jatem > OFF) then
                    tem1(boundary_cell)  = tem1(internal_cell)
                end if
-               if (jased /= OFF) then
+               if (jased > OFF) then
                    do grain = 1, mxgr
                       sed(grain,boundary_cell) = sed(grain,internal_cell)
                    end do
@@ -1423,7 +1422,7 @@ subroutine initialize_salinity_and_temperature_with_nudge_variables()
 
    if ( janudge == ON ) then  ! and here last actions on sal/tem nudging, before we set rho
        call set_nudgerate()
-       if ( jainiwithnudge /= OFF ) then
+       if ( jainiwithnudge > OFF ) then
           call set_saltem_nudge()
           if (jainiwithnudge == 2) then
               janudge = OFF
