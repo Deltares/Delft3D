@@ -357,7 +357,9 @@ end subroutine api_loadmodel
       goto 888
    end if
 
-888 continue
+   if ( jatimer.eq.1 ) call stoptimer(ITOTAL)
+
+888  continue
    ! Error
  end subroutine flowstep
 
