@@ -42,6 +42,8 @@ integer, parameter :: LATERAL_1D2D_LINK = 3
 integer, parameter :: STREET_INLET_1D2D_LINK = 5
 integer, parameter :: ROOF_GUTTER_1D2D_LINK  = 7
 integer, parameter :: ORIGINAL_LATERAL_OVERFLOW_ADVECTION = 8
+integer, parameter :: BOUNDARY_1D = -1
+
 
 public :: flow_flowinit
 
@@ -226,6 +228,7 @@ contains
    call initialize_values_at_discharge_boundaries()
    call copy_boundary_friction_and_skewness_into_flow_links()
    call set_boundaries_implicit()
+   call set_implicit_for_pipes()
    call set_structure_links_implicit()
 
    if (.not. jawelrestart) then
@@ -877,8 +880,6 @@ subroutine copy_boundary_friction_and_skewness_into_flow_links()
 
    implicit none
 
-   integer, parameter :: BOUNDARY_1D = -1
-
    integer            :: flow_link
    integer            :: boundary_link
 
@@ -906,6 +907,49 @@ subroutine set_boundaries_implicit()
    endif
  
 end subroutine set_boundaries_implicit
+
+
+!> set_implicit_for_pipes
+subroutine set_implicit_for_pipes()
+   use m_flowparameters, only : nonlin1d, nonlin2D
+   use m_flowgeom,       only : kcu, lbnd1d, lnx1D, ln, lnxi, lnx, prof1d, teta
+   use m_missing,        only : dmiss
+
+   implicit none
+   
+   integer, parameter :: CIRCLE      = 1
+   integer, parameter :: RECTANGLE   = 2
+   integer, parameter :: RECTANGLE2  = 3
+   integer, parameter :: CLOSED_PIPE = 2
+
+   integer   :: link1D
+   integer   :: boundary_link
+
+   if (nonlin1d == CLOSED_PIPE .or. nonlin1d == 3 .or. nonlin2D == 2) then
+      do link1D = 1, lnx1D
+         if ( abs(prof1d(3,link1D)) == CIRCLE ) then
+            teta(link1D)    = 1d0                          ! closed pipes always implicit
+         else if ( abs(prof1d(3,link1D)) == RECTANGLE .or. abs(prof1d(3,link1D)) == RECTANGLE2 ) then
+            if ( prof1d(2,link1D) /= dmiss ) then
+                teta(link1D) = 1d0
+            end if
+         end if
+      end do
+      do boundary_link = lnxi + 1, lnx
+         if (kcu(boundary_link) == BOUNDARY_1D ) then
+            link1D = lbnd1d(boundary_link)
+            if ( abs(prof1d(3,link1D)) == CIRCLE ) then
+               teta(boundary_link)   = 1d0                          ! closed pipes always implicit
+            else if ( abs(prof1d(3,link1D)) == RECTANGLE .or. abs(prof1d(3,link1D)) == RECTANGLE2 ) then
+               if ( prof1D(2,link1D) /= dmiss ) then
+                   teta(link1D) = 1d0
+               end if
+            end if
+         end if
+      end do
+ end if
+ 
+end subroutine set_implicit_for_pipes
 
 
 !> Set teta for all structure links to 1.0 (implicit)
