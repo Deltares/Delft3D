@@ -31,33 +31,6 @@
 ! 
 module m_flow_flowinit
 
-   use m_netw, only : zk
-   use m_flowgeom
-   use m_flow
-   use m_flowtimes
-   use m_sferic
-   use unstruc_model
-   use unstruc_files
-   use m_reduce, only : nodtot, lintot
-   use m_samples, only : ns, savesam, restoresam
-   use m_missing
-   use m_partitioninfo, only : jampi, reduce_int1_max
-   use m_sediment
-   use m_transport
-   use dfm_error
-   use m_monitoring_crosssections, only : crs, ReallocCrosssectionSums
-   use m_alloc
-   use m_1d_structures, only: initialize_structures_actual_params, t_structure
-   use m_oned_functions, only: set_max_volume_for_1d_nodes
-   use m_waves 
-   use m_structures
-   use m_longculverts
-   use unstruc_channel_flow, only: useVolumeTables
-   use m_VolumeTables
-   use timers
-   use m_setucxcuy_leastsquare, only: reconst2nd
-   use mathconsts, only: sqrt2_hp
-
 implicit none
 
 private
@@ -77,7 +50,20 @@ contains
  !> Initialise flow model time dependent parameters
  !! @return Integer error status (0) if succesful.
  integer function flow_flowinit() result(error)
-
+   use m_flowgeom
+   use m_flow
+   use m_flowtimes
+   use m_sferic
+   use unstruc_model,    only : md_netfile, md_input_specific
+   use m_reduce,         only : nodtot, lintot
+   use m_transport
+   use dfm_error
+   use m_1d_structures,  only: initialize_structures_actual_params
+   use m_oned_functions, only: set_max_volume_for_1d_nodes
+   use m_structures
+   use m_longculverts
+   use timers,           only : timstrt, timstop
+   
    implicit none
 
    integer           :: ierror
@@ -87,7 +73,7 @@ contains
    
    integer, external :: flow_initexternalforcings
 
-   error = DFM_GENERICERROR
+   error = DFM_NOERR
 
    if (ndx == 0) then
       error = DFM_MODELNOTINITIALIZED
@@ -347,14 +333,15 @@ contains
 
    call upotukinueaa(upot, ukin, ueaa)
 
-   error = DFM_NOERR
-
 end function flow_flowinit
  
 
 !> is_error_at_any_processor
 logical function is_error_at_any_processor(error)
-
+   use dfm_error
+   use m_partitioninfo, only : jampi, reduce_int1_max
+   use m_cell_geometry, only : ndx
+   
    implicit none
 
    integer, intent(inout) :: error
@@ -375,7 +362,10 @@ end function is_error_at_any_processor
  
 !> initialize fvcoro array for Adams/Bashforth
 subroutine initialize_for_coriolis_Adams_Bashforth()
-
+   use m_flowparameters, only : Corioadamsbashfordfac
+   use m_flow,           only : lnkx, fvcoro
+   use m_alloc,          only : aerr
+   
    implicit none
 
    integer :: error
@@ -392,7 +382,11 @@ end  subroutine initialize_for_coriolis_Adams_Bashforth
 
 !> initialize_water_level
 subroutine initialize_water_level()
-
+   use m_flowparameters, only : sini, waterdepthini1D
+   use m_flow,           only : s1
+   use m_flowgeom,       only : bl, ndxi
+   use m_cell_geometry,  only : ndx2D
+   
    implicit none
 
    integer :: cell
@@ -408,7 +402,8 @@ end subroutine initialize_water_level
 
 !> initialize_velocity_with_uniform_value
 subroutine initialize_velocity_with_uniform_value()
-
+   use m_flowparameters, only : uini
+   use m_flow,           only : u1
    implicit none
 
    u1(:)  = uini
@@ -417,7 +412,9 @@ end subroutine initialize_velocity_with_uniform_value
 
 !> initialize salinity with uniform value when SAL is used
 subroutine initialize_salinity_for_SAL_with_uniform_value()
-
+   use m_flowparameters, only : jasal, salini
+   use m_flow,           only : sa1
+   
    implicit none
 
    if (jasal /= OFF) then
@@ -429,7 +426,9 @@ end subroutine initialize_salinity_for_SAL_with_uniform_value
 
 !> initialize_temperature_with_uniform_value
 subroutine initialize_temperature_with_uniform_value()
-
+   use m_flowparameters, only : jatem, temini
+   use m_flow,           only : tem1
+   
    implicit none
 
    if (jatem /= OFF) then
@@ -441,7 +440,9 @@ end subroutine initialize_temperature_with_uniform_value
 
 !> initialize spiral flow
 subroutine initialize_spiral_flow_with_uniform_value()
-
+   use m_flowparameters, only : jasecflow, spirini
+   use m_flow,           only : spirint
+   
    implicit none
 
     if (jasecflow /= OFF ) then
@@ -452,7 +453,10 @@ end subroutine initialize_spiral_flow_with_uniform_value
 
 !> initialize sediment
 subroutine initialize_sediment()
-
+   use m_flowparameters, only : jased
+   use m_flow,           only : ndkx
+   use m_sediment,       only : mxgr, sed, sedini
+   
    implicit none
 
    integer, parameter :: KRONE = 1
@@ -474,7 +478,9 @@ end subroutine initialize_sediment
  
 !> Set ihorvic related to horizontal viscosity
 subroutine set_ihorvic_related_to_horizontal_viscosity()
-
+   use m_flowparameters, only : ihorvic, javiusp
+   use m_physcoef,       only : vicouv, Smagorinsky, Elder
+   
    implicit none
 
    ihorvic = OFF
@@ -487,7 +493,8 @@ end subroutine set_ihorvic_related_to_horizontal_viscosity
 
 !> If constituents have been added at this point, the sum-arrays in crs require redimensioning
 subroutine redimension_summ_arrays_in_crs()
-
+   use m_monitoring_crosssections, only : crs, ReallocCrosssectionSums
+   
    implicit none
 
    if (allocated(crs)) then
@@ -498,7 +505,8 @@ end subroutine redimension_summ_arrays_in_crs
 
 !> set fixed weirs
 subroutine set_fixed_weirs()
-
+   use m_flowparameters, only : isimplefixedweirs
+   
    implicit none
 
    integer, parameter :: COMPLETE_CROSSECTION_PATHS_STORED = 0
@@ -514,12 +522,14 @@ end subroutine set_fixed_weirs
 
 !> set advection type for slope large than Slopedrop2D
 subroutine set_advection_type_for_slope_large_than_Slopedrop2D()
-
+   use m_flowparameters, only : Slopedrop2D
+   use m_flowgeom,       only : lnx1D, lnxi, ln, iadv, dxi, bl
+   
    implicit none
 
    integer            :: link
 
-   if (Slopedrop2D > 0) then !todo, uitsluitende test maken
+   if (Slopedrop2D > 0d0 ) then !todo, uitsluitende test maken
       do link  = lnx1D + 1, lnxi
          if (iadv(link) /= OFF .and. &
              .not. (iadv(link) >= 21 .and. iadv(link) <=25) .and. &
@@ -533,6 +543,8 @@ end subroutine set_advection_type_for_slope_large_than_Slopedrop2D
  
 !> set advection type for slope large than Slopedrop2D
 subroutine set_advection_type_for_lateral_flow_and_pipes()
+   use m_flowparameters, only : iadveccorr1D2D
+   use m_flowgeom,       only : lnxi, iadv, kcu
 
    implicit none
 
@@ -556,7 +568,12 @@ end subroutine set_advection_type_for_lateral_flow_and_pipes
 
 !> Floodfill water levels based on sample file.
 subroutine set_floodfill_water_levels_based_on_sample_file()
-
+   use unstruc_model,      only : md_s1inifile
+   use m_partitioninfo,    only : jampi
+   use iso_varying_string, only : len_trim
+   use m_samples,          only : NS, restoresam, savesam
+   use MessageHandling,    only : LEVEL_WARN, mess
+   
    implicit none
 
    integer :: msam
@@ -579,6 +596,10 @@ end subroutine set_floodfill_water_levels_based_on_sample_file
 
 !> sert friction coefficient by initial fields
 subroutine set_friction_coefficient_by_initial_fields()
+   use m_flowgeom,    only : lnx, lnx1D, kcu
+   use m_flow,        only : frcu, ifrcutp
+   use m_physcoef,    only : frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
+   use m_missing,     only : dmiss, imiss
 
    implicit none
 
@@ -619,7 +640,12 @@ end subroutine set_friction_coefficient_by_initial_fields
 
 !> set friction uniform value on links where_friction_is_not_set
 subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()
-
+   use m_flowparameters, only : jafrculin
+   use m_flowgeom,       only : lnx
+   use m_flow,           only : frculin
+   use m_physcoef,       only : frcunilin
+   use m_missing,        only : dmiss
+   
    implicit none
 
    integer, parameter ::  USE_LINEAR_FRICTION = 1
@@ -638,6 +664,10 @@ end subroutine set_friction_uniform_value_on_links_where_friction_is_not_set
 
 !> set internal tides friction coefficient
 subroutine set_internal_tides_friction_coefficient()
+   use m_flowparameters, only : jaFrcInternalTides2D
+   use m_flow,           only : frcInternalTides2D
+   use m_cell_geometry,  only : ndx
+   use m_missing,        only : dmiss
 
    implicit none
 
@@ -659,6 +689,9 @@ end subroutine set_internal_tides_friction_coefficient
  !> remember initial water levels at the water level boundaries
  !! so that reading rst file won't influence it. This is used for restart a model with Riemann boundary conditions.
 subroutine remember_initial_water_levels_at_water_level_boundaries()
+   use m_flow,                 only : s1
+   use m_flowgeom,             only : bl
+   use m_flowexternalforcings, only : nbndz, kbndz, zbndz0
 
    implicit none
 
@@ -672,7 +705,12 @@ end subroutine remember_initial_water_levels_at_water_level_boundaries
 
 !> make volume tables 
 subroutine make_volume_tables()
-
+   use MessageHandling,      only : Idlen
+   use unstruc_channel_flow, only : useVolumeTables
+   use unstruc_files,        only : defaultFilename
+   use Timers,               only : timstrt, timstop
+   use m_VolumeTables,       only : makeVolumeTables
+   
    implicit none
 
    integer              :: ihandle
@@ -690,6 +728,14 @@ end subroutine make_volume_tables
  
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
+   use m_flowparameters,   only : jased, iperot
+   use m_flow,             only : u1, u0, s0, hs
+   use m_flowgeom,         only : bl
+   use m_sediment,         only : stm_included
+   use unstruc_model,      only : md_restartfile
+   use iso_varying_string, only : len_trim, index
+   use m_setucxcuy_leastsquare, only: reconst2nd
+   use dfm_error
 
    implicit none
 
@@ -744,6 +790,9 @@ end subroutine load_restart_file
 !! to restart from mapfile, then make sure that the morphological start
 !! time corresponds to the hydrodynamic start time. This includes TStart!
 subroutine initialize_morphological_start_time()
+   use m_flowparameters,   only : jased, eps10
+   use m_sediment,         only : stm_included, stmpar
+   use m_flowtimes,        only : tstart_user
 
    implicit none
 
@@ -759,6 +808,8 @@ end subroutine initialize_morphological_start_time
  
 !> for normal velocity boundaries, also initialise velocity on link
 subroutine initialize_values_at_normal_velocity_boundaries()
+   use m_flowexternalforcings, only : nbndn, kbndn, zbndn
+   use m_flow,                 only : u1
 
    implicit none
 
@@ -780,6 +831,10 @@ end subroutine initialize_values_at_normal_velocity_boundaries
 
 !> initialize discharge boundaries
 subroutine initialize_values_at_discharge_boundaries()
+   use m_flowparameters,       only : epshu
+   use m_flowexternalforcings, only : nqbnd, L1qbnd, L2qbnd, kbndu
+   use m_flowgeom,             only : bob
+   use m_flow,                 only : s1
 
    implicit none
 
@@ -817,6 +872,9 @@ end subroutine initialize_values_at_discharge_boundaries
 
 !>  copy 1D bnd arrays to that of internal attached link
 subroutine copy_boundary_friction_and_skewness_into_flow_links()
+   use m_flowparameters, only : jaconveyance2D
+   use m_flowgeom,       only : lnxi, lnx, kcu, Lbnd1D, aifu
+   use m_flow,           only : frcu, ifrcutp
 
    implicit none
 
@@ -840,6 +898,7 @@ end subroutine copy_boundary_friction_and_skewness_into_flow_links
 
 !> boundaries always implicit
 subroutine set_boundaries_implicit()
+   use m_flowgeom,       only : lnxi, lnx, teta
 
    implicit none
 
@@ -852,6 +911,9 @@ end subroutine set_boundaries_implicit
 
 !> Set teta for all structure links to 1.0 (implicit)
 subroutine set_structure_links_implicit()
+   use m_flowgeom,           only : teta
+   use m_1d_structures,      only : t_structure
+   use unstruc_channel_flow, only : network
 
    implicit none
 
@@ -872,6 +934,10 @@ end subroutine set_structure_links_implicit
 
 !> correction_s1_for_atmospheric_pressure
 subroutine correction_s1_for_atmospheric_pressure()
+   use m_physcoef,       only : ag, rhomean
+   use m_flowgeom,       only : ndxi
+   use m_flow,           only : s1
+   use m_wind,           only : japatm, PavIni, patm
 
    implicit none
 
@@ -892,6 +958,9 @@ end subroutine correction_s1_for_atmospheric_pressure
 
 !> correction_s1_for_atmospheric_pressure
 subroutine correction_s1init_for_self_attraction()
+   use m_flowparameters, only : jaselfal, jaSELFALcorrectWLwithIni
+   use m_flowgeom,       only : ndxi, bl
+   use m_flow,           only : s1, s1init
 
    implicit none
 
@@ -899,7 +968,7 @@ subroutine correction_s1init_for_self_attraction()
 
     if  ( jaselfal /= OFF .and. &
           jaSELFALcorrectWLwithIni == ON ) then
-       do cell = 1, Ndxi
+       do cell = 1, ndxi
            s1init(cell) = max(s1(cell), bl(cell))
        end do
    end if
@@ -908,7 +977,11 @@ end subroutine correction_s1init_for_self_attraction
 
 !> set_data_for_ship_modelling
 subroutine set_data_for_ship_modelling()
-
+   use m_ship,                 only : nshiptxy
+   use m_flowparameters,       only : jasal
+   use m_flow,                 only : kmx, ndkx, sa1
+   use m_flowexternalforcings, only : success
+   
    implicit none
 
    if (nshiptxy > 0) then
@@ -926,6 +999,8 @@ end subroutine set_data_for_ship_modelling
 
 !> update_s0_and_hs
 subroutine update_s0_and_hs(jawelrestart)
+   use m_flow,           only : s1, s0, hs
+   use m_flowgeom,       only : bl
 
    implicit none
 
@@ -943,7 +1018,14 @@ end subroutine update_s0_and_hs
 
 !> include_ground_water
 subroutine include_ground_water()
-
+   use m_grw
+   use m_cell_geometry,  only : ndx
+   use m_flow,           only : hs
+   use m_flowparameters, only : epshs
+   use m_flow,           only : s1
+   use m_flowgeom,       only : bl
+   use m_hydrology_data, only : infiltrationmodel
+   
    implicit none
 
    integer            :: cell
@@ -984,6 +1066,10 @@ end subroutine include_ground_water
  
 !> include_infiltration_model
 subroutine include_infiltration_model()
+   use m_hydrology_data, only : infiltrationmodel, DFM_HYD_INFILT_CONST, DFM_HYD_INFILT_DARCY, infiltcap
+   use m_flowgeom,       only : kcsini, prof1D, lnx, ln, lnx1D
+   use m_cell_geometry,  only : ndx
+   use m_alloc!,        only : realloc
 
    implicit none
 
@@ -992,7 +1078,7 @@ subroutine include_infiltration_model()
    integer     :: left_cell
    integer     :: right_cell
 
-   if (infiltrationmodel ==  DFM_HYD_INFILT_CONST .or. &
+   if (infiltrationmodel == DFM_HYD_INFILT_CONST .or. &
        infiltrationmodel == DFM_HYD_INFILT_DARCY) then  ! set infiltcap=0 for closed links only
        call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
        do link = 1, lnx  ! only one connected open profile will open surface runoff
@@ -1009,16 +1095,17 @@ subroutine include_infiltration_model()
              kcsini(right_cell) = 1
           end if
        end do
-       do cell = 1, ndx
-          infiltcap(cell) = infiltcap(cell)*kcsini(cell)  ! 0 for all links closed
-       end do
-       if (allocated(kcsini)) deallocate(kcsini)
+       infiltcap(:) = infiltcap(:)*kcsini(:)  ! 0 for all links closed
+
+       deallocate(kcsini) ! GM: why is it deallocated here?
    end if
  
 end subroutine include_infiltration_model
 
 !> temporary fix for sepr 3D
 subroutine temporary_fix_for_sepr_3D()
+   use m_flow,                 only : kmx, hu, au
+   use m_flowgeom,             only : lnx, kcu, wu
 
    implicit none
 
@@ -1043,6 +1130,9 @@ end subroutine temporary_fix_for_sepr_3D
 
 !> set initial velocity in 3D (needs Lbot, Ltop)
 subroutine set_initial_velocity_in_3D()
+   use m_flow,                 only : kmx, u1
+   use m_flowparameters,       only : inivel
+   use m_flowgeom,             only : lnx
 
    implicit none
 
@@ -1061,6 +1151,12 @@ end subroutine set_initial_velocity_in_3D
 
 !> set wave modelling
 subroutine set_wave_modelling()
+   use m_flowparameters,       only : jawave, flowWithoutWaves
+   use m_flow,                 only : hs, hu, kmx, kmxn
+   use mathconsts,             only : sqrt2_hp
+   use m_waves,                only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
+   use m_flowgeom,             only : lnx, ln, csu, snu
+   use m_sferic,               only : dg2rd
 
    implicit none
    
@@ -1141,6 +1237,11 @@ end subroutine set_wave_modelling
 
 !> initialize_salinity_from_bottom_or_top
 subroutine initialize_salinity_from_bottom_or_top()
+   use m_flowparameters,       only : jasal, inisal2D, uniformsalinitybelowz, Sal0abovezlev, salmax
+   use m_flow,                 only : kmx, kmxn, sa1, satop, sabot, zws
+   use m_cell_geometry,        only : ndx
+   use m_flowtimes,            only : jarestart
+   use m_missing,              only : dmiss
 
    implicit none
 
@@ -1216,6 +1317,11 @@ end subroutine initialize_salinity_from_bottom_or_top
 
 
 subroutine question1()
+   use m_flow,                 only : kmx
+   use m_flowparameters,       only : inised2D
+   use m_cell_geometry,        only : ndx
+   use m_sediment,             only : mxgr, sed, sedh
+   use m_missing,              only : dmiss
 
    implicit none
 
@@ -1241,6 +1347,10 @@ end subroutine question1
 
 !> initialize salinity, temperature, sediment on boundary
 subroutine initialize_salinity_temperature_sediment_on_boundary()
+   use m_flowparameters,       only : jasal, jased, jatem
+   use m_flowgeom,             only : ln, lnx, lnxi
+   use m_flow,                 only : sa1, q1, tem1
+   use m_sediment,             only : mxgr, sed
 
    implicit none
 
@@ -1282,6 +1392,8 @@ end subroutine initialize_salinity_temperature_sediment_on_boundary
 
 !> initialize salinity and temperature with nudge variables
 subroutine initialize_salinity_and_temperature_with_nudge_variables()
+   use m_flowparameters,       only : janudge, jainiwithnudge
+   use m_nudge
 
    implicit none
 
@@ -1301,6 +1413,8 @@ end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 !> fill_constituents_with
 subroutine fill_constituents_with(item, input)
+   use m_flow,           only : ndkx
+   use m_transportdata,  only : constituents
 
    implicit none
 
@@ -1318,6 +1432,11 @@ end subroutine fill_constituents_with
 
 !> initialise_density_at_cell_centres
 subroutine initialise_density_at_cell_centres()
+   use m_flowparameters,       only : jainirho
+   use m_flow,                 only : kmxn
+   use m_cell_geometry,        only : ndx
+   use m_sediment,             only : stm_included
+   use m_turbulence,           only : rhowat
 
    implicit none
 
