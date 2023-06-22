@@ -888,7 +888,7 @@ subroutine copy_boundary_friction_and_skewness_into_flow_links()
          boundary_link      = Lbnd1D(flow_link)
          frcu(flow_link)    = frcu(boundary_link)
          ifrcutp(flow_link) = ifrcutp(boundary_link)
-         if (jaconveyance2D /= OFF) then
+         if (jaconveyance2D > OFF) then
              aifu(flow_link) = aifu(boundary_link)
          end if
       end if
