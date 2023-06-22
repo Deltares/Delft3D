@@ -43,12 +43,12 @@
 
    character(len=128) :: mesg
 
-   integer,          save :: ndays=0
+   integer,          save :: ndays=0      !< number of wall clock days(keep in memory)
    integer,          save :: dayprev=-999
 
    call date_and_time(date, time, zone, timing)
 
-!  check for new day
+!  check for new day. If found, write a message to the log file
    if ( dayprev.eq.-999 ) then
       dayprev = timing(3)    ! initialization to
    else if ( timing(3).ne.dayprev ) then

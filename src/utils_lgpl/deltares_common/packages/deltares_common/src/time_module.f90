@@ -1086,7 +1086,6 @@ module time_module
          call seconds_since_refdat(iyear, imonth, iday, ihour, imin, isec, refdat, timsec)
 
          timmin  = timsec/60d0
-         !timmin = (jul - jul0)*24d0*60d0      + ihour*60d0      + imin
 
          return
 999      continue

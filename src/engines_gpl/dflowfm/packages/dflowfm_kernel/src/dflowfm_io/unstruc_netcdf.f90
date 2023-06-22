@@ -12672,6 +12672,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call readyy('Reading map data',0.10d0)
 
     iostat = 0
+    ! Add _ between date and time string
     tmpstr = ''
     tmpstr = restartdatetime(1:8)//'_'//restartdatetime(9:14)
     call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
@@ -12686,6 +12687,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
        fname_has_date = .false.
        if (tok1 .gt. 15) then
+          ! Add _ between date and time string
           tmpstr  = filename(tok1-15:tok1-8)//'_'//filename(tok1-6:tok1-1)
           call datetimestring_to_seconds(tmpstr(1:15), refdat, trefdat_rst, iostat)
           fname_has_date = (iostat==0)
@@ -12735,6 +12737,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
         ierr = nf90_inq_varid(imapfile, 'time', id_time)
         refdat_map = ''
         ierr = ncu_get_att(imapfile, id_time, "units", refdat_map)
+        ! Add _ between date and time string
         tmpstr = ' '
         tmpstr  = refdat_map(15:18)//refdat_map(20:21)//refdat_map(23:24)//'_'//refdat_map(26:27)//refdat_map(29:30)//refdat_map(32:33)
         call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_map, iostat)             ! result: refdatold in seconds  w.r.t. absolute t0
