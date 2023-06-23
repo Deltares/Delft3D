@@ -88,6 +88,13 @@ if(WIN32)
     endif()
 endif(WIN32)
 
+# netcdf
+if(WIN32)
+    if(NOT TARGET intelredist)
+        add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)
+    endif()
+endif(WIN32)
+
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
