@@ -40,7 +40,7 @@
     ! global variables
     integer :: ierr
 
-    call transform_wave_physics(fof%hs             ,fof%dir           ,fof%period         ,fof%depth         , &
+    call transform_swan_physics(fof%hs             ,fof%dir           ,fof%period         ,fof%depth         , &
         & fof%fx             ,fof%fy            ,fof%mx             ,fof%my            , &
         & fof%dissip(:,:,1)  ,fof%dissip(:,:,2) ,fof%dissip(:,:,3)  , &
         & fof%mmax           ,fof%nmax          ,fof%hrms           ,fof%tp            , &

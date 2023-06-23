@@ -32,14 +32,15 @@
     !
     !     Input:
     !     -------
-    !     hrm, deph, tp, grav
+    !     HSH,DEPH,TP
+    !     I/O  I    I/O
     !
     !     Output:
     !     --------
-    !     wavel, wavek, ldep
+    !     WAVEL,WAVEK,LDEP
     !     LDEP  : logical variable, .true. when depth or wave height too small
     !
-    !     Compute wave lenght (for high enough waves and for deep enough water)
+    !     Adapt wave period TP and wave height HSH
     !
     !!--pseudo code and references--------------------------------------------------
     ! NONE
