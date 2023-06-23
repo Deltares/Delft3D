@@ -349,7 +349,7 @@ end subroutine api_loadmodel
       goto 888
    end if
 
-   call flow_usertimestep(iresult)                         ! one user_step consists of several flow computational time steps
+   call flow_usertimestep(iresult)                   ! one user_step consists of several flow computational time steps
 
    if (iresult /= DFM_NOERR) then
       goto 888
