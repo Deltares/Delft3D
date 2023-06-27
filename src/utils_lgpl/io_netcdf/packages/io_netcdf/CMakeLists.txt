@@ -105,12 +105,10 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     set(build_dir ${CMAKE_BINARY_DIR})
 
 	if (UNIX)
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION bin)
+    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)
     endif(UNIX)
     if (WIN32)
-    install(TARGETS ${library_name} ARCHIVE DESTINATION lib
-         LIBRARY DESTINATION lib
-         RUNTIME DESTINATION bin)
+    install(TARGETS ${library_name} RUNTIME DESTINATION lib)
     endif(WIN32)
 endif()
 

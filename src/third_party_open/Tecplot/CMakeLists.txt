@@ -4,6 +4,8 @@ set(library_path "${CMAKE_CURRENT_SOURCE_DIR}/lib/x64/")
 if (WIN32)
 	install(DIRECTORY ${library_path} DESTINATION bin 
 	FILES_MATCHING 
-	PATTERN "*.exe" 
+	PATTERN "*.exe")
+	install(DIRECTORY ${library_path} DESTINATION lib
+	FILES_MATCHING 
 	PATTERN "*.dll" )
 endif(WIN32)
