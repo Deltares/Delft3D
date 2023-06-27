@@ -1054,8 +1054,8 @@ module time_module
          enddo
       end function parse_time
       
-      !> Given datetime string, compute time in seconds from refdat
-     subroutine datetimestring_to_seconds(dateandtime,refdat,timsec,stat)
+     !< Given a suitable string, compute time in seconds from refdat
+     subroutine string_to_seconds(dateandtime,refdat,timsec,stat)
          implicit none
 
          character,         intent(in)  :: dateandtime*(*) !< Input datetime string, format '20120101_0000', note that seconds are ignored.
@@ -1091,6 +1091,41 @@ module time_module
 999      continue
          stat = ierr
          return
+     end subroutine string_to_seconds
+     
+     !> Given any datetime string, compute time in seconds from refdat
+     subroutine datetimestring_to_seconds(dateandtime,refdat,timsec,stat)
+        implicit none
+        ! global variables
+        character,         intent(in)  :: dateandtime*(*) !< Input datetime string, format '20120101_0000', note that seconds are ignored.
+        character (len=8), intent(in)  :: refdat          !< reference date
+        integer,           intent(out) :: stat
+        double precision,  intent(out) :: timsec
+        ! local variables
+        integer   :: string_length
+        integer   :: find_underscore
+        character :: tmpstr
+        
+        ! dateandtime format should be yyyymmdd_hhmmss
+        string_length = len(dateandtime)
+        find_underscore = index(dateandtime,'_')
+        tmpstr = ''
+        
+        if(string_length < 8) goto 999
+        if(find_underscore) then
+            tmpstr = dateandtime
+        elseif(string_length == 8) then
+            write (*,'(a)') '*** WARNING: dateandtime string is too short, extended to yyyymmdd_000000 format.'
+            tmpstr = dateandtime//'_000000'    
+        else
+            tmpstr = dateandtime(1:8)//'_'//dateandtime(9:14)
+        endif
+        
+        call string_to_seconds(tmpstr,refdat,timsec,stat)
+        
+999     continue 
+        write (*,'(a)') '*** ERROR: dateandtime string is too short. The correct format is yyyymmdd_hhmmss.'
+        stat = 1
      end subroutine datetimestring_to_seconds
       
      !> Given time in seconds from refdat, fill dateandtime string

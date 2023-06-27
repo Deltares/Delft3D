@@ -12579,7 +12579,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     tok2 = index( filename, '_map.nc', .true. )
 
     ! Convert the refdat from the mdu to seconds w.r.t. an absolute t0
-    call datetimestring_to_seconds(refdat//'_000000', refdat, trefdat_mdu, iostat)
+    call datetimestring_to_seconds(refdat//'000000', refdat, trefdat_mdu, iostat)
 
     call readyy('Reading map data',0d0)
 
@@ -12734,26 +12734,21 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
     call readyy('Reading map data',0.10d0)
 
-    if (tok1 .gt. 0) then
-        iostat = 0
-        ! Add _ between date and time string
-        tmpstr = ''
-        tmpstr = restartdatetime(1:8)//'_'//restartdatetime(9:14)
-        call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
-        mdu_has_date = (iostat==0)
+    iostat = 0
+    call datetimestring_to_seconds(trim(restartdatetime), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
+    mdu_has_date = (iostat==0)
 
-        ! Restart from *yyyymmdd_hhmmss_rst.nc
-        !              15    0 8  5   1^tok1
-    
+    ! Restart from *yyyymmdd_hhmmss_rst.nc
+    !              15    0 8  5   1^tok1
+    if (tok1 .gt. 0) then
 
        ! Derive time from restart file name (first: check if the string length is larger than 15 characters at all!)
        it_read     = 1
 
        fname_has_date = .false.
        if (tok1 .gt. 15) then
-          ! Add _ between date and time string
-          tmpstr  = filename(tok1-15:tok1-8)//'_'//filename(tok1-6:tok1-1)
-          call datetimestring_to_seconds(tmpstr(1:15), refdat, trefdat_rst, iostat)
+          tmpstr  = filename(tok1-15:tok1-8)//filename(tok1-6:tok1-1)
+          call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_rst, iostat)
           fname_has_date = (iostat==0)
           tok3    = index( filename(tok1-15:tok1-1), '_')
           fname_has_date = fname_has_date .and. (tok3 > 0)                    ! require connecting underscore between date and time
@@ -12767,7 +12762,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
              goto 999
           else
              call mess(LEVEL_INFO, 'No valid date-time-string in *yyyymmdd_hhmmss_rst.nc filename: '''//trim(filename)  &
-                             //'''. MDU RestartDateTime of '//restartdatetime(1:14)//' will be used.')
+                             //'''. MDU RestartDateTime of '//trim(restartdatetime)//' will be used.')
           endif
        endif
 
@@ -12801,9 +12796,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
         ierr = nf90_inq_varid(imapfile, 'time', id_time)
         refdat_map = ''
         ierr = ncu_get_att(imapfile, id_time, "units", refdat_map)
-        ! Add _ between date and time string
-        tmpstr = ' '
-        tmpstr  = refdat_map(15:18)//refdat_map(20:21)//refdat_map(23:24)//'_'//refdat_map(26:27)//refdat_map(29:30)//refdat_map(32:33)
+        tmpstr = refdat_map(15:18)//refdat_map(20:21)//refdat_map(23:24)//refdat_map(26:27)//refdat_map(29:30)//refdat_map(32:33)
         call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_map, iostat)             ! result: refdatold in seconds  w.r.t. absolute t0
         deallocate(refdat_map)
         

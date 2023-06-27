@@ -1643,10 +1643,7 @@ subroutine readMDUFile(filename, istat)
     Startdatetime = ' '
     call prop_get_string  (md_ptr, 'time', 'Startdatetime', Startdatetime, success)
     if (len_trim(Startdatetime) > 0 .and. success) then
-        ! Add _ between date and time string
-        tmpstr = ''
-        tmpstr  = Startdatetime(1:8)//'_'//Startdatetime(9:14)
-        call datetimestring_to_seconds(tmpstr, refdat, tim, iostat)
+        call datetimestring_to_seconds(Startdatetime, refdat, tim, iostat)
         if (iostat == 0) then
            Tstart_user = tim
         endif
@@ -1655,10 +1652,7 @@ subroutine readMDUFile(filename, istat)
     Stopdatetime = ' '
     call prop_get_string  (md_ptr, 'time', 'Stopdatetime', Stopdatetime, success)
     if (len_trim(Stopdatetime) > 0 .and. success) then
-        ! Add _ between date and time string
-        tmpstr = ''
-        tmpstr  = Stopdatetime(1:8)//'_'//Stopdatetime(9:14)
-        call datetimestring_to_seconds(tmpstr, refdat, tim, iostat)
+        call datetimestring_to_seconds(Stopdatetime, refdat, tim, iostat)
         if (iostat == 0) then
            Tstop_user = tim
         endif
