@@ -68,5 +68,5 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortran_sources} )
 set_target_properties (${netcdf_library_name} PROPERTIES FOLDER third_party_open)
 
 if (WIN32)
-	install(FILES ${library_path}/xerces-c_3_2.dll DESTINATION bin)
+#	install(FILES ${library_path}/xerces-c_3_2.dll DESTINATION bin)
 endif()

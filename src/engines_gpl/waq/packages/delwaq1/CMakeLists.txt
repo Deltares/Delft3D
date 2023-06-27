@@ -132,9 +132,9 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.sh  DESTINATION scripts)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.sh  DESTINATION bin)
 endif(UNIX)
 if (WIN32)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.bat  DESTINATION scripts)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.bat  DESTINATION bin)
 endif(WIN32)
 

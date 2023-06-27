@@ -6,7 +6,7 @@ if (WIN32)
 	if ("${OSS_MPI}" STREQUAL "IntelMPI")
         set(mpi_path $ENV{I_MPI_ONEAPI_ROOT})
 		string(REPLACE "\\" "/" mpi_path "${mpi_path}")
-		install(DIRECTORY ${mpi_path}/env/ DESTINATION scripts FILES_MATCHING PATTERN "*.bat")
+		install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
 		install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin 
 		FILES_MATCHING 
 		PATTERN "*.exe" 
