@@ -60,10 +60,6 @@ ENDIF()
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../install/${configuration_type} CACHE PATH "default" FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
 #set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")
@@ -141,6 +137,13 @@ endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 ### Configuration names
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
+string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
+
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(installdir "install_${configuration_type_lower}")
+  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 
 # Basic (single-component) configurations
 set(dflowfm_configuration "DFLOWFM")
