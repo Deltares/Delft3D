@@ -15,7 +15,7 @@ endforeach(prog)
 
 if(METIS_INSTALL)
   install(TARGETS gpmetis ndmetis mpmetis m2gmetis graphchk cmpfillin
-    RUNTIME DESTINATION bin)
+    RUNTIME DESTINATION lib)
 endif()
 
 # Try to find subversion revision.

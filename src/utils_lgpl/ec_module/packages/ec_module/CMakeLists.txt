@@ -84,8 +84,7 @@ if (UNIX)
     install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION bin)
 endif(UNIX)
 if (WIN32)
-install(TARGETS ${library_name} ARCHIVE DESTINATION lib
-         LIBRARY DESTINATION lib
-         RUNTIME DESTINATION bin)
+install(TARGETS ${library_name} 
+         RUNTIME DESTINATION lib)
 endif(WIN32)
 endif()

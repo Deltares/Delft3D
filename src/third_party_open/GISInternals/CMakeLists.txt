@@ -18,6 +18,6 @@ ${library_path}/libxml2.dll
 ${library_path}/iconv.dll     
 ${library_path}/geos.dll     
 ${library_path}/freexl.dll    
-DESTINATION bin)
+DESTINATION lib)
 	
 endif(WIN32)

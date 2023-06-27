@@ -7,19 +7,25 @@ if (WIN32)
         set(mpi_path $ENV{I_MPI_ONEAPI_ROOT})
 		string(REPLACE "\\" "/" mpi_path "${mpi_path}")
 		install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-		install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin 
+		install(DIRECTORY ${mpi_path}/bin/ DESTINATION lib 
 		FILES_MATCHING 
-		PATTERN "*.exe" 
 		PATTERN "*.dll" 
 		PATTERN "debug" EXCLUDE
 		PATTERN "release" EXCLUDE
 		PATTERN "tune" EXCLUDE)
-		install(DIRECTORY ${mpi_path}/libfabric/bin/* DESTINATION bin FILES_MATCHING PATTERN "*.dll")
-		install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION bin FILES_MATCHING PATTERN "*.dll")
+		install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin 
+		FILES_MATCHING 
+		PATTERN "*.exe" 
+		PATTERN "debug" EXCLUDE
+		PATTERN "release" EXCLUDE
+		PATTERN "tune" EXCLUDE)
+		install(DIRECTORY ${mpi_path}/libfabric/bin/* DESTINATION lib FILES_MATCHING PATTERN "*.dll")
+		install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
 	endif()
+	
 	set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/redist/intel64)
 	string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-	install (DIRECTORY ${mkl_path}/ DESTINATION bin
+	install (DIRECTORY ${mkl_path}/ DESTINATION lib
 	FILES_MATCHING
 	PATTERN "mkl_core.*.dll"
 	PATTERN "mkl_def.*.dll"

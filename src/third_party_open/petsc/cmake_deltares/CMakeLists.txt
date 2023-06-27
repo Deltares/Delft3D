@@ -30,7 +30,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${sources} )
 set_target_properties (${library_name} PROPERTIES FOLDER third_party_open/petsc)
 
 if (WIN32)
-	install(DIRECTORY ${library_path}/lib/x64/Release-oneAPI/ DESTINATION bin 
+	install(DIRECTORY ${library_path}/lib/x64/Release-oneAPI/ DESTINATION lib
 	FILES_MATCHING 
 	PATTERN "*.exe" 
 	PATTERN "*.dll" )
