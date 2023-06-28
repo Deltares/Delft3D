@@ -94,7 +94,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${dimr_lib_sources
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dimr)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/${executable_name}.exe")
+	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
 	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/")
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
