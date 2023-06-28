@@ -220,13 +220,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000" )
-#	set_target_properties(${executable_name} PROPERTIES VS_DEBUGGER_COMMAND ${CMAKE_INSTALL_PREFIX}/bin/${executable_name})
-#	set_target_properties(${executable_name} PROPERTIES VS_DEBUGGER_ENVIRONMENT "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib")
-#	set_target_properties(${executable_name} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "-autostartstop -t 1")
 	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/${executable_name}.exe")
 	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/")
-	message(STATUS $ENV{USERNAME})
-	set (userfilename "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.vfproj.user")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>

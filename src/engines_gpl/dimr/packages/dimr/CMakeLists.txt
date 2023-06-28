@@ -94,6 +94,28 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${dimr_lib_sources
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dimr)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/${executable_name}.exe")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+</Project>"
+    )
+	configure_file(
+    ${userfilename}
+    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.user"
+    @ONLY
+	)
 endif(WIN32)
 
 # post-build
