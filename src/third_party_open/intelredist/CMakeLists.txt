@@ -34,4 +34,12 @@ if (WIN32)
 	PATTERN "mkl_intel_thread.*.dll"
 	PATTERN "1033" EXCLUDE
 	)
+	
+	set (redist_path $ENV{ONEAPI_ROOT}/compiler/2023.0.0/windows/redist/intel64_win/compiler)
+	string(REPLACE "\\" "/" redist_path "${redist_path}")
+	install (DIRECTORY ${redist_path}/ DESTINATION lib
+	FILES_MATCHING
+	PATTERN "*.dll"
+	PATTERN "1033" EXCLUDE
+	)
 endif(WIN32)
