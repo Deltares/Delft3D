@@ -304,58 +304,6 @@ subroutine deactivate_time_step_checking() bind(C, name="deactivate_time_step_ch
    do_check_bmi_timestep = .false.
 end subroutine deactivate_time_step_checking
 
-!! USER TIMESTEP !!
-!! NOTE: for greater flexibility the time step routines below are split into three
-!! init_, run_ and finalize_ routines. Make sure to call all of them in proper order.
-
-!> Initializes a 'user' timestep (outer time level, for meteo updates and I/O).
-!!
-!! The actual time-stepping will have to be done by dfm_init/run/finalize_computational_timestep.
-!! @see dfm_init_computational_timestep
-function dfm_init_user_timestep(timetarget) result(iresult) bind(C, name="dfm_init_user_timestep")
-   !DEC$ ATTRIBUTES DLLEXPORT :: dfm_init_user_timestep
-   use m_flowtimes, only: time_user, dt_user
-   use dfm_error
-   use MessageHandling
-   real(c_double), intent(in)  :: timetarget !< Target time. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
-   integer(c_int)              :: iresult    !< Result status, DFM_NOERR(=0) if successful.
-   character*(MAXSTRLEN)    :: msg
-
-   iresult = DFM_NOERR
-
-   if (do_check_bmi_timestep .and. timetarget - time_user /= dt_user) then ! We don't support yet a changing dt_user (may affect input/output, meteo, etc.)
-      iresult = DFM_INVALIDTARGETTIME
-      write(msg,'(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (',timetarget - time_user,') and the specified user timestep (',dt_user,').'
-      call mess(LEVEL_WARN,msg)
-!      goto 888
-   end if
-
-   call flow_init_usertimestep(iresult)
-
-   return
-
-888 continue
-
-end function dfm_init_user_timestep
-
-
-!> Runs the actual 'user' timestep (outer time level, preceded by meteo updates and to be followed by I/O).
-function dfm_run_user_timestep() result(iresult) bind(C, name="dfm_run_user_timestep")
-   !DEC$ ATTRIBUTES DLLEXPORT :: dfm_run_user_timestep
-   integer(c_int) :: iresult    !< Result status, DFM_NOERR(=0) if successful.
-   integer :: dummykey
-
-   call flow_run_usertimestep(dummykey, iresult)
-end function dfm_run_user_timestep
-
-
-!> Finalizes a 'user' timestep (outer time level, typically timers and I/O).
-function dfm_finalize_user_timestep() result(iresult) bind(C, name="dfm_finalize_user_timestep")
-   !DEC$ ATTRIBUTES DLLEXPORT :: dfm_finalize_user_timestep
-   integer(c_int) :: iresult    !< Result status, DFM_NOERR(=0) if successful.
-
-   call flow_finalize_usertimestep(iresult)
-end function dfm_finalize_user_timestep
 
 
 !! COMPUTATIONAL TIMESTEP !!

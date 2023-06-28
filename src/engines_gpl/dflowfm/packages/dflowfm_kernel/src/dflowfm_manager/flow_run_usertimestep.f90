@@ -30,10 +30,10 @@
 ! 
 ! 
 
-!> Runs a user-timestep (do computational flowsteps until timeuser), but not the init and finalize.
+!> Runs a user-timestep (do computational timesteps until timeuser), but not the init and finalize.
 !!
 !! Should be preceded by a flow_run_usertimestep and followed by a flow_finalize_usertimestep.
-subroutine flow_run_usertimestep(iresult)                   ! do computational flowsteps until timeuser
+subroutine flow_run_usertimestep(iresult)
    use m_flowtimes
    use unstruc_messages
    use m_partitioninfo

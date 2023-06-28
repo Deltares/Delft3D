@@ -30,7 +30,10 @@
 ! 
 ! 
 
- subroutine flow_spatietimestep()                 ! do 1 flowstep
+ !> Perform a single computational timestep from the Interacter GUI,
+ !! taking care of initialization/boundary updates if needed.
+ !! Only for interactive running.
+ subroutine flow_spatietimestep()
  use m_flowtimes
  use m_flowgeom, only: ndx
  use m_flowexternalforcings, only: nbndz, zbndz

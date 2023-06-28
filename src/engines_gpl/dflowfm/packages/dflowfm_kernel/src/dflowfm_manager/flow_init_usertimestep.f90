@@ -35,6 +35,7 @@
 !! Should be followed by a flow_run_usertimestep and a flow_finalize_usertimestep.
 subroutine flow_init_usertimestep(iresult)
    use m_flowtimes
+   use m_flowgeom, only: ndx
    use dfm_error
    use MessageHandling
    use m_flowparameters, only: janudge
@@ -44,6 +45,11 @@ subroutine flow_init_usertimestep(iresult)
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
  iresult = DFM_GENERICERROR
+
+ if (ndx == 0) then                                 ! No valid flow network was initialized
+    iresult = DFM_MODELNOTINITIALIZED
+    goto 888
+ end if
 
  call inctime_user()
 

@@ -30,13 +30,15 @@
 ! 
 ! 
 
-!> Runs flow steps for a certain period (do computational flowsteps for as long as timeinterval dtrange).
-subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do computational flowsteps for as long as timeinterval dtrange
+!> Runs flow steps for a certain period (do computational timesteps for as long as timeinterval dtrange).
+!! Note: this subroutine automatically initializes/finalizes user timestep(s)
+!! if that is necessary inside the requested dtrange.
+subroutine flow_run_sometimesteps(dtrange, iresult)
    use m_flowtimes
    use unstruc_messages
    use dfm_error
    implicit none
-   double precision, intent(in)  :: dtrange
+   double precision, intent(in)  :: dtrange !< [s] Requested time interval, starting at the current time.
    integer,          intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
    integer                       :: key
 

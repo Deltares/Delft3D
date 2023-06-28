@@ -211,6 +211,7 @@ end subroutine batch
 
   integer function flow() result(iresult)
   use dfm_error
+  use m_timer
   use unstruc_display
   use unstruc_messages
   use unstruc_display 
@@ -218,10 +219,13 @@ end subroutine batch
     
     iresult = DFM_NOERR
     call mess(LEVEL_INFO, 'Start of the computation time loop')
+
+    if ( jatimer.eq.1 ) call starttimer(ITOTAL)
+
     iresult = flowinit()
-    do while (time_user < tstop_user .and. iresult == DFM_NOERR)                ! time loop
-       call flowstep(iresult)
-    end do
+
+    call flow_run_sometimesteps(tstop_user - time0, iresult)                ! time loop
+
     if (iresult /= DFM_NOERR .and. iresult /= DFM_USERINTERRUPT) then
        call mess(LEVEL_WARN, 'Error during computation time loop. Details follow:')
        call dfm_strerror(msgbuf, iresult)
@@ -238,7 +242,9 @@ end subroutine batch
     if (iresult == DFM_NOERR .and. jaGUI == 0) then
        call flowfinalize()
     endif   
-  
+
+    if ( jatimer.eq.1 ) call stoptimer(ITOTAL)
+
   end function flow
  
 
@@ -336,34 +342,9 @@ end subroutine api_loadmodel
     end if
   end function flowinit
 
- subroutine flowstep(iresult)
- use dfm_error
- integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-   
-   iresult = DFM_GENERICERROR
-    
-   if ( jatimer.eq.1 ) call starttimer(ITOTAL)
-   
-   if (ndx == 0) then                                 ! No valid flow network was initialized
-      iresult = DFM_MODELNOTINITIALIZED
-      goto 888
-   end if
-
-   call flow_usertimestep(iresult)                    ! one user_step consists of several flow computational time steps
-
-   if (iresult /= DFM_NOERR) then
-      goto 888
-   end if
-
-   if ( jatimer.eq.1 ) call stoptimer(ITOTAL)
-
-888  continue
-   ! Error
- end subroutine flowstep
-
 
 !> Finishes a run of the current model (timings/statistics).
-!! For a restart, subsequently call a flowinit and flow/flowstep again.
+!! For a restart, subsequently call flowinit and flow again.
 subroutine flowfinalize()
 use unstruc_files
 use unstruc_netcdf

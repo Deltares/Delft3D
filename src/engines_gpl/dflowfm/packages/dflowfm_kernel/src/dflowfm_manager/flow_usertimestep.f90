@@ -30,8 +30,9 @@
 ! 
 ! 
 
-!> A complete single user time step (init-run-finalize).
- subroutine flow_usertimestep(iresult)                   ! do computational flowsteps until timeuser
+!> A complete single user time step (init-run-finalize), consisting of one
+!! or more computational timesteps.
+ subroutine flow_usertimestep(iresult)
  use m_flowtimes
  use timers
  use unstruc_messages
