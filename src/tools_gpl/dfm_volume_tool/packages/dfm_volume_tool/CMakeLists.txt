@@ -121,6 +121,15 @@ if (WIN32)
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
+	
+	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/${executable_name}.exe")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+	configure_file(
+    ${userfilename}
+    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+    @ONLY
+	)
 endif(WIN32)
 
 # Create the folder structure in vfproj
