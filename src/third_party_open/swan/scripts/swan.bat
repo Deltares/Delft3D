@@ -5,9 +5,9 @@ if exist swan_bat.log del swan_bat.log
 @echo and will be overwritten everytime that swan.bat is executed >>swan_bat.log
 @echo >>swan_bat.log
 
-set swanexec=%~dp0\..\bin\swan_omp.exe
-set PATH=%~dp0\..\bin;%PATH%
-set PATH=%~dp0\..\..\share\bin;%PATH%
+set swanexec=%~dp0\swan_omp.exe
+set PATH=%~dp0\..\lib;%PATH%
+set PATH=%~dp0\..\share\;%PATH%
 
 rem
 set OMP_NUM_THREADS_BACKUP=%OMP_NUM_THREADS%

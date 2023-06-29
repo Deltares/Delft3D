@@ -33,12 +33,12 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%~dp0..\..\..
-
+set D3D_HOME=%~dp0..
+set waqdir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
+set PATH=%sharedir%;%libdir%;%waqdir%
 rem Remove "\dwaq\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-22%
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
 rem
 rem process other arguments
@@ -74,15 +74,14 @@ shift
 goto loop
 :continue
 
-set waqdir=%D3D_HOME%\%ARCH%\dwaq\bin
 if [%userprocfile%] EQU [none] (
-    set procfile=%D3D_HOME%\%ARCH%\dwaq\default\proc_def
+    set procfile=sharedir\proc_def
     ) else (
        set procfile=%userprocfile%
     )
 if [%eco%] EQU [true] (
     if [%userspefile%] EQU [none] (
-       set spefile=%D3D_HOME%\%ARCH%\dwaq\default\bloom.spe
+       set spefile=sharedir\bloom.spe
        ) else (
           set spefile=%userspefile%
        )
@@ -90,8 +89,6 @@ if [%eco%] EQU [true] (
 if [%eco%] EQU [true] (
     set switches=%switches% -eco %spefile%
     )
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set PATH=%waqdir%;%sharedir%
 
     rem
     rem No adaptions needed below
