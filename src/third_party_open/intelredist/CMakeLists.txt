@@ -15,8 +15,7 @@ if (WIN32)
 		PATTERN "tune" EXCLUDE)
 		install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin 
 		FILES_MATCHING 
-		PATTERN "mpiexec.exe" 
-		PATTERN "hydra_service.exe" 
+		PATTERN "*.exe" 
 		PATTERN "debug" EXCLUDE
 		PATTERN "release" EXCLUDE
 		PATTERN "tune" EXCLUDE)
