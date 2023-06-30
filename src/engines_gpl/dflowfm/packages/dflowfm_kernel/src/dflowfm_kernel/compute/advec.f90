@@ -293,8 +293,8 @@ subroutine calculate_advection()
              uqn = qn*qnn / arsrc(n)
 
              if (jarhoxu > 0) then
-                qn       = qn* rhoinsrc
-                uqn      = uqn*rhoinsrc
+                qn       = qn* rhomean
+                uqn      = uqn*rhomean
              endif
 
              if (qsrc(n) > 0) then               ! from 1 to 2
