@@ -26,66 +26,45 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-
 ! 
 ! 
+module m_advection
 
- subroutine advec()                                  ! advection, based on u0, q0 24
- use m_flowtimes
- use m_flowgeom
- use m_flow
- use m_partitioninfo
- use m_fixedweirs
- use m_sferic
- use unstruc_channel_flow, only: network
+public :: advec
 
- implicit none
+contains
+    
+!> calculate_advection, based on u0, q0 24
+subroutine calculate_advection()
+   use m_flowtimes
+   use m_flowgeom
+   use m_flow
+   use m_fixedweirs
+   use m_sferic
+   use unstruc_channel_flow, only: network
+
+   implicit none
 
  ! locals
- double precision                  :: unormal        ! function unormal
- double precision                  :: dif            ! averaged waterdepth at flow link (m)
  integer                           :: L, k1, k2      ! link, nd1, nd2
- integer                           :: k12            ! nd1  or nd2
- integer                           :: k34            ! nod1 or nod2
- double precision                  :: ul1, ul2       ! just testing
- double precision                  :: uup            ! cell centered upwind u(L)
- double precision                  :: vup            ! cell centered upwind v(L) determines whether to use corner up or dwn in vdudy
- double precision                  :: ucnup          ! corner based  upwind u(L)
- double precision                  :: vcn3, vcn4, vcnu, qx
- double precision                  :: v12            ! Wenneker control volume (m3)
- double precision                  :: v12t, v1t, v2t ! time derivative of control volume (m3/s)
- double precision                  :: advil          ! local advi
+ double precision                  :: v12t ! time derivative of control volume (m3/s)
  double precision                  :: advel          ! local adve
 
  double precision                  :: qu1            ! Flux times advection velocity node 1 (m4/s2)
  double precision                  :: qu2            ! idem                          node 2
- double precision                  :: qu1a           ! Flux times advection velocity node 1 (m4/s2)
- double precision                  :: qu2a           ! idem                          node 2
- double precision                  :: qu12a          ! both a
- double precision                  :: uqcxl          !
- double precision                  :: uqcyl          !
- double precision                  :: qu12, aa       ! both
  double precision                  :: cs, sn
 
- double precision                  :: QucWen         ! Sum over links of Flux times upwind cell centre velocity (m4/s2), do not include own link
- double precision                  :: QucPer         ! idem, include own link
- double precision                  :: QucPer3D       ! idem, include own link
- double precision                  :: QucPerpure1D   ! idem, include own link
- !double precision                  :: QucWeni        ! idem, only incoming
- double precision                  :: QucPeri        ! idem, inly incoming         nb: QucPeripiaczek is a subroutine
-! double precision                  :: QunPeri
+ double precision, external        :: QucWen         ! Sum over links of Flux times upwind cell centre velocity (m4/s2), do not include own link
+ double precision, external        :: QucPer         ! idem, include own link
+ double precision, external        :: QucPerpure1D   ! idem, include own link
+ double precision, external        :: QucPeri        ! idem, inly incoming         nb: QucPeripiaczek is a subroutine
 
- double precision                  :: QucPerq1       ! ..
- double precision                  :: QucPercu       ! testing center differences
- double precision                  :: QufPer         ! testing adv of face velocities instead of centre upwind velocities
+ double precision, external        :: QucPerq1       ! ..
+ double precision, external        :: QucPercu       ! testing center differences
+ double precision, external        :: QufPer         ! testing adv of face velocities instead of centre upwind velocities
 
- !double precision                  :: Qucnu          ! = original of QucPer
-
-
- double precision                  :: visc           ! eddy viscosity term
-
- integer                           :: isg, jcheck, iadvL, ierr
- integer                           :: m, mu, md, mdd, iad, n, kk, kb
+ integer                           :: isg, iadvL
+ integer                           :: mu, md, mdd, iad, n, kk, kb
  double precision                  :: qxm, qxmu, uam, uamu, uamd, qxmd, du
  double precision                  :: vv1, vv2, dv1, dv2, quk, que
  double precision                  :: ucxku, ucyku, ai, ae, abh, vu1Di, volu, volui, hh, huvL, baik1, baik2
@@ -186,8 +165,8 @@
     do LL = Lnx,1,-1
        Lb = lbot(LL) ; Lt = ltop(LL)
        do L = Lb, Lt
-          k1 = ln(1,L) !; k1 = min(k1, ktop(ln(1,LL) ) )
-          k2 = ln(2,L) !; k2 = min(k2, ktop(ln(2,LL) ) )
+          k1 = ln(1,L) 
+          k2 = ln(2,L) 
           qL = qa(L)
           if (jasfer3d == 1) then
              uqcx(k1) = uqcx(k1) + qL*lin2nodx(LL,1,ucxu(L),ucyu(L))
@@ -224,11 +203,9 @@
                        sl  =  dzk/dzu
                        du2 = (ucx(k+1) - ucx(k)   )
                        du1 = (ucx(k )  - ucx(k-1) )*sl
-                       ! dux =  0.5d0*dlimiter(du1,du2,4)
                        dux =  0.5d0*dslim(du1,du2,4)
                        du2 = (ucy(k+1) - ucy(k)   )
                        du1 = (ucy(k )  - ucy(k-1) )*sl
-                       ! duy =  0.5d0*dlimiter(du1,du2,4)
                        duy =  0.5d0*dslim(du1,du2,4)
                        uqcx(k+1) = uqcx(k+1) - qw(k)*dux
                        uqcx(k  ) = uqcx(k  ) + qw(k)*dux
@@ -248,11 +225,9 @@
                        sl  =  dzk/dzu
                        du2 = (ucx(k)   - ucx(k+1) )
                        du1 = (ucx(k+1) - ucx(k+2) )*sl
-                       ! dux =  0.5d0*dlimiter(du1,du2,4)
                        dux =  0.5d0*dslim(du1,du2,4)
                        du2 = (ucy(k)   - ucy(k+1) )
                        du1 = (ucy(k+1) - ucy(k+2) )*sl
-                       ! duy =  0.5d0*dlimiter(du1,du2,4)
                        duy =  0.5d0*dslim(du1,du2,4)
 
                        uqcx(k+1) = uqcx(k+1) - qw(k)*dux
@@ -364,7 +339,6 @@
        else if (u0(L) > 0) then
            iadvL = 0                                 ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
        endif
-       !vol1(k1) = 0d0
     endif
 
     if (iadvL == 33) then                       !
@@ -393,14 +367,6 @@
 
        if (volu > 0) then
           advel = (acl(L)*qu1 + (1d0-acl(L))*qu2) / volu
-
-          !if ( japiaczek33 == 1) then
-          !   expl = ( acl(L)*sqa(k1) + (1d0-acl(L))*sqa(k2) ) / volu
-          !   if (expl < 0d0) then
-          !      advel   = advel   + expl*u1(L)
-          !      advi(L) = advi(L) - expl
-          !   endif
-          !endif
 
        endif
 
@@ -786,13 +752,6 @@
 
        else if ( iadv(LL) == 33 .or. iadv(LL) == 40 .or. iadv(LL) == 6 ) then                       !
 
-          ! qu1   = csu(L)*uqcx(k1) + snu(L)*uqcy(k1) - u1(L)*sqa(k1)
-          ! qu2   = csu(L)*uqcx(k2) + snu(L)*uqcy(k2) - u1(L)*sqa(k2)
-          ! volu  = ac1*vol1(k1)    + ac2*vol1(k2)
-          ! if (volu > 0) then
-          !    advel = (acl(L)*qu1 + (1d0-acl(L))*qu2) / volu
-          ! endif
-
           if (layertype == 1) then
 
              if (iadv(LL) == -6 ) then  ! .and. newzbndadv == 1 ) then
@@ -830,30 +789,14 @@
                 endif
 
                 if (jarhoxu > 0) then
-                   !if (kcu(LL) ==1) then
-                   !   volu  = ac1*vol1_f(k1)*rho(k1) + ac2*vol1_f(k2)*rho(k2)
-                   !else
                       volu  = ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
-                   !endif
                 else
-                   !if (kcu(LL) ==1) then
-                   !   volu  = ac1*vol1_f(k1)         + ac2*vol1_f(k2)
-                   !else
                       volu  = ac1*vol1(k1)         + ac2*vol1(k2)
-                   !endif
                 endif
 
                 if (volu > 0) then
 
                    adve(L) = adve(L) + (ac1*qu1 + ac2*qu2) / volu
-
-                   !if ( japiaczek33 == 1) then
-                   !   expl = ( acl(L)*sqa(k1) + (1d0-acl(L))*sqa(k2) ) / volu
-                   !   if (expl < 0d0) then
-                   !      adve(L) = adve(L) + expl*u1(L)
-                   !      advi(L) = advi(L) - expl
-                   !   endif
-                   !endif
 
                 endif
              enddo
@@ -899,15 +842,6 @@
 
                 if (volukk(L-Lb+1) > 0) then
                    adve(L) = adve(L) +  (ac1*qu1 + ac2*qu2) / volukk(L-Lb+1)
-
-                   !if ( japiaczek33 == 1) then
-                   !   expl = ( acl(L)*sqa(k1) + (1d0-acl(L))*sqa(k2) ) / volukk(L-Lb+1)
-                   !   if (expl < 0d0) then
-                   !      adve(L) = adve(L) + expl*u1(L)
-                   !      advi(L) = advi(L) - expl
-                   !   endif
-                   !endif
-
                 endif
 
              enddo
@@ -1146,4 +1080,7 @@
     call setucxy1D()
  endif
 
- end subroutine advec
+end subroutine calculate_advection
+
+end module m_advection
+    

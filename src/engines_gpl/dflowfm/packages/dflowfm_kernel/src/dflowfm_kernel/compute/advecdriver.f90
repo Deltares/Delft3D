@@ -35,6 +35,8 @@
  use m_flow
  use m_flowgeom
  use m_setucxcuy_leastsquare, only: reconst2nd
+ use m_advection
+ 
  implicit none
 
  double precision :: dta, das, ds
@@ -52,7 +54,7 @@
 
       adve = 0d0
 
-      call advec()
+      call calculate_advection()
       if (k == 1) then
          adve0 = adve
       endif
@@ -72,7 +74,7 @@
 
  else
 
-   call advec()                                       ! advection term, must be called after set-umod and cell velocity updates
+   call calculate_advection()                                       ! advection term, must be called after set-umod and cell velocity updates
 
  endif
 
