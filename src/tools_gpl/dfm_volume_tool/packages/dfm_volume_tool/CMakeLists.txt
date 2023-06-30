@@ -122,11 +122,13 @@ if (WIN32)
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
-	configure_file(
-    ${userfilename}
-    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
-    @ONLY
-	)
+	if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
+		configure_file(
+		${userfilename}
+		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+		@ONLY
+		)
+	endif()
 endif(WIN32)
 
 # Create the folder structure in vfproj

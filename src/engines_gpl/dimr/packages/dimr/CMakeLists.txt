@@ -111,11 +111,13 @@ if (WIN32)
     </PropertyGroup>
 </Project>"
     )
-	configure_file(
-    ${userfilename}
-    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.user"
-    @ONLY
-	)
+	if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
+		configure_file(
+		${userfilename}
+		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.user"
+		@ONLY
+		)
+	endif()
 endif(WIN32)
 
 # post-build
