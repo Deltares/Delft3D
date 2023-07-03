@@ -27,7 +27,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-subroutine transform_swan_physics(hs        ,dir       ,period    ,depth     , &
+subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
                                     & fx        ,fy        ,mx        ,my        , &
                                     & distot    ,dissurf   ,diswcap   , &
                                     & m         ,n         ,hrms      ,tp        , &
@@ -151,4 +151,4 @@ subroutine transform_swan_physics(hs        ,dir       ,period    ,depth     , &
         !
     enddo
 999 continue
-    end subroutine transform_swan_physics
+    end subroutine transform_wave_physics

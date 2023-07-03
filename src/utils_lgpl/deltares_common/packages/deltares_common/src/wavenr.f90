@@ -1,32 +1,30 @@
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
-!-------------------------------------------------------------------------------
-
+   !                                                                               
+   !  Copyright (C)  Stichting Deltares, 2011-2023.                                
+   !                                                                               
+   !  This library is free software; you can redistribute it and/or                
+   !  modify it under the terms of the GNU Lesser General Public                   
+   !  License as published by the Free Software Foundation version 2.1.            
+   !                                                                               
+   !  This library is distributed in the hope that it will be useful,              
+   !  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
+   !  Lesser General Public License for more details.                              
+   !                                                                               
+   !  You should have received a copy of the GNU Lesser General Public             
+   !  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
+   !                                                                               
+   !  contact: delft3d.support@deltares.nl                                         
+   !  Stichting Deltares                                                           
+   !  P.O. Box 177                                                                 
+   !  2600 MH Delft, The Netherlands                                               
+   !                                                                               
+   !  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+   !  are registered trademarks of Stichting Deltares, and remain the property of  
+   !  Stichting Deltares. All rights reserved.                                     
+   !                                                                               
+   !-------------------------------------------------------------------------------
+    
 subroutine wavenr(h         ,t         ,k         ,ag)
     !!--description-----------------------------------------------------------------
     !
@@ -57,6 +55,15 @@ subroutine wavenr(h         ,t         ,k         ,ag)
     !
     implicit none
     !
+    ! Global variables
+    !
+    real, intent(in)               :: h  !!  Waterheight
+    real, intent(out)              :: k  !!  Approxiamation of wave lenght
+    real, intent(in)               :: t  !!  Period
+    real, intent(in   )              :: h  !< Waterheight
+    real, intent(  out)              :: k  !< Approximation of wave length
+    real, intent(in   )              :: t  !< Period
+    real, intent(in   )              :: ag !< Gravitational acceleration
     !
     ! Local parameters
     !
@@ -65,17 +72,7 @@ subroutine wavenr(h         ,t         ,k         ,ag)
         & a5 = 8.670877524768146D-03, a6 = 4.890806291366061D-03,&
         & b1 = 1.727544632667079D-01, b2 = 1.191224998569728D-01,&
         & b3 = 4.165097693766726D-02, b4 = 8.674993032204639D-03
-    !
-    ! Global variables
-    !
-    real, intent(in)               :: h  !!  Waterheight
-    real, intent(out)              :: k  !!  Approxiamation of wave lenght
-    real, intent(in)               :: t  !!  Period
-    real, intent(in)               :: ag !! Gravitational acceleration
-    !
-    !
-    ! Local variables
-    !
+   !
     real(hp)               :: den                  ! Denominator
     real(hp)               :: kd                   ! Double value for K
     real(hp)               :: num                  ! Numerator
