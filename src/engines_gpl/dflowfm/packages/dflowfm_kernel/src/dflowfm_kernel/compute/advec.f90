@@ -48,146 +48,91 @@ subroutine calculate_advection()
    integer, parameter  :: SEMI_SUBGRID      = 21
    integer, parameter  :: ADVECTION_CORRECTION = 2
    integer, parameter  :: NO_RHO_EFFECTS_IN_MOMENTUM = 0
+   integer, parameter  :: LINK_1D = 1
+   integer, parameter  :: LATERAL_1D2D_LINK = 3
+   integer, parameter  :: LINK_VOLUME = 1
+   integer, parameter  :: SCALAR_APPROACH_USING_VOL1_F = 1
+   integer, parameter  :: SPHERIC = 1
+   
+   integer                        :: link, k1, k2   !< link, nd1, nd2
+   double precision               :: advel          !< local adve
+   double precision               :: qu1            !< Flux times advection velocity node 1 (m4/s2)
+   double precision               :: qu2            !< idem                          node 2
+   double precision               :: cs, sn
 
-   integer                           :: link, k1, k2      ! link, nd1, nd2
-   double precision                  :: v12t ! time derivative of control volume (m3/s)
-   double precision                  :: advel          ! local adve
+   double precision, external     :: QucPer         !< idem, include own link
+   double precision, external     :: QucPerq1       !< ..
 
-   double precision                  :: qu1            ! Flux times advection velocity node 1 (m4/s2)
-   double precision                  :: qu2            ! idem                          node 2
-   double precision                  :: cs, sn
+   integer                        :: iadvL
+   integer                        :: source, kk, kb
+   double precision               :: volu
+   double precision               :: ac1, ac2
+   integer                        :: LL, Lb, Lt
 
-   double precision, external        :: QucWen         ! Sum over links of Flux times upwind cell centre velocity (m4/s2), do not include own link
-   double precision, external        :: QucPer         ! idem, include own link
- double precision, external        :: QucPerpure1D   ! idem, include own link
- double precision, external        :: QucPeri        ! idem, inly incoming         nb: QucPeripiaczek is a subroutine
+   integer                        :: cell
 
- double precision, external        :: QucPerq1       ! ..
- double precision, external        :: QucPercu       ! testing center differences
- double precision, external        :: QufPer         ! testing adv of face velocities instead of centre upwind velocities
+   double precision               :: quk1(3,kmxx), quk2(3,kmxx), volukk(kmxx)   !< 3D for 1=u, 2=turkin, 3=tureps
 
- integer                           :: isg, iadvL
- integer                           :: iad, n, kk, kb
- double precision                  :: ucxku, ucyku, ai, ae, abh, volu, volui, huvL, baik1, baik2
- double precision                  :: vol_k1        !< representative volume for node k1
- double precision                  :: vol_k2        !< representative volume for node k2
- double precision                  :: ucin, fdx, ql, ac1, ac2, uqn, qn, dzss, qnn
- integer                           :: LL, Lb, Lt, i
+   integer                        :: ksb, kst
 
- integer                           :: ku, kd, k, nfw, kt
- integer                           :: n12
+   double precision               :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
+   double precision               :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
+   double precision               :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
 
- double precision                  :: quk1(3,kmxx), quk2(3,kmxx), volukk(kmxx)   ! 3D for 1=u, 2=turkin, 3=tureps
+   double precision,     external :: nod2linx, nod2liny
 
- integer                           :: kt1, kt2, n1, n2, kb1, kb2, Ltx0, ktx01, ktx02 , ktx1 , ktx2, Ltx, L1, ksb, kst
- double precision                  :: hs1, hs2, vo1, vo2
+   if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
+      call set_ucx_ucy_for_weirs_at_semi_subgrid()
+   end if
 
- double precision                  :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
- double precision                  :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
- double precision                  :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
+   if (jabarrieradvection == ADVECTION_CORRECTION) then
+       call set_ucx_ucy_for_gates_signals()
+       call set_ucx_ucy_for_gates_in_structures()
+   end if
 
- double precision,        external :: lin2nodx, lin2nody
- double precision,        external :: nod2linx, nod2liny
- double precision,        external :: dslim
+   call sethigherorderadvectionvelocities()
 
- if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
-    call set_ucx_ucy_for_weirs_at_semi_subgrid()
- end if
+   uqcx(:) = 0d0
+   uqcy(:) = 0d0
+   sqa (:) = 0d0
 
- if (jabarrieradvection == ADVECTION_CORRECTION) then
-     call set_ucx_ucy_for_gates_signals()
-     call set_ucx_ucy_for_gates_in_structures()
- end if
-
- call sethigherorderadvectionvelocities()
-
- uqcx(:) = 0d0
- uqcy(:) = 0d0
- sqa (:) = 0d0
-
- if (kmx == 0) then
-
-   if (jasfer3d == 1) then
-
-      do link = Lnx,1,-1
-          k1 = ln(1,link)
-          k2 = ln(2,link)
-          qL = qa(link)
-          uqcx(k1) = uqcx(k1) + qL*lin2nodx(link,1,ucxu(link),ucyu(link))
-          uqcx(k2) = uqcx(k2) - qL*lin2nodx(link,2,ucxu(link),ucyu(link))
-          uqcy(k1) = uqcy(k1) + qL*lin2nody(link,1,ucxu(link),ucyu(link))
-          uqcy(k2) = uqcy(k2) - qL*lin2nody(link,2,ucxu(link),ucyu(link))
-          sqa (k1) = sqa (k1) + ql
-          sqa (k2) = sqa (k2) - ql
-       end do
-
+   if (kmx == 0) then
+      if (jasfer3d == SPHERIC) then
+         call calculate_uqcx_uqcy_sqa_spheric()
+      else
+         call calculate_uqcx_uqcy_sqa()
+      end if
    else
+      if (jasfer3d == SPHERIC) then
+          call calculate_uqcx_uqcy_sqa_3D_spheric()
+      else 
+          call calculate_uqcx_uqcy_sqa_3D()
+      end if
+   end if
 
-       do link = Lnx,1,-1
-          k1 = ln(1,link)
-          k2 = ln(2,link)
-          qL = qa(link)
-          uqcx(k1) = uqcx(k1) + qL*ucxu(link)
-          uqcx(k2) = uqcx(k2) - qL*ucxu(link)
-          uqcy(k1) = uqcy(k1) + qL*ucyu(link)
-          uqcy(k2) = uqcy(k2) - qL*ucyu(link)
-          sqa (k1) = sqa (k1) + ql
-          sqa (k2) = sqa (k2) - ql
-       end do
+   if (javau >= 6) then ! 3D checkerboard pepare explicit node based vertical advection
+      if (jarhoxu == NO_RHO_EFFECTS_IN_MOMENTUM) then
+         call set_uqcx_uqcy_sqa_without_rho_effects()
+      else
+         call set_uqcx_uqcy_sqa_with_rho_effects()
+      end if
+   end if
 
-    end if
+   if (jarhoxu > 0) then
+      sqa(:) = sqa(:) * rho(:)
+   end if
 
- else
-
-    do LL = Lnx,1,-1
-       Lb = lbot(LL) ; Lt = ltop(LL)
-       do link = Lb, Lt
-          k1 = ln(1,link) 
-          k2 = ln(2,link) 
-          qL = qa(link)
-          if (jasfer3d == 1) then
-             uqcx(k1) = uqcx(k1) + qL*lin2nodx(LL,1,ucxu(link),ucyu(link))
-             uqcx(k2) = uqcx(k2) - qL*lin2nodx(LL,2,ucxu(link),ucyu(link))
-             uqcy(k1) = uqcy(k1) + qL*lin2nody(LL,1,ucxu(link),ucyu(link))
-             uqcy(k2) = uqcy(k2) - qL*lin2nody(LL,2,ucxu(link),ucyu(link))
-          else
-             uqcx(k1) = uqcx(k1) + qL*ucxu(link)
-             uqcx(k2) = uqcx(k2) - qL*ucxu(link)
-             uqcy(k1) = uqcy(k1) + qL*ucyu(link)
-             uqcy(k2) = uqcy(k2) - qL*ucyu(link)
-          end if
-          sqa (k1) = sqa (k1) + ql
-          sqa (k2) = sqa (k2) - ql
-       end do
-    end do
-
- end if
-
- if (javau >= 6) then ! 3D checkerboard pepare explicit node based vertical advection
-    if (jarhoxu == NO_RHO_EFFECTS_IN_MOMENTUM) then
-       call set_uqcx_uqcy_sqa_without_rho_effects()
-    else
-       call set_uqcx_uqcy_sqa_with_rho_effects()
-    end if
- end if
-
- if (jarhoxu > 0) then
-    sqa(:) = sqa(:) * rho(:)
- end if
-
- call set_uqcx_uqcy_sqa_for_sources()
+   call set_uqcx_uqcy_sqa_for_sources()
  
- nfw = 0
+   if (kmx == 0) then
+      call calculate_advection_for_2D()     
+   else
+      call calculate_advection_for_3D() 
+   end if
 
- if (kmx == 0) then
-    call calculate_advection_for_2D()     
- else                                                      ! Plus vertical
-    call calculate_advection_for_3D() 
- end if
-
- if (kmx == 0 .and. lnx1D > 0) then
-    call setucxy1D()
- end if
+   if (kmx == 0 .and. lnx1D > 0) then
+      call setucxy1D()
+   end if
 
 contains
 
@@ -245,63 +190,190 @@ subroutine set_ucx_ucy_for_gates_in_structures()
     
 end subroutine set_ucx_ucy_for_gates_in_structures
 
+!> calculate_uqcx_uqcy_sqa_spheric
+subroutine calculate_uqcx_uqcy_sqa_spheric()
+
+    do link = lnx, 1, -1
+        call update_uqcx_neigboring_cells_spheric()
+        call update_uqcy_neigboring_cells_spheric()
+        call update_sqa_neigboring_cells()
+    end do
+
+end subroutine calculate_uqcx_uqcy_sqa_spheric
+
+!> update_uqcx_neigboring_cells_spheric
+subroutine update_uqcx_neigboring_cells_spheric()
+
+    uqcx(ln(1,link)) = uqcx(ln(1,link)) + qa(link) * ucxu_in_spheric(1)
+    uqcx(ln(2,link)) = uqcx(ln(2,link)) - qa(link) * ucxu_in_spheric(2)
+        
+end subroutine update_uqcx_neigboring_cells_spheric
+
+!> update_uqcy_neigboring_cells
+subroutine update_uqcy_neigboring_cells_spheric()
+
+    uqcy(ln(1,link)) = uqcy(ln(1,link)) + qa(link) * ucyu_in_spheric(1)
+    uqcy(ln(2,link)) = uqcy(ln(2,link)) - qa(link) * ucyu_in_spheric(2)
+        
+end subroutine update_uqcy_neigboring_cells_spheric
+
+!> local simplified version of lin2nodx
+!! return x-component in node coordinate frame of a vector in link coordinate frame
+double precision function ucxu_in_spheric(i12)
+
+    integer,          intent(in) :: i12 !< left (1) or right (2) neighboring cell
+         
+    ucxu_in_spheric =  csb(i12,link) * ucxu(link) - snb(i12,link) * ucyu(link)
+   
+end function ucxu_in_spheric
+
+!> local simplified version of lin2nody
+!! return y-component in node coordinate frame of a vector in link coordinate frame
+double precision function ucyu_in_spheric(i12)
+
+    integer,          intent(in) :: i12 !< left (1) or right (2) neighboring cell
+         
+    ucyu_in_spheric =  snb(i12,link) * ucxu(link) + csb(i12,link) * ucyu(link)
+   
+end function ucyu_in_spheric
+
+!> update_sqa_neigboring_cells
+subroutine update_sqa_neigboring_cells()
+
+    sqa(ln(1,link)) = sqa(ln(1,link)) + qa(link)
+    sqa(ln(2,link)) = sqa(ln(2,link)) - qa(link)
+        
+end subroutine update_sqa_neigboring_cells
+
+!> calculate_uqcx_uqcy_sqa
+subroutine calculate_uqcx_uqcy_sqa()
+
+    do link = lnx, 1, -1
+        call update_uqcx_neigboring_cells()
+        call update_uqcy_neigboring_cells()
+        call update_sqa_neigboring_cells()
+    end do
+
+end subroutine calculate_uqcx_uqcy_sqa
+
+
+!> update_uqcx_neigboring_cells
+subroutine update_uqcx_neigboring_cells()
+
+    uqcx(ln(1,link)) = uqcx(ln(1,link)) + qa(link) * ucxu(link)
+    uqcx(ln(2,link)) = uqcx(ln(2,link)) - qa(link) * ucxu(link)
+        
+end subroutine update_uqcx_neigboring_cells
+
+
+!> update_uqcy_neigboring_cells
+subroutine update_uqcy_neigboring_cells()
+
+    uqcy(ln(1,link)) = uqcy(ln(1,link)) + qa(link) * ucyu(link)
+    uqcy(ln(2,link)) = uqcy(ln(2,link)) - qa(link) * ucyu(link)
+        
+end subroutine update_uqcy_neigboring_cells
+
+!> calculate_uqcx_uqcy_sqa_3D_spheric
+subroutine calculate_uqcx_uqcy_sqa_3D_spheric()
+
+    integer  :: link2D
+    integer  :: bottom_link
+    integer  :: top_link
+
+    do link2D = lnx, 1, -1
+        bottom_link = lbot(link2D)
+        top_link    = ltop(link2D)
+        do link = bottom_link, top_link
+           call update_uqcx_neigboring_cells_spheric()
+           call update_uqcy_neigboring_cells_spheric()
+           call update_sqa_neigboring_cells()
+        end do
+    end do
+      
+end subroutine calculate_uqcx_uqcy_sqa_3D_spheric
+
+
+!> calculate_uqcx_uqcy_sqa_3D
+subroutine calculate_uqcx_uqcy_sqa_3D()
+
+    integer  :: link2D
+    integer  :: bottom_link
+    integer  :: top_link
+
+    do link2D = lnx, 1, -1
+        bottom_link = lbot(link2D)
+        top_link    = ltop(link2D)
+        do link = bottom_link, top_link
+           call update_uqcx_neigboring_cells()
+           call update_uqcy_neigboring_cells()
+           call update_sqa_neigboring_cells()
+        end do
+    end do
+      
+end subroutine calculate_uqcx_uqcy_sqa_3D
+
 !> set_uqcx_uqcy_sqa_without_rho_effects
 subroutine set_uqcx_uqcy_sqa_without_rho_effects()
 
+   integer                        :: kt
+
    double precision, parameter :: TOLERANCE = 1d-4 
    double precision            :: sl, dzu, dzk, du1, du2, dux, duy
+   
+   double precision,  external :: dslim
 
    do kk = 1, ndxi
       call getkbotktop(kk,kb,kt)
-      do k = kb, kt-1
-         if ( qw(k) > 0d0) then
-             uqcx(k+1) = uqcx(k+1) - qw(k) * ucx(k)
-             uqcx(k  ) = uqcx(k  ) + qw(k) * ucx(k)
-             uqcy(k+1) = uqcy(k+1) - qw(k) * ucy(k)
-             uqcy(k  ) = uqcy(k  ) + qw(k) * ucy(k)
-             if (javau == 7 .and. k > kb ) then
-                dzu =  zws(k) - zws(k-2)      ! 2*dz of upwind face
+      do cell = kb, kt - 1
+         if ( qw(cell) > 0d0) then
+             uqcx(cell+1) = uqcx(cell+1) - qw(cell) * ucx(cell)
+             uqcx(cell  ) = uqcx(cell  ) + qw(cell) * ucx(cell)
+             uqcy(cell+1) = uqcy(cell+1) - qw(cell) * ucy(cell)
+             uqcy(cell  ) = uqcy(cell  ) + qw(cell) * ucy(cell)
+             if (javau == 7 .and. cell > kb ) then
+                dzu =  zws(cell) - zws(cell-2)      ! 2*dz of upwind face
                 if ( dzu > TOLERANCE) then
-                   dzk =  zws(k+1) - zws(k-1) ! 2*dz of this face
+                   dzk =  zws(cell+1) - zws(cell-1) ! 2*dz of this face
                    sl  =  dzk/dzu
-                   du2 = (ucx(k+1) - ucx(k)   )
-                   du1 = (ucx(k )  - ucx(k-1) ) * sl
+                   du2 = (ucx(cell+1) - ucx(cell)   )
+                   du1 = (ucx(cell )  - ucx(cell-1) ) * sl
                    dux =  0.5d0 * dslim(du1,du2,4)
-                   du2 = (ucy(k+1) - ucy(k)   )
-                   du1 = (ucy(k )  - ucy(k-1) ) * sl
+                   du2 = (ucy(cell+1) - ucy(cell)   )
+                   du1 = (ucy(cell )  - ucy(cell-1) ) * sl
                    duy =  0.5d0 * dslim(du1,du2,4)
-                   uqcx(k+1) = uqcx(k+1) - qw(k) * dux
-                   uqcx(k  ) = uqcx(k  ) + qw(k) * dux
-                   uqcy(k+1) = uqcy(k+1) - qw(k) * duy
-                   uqcy(k  ) = uqcy(k  ) + qw(k) * duy
+                   uqcx(cell+1) = uqcx(cell+1) - qw(cell) * dux
+                   uqcx(cell  ) = uqcx(cell  ) + qw(cell) * dux
+                   uqcy(cell+1) = uqcy(cell+1) - qw(cell) * duy
+                   uqcy(cell  ) = uqcy(cell  ) + qw(cell) * duy
                 end if
              end if
-         else if ( qw(k) < 0d0) then
-             uqcx(k+1) = uqcx(k+1) - qw(k) * ucx(k+1)
-             uqcx(k  ) = uqcx(k  ) + qw(k) * ucx(k+1)
-             uqcy(k+1) = uqcy(k+1) - qw(k) * ucy(k+1)
-             uqcy(k  ) = uqcy(k  ) + qw(k) * ucy(k+1)
-             if (javau == 7 .and. k < kt-1 ) then
-                dzu =  zws(k+2) - zws(k)      ! 2*dz of upwind face
+         else if ( qw(cell) < 0d0) then
+             uqcx(cell+1) = uqcx(cell+1) - qw(cell) * ucx(cell+1)
+             uqcx(cell  ) = uqcx(cell  ) + qw(cell) * ucx(cell+1)
+             uqcy(cell+1) = uqcy(cell+1) - qw(cell) * ucy(cell+1)
+             uqcy(cell  ) = uqcy(cell  ) + qw(cell) * ucy(cell+1)
+             if (javau == 7 .and. cell < kt-1 ) then
+                dzu =  zws(cell+2) - zws(cell)      ! 2*dz of upwind face
                 if ( dzu > TOLERANCE) then
-                   dzk =  zws(k+1) - zws(k-1) ! 2*dz of this face
+                   dzk =  zws(cell+1) - zws(cell-1) ! 2*dz of this face
                    sl  =  dzk/dzu
-                   du2 = (ucx(k)   - ucx(k+1) )
-                   du1 = (ucx(k+1) - ucx(k+2) ) * sl
+                   du2 = (ucx(cell)   - ucx(cell+1) )
+                   du1 = (ucx(cell+1) - ucx(cell+2) ) * sl
                    dux =  0.5d0*dslim(du1,du2,4)
-                   du2 = (ucy(k)   - ucy(k+1) )
-                   du1 = (ucy(k+1) - ucy(k+2) ) * sl
+                   du2 = (ucy(cell)   - ucy(cell+1) )
+                   du1 = (ucy(cell+1) - ucy(cell+2) ) * sl
                    duy =  0.5d0*dslim(du1,du2,4)
-                   uqcx(k+1) = uqcx(k+1) - qw(k) * dux
-                   uqcx(k  ) = uqcx(k  ) + qw(k) * dux
-                   uqcy(k+1) = uqcy(k+1) - qw(k) * duy
-                   uqcy(k  ) = uqcy(k  ) + qw(k) * duy
+                   uqcx(cell+1) = uqcx(cell+1) - qw(cell) * dux
+                   uqcx(cell  ) = uqcx(cell  ) + qw(cell) * dux
+                   uqcy(cell+1) = uqcy(cell+1) - qw(cell) * duy
+                   uqcy(cell  ) = uqcy(cell  ) + qw(cell) * duy
                 end if
              end if
 
          end if
-         sqa(k+1) = sqa(k+1) - qw(k)
-         sqa(k  ) = sqa(k  ) + qw(k)
+         sqa(cell+1) = sqa(cell+1) - qw(cell)
+         sqa(cell  ) = sqa(cell  ) + qw(cell)
       end do
    end do
 
@@ -311,20 +383,20 @@ end subroutine set_uqcx_uqcy_sqa_without_rho_effects
 subroutine set_uqcx_uqcy_sqa_with_rho_effects()
 
    do kk = 1, ndxi
-      do k = kbot(kk), ktop(kk)-1
-         if ( qw(k) > 0d0) then
-             uqcx(k+1) = uqcx(k+1) - qw(k) * ucx(k) * rho(k)
-             uqcx(k  ) = uqcx(k  ) + qw(k) * ucx(k) * rho(k)
-             uqcy(k+1) = uqcy(k+1) - qw(k) * ucy(k) * rho(k)
-             uqcy(k  ) = uqcy(k  ) + qw(k) * ucy(k) * rho(k)
-         else if ( qw(k) < 0d0) then
-             uqcx(k+1) = uqcx(k+1) - qw(k) * ucx(k+1) * rho(k+1)
-             uqcx(k  ) = uqcx(k  ) + qw(k) * ucx(k+1) * rho(k+1)
-             uqcy(k+1) = uqcy(k+1) - qw(k) * ucy(k+1) * rho(k+1)
-             uqcy(k  ) = uqcy(k  ) + qw(k) * ucy(k+1) * rho(k+1)
+      do cell = kbot(kk), ktop(kk) - 1
+         if ( qw(cell) > 0d0) then
+             uqcx(cell+1) = uqcx(cell+1) - qw(cell) * ucx(cell) * rho(cell)
+             uqcx(cell  ) = uqcx(cell  ) + qw(cell) * ucx(cell) * rho(cell)
+             uqcy(cell+1) = uqcy(cell+1) - qw(cell) * ucy(cell) * rho(cell)
+             uqcy(cell  ) = uqcy(cell  ) + qw(cell) * ucy(cell) * rho(cell)
+         else if ( qw(cell) < 0d0) then
+             uqcx(cell+1) = uqcx(cell+1) - qw(cell) * ucx(cell+1) * rho(cell+1)
+             uqcx(cell  ) = uqcx(cell  ) + qw(cell) * ucx(cell+1) * rho(cell+1)
+             uqcy(cell+1) = uqcy(cell+1) - qw(cell) * ucy(cell+1) * rho(cell+1)
+             uqcy(cell  ) = uqcy(cell  ) + qw(cell) * ucy(cell+1) * rho(cell+1)
         end if
-        sqa(k+1) = sqa(k+1) - qw(k)
-        sqa(k  ) = sqa(k  ) + qw(k)
+        sqa(cell+1) = sqa(cell+1) - qw(cell)
+        sqa(cell  ) = sqa(cell  ) + qw(cell)
       end do
    end do
 
@@ -333,37 +405,42 @@ end subroutine set_uqcx_uqcy_sqa_with_rho_effects
 !> set_uqcx_uqcy_sqa_for_sources
 subroutine set_uqcx_uqcy_sqa_for_sources()
 
-   do n  = 1, numsrc                             ! momentum
-      if (arsrc(n) > 0) then                    ! if momentum desired
+   double precision                  :: qn
+   double precision                  :: qnn
+   double precision                  :: dzss
+   double precision                  :: uqn
+
+   do source  = 1, numsrc
+      if (arsrc(source) > 0) then                    ! if momentum desired
          call set_kk_ksb_kst()
          if (kk > 0 .and. ksb > 0) then
 
-            qnn = qsrc(n)
-            do k  = ksb,kst
+            qnn = qsrc(source)
+            do cell  = ksb, kst
                qn = qnn
                if (kmx > 0) then
                   dzss  = zws(kst) - zws(ksb-1)
                   if (dzss > epshs) then
-                     qn = qnn*( zws(k) - zws(k-1) ) / dzss
+                     qn = qnn*( zws(cell) - zws(cell-1) ) / dzss
                   else
                      qn = qnn / (kst - ksb + 1)
                   end if
                end if
-               uqn = qn*qnn / arsrc(n)
+               uqn = qn*qnn / arsrc(source)
 
                if (jarhoxu > 0) then
                   qn  = qn  * rhomean
                   uqn = uqn * rhomean
                end if
 
-               if (qsrc(n) > 0) then               ! from 1 to 2
-                  uqcx(k) = uqcx(k) - uqn*cssrc(2,n)
-                  uqcy(k) = uqcy(k) - uqn*snsrc(2,n)
-                  sqa(k)  = sqa(k)  - qn           ! sqa : out - in
+               if (qsrc(source) > 0) then               ! from 1 to 2
+                  uqcx(cell) = uqcx(cell) - uqn*cssrc(2,source)
+                  uqcy(cell) = uqcy(cell) - uqn*snsrc(2,source)
+                  sqa(cell)  = sqa(cell)  - qn           ! sqa : out - in
                else                                ! from 2 to 1
-                  uqcx(k) = uqcx(k) + uqn*cssrc(1,n)
-                  uqcy(k) = uqcy(k) + uqn*snsrc(1,n)
-                  sqa(k)  = sqa(k)  + qn           ! sqa : out - in
+                  uqcx(cell) = uqcx(cell) + uqn*cssrc(1,source)
+                  uqcy(cell) = uqcy(cell) + uqn*snsrc(1,source)
+                  sqa(cell)  = sqa(cell)  + qn           ! sqa : out - in
                end if
 
             end do
@@ -377,7 +454,7 @@ end subroutine set_uqcx_uqcy_sqa_for_sources
 subroutine calculate_advection_for_2D()
 
  !$OMP PARALLEL DO                                                                   &
- !$OMP PRIVATE(link, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2)
+ !$OMP PRIVATE(link, advel,k1,k2,iadvL,qu1,qu2,volu)
 
     do link  = 1,lnx
 
@@ -452,14 +529,14 @@ end subroutine calculate_advection_for_2D
 !> set_kk_ksb_kst
 subroutine set_kk_ksb_kst()
 
-    if (qsrc(n) > 0) then
-       kk  = ksrc(4,n)                     ! 2D pressure cell nr TO
-       ksb = ksrc(5,n)                     ! cell nr
-       kst = ksrc(6,n)                     ! cell nr
+    if (qsrc(source) > 0) then
+       kk  = ksrc(4,source)                     ! 2D pressure cell nr TO
+       ksb = ksrc(5,source)                     ! cell nr
+       kst = ksrc(6,source)                     ! cell nr
     else
-       kk  = ksrc(1,n)                     ! 2D pressure cell nr FROM
-       ksb = ksrc(2,n)                     ! cell nr
-       kst = ksrc(3,n)                     ! cell nr
+       kk  = ksrc(1,source)                     ! 2D pressure cell nr FROM
+       ksb = ksrc(2,source)                     ! cell nr
+       kst = ksrc(3,source)                     ! cell nr
     end if
 
 end subroutine set_kk_ksb_kst
@@ -467,22 +544,14 @@ end subroutine set_kk_ksb_kst
 !> calculate_advection_using_scheme_33
 subroutine calculate_advection_using_scheme_33()
 
-    if (jasfer3d == 1) then
-       qu1   = csu(link)*nod2linx(link,1,uqcx(k1),uqcy(k1)) + snu(link)*nod2liny(link,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
-       qu2   = csu(link)*nod2linx(link,2,uqcx(k2),uqcy(k2)) + snu(link)*nod2liny(link,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
-    else
-       qu1   = csu(link)*uqcx(k1) + snu(link)*uqcy(k1) - u1(link)*sqa(k1)
-       qu2   = csu(link)*uqcx(k2) + snu(link)*uqcy(k2) - u1(link)*sqa(k2)
-    end if
-
     if (jarhoxu == NO_RHO_EFFECTS_IN_MOMENTUM) then
-       if (kcu(link) == 1) then
+       if (kcu(link) == LINK_1D) then
           volu  = acl(link)*vol1_f(k1) + (1d0-acl(link))*vol1_f(k2)
        else
           volu  = acl(link)*vol1(k1) + (1d0-acl(link))*vol1(k2)
        end if
     else
-       if (kcu(link) == 1) then
+       if (kcu(link) == LINK_1D) then
           volu  = acl(link)*vol1_f(k1)*rho(k1) + (1d0-acl(link))*vol1_f(k2)*rho(k2)
        else
           volu  = acl(link)*vol1(k1)*rho(k1) + (1d0-acl(link))*vol1(k2)*rho(k2)
@@ -490,25 +559,54 @@ subroutine calculate_advection_using_scheme_33()
     end if
 
     if (volu > 0) then
+	    if (jasfer3d == SPHERIC) then
+           qu1   = csu(link)*uqcx_spheric(1, k1) + snu(link)*uqcy_spheric(1, k1) - u1(link)*sqa(k1)
+           qu2   = csu(link)*uqcx_spheric(2, k2) + snu(link)*uqcy_spheric(2, k2) - u1(link)*sqa(k2)
+        else
+           qu1   = csu(link)*uqcx(k1) + snu(link)*uqcy(k1) - u1(link)*sqa(k1)
+           qu2   = csu(link)*uqcx(k2) + snu(link)*uqcy(k2) - u1(link)*sqa(k2)
+       end if
        advel = (acl(link)*qu1 + (1d0-acl(link))*qu2) / volu
     end if
 
 end subroutine calculate_advection_using_scheme_33
+
+!>    local simplified version of nod2linx
+!! return x-component in link coordinate frame of vector in node coordinate frame
+double precision function uqcx_spheric(i12, cell)
+
+    integer,    intent(in) :: i12 !< left (1) or right (2) neighboring cell
+    integer,    intent(in) :: cell 
     
+    uqcx_spheric =  csb(i12,link) * uqcx(cell) + snb(i12,link) * uqcy(cell)
+
+end function uqcx_spheric
+
+!>    local simplified version of nod2liny
+!!    return y-component in link coordinate frame of a vector in node coordinate frame
+double precision function uqcy_spheric(i12, cell)
+
+    integer,    intent(in) :: i12 !< left (1) or right (2) neighboring cell
+    integer,    intent(in) :: cell 
+
+    uqcy_spheric =  -snb(i12,link) * uqcx(cell) + csb(i12,link) * uqcy(cell)
+
+end function uqcy_spheric
+      
 !> calculate_advection_using_scheme_44
 subroutine calculate_advection_using_scheme_44()
 
     if (vol1(k1) > 0) then
-       if (jasfer3D == 1) then
-          qu1   = csu(link)*nod2linx(link,1,uqcx(k1),uqcy(k1)) + snu(link)*nod2liny(link,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
+       if (jasfer3d == SPHERIC) then
+          qu1   = csu(link)*uqcx_spheric(1, k1) + snu(link)*uqcy_spheric(1, k1) - u1(link)*sqa(k1)
        else
           qu1   = csu(link)*uqcx(k1) + snu(link)*uqcy(k1) - u1(link)*sqa(k1)
        end if
        advel = advel + acl(link)*qu1/vol1(k1)
     end if
     if (vol1(k2) > 0) then
-       if (jasfer3D == 1) then
-          qu2   = csu(link)*nod2linx(link,2,uqcx(k2),uqcy(k2)) + snu(link)*nod2liny(link,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
+       if (jasfer3d == SPHERIC) then
+          qu2   = csu(link)*uqcx_spheric(2, k2) + snu(link)*uqcy_spheric(2, k2) - u1(link)*sqa(k2)
        else
           qu2   = csu(link)*uqcx(k2) + snu(link)*uqcy(k2) - u1(link)*sqa(k2)
        end if
@@ -541,9 +639,13 @@ end subroutine calculate_advection_using_scheme_3
 !! explicit first order mom conservative based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_103()
 
+   double precision, external     :: QucPerpure1D   ! idem, include own link
+   double precision               :: vol_k1        !< representative volume for node k1
+   double precision               :: vol_k2        !< representative volume for node k2
+   
     qu1 = 0                                       ! and Perot control volume
     qu2 = 0
-    if (jaPure1D == 1) then
+    if (jaPure1D == SCALAR_APPROACH_USING_VOL1_F) then
        vol_k1 = vol1_f(k1)
        vol_k2 = vol1_f(k2)
     else
@@ -559,6 +661,7 @@ subroutine calculate_advection_using_scheme_103()
        qu2 = QucPerPure1D(2,link)                    ! excess momentum in/out u(link) dir. from k2
        qu2 = qu2*(1d0-acl(link))                     ! Perot weigthing
     end if
+	
     volu = acl(link)*vol_k1 + (1d0-acl(link))*vol_k2
     if (volu > 0) then
        advel = (qu1 + qu2)/volu                   ! dimension: ((m4/s2) / m3) =   (m/s2)
@@ -570,7 +673,7 @@ end subroutine calculate_advection_using_scheme_103
 !! explicit first order mom conservative based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_333()
 
-    qu1 = 0                                       ! and Perot control volume
+    qu1 = 0
     if (volau(k1) > 0) then
        qu1 = QucPer(1,link)                          ! excess momentum in/out u(link) dir. from k1
        qu1 = qu1*acl(link)/ volau(k1)                ! Perot weigthing
@@ -607,9 +710,9 @@ end subroutine calculate_advection_using_scheme_30
 !! Thesis Olga 4.8 based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_31()
 
-    if (jasfer3D == 1) then
-       qu1   = csu(link)*nod2linx(link,1,uqcx(k1),uqcy(k1)) + snu(link)*nod2liny(link,1,uqcx(k1),uqcy(k1))
-       qu2   = csu(link)*nod2linx(link,2,uqcx(k2),uqcy(k2)) + snu(link)*nod2liny(link,2,uqcx(k2),uqcy(k2))
+    if (jasfer3d == SPHERIC) then
+       qu1   = csu(link)*uqcx_spheric(1, k1) + snu(link)*uqcy_spheric(1, k1)
+       qu2   = csu(link)*uqcx_spheric(2, k2) + snu(link)*uqcy_spheric(2, k2)
     else
        qu1   = csu(link)*uqcx(k1) + snu(link)*uqcy(k1)
        qu2   = csu(link)*uqcx(k2) + snu(link)*uqcy(k2)
@@ -621,9 +724,9 @@ end subroutine calculate_advection_using_scheme_31
 !> calculate_advection_using_scheme_40
 subroutine calculate_advection_using_scheme_40()
 
-    if (jasfer3D == 1) then
-       qu1   = csu(link)*nod2linx(link,1,uqcx(k1),uqcy(k1)) + snu(link)*nod2liny(link,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
-       qu2   = csu(link)*nod2linx(link,2,uqcx(k2),uqcy(k2)) + snu(link)*nod2liny(link,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
+    if (jasfer3d == SPHERIC) then
+       qu1   = csu(link)*uqcx_spheric(1, k1) + snu(link)*uqcy_spheric(1, k1) - u1(link)*sqa(k1)
+       qu2   = csu(link)*uqcx_spheric(2, k2) + snu(link)*uqcy_spheric(2, k2) - u1(link)*sqa(k2)
     else
        qu1   = csu(link)*uqcx(k1) + snu(link)*uqcy(k1) - u1(link)*sqa(k1)
        qu2   = csu(link)*uqcx(k2) + snu(link)*uqcy(k2) - u1(link)*sqa(k2)
@@ -645,15 +748,14 @@ subroutine calculate_advection_using_scheme_1()
                                                   ! qu1     = ( uqcx(k1)*cs + uqcy(k1)*sn )
                                                   ! qu2     = ( uqcx(k2)*cs + uqcy(k2)*sn )
     if (volu   > 0) then
-       if (jasfer3D == 1) then
-          qu1 = csu(link)*(nod2linx(link,1,uqcx(k1),uqcy(k1)) + nod2linx(link,2,uqcx(k2),uqcy(k2)))
-          qu2 = snu(link)*(nod2liny(link,1,uqcx(k1),uqcy(k1)) + nod2liny(link,2,uqcx(k2),uqcy(k2)))
+       if (jasfer3d == SPHERIC) then
+          qu1 = csu(link)*(uqcx_spheric(1, k1) + uqcx_spheric(2, k2))
+          qu2 = snu(link)*(uqcy_spheric(1, k1) + uqcy_spheric(2, k2))
        else
           qu1 = csu(link)*( uqcx(k1) + uqcx(k2) )
           qu2 = snu(link)*( uqcy(k1) + uqcy(k2) )
        end if
-       v12t    = sq(k1) + sq(k2)                  ! time der. of v12
-       advel   = (qu1 + qu2 + u1(link)*v12t) / volu  ! dimension: ((m4/s2) / m3) =   (m/s2)
+       advel   = (qu1 + qu2 + u1(link)*(sq(k1) + sq(k2))) / volu  ! dimension: ((m4/s2) / m3) =   (m/s2)
     end if
     
 end subroutine calculate_advection_using_scheme_1
@@ -661,6 +763,8 @@ end subroutine calculate_advection_using_scheme_1
 !> calculate_advection_using_scheme_2
 !! explicit first order mom conservative based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_2()
+
+    double precision, external :: QucWen         ! Sum over links of Flux times upwind cell centre velocity (m4/s2), do not include own link
 
     volu     = vol1(k1) + vol1(k2)                ! Wennekers control volume
     if (volu > 0) then
@@ -674,6 +778,8 @@ end subroutine calculate_advection_using_scheme_2
 !> calculate_advection_using_scheme_4
 !! explicit first order mom conservative
 subroutine calculate_advection_using_scheme_4()
+
+   double precision, external        :: QucPeri        ! idem, inly incoming         nb: QucPeripiaczek is a subroutine
 
     qu1 = 0                                       ! and Perot control volume
     if (vol1(k1) > 0) then
@@ -697,24 +803,25 @@ end subroutine calculate_advection_using_scheme_4
 !! 5,6 = advection like 3,4, now Piaczek teta
 subroutine calculate_advection_using_schemes_5_6()
 
-    if (kcu(link) ==1) then
+    double precision               :: ai, ae, abh
+
+    if (kcu(link) == LINK_1D) then
        volu = acl(link)*vol1_f(k1) + (1d0-acl(link))*vol1_f(k2)
     else
        volu = acl(link)*vol1(k1) + (1d0-acl(link))*vol1(k2)
     end if
 
     if (volu > 0) then
-       volui = 1d0/volu
        if (vol1(k1) > 0) then
           call QucPeripiaczekteta(1,link,ai,ae,volu,iadvL-2)   ! excess momentum in u(link) dir. out of k1, include own
-          abh     = acl(link)*volui
-          adveL   = adveL   + abh*ae
+          abh        = acl(link)/volu
+          adveL      = adveL      + abh*ae
           advi(link) = advi(link) + abh*ai
        end if
        if (vol1(k2) > 0) then
           call QucPeripiaczekteta(2,link,ai,ae,volu,iadvL-2)   ! excess momentum in u(link) dir. out of k2
-          abh = (1d0-acl(link))*volui
-          adveL   = adveL   + abh*ae
+          abh        = (1d0-acl(link))/volu
+          adveL      = adveL      + abh*ae
           advi(link) = advi(link) + abh*ai
        end if
 
@@ -726,30 +833,32 @@ end subroutine calculate_advection_using_schemes_5_6
 !! Piaczek fully implicit
 subroutine calculate_advection_using_schemes_7_till_12()
 
+    integer                        :: iad
+    double precision               :: ai, ae, abh
+    
     iad  = 3
     if (iadvL == 8 .or. iadvL == 10 .or. iadvL == 12) then
        iad = 4
     end if
 
-    if (kcu(link) == 1) then
+    if (kcu(link) == LINK_1D) then
        volu = acl(link)*vol1_f(k1) + (1d0-acl(link))*vol1_f(k2)
-    else if (kcu(link) == 3 .and. iadveccorr1D2D == 1) then
+    else if (kcu(link) == LATERAL_1D2D_LINK .and. iadveccorr1D2D == LINK_VOLUME) then
        volu = au(link)*dx(link) ! Use volume weighting based on approximated "lateral volume", to avoid large 1D river volumes.
     else
        volu = acl(link)*vol1(k1) + (1d0-acl(link))*vol1(k2)
     end if
 
     if (volu > 0) then
-       volui = 1d0/volu
        if (hs(k1) > 0) then
           call QucPeripiaczek(1,link,ai,ae,iad)   ! excess momentum in u(link) dir. out of k1, include own
-          abh     = acl(link)*volui
+          abh     = acl(link)/volu
           adveL   = adveL   + abh*ae
           advi(link) = advi(link) + abh*ai
        end if
        if (hs(k2) > 0) then
           call QucPeripiaczek(2,link,ai,ae,iad)   ! excess momentum in u(link) dir. out of k2
-          abh = (1d0-acl(link))*volui
+          abh = (1d0-acl(link))/volu
           adveL   = adveL   + abh*ae
           advi(link) = advi(link) + abh*ai
        end if
@@ -762,35 +871,48 @@ end subroutine calculate_advection_using_schemes_7_till_12
 !! subgrid weir small stencil, ifixedweirscheme = 3, upwind center velocity does not feel crest link
 subroutine calculate_advection_using_scheme_21()
 
+    integer                        :: isg
+    integer                        :: ku, kd
+    integer                        :: n12
+    double precision               :: ucxku, ucyku
+    double precision               :: ucin, fdx
+
     if (u0(link)  > 0d0) then
-       ku = k1 ; kd = k2 ; isg =  1 ; n12 = 1
+       ku  = k1
+	   kd  = k2
+	   isg =  1
+	   n12 = 1
     else
-       ku = k2 ; kd = k1 ; isg = -1 ; n12 = 2
+       ku  = k2
+	   kd  = k1
+	   isg = -1
+	   n12 = 2
     end if
 
     call getucxucynoweirs(ku, ucxku, ucyku, ifixedweirscheme )
-    if (jasfer3D == 1) then
+    if (jasfer3d == SPHERIC) then
        ucin = nod2linx(link,n12,ucxku,ucyku)*csu(link) + nod2liny(link,n12,ucxku,ucyku)*snu(link)
     else
        ucin = ucxku*csu(link) + ucyku*snu(link)
     end if
 
-    fdx     = 0.5d0*dxi(link)*isg
-
+    fdx        = 0.5d0*dxi(link)*isg
     advi(link) = advi(link) + fdx*u0(link)
-    advel   = advel   - fdx*ucin*ucin
+    advel      = advel      - fdx*ucin*ucin
 
 end subroutine calculate_advection_using_scheme_21
 
 !> calculate_advection_using_scheme_77
 !! supercritical inflow boundary
 subroutine calculate_advection_using_scheme_77()
-
-    abh     = bai(k1)*huvli(link)*acl(link)
-    if (jasfer3D == 1) then
-       adveL = adveL   - abh*q1(link)*(nod2linx(link,1,ucx(k1),ucy(k1))*csu(link) + nod2liny(link,1,ucx(k1),ucy(k1))*snu(link))
+    
+    double precision :: abh
+    
+    abh = bai(k1)*huvli(link)*acl(link)
+    if (jasfer3d == SPHERIC) then
+       adveL = adveL - abh*q1(link)*(nod2linx(link,1,ucx(k1),ucy(k1))*csu(link) + nod2liny(link,1,ucx(k1),ucy(k1))*snu(link))
     else
-       adveL = adveL   - abh*q1(link)*(ucx(k1)*csu(link)+ucy(k1)*snu(link))
+       adveL = adveL - abh*q1(link)*(ucx(k1)*csu(link)+ucy(k1)*snu(link))
     end if
     advi(link) = advi(link) + abh*q1(link)
        
@@ -800,7 +922,9 @@ end subroutine calculate_advection_using_scheme_77
 !! explicit first order mom conservative olga (17), based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_38()
 
-    qu1 = 0                                       ! and Perot control volume
+    double precision, external     :: QucPercu       ! testing center differences
+
+    qu1 = 0
     if (vol1(k1) > 0) then
        qu1 = QucPercu(1,link)                        ! excess momentum in/out uc(k1) dir. from k1
        qu1 = qu1*acl(link)/volau(k1)                 ! Perot weigthing
@@ -818,7 +942,7 @@ end subroutine calculate_advection_using_scheme_38
 !! explicit first order mom conservative (stelling kramer), based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_34()
 
-    qu1 = 0                                       ! and Perot control volume
+    qu1 = 0
     if (vol1(k1) > 0) then
        qu1 = QucPer(1,link)                          ! excess momentum in/out u(link) dir. from k1
        qu1 = qu1*acl(link)*bai(k1)                   ! Perot weigthing
@@ -836,7 +960,9 @@ end subroutine calculate_advection_using_scheme_34
 !! explicit first order mom conservative (stelling kramer), based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_35()
 
-    qu1 = 0                                       ! and Perot control volume
+    double precision, external :: QufPer            ! testing adv of face velocities instead of centre upwind velocities
+
+    qu1 = 0
     if (vol1(k1) > 0) then
        qu1 = QufPer(1,link)                          ! excess momentum in/out u(link) dir. from k1
        qu1 = qu1*acl(link)                           ! Perot weigthing
@@ -892,78 +1018,108 @@ subroutine calculate_advection_for_3d()
 
  do LL  = 1, lnx
 
-    if ( hu(LL) > 0 ) then
+    if ( hu(LL) <= 0 ) cycle
 
-       iadvL = iadv(LL)
-       if (LL > lnxi) then
-          if (iadvL == 77) then
-             if (u0(LL) < 0) cycle
-          else if (u0(LL) > 0) then
-             cycle                                            ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
-          end if
-       end if
-       cs  = csu(LL)  ; sn  = snu(LL)
-       Lb  = Lbot(LL) ; Lt  = Ltop(LL)
-       ac1 = acl(LL)  ; ac2 = 1d0 - ac1
+    iadvL = iadv(LL)
+    if (LL > lnxi) then
+        if (iadvL == 77) then
+            if (u0(LL) < 0) cycle
+        else if (u0(LL) > 0) then
+            cycle                                            ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
+        end if
+    end if
+    
+    cs  = csu(LL)
+    sn  = snu(LL)
+    Lb  = Lbot(LL)
+    Lt  = Ltop(LL)
+    ac1 = acl(LL)
+    ac2 = 1d0 - ac1
 
-       if (iadv(LL) == 3) then
-          call QucPer3Dsigma(1,LL,Lb,Lt,cs,sn,quk1)           ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
-          call QucPer3Dsigma(2,LL,Lb,Lt,cs,sn,quk2)           ! sum of (Q*uc cell centre upwind normal) at side 2 of basis link LL
+    if (iadv(LL) == 3) then
+        call calculate_advection_3D_scheme_3()
+    else if ( iadv(LL) == 33 .or. iadv(LL) == 40 .or. iadv(LL) == 6 ) then                       !
+        call calculate_advection_3D_schemes_33_40_6()
+    else if (iadv(LL) == 34) then                          ! Kramer Stelling, ba per cell weighted
+        call calculate_advection_3D_scheme_34()
+    else if (iadv(LL) == 5) then
+        call calculate_advection_3D_scheme_5()
+    else if (iadv(LL) == 44) then
+        call calculate_advection_3D_scheme_44()
+    end if
 
-          do link = Lb, Lt
-             advel = 0d0                                      ! advi (1/s), adve (m/s2)
-             k1    = ln(1,link) ; k2 = ln(2,link)
-             qu1   = 0d0
-             if (vol1(k1) > 0) then
-                qu1 = quk1(1,link-Lb+1)*ac1                      ! Perot weigthing
-             end if
-             qu2    = 0d0
-             if (vol1(k2) > 0) then
-                qu2 = quk2(1,link-Lb+1)*ac2                      ! Perot weigthing
-             end if
-             if (jarhoxu == NO_RHO_EFFECTS_IN_MOMENTUM) then
-                volu  = ac1*vol1(k1)         + ac2*vol1(k2)
-             else
-                volu  = ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
-             end if
-             if (volu > 0) then
-                advel = (qu1 + qu2)/volu                      ! dimension: ((m4/s2) / m3) =   (m/s2)
-             end if
-             adve(link) = adve(link) + advel
+ end do
 
-          end do
+end subroutine calculate_advection_for_3d
 
-       else if ( iadv(LL) == 33 .or. iadv(LL) == 40 .or. iadv(LL) == 6 ) then                       !
+!> calculate_advection_3D_scheme_3
+subroutine calculate_advection_3D_scheme_3()
 
-          if (layertype == 1) then
+    call QucPer3Dsigma(1,LL,Lb,Lt,cs,sn,quk1)           ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
+    call QucPer3Dsigma(2,LL,Lb,Lt,cs,sn,quk2)           ! sum of (Q*uc cell centre upwind normal) at side 2 of basis link LL
 
-             if (iadv(LL) == -6 ) then  ! .and. newzbndadv == 1 ) then
+    do link = Lb, Lt
+        advel = 0d0                                      ! advi (1/s), adve (m/s2)
+        k1    = ln(1,link)
+        k2    = ln(2,link)
+        qu1   = 0d0
+        if (vol1(k1) > 0) then
+            qu1 = quk1(1,link-Lb+1)*ac1                      ! Perot weigthing
+        end if
+        qu2    = 0d0
+        if (vol1(k2) > 0) then
+            qu2 = quk2(1,link-Lb+1)*ac2                      ! Perot weigthing
+        end if
+        if (jarhoxu == NO_RHO_EFFECTS_IN_MOMENTUM) then
+            volu  = ac1*vol1(k1)         + ac2*vol1(k2)
+        else
+            volu  = ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
+        end if
+        if (volu > 0) then
+            advel = (qu1 + qu2)/volu                      ! dimension: ((m4/s2) / m3) =   (m/s2)
+        end if
+        adve(link) = adve(link) + advel
 
-                do link = Lb, Lt
-                   if (u1(link) > 0) then
-                      k = ln(1,link)
-                      n12 = 1
-                   else
-                      k = ln(2,link)
-                      n12 = 2
-                   end if
-                   if (jasfer3D == 1) then
-                      advel   = 2d0*( u1(link) - (cs*nod2linx(LL,n12,ucx(k),ucy(k)) + sn*nod2liny(LL,n12,ucx(k),ucy(k)) ) )*dxi(LL)
-                   else
-                      advel   = 2d0*( u1(link) - (cs*ucx(k) + sn*ucy(k) ) )*dxi(LL)
-                   end if
-                   if ( advel > 0d0 ) then
-                      advi(link) = advi(link) + advel
-                   else
-                      adve(link) = adve(link) - cs*u1(link)*advel
-                   end if
-                end do
+    end do
+    
+end subroutine calculate_advection_3D_scheme_3
 
-             else
+!> calculate_advection_3D_schemes_33_40_6
+subroutine calculate_advection_3D_schemes_33_40_6()
 
-             do link = Lb, Lt
+    integer                        :: kt1, kt2, n1, n2, kb1, kb2, Ltx0, ktx01, ktx02 , ktx1 , ktx2, Ltx, L1
+    integer                        :: n12
+    double precision               :: hs1, hs2, vo1, vo2
+
+    if (layertype == 1) then
+
+        if (iadv(LL) == -6 ) then 
+
+            do link = Lb, Lt
+                if (u1(link) > 0) then
+                    cell = ln(1,link)
+                    n12 = 1
+                else
+                    cell = ln(2,link)
+                    n12 = 2
+                end if
+                if (jasfer3d == SPHERIC) then
+                    advel   = 2d0*( u1(link) - (cs*nod2linx(LL,n12,ucx(cell),ucy(cell)) + sn*nod2liny(LL,n12,ucx(cell),ucy(cell)) ) )*dxi(LL)
+                else
+                    advel   = 2d0*( u1(link) - (cs*ucx(cell) + sn*ucy(cell) ) )*dxi(LL)
+                end if
+                if ( advel > 0d0 ) then
+                    advi(link) = advi(link) + advel
+                else
+                    adve(link) = adve(link) - cs*u1(link)*advel
+                end if
+            end do
+
+        else
+
+            do link = Lb, Lt
                 k1    = ln(1,link) ; k2 = ln(2,link)
-                if (jasfer3D == 1) then
+                if (jasfer3d == SPHERIC) then
                    qu1   =  cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) +  sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
                    qu2   =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) +  sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
                 else
@@ -998,24 +1154,24 @@ subroutine calculate_advection_for_3d()
                    volukk(link-Lb+1)  = volukk(link-Lb+1) + ac1*vol1(k1) + ac2*vol1(k2)
                 end if
              end do
-             do k = k1+1, ktop(ln(1,LL) )
+             do cell = k1+1, ktop(ln(1,LL) )
                 if (jarhoxu > 0) then
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(k)*rho(k)
+                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(cell)*rho(cell)
                 else
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(k)
+                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(cell)
                 end if
              end do
-             do k = k2+1, ktop(ln(2,LL) )
+             do cell = k2+1, ktop(ln(2,LL) )
                 if (jarhoxu > 0) then
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(k)*rho(k)
+                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(cell)*rho(cell)
                 else
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(k)
+                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(cell)
                 end if
              end do
 
              do link = Lb, Lt
                 k1    = ln(1,link) ; k2 = ln(2,link)
-                if (jasfer3D == 1) then
+                if (jasfer3d == SPHERIC) then
                    qu1    = cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
                    qu2    = cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
                 else
@@ -1031,10 +1187,13 @@ subroutine calculate_advection_for_3d()
 
           else if (layertype == 2 .and. jahazlayer == 1) then
 
-             n1  = ln(1,LL) ; n2 = ln(2,LL)
-             call getkbotktop(n1,kb1,kt1) ; ktx1 = kt1-kb1+1
-             call getkbotktop(n2,kb2,kt2) ; ktx2 = kt2-kb2+1
-             Ltx = Lt-Lb+1
+             n1 = ln(1,LL)
+             n2 = ln(2,LL)
+             call getkbotktop(n1, kb1, kt1)
+             ktx1 = kt1 - kb1 + 1
+             call getkbotktop(n2, kb2, kt2)
+             ktx2 = kt2 - kb2 + 1
+             Ltx  = Lt - Lb + 1
 
              volukk(1:Ltx) = 0d0
 
@@ -1043,18 +1202,18 @@ subroutine calculate_advection_for_3d()
                 volukk(L1) = volukk(L1) + ac1*vol1(k1) + ac2*vol1(k2)
              end do
 
-             do k = k1+1, kt1
-                volukk(Ltx) = volukk(Ltx) + ac1*vol1(k)
+             do cell = k1+1, kt1
+                volukk(Ltx) = volukk(Ltx) + ac1*vol1(cell)
              end do
 
-             do k = k2+1, kt2
-                volukk(Ltx) = volukk(Ltx) + ac2*vol1(k)
+             do cell = k2+1, kt2
+                volukk(Ltx) = volukk(Ltx) + ac2*vol1(cell)
              end do
 
              do link = Lb, Lt
                 k1    = ln(1,link) ; k2 = ln(2,link) ; L1 = link-Lb+1
                 if (volukk(L1) > 0) then
-                   if (jasfer3D == 1) then
+                   if (jasfer3d == SPHERIC) then
                       qu1   =  cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) +  sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
                       qu2   =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) +  sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
                    else
@@ -1068,37 +1227,41 @@ subroutine calculate_advection_for_3d()
 
           else if (layertype == 2 .and. jahazlayer == 2 ) then  ! lineinterp
 
-             n1  = ln(1,LL) ; n2 = ln(2,LL)
-             call getkbotktop(n1,kb1,kt1)
-             call getkbotktop(n2,kb2,kt2)
+             n1 = ln(1,LL)
+             n2 = ln(2,LL)
+             call getkbotktop(n1, kb1, kt1)
+             call getkbotktop(n2, kb2, kt2)
              hs1 = max(epshs, zws(kt1) - zws(kb1-1) )
              hs2 = max(epshs, zws(kt2) - zws(kb2-1) )
 
              ktx01 = kt1 - kb1 + 1
              ktx02 = kt2 - kb2 + 1
 
-             volk1(0) = 0d0 ; quuk1(0) = 0d0 ; sqak1(0) = 0d0 ; sigk1(0) = 0d0
-             do k = kb1, kt1
-                volk1(k-kb1+1) = volk1(k-kb1) + vol1(k)
-                if (jasfer3D == 1) then
-                   quuk1(k-kb1+1) = quuk1(k-kb1) + cs*nod2linx(LL,1,uqcx(k),uqcy(k)) + sn*nod2liny(LL,1,uqcx(k),uqcy(k))
+             volk1(0) = 0d0
+             quuk1(0) = 0d0
+             sqak1(0) = 0d0
+             sigk1(0) = 0d0
+             do cell = kb1, kt1
+                volk1(cell-kb1+1) = volk1(cell-kb1) + vol1(cell)
+                if (jasfer3d == SPHERIC) then
+                   quuk1(cell-kb1+1) = quuk1(cell-kb1) + cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell))
                 else
-                   quuk1(k-kb1+1) = quuk1(k-kb1) + cs*uqcx(k) + sn*uqcy(k)
+                   quuk1(cell-kb1+1) = quuk1(cell-kb1) + cs*uqcx(cell) + sn*uqcy(cell)
                 end if
-                sqak1(k-kb1+1) = sqak1(k-kb1) + sqa(k)
-                sigk1(k-kb1+1) = ( zws(k) - zws(kb1-1) ) / hs1
+                sqak1(cell-kb1+1) = sqak1(cell-kb1) + sqa(cell)
+                sigk1(cell-kb1+1) = ( zws(cell) - zws(kb1-1) ) / hs1
              end do
 
              volk2(0) = 0d0 ; quuk2(0) = 0d0 ; sqak2(0) = 0d0 ; sigk2(0) = 0d0
-             do k = kb2, kt2
-                volk2(k-kb2+1) = volk2(k-kb2) + vol1(k)
-                if (jasfer3D == 1) then
-                   quuk2(k-kb2+1) = quuk2(k-kb2) + cs*nod2linx(LL,2,uqcx(k),uqcy(k)) + sn*nod2liny(LL,2,uqcx(k),uqcy(k))
+             do cell = kb2, kt2
+                volk2(cell-kb2+1) = volk2(cell-kb2) + vol1(cell)
+                if (jasfer3d == SPHERIC) then
+                   quuk2(cell-kb2+1) = quuk2(cell-kb2) + cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell))
                 else
-                   quuk2(k-kb2+1) = quuk2(k-kb2) + cs*uqcx(k) + sn*uqcy(k)
+                   quuk2(cell-kb2+1) = quuk2(cell-kb2) + cs*uqcx(cell) + sn*uqcy(cell)
                 end if
-                sqak2(k-kb2+1) = sqak2(k-kb2) + sqa(k)
-                sigk2(k-kb2+1) = ( zws(k) - zws(kb2-1) ) / hs2
+                sqak2(cell-kb2+1) = sqak2(cell-kb2) + sqa(cell)
+                sigk2(cell-kb2+1) = ( zws(cell) - zws(kb2-1) ) / hs2
              end do
 
              do link = Lb, Lt  ;  Ltx0 = Lt - Lb + 1 ; siguL(0) = 0d0
@@ -1123,38 +1286,42 @@ subroutine calculate_advection_for_3d()
 
           else if (layertype == 2 .and. jahazlayer == 4) then
 
-             n1  = ln(1,LL) ; n2 = ln(2,LL)
-             call getkbotktop(n1,kb1,kt1) ; ktx1 = kb1 + kmxn(n1) - 1
-             call getkbotktop(n2,kb2,kt2) ; ktx2 = kb2 + kmxn(n2) - 1
+             n1 = ln(1,LL)
+             n2 = ln(2,LL)
+             call getkbotktop(n1, kb1, kt1)
+             ktx1 = kb1 + kmxn(n1) - 1
+             call getkbotktop(n2, kb2, kt2)
+             ktx2 = kb2 + kmxn(n2) - 1
+             Ltx  = Lt-Lb+1
 
-             Ltx = Lt-Lb+1
+             volukk(1:Ltx) = 0d0
+             quuk1(1:Ltx)  = 0d0
+             sqak1(1:Ltx)  = 0d0
 
-             volukk(1:Ltx) = 0d0 ; quuk1(1:Ltx) = 0d0 ; sqak1(1:Ltx) = 0d0
-
-             do k = kb1, ln(1,Lb) - 1                   ! below Lb n1
-                volukk(1) = volukk(1)     + ac1*vol1(k)
-                if (jasfer3D == 1) then
-                   quuk1(1) = quuk1(1) + ac1*(cs*nod2linx(LL,1,uqcx(k),uqcy(k)) + sn*nod2liny(LL,1,uqcx(k),uqcy(k)))
+             do cell = kb1, ln(1,Lb) - 1                   ! below Lb n1
+                volukk(1) = volukk(1)     + ac1*vol1(cell)
+                if (jasfer3d == SPHERIC) then
+                   quuk1(1) = quuk1(1) + ac1*(cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell)))
                 else
-                   quuk1(1) = quuk1 (1)     + ac1*(cs*uqcx(k) + sn*uqcy(k))
+                   quuk1(1) = quuk1 (1)     + ac1*(cs*uqcx(cell) + sn*uqcy(cell))
                 end if
-                sqak1 (1) = sqak1 (1)     + ac1*sqa(k)
+                sqak1 (1) = sqak1 (1)     + ac1*sqa(cell)
              end do
 
-             do k = kb2, ln(2,Lb) - 1                   ! below Lb n2
-                volukk(1) = volukk(1)     + ac2*vol1(k)
-                if (jasfer3D == 1) then
-                   quuk1(1) = quuk1(1) + ac2*(cs*nod2linx(LL,2,uqcx(k),uqcy(k)) + sn*nod2liny(LL,2,uqcx(k),uqcy(k)))
+             do cell = kb2, ln(2,Lb) - 1                   ! below Lb n2
+                volukk(1) = volukk(1)     + ac2*vol1(cell)
+                if (jasfer3d == SPHERIC) then
+                   quuk1(1) = quuk1(1) + ac2*(cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell)))
                 else
-                   quuk1(1) = quuk1 (1)     + ac2*(cs*uqcx(k) + sn*uqcy(k))
+                   quuk1(1) = quuk1 (1)     + ac2*(cs*uqcx(cell) + sn*uqcy(cell))
                 end if
-                sqak1 (1) = sqak1 (1)     + ac2*sqa(k)
+                sqak1 (1) = sqak1 (1)     + ac2*sqa(cell)
              end do
 
              do link = Lb, Lt                              ! intermediate
                 k1    = ln(1,link) ; k2 = ln(2,link) ; L1 = link-Lb+1
                 volukk(L1) = volukk(L1) + ac1*vol1(k1)                    + ac2*vol1(k2)
-                if (jasfer3D == 1) then
+                if (jasfer3d == SPHERIC) then
                    quuk1 (L1) = quuk1(L1) + ac1*(cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1))) +   &
                                             ac2*(cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)))
                 else
@@ -1163,24 +1330,24 @@ subroutine calculate_advection_for_3d()
                 sqak1 (L1) = sqak1 (L1) + ac1*sqa(k1)                     + ac2*sqa(k2)
              end do
 
-             do k = k1+1, ktx1                          ! above Lt n1
-                volukk(Ltx) = volukk(Ltx) + ac1*vol1(k)
-                if (jasfer3D == 1) then
-                   quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*nod2linx(LL,1,uqcx(k),uqcy(k)) + sn*nod2liny(LL,1,uqcx(k),uqcy(k)))
+             do cell = k1+1, ktx1                          ! above Lt n1
+                volukk(Ltx) = volukk(Ltx) + ac1*vol1(cell)
+                if (jasfer3d == SPHERIC) then
+                   quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell)))
                 else
-                   quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*uqcx(k) + sn*uqcy(k))
+                   quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*uqcx(cell) + sn*uqcy(cell))
                 end if
-                sqak1 (Ltx) = sqak1(Ltx)  + ac1*sqa(k)
+                sqak1 (Ltx) = sqak1(Ltx)  + ac1*sqa(cell)
              end do
 
-             do k = k2+1, ktx2                          ! above Lt n2
-                volukk(Ltx) = volukk(Ltx) + ac2*vol1(k)
-                if (jasfer3D == 1) then
-                   quuk1 (Ltx) = quuk1(Ltx)  + ac2*(cs*nod2linx(LL,2,uqcx(k),uqcy(k)) + sn*nod2liny(LL,2,uqcx(k),uqcy(k)))
+             do cell = k2+1, ktx2                          ! above Lt n2
+                volukk(Ltx) = volukk(Ltx) + ac2*vol1(cell)
+                if (jasfer3d == SPHERIC) then
+                   quuk1 (Ltx) = quuk1(Ltx)  + ac2*(cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell)))
                 else
-                   quuk1 (Ltx) = quuk1 (Ltx) + ac2*(cs*uqcx(k) + sn*uqcy(k))
+                   quuk1 (Ltx) = quuk1 (Ltx) + ac2*(cs*uqcx(cell) + sn*uqcy(cell))
                 end if
-                sqak1 (Ltx) = sqak1 (Ltx) + ac2*sqa(k)
+                sqak1 (Ltx) = sqak1 (Ltx) + ac2*sqa(cell)
              end do
 
              do link  = Lb, Lt
@@ -1195,70 +1362,76 @@ subroutine calculate_advection_for_3d()
              end do
 
           end if
+end subroutine calculate_advection_3D_schemes_33_40_6
 
-       else if (iadv(LL) == 34) then                          ! Kramer Stelling, ba per cell weighted
 
-          call QucPer3Dsigma(1,LL,Lb,Lt,cs,sn,quk1)           ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
-          call QucPer3Dsigma(2,LL,Lb,Lt,cs,sn,quk2)           ! sum of (Q*uc cell centre upwind normal) at side 2 of basis link LL
-          baik1 = bai( ln(1,LL) )
-          baik2 = bai( ln(2,LL) )
-          do link = Lb, Lt
-             advel = 0                                        ! advi (1/s), adve (m/s2)
-             k1    = ln(1,link) ; k2 = ln(2,link)
-             qu1   = 0d0
-             if (vol1(k1) > 0) then
-                qu1 = quk1(1,link-Lb+1)*ac1*baik1
-             end if
-             qu2    = 0
-             if (vol1(k2) > 0) then
-                qu2 = quk2(1,link-Lb+1)*ac2*baik2            ! Perot weigthing
-             end if
-             huvL    = ac1*(zws(k1)-zws(k1-1)) + ac2*(zws(k2)-zws(k2-1))
-             if (huvL > 0d0) then
-                advel   = (qu1 + qu2)/huvL                         ! dimension: ((m4/s2) / m3) =   (m/s2)
-                adve(link) = adve(link) + advel
-             end if
-          end do
+!> calculate_advection_3D_scheme_34
+subroutine calculate_advection_3D_scheme_34()
 
-       else if (iadv(LL) == 5) then
+    double precision :: huvl, baik1, baik2
+    
+    call QucPer3Dsigma(1,LL,Lb,Lt,cs,sn,quk1)           ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
+    call QucPer3Dsigma(2,LL,Lb,Lt,cs,sn,quk2)           ! sum of (Q*uc cell centre upwind normal) at side 2 of basis link LL
+    baik1 = bai( ln(1,LL) )
+    baik2 = bai( ln(2,LL) )
+    do link = Lb, Lt
+        advel = 0                                        ! advi (1/s), adve (m/s2)
+        k1    = ln(1,link) ; k2 = ln(2,link)
+        qu1   = 0d0
+        if (vol1(k1) > 0) then
+            qu1 = quk1(1,link-Lb+1)*ac1*baik1
+        end if
+        qu2    = 0
+        if (vol1(k2) > 0) then
+            qu2 = quk2(1,link-Lb+1)*ac2*baik2            ! Perot weigthing
+        end if
+        huvL    = ac1*(zws(k1)-zws(k1-1)) + ac2*(zws(k2)-zws(k2-1))
+        if (huvL > 0d0) then
+            advel   = (qu1 + qu2)/huvL                         ! dimension: ((m4/s2) / m3) =   (m/s2)
+            adve(link) = adve(link) + advel
+        end if
+    end do
+          
+end subroutine calculate_advection_3D_scheme_34
 
-          call QucPer3Dsigmapiaczekteta(LL,Lb,Lt,cs,sn,quk1,quk2)
+!> calculate_advection_3D_scheme_5
+subroutine calculate_advection_3D_scheme_5()
 
-          do link = Lb, Lt
-              adve(link) = adve(link) + quk1(1,link-Lb+1)
-              advi(link) = advi(link) + quk2(1,link-Lb+1)
-          end do
+    call QucPer3Dsigmapiaczekteta(LL,Lb,Lt,cs,sn,quk1,quk2)
 
-       else if (iadv(LL) == 44) then
+    do link = Lb, Lt
+        adve(link) = adve(link) + quk1(1,link-Lb+1)
+        advi(link) = advi(link) + quk2(1,link-Lb+1)
+    end do
+          
+end subroutine calculate_advection_3D_scheme_5
 
-            do link = Lb, Lt
-               k1    = ln(1,link) ; k2 = ln(2,link)
-               if (vol1(k1) > 0) then
-                  if (jasfer3D == 1) then
-                     qu1     = cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
-                  else
-                     qu1     = cs*uqcx(k1)  + sn*uqcy(k1) - u1(link)*sqa(k1)
-                  end if
-                  adve(link) = adve(link) + ac1*qu1/vol1(k1)
-               end if
-               if (vol1(k2) > 0) then
-                  if (jasfer3D == 1) then
-                     qu2    =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
-                  else
-                     qu2     = cs*uqcx(k2)  + sn*uqcy(k2) - u1(link)*sqa(k2)
-                  end if
-                  adve(link) = adve(link) + ac2*qu2/vol1(k2)
-               end if
-            end do
+!> calculate_advection_3D_scheme_44
+subroutine calculate_advection_3D_scheme_44()
 
-       end if   ! advectiontypes
+    do link = Lb, Lt
+        k1    = ln(1,link) ; k2 = ln(2,link)
+        if (vol1(k1) > 0) then
+            if (jasfer3d == SPHERIC) then
+                qu1     = cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
+            else
+                qu1     = cs*uqcx(k1)  + sn*uqcy(k1) - u1(link)*sqa(k1)
+            end if
+            adve(link) = adve(link) + ac1*qu1/vol1(k1)
+        end if
+        if (vol1(k2) > 0) then
+            if (jasfer3d == SPHERIC) then
+                qu2    =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
+            else
+                qu2     = cs*uqcx(k2)  + sn*uqcy(k2) - u1(link)*sqa(k2)
+            end if
+            adve(link) = adve(link) + ac2*qu2/vol1(k2)
+        end if
+    end do
+    
+end subroutine calculate_advection_3D_scheme_44
 
-    end if      ! (hu)
-
- end do         ! LL
-
-end subroutine calculate_advection_for_3d
-
+    
 end subroutine calculate_advection
 
 end module m_advection
