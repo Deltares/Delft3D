@@ -52,6 +52,7 @@ subroutine calculate_advection()
    integer, parameter  :: SCALAR_APPROACH_USING_VOL1_F = 1
    integer, parameter  :: SPHERIC = 1
    
+   integer :: n
    integer                        :: link, k1, k2   !< link, nd1, nd2 
    integer                        :: iadvL
    integer                        :: source, kk, kb
@@ -83,6 +84,15 @@ subroutine calculate_advection()
    end if
 
    call sethigherorderadvectionvelocities()
+   
+    write (879,*) 'ucxu'
+ do n = 1, size(ucxu)
+     write (879,*) n,ucxu(n)
+ enddo
+  write (879,*) 'ucyu'
+ do n = 1, size(ucyu)
+     write (879,*) n,ucyu(n)
+enddo
 
    uqcx(:) = 0d0
    uqcy(:) = 0d0
@@ -102,6 +112,19 @@ subroutine calculate_advection()
       end if
    end if
 
+     write (879,*) 'uqcx'
+ do n = 1, size(uqcx)
+     write (879,*) n,uqcx(n)
+ enddo
+   write (879,*) 'uqcy'
+ do n = 1, size(uqcy)
+     write (879,*) n,uqcy(n)
+ enddo
+    write (879,*) 'sqa'
+ do n = 1, size(sqa)
+     write (879,*) n,sqa(n)
+ enddo
+ 
    if (javau >= 6) then ! 3D checkerboard pepare explicit node based vertical advection
       if (jarhoxu == NO_RHO_EFFECTS_IN_MOMENTUM) then
          call set_uqcx_uqcy_sqa_without_rho_effects()
@@ -110,6 +133,19 @@ subroutine calculate_advection()
       end if
    end if
 
+   write (879,*) 'uqcx after javau'
+ do n = 1, size(uqcx)
+     write (879,*) n,uqcx(n)
+ enddo
+ write (879,*) 'uqcy'
+ do n = 1, size(uqcy)
+     write (879,*) n,uqcy(n)
+ enddo
+  write (879,*) 'sqa'
+ do n = 1, size(sqa)
+     write (879,*) n,sqa(n)
+ enddo
+ 
    if (jarhoxu > 0) then
       sqa(:) = sqa(:) * rho(:)
    end if
@@ -121,7 +157,18 @@ subroutine calculate_advection()
    else
       call calculate_advection_for_3D() 
    end if
-
+write (879, *) 'iadv'
+ do n = 1, size(iadv)
+     write(879,*) n, iadv(n)
+ enddo 
+ write (879, *) 'adve'
+ do n = 1, size(adve)
+     write(879,*) n, adve(n)
+ enddo
+write (879, *) 'advi'
+ do n = 1, size(advi)
+     write(879,*) n, advi(n)
+ enddo
    if (kmx == 0 .and. lnx1D > 0) then
       call setucxy1D()
    end if
@@ -445,10 +492,10 @@ end subroutine set_uqcx_uqcy_sqa_for_sources
 !> calculate_advection_for_2D
 subroutine calculate_advection_for_2D()
 
- !$OMP PARALLEL DO                                                                   &
- !$OMP PRIVATE(link, advel,k1,k2,iadvL,qu1,qu2,volu)
+! !$OMP PARALLEL DO                                                                   &
+! !$OMP PRIVATE(link, advel,k1,k2,iadvL,qu1,qu2,volu)
 
-    do link  = 1,lnx
+    do link  = 1, lnx
 
         advel = 0                                          !  advi (1/s), adve (m/s2)
 
@@ -513,7 +560,7 @@ subroutine calculate_advection_for_2D()
 
     end do
 
- !$OMP END PARALLEL DO
+! !$OMP END PARALLEL DO
 
 end subroutine calculate_advection_for_2D
 
