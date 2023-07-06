@@ -13,7 +13,6 @@ endif(UNIX)
 
 if (WIN32)
     message(STATUS "Configuring in windows")
-    include(windows_scripts.cmake)
 endif(WIN32)
 
 include(functions.cmake)
@@ -51,11 +50,6 @@ endif(UNIX)
 
 # Set available build configurations for the .sln file
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
-
-# auto-install debug
-IF (NOT CMAKE_BUILD_TYPE MATCHES Release)
-	set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-ENDIF()
 
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
@@ -132,6 +126,41 @@ set(update_version_script_path ${checkout_src_root}/${update_version_script})
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
    # Set root name of the projects in the root UI of Visual Studio
    set(visual_studio_source_group_name "Source Files")
+      # auto-install debug
+   IF (NOT CMAKE_BUILD_TYPE MATCHES Release)
+      set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
+   ENDIF()
+   
+   	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<VisualStudioUserFile>
+	<Configurations>
+		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+)
+
+	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+</Project>"
+    )
+
 endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 ### Configuration names

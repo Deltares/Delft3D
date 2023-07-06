@@ -186,16 +186,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${header_files}
 source_group(Resources FILES    ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
- 
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${library_name})
-
 install(TARGETS ${library_name} DESTINATION lib)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.sh                   DESTINATION bin)
