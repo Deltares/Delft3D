@@ -128,7 +128,7 @@ module m_ec_support
 
          integer                       :: unit
          real(kind=hp)                 :: ref_date, tzone, time_in
-         integer                       :: i, posTimeUnit !< position in string of 'since'
+         integer                       :: i, posTimeUnit !< position of time_unit(s) in string
          character(len=:), allocatable :: time_string
          character(len=*), parameter   :: time_units(4) = ['seconds', 'minutes', 'hours  ', 'days   ']
          !
@@ -760,6 +760,27 @@ end subroutine ecInstanceListSourceItems
          !
       end function ecSupportTimestringToRefdate
 
+      !> Extracts time unit from a string.
+      function ecSupportTimeUnitstringToUnitEnum(string, unit) result (success)
+         !
+         logical                         :: success   !< function status
+         character(len=*), intent(in)    :: string    !< units string (at out in lowercase)
+         integer, intent(out)            :: unit      !< unit enum: ec_second, ec_minte, ec_hour, ec_day or 0 on error.
+         !
+         success = .true.
+         if (index(string, 'seconds') /= 0) then
+            unit = ec_second
+         else if (index(string, 'minutes') /= 0) then
+            unit = ec_minute
+         else if (index(string, 'hours') /= 0 .or. index( string, 'hrs') /= 0) then
+            unit = ec_hour
+         else if (index(string, 'days') /= 0) then
+            unit = ec_day
+         else
+            unit = 0
+            success = .false.
+         end if
+      end function ecSupportTimeUnitstringToUnitEnum
 
       !> Extracts time unit and reference date from a standard time string.
       !! ASCII example: "TIME = 0 hours since 2006-01-01 00:00:00 +00:00"
@@ -797,15 +818,7 @@ end subroutine ecInstanceListSourceItems
          call str_lower(string)
 
          ! Determine the time unit.
-         if (index(string, 'seconds') /= 0) then
-            unit = ec_second
-         else if (index(string, 'minutes') /= 0) then
-            unit = ec_minute
-         else if (index(string, 'hours') /= 0 .or. index( string, 'hrs') /= 0) then
-            unit = ec_hour
-         else if (index(string, 'days') /= 0) then
-            unit = ec_day
-         else
+         if (.not. ecSupportTimeUnitstringToUnitEnum(string, unit)) then
             call setECMessage("unitstring = '"//trim(string)//"'.")
             call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify the time unit.")
             return
