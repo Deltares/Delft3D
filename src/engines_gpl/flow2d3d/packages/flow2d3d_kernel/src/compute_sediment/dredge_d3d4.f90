@@ -60,6 +60,8 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     integer                   , pointer :: lsedtot
     real(fp)  , dimension(:)  , pointer :: cdryb
     real(fp)  , dimension(:,:), pointer :: dbodsd
+	real(fp)  , dimension(:,:), pointer :: agsqs
+	real(fp)  , dimension(:,:), pointer :: gsqs
 
 !
 ! Global variables
@@ -99,6 +101,10 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     cdryb               => gdp%gdsedpar%cdryb
     dbodsd              => gdp%gderosed%dbodsd
 
+	cutcell             => gdp%gdimbound%cutcell
+    agsqs               => gdp%gdimbound%agsqs
+    gsqs                => gdp%gdr_i_ch%gsqs
+
     morhr = real(gdmorpar%morft * 24.0_hp, fp)
     spinup = nst < gdmorpar%itmor
     if (parll) then
@@ -109,7 +115,9 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     call dredge(nmmax, lsedtot, spinup, cdryb, dps, -1.0_fp, &
               & dbodsd, kfsed, s1, timhr, morhr, gddredge, error, &
               & dredgecommunicate, gdbedformpar%duneheight, gdmorpar, hdt, ndomains, lundia, &
-              & julday, nmlb, nmub, gderosed, gdmorlyr, messages)
+              & julday, nmlb, nmub, gderosed, gdmorlyr, &
+              & agsqs, gsqs, cutcell & 
+			  & messages)
     !
     ! Update sediment administration for dumping only
     ! dbodsd is filled (kg/m^2 sediment added to a cell)

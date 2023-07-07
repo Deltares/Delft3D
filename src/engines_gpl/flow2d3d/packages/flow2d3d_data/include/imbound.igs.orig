@@ -1,0 +1,637 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id: address.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/address.igs $$
+!-------------------------------------------------------------------------------
+    type gd_imbound
+
+    real(fp)               :: fracBANKsuspWASH
+    real(fp)               :: fracBANKdepos
+    real(fp)               :: R1_anal
+    real(fp)               :: R2_anal
+    real(fp)               :: Kbank
+    real(fp)               :: TAUcrBANKcnst
+    real(fp)               :: threshVELghost
+    real(fp)               :: tolFREEexact
+    real(fp)               :: epsSUD
+    real(fp)               :: uAXIS
+    real(fp)               :: hAXIS
+    real(fp)               :: ratio_ca_c2d
+    real(fp)               :: thresMERGE_d
+    real(fp)               :: thresMERGE_w
+    real(fp)               :: thresMERGE_zb
+    real(fp)               :: thresMERGE_Q
+    real(fp)               :: reltim_qtq
+    real(fp)               :: reltim_qtq_C
+    real(fp)               :: reltim_s1
+    real(fp)               :: reltim_qtq_bdl
+    real(fp)               :: tolwet
+    real(fp)               :: t
+    real(fp)               :: timeSIM
+    real(fp)               :: PERCedge
+    real(fp)               :: THRESextCUTedge
+    real(fp)               :: THRESsmallCELL
+    real(fp)               :: facws
+    real(fp)               :: THRlocalMASSbal
+    real(fp)               :: distanceBOUNDper
+    real(fp)               :: perSMOfac
+    real(fp)               :: perSMOfac_Qb
+    real(fp)               :: LchanPERprojX
+    real(fp)               :: LchanPERprojY
+    real(fp)               :: dps_per(1000)
+    real(fp)               :: ccofu_stored
+    real(fp)               :: ccofv_stored
+    real(fp)               :: DISSghost
+    real(fp)               :: slopeCIRC
+    real(fp)               :: ELEVencr
+    real(fp)               :: THRdepVEGET   
+    real(fp)               :: timeFORenchr  
+    real(fp)               :: timeFORdisrupt
+    real(fp)               :: tmorB
+    real(fp)               :: thresCURVcut
+    real(fp)               :: DELAYfixedBEDequilQS
+    real(fp)               :: facMERGElink
+    real(fp)               :: thrPRINTerrGRAD
+    real(fp)               :: maxVELfac
+    real(fp)               :: minVELfac
+!
+! reals
+!
+    integer :: subtypeTESTghost
+    integer :: freeNONhomo
+    integer :: analSUDcenterACTIVE
+    integer :: SMOOTHbankVEL
+    integer :: SMOOTHbankSHEAR
+    integer :: smoothEb
+    integer :: removeW1qzk ! 0: dont remove 1: set them to zero 2: set them to zero only for suspended transport
+    integer :: analyticalPOLY
+    integer :: VERSIONprecisePOROSbaric
+    integer :: exactSLOPE
+    integer :: shiftHM  !shift in m that I have to prescribe when I copy othogonal velocity (vel that is orth to bound) at H periodic boundary
+    integer :: shiftHN  
+    integer :: shiftQM  !shift in m that I have to prescribe when I copy othogonal velocity (vel that is orth to bound) at Q periodic boundary
+    integer :: shiftQN
+    integer :: distQHm !shift in m 
+    integer :: distQHn
+    integer :: PERIODalongM
+    integer :: nrPER
+    integer :: free_S1_sud
+    integer :: kFLcutEQ1
+    integer :: TYPEaguuAGVV
+    integer :: TYPEtauCRbank
+    integer :: continuity_cc
+    integer :: extrapGHOST1fluid2
+    integer :: doNOTdebugGHOSTS
+    integer :: cutBC
+    integer :: ERODsubmBANKS
+    integer :: int0comp1_s1SMALLcut
+    integer :: nprintVOF
+    integer :: nPORprint
+    integer :: nCUTcell
+    integer :: NvertTOT
+    integer :: Npoly
+    integer :: Nedge
+    integer :: TYPErecVOF
+    integer :: TYPEdistrBANKerod
+    integer :: ADVECTbank
+    integer :: Nprint
+    integer :: BOUNDvof
+    integer :: totGHOSTu1 
+    integer :: totGHOSTv1 
+    integer :: totGHOSTs1
+    integer :: cutcell
+    integer :: GHOSTimpl
+    integer :: TYPEtauBANK
+    integer :: GhostMethod
+    integer :: simpleVR84
+    integer :: TYPEcorVELafterUZD
+    integer :: nstREST
+    integer :: idebugCUT
+    integer :: idebugCUThard
+    integer :: idebugCUTini
+    integer :: idebugCUTfin
+    integer :: idebugCUThardINI
+    integer :: idebugCUThardFIN
+    integer :: IstencBANKer
+    integer :: iprintINTERMghost01
+    integer :: TYPEfreeSLIP
+    integer :: typeEXTRAPstencil
+    integer :: typeVIRTmergeUPDbed
+    integer :: typeVIRTmergeUPDvert
+    integer :: typeVIRTmergeUPDdepth
+    integer :: typeHART
+    integer :: dim_NMlist
+    integer :: CORRbedSLOPEcut
+    integer :: MODadvecGHOSTuzd  
+    integer :: MODadvecGHOSTsud
+    integer :: typeVEGencr
+    integer :: TYPEinterpVELcurv
+    integer :: typeCOMPcurvSMALL
+    integer :: PREsmoothVELOCcurv
+    integer :: TYPEangleCURV
+    integer :: itmorB
+    integer :: NsmoCURV
+    integer :: NanglesANALcircle_FIXED
+    integer :: NanglesANALcircle
+    integer :: typeHUDPU
+    integer :: HOWmanyPOINTSforCURV
+    integer :: typeEXTRAPux
+    integer, dimension(6) :: edge6 = (/ 1,2,3,4,1,2/)
+    integer, dimension(0:1000) :: mpH_int
+    integer, dimension(0:1000) :: npH_int
+    integer, dimension(0:1000) :: mpQ_int
+    integer, dimension(0:1000) :: npQ_int
+    integer, dimension(0:1000) :: mpH_ext
+    integer, dimension(0:1000) :: npH_ext
+    integer, dimension(0:1000) :: mpQ_ext
+    integer, dimension(0:1000) :: npQ_ext
+    integer, dimension(0:1000) :: mpH_intint
+    integer, dimension(0:1000) :: npH_intint
+    integer, dimension(0:1000) :: mpQ_intint
+    integer, dimension(0:1000) :: npQ_intint
+    integer, dimension(0:1000) :: mpH_extext
+    integer, dimension(0:1000) :: npH_extext
+    integer, dimension(0:1000) :: mpQ_extext
+    integer, dimension(0:1000) :: npQ_extext
+    integer, dimension(:,:), ALLOCATABLE :: iPERs1
+    integer, dimension(:,:), ALLOCATABLE :: FREEs1_u
+    integer, dimension(:,:), ALLOCATABLE :: FREEs1_v
+    integer, dimension(:,:), ALLOCATABLE :: kfs_cc
+    integer, dimension(:,:), ALLOCATABLE :: kWDu
+    integer, dimension(:,:), ALLOCATABLE :: kWDv
+    integer, dimension(:,:), ALLOCATABLE :: multEXITu
+    integer, dimension(:,:), ALLOCATABLE :: multEXITv
+    integer, dimension(:), ALLOCATABLE :: EDGEdry
+    integer, dimension(:), allocatable :: nvert
+    integer, dimension(:), ALLOCATABLE :: progVERT
+    integer, dimension(:,:), ALLOCATABLE :: Ndry_GRS
+    integer, dimension(:,:), ALLOCATABLE :: Nwet_GRS
+    integer, dimension(:,:,:), ALLOCATABLE :: nAD
+    integer, dimension(:,:,:), ALLOCATABLE :: mAD
+    integer, dimension(:,:,:), ALLOCATABLE :: EDGEtypeBANK
+    integer, dimension(:,:,:), ALLOCATABLE :: EDGEtypeBANKerod
+    integer, dimension(:,:,:), ALLOCATABLE :: STOREedge2
+    integer, dimension(:,:,:), ALLOCATABLE :: EDGEtypeDRY
+    integer, dimension(:,:), ALLOCATABLE :: U1inDRY
+    integer, dimension(:,:), ALLOCATABLE :: V1inDRY
+    integer, dimension(:,:), ALLOCATABLE :: por012
+    INTEGER, dimension(:,:), ALLOCATABLE :: FROMmnTOghostS1
+    INTEGER, dimension(:,:), ALLOCATABLE :: FROMmnTOghostU1
+    INTEGER, dimension(:,:), ALLOCATABLE :: FROMmnTOghostV1
+    integer, dimension(:), ALLOCATABLE :: nGPs1
+    integer, dimension(:), ALLOCATABLE :: mGPs1
+    integer, dimension(:), ALLOCATABLE :: nGPu1
+    integer, dimension(:), ALLOCATABLE :: mGPu1
+    integer, dimension(:), ALLOCATABLE :: nGPv1
+    integer, dimension(:), ALLOCATABLE :: mGPv1
+    integer, dimension(:), ALLOCATABLE :: mIPs1
+    integer, dimension(:), ALLOCATABLE :: nIPs1
+    integer, dimension(:), ALLOCATABLE :: mBIs1
+    integer, dimension(:), ALLOCATABLE :: nBIs1
+    integer, dimension(:), ALLOCATABLE :: mIPu1
+    integer, dimension(:), ALLOCATABLE :: nIPu1
+    integer, dimension(:), ALLOCATABLE :: mBIu1
+    integer, dimension(:), ALLOCATABLE :: nBIu1
+    integer, dimension(:), ALLOCATABLE :: mIPv1
+    integer, dimension(:), ALLOCATABLE :: nIPv1
+    integer, dimension(:), ALLOCATABLE :: mBIv1
+    integer, dimension(:), ALLOCATABLE :: nBIv1
+    integer, dimension(:), ALLOCATABLE :: MERGEDwith_d
+    integer, dimension(:), ALLOCATABLE :: MERGEDwith_w
+    integer, dimension(:), ALLOCATABLE :: MERGEDwith_bed
+    integer, dimension(:), ALLOCATABLE :: isMERGEDu_bed
+    integer, dimension(:), ALLOCATABLE :: isMERGEDv_bed
+    integer, dimension(:), ALLOCATABLE :: isMERGEDu_w
+    integer, dimension(:), ALLOCATABLE :: isMERGEDv_w
+    integer, dimension(:), ALLOCATABLE :: isMERGEDu_d
+    integer, dimension(:), ALLOCATABLE :: isMERGEDv_d
+    integer, dimension(:,:), ALLOCATABLE :: NMlistMERGED_bed
+    integer, dimension(:,:), ALLOCATABLE :: NMlistMERGED_w
+    integer, dimension(:,:), ALLOCATABLE :: NMlistMERGED_d
+    integer, dimension(:), ALLOCATABLE :: neuMERG
+    integer, dimension(:), ALLOCATABLE :: Nmerged_bed
+    integer, dimension(:), ALLOCATABLE :: Nmerged_w
+    integer, dimension(:), ALLOCATABLE :: Nmerged_d
+    integer, dimension(:,:), ALLOCATABLE :: inSTENCILu
+    integer, dimension(:,:), ALLOCATABLE :: inSTENCILv
+    integer, dimension(:,:), ALLOCATABLE :: GHOSTs1
+    integer, dimension(:,:), ALLOCATABLE :: GHOSTu1
+    integer, dimension(:,:), ALLOCATABLE :: GHOSTv1
+    integer, dimension(:,:), allocatable :: kfu_cc
+    integer, dimension(:,:), allocatable :: kfv_cc
+    integer, dimension(:,:), allocatable :: kFLcut
+    integer, dimension(:,:), ALLOCATABLE :: SURFinDRY
+    integer, dimension(:), ALLOCATABLE :: kGPumin
+    integer, dimension(:), ALLOCATABLE :: kGPvmin
+    integer, dimension(:), ALLOCATABLE :: kGPumax
+    integer, dimension(:), ALLOCATABLE :: kGPvmax
+    integer, dimension(:), ALLOCATABLE :: INTERFtype
+!
+! pointers
+!
+    real(fp)  , dimension(:,:)       , allocatable   :: sourseBANK
+    real(fp)  , dimension(:,:)       , allocatable   :: dpU0
+    real(fp)  , dimension(:,:)       , allocatable   :: dpV0
+    real(prec), dimension(:,:)       , allocatable   :: dps0
+    real(fp)  , dimension(:,:)       , allocatable   :: Eros
+    real(fp)  , dimension(:,:)       , allocatable   :: Depos
+    real(fp)  , dimension(:,:)       , allocatable   :: Eb
+    real(fp)  , dimension(:,:,:)     , allocatable   :: EbK
+    real(fp)  , dimension(:,:)       , allocatable   :: dpH
+    real(fp)  , dimension(:,:)       , allocatable   :: dpL
+    real(fp)  , dimension(:,:)       , allocatable   :: dpL_m_aver
+    real(fp)  , dimension(:,:)       , allocatable   :: dpsi
+    real(fp)  , dimension(:,:)       , allocatable   :: deta
+    real(fp)  , dimension(:,:)       , allocatable   :: POROS
+    real(fp)  , dimension(:,:)       , allocatable   :: POROSold
+    real(fp)  , dimension(:,:)       , allocatable   :: alphaD
+    real(fp)  , dimension(:,:)       , allocatable   :: PSIx
+    real(fp)  , dimension(:,:)       , allocatable   :: PSIy
+    real(fp)  , dimension(:,:)       , allocatable   :: ETAx
+    real(fp)  , dimension(:,:)       , allocatable   :: ETAy
+    real(fp)  , dimension(:,:)       , allocatable   :: xG_L
+    real(fp)  , dimension(:,:)       , allocatable   :: xG_H
+    real(fp)  , dimension(:,:)       , allocatable   :: yG_L
+    real(fp)  , dimension(:,:)       , allocatable   :: yG_H
+    real(fp)  , dimension(:,:,:)     , allocatable   :: dutdn_U        !dutdn AT THE U stencil
+    real(fp)  , dimension(:,:,:)     , allocatable   :: dutdn_V        !dutdn AT THE V stencil
+    real(fp)  , dimension(:,:)       , allocatable   :: deltaUcut
+    real(fp)  , dimension(:)         , allocatable   :: deltaS1cut
+    real(fp)  , dimension(:)         , allocatable   :: dhFACcut
+    real(fp)  , dimension(:,:,:)     , allocatable   :: vFACcut
+    real(fp)  , dimension(:,:,:)     , allocatable   :: INTx_GRS
+    real(fp)  , dimension(:,:,:)     , allocatable   :: INTy_GRS
+    real(fp)  , dimension(:,:,:)     , allocatable   :: INTwx_GRS
+    real(fp)  , dimension(:,:,:)     , allocatable   :: INTwy_GRS
+    real(fp)  , dimension(:,:,:)     , allocatable   :: EDGElenBANK
+    real(fp)  , dimension(:,:,:)     , allocatable   :: EDGElenDRYeff
+    real(fp)  , dimension(:,:,:,:,:) , allocatable   :: EDGExyBANK
+    real(fp)  , dimension(:,:,:,:,:) , allocatable   :: EDGExyBANKerod
+    real(fp)  , dimension(:,:,:,:,:) , allocatable   :: EDGExyDRY
+    real(fp)  , dimension(:,:)       , allocatable   :: taucr
+    real(fp)  , dimension(:,:,:)     , allocatable :: tauBANK
+    real(fp)  , dimension(:,:,:)     , allocatable :: STOREedgeLEN 
+    real(fp)  , dimension(:,:,:)     , allocatable :: EDGElenWET
+    real(fp)  , dimension(:,:)       , allocatable :: gsqs_cc 
+    real(fp)  , dimension(:,:)       , allocatable :: guu_cc 
+    real(fp)  , dimension(:,:)       , allocatable :: gvv_cc 
+    real(fp)  , dimension(:,:)       , allocatable :: agsqs 
+    real(fp)  , dimension(:)         , allocatable :: agsqs_link
+    real(fp)  , dimension(:,:)       , allocatable :: aguu 
+    real(fp)  , dimension(:,:)       , allocatable :: agvv 
+    real(fp)  , dimension(:,:)       , allocatable :: aguu0 
+    real(fp)  , dimension(:,:)       , allocatable :: agvv0
+    real(fp)  , dimension(:,:,:)     , allocatable :: qxk_tinyCUT 
+    real(fp)  , dimension(:,:,:)     , allocatable :: qyk_tinyCUT 
+    real(fp)  , dimension(:,:)       , allocatable :: xcor0      
+    real(fp)  , dimension(:,:)       , allocatable :: ycor0 
+    real(fp)  , dimension(:,:)       , allocatable :: xcorU1      
+    real(fp)  , dimension(:,:)       , allocatable :: ycorU1 
+    real(fp)  , dimension(:,:)       , allocatable :: xcorV1      
+    real(fp)  , dimension(:,:)       , allocatable :: ycorV1 
+    real(fp)  , dimension(:,:)       , allocatable :: PSIcor0      
+    real(fp)  , dimension(:,:)       , allocatable :: ETAcor0   
+    real(fp)  , dimension(:,:)       , allocatable :: PSIcor      
+    real(fp)  , dimension(:,:)       , allocatable :: ETAcor
+    real(fp)  , dimension(:,:)       , allocatable :: PSIcorU1      
+    real(fp)  , dimension(:,:)       , allocatable :: ETAcorU1    
+    real(fp)  , dimension(:,:)       , allocatable :: PSIcorV1      
+    real(fp)  , dimension(:,:)       , allocatable :: ETAcorV1      
+    real(fp)  , dimension(:,:)       , allocatable :: xG   
+    real(fp)  , dimension(:,:)       , allocatable :: yG  
+    real(fp)  , dimension(:,:)       , allocatable :: psiG   
+    real(fp)  , dimension(:,:)       , allocatable :: etaG  
+    real(fp)  , dimension(:)         , allocatable :: vertx
+    real(fp)  , dimension(:)         , allocatable :: verty
+    real(fp)  , dimension(:,:,:)     , allocatable :: dxk
+    real(fp)  , dimension(:,:,:)     , allocatable :: dyk
+    real(fp)  , dimension(:,:,:)     , allocatable :: xcell      ! Array with the five x-coordinates of the cell (closed polygon)
+    real(fp)  , dimension(:,:,:)     , allocatable :: ycell      ! Array with the five y-coordinates of the cell (closed polygon)
+    real(fp)  , dimension(:,:)       , allocatable :: Npsi       ! psi-component of normal to the interface
+    real(fp)  , dimension(:,:)       , allocatable :: Neta       ! eta-component of normal to the interface
+    real(fp)  , dimension(:,:)       , allocatable :: Nx         ! x-component of normal to the interface
+    real(fp)  , dimension(:,:)       , allocatable :: Ny         ! y-component of normal to the interface
+    real(fp)  , dimension(:,:)       , allocatable :: DpsiG      ! psi-component of the difference between the location of barycenter in (n,m+1) and (n,m)
+    real(fp)  , dimension(:,:)       , allocatable :: DetaG      ! eta-component of the difference between the location of barycenter in (n+1,m) and (n,m)
+    real(fp)  , dimension(:,:)       , allocatable :: xG_V1
+    real(fp)  , dimension(:,:)       , allocatable :: xG_U1 
+    real(fp)  , dimension(:,:)       , allocatable :: yG_V1
+    real(fp)  , dimension(:,:)       , allocatable :: yG_U1 
+    real(fp)  , dimension(:)         , allocatable :: xIPs1
+    real(fp)  , dimension(:)         , allocatable :: yIPs1
+    real(fp)  , dimension(:)         , allocatable :: xBIs1
+    real(fp)  , dimension(:)         , allocatable :: yBIs1 
+    real(fp)  , dimension(:)         , allocatable :: s1IP
+    real(fp)  , dimension(:)         , allocatable :: xIPu1
+    real(fp)  , dimension(:)         , allocatable :: yIPu1
+    real(fp)  , dimension(:)         , allocatable :: xBIu1
+    real(fp)  , dimension(:)         , allocatable :: yBIu1 
+    real(fp)  , dimension(:)         , allocatable :: u1IP
+    real(fp)  , dimension(:,:)       , allocatable :: u1IPu
+    real(fp)  , dimension(:,:)       , allocatable :: u1IPv
+    real(fp)  , dimension(:,:)       , allocatable :: v1IPu
+    real(fp)  , dimension(:,:)       , allocatable :: v1IPv
+    real(fp)  , dimension(:)         , allocatable :: xIPv1
+    real(fp)  , dimension(:)         , allocatable :: yIPv1
+    real(fp)  , dimension(:)         , allocatable :: xBIv1
+    real(fp)  , dimension(:)         , allocatable :: yBIv1 
+    real(fp)  , dimension(:)         , allocatable :: v1IP
+    real(fp)  , dimension(:)         , allocatable :: nxG_S1 
+    real(fp)  , dimension(:)         , allocatable :: nyG_S1 
+    real(fp)  , dimension(:)         , allocatable :: nxG_U1 
+    real(fp)  , dimension(:)         , allocatable :: nyG_U1 
+    real(fp)  , dimension(:)         , allocatable :: nxG_V1 
+    real(fp)  , dimension(:)         , allocatable :: nyG_V1 
+    real(fp)  , dimension(:,:)       , allocatable :: psiG_U1 
+    real(fp)  , dimension(:,:)       , allocatable :: psiG_V1 
+    real(fp)  , dimension(:,:)       , allocatable :: etaG_U1 
+    real(fp)  , dimension(:,:)       , allocatable :: etaG_V1 
+    real(fp)  , dimension(:,:,:)     , allocatable :: u1_FLLYghst 
+    real(fp)  , dimension(:,:,:)     , allocatable :: v1_FLLYghst 
+    real(fp)  , dimension(:)         , allocatable :: DISTs1 
+    real(fp)  , dimension(:)         , allocatable :: DISTu1  
+    real(fp)  , dimension(:)         , allocatable :: DISTv1 
+    real(fp)  , dimension(:,:)       , allocatable :: qfilt
+    real(fp)  , dimension(:,:,:)     , allocatable :: qfiltC
+    real(fp)  , dimension(:,:)       , allocatable :: qfilt_bdl
+    real(fp)  , dimension(:)         , allocatable :: qfilt_s1
+    real(fp)  , dimension(:)         , allocatable :: dzduu_w
+    real(fp)  , dimension(:)         , allocatable :: dzdvv_w
+    real(fp)  , dimension(:)         , allocatable :: dzduuCENTR
+    real(fp)  , dimension(:)         , allocatable :: dzdvvCENTR
+    real(fp)  , dimension(:,:)       , allocatable :: z_aguu
+    real(fp)  , dimension(:,:)       , allocatable :: z_agvv 
+    real(fp)  , dimension(:,:)       , allocatable :: z_agsqs
+    real(fp)  , dimension(:,:)       , allocatable :: shiftBIv_x
+    real(fp)  , dimension(:,:)       , allocatable :: shiftBIv_y
+    real(fp)  , dimension(:,:)       , allocatable :: shiftBIu_x
+    real(fp)  , dimension(:,:)       , allocatable :: shiftBIu_y
+    real(fp)  , dimension(:,:)       , allocatable :: dpLnew
+    real(fp)  , dimension(:,:)       , allocatable :: TIMElowDEPTH
+    real(fp)  , dimension(:,:)       , allocatable :: TIMEsubmerged
+    real(fp)  , dimension(:,:)       , allocatable :: VOLeros 
+    real(fp)  , dimension(:,:)       , allocatable :: curstr_print
+    real(fp)  , dimension(:)         , allocatable :: sourceU
+    real(fp)  , dimension(:)         , allocatable :: gradS1_sud
+    real(fp)  , dimension(:)         , allocatable :: gradS1_uzd
+    real(fp)  , dimension(:)         , allocatable :: frict_sud
+    real(fp)  , dimension(:)         , allocatable :: frict_uzd
+    real(fp)  , dimension(:)         , allocatable :: vdudy
+    real(fp)  , dimension(:)         , allocatable :: ududx
+    real(fp)  , dimension(:)         , allocatable :: xintU
+    real(fp)  , dimension(:)         , allocatable :: yintU
+    real(fp)  , dimension(:)         , allocatable :: dpuFAC
+    real(fp)  , dimension(:)         , allocatable :: huFAC
+    		  					     
+    real(fp)  , dimension(:,:)       , allocatable :: eeC
+    real(fp)  , dimension(:,:)       , allocatable :: eeR 
+    real(fp)  , dimension(:,:)       , allocatable :: eeL
+    real(fp)  , dimension(:)         , allocatable :: EXPsouC
+    real(fp)  , dimension(:)         , allocatable :: EXPsouR
+    real(fp)  , dimension(:)         , allocatable :: EXPsouL
+!
+! logical
+!
+    logical, dimension(:,:), ALLOCATABLE :: CELLtoRECON
+    logical, dimension(:,:), ALLOCATABLE :: CELLadjCUT
+    logical, dimension(:,:), ALLOCATABLE :: updatedBANK
+    logical, dimension(:,:), ALLOCATABLE :: newGHOSTu
+    logical, dimension(:,:), ALLOCATABLE :: newGHOSTv
+    logical, dimension(:,:), ALLOCATABLE :: oneEXIT
+    !
+    logical, dimension(0:1000)  :: COPY_H_TO_Q
+    !
+    logical              :: bdslpINupwnbed
+    logical              :: DEPOSbankMATERIAL
+    logical              :: DOUBLEuvh
+    logical              :: bnd_distr_perC
+    logical              :: SECordVEL
+    logical              :: SECordLEVEL
+    logical              :: RECdepth
+    logical              :: QUARTERdt
+    logical              :: massBALhdt
+    logical              :: massbalLOC
+    logical              :: PRINTedgeVEL
+    logical              :: interpS1beforeUZD
+    logical              :: printGHOSTmap
+    logical              :: floodplain_inflow
+    logical              :: UavWETtau
+    logical              :: EXACTpolygons
+    logical              :: EXACTpolygonsONLYfirst
+    logical              :: periodSURFACE
+    logical              :: precisePOROSbaric
+    logical              :: callSUBR_WATERlevelPERIOD
+    logical              :: PERIODICwaterDEPTH
+    logical              :: periodGHOST
+    logical              :: PERIODICtangVEL
+    logical              :: PERIODICorthVEL
+    logical              :: twoCELLSperiod
+    logical              :: bedLOADper
+    logical              :: suspLOADper
+    logical              :: suspCONCper
+    logical              :: EXCLouterVEL
+    logical              :: TRANSVperIMPL
+    logical              :: WAQUAfullyCENTRED
+    logical              :: CYCLICtransCENTR
+    logical              :: PERIODopposTRANSV
+    logical              :: bndBEDfromFILE
+    logical              :: printINTERMghost
+    logical              :: printSUDITERghost
+    logical              :: printUZDITERghost
+    logical              :: solvedU_ATu
+    logical              :: solvedV_ATu
+    logical              :: solvedU_ATv
+    logical              :: solvedV_ATv
+    logical              :: IGNOREwrongDEPTH
+    logical              :: perHwaterRIGHT
+    logical              :: ITERATEfree
+    logical              :: freeU0fixed
+    logical              :: corrSURFslopeSUD
+    logical              :: corrSURFslopeUZD
+    logical              :: originalMOMENTUM
+    logical              :: virtualMERGEupdBED
+    logical              :: virtualMERGEupdCONC
+    logical              :: virtualMERGEupdVERT
+    logical              :: virtualMERGEupdDEPTH
+    logical              :: virtualMERGEdisch
+    logical              :: virtualLINK
+    logical              :: virtuallinkSMOw1
+    logical              :: linkMINarea
+    logical              :: smoCURV
+    logical              :: perCIRC
+    logical              :: curvMESH
+    logical              :: constSOLUTION
+    logical              :: testGHOSTaccur
+    logical              :: EXACTcurv
+    logical              :: includeSMALLforCURV
+    logical              :: AVvelCUT
+    logical              :: HORIZviscZERO
+    logical              :: HORIZdiffZERO
+    logical              :: bedPERIODIC
+    logical              :: useCUTstyle
+    logical              :: prescrDEPTH
+    logical              :: bedUPDandFIXdepth
+    logical              :: use_DPSavg_for_qtot
+    logical              :: skip_aval_adjust
+    logical              :: forceCHEZYtransp
+    logical              :: ignoreMUmeyer
+    logical              :: zavg_global
+    logical              :: distr_qtq_bdl_NNprism
+    logical              :: compHALFDTss
+    logical              :: moveEDtoBED
+    logical              :: consistency_ce_Cav
+    logical              :: prescVR93refHEIGHT
+    logical              :: ratioVR84
+    logical              :: interpVinUexact
+    logical              :: shift_xycor
+    logical              :: getADJACENTgrad
+    logical              :: changeKFUVcut
+    logical              :: deactGHOST_smallcut
+    logical              :: dontRESETghost
+    logical              :: resetV1toV0
+    logical              :: correctVELafterUZD
+    logical              :: neuPERslope
+    logical              :: FORCEdisch
+    logical              :: noFLOODINGbanks
+    logical              :: FIXEDriverBANKS
+    logical              :: printFLUXuv
+    logical              :: noCORfacCURV
+    logical              :: printCURV
+    logical              :: USEfixedBEDequilQS
+    logical              :: USEfixedBEDequilQb
+    logical              :: CURVboogaard
+    logical              :: useFULL
+    logical              :: constSOLforCHECKmomTERM
+    logical              :: hindered
+    logical              :: prescVR93settl
+    logical              :: modDWNVEL
+    logical              :: PRINTbalanceUZD
+    logical              :: SingleLOOPuzd
+    logical              :: FORCEexplicitUPDATEs1
+    logical              :: activeNEVERghost
+    logical              :: onlyUZD
+    logical              :: noUZD
+    logical              :: gradDEFER3orderDIFF
+    logical              :: cntrUZDbnd_n
+    logical              :: cntrUZDbnd_m
+    logical              :: analDEFERR
+
+    logical              :: partIMPLgrad
+    logical              :: SUDtoCONVERGENCE
+    logical              :: huRHS
+    logical              :: vvvSECord
+!   start IBM_research variables, most of them will be eventually removed
+    logical              :: INTERPdhdx
+	logical              :: noCUTfac
+    logical              :: FORCEgradS1_sud
+    logical              :: FORCEgradS1_uzd
+    logical              :: FORCEfrict_uzd
+    logical              :: FORCEfrict_sud
+    logical              :: FORCEu1_sud
+    logical              :: forceU0_sud
+    logical              :: force_DPUhu
+    logical              :: FORCEu1_uzd
+    logical              :: force_QYK
+    logical              :: forceQYKallSTEPS
+    logical              :: forceVVVuzd
+    logical              :: forceVVVsud
+    logical              :: FORCEududx_uzd
+    logical              :: FORCEvdudy_uzd
+    logical              :: FORCEududx_sud
+    logical              :: FORCEvdudy_sud
+    real(fp)  , dimension(:)         , allocatable :: cutfac
+    logical              :: implDEFsud
+    logical              :: deferredS1sud
+    logical              :: deferredS1uzd
+    integer              :: TYPEgradDEFERRuzd
+    integer              :: TYPEgradDEFERRsud
+    integer              :: TYPEpartIMPLgrad
+    logical              :: vFACTORcutEDGESx
+    logical              :: vFACTORcutEDGESy
+    logical              :: DPUhuSECONDorder
+    logical              :: hu2SUDiter
+    logical              :: vFACsudITER
+    real(fp)  , dimension(:,:,:)     , allocatable   :: uFACcut
+    real(fp)  , dimension(:,:)       , allocatable   :: uFACcutINV
+    logical              :: FORCEnormBIinFINDbi
+    logical              :: FORCEuAThPERbnd
+    logical              :: forceEb
+    logical              :: forceN
+    logical              :: FORCEghost_sud2
+    logical              :: FORCEghost_sud1
+    logical              :: FORCEghost_uzd2
+    logical              :: FORCEghost_uzd1
+    logical              :: forceANALforSTAGE2
+    logical              :: FORCEs1CIRCanal
+    logical              :: extrADVECTsud
+    integer              :: TYPEofFORCING
+    logical              :: skipBOUNDvelSUD
+    logical              :: FIXEDcoastBANKS
+!   end IBM_research
+!
+! characters
+!
+    character(255) :: filcc_in
+    character(255) :: filcc_out
+    character(255) :: TAUcrBANKfil                          ! File with spatially varying critical bank shear stress
+!
+!  WORK ARRAYS
+!
+    real(fp), dimension(:),       allocatable :: Dwrka1     ! double(fp) work arrays (nmlb:nmub)
+    real(fp), dimension(:),       allocatable :: Dwrka2
+    real(fp), dimension(:),       allocatable :: Dwrka3
+    real(fp), dimension(:),       allocatable :: Dwrka4
+    real(fp), dimension(:),       allocatable :: Dwrka5
+    real(fp), dimension(:),       allocatable :: Dwrka6
+    real(fp), dimension(:),       allocatable :: Dwrka7
+    real(fp), dimension(:,:),     allocatable :: Dwrka1_E   ! double(fp) work arrays Expanded (nlb:nub,mlb:mub)
+    real(fp), dimension(:,:),     allocatable :: Dwrka2_E	  
+    real(fp), dimension(:,:),     allocatable :: Dwrka3_E	  
+    real(fp), dimension(:,:),     allocatable :: Dwrka4_E	  
+    real(fp), dimension(:,:),     allocatable :: Dwrka5_E	  
+    real(fp), dimension(:,:),     allocatable :: Dwrka6_E	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak1    ! double(fp) work arrays (nmlb:nmub,kmax)
+    real(fp), dimension(:,:),     allocatable :: Dwrkak2	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak3	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak4	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak5	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak6	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak7	  
+    real(fp), dimension(:,:),     allocatable :: Dwrkak8	  
+    real(fp), dimension(:,:),     allocatable :: Dwrka0k    ! double(fp) work arrays (nmlb:nmub,0:kmax)
+    real(fp), dimension(:,:),     allocatable :: Dwrkak1_T  ! double(fp) work arrays (nmlb:nmub,kmax)^T
+    real(fp), dimension(:,:),     allocatable :: Dwrka0k1_T ! double(fp) work arrays (nmlb:nmub,0:kmax)^T
+    real(fp), dimension(:,:),     allocatable :: Dwrkal1_T  ! double(fp) work arrays (nmlb:nmub,lstsci)^T
+    real(fp), dimension(:,:,:,:), allocatable :: DwrkakL1_E ! double(fp) work arrays (nmlb:nmub,kmax,lstsci)
+    														  
+	integer , dimension(:),       allocatable :: Iwrka1     ! integer work arrays (nmlb:nmub)
+    														  
+	logical , dimension(:),       allocatable :: Lwrka1     ! logical work arrays (nmlb:nmub)
+    logical , dimension(:,:),     allocatable :: Lwrka1_E   ! logical work arrays xpanded (nlb:nub,mlb:mub)
+    logical , dimension(:,:),     allocatable :: Lwrka2_E
+
+    end type gd_imbound

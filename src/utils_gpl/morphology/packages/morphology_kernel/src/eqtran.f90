@@ -425,6 +425,12 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
        
        call tranb7(utot      ,di50       ,d90       ,h1        ,npar      , &
                  & par       ,sbot      ,ssus       ,vonkar    ,mudfrac   )
+	   !
+	   !V: In the branch, `tranb7` was modified. I prefer to keep `tranb7` as in
+	   !main and keep a copy of the branch version of `tranb7` named `tranb7_bank_erosion`.
+	   !The if-clause below is the original in the branch, which should be changed
+	   !to call `tranb7_bank_erosion` if desired.
+	   !
        !if (simpleVR84/=1) then
        !   call tranb7(utot      ,di50      ,d90       ,h1        ,par        , &
        !             & sbot      ,ssus      ,vonkar    ,mudfrac   ,i2d3d      , &

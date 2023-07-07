@@ -37,7 +37,10 @@ module m_dredge
 subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
             & dbodsd, kfsed, s1, timhr, morhr, dadpar, error, &
             & comm, duneheight, morpar, dt, ndomains, lundia, &
-            & julrefdate, nmlb, nmub, gderosed, morlyr, messages)
+            & julrefdate, nmlb, nmub, gderosed, morlyr, &
+            & agsqs, gsqs, cutcell, &
+			& messages)
+			
     use precision
     use bedcomposition_module
     use dredge_data_module
@@ -72,6 +75,9 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     real(prec), dimension(nmlb:nmub)                                     :: dps        !< bed level or depth at cell faces
     real(fp)                                             , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
     logical                                              , intent(out)   :: error
+    real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: agsqs
+    real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: gsqs
+	integer   ,                                          , intent(in)    :: cutcell
 !
     interface
        subroutine comm(a, n, error, msgstr)
@@ -126,7 +132,8 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     call distribute_sediments_over_dump_areas(lsedtot, dadpar) 
     !
     call calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lundia, kfsed, cdryb, dbodsd, &
-    duneheight, dps, dpsign, error)
+    duneheight, dps, dpsign, agsqs, gsqs, cutcell, error)
+	
     !!
     !! Update sediment administration for dumping only
     !! dbodsd is filled (kg/m^2 sediment added to a cell)
@@ -1372,7 +1379,9 @@ end subroutine distribute_sediments_over_dump_areas
 
 !> calculation of dumping
 subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lundia, kfsed, cdryb,&
-                                  dbodsd, duneheight, dps, dpsign, error)
+                                  dbodsd, duneheight, dps, dpsign, agsqs, gsqs, cutcell, error)
+								  
+								  
     use precision
     use dredge_data_module
     use message_module
@@ -1390,10 +1399,13 @@ subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lund
     real(fp)  , dimension(:)                             , pointer       :: duneheight !< pointer since this variable doesn't have to be allocated if use_dunes = .false.
     real(prec), dimension(nmlb:nmub)                     , intent(inout) :: dps        !< bed level or depth at cell faces
     real(fp)                                             , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
+	real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: agsqs
+    real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: gsqs
+	integer   ,                                          , intent(in)    :: cutcell
     logical                                              , intent(out)   :: error
-        
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                         :: agsqs
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                         :: gsqs
+	
+    real(fp), dimension(nmlb:nmub)                         :: agsqs
+    real(fp), dimension(nmlb:nmub)                         :: gsqs
 	
     interface
        subroutine comm(a, n, error, msgstr)
@@ -1427,10 +1439,10 @@ subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lund
     real(fp)                        :: voltim     !< local volume variable, various meanings
     type(dumptype),         pointer :: pdump
 
-    if (dadpar%cutcell==2) then ! areas of active cell can vary with bank erosion, recompute them (not ok for parellel/domain decomposition case since    globalareadump (=localareadump ) is simply overwriten
+    if (cutcell==2) then ! areas of active cell can vary with bank erosion, recompute them (not ok for parellel/domain decomposition case since    globalareadump (=localareadump ) is simply overwriten
        do ib = 1, dadpar%nadump
-          !pdump => dump_prop(ib)
-          !area => pdump%area
+          pdump => dump_prop(ib)
+          area => pdump%area
           dadpar%globalareadump(ib) = 0._fp !I overwrite it
           do i = 1, dadpar%dump_prop(ib)%npnt
              nm = dadpar%dump_prop(ib)%nm(i)
