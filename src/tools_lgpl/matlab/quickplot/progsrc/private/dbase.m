@@ -10,7 +10,7 @@ function varargout=dbase(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -70,7 +70,8 @@ if (nargin==0) || strcmp(filename,'?')
 end
 
 S.FileName=filename;
-fid=fopen(filename,'r','l');
+encoding = Default_Encoding;
+fid=fopen(filename,'r','l',encoding);
 HTerminator = 13;
 %--------------------------------------------------------------------------
 % Version number
@@ -179,6 +180,7 @@ else
     % 200: Win EE                  1250
     %      Russian (201), Turkish (202), Greek (203)
     %   0: ignored
+    % --> might use this to determine the encoding
     fread(fid,2,'uint8'); % reserved
 end
 %--------------------------------------------------------------------------
@@ -334,11 +336,11 @@ fclose(fid);
 MemoFileName=S.FileName;
 MemoFileName(end-2:end)=MemoFileName(end-2:end)-'DBF'+'DBT';
 MemoFormat = 'DBT';
-fid = fopen(MemoFileName,'r','l');
+fid = fopen(MemoFileName,'r','l','US-ASCII');
 if fid<0
     MemoFileName(end-2:end)=MemoFileName(end-2:end)-'DBT'+'FPT';
     MemoFormat = 'FPT';
-    fid = fopen(MemoFileName,'r','l');
+    fid = fopen(MemoFileName,'r','l','US-ASCII');
 end
 if fid>0
     MemoFPT = strcmp(MemoFormat,'FPT');
@@ -389,7 +391,7 @@ end
 %
 MdxFileName=S.FileName;
 MdxFileName(end-2:end)=MdxFileName(end-2:end)-'DBF'+'MDX';
-fid = fopen(MdxFileName,'r','l');
+fid = fopen(MdxFileName,'r','l','US-ASCII');
 if fid>0
     fseek(fid,0,1);
     FileSize = ftell(fid);
@@ -585,6 +587,9 @@ else
     D = datenum(Date(1)+1900,Date(2),Date(3));
 end
 
+function Encoding = Default_Encoding
+Encoding = 'windows-1252';
+
 function Dbs=Local_read_dbase(S,Records,Fields)
 if ~isequal(Records,0)
     Records=Records(:);
@@ -600,7 +605,11 @@ else
         error('Invalid field number.');
     end
 end
-fid=fopen(S.FileName,'r','l');
+encoding = Default_Encoding;
+if isfield(S,'Encoding')
+    encoding = S.Encoding;
+end
+fid=fopen(S.FileName,'r','l',encoding);
 Dbs=cell(1,length(Fields));
 for j=1:length(Fields)
     i=Fields(j);

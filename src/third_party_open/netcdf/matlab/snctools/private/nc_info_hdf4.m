@@ -1,24 +1,27 @@
 function fileinfo = nc_info_hdf4(hdf4file)
 % HDF4 backend for NC_INFO
 
+fileinfo.Name = '/';
+
 % Get the full path name.
 fid = fopen(hdf4file,'r');
 fullfile = fopen(fid);
 fclose(fid);
 
 fileinfo.Filename = hdf4file; % [name ext];
+fileinfo.Datatype = [];       % Never used for HDF4.
 
 sd_id = hdfsd('start',fullfile,'read');
 if sd_id < 0
-    error('SNCTOOLS:nc_info:hdf4:startFailed', ...
-        'start failed on %s.\n', hdf4file);
+    error('snctools:nc_info:hdf4:startFailed', ...
+        'start failed on %s.', hdf4file);
 end
 
 [ndatasets,nglobal_attr,status] = hdfsd('fileinfo',sd_id);
 if status < 0
     hdfsd('end',sd_id);
-    error('SNCTOOLS:nc_info:hdf4:fileinfoFailed', ...
-        'fileinfo failed on %s.\n', hdf4file);
+    error('snctools:nc_info:hdf4:fileinfoFailed', ...
+        'fileinfo failed on %s.', hdf4file);
 end
 
 dim_count = 0;
@@ -29,16 +32,16 @@ for idx = 0:ndatasets-1
     sds_id = hdfsd('select',sd_id,idx);
     if sds_id < 0
         hdfsd('end',sd_id);
-        error('SNCTOOLS:nc_info:hdf4:selectFailed', ...
-            'select failed on dataset with index %d\n', idx);
+        error('snctools:nc_info:hdf4:selectFailed', ...
+            'Select failed on dataset with index %d.', idx);
     end
 
 	[sds_name,sds_rank,sds_dimsizes,dtype_wr,nattrs,status] = hdfsd('getinfo',sds_id); %#ok<ASGLU>
     if status < 0
         hdfsd('endaccess',sds_id);
         hdfsd('end',sd_id);
-        error('SNCTOOLS:nc_info:hdf4:getinfoFailed', ...
-            'getinfo failed on dataset with index %d\n', idx);
+        error('snctools:nc_info:hdf4:getinfoFailed', ...
+            'getinfo failed on dataset with index %d.', idx);
     end
 
 	% Look at each dimension
@@ -48,28 +51,29 @@ for idx = 0:ndatasets-1
         if dimid < 0
             hdfsd('endaccess',sds_id);
             hdfsd('end',sd_id);
-            error('SNCTOOLS:varput:hdf4:getdimidFailed', 'GETDIMID failed on %s.', varname);
+            error('snctools:varput:hdf4:getdimidFailed', 'GETDIMID failed on %s.', varname);
         end
         [dname,dcount,ddatatype,dattrs,status] = hdfsd('diminfo',dimid); %#ok<ASGLU>
         if status < 0
             hdfsd('endaccess',sds_id);
             hdfsd('end',sd_id);
-            error('SNCTOOLS:varput:hdf4:diminfoFailed', 'DIMINFO failed');
+            error('snctools:varput:hdf4:diminfoFailed', 'DIMINFO failed');
         end
 
 		% Do we already have it?
 		if (dim_count > 0) && any(strcmp(dname,{fileinfo.Dimension.Name}))
+            % we already have it.
 			continue;
-		else
+        else
 			dim_count = dim_count + 1;
 			fileinfo.Dimension(dim_count).Name = dname;
 			if isinf(dcount)
 				fileinfo.Dimension(dim_count).Unlimited = true;
-                if isinf(sds_dimsizes(dimidx+1))
-                   fileinfo.Dimension(dim_count).Length = 0;
-                else
+                %if isinf(sds_dimsizes(dimidx+1))
+                %   fileinfo.Dimension(dim_count).Length = 0;
+                %else
                     fileinfo.Dimension(dim_count).Length = sds_dimsizes(dimidx+1);
-                end
+                %end
 			else
 				fileinfo.Dimension(dim_count).Unlimited = false;
 				fileinfo.Dimension(dim_count).Length = dcount;
@@ -84,8 +88,8 @@ for idx = 0:ndatasets-1
     status = hdfsd('endaccess',sds_id);
     if status < 0
         hdfsd('end',sd_id);
-        error('SNCTOOLS:nc_info:hdf4:endaccessFailed', ...
-            'endaccess failed on dataset with index %d\n', idx);
+        error('snctools:nc_info:hdf4:endaccessFailed', ...
+            'endaccess failed on dataset with index %d.', idx);
     end
 end
 
@@ -101,15 +105,15 @@ if nglobal_attr > 0
     for j = 0:nglobal_attr-1
         [name,atype,acount,status] = hdfsd('attrinfo',sd_id,j); %#ok<ASGLU>
         if status < 0
-            error('SNCTOOLS:nc_info:hdf4:attrinfoFailed', ...
-                'Could not read attribute %d.\n', j );
+            error('snctools:nc_info:hdf4:attrinfoFailed', ...
+                'Could not read attribute %d.', j );
         end
         Attribute(j+1).Name = name;
         
         [Attribute(j+1).Value, status] = hdfsd('readattr',sd_id,j);
         if status < 0
-            error('SNCTOOLS:nc_info:hdf4:readattrFailed', ...
-                'Could not read attribute %d.\n',j );
+            error('snctools:nc_info:hdf4:readattrFailed', ...
+                'Could not read attribute %d.',j );
         end
         Attribute(j+1).Datatype = class(Attribute(j+1).Value);
     end
@@ -119,14 +123,15 @@ fileinfo.Attribute = Attribute;
 
 status = hdfsd('end',sd_id);
 if status < 0
-    error('SNCTOOLS:nc_info:hdf4:endFailed', ...
-        'end failed on %s.\n', hdf4file);
+    error('snctools:nc_info:hdf4:endFailed', ...
+        'end failed on %s.', hdf4file);
 end
 
 if isempty(fileinfo.Dataset) 
     return
 end
 
+return;
 
 % Post process it.  For some reason, we cannot retrieve the length of an
 % unlimited coordinate variable via the low-level interface.  Have to fudge

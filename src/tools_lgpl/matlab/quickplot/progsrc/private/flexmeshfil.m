@@ -18,7 +18,7 @@ function varargout=flexmeshfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -105,22 +105,42 @@ fidx=find(DimFlag);
 
 idx(fidx(1:length(varargin)))=varargin;
 
-if isfield(Props,'ElmLayer')
-    Faces = FI.Faces(FI.ElmLyr==Props.ElmLayer,:);
+if strcmp(FI.FileType,'Gmsh')
+    Faces = FI.Element.Node';
+    NodeCoor = FI.Nodes.XYZ';
 else
-    Faces = FI.Faces;
+    if isfield(Props,'ElmLayer')
+        Faces = FI.Faces(FI.ElmLyr==Props.ElmLayer,:);
+    else
+        Faces = FI.Faces;
+    end
+    NodeCoor = FI.NodeCoor;
 end
+iFaces = [];
+lFaces = [];
 if ~isequal(idx{M_},0)
-    Faces = Faces(idx{M_},:);
+    switch Props.Geom
+        case 'UGRID2D-NODE'
+            lFaces = all(ismember(Faces,idx{M_}) | Faces<=0,2);
+            Faces = Faces(lFaces,:);
+            %NodeCoor = NodeCoor(idx{M_},:); % will be updated below since
+            %Faces only contains a subset of the Node indices.
+        case 'UGRID2D-FACE'
+            iFaces = idx{M_};
+            Faces = Faces(iFaces,:);
+    end
 end
 i = Faces>0;
+[iNodes,~,renumFaces] = unique(Faces(i));
+Faces(i) = renumFaces;
+NodeCoor = NodeCoor(iNodes,:);
 %
 switch Props.Geom
     case 'POLYG'
         X = Faces;
         Y = Faces;
-        X(i) = FI.NodeCoor(Faces(i),1);
-        Y(i) = FI.NodeCoor(Faces(i),2);
+        X(i) = NodeCoor(Faces(i),1);
+        Y(i) = NodeCoor(Faces(i),2);
         X(~i) = NaN;
         Y(~i) = NaN;
         X(:,end+1:end+2) = NaN;
@@ -140,16 +160,29 @@ switch Props.Geom
         Ans.Y = Y(:);
     case 'TRI'
         Ans.TRI = Faces;
-        sz = size(FI.NodeCoor);
-        Ans.XYZ = reshape(FI.NodeCoor,[1 sz(1) 1 sz(2)]);
-        Ans.Val = FI.NodeCoor(:,3);
-    case 'UGRID-NODE'
+        sz = size(NodeCoor);
+        Ans.XYZ = reshape(NodeCoor,[1 sz(1) 1 sz(2)]);
+        Ans.Val = NodeCoor(:,3);
+    case {'UGRID2D-NODE','UGRID2D-FACE'}
         Faces(Faces==0) = NaN;
         Ans.FaceNodeConnect = Faces;
-        Ans.X = FI.NodeCoor(:,1);
-        Ans.Y = FI.NodeCoor(:,2);
-        Ans.Val = FI.NodeCoor(:,3);
-        Ans.ValLocation = 'NODE';
+        Ans.X = NodeCoor(:,1);
+        Ans.Y = NodeCoor(:,2);
+        switch Props.Name
+            case 'mesh - node indices'
+                Ans.Val = iNodes;
+            case 'mesh - face indices'
+                if ~isempty(lFaces)
+                    Ans.Val = find(lFaces);
+                elseif ~isempty(iFaces)
+                    Ans.Val = iFaces;
+                else
+                    Ans.Val = 1:size(Faces,1);
+                end
+            case 'value'
+                Ans.Val = NodeCoor(:,3);
+        end
+        Ans.ValLocation = Props.Geom(9:end);
 end
 %
 varargout={Ans FI};
@@ -160,22 +193,20 @@ varargout={Ans FI};
 function Out=infile(FI,domain)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 %======================== SPECIFIC CODE =======================================
-PropNames={'Name'                   'Units' 'Geom'       'Coords' 'DimFlag' 'DataInCell' 'NVal' 'SubFld' 'ClosedPoly'};
-DataProps={'mesh'                   ''      'POLYG'      'xy'    [0 0 6 0 0]  0            0      []         1
-           'value'                  ''      'UGRID-NODE' 'xy'    [0 0 6 0 0]  0            1      []         1};
+PropNames={'Name'                   'Units' 'Geom'       'Coords' 'DimFlag' 'DataInCell' 'NVal' 'SubFld' 'ClosedPoly' 'UseGrid'};
+DataProps={'mesh'                   ''      'UGRID2D-NODE' 'xy'    [0 0 6 0 0]  0            0      []         0            1
+           'mesh - node indices'    ''      'UGRID2D-NODE' 'xy'    [0 0 6 0 0]  0            1      []         0            1
+           'mesh - face indices'    ''      'UGRID2D-FACE' 'xy'    [0 0 6 0 0]  1            1      []         0            1
+           'value'                  ''      'UGRID2D-NODE' 'xy'    [0 0 6 0 0]  0            1      []         0            1};
 if strcmp(FI.FileType,'Gmsh')
-    DataProps(1:2,:) = [];
     Out=cell2struct(DataProps,PropNames,2);
 else
     if size(FI.NodeCoor,2)<3
-        DataProps(2,:) = [];
+        DataProps(4,:) = [];
     end
     Out=cell2struct(DataProps,PropNames,2);
     if isfield(FI,'ElmLyr') && domain<=length(FI.Layers)
         [Out.ElmLayer] = deal(FI.Layers(domain));
-    end
-    if size(FI.Faces,2)>3
-        Out(2).Geom = 'UGRID-NODE';
     end
 end
 % -----------------------------------------------------------------------------
@@ -184,10 +215,24 @@ end
 function sz=getsize(FI,Props)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 sz=[0 0 0 0 0];
-if isfield(Props,'ElmLayer')
-    sz(M_) = sum(FI.ElmLyr==Props.ElmLayer);
+if strcmp(FI.FileType,'Gmsh')
+    switch Props.Geom
+        case 'UGRID2D-NODE'
+            sz(M_) = size(FI.Nodes.XYZ,2);
+        case 'UGRID2D-FACE'
+            sz(M_) = size(FI.Element.Node,2);
+    end
 else
-    sz(M_) = size(FI.Faces,1);
+    switch Props.Geom
+        case 'UGRID2D-NODE'
+            % to do
+        case 'UGRID2D-FACE'
+            if isfield(Props,'ElmLayer')
+                sz(M_) = sum(FI.ElmLyr==Props.ElmLayer);
+            else
+                sz(M_) = size(FI.Faces,1);
+            end
+    end
 end
 % -----------------------------------------------------------------------------
 

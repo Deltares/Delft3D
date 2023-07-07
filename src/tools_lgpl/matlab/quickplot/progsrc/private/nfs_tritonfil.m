@@ -18,7 +18,7 @@ function varargout=nfs_tritonfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -288,6 +288,9 @@ T_=1; ST_=2; M_=3; N_=4; K_=5;
 PropNames={'Name'                   'Units'   'DimFlag' 'DataInCell' 'NVal' 'Group'          'Val1'    'Val2'  'SubFld'};
 %
 dms = domains(FI);
+if domain == 0
+    domain = length(dms);
+end
 switch dms{domain}
     case 'grid'
         DataProps={...

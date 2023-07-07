@@ -37,7 +37,7 @@ function varargout=d3d_attrib(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -112,13 +112,16 @@ if nargin<2 || isempty(filetype)
 else
     types = {filetype};
 end
+fid=fopen(filename,'r','n','US-ASCII');
+if fid<0
+    error('Can''t open file: %s.',filename)
+end
 for tpC = types
     tp = tpC{1};
     Out.Type = tp;
     try
         switch tp
             case 'openboundary'
-                fid=fopen(filename,'r');
                 i=0;
                 while 1
                     Line=fgetl(fid);
@@ -169,7 +172,6 @@ for tpC = types
                             AComp2{i} = Tokens{3};
                     end
                 end
-                fclose(fid);
                 Out.Name = Name;
                 Out.BndType = BndType;
                 Out.Forcing = Forcing;
@@ -179,10 +181,8 @@ for tpC = types
                 Out.AstrSta1 = AComp1;
                 Out.AstrSta2 = AComp2;
             case 'rigidsheet' % or porous plate
-                fid=fopen(filename,'r');
                 [Data,N]=fscanf(fid,' %[uUvV] %i %i %i %i %i %i %f',[8 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/8)~=N/8
                     error('Error reading file.')
                 end
@@ -196,10 +196,8 @@ for tpC = types
                 kmax=max(kmax,max(max(Out.MNKv(:,5:6))));
                 Out.KMax=kmax;
             case '3dgate'
-                fid=fopen(filename,'r');
                 [Data,N]=fscanf(fid,' %[uUvV] %i %i %i %i %i %i',[7 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/7)~=N/7
                     error('Error reading file.')
                 end
@@ -213,10 +211,8 @@ for tpC = types
                 kmax=max(kmax,max(max(Out.MNKv(:,5:6))));
                 Out.KMax=kmax;
             case 'weir'
-                fid=fopen(filename,'r');
                 [Data,N]=fscanf(fid,' %[uUvV] %i %i %i %i %f %f %f',[8 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/8)~=N/8
                     error('Error reading file.')
                 end
@@ -227,11 +223,9 @@ for tpC = types
                 Out.MNv=Data(2:5,~U)'; if isempty(Out.MNv), Out.MNv=zeros(0,4); end
                 Out.CHARv=Data(6:8,~U)'; if isempty(Out.CHARv), Out.CHARv=zeros(0,3); end
             case 'weir-waqua'
-                fid=fopen(filename,'r');
                 %W    3   26    8.86    1.65    1.57    0.00    0.00    0.00 'K' ' ' 1 0
                 [Data,N]=fscanf(fid,' %*[W] %i %i %f %f %f %f %f %f ''%1c'' ''%1c'' %i %i',[12 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/12)~=N/12
                     error('Error reading file.')
                 end
@@ -243,10 +237,8 @@ for tpC = types
                 Out.MNv=Data([1:2 1:2],V)'; if isempty(Out.MNv), Out.MNv=zeros(0,4); end
                 Out.CHARv=Data([6:8 10 12],V)'; if isempty(Out.CHARv), Out.CHARv=zeros(0,5); end
             case 'thindam'
-                fid=fopen(filename,'r');
                 [Data,N]=fscanf(fid,' %i %i %i %i %[uUvV]',[5 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/5)~=N/5
                     error('Error reading file.')
                 end
@@ -257,10 +249,8 @@ for tpC = types
                 Out.MNv=Data(1:4,~U)'; if isempty(Out.MNv), Out.MNv=zeros(0,4); end
                 Out.CHARv=Data([],~U)'; if isempty(Out.CHARv), Out.CHARv=zeros(0,0); end
             case 'thindam-waqua'
-                fid=fopen(filename,'r');
                 [Data,N]=fscanf(fid,' %1[mMnN]%*[^=]= %i %i %i',[4 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/4)~=N/4
                     error('Error reading file.')
                 end
@@ -271,10 +261,8 @@ for tpC = types
                 Out.MNv=Data([3 2 4 2],~U)'; if isempty(Out.MNv), Out.MNv=zeros(0,4); end
                 Out.CHARv=Data([],~U)'; if isempty(Out.CHARv), Out.CHARv=zeros(0,0); end
             case 'drypoint'
-                fid=fopen(filename,'r');
                 [Data,N]=fscanf(fid,' %i %i %i %i',[4 inf]);
                 erryes=~feof(fid);
-                fclose(fid);
                 if erryes || round(N/4)~=N/4
                     error('Error reading file.')
                 end
@@ -285,7 +273,6 @@ for tpC = types
                 end
                 Out.MN=Data;
             case 'discharge stations'
-                fid=fopen(filename,'r');
                 i=0;
                 while 1
                     Line=fgetl(fid);
@@ -324,7 +311,6 @@ for tpC = types
                         end
                     end
                 end
-                fclose(fid);
                 Out.Name=Name;
                 Out.Interpolation=Interpolation;
                 Out.MNK=MNK;
@@ -333,22 +319,23 @@ for tpC = types
                     Out.MNK_out=MNK_out;
                 end
             case 'cross-sections'
-                fid=fopen(filename,'r');
                 i=0;
                 while 1
                     Line=fgetl(fid);
-                    if (~ischar(Line) || isempty(deblank(Line)) ) && feof(fid)
-                        break
+                    if ~ischar(Line) || isempty(deblank(Line))
+                        if feof(fid)
+                            break
+                        else % skip empty lines (mostly at the end of the file)
+                            continue
+                        end
                     end
                     i=i+1;
                     Name{i,1}=deblank(Line(1:20));
                     MNMN(i,1:4)=sscanf(Line(21:end),' %i %i %i %i',[1 4]);
                 end
-                fclose(fid);
                 Out.Name=Name;
                 Out.MNMN=MNMN;
             case 'barriers'
-                fid=fopen(filename,'r');
                 i=0;
                 while 1
                     Line=fgetl(fid);
@@ -369,35 +356,39 @@ for tpC = types
                     U(i)=upper(v(1))=='U';
                     MNMN(i,1:4)=v(1,2:5);
                 end
-                fclose(fid);
                 Out.Name=Name;
                 Out.U   =U;
                 Out.MNMN=MNMN;
             case 'observation points'
-                fid=fopen(filename,'r');
                 i=0;
                 while 1
                     Line=fgetl(fid);
-                    if (~ischar(Line) || isempty(deblank(Line)) ) && feof(fid)
+                    if ~ischar(Line)
                         break
+                    elseif isempty(deblank(Line))
+                        continue
                     end
                     i=i+1;
-                    Name{i,1}=deblank(Line(1:20));
-                    MN(i,1:2)=sscanf(Line(21:end),' %i %i',[1 2]);
+                    Name{i,1} = deblank(Line(1:20));
+                    mn = sscanf(Line(21:end),' %i %i',[1 2]);
+                    if any(mn <= 0)
+                        error('Invalid MN coordinates (%d,%d) for observation point "%s"',mn,Name{i,1})
+                    end
+                    MN(i,1:2) = mn;
                 end
-                fclose(fid);
                 Out.Name=Name;
                 Out.MN=MN;
             otherwise
                 error('Reading file format ''%s'' not supported.',tp)
         end
+        fclose(fid);
         return
     catch err
-        if ~isempty(fopen(fid))
-            fclose(fid);
-        end
         if length(types)==1
+            fclose(fid);
             rethrow(err)
+        else
+            fseek(fid,0,-1);
         end
     end
 end
@@ -413,7 +404,7 @@ end
 if ~isfield(Out,'Type')
     Out.Type='weir';
 end
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 switch Out.Type
     case 'openboundary'
         for i = 1:length(Out.Name)

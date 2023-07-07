@@ -14,7 +14,7 @@ end subroutine get_swan_depth
 subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -38,8 +38,8 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -60,13 +60,11 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
     integer           :: i
     integer           :: j
     integer           :: lunbot
-    integer, external :: new_lun
     real              :: dummy
 !
 !! executable statements -------------------------------------------------------
 !
-    lunbot = new_lun()
-    open (lunbot, file = botfil, status = 'unknown')
+    open (newunit = lunbot, file = botfil, status = 'unknown')
     do j = 1, nb
        read (lunbot, *, end = 999) (dpb(i, j), i = 1, mb), dummy
     enddo
@@ -80,5 +78,5 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
   999 continue
     write (*, '('' Premature end of file while reading file: '',A)') botfil
     close (lunbot)
-    stop
+    call wavestop(1, ' Premature end of file while reading file: '//trim(botfil))
 end subroutine read_bot 

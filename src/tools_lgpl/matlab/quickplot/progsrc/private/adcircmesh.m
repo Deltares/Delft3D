@@ -1,6 +1,6 @@
 function S = adcircmesh(cmd,FileName)
 %ADCIRCMESH Read an Adcirc fort.14 mesh topology file.
-%   MESH = ADCIRCMESH('open',FILENAME) reads an Adcird fort.14 mesh
+%   MESH = ADCIRCMESH('open',FILENAME) reads an Adcirc fort.14 mesh
 %   topology file and returns a structure containing all mesh information.
 %   The returned structure contains fields
 %    * NodeCoor: NNODES x 3 array with XYZ coordinates of NNODES mesh
@@ -14,7 +14,7 @@ function S = adcircmesh(cmd,FileName)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -98,7 +98,7 @@ end
 function S = local_open(FileName)
 S.FileName = FileName;
 S.FileType = 'Adcirc 14 mesh';
-[fid,msg] = fopen(FileName,'r');
+[fid,msg] = fopen(FileName,'r','n','US-ASCII');
 if fid<0
     error('%s: %s',FileName,msg)
 end

@@ -3,7 +3,7 @@
     <documentation>
         <fileVersion>1.00</fileVersion>
         <createdBy>Deltares, Coupling team</createdBy>
-        <creationDate>2015-05-20T07:56:32+01</creationDate>
+        <creationDate>2015-05-20T07:56:32+01:00</creationDate>
     </documentation>
     <control>
         <parallel>

@@ -17,7 +17,7 @@ if nvdims == 0
         return
 
     else     
-        error('SNCTOOLS:nc_varput:badIndexing',...
+        error('snctools:nc_varput:badIndexing',...
             'Do not use indexing for singleton variables.');
     end
 
@@ -37,6 +37,6 @@ end
 
 % Check that the start, count, and stride arguments have the same length.
 if (numel(start) ~= numel(count)) || (~isempty(stride) && numel(start) ~= numel(stride))
-    error('SNCTOOLS:nc_varput:badIndexLength', ...
+    error('snctools:nc_varput:badIndexLength', ...
           'The START, COUNT, and STRIDE arguments must have the same length.');
 end

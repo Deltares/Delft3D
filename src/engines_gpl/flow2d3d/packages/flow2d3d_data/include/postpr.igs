@@ -1,0 +1,58 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type sv_postpr
+    !
+    ! doubles
+    !
+    ! reals
+    !
+    ! integers
+    !
+	integer :: nc_deflate !  deflate_level argument when defining variables on NetCDF4 files
+	integer :: nc_mode    !  cmode argument when creating new NetCDF files (NF90_64BIT_OFFSET for NetCDF3, NF90_NETCDF4 for NetCDF4)
+    integer :: nuprpg     !  Current page number print file
+    integer :: nuprln     !  Current line number in print page
+    integer :: io_fp      !  Output precision matching simulation precision (IO_REAL4 or IO_REAL8)
+    integer :: io_prec    !  Output precision (IO_REAL4 or IO_REAL8)
+    !
+    ! pointers
+    !
+    integer, dimension(:)  , pointer :: smlay   !  layers to be written to map output (default all layers)
+    integer, dimension(:)  , pointer :: shlay   !  layers to be written to his output (default all layers)
+    integer, dimension(:)  , pointer :: kfst0   !  kfs at the start of the simulation
+    ! 
+    ! logicals
+	!
+	logical :: mergemap !  Flag indicating whether a parallel simulation should write one overall trim-file (TRUE) or one file per partition (FALSE) - always true for serial simulations
+    !
+    ! characters
+    character*131 :: header(10) !  Print file header
+    character*10  :: trans_unit !  Unit of the variables ATR and DTR
+end type sv_postpr

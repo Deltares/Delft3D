@@ -151,6 +151,11 @@ varstruct.Chunking = [10 50];
 
 nc_addvar ( ncfile, varstruct );
 
+info = nc_info(ncfile);
+if strcmp(info.Format,'netcdf-java')
+    % netcdf-java can't return information about chunk size.
+    return
+end
 v = nc_getvarinfo(ncfile,'z');
 
 if (v.Chunking(1) ~= 10) || (v.Chunking(2) ~= 50)
@@ -202,6 +207,12 @@ varstruct.Shuffle = 1;
 
 nc_addvar ( ncfile, varstruct );
 
+info = nc_info(ncfile);
+if strcmp(info.Format,'netcdf-java')
+    % netcdf-java can't return information about compression
+    return
+end
+
 v = nc_getvarinfo(ncfile,'z');
 
 if v.Shuffle ~= 1
@@ -242,7 +253,11 @@ varstruct.Dimension = { 'y', 'x' };
 varstruct.Deflate = 1;
 
 nc_addvar ( ncfile, varstruct );
-
+info = nc_info(ncfile);
+if strcmp(info.Format,'netcdf-java')
+    % netcdf-java can't return information about chunk size.
+    return
+end
 v = nc_getvarinfo(ncfile,'z');
 
 if v.Shuffle ~= 0
@@ -301,6 +316,12 @@ varstruct.Shuffle = 1;
 varstruct.Deflate = 9;
 
 nc_addvar ( ncfile, varstruct );
+
+info = nc_info(ncfile);
+if strcmp(info.Format,'netcdf-java')
+    % netcdf-java can't return information about chunk size.
+    return
+end
 
 v = nc_getvarinfo(ncfile,'z');
 
@@ -434,6 +455,9 @@ error ( 'succeeded when it should have failed.' );
 function test_singletons (ncfile,mode)
 % Create singletons of different datatypes.
 
+if exist(ncfile,'file')
+    delete(ncfile);
+end
 nc_create_empty (ncfile,mode);
 clear varstruct;
 varstruct.Name = 'x';
@@ -759,7 +783,7 @@ function test_illegal_field_name (ncfile,mode)
 % Should produce a warning, which we want to suppress.  The varstruct
 % has an unrecognized field.
 
-warning('off','SNCTOOLS:nc_addvar:unrecognizedFieldName');
+warning('off','snctools:addvar:unrecognizedFieldName');
 nc_create_empty (ncfile,mode);
 nc_adddim ( ncfile, 'x', 5 );
 
@@ -769,7 +793,7 @@ varstruct.nnccttyyppee = { 'x' };
 varstruct.Dimension = { 'x' };
 nc_addvar ( ncfile, varstruct );
 
-warning('on','SNCTOOLS:nc_addvar:unrecognizedFieldName');
+warning('on','snctools:addvar:unrecognizedFieldName');
 
 
 

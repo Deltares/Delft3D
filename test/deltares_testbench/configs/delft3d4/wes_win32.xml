@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+    <!--
+    Basic Windows configuration file: For "wes" (Wind Enhanced Scheme)
+    -->
+    <config>
+        <localPaths>
+            <testCasesDir>./data/cases</testCasesDir>
+            <enginesDir>./data/reference_engines/delft3d/win32</enginesDir>
+            <referenceDir>./data/reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+                <!--root>
+                    https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32
+                    https://repos.deltares.nl/repos/ds/dist/wix/source/delft3d/win32
+                    ../../engines_for_reference/trunk/bin/delft3d/win32/
+                </root-->
+                <root>
+                https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin
+                </root>
+            </location>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="engines_to_compare">
+                <!--root>
+                    ../../engines_to_compare/
+                </root-->  
+                <root>
+                    ./data/engines_to_compare/teamcity_artifacts  <!-- Same path as defined in the teamcity Delft3D TestBank WES win32; Edit configuration, Dependencies -->
+                </root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <programs>
+        <!--
+        The order is important. Start with the following programs:
+            command_prompt
+            svn
+            mpi
+        -->
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win32\svn.exe</path>
+        </program>
+        <program name="wes" logOutputToFile="true" programStringRemoveQuotes="true">
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>delft3d_closed_source/win32/wes/bin</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>bin/win32/wes/bin</from>
+            </location>
+            <path>wes.exe</path>
+        </program>
+    </programs>
+    <!--
+    default testCases
+    -->
+    <defaultTestCases>
+        <testCase name="wes_default">
+            <programs>
+                <program ref="wes"/>
+            </programs>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                <from>win32</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e68_f01_c01_katrina_t1" ref="wes_default">
+            <path>e68_wes/f01_general/c01_katrina_t1</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t1.inp</argument>
+                        <argument>&gt;t1_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t1_wes.dia" type="ASCII"/>
+                <file name="t1_wes.scr" type="ASCII"/>
+                <file name="t1.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c02_katrina_t2" ref="wes_default">
+            <path>e68_wes/f01_general/c02_katrina_t2</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t2.inp</argument>
+                        <argument>&gt;t2_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t2_wes.dia" type="ASCII"/>
+                <file name="t2_wes.scr" type="ASCII"/>
+                <file name="t2.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c03_katrina_t3" ref="wes_default">
+            <path>e68_wes/f01_general/c03_katrina_t3</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t3.inp</argument>
+                        <argument>&gt;t3_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t3_wes.dia" type="ASCII"/>
+                <file name="t3_wes.scr" type="ASCII"/>
+                <file name="t3.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c04_katrina_t4" ref="wes_default">
+            <path>e68_wes/f01_general/c04_katrina_t4</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t4.inp</argument>
+                        <argument>&gt;t4_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t4_wes.dia" type="ASCII"/>
+                <file name="t4_wes.scr" type="ASCII"/>
+                <file name="t4.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c05_katrina_t5" ref="wes_default">
+            <path>e68_wes/f01_general/c05_katrina_t5</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t5.inp</argument>
+                        <argument>&gt;t5_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t5_wes.dia" type="ASCII"/>
+                <file name="t5_wes.scr" type="ASCII"/>
+                <file name="t5.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c06_katrina_t6" ref="wes_default">
+            <path>e68_wes/f01_general/c06_katrina_t6</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t6.inp</argument>
+                        <argument>&gt;t6_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t6_wes.dia" type="ASCII"/>
+                <file name="t6_wes.scr" type="ASCII"/>
+                <file name="t6.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c07_katrina_t7" ref="wes_default">
+            <path>e68_wes/f01_general/c07_katrina_t7</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t7.inp</argument>
+                        <argument>&gt;t7_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t7_wes.dia" type="ASCII"/>
+                <file name="t7_wes.scr" type="ASCII"/>
+                <file name="t7.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c08_hemisphere" ref="wes_default">
+            <path>e68_wes/f01_general/c08_hemisphere</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>test_hemisphere.inp</argument>
+                        <argument>&gt;test_hemisphere_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test_hemisphere_wes.dia" type="ASCII"/>
+                <file name="test_hemisphere_wes.scr" type="ASCII"/>
+                <file name="test_hemisphere.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c09_wes" ref="wes_default">
+            <path>e68_wes/f01_general/c09_wes</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>wes.inp</argument>
+                        <argument>&gt;wes_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="wes_wes.dia" type="ASCII"/>
+                <file name="wes_wes.scr" type="ASCII"/>
+                <file name="wes.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c10_wes" ref="wes_default">
+            <path>e68_wes/f01_general/c10_wes</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>wes.inp</argument>
+                        <argument>&gt;wes_wes.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="wes_wes.dia" type="ASCII"/>
+                <file name="wes_wes.scr" type="ASCII"/>
+                <file name="wes.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c11_wes" ref="wes_default">
+            <path>e68_wes/f01_general/c11_wes</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>wes_81.inp</argument>
+                        <argument>&gt;wes_81.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="wes_81_wes.dia" type="ASCII"/>
+                <file name="wes_81.scr" type="ASCII"/>
+                <file name="wes_81.spw" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+</testCases>
+</deltaresTestbench_v3>

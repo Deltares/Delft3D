@@ -44,10 +44,11 @@ function [varargout]=qp_getdata(varargin)
 %      [Success]                       = QP_GETDATA(FI,'options',OptionsFigure,'initialize')
 %      [Success,NewFI     ,cmdargs]    = QP_GETDATA(FI,'options',OptionsFigure,OptionsCommand, ...)
 %      [Success,hNew      ,NewFI]      = QP_GETDATA(FI,Domain,DataFld,'plot',Parent,Ops,hOld,subf,t,station,m,n,k)
+%      [Success,Options   ]            = QP_GETDATA(FI,Domain,DataFld,'plotoptions',subf,t,station,m,n,k)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -164,6 +165,7 @@ try
             % [Success,StNames   ]            = QP_GETDATA(FI,Domain,DataFld,'stations',S)
             % [Success,SubFields ]            = QP_GETDATA(FI,Domain,DataFld,'subfields',F)
             % [Success,hNew      ]            = QP_GETDATA(FI,Domain,DataFld,'plot',Parent,Ops,hOld,subf,t,station,m,n,k)
+            % [Success,Options   ]            = QP_GETDATA(FI,Domain,DataFld,'plotoptions',subf,t,station,m,n,k)
             % [Success,Data      ]            = QP_GETDATA(FI,Domain,DataFld,'data',subf,t,station,m,n,k)
             %
             % Check for domain index ... add if necessary
@@ -496,21 +498,30 @@ end
 
 
 function [arg2,arg3] = hvslice(Fcn,FI,X)
+T_=1; ST_=2; M_=3; N_=4; K_=5;
+Props   = X{2};
+DimFlag = Props.DimFlag;
+%
 v_slice=[];
 h_slice=[];
-if iscell(X{end})
-    switch X{end}{1}
-        case 'k'
-            X{end}=X{end}{2};
-        case {'z'}
-            h_slice=X{end};
-            X{end}=0;
+if ~isempty(feval(Fcn,FI,X{1:2},'subfields'))
+    sf = 1;
+else
+    sf = 0;
+end
+if DimFlag(K_)
+    idxK = 3+sf+sum(DimFlag(1:K_)~=0);
+    if length(X)>=idxK && iscell(X{idxK})
+        h_slice = X{idxK};
+        X{idxK}=0;
     end
 end
-m = 3+find(cellfun('isclass',X(4:end),'cell'));
-if ~isempty(m)
-    v_slice=X{m};
-    X{m}=0;
+if DimFlag(M_)
+    idxM = 3+sf+sum(DimFlag(1:M_)~=0);
+    if length(X)>=idxM && iscell(X{idxM})
+        v_slice = X{idxM};
+        X{idxM}=0;
+    end
 end
 %
 % If function does not support delivery of DataInCell but
@@ -528,7 +539,7 @@ end
 %
 % Get all data needed.
 %
-[arg2 arg3]=feval(Fcn,FI,X{:});
+[arg2,arg3]=feval(Fcn,FI,X{:});
 %
 % Take average if cell data was required, but not provided.
 % The following code does not yet work for 3D slices!
@@ -553,10 +564,7 @@ end
 % Handle h_slice options as needed.
 %
 if ~isempty(h_slice)
-    switch h_slice{1}
-        case 'z'
-            arg2 = hslice(arg2,h_slice{2});
-    end
+    arg2 = hslice(arg2,h_slice{:});
 end
 %
 % Handle v_slice options as needed.

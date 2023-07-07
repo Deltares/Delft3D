@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -26,10 +26,11 @@
 
 !     Deltares Software Centre
 
-!     function : Checks if collumn header exists
+!     function : Checks if column header exists
 
 !     Global declarations
 
+      use m_zoek
       use dlwq_data      ! for definition and storage of data
       use rd_token
       use timers       !   performance timers

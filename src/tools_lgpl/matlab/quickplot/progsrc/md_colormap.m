@@ -12,7 +12,7 @@ function cmap=md_colormap(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -50,8 +50,15 @@ if nargin==0 || ~ischar(varargin{1})
 end
 
 colorfiles = {'*.hls' 'Classic Delft3D HLS Files'
+    '*.c3g' 'CSS3 Gradients'
+    '*.ggr' 'GNU Image Manipulation Program Gradients'
+    '*.gpf' 'GNUplot Palettes'
     '*.cpt' 'GMT Palettes'
-    '*.qgs' 'QGIS Gradients'
+    '*.inc' 'POV-Ray Colour Map Headers'
+    '*.pg'  'PostGIS (ST_ColorMap) Colour Maps'
+    '*.qgs' 'QGIS Colour Ramps'
+    '*.sao' 'SAOImage DS9 Colour Maps'
+    '*.svg' 'Scalar Vector Graphics Gradients'
     '*.*'   'All Files'};
 
 F=gcbf;
@@ -340,15 +347,29 @@ switch cmd
         map=clrmap(S,m);
         try
             switch filename(end-2:end)
+                case 'c3g'
+                    CSS3clr('write',filename,S,S.Name);
+                case 'cpt'
+                    GMTclr('write',filename,S,S.Name);
+                case 'ggr'
+                    GIMPclr('write',filename,S,S.Name);
+                case 'gpf'
+                    gnuplot_clr('write',filename,S,S.Name);
                 case 'hls'
                     qnhls('write',filename,map,S.Name);
-                case 'cpt'
-                    GMTclr('write',filename,map,S.Name);
+                case 'inc'
+                    POVRAYclr('write',filename,S,S.Name);
+                case 'pg'
+                    PGclr('write',filename,S,S.Name);
                 case 'qgs'
-                    QGISclr('write',filename,map,S.Name);
+                    QGISclr('write',filename,S,S.Name);
+                case 'sao'
+                    SAO_DS9clr('write',filename,S,S.Name);
+                case 'svg'
+                    SVGclr('write',filename,S,S.Name);
             end
-        catch
-            ui_message('error',lasterr);
+        catch Ex
+            qp_error('Catch in md_colormap',Ex);
         end
         return
     case 'apply'
@@ -389,22 +410,33 @@ switch cmd
                 end
                 filename=[p f];
                 SS = [];
-                for FT = colorfiles(:,2)'
-                    ft = FT{1};
+                for FT = colorfiles(:,1)'
+                    ft = FT{1}(3:end);
                     try
-                        if strcmp(ft,'All Files')
+                        if strcmp(ft,'*')
                             [pp,ff,ee] = fileparts(filename);
-                            switch lower(ee)
-                                case '.qgs'
-                                    ft = 'QGIS Gradients';
-                                case '.cpt'
-                                    ft = 'GMT Palettes';
-                                otherwise
-                                    ft = 'Classic Delft3D HLS Files';
-                            end
+                            ft = lower(ee(2:end));
                         end
                         switch ft
-                            case 'Classic Delft3D HLS Files'
+                            case 'c3g'
+                                SS = CSS3clr('read',filename);
+                            case 'cpt'
+                                SS = GMTclr('read',filename);
+                            case 'ggr'
+                                SS = GIMPclr('read',filename);
+                            case 'gpf'
+                                SS = gnuplot_clr('read',filename);
+                            case 'inc'
+                                SS = POVRAYclr('read',filename);
+                            case 'pg'
+                                SS = PGclr('read',filename);
+                            case 'qgs'
+                                SS = QGISclr('read',filename);
+                            case 'sao'
+                                SS = SAO_DS9clr('read',filename);
+                            case 'svg'
+                                SS = SVGclr('read',filename);
+                            otherwise
                                 [map,label]=qnhls('read',filename);
                                 map=rgb2hls(map);
                                 SS.Name=label;
@@ -412,14 +444,8 @@ switch cmd
                                 SS.Colors=map;
                                 SS.AlternatingColors=0;
                                 SS.Index=[];
-                                break
-                            case 'GMT Palettes'
-                                SS = GMTclr('read',filename);
-                                break
-                            case 'QGIS Gradients'
-                                SS = QGISclr('read',filename);
-                                break
                         end
+                        break
                     catch Ex
                     end
                 end
@@ -1109,11 +1135,12 @@ uih(i,j,1) = uicontrol('Parent',h0, ...
 
 
 function varargout = GMTclr(cmd,filename,varargin)
+% Description: http://gmtrac.soest.hawaii.edu/doc/latest/GMT_Docs.html#color-palette-tables
 switch cmd
     case 'read'
-        label = '';
+        [p,label] = fileparts(filename);
         %
-        fid = fopen(filename,'r');
+        fid = fopen(filename,'r','n','UTF-8');
         oldPos = ftell(fid);
         Line = fgetl(fid);
         lineNr = 1;
@@ -1161,25 +1188,26 @@ switch cmd
         SS.Space=ColorModel;
         SS.Colors=map/255;
         SS.AlternatingColors=0;
-        SS.Index=index;
+        SS.Index=checkindex(index);
         varargout = {SS};
     case 'write'
         SS = varargin{1};
         SS = convertcolors(SS,{'RGB','HSV'}); % RGB, HSV, and CMYK supported by GMT
         clrs = SS.Colors;
         %
-        fid = fopen(filename,'w');
+        fid = fopen(filename,'w','n','UTF-8');
         fprintf(fid,'# autogenerated GMT palette "%s"\n',SS.Name);
-        fprintf(fid,'%s\n',md_colormap_revision);
+        fprintf(fid,'# %s\n',md_colormap_revision);
         fprintf(fid,'# COLOR_MODEL = %s\n',SS.Space);
-        map = [round(SS.Index*10000)-5000 clrs*255];
+        map = [round(9000*SS.Index(:))-5000 clrs*255];
         map = [map(1:end-1,:) map(2:end,:)];
-        fprintf(fid,'%4i %3i %3i %3i %4i %3i %3i %3i\n',map');
+        fprintf(fid,'%5i %3i %3i %3i %5i %3i %3i %3i\n',map');
         fclose(fid);
 end
 
 
 function varargout = QGISclr(cmd,filename,varargin)
+% Description: ??
 switch cmd
     case 'read'
         file = xmlread(filename);
@@ -1218,14 +1246,14 @@ switch cmd
         SS.Space='RGB';
         SS.Colors=map(:,2:4)/255;
         SS.AlternatingColors=0;
-        SS.Index=map(:,1);
+        SS.Index=checkindex(map(:,1));
         varargout = {SS};
     case 'write'
         SS = varargin{1};
         SS = convertcolors(SS,'RGB'); % only RGB supported
         clrs = SS.Colors*255;
         %
-        fid = fopen(filename,'w');
+        fid = fopen(filename,'w','n','UTF-8');
         fprintf(fid,'<!DOCTYPE qgis_style>');
         fprintf(fid,'<qgis_style version="1">');
         if 1
@@ -1246,10 +1274,491 @@ switch cmd
         end
         fprintf(fid,'</qgis_style>');
         fclose(fid);
-
 end
+
+
+function varargout = CSS3clr(cmd,filename,varargin)
+% Description: https://www.w3.org/TR/css3-images/#gradients
+switch cmd
+    case 'read'
+        [p,label] = fileparts(filename);
+        %
+        fid = fopen(filename,'r','n','UTF-8');
+        Line = strtrim(fgetl(fid));
+        while 1
+            if isempty(Line) || (length(Line)>=2 && strcmp(Line(1:2),'//'))
+                Line = strtrim(fgetl(fid));
+            elseif length(Line)>=2 && strcmp(Line(1:2),'/*')
+                Line = strtrim(fgetl(fid));
+                while length(Line)<2 || ~strcmp(Line(1:2),'*/')
+                    Line = strtrim(fgetl(fid));
+                end
+                Line = strtrim(fgetl(fid));
+            else
+                break
+            end
+        end
+        %
+        pos = ftell(fid);
+        if length(Line)<15 || ~strcmpi(Line(1:15),'linear-gradient')
+            fclose(fid);
+            error('First data line of CSS3 file should start with "linear-gradient". Reading "%s"',Line)
+        end
+        fseek(fid,pos,-1);
+        %
+        C = cell(1000,1);
+        C{1} = Line;
+        N = 1;
+        while 1
+            Line = fgetl(fid);
+            if ~ischar(Line)
+                break
+            else
+                N = N+1;
+                if N>length(C)
+                    C{2*(N-1)} = '';
+                end
+                C{N} = strtrim(Line);
+            end
+        end
+        fclose(fid);
+        C = cat(2,C{1:N});
+        ob = find(C=='(');
+        cb = find(C==')');
+        cob = NaN(size(ob));
+        %
+        for icb = 1:length(cb)
+            iob = max(find(ob<cb(icb) & isnan(cob)));
+            cob(iob) = icb;
+            if iob==1
+                break
+            end
+        end
+        %
+        if isnan(cob(1))
+            error('No closing bracket found for linear-gradient')
+        end
+        args = C(ob(1)+1:cb(cob(1))-1);
+        nb = cob(1);
+        cb = cb(1:nb-1)-ob(1);
+        ob = ob(2:nb)-ob(1);
+        cob = cob(2:nb);
+        cm = find(args==',');
+        %
+        for i = 1:length(cm)
+            for j = 1:length(ob)
+                if cm(i)>ob(j) && cm(i)<cb(cob(j))
+                    cm(i) = NaN;
+                    break
+                end
+            end
+        end
+        cm(isnan(cm))=[];
+        args = mat2cell(args,1,[cm(1) diff([cm length(args)])])';
+        for i = 1:length(args)-1
+            args{i} = args{i}(1:end-1);
+        end
+        %
+        %dir = args{1};
+        stops = args(2:end);
+        map = zeros(length(stops),4);
+        for i = 1:length(stops)
+            A = sscanf(stops{i},'rgb(%i,%i,%i) %f',4);
+            map(i,:) = A;
+        end
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map(:,1:3)/255;
+        SS.AlternatingColors=0;
+        SS.Index=checkindex(map(:,4)/100);
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors*255;
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        fprintf(fid,'/*\n');
+        fprintf(fid,'   CSS3 gradient\n');
+        fprintf(fid,'   %s\n',md_colormap_revision);
+        fprintf(fid,'*/\n\n');
+        fprintf(fid,'linear-gradient(\n');
+        fprintf(fid,'  0deg,\n');
+        stopv = [clrs 100*SS.Index(:)];
+        stops = sprintf('  rgb(%3i,%3i,%3i) %7.3f%%,\n',stopv');
+        fprintf(fid,'%s\n',stops(1:end-2)); % remove last comma, add new \n
+        fprintf(fid,'  );\n');
+        fclose(fid);
+end
+
+
+function varargout = GIMPclr(cmd,filename,varargin)
+% Description: https://marc.info/?t=102275194900003&r=1&w=1
+switch cmd
+    case 'read'
+        fid = fopen(filename,'r','n','UTF-8');
+        Line = fgetl(fid);
+        if ~strcmpi(Line,'GIMP Gradient')
+            fclose(fid);
+            error('First line of GIMP file should read "GIMP Gradient"')
+        end
+        Line = fgetl(fid);
+        if length(Line)<5 || ~strcmpi(Line(1:5),'Name:')
+            fclose(fid);
+            error('Second line of GIMP file should start with "Name:"')
+        end
+        label = strtrim(Line(6:end));
+        Line = fgetl(fid);
+        N = sscanf(Line,'%i');
+        [A,c] = fscanf(fid,'%f %f %f %f %f %f %f %f %f %f %f %i %i',[13 inf]);
+        if c ~= N*13
+            fclose(fid);
+            error('Unable to read %i records from GIMP file (%.2g records read).',N,c/13)
+        end
+        fclose(fid);
+        N = size(A,2);
+        map = reshape(A([1 4:6 3 8:10],:),[4 2*N])';
+        map(find(all(diff(map)==0,2))+1,:) = [];
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map(:,2:4);
+        SS.AlternatingColors=0;
+        SS.Index=checkindex(map(:,1));
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors;
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        fprintf(fid,'GIMP Gradient\n');
+        fprintf(fid,'Name: %s\n',SS.Name);
+        fprintf(fid,'%i\n',size(clrs,1)-1);
+        i1 = SS.Index(1:end-1)';
+        i2 = SS.Index(2:end)';
+        im = (i1+i2)/3;
+        o1 = ones(size(i1));
+        stopv = [i1 im i2 clrs(1:end-1,:) o1 clrs(2:end,:) o1];
+        stops = sprintf('%8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f %8.6f 0 0\n',stopv');
+        %stops = strrep(stops,'.',','); % period or colon depending on locale for GIMP 1.3
+        fprintf(fid,'%s',stops);
+        fclose(fid);
+end
+
+
+function varargout = gnuplot_clr(cmd,filename,varargin)
+% Description: http://gnuplot.sourceforge.net/docs_5.0/gnuplot.pdf#section*.296
+switch cmd
+    case 'read'
+        [p,label] = fileparts(filename);
+        %
+        fid = fopen(filename,'r','n','UTF-8');
+        C = textscan(fid,'%f %f %f %f','commentstyle','#');
+        fclose(fid);
+        %
+        if isempty(C{1})
+            error('Data format in file does not match 3 or 4 floats per line as expected for GNU Plot file.')
+        elseif all(isnan(C{4}))
+            map = [C{1} C{2} C{3}];
+            N = size(map,1);
+            f = (0:(N-1))/(N-1);
+        else
+            map = [C{2} C{3} C{4}];
+            N = size(map,1);
+            f = C{1};
+        end
+        %
+        checkmap(map,1);
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map;
+        SS.AlternatingColors=0;
+        SS.Index=checkindex(f);
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors;
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        fprintf(fid,'# Gnuplot colour map\n');
+        fprintf(fid,'# %s\n',md_colormap_revision);
+        stopv = [SS.Index(:) clrs];
+        fprintf(fid,'%7.5f %7.5f %7.5f %7.5f\n',stopv');
+        fclose(fid);
+end
+
+
+function varargout = POVRAYclr(cmd,filename,varargin)
+switch cmd
+    case 'read'
+        fid = fopen(filename,'r','n','UTF-8');
+        Line = strtrim(fgetl(fid));
+        while isempty(Line) || (length(Line)>=2 && strcmp(Line(1:2),'//'))
+            Line = strtrim(fgetl(fid));
+        end
+        %
+        if length(Line)<8 || ~strcmpi(Line(1:8),'#declare')
+            fclose(fid);
+            error('First data line of POV-Ray file should start with "#declare"')
+        end
+        [dec,Line] = strtok(Line);
+        label = strtok(Line); % label is second argument on this line
+        %
+        Line = strtrim(fgetl(fid));
+        if length(Line)<9 || ~strcmpi(Line(1:9),'color_map')
+            fclose(fid);
+            error('Second data line of POV-Ray file should start with "color_map"')
+        end
+        if Line(end)~='{'
+            fclose(fid);
+            error('Second data line of POV-Ray file should end with "{"')
+        end
+        %
+        C = textscan(fid,'[%f color rgbf <%f,%f,%f,%f>]');
+        Line = strtrim(fgetl(fid));
+        if ~strcmp(Line,'}')
+            fclose(fid);
+            error('The color_map record of POV-Ray file should end with "}"')
+        end
+        fclose(fid);
+        %
+        map = [C{2} C{3} C{4}];
+        f = C{1};
+        checkmap(map,1);
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map;
+        SS.AlternatingColors=0;
+        SS.Index=checkindex(f);
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors;
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        fprintf(fid,'// autogenerated povray color map "%s"\n',SS.Name);
+        fprintf(fid,'// %s\n',md_colormap_revision);
+        fprintf(fid,'#declare %s =\n',SS.Name);
+        fprintf(fid,'color_map {\n');
+        stopv = [SS.Index(:) clrs clrs(:,1)]; stopv(:,end)=0;
+        fprintf(fid,'  [%7.5f color rgbf <%6.4f,%6.4f,%6.4f,%6.4f>]\n',stopv');
+        fprintf(fid,'}\n');
+        fclose(fid);
+end
+
+
+function varargout = PGclr(cmd,filename,varargin)
+switch cmd
+    case 'read'
+        [p,label] = fileparts(filename);
+        %
+        fid = fopen(filename,'r','n','UTF-8');
+        C = textscan(fid,'%d %d %d %d %d','emptyvalue',-999);
+        fclose(fid);
+        %
+        if isempty(C{1})
+            error('Data format in file does not match 5 integers per line as expected for PostGIS file.')
+        else
+            map = double([C{1} C{2} C{3} C{4} C{5}]);
+            if any(any(map(:,2:5)==-999))
+                error('Data format in file does not match 5 integers per line as expected for PostGIS file.')
+            end
+            map = flipud(map);
+            f = (map(:,1)-map(1,1))/(map(end,1)-map(1,1));
+            map = map(:,2:4);
+        end
+        %
+        checkmap(map,255);
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map/255;
+        SS.AlternatingColors=0;
+        SS.Index=checkindex(f);
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors;
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        map = flipud([round(9000*SS.Index(:))-5000 clrs*255]);
+        fprintf(fid,'%-7i %3i %3i %3i\n',map');
+        fclose(fid);
+end
+
+
+function varargout = SAO_DS9clr(cmd,filename,varargin)
+switch cmd
+    case 'read'
+        [p,label] = fileparts(filename);
+        %
+        fid = fopen(filename,'r','n','UTF-8');
+        Line = strtrim(fgetl(fid));
+        while isempty(Line) || strcmp(Line(1),'#')
+            Line = strtrim(fgetl(fid));
+        end
+        %
+        if ~strcmpi(Line,'PSEUDOCOLOR')
+            fclose(fid);
+            error('First data line of SAO DS9 file expected to read "PSEUDOCOLOR"')
+        end
+        %
+        col = {'RED','GREEN','BLUE'};
+        fst = {'first','second','third'};
+        cl = cell(2,3);
+        for i = 1:3
+            COL = [col{i} ':'];
+            Line = strtrim(fgetl(fid));
+            if ~strcmpi(Line,COL)
+                fclose(fid);
+                error('Trying to read %s data table. Expecting "%s", read: "%s"',fst{i},COL,Line)
+            end
+            v = fscanf(fid,' (%f,%f)');
+            v = reshape(v,[2 length(v)/2])';
+            cl{1,i} = checkindex(v(:,1));
+            cl{2,i} = v(:,2);
+        end
+        fclose(fid);
+        f = unique(cat(1,cl{1,:}));
+        map = zeros(length(f),3);
+        for i = 1:3
+            map(:,i) = interp1(cl{1,i},cl{2,i},f);
+        end
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map;
+        SS.AlternatingColors=0;
+        SS.Index=f;
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors;
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        fprintf(fid,'# SAOimage color table\n');
+        fprintf(fid,'# %s\n',SS.Name);
+        fprintf(fid,'# created by %s\n',md_colormap_revision);
+        fprintf(fid,'PSEUDOCOLOR\n');
+        fprintf(fid,'RED:\n');
+        stopv = [SS.Index(:) clrs];
+        stops = sprintf('(%.4g,%.4g)',stopv(:,[1 2])');
+        fprintf(fid,'%s\n',stops);
+        fprintf(fid,'GREEN:\n');
+        stops = sprintf('(%.4g,%.4g)',stopv(:,[1 3])');
+        fprintf(fid,'%s\n',stops);
+        fprintf(fid,'BLUE:\n');
+        stops = sprintf('(%.4g,%.4g)',stopv(:,[1 4])');
+        fprintf(fid,'%s\n',stops);
+        fclose(fid);
+end
+
+
+function varargout = SVGclr(cmd,filename,varargin)
+switch cmd
+    case 'read'
+        file = xmlread(filename);
+        if ~strcmp(char(file.getDocumentElement.getNodeName),'svg')
+            error('File doesn''t seem to be SVG file')
+        end
+        ramps = file.getElementsByTagName('linearGradient');
+        if ramps.getLength ~= 1
+            error('File %s contains %i linear gradients, expecting 1',filename,ramps.getLength)
+        end
+        ramp = ramps.item(0);
+        %
+        label = char(ramp.getAttribute('id'));
+        stops = ramp.getElementsByTagName('stop');
+        N = stops.getLength;
+        if N == 0
+            error('File %s does not contain any colour stops',filename)
+        end
+        f = zeros(N,1);
+        map = zeros(N,3);
+        %
+        for i = 1:N
+            stop = stops.item(i-1);
+            f(i) = sscanf(char(stop.getAttribute('offset')),'%f');
+            map(i,:) = sscanf(char(stop.getAttribute('stop-color')),'rgb(%d,%d,%d',[1 3]);
+            % stop-opacity
+        end
+        checkmap(map,255)
+        %
+        SS.Name=label;
+        SS.Space='RGB';
+        SS.Colors=map/255;
+        SS.AlternatingColors=0;
+        SS.Index=checkindex(f/100);
+        varargout = {SS};
+    case 'write'
+        SS = varargin{1};
+        SS = convertcolors(SS,'RGB'); % only RGB supported
+        clrs = SS.Colors*255;
+        %
+        mdcrev = md_colormap_revision;
+        [mdc,rev] = strtok(mdcrev);
+        rev = strtrim(rev);
+        %
+        fid = fopen(filename,'w','n','UTF-8');
+        fprintf(fid,'<?xml version="1.0" encoding="UTF-8"?>\n');
+        fprintf(fid,'<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="300px" height="45px" viewBox="0 0 300 45">\n');
+        fprintf(fid,'  <g>\n');
+        fprintf(fid,'    <defs>\n');
+        fprintf(fid,'      <linearGradient id="%s" gradientUnits="objectBoundingBox" spreadMethod="pad" x1="0%%" x2="100%%" y1="0%%" y2="0%%">\n',SS.Name);
+        stopv = [100*SS.Index(:) clrs clrs(:,1)]; stopv(:,end)=1;
+        fprintf(fid,'        <stop offset="%.2f%%" stop-color="rgb(%i, %i, %i)" stop-opacity="%.4f"/>\n',stopv');
+        fprintf(fid,'      </linearGradient>\n');
+        fprintf(fid,'    </defs>\n');
+        fprintf(fid,'    <rect fill="url(#%s)" x="4" y="4" width="292" height="37" stroke="black" stroke-width="1"/>\n',SS.Name);
+        fprintf(fid,'  </g>\n');
+        fprintf(fid,'  <metadata>\n');
+        fprintf(fid,'    <creator name="%s" version="%s"/>\n',mdc,rev);
+        fprintf(fid,'    <created date="%s"/>\n',datestr(now));
+        fprintf(fid,'  </metadata>\n');
+        fprintf(fid,'</svg>\n');
+        fclose(fid);
+end
+
+
+function checkmap(map,maxv)
+for i = 1:3
+    switch i
+        case 1
+            j = isnan(map(:));
+        case 2
+            j = map(:)<0;
+        case 3
+            j = map(:)>maxv;
+    end
+    if any(j)
+        iw = find(j);
+        iw = iw(1);
+        iRGB = floor(iw/N);
+        iCOL = iw - iRGB*N;
+        error('Invalid color value %i read (red=%f, green=%f, blue=%f).\n Expecting values in range 0 to %i.',iCOL,map(iCOL,:),maxv)
+    end
+end
+
+
+
+function index = checkindex(index)
+for i = 2:length(index)
+    index(i) = max(index(i-1)+eps,index(i));
+end
+for i = length(index)-1:-1:1
+    index(i) = min(index(i+1)-eps,index(i));
+end
+
 
 function rev = md_colormap_revision
 url = '$HeadURL$';
 rev = '$Id$';
-rev = [url(11:end-2) sscanf(rev,'%*[^ ] %*[^ ] %[^ ]%[ ]%[^ ]%[ ]%[^ ] ')];
+rev = [url(11:end-2) ' ' sscanf(rev,'%*[^ ] %*[^ ] %[^ ]%[ ]%[^ ]%[ ]%[^ ] ')];

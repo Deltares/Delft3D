@@ -1,6 +1,6 @@
 ! ---- LGPL --------------------------------------------------------------------
 !
-! Copyright (C)  Stichting Deltares, 2011-2017.
+! Copyright (C)  Stichting Deltares, 2011-2023.
 !
 ! This library is free software; you can redistribute it and/or
 ! modify it under the terms of the GNU Lesser General Public
@@ -148,23 +148,6 @@ C
 *
 * -------- Now read the record with the dimensions
 *
-         LUN1   = 0
-         LUN2   = 0
-         DO 130 I = 10,99
-            INQUIRE( I , OPENED = OPEND )
-            IF ( .NOT. OPEND  ) THEN
-               IF ( LUN1   .EQ. 0 ) THEN
-                  LUN1   = I
-               ELSE
-                  IF ( LUN2   .EQ. 0 ) THEN
-                     LUN2   = I
-                     GOTO 140
-                  ENDIF
-               ENDIF
-            ENDIF
-  130    CONTINUE
-*
-  140    CONTINUE
 *
 * -------- Open the files: either binary or unformatted
 *          Note:
@@ -177,7 +160,7 @@ C
 *          Note:
 *          Read two records to be sure everything is all right
 *
-         OPEN( LUN1   , FILE = FILNAM(1)(1:K1) , STATUS = 'OLD' ,
+         OPEN( NEWUNIT = LUN1    , FILE = FILNAM(1)(1:K1) , STATUS = 'OLD' ,
      &         ACCESS = 'STREAM' , ERR = 210 )
          READ( LUN1   , ERR  = 210 , END = 910 ) NX
          READ( LUN1   , ERR  = 210 , END = 910 ) NY
@@ -186,11 +169,11 @@ C
 *
   210    CONTINUE
          CLOSE( LUN1   )
-         OPEN( LUN1   , FILE = FILNAM(1)(1:K1) , STATUS = 'OLD' ,
+         OPEN( NEWUNIT = LUN1       , FILE = FILNAM(1)(1:K1) , STATUS = 'OLD' ,
      &         FORM = 'UNFORMATTED' , ERR = 900 )
 *
   220    CONTINUE
-         OPEN( LUN2   , FILE = FILNAM(2)(1:K1) , STATUS = 'OLD' ,
+         OPEN( NEWUNIT = LUN2    , FILE = FILNAM(2)(1:K1) , STATUS = 'OLD' ,
      &         ACCESS = 'STREAM' , ERR = 230 )
          READ( LUN2   , ERR  = 230 , END = 910 )
          READ( LUN2   , ERR  = 230 , END = 910 ) NY2
@@ -199,7 +182,7 @@ C
 *
   230    CONTINUE
          CLOSE( LUN2   )
-         OPEN( LUN2   , FILE = FILNAM(2)(1:K1) , STATUS = 'OLD' ,
+         OPEN( NEWUNIT = LUN2       , FILE = FILNAM(2)(1:K1) , STATUS = 'OLD' ,
      &         FORM = 'UNFORMATTED' , ERR = 900 )
 *
 * -------- Read the first record of the LGRID file
@@ -371,19 +354,9 @@ C
 * -------- Unformatted files:
 *          read the record with the dimensions
 *
-      LUN2   = 0
-      DO 110 I = 10,99
-         INQUIRE( I , OPENED = OPEND )
-         IF ( .NOT. OPEND  ) THEN
-            LUN2   = I
-            GOTO 120
-         ENDIF
-  110 CONTINUE
-*
-  120 CONTINUE
       K2     = INDEX( FILNAM(2) , CHAR(0) )
       IF ( K2     .EQ. 0 ) K2     = LENODS
-      OPEN( LUN2   , FILE = FILNAM(2)(1:K2) , STATUS = 'OLD' ,
+      OPEN( NEWUNIT = LUN2, FILE = FILNAM(2)(1:K2) , STATUS = 'OLD' ,
      &      FORM = BINARY , ERR = 210 )
       READ( LUN2   , ERR = 210 , END = 910 )
       READ( LUN2   , ERR = 210 , END = 910 ) NY2
@@ -392,7 +365,7 @@ C
 *
   210 CONTINUE
       CLOSE( LUN2   )
-      OPEN( LUN2   , FILE = FILNAM(2)(1:K2) , STATUS = 'OLD' ,
+      OPEN( NEWUNIT = LUN2, FILE = FILNAM(2)(1:K2) , STATUS = 'OLD' ,
      &      FORM = UNFORM , ERR = 900 )
 *
 * -------- Read the second record of the TELMAC file:

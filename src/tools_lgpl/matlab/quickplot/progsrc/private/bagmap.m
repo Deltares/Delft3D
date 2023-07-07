@@ -12,7 +12,7 @@ function Out=bagmap(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,7 @@ if nargin==0 || strcmp(filename,'?')
 end
 Structure.FileName=filename;
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Cannot open %s.',filename);
 end
@@ -189,7 +189,7 @@ function Data=Local_bmread(S,Index,Subfield)
 if nargin<3
     Subfield=1;
 end
-fid=fopen(S.FileName,'r');
+fid=fopen(S.FileName,'r','n','US-ASCII');
 if fid<0
     error('Cannot open %s.',S.FileName)
 end

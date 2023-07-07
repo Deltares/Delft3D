@@ -10,4 +10,4 @@ fc TESTNefisPLT-res.txt ..\resultsApproved\w32\TESTNefisPLT-res.txt
 fc TESTNefis.dat ..\resultsApproved\w32\TESTNefis.dat
 fc TESTNefis.def ..\resultsApproved\w32\TESTNefis.def
 
-exit 0
+exit /B 0

@@ -1,7 +1,7 @@
 subroutine get_params(tscale, rho, filnam)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine get_params(tscale, rho, filnam)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -110,7 +110,7 @@ subroutine get_params(tscale, rho, filnam)
   200 continue
     if (error /= 0) then
        write(*,'(5a)') '*** ERROR: Reading file "', trim(filnam), '.dat" or "', trim(filnam), '.def"'
-       stop
+       call wavestop(1, '*** ERROR: Reading file "'//trim(filnam)//'.dat" or "'//trim(filnam)//'.def"')
     endif
     deallocate(rbuff, stat=ierr)
 end subroutine get_params

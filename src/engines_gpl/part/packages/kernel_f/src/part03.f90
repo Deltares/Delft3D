@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,14 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-
+module part03_mod
+!
+contains
       subroutine part03 ( lgrid  , volume , flow   , dx     , dy     ,   &
                           nmax   , mmax   , mnmaxk , lgrid2 , velo   ,   &
                           layt   , area   , depth  , dps    , locdep ,   &
-                          zlevel , tcktot , ltrack)
+                          zlevel , zmodel , laytop , laytopp, laybot ,   &
+                          pagrid , aagrid , tcktot , ltrack , flow2m ,   & 
+                          lgrid3 , vol1   , vol2   , vel1   , vel2   )
 !
 !
-!                   Deltares (former: Deltares)
+!                   Deltares
 !
 !                        d e l p a r    v3.10
 !
@@ -64,26 +68,38 @@
 
 !     parameters
 
-!     kind         function         name                     Descriptipon
+!     kind         function         name                     Description
 
       integer(ip), intent(in   ) :: nmax                   !< first dimension lgrid
       integer(ip), intent(in   ) :: mmax                   !< second dimension lgrid
       integer(ip), intent(in   ) :: mnmaxk                 !< total size of 3D matrix
       integer(ip), intent(in   ) :: layt                   !< number of layers
-      integer(ip), intent(in   ) :: lgrid (nmax,mmax)      !< active grid indices matrix
-      integer(ip), intent(in   ) :: lgrid2(nmax,mmax)      !< total grid indices matrix
-      real   (rp), intent(in   ) :: dx    (nmax*mmax)      !< x distance of grid cell
-      real   (rp), intent(in   ) :: dy    (nmax*mmax)      !< y distance of grid cell
-      real   (rp), intent(in   ) :: volume(mnmaxk)         !< volumes
+      integer(ip), intent(in   ) :: lgrid (:,:)            !< active grid indices matrix
+      integer(ip), intent(in   ) :: lgrid2(:,:)            !< total grid indices matrix
+      real   (rp), intent(in   ) :: dx    (:)              !< x distance of grid cell
+      real   (rp), intent(in   ) :: dy    (:)              !< y distance of grid cell
+      real   (rp), intent(in   ) :: volume(:)              !< volumes
       real   (rp), intent(in   ) :: flow  (*)              !< flows
-      real   (rp), intent(in   ) :: area  (nmax*mmax)      !< horizontal surface area
-      real   (rp), intent(  out) :: depth (nmax*mmax)      !< water depth
-      real   (rp), intent(  out) :: velo  (mnmaxk)         !< velocities in 3D
-      real   (rp), intent(in   ) :: dps   (nmax*mmax)      !< bed depth
-      real   (rp), intent(  out) :: locdep(nmax*mmax,layt) !< depth per layer
-      real   (rp), intent(  out) :: zlevel(nmax*mmax)
-      real   (rp), intent(in   ) :: tcktot(layt)
+      real   (rp), intent(in   ) :: area  (:)              !< horizontal surface area
+      real   (rp), intent(  out) :: depth (:)              !< water depth
+      real   (rp), intent(  out) :: velo  (:)              !< velocities in 3D
+      real   (rp), intent(in   ) :: dps   (:)              !< bed depth
+      real   (rp), intent(  out) :: locdep(:,:)            !< depth per layer
+      real   (rp), intent(  out) :: zlevel(:)
+      logical    , intent(in   ) :: zmodel
+      integer(ip), intent(inout) :: laytop(:,:)            !< highest active layer in z-layer model
+      integer(ip), intent(inout) :: laytopp(:,:)           !< highest active layer in z-layer model of previous time step
+      integer(ip), intent(inout) :: laybot(:,:)            !< deepest active layer in z-layer model
+      integer(ip), intent(in   ) :: pagrid(:,:,:)          !< potentially active z-layer segments grid matrix
+      integer(ip), intent(inout) :: aagrid(:,:,:)          !< actually active z-layer segments grid matrix
+      real   (rp), intent(in   ) :: tcktot(:)
       logical    , intent(in   ) :: ltrack
+      real   (rp), intent(in   ) :: flow2m  (*)            !< flows next time level on matrix
+      integer(ip), pointer       :: lgrid3( : , : )        !< original grid (conc array)
+      real   (sp), pointer       :: vol1   ( : )           !< first volume record
+      real   (sp), pointer       :: vol2   ( : )           !< second volume record
+      real   (sp), pointer       :: vel1  ( : )            ! velocity begin hydr step
+      real   (sp), pointer       :: vel2  ( : )            ! velocity end hydr step
 
       real (sp) ::  default = 999.999
 
@@ -99,11 +115,37 @@
       real   (rp)  vy       !    velocity in y direction
       integer(ip)  i03d , i33d, i43d
       integer(ip)  ilay
+      integer(ip)  iseg
       real   (dp)  dplay
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "part03", ithndl )
+!
+!     determine actually active segments in z-layer models
+!
+      if (zmodel) then
+         do i2 = 2, mmax
+            do i1 = 2, nmax
+               i0 = lgrid(i1, i2)
+               if (i0  >  0) then
+                  laytopp(i1, i2) = laytop(i1, i2)
+                  laytop(i1, i2) = laybot(i1, i2)
+                  do ilay = 1, laybot(i1, i2)
+                     if (pagrid(i1, i2, ilay)==1) then
+                        i03d = i0 + (ilay-1)*nmax*mmax
+                        if (volume(i03d)>0.0) then
+                           aagrid(i1, i2, ilay) = 1
+                           if (laytop(i1, i2)==laybot(i1, i2)) then
+                              laytop(i1, i2)=ilay
+                           endif
+                        end if
+                     end if
+                  end do
+               end if
+            end do
+         end do
+      end if
 !
 !     initialisation
 !
@@ -113,81 +155,88 @@
 !
 !     loop over the segments
 !
-      do 300 ilay = 1, layt
-         do 200 i2 = 2, mmax
-           do 150 i1 = 2, nmax
-!
-!            active?
-!
-             i0 = lgrid(i1, i2)
-             if (i0  >  0) then
-               i03d = i0 + (ilay-1)*nmax*mmax
-!
-!              magnitude of the velocities
-!
-               vy  = flow(i03d        ) / volume(i03d) * dy(i0)
-               vx  = flow(i03d+ mnmaxk) / volume(i03d) * dx(i0)
-!
-!              calculate sum; value >= 0
-!
-               sum = vx**2 + vy**2
-!
-               i3 = lgrid2(i1 - 1, i2    )
-               i33d = i3 + (ilay-1)*nmax*mmax
-               if (i3  >  0) then
-                 vy  = flow(i33d        ) / volume(i03d) * dy(i0)
-                 sum = sum + vy**2
-               endif
-!
-               i4 = lgrid2(i1    , i2 - 1)
-               i43d = i4 + (ilay-1)*nmax*mmax
-               if (i4  >  0) then
-                 vx  = flow(i43d+mnmaxk) / volume(i03d) * dx(i0)
-                 sum = sum + vx**2
-               endif
-!
-               velo(i03d) = sqrt(sum / 2.0)
-               depth(i0)  = depth(i0) + volume(i03d)
-             endif
-!
-!            end of loop
-!
-  150      continue
-  200    continue
-  300 continue
-!
-      do 400 i2 = 2, mmax
-         do 350 i1 = 2, nmax
-!
-!            active?
-!
-             i0 = lgrid(i1, i2)
-             if (i0  >  0) then
-                if(area(i0)==(0.0)) then
-                   write (*,*) ' Area zero in active segment'
-                   call stop_exit(1)
-                endif
-                depth(i0) = depth(i0)/area(i0)
-             endif
-  350    continue
-  400 continue
-!
-!     determine local depth per layer
-!     local depth = distance free water surface till (bottom of) layer
-!
-      do i2 = 1, mmax
-         do i1 = 1, nmax
+      do i2 = 2, mmax
+         do i1 = 2, nmax
             i0 = lgrid(i1, i2)
-            dplay = 0.0
-            do ilay = 1, layt
-               if (i0  >  0) then
-                  i03d         = i0    + (ilay-1)*nmax*mmax
-                  dplay        = dplay + depth(i0)*tcktot(ilay)
-                  locdep(i0,ilay) = dplay
+            iseg = lgrid3(i1, i2)
+            if (i0  >  0) then
+               if(area(i0)==(0.0)) then
+                  write (*,*) ' Area zero in active segment'
+                  call stop_exit(1)
                endif
-            enddo
-         enddo
-      enddo
+               do ilay = 1, layt
+                  if (zmodel) then
+                     if (aagrid(i1, i2, ilay)==0) cycle
+                  end if
+                  i03d = i0 + (ilay-1)*nmax*mmax
+
+!                 magnitude of the velocities
+                  vy  = flow(i03d        ) / volume(i03d) * dy(i0)
+                  vx  = flow(i03d+ mnmaxk) / volume(i03d) * dx(i0)
+
+!                 calculate sum; value >= 0
+                  sum = vx**2 + vy**2
+                  i3 = lgrid2(i1 - 1, i2    )
+                  i33d = i3 + (ilay-1)*nmax*mmax
+                  if (i3  >  0) then
+                    vy  = flow(i33d        ) / volume(i03d) * dy(i0)
+                    sum = sum + vy**2
+                  endif
+                  i4 = lgrid2(i1    , i2 - 1)
+                  i43d = i4 + (ilay-1)*nmax*mmax
+                  if (i4  >  0) then
+                    vx  = flow(i43d+mnmaxk) / volume(i03d) * dx(i0)
+                    sum = sum + vx**2
+                  endif
+                  velo(i03d) = sqrt(sum / 2.0)
+                  dplay = volume(i03d)/area(i0)
+                  if (ilay .eq. 1) then
+                    vel1(iseg) = velo(i03d)
+
+                    ! next time level
+                    if(vol2(iseg) .gt. 0.0001) then
+                      vy = flow2m(i03d        ) / vol2(iseg) * dy(i0)
+                      vx = flow2m(i03d+ mnmaxk) / vol2(iseg) * dx(i0)
+                    else
+                      vy = 0.0
+                      vx = 0.0
+                    endif
+!
+!                   calculate sum; value >= 0
+!
+                    sum = vx**2 + vy**2
+!
+                    i3 = lgrid2(i1 - 1, i2    )
+                    i33d = i3 + (ilay-1)*nmax*mmax
+                    if (i3  >  0) then
+                      if(vol2(iseg) .gt. 0.0001) then
+                        vy  = flow2m(i33d        ) / vol2(iseg) * dy(i0)
+                      else
+                        vy = 0.0
+                      endif
+                      sum = sum + vy**2
+                    endif
+!
+                    i4 = lgrid2(i1    , i2 - 1)
+                    i43d = i4 + (ilay-1)*nmax*mmax
+                    if (i4  >  0) then
+                      if(vol2(iseg) .gt. 0.0001) then
+                        vx  = flow2m(i43d+mnmaxk) / vol2(iseg) * dx(i0)
+                      else
+                        vx = 0.0
+                      endif
+                      sum = sum + vx**2
+                    endif
+                    vel2(iseg) = sqrt(sum/2.0)
+                    locdep(i0,ilay) = dplay
+                  else
+                    locdep(i0,ilay) = locdep(i0,ilay-1) + dplay
+                  end if
+                  depth(i0)  = locdep(i0,layt)
+               end do
+            end if
+         end do
+      end do
 !
 !     determine z coordinate free water surface
 !     totdep = total depth (free water surface - bottom)
@@ -202,8 +251,6 @@
          do i1 = 1, nmax
             i0 = lgrid(i1, i2)
             if (i0  >  0) then
-               i03d       = i0  + (layt-1)*nmax*mmax
-!              zlevel(i0) = locdep(i03d) - dps(i0)
                zlevel(i0) = locdep(i0,layt) - dps(i0)
             endif
          enddo
@@ -218,3 +265,4 @@
       return
 !
       end subroutine
+end module

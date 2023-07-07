@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,7 +36,7 @@ implicit none    ! force explicit typing
 contains
      subroutine delete_file ( filnam, ierror )
 !
-!     Deltares (former: Deltares)
+!     Deltares
 !
 !     created: aug   1993 by jan van beek
 !
@@ -70,21 +70,10 @@ contains
       inquire ( file=filnam, exist = lexist )
       if ( .not. lexist ) goto 9999
 !
-!     select availeble unitnumber
-!
-      do 100 ilun = 10, 99
-         inquire ( unit=ilun, opened = lopen )
-         if ( .not. lopen ) then
-            iolun = ilun
-            goto 101
-         endif
-  100 continue
-  101 continue
-!
 !     open and close file
 !
       if ( iolun  /=  0 ) then
-         open  ( iolun, file = filnam  , err = 900 )
+         open  ( newunit = iolun, file = filnam  , err = 900 )
          close ( iolun, status='delete', err = 900 )
       else
          ierror = 1

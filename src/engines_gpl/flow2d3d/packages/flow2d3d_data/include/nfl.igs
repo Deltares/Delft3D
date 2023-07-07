@@ -1,0 +1,114 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$
+!-------------------------------------------------------------------------------
+integer, parameter :: NFLWRITE        = 1
+integer, parameter :: NFLREADOLD      = 2
+integer, parameter :: NFLWRITEREADOLD = 3
+integer, parameter :: NFLWRITEREADNEW = 4
+!
+integer, parameter :: NFLCONSTOPERATOR_ABS = 1
+integer, parameter :: NFLCONSTOPERATOR_EXC = 2
+!
+type gd_nfl
+    !
+    ! integers
+    !
+    integer                                :: no_dis            ! number of diffusers/discharges
+    integer                                :: no_amb_max        ! number of diffusers/discharges
+    integer                                :: nflwrmode         ! NFL Write/Read mode: default: NFLWRITEREADNEW
+	integer                                :: nf_const_operator ! Constituent operator as read from NF2FF file
+    !
+    ! integer arrays
+    !
+    integer , dimension(:)  , pointer        :: m_diff
+    integer , dimension(:)  , pointer        :: n_diff
+    integer , dimension(:)  , pointer        :: no_amb
+    integer , dimension(:,:), pointer        :: m_amb
+    integer , dimension(:,:), pointer        :: n_amb
+    integer , dimension(:)  , pointer        :: m_intake
+    integer , dimension(:)  , pointer        :: n_intake
+    integer , dimension(:)  , pointer        :: k_intake
+    integer , dimension(:)  , pointer        :: const_operator
+    !
+    ! Real arrays
+    !
+    real(fp), dimension(:)              , pointer  :: x_diff
+    real(fp), dimension(:)              , pointer  :: y_diff
+    real(fp), dimension(:,:)            , pointer  :: x_amb
+    real(fp), dimension(:,:)            , pointer  :: y_amb
+    real(fp), dimension(:)              , pointer  :: x_intake
+    real(fp), dimension(:)              , pointer  :: y_intake
+    real(fp), dimension(:)              , pointer  :: z_intake
+    real(fp), dimension(:)              , pointer  :: q_diff
+    real(fp), dimension(:,:)            , pointer  :: const_diff
+    real(fp), dimension(:)              , pointer  :: rho0_diff
+    real(fp), dimension(:)              , pointer  :: d0
+    real(fp), dimension(:)              , pointer  :: h0
+    real(fp), dimension(:)              , pointer  :: sigma0
+    real(fp), dimension(:)              , pointer  :: theta0
+    real(fp), dimension(:)              , pointer  :: nf_const     ! Constituent values as read from NF2FF file
+    real(fp), dimension(:,:)            , pointer  :: nf_intake    ! Intake distribution points X,Y,Z as read from NF2FF file
+    real(fp), dimension(:,:)            , pointer  :: nf_sink      ! Sinks X,Y,Z,S,H,B as read from NF2FF file
+    real(fp), dimension(:,:)            , pointer  :: nf_sour      ! Sources X,Y,Z,S,H,B,Umag,Udir as read from NF2FF file
+    real(fp), dimension(:,:,:)          , pointer  :: disnf        ! Discharge volume (nm, k, idis)
+    real(fp), dimension(:,:,:)          , pointer  :: disnf_intake ! Discharge volume (nm, k, idis), not coupled
+    real(fp), dimension(:,:,:)          , pointer  :: disnf_entr   ! Entrainment part of array disnf. Sigma disnf_entr=0.0, disnf_entr + "discharged via diffusor" = disnf
+    real(fp), dimension(:,:,:)          , pointer  :: nf_src_momu  ! Discharge momentum in u direction (nm, k, idis)
+    real(fp), dimension(:,:,:)          , pointer  :: nf_src_momv  ! Discharge momentum in v direction (nm, k, idis)
+    real(fp), dimension(:,:,:,:)        , pointer  :: sournf       ! Discharge constituents (nm, k, l, idis)
+    !
+    ! character arrays
+    !
+    character(256),dimension(:,:), pointer :: basecase     ! name of near field model to apply
+    character(256),dimension(:)  , pointer :: base_path    ! path were to put the cortime.linkinp file
+    character(256),dimension(:)  , pointer :: waitfilesold ! names of near field files to appear, created at an older timestep (itnflri > 0)
+    !
+    ! reals
+    !
+    real(fp)                        :: nf_q_source ! Qsource as read from NF2FF file
+    real(fp)                        :: nf_q_intake ! Qintake as read from NF2FF file
+    real(fp)                        :: momrelax    ! Momentum Relaxation parameter
+    real(fp)                        :: nf_timeout  ! Minutes to wait for the nearfield files to appear
+    !
+    ! logicals
+    !
+    logical                        :: nf_src_mom   ! true: Umag and Udir in nf_sour are filled, as read from NF2FF file
+    logical                        :: skipuniqueid ! true: Do not add a uniqueID to the name of the nearfield input file
+    !
+    ! characters
+    !
+    character(256)                         :: infile    ! name of (XML) input/config file
+    character(256) :: nflmod !  name of near field model to apply
+    !
+    ! other
+    !
+    type(tree_data), pointer :: cosumofile_ptr
+end type gd_nfl
+
+

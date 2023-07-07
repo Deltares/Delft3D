@@ -1,0 +1,105 @@
+[General]
+    majorVersion          = 1                   
+    minorVersion          = 0                   
+    fileType              = boundConds          
+
+[Boundary]
+    name                  = 1                   
+    function              = constant            
+    time-interpolation    = linear-extrapolate  
+    quantity              = water_level         
+    unit                  = m                   
+    6 
+
+[Boundary]
+    name                  = 2                   
+    function              = constant            
+    time-interpolation    = linear-extrapolate  
+    quantity              = water_level         
+    unit                  = m                   
+    3 
+
+[LateralDischarge]
+    name                  = 5                   
+    function              = timeseries          
+    time-interpolation    = linear-extrapolate  
+    quantity              = time                
+    unit                  = minutes since 1996-01-01 00:00:00
+    quantity              = water_discharge     
+    unit                  = m3/s                
+    0 40 
+    60 10 
+    120 30 
+    180 20 
+    240 50 
+    300 20 
+    360 40 
+    420 30 
+    480 40 
+    540 10 
+    600 30 
+    660 50 
+    720 20 
+    780 30 
+    840 50 
+    900 40 
+    960 30 
+    1020 50 
+    1080 20 
+    1140 40 
+    1200 20 
+    1260 40 
+    1320 10 
+    1380 30 
+    1440 50 
+
+[Boundary]
+    name                  = model_wide          
+    function              = timeseries          
+    time-interpolation    = linear-extrapolate  
+    quantity              = time                
+    unit                  = minutes since 1996-01-01 00:00:00
+    quantity              = wind_speed          
+    unit                  = m/s                 
+    0 1.23
+
+[Boundary]
+    name                  = model_wide          
+    function              = timeseries          
+    time-interpolation    = linear-extrapolate  
+    quantity              = time                
+    unit                  = minutes since 1996-01-01 00:00:00
+    quantity              = wind_from_direction 
+    unit                  = degree              
+    0 60 
+
+[Boundary]
+    name                  = model_wide          
+    function              = timeseries          
+    time-interpolation    = linear-extrapolate  
+    quantity              = time                
+    unit                  = minutes since 1996-01-01 00:00:00
+    quantity              = air_temperature     
+    unit                  = degrees C           
+    0 0 
+
+[Boundary]
+    name                  = model_wide          
+    function              = timeseries          
+    time-interpolation    = linear-extrapolate  
+    quantity              = time                
+    unit                  = minutes since 1996-01-01 00:00:00
+    quantity              = humidity            
+    unit                  = percentage          
+    0 0 
+
+[Boundary]
+    name                  = model_wide          
+    function              = timeseries          
+    time-interpolation    = linear-extrapolate  
+    quantity              = time                
+    unit                  = minutes since 1996-01-01 00:00:00
+    quantity              = cloudiness          
+    unit                  = percentage          
+    0 0 
+

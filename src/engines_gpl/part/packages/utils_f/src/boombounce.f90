@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
 
       subroutine boombounce( xold, yold, xnew, ynew, nboom, xboom, &
-                                    yboom, xcatch, ycatch, catch, xbounce, ybounce, bounce)
+                                    yboom, xcatch, ycatch, catch, xbounce, ybounce, bounce, leftside)
 !
 !     Does a boom catch a particle in it's path from xold, yold to xnew, ynew?
 !     And if it does, does it bounce without crossing another part of the boom?
@@ -38,6 +38,7 @@
       real    ( sp ) :: xboom(nboom), yboom(nboom)
       real    ( sp ) :: xcatch, ycatch
       logical        :: catch
+      logical        :: leftside
       real    ( sp ) :: xbounce, ybounce
       logical        :: bounce
 
@@ -70,6 +71,7 @@
       boomgap = .false.
       xcrossboom = 999.999e0
       ycrossboom = 999.999e0
+      leftside = .true.
 
       xoldd = dble(xold)
       yoldd = dble(yold)
@@ -136,6 +138,7 @@
                            catch = .true.
                            rlnear = rl1
                            inear = iboom
+                           leftside = det .gt. 0.0D+0
                         end if
                      end if
                   end if

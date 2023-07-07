@@ -6,7 +6,7 @@ use swan_flow_grid_maps
 use swan_input
 implicit none
 type (output_fields) :: fof
-type (swan)          :: sr
+type (swan_type)     :: sr
 
    call hiscom(fof%hs             ,fof%dir           ,fof%period         ,fof%depth         , &
              & fof%fx             ,fof%fy            ,fof%mx             ,fof%my            , &
@@ -26,7 +26,7 @@ subroutine hiscom(hs        ,dir       ,period    ,depth     , &
                 & gamma0    ,wsbodyu   ,wsbodyv   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -50,8 +50,8 @@ subroutine hiscom(hs        ,dir       ,period    ,depth     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -118,7 +118,7 @@ subroutine hiscom(hs        ,dir       ,period    ,depth     , &
     call perpar(gamma0, perfac, ierr)
     if (ierr < 0) then
        write(*,'(a,f10.5)') 'ERROR: gamma0 = ',gamma0,' lies outside allowed range [1,20]'
-       stop
+       call wavestop(1, 'ERROR: gamma0 lies outside allowed range [1,20]')
     endif
     !
     ! Start loop

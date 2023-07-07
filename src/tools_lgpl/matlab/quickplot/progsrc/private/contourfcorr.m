@@ -160,6 +160,8 @@ end
 draw_min = any(nv <= minz) & style>2;
 
 % Get the unique levels
+largest_value_LE_minz = max(nv(nv<=minz));
+no_lower_bound = largest_value_LE_minz == -realmax;
 nv = sort([minz nv(:)']);
 zi = [1, find(diff(nv))+1];
 nv = nv(zi);
@@ -229,11 +231,72 @@ if style>2 && ncurves>0
     % all the levels get drawn, no matter if we are going up a hill or
     % down into a hole. Lowest curve is largest and encloses higher data
     % always.
-    [FA,IA]=sort(-abs(Area));
-    % Check whether there are multiple patches that have the same size as
-    % the first full area. Just plot the last one.
-    fullarea = sum(Area(IA)==Area(IA(1)));
-    IA = IA(fullarea:end);
+    keep = true(size(Area));
+    [sortedAreas,IA]=sort(-abs(Area));
+    uniqueAreas = unique(sortedAreas);
+    % check for duplicate areas - first by size
+    for uA = uniqueAreas
+        ii = find(sortedAreas == uA);
+        if numel(ii) == 1
+            % area size is unique, no further checks needed
+            continue
+        else
+            % multiple polygons of same size
+            nPnts = CS(2,I(IA(ii)));
+            uniquePoints = unique(nPnts);
+            for uP = uniquePoints
+                jj = find(nPnts == uP);
+                if numel(jj) == 1
+                    % number of polygon points is unique, no further checks
+                    % needed
+                    continue
+                else
+                    % multiple polygons of same size and same number of
+                    % points ... check if they are the same
+                    jj = ii(jj);
+                    % polygons can only be identical if at least one is
+                    % less than minz
+                    levels = CS(1,I(IA(jj)));
+                    holes = jj(levels < minz);
+                    nonholes = jj(levels >= minz);
+                    level = [];
+                    poly = [];
+                    for hole = holes
+                        for nhole = nonholes
+                            if isequal(CS(1:2,I(IA(hole))+(1:uP)), ...
+                                    CS(1:2,I(IA(nhole))+(1:uP)))
+                                % twice the same polygon ...
+                                if uA == uniqueAreas(1)
+                                    % for the biggest area, choose the highest level
+                                    new_level = CS(1,I(IA(nhole)));
+                                    if isempty(level)
+                                        level = new_level;
+                                        keep(hole) = false;
+                                        poly = nhole;
+                                    elseif new_level > level
+                                        % new polygon has higher level
+                                        level = new_level;
+                                        keep(poly) = false;
+                                        poly = nhole;
+                                    else
+                                        % other polygon had higher level
+                                        keep(nhole) = false;
+                                    end
+                                else
+                                    % for other areas, choose the hole
+                                    keep(nhole) = false;
+                                    nonholes(nonholes == nhole) = [];
+                                end
+                            else
+                                % polygons actually not the same, do nothing
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    IA = IA(keep);
 else
     IA = 1:ncurves;
 end
@@ -372,7 +435,28 @@ for jj=IA
             H(iH) = patch(xp,yp,lev,'facecolor',bg,'edgecolor',edgec, ...
                 'linestyle',edgestyle,'userdata',CS(1,I(jj)));
         end
-        
+        iLevel = find(nv==lev);
+        if isempty(iLevel)
+            % a hole
+            setappdata(H(iH),'MinThreshold',NaN);
+        elseif nv(iLevel) == minz
+            if no_lower_bound
+                setappdata(H(iH),'MinThreshold',NaN);
+            else
+                setappdata(H(iH),'MinThreshold',largest_value_LE_minz);
+            end
+        else
+            setappdata(H(iH),'MinThreshold',nv(iLevel));
+        end
+        if isempty(iLevel)
+            % a hole
+            setappdata(H(iH),'MaxThreshold',NaN);
+        elseif iLevel == length(nv)
+            setappdata(H(iH),'MaxThreshold',NaN);
+        else
+            setappdata(H(iH),'MaxThreshold',nv(iLevel+1));
+        end
+
         if nargout>0
             xp(abs(xp - lims(1)) < xtol | abs(xp - lims(2)) < xtol) = NaN;
             yp(abs(yp - lims(3)) < ytol | abs(yp - lims(4)) < ytol) = NaN;

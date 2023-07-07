@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,7 @@
 #define HAVE_STRUCT_TIMESPEC
 
 
-#if HAVE_CONFIG_H
+#ifndef _WIN32
 #   include "config.h"
 #endif
 
@@ -57,7 +57,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if HAVE_CONFIG_H
+#ifndef _WIN32
 #   include <sys/wait.h>
 #   include <unistd.h>
 // #else
@@ -98,9 +98,10 @@ class DimrExe {
         void openLibrary(void);
         void freeLib (void);
         void lib_initialize(void);
-        void lib_update(void);
+        int lib_update(void);
         void lib_update_test(void);
         void lib_finalize(void);
+        void timerFinish(void);
 
     public:
         bool       ready;          // true means constructor succeeded and DH ready to run
@@ -115,7 +116,10 @@ class DimrExe {
         char  *    configfile;     // name of configuration file
         bool       done;           // set to true when it's time to stop
         char  *    library;        // Component library name, without extension/prefix
-#if HAVE_CONFIG_H
+        Clock::Timestamp  timerStartStamp;
+        Clock::Timestamp  timerSumStamp;
+
+#ifndef _WIN32
     void          *    libHandle;         // (Linux) Handle to the loaded library for this component.
 #else
     HINSTANCE          libHandle;         // (Windows) Handle to the loaded library for this component.

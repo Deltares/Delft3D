@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,7 +25,7 @@
 
       implicit none
 
-!         publicly accessable ( this allows for mixed use with direct calls to rdtok1 )
+!         publicly accessable ( this allows for mixed use with direct calls to rdtok1/2 )
 
       integer  , parameter :: lstack = 6      ! size include files stack
       integer  , parameter :: lchmax = 255    ! string length file name variables
@@ -39,21 +39,38 @@
 
 !         private
 
-      integer          , private   :: type    ! type to be expected from rdtok1
+      integer          , private   :: type    ! type to be expected from rdtok1/2
       character(lchmax), private   :: cdummy  ! character dummy argument
-      integer          , private   :: idummy  ! integer dummy argument
-      real             , private   :: rdummy  ! real dummy argument
+      integer*8        , private   :: idummy  ! integer dummy argument
+      real*8           , private   :: rdummy  ! real dummy argument
 
       interface gettoken
          module procedure get_char_tok
+         module procedure get_char_untileol_tok
          module procedure get_int_tok
+         module procedure get_int8_tok
          module procedure get_real_tok
+         module procedure get_double_tok
          module procedure get_nochar_tok
          module procedure get_noreal_tok
          module procedure get_all_tok
       end interface
 
       contains
+
+!          force the opening of a new include file
+
+      function force_include_file ( achar ) result ( ierr )
+
+         character*(*), intent(in   ) :: achar
+         integer   (4)                   ierr
+
+         type = -999
+         call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+     &                 iposr  , npos   , achar  , idummy , rdummy ,              &
+     &                 type   , ierr   )
+      end function force_include_file
+
 
 !          get a character string
 
@@ -69,7 +86,7 @@
             push  = .false.
          else
             type = 1
-            call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
      &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
      &                    type   , ierr2  )
             achar = cdummy
@@ -77,6 +94,30 @@
          ierr  = ierr2
 
       end function get_char_tok
+
+!          get a character string until the end of the line
+
+      function get_char_untileol_tok ( achar, untileol, ierr2 ) result ( ierr )
+
+         character*(*), intent(  out) :: achar
+         logical      , intent(in)    :: untileol
+         integer   (4), intent(inout) :: ierr2
+         integer   (4)                   ierr
+
+         if ( push ) then
+            achar = cdummy
+            ierr2 = 0                   ! this is always possible
+            push  = .false.
+         else
+            type = 4
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+     &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
+     &                    type   , ierr2  )
+            achar = cdummy
+         endif
+         ierr  = ierr2
+
+      end function get_char_untileol_tok
 
 !          get an integer
 
@@ -96,7 +137,7 @@
             push  = .false.
          else
             type = 2
-            call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
      &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
      &                    type   , ierr2  )
             anint  = idummy
@@ -105,6 +146,34 @@
          ierr = ierr2
 
       end function get_int_tok
+
+!          get an integer
+
+      function get_int8_tok ( anint8, ierr2 ) result ( ierr )
+
+         integer   (8), intent(  out) :: anint8
+         integer   (4), intent(inout) :: ierr2
+         integer   (4)                   ierr
+
+         if ( push ) then
+            if ( type .ne. 2 ) then
+               ierr2 = 1                ! there is no integer on the stack
+            else
+               anint8 = idummy
+               ierr2 = 0
+            endif
+            push  = .false.
+         else
+            type = 2
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+     &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
+     &                    type   , ierr2  )
+            anint8 = idummy
+            rdummy = idummy
+         endif
+         ierr = ierr2
+
+         end function get_int8_tok
 
 !             get a real
 
@@ -118,20 +187,45 @@
             if ( type .ne. 2 .and. type .ne. 3 ) then
                ierr2 = 1                ! there is no number on the stack
             else
-               areal = rdummy
+               areal = real(rdummy)
                ierr2 = 0
             endif
             push  = .false.
          else
             type = 3
-            call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
      &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
      &                    type   , ierr2  )
-            areal = rdummy
+            areal = real(rdummy)
          endif
          ierr  = ierr2
 
       end function get_real_tok
+
+      function get_double_tok ( adouble, ierr2 ) result ( ierr )
+
+         real      (8), intent(  out) :: adouble
+         integer   (4), intent(inout) :: ierr2
+         integer                         ierr
+
+         if ( push ) then
+            if ( type .ne. 2 .and. type .ne. 3 ) then
+               ierr2 = 1                ! there is no number on the stack
+            else
+               adouble = rdummy
+               ierr2 = 0
+            endif
+            push  = .false.
+         else
+            type = 3
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+     &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
+     &                    type   , ierr2  )
+            adouble = rdummy
+         endif
+         ierr  = ierr2
+
+         end function get_double_tok
 
 !          get a number
 
@@ -155,7 +249,7 @@
             push  = .false.
          else
             type = -1
-            call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
      &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
      &                    type   , ierr2  )
             anint = idummy
@@ -188,7 +282,7 @@
             push  = .false.
          else
             type = -3
-            call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
      &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
      &                    type   , ierr2  )
             achar = cdummy
@@ -219,7 +313,7 @@
             push  = .false.
          else
             type = 0
-            call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
+            call rdtok2 ( lunut  , ilun   , lch    , lstack , cchar  ,              &
      &                    iposr  , npos   , cdummy , idummy , rdummy ,              &
      &                    type   , ierr2  )
             achar = cdummy

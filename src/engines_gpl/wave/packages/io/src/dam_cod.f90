@@ -1,7 +1,7 @@
 subroutine dam_cod(xz      ,yz      ,kcs      ,mmax      ,nmax )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine dam_cod(xz      ,yz      ,kcs      ,mmax      ,nmax )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -54,7 +54,6 @@ subroutine dam_cod(xz      ,yz      ,kcs      ,mmax      ,nmax )
     integer                             :: ncol
     integer                             :: np
     integer                             :: umsk
-    integer, external                   :: new_lun
     real(hp), dimension(:), allocatable :: xdam      ! hp, because it is a parameter for subroutine ipon
     real(hp), dimension(:), allocatable :: ydam      ! idem
     character(4)                        :: blname
@@ -66,8 +65,7 @@ subroutine dam_cod(xz      ,yz      ,kcs      ,mmax      ,nmax )
     !
     inquire(file='wavemask.ldb',exist=exists)
     if (.not.exists) goto 1000
-    umsk = new_lun()
-    open (umsk, file = 'wavemask.ldb')
+    open (newunit = umsk, file = 'wavemask.ldb')
   100 continue
     read (umsk, '(A)', err = 999) blname
     if (blname(1:1)=='*') goto 100

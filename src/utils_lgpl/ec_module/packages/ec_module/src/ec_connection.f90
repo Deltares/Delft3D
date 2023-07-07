@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of  
 !  Stichting Deltares. All rights reserved.                                     
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module contains all the methods for the datatype tEcConnection.
 !! @author arjen.markus@deltares.nl
@@ -36,6 +36,7 @@ module m_ec_connection
    use m_ec_message
    use m_ec_support
    use m_ec_alloc
+   use m_ec_converter
    
    implicit none
    
@@ -46,6 +47,7 @@ module m_ec_connection
    public :: ecConnectionSetConverter
    public :: ecConnectionAddSourceItem
    public :: ecConnectionAddTargetItem
+   public :: ecConnectionSetIndexWeights
    
    contains
       
@@ -230,4 +232,26 @@ module m_ec_connection
             call setECMessage("ERROR: ec_connection::ecConnectionAddTargetItem: Cannot find a Connection or Item with the supplied id.")
          end if
       end function ecConnectionAddTargetItem
+
+      
+      function ecConnectionSetIndexWeights(instancePtr, connectionId) result(success)
+         logical                               :: success      !< function status
+         type(tEcInstance), pointer            :: instancePtr  !< intent(in)
+         integer,                   intent(in) :: connectionId !< unique Connection id
+         !
+         type(tEcConnection), pointer :: connectionPtr !< Connection corresponding to connectionId
+         !
+         success = .false.
+         connectionPtr => null()
+         !
+         connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
+         if ( associated(connectionPtr) ) then
+            if ( associated(connectionPtr%sourceItemsPtr(1)%ptr%elementSetPtr ) ) then 
+               success = ecConverterUpdateWeightFactors(instancePtr, connectionPtr)
+            else
+               success = .True. 
+            end if
+         end if
+      end function ecConnectionSetIndexWeights
+      
 end module m_ec_connection

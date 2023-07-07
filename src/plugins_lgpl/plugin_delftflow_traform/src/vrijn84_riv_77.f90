@@ -48,6 +48,21 @@ logical           , intent(out) :: equi_conc     ! true: contration cesus return
 logical           , intent(out) :: sbc_total     ! true: bed load magnitude returned by formula
                                                  ! false: bed load components returned
 !
+! Local variables for error message
+!
+character(len=256) :: error_message
+!
+call core_function() ! Core function call 
+!
+call message2c(error_message, error_message_c)
+
+contains
+    
+!
+! Core function definition 
+!
+subroutine core_function()
+!
 ! Local variables for input parameters
 !
 integer            :: i
@@ -114,9 +129,6 @@ logical            :: opened
 !
 if (max_integers < 4) then
    error_message = 'Insufficient integer values provided by delftflow'
-   do i=1,256
-      error_message_c(i) = error_message(i:i)
-   enddo
    return
 endif
 nm      = dll_integers( 1) ! nm index of the grid cell
@@ -126,9 +138,6 @@ l       = dll_integers( 4) ! number of the sediment fraction in the computation
 !
 if (max_reals < 30) then
    error_message = 'Insufficient real values provided by delftflow'
-   do i=1,256
-      error_message_c(i) = error_message(i:i)
-   enddo
    return
 endif
 timsec  = dll_reals( 1)    ! current time since reference time [s]
@@ -164,9 +173,6 @@ taub    = dll_reals(30)    ! bed shear stress [N/m2]
 !
 if (max_strings < 2) then
    error_message = 'Insufficient strings provided by delftflow'
-   do i=1,256
-      error_message_c(i) = error_message(i:i)
-   enddo
    return
 endif
 runid   = dll_strings( 1)  ! user-specified run-identification
@@ -226,21 +232,7 @@ sswv    = 0.0_hp          ! suspended load transport, n direction due to waves i
 t_relax = -1.0_hp          ! relaxation time is zero
 !
 if (alf1 < 0.0_hp) then
-    !
-    ! Find a free file unit number ...
-    !
-    do lun=31,999
-       inquire (unit = lun, opened = opened)
-       if (.not. opened) exit
-    enddo
-    if (lun == 999) then
-       error_message = 'Unable to find a free file unit number'
-       return
-    endif
-    !
-    ! ... and use it
-    !
-    open (lun, file = filenm, form = 'formatted', iostat = iocond, status = 'old')
+    open (newunit=lun, file = filenm, form = 'formatted', iostat = iocond, status = 'old')
     if (iocond/=0) then
        error_message = 'Unable to open parameter file: ' // filenm
        return
@@ -365,8 +357,6 @@ endif
        sbc = 0.100_hp*acal_b*(delta)**0.5_hp*sqrt(ag)*d50**1.5_hp*dstar**(-0.3_hp)*t**1.5_hp
     endif
 
-    do i=1,256
-       error_message_c(i) = error_message(i:i)
-    enddo
-
+end subroutine core_function
+    
 end subroutine vrijn84_riv_77

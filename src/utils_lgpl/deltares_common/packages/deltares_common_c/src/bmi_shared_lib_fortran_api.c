@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "so_fortran_api.h"
 
@@ -41,7 +42,7 @@
 #  include <windows.h>
 #elif defined(salford32)
 #  include <windows.h>
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
 #  include <dlfcn.h>
 #endif
 
@@ -58,9 +59,10 @@
 #  define BMI_GET_VAR_SHAPE     BMI_GET_VAR_SHAPE
 #  define BMI_SET_VAR           BMI_SET_VAR
 #  define BMI_GET_VAR           BMI_GET_VAR
+#  define BMI_GET_VAR_POINTER   BMI_GET_VAR_POINTER
 #  define STDCALL
-#elif defined(HAVE_CONFIG_H)
-#   include "config.h"
+#elif defined(linux)
+#  include "config.h"
 #  define BMI_INITIALIZE        FC_FUNC(bmi_initialize,BMI_INITIALIZE)
 #  define BMI_UPDATE            FC_FUNC(bmi_update,BMI_UPDATE)
 #  define BMI_FINALIZE          FC_FUNC(bmi_finalize,BMI_FINALIZE)
@@ -73,6 +75,7 @@
 #  define BMI_GET_VAR_SHAPE     FC_FUNC(bmi_get_var_shape,BMI_GET_VAR_SHAPE)
 #  define BMI_SET_VAR           FC_FUNC(bmi_set_var,BMI_SET_VAR)
 #  define BMI_GET_VAR           FC_FUNC(bmi_get_var,BMI_GET_VAR)
+#  define BMI_GET_VAR_POINTER   FC_FUNC(bmi_get_var_pointer,BMI_GET_VAR_POINTER)
 #  define STDCALL
 #endif
 
@@ -89,7 +92,7 @@
 #if defined(WIN32)
 typedef HMODULE DllHandle;
 typedef WINBASEAPI FARPROC WINAPI DllProcedureAddress;
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
 typedef void * DllHandle;
 typedef void * DllProcedureAddress;
 #endif
@@ -100,7 +103,7 @@ typedef struct {
 
 
 DllProcedureAddress GetDllProcedure(
-	long * sharedDLLHandle,
+	int64_t * sharedDLLHandle,
 	char * fun_name)
 {
 	SharedDLL * sharedDLL = (SharedDLL *)(*sharedDLLHandle);
@@ -108,13 +111,13 @@ DllProcedureAddress GetDllProcedure(
 	DllProcedureAddress procedure;
 #if defined(WIN32)
 	procedure = GetProcAddress(sharedDLL->dllHandle, fun_name);
-#elif defined(HAVE_CONFIG_H)
-	proc = (DllProcedureAddress)dlsym(sharedDLL->dllHandle, fun_name);
+#elif defined(linux)
+	procedure = (DllProcedureAddress)dlsym(sharedDLL->dllHandle, fun_name);
 #endif
 	return procedure;
 }
 
-double DllGetBmiTime(long * sharedDLLHandle, char * function_name)
+double DllGetBmiTime(int64_t * sharedDLLHandle, char * function_name)
 {
 	typedef void * (STDCALL * MyProc)(double *);
 	MyProc proc = (MyProc)GetDllProcedure(sharedDLLHandle, function_name);
@@ -128,7 +131,7 @@ double DllGetBmiTime(long * sharedDLLHandle, char * function_name)
 	return time;
 }
 
-long STDCALL BMI_INITIALIZE(long * sharedDLLHandle,
+long STDCALL BMI_INITIALIZE(int64_t * sharedDLLHandle,
 	char   * config_file,
 	int      config_file_len)
 {
@@ -151,31 +154,31 @@ long STDCALL BMI_INITIALIZE(long * sharedDLLHandle,
 	return error;
 }
 
-void STDCALL BMI_GET_START_TIME(long * sharedDLLHandle,
+void STDCALL BMI_GET_START_TIME(int64_t * sharedDLLHandle,
 	double * start_time)
 {
 	*start_time = DllGetBmiTime(sharedDLLHandle, "get_start_time");
 }
 
-void STDCALL BMI_GET_END_TIME(long * sharedDLLHandle,
+void STDCALL BMI_GET_END_TIME(int64_t * sharedDLLHandle,
 	double * end_time)
 {
 	*end_time = DllGetBmiTime(sharedDLLHandle, "get_end_time");
 }
 
-void STDCALL BMI_GET_CURRENT_TIME(long * sharedDLLHandle,
+void STDCALL BMI_GET_CURRENT_TIME(int64_t * sharedDLLHandle,
 	double * current_time)
 {
 	*current_time = DllGetBmiTime(sharedDLLHandle, "get_current_time");
 }
 
-void STDCALL BMI_GET_TIME_STEP(long * sharedDLLHandle,
+void STDCALL BMI_GET_TIME_STEP(int64_t * sharedDLLHandle,
 	double * time_step)
 {
 	*time_step = DllGetBmiTime(sharedDLLHandle, "get_time_step");
 }
 
-void STDCALL BMI_GET_VAR(long * sharedDLLHandle,
+void STDCALL BMI_GET_VAR(int64_t * sharedDLLHandle,
    char   * var_name,
    double * values,
    int    * num_values,
@@ -201,7 +204,19 @@ void STDCALL BMI_GET_VAR(long * sharedDLLHandle,
    free(c_var_name); c_var_name = NULL;
 }
 
-void STDCALL BMI_GET_VAR_SHAPE(long * sharedDLLHandle,
+void STDCALL BMI_GET_VAR_POINTER(int64_t* sharedDLLHandle, char* var_name, void* xptr)
+{
+	typedef void* (STDCALL* MyProc)(char*, void*);
+	MyProc proc = (MyProc)GetDllProcedure(sharedDLLHandle, "get_var");
+
+
+	if (proc != NULL)
+	{
+		(void*)(*proc)(var_name, xptr);
+	}
+}
+
+void STDCALL BMI_GET_VAR_SHAPE(int64_t * sharedDLLHandle,
    char   * var_name,
    int    * values,
    int      var_name_len)
@@ -211,20 +226,17 @@ void STDCALL BMI_GET_VAR_SHAPE(long * sharedDLLHandle,
 
    int  i;					// vs2102 and lower do not support typedefs in combination
    int * bmi_values;    // with local variable declaration, hence declare at start of function
-
    char * c_var_name = strFcpy(var_name, var_name_len);
-   RemoveTrailingBlanks_dll(c_var_name);
-
    if (proc != NULL)
    {
-      (void *)(*proc)(c_var_name, values);
+      (void *)(*proc)(var_name, values);
    }
 
    free(c_var_name); c_var_name = NULL;
 }
 
 
-void STDCALL BMI_SET_VAR(long * sharedDLLHandle,
+void STDCALL BMI_SET_VAR(int64_t * sharedDLLHandle,
 	char   * var_name,
 	double * values,
 	int    * num_values,
@@ -244,7 +256,7 @@ void STDCALL BMI_SET_VAR(long * sharedDLLHandle,
 	free(c_var_name); c_var_name = NULL;
 }
 
-long STDCALL BMI_UPDATE(long * sharedDLLHandle,
+long STDCALL BMI_UPDATE(int64_t * sharedDLLHandle,
 	double * dt)
 {
 	typedef void * (STDCALL * MyProc)(double);
@@ -258,7 +270,7 @@ long STDCALL BMI_UPDATE(long * sharedDLLHandle,
 	return -1;
 }
 
-long STDCALL BMI_FINALIZE(long * sharedDLLHandle)
+long STDCALL BMI_FINALIZE(int64_t * sharedDLLHandle)
 {
 	typedef void * (STDCALL * MyProc)();
 	MyProc proc = (MyProc)GetDllProcedure(sharedDLLHandle, "finalize");

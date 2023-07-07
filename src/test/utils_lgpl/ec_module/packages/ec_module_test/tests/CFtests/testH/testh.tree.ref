@@ -1,0 +1,9 @@
+.
+EC MODULE ITEMS:
+Target Item 00002 (name=airpressure, vectormax=1)
+Element Set 00003
+   Connection 00001, Converter 00002, targetIndex -0987
+      Source Item 00001 (name=air_pressure, vectormax=1)
+         File Reader 00001(filename=dfm_u10_uniform_alpham0_x_direction.nc)
+            Quantity = air_pressure
+.

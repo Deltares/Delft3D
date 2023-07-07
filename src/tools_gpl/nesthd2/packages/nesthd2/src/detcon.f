@@ -1,9 +1,10 @@
       subroutine detcon(lundia,fout  ,lunadm,bndval,mcbsp ,ncbsp ,
      *                  mnstat,conc  ,iwet  ,nobnd ,notims,nostat,
      *                  kmax  ,lstci                             )
+      implicit none
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +28,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !***********************************************************************
 ! Deltares                         marine and coastal management
 !
@@ -48,14 +49,14 @@
       integer       mnstat(2,nostat),
      *              mcbsp (nobnd ,2), ncbsp(nobnd ,2)
 
-      real          weight(  4   )
-
-      real          conc  (nostat,kmax  ,lstci ,notims)
-
-      real          bndval(nobnd ,notims,kmax  ,lstci ,2)
+      double precision weight(  4   )
+      double precision conc  (nostat,kmax  ,lstci ,notims)
+      double precision bndval(nobnd ,notims,kmax  ,lstci ,2)
 
       character*1   type
-
+      integer lundia, lunadm, nobnd, notims, nostat, kmax, lstci
+      integer ibnd, isize, m, n, iwght, istat, itim, icon, k
+      double precision angle, weigght
       logical       fout
 
       write (*     ,'('' >>> Generating transport boundary '',

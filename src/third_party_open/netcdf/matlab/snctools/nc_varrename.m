@@ -24,55 +24,8 @@ switch(backend)
     	nc_varrename_tmw( ncfile, old_variable_name, new_variable_name )
 	case 'mexnc'
     	nc_varrename_mexnc( ncfile, old_variable_name, new_variable_name )
+    otherwise
+    	error('snctools:varRename:unsupportedBackend', ...
+              'NC_VARRENAME not supported with %s backend.', backend);
 end
-
-
-
-%--------------------------------------------------------------------------
-function nc_varrename_mexnc ( ncfile, old_variable_name, new_variable_name )
-[ncid,status ]=mexnc('OPEN',ncfile,nc_write_mode);
-if status ~= 0
-    ncerr = mexnc('strerror', status);
-    error ( 'SNCTOOLS:NC_VARGET:MEXNC:OPEN', ncerr );
-end
-
-
-status = mexnc('REDEF', ncid);
-if status ~= 0
-    mexnc('close',ncid);
-    ncerr = mexnc('strerror', status);
-    error ( 'SNCTOOLS:NC_VARGET:MEXNC:REDEF', ncerr );
-end
-
-
-[varid, status] = mexnc('INQ_VARID', ncid, old_variable_name);
-if status ~= 0
-    mexnc('close',ncid);
-    ncerr = mexnc('strerror', status);
-    error ( 'SNCTOOLS:NC_VARGET:MEXNC:INQ_VARID', ncerr );
-end
-
-
-status = mexnc('RENAME_VAR', ncid, varid, new_variable_name);
-if status ~= 0
-    mexnc('close',ncid);
-    ncerr = mexnc('strerror', status);
-    error ( 'SNCTOOLS:NC_VARGET:MEXNC:RENAME_VAR', ncerr );
-end
-
-
-status = mexnc('ENDDEF', ncid);
-if status ~= 0
-    mexnc('close',ncid);
-    ncerr = mexnc('strerror', status);
-    error ( 'SNCTOOLS:NC_VARGET:MEXNC:ENDDEF', ncerr );
-end
-
-
-status = mexnc('close',ncid);
-if status ~= 0
-    ncerr = mexnc('strerror', status);
-    error ( 'SNCTOOLS:NC_VARGET:MEXNC:CLOSE', ncerr );
-end
-
 

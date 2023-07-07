@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -46,13 +46,12 @@
 
 !     Global declarations
 
+      use m_julian
       use rd_token       ! for definition and storage of data
       use timers         ! performance timers
+      use m_sysi          ! Timer characteristics
 
       implicit none
-
-      include 'sysi.inc' ! common  /  sysi   /   system timers
-      real(8) julian     ! returns 64 bits real Julian data
 
 !     Arguments
 

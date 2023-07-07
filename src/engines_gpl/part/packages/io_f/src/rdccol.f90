@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      subroutine rdccol ( nmax   , mmax   , lun    , fnam   , ftype  ,  &
+      subroutine rdccol ( nmax   , mmax   , lun    , fnam   ,   &
                           lgrid  , xbott  , ybott  , lun2   )
 
 !     READING CURVILINEAR CCO FILE
@@ -60,7 +60,6 @@
       integer  (ip), intent(in   ) :: mmax              !< second dimension of the grid
       integer  (ip), intent(in   ) :: lun               !< unit number cco file
       character( *), intent(in   ) :: fnam              !< name of cco file
-      character( *), intent(in   ) :: ftype(*)          !< type of cco file
       integer  (ip), intent(in   ) :: lgrid(nmax,mmax)  !< grid table
       real     (sp), intent(  out) :: xbott(*)          !< x-values in the grid
       real     (sp), intent(  out) :: ybott(*)          !< y-values in the grid
@@ -85,7 +84,7 @@
 !     open cco-file
 
       write ( lun2, * ) ' Opening the grid coordinates file:', fnam(1:len_trim(fnam))
-      call openfl ( lun, fnam, ftype(2), 0 )
+      call openfl ( lun, fnam, 0 )
 
 !     read requested data
       

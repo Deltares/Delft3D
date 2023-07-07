@@ -13,7 +13,7 @@ function Out=morf(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -87,15 +87,15 @@ end
 function Structure=Local_read_morf(filename)
 Structure=[];
 
-if nargin==0,
+if nargin==0
     [fn,fp]=uigetfile('morf.*');
     if ~ischar(fn),
         return;
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'rt');
-if fid<0,
+fid=fopen(filename,'rt','n','US-ASCII');
+if fid<0
     error('Cannot open file: %s.',filename)
 end
 Data={};
@@ -105,7 +105,7 @@ i=0;
 while ~feof(fid),
     Line=fgetl(fid);
     i=i+1;
-    if ~isempty(Line) && ~strcmp(Line(1),'*'),
+    if ~isempty(Line) && ~strcmp(Line(1),'*')
         DataLine=DataLine+1;
         Data{DataLine}=Line;
         LineNr(DataLine)=i;

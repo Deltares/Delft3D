@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,9 +27,11 @@ contains
       subroutine part09 ( lun2   , itime  , nodye  , nwaste , mwaste ,  &
                           xwaste , ywaste , iwtime , amassd , aconc  ,  &
                           npart  , mpart  , xpart  , ypart  , zpart  ,  &
-                          wpart  , iptime , nopart , radius , lgrid  ,  &
+                          wpart  , iptime , nopart , radius , nrowswaste, &
+                          xpolwaste       , ypolwaste       , lgrid  ,  &
+                          lgrid2 , nmax   , mmax   , xp     , yp     ,  &
                           dx     , dy     , ndprt  , nosubs , kpart  ,  &
-                          layt   , tcktot , nplay  , kwaste , nolay  ,  &
+                          layt   , tcktot , zmodel , laytop , laybot , nplay  , kwaste , nolay  ,  &
                           modtyp , zwaste , track  , nmdyer , substi ,  &
                           rhopart )
 
@@ -52,24 +54,16 @@ contains
 !>         NOTE:  The vertical distribution contains a bug by integer division. This
 !>         bug is not removed yet because it would disturb the test bench that is now needed.
 
-!     System administration : Antoon Koster
-
-!     Created               : February 1990 by Leo Postma
-
-!     Modified              : May      1996 by Robert Vos    : 3d version
-
-!     Note                  : none
 
 !     Logical unit numbers  : lun2 - output file to print statistics
 
-!     Subroutines called    : find - distributes particles over a circel
-
-!     functions   called    : rnd  - random number generator
+!     Subroutines called    : findcircle - distributes particles over a circle
 
       use precision_part          ! single/double precision
       use timers
       use grid_search_mod
       use spec_feat_par
+      use m_part_modeltypes
       implicit none
 
 !     Arguments
@@ -98,13 +92,24 @@ contains
       integer  ( ip), intent(  out) :: iptime (*)            !< particle age
       integer  ( ip), intent(inout) :: nopart                !< number of active particles
       real     ( rp), intent(in   ) :: radius (nodye)        !< help var. radius (speed)
+      real     ( sp), pointer       :: xpolwaste(:,:)        !< x-coordinates of waste polygon
+      real     ( sp), pointer       :: ypolwaste(:,:)        !< y-coordinates of waste polygon
+      integer  ( ip), pointer       :: nrowswaste(:)         !< length of waste polygon
       integer  ( ip), pointer       :: lgrid  (:,:)          !< grid numbering active
+      integer  ( ip), pointer       :: lgrid2(:,:)           !< total grid layout of the area
+      integer  ( ip), intent(in   ) :: nmax                  !< first dimension of the grid
+      integer  ( ip), intent(in   ) :: mmax                  !< second dimension of the grid
+      real     ( rp), pointer       :: xp     (:)            !< x of upper right corner grid point
+      real     ( rp), pointer       :: yp     (:)            !< y of upper right corner grid point
       real     ( rp), pointer       :: dx     (:)            !< dx of the grid cells
       real     ( rp), pointer       :: dy     (:)            !< dy of the grid cells
       integer  ( ip), intent(in   ) :: modtyp                !< for model type 2 temperature
       integer  ( ip), intent(in   ) :: lun2                  !< output report unit number
       integer  ( ip), intent(  out) :: kpart  (*)            !< k-values particles
       real     ( rp), intent(in   ) :: tcktot (layt)         !< thickness hydrod.layer
+      logical       , intent(in   ) :: zmodel
+      integer  ( ip), intent(in   ) :: laytop(:,:)           !< highest active layer in z-layer model
+      integer  ( ip), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( ip)                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( ip), intent(inout) :: kwaste (nodye)        !< k-values of dye points
       integer  ( ip), intent(in   ) :: nolay                 !< number of comp. layer
@@ -201,8 +206,17 @@ contains
             mpart (i) = mwasth
             xpart (i) = xwasth
             ypart (i) = ywasth
-            call find ( xpart(i), ypart(i), radiuh  , npart(i), mpart(i),  &
-                        lgrid   , dx      , dy      , lcircl  )
+
+            if (radiuh.ne.-999.0) then
+!              spread the particles over a circle
+               call findcircle ( xpart(i), ypart(i), radiuh  , npart(i), mpart(i),  &
+                                 lgrid   , dx      , dy      , lcircl  )
+            else
+!              spread the particles over a polygon
+               call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(id), &
+                                xpolwaste(1:nrowswaste(id), id), ypolwaste(1:nrowswaste(id), id), &
+                                xpart(i), ypart(i), npart(i), mpart(i))
+            end if
 
 !     distribute the particles for this waste over the vertical
 
@@ -222,11 +236,15 @@ contains
                call stop_exit(1)
             endif
    20       continue
-            kpart(i) = nulay
+            if (zmodel) then
+               kpart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
+            else
+               kpart(i) = nulay
+            endif
 
 !    for one layer models (2dh), the release will be in the user-defined location
 
-            if ( modtyp .eq. 4 .and. kpart(i) .eq. 1 ) then
+            if ( modtyp .eq. model_oil .and. kpart(i) .eq. 1 ) then
                zpart(i) = zwasth
             elseif ( nolay .eq. 1 ) then
                zpart(i) = zwasth/100.0
@@ -241,9 +259,9 @@ contains
 
             do isub = 1, nosubs
                wpart( isub, i ) = aconc( id, isub )
-               if (modtyp .eq. 6) then
+               if (modtyp .eq. model_prob_dens_settling) then
                   rhopart(isub, i) = pldensity(isub)
-               endif                 
+               endif
             enddo
             iptime(i) = 0
 

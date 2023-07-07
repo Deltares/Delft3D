@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhisys
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DHISYS ( ISYSI , ISYSN )
 !
@@ -41,22 +47,12 @@
 !     ISYSN   INTEGER       *     OUTPUT  copy of the SYSI common block
 !
 !     declarations
+      use m_dhimov
+      use m_sysn          ! System characteristics
+      use m_sysi          ! Timer characteristics
 !
-      INTEGER       ISYSI(*), ISYSN(*)
-!
-!     COMMON  /  SYSN   /   System characteristics
-!
-      INCLUDE 'sysn.inc'
-!
-!     COMMON  /  SYSI  /    Timer characteristics
-!
-      INCLUDE 'sysi.inc'
-!
-!     input structure for boot-file
-!
-      INTEGER             IN(INSIZE)       , II(IISIZE)
-      EQUIVALENCE       ( IN(1)  , NOSEG ) , ( II(1), ITSTRT  )
-!
+      INTEGER       ISYSI(:), ISYSN(:)
+
 !     Fill the array's
 !
       CALL DHIMOV( II    , ISYSI , IISIZE )
@@ -64,3 +60,4 @@
 !
       RETURN
       END
+      end module m_dhisys

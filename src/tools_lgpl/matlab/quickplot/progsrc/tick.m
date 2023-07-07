@@ -112,7 +112,7 @@ function tick(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -598,6 +598,9 @@ if limmanual
     lim = get(handle,[ax 'lim']);
 else
     lim = limits(handle,ax);
+    if any(~isfinite(lim)) % no data !?
+        lim = get(handle,[ax 'lim']);
+    end
 end
 [ticks,format] = bestscale(lim);
 if ~limmanual && length(ticks)>1

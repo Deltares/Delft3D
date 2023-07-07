@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 program DatasetsInMem
 
     ! modules
@@ -37,7 +37,7 @@ program DatasetsInMem
     logical                       :: toScreen = .False. ! write to screen?
     logical                       :: toFile   = .True.  ! write to file?
 
-    integer, parameter            :: resLun  = 11
+    integer, parameter            :: resLun
     character(len=100), parameter :: resFile = 'TESTShmPlt2dfInMem-res.txt'
 
     ! PLT datasets and their data
@@ -87,7 +87,7 @@ program DatasetsInMem
     real                        :: rTempVal
 
 
-    open(resLun, file=resFile)
+    open(newunit=resLun, file=resFile)
 
 !
 !   Create Data to be put

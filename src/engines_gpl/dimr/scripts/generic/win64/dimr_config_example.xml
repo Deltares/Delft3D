@@ -3,16 +3,25 @@
     <documentation>
         <fileVersion>1.00</fileVersion>
         <createdBy>Deltares, Coupling team</createdBy>
-        <creationDate>2016-01-20T07:56:32+01</creationDate>
+        <creationDate>2015-05-20T07:56:32+01:00</creationDate>
     </documentation>
-    
     <control>
-        <start name="myDelft3D-FLOW"/>
+        <parallel>
+           <startGroup>
+              <time>0.0 3600.0 9999999.0</time>
+              <start name="myNameWave"/>
+           </startGroup>
+           <start name="myNameDFlowFM"/>
+        </parallel>
     </control>
-
-    <component name="myDelft3D-FLOW">
-        <library>flow2d3d</library>
-        <workingDir>.</workingDir>
-        <inputFile>f34.mdf</inputFile>
+    <component name="myNameDFlowFM">
+        <library>dflowfm</library>
+        <workingDir>fm</workingDir>
+        <inputFile>f34.mdu</inputFile>
+    </component>
+    <component name="myNameWave">
+        <library>wave</library>
+        <workingDir>wave</workingDir>
+        <inputFile>f34.mdw</inputFile>
     </component>
 </dimrConfig>

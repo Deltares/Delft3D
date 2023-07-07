@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,13 +24,13 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 subroutine settle(dll_integers, max_integers, &
                   dll_reals   , max_reals   , &
                   dll_strings , max_strings , &
                   ws          , &
-                  error_message   )
+                  error_message_c   )
 !DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'SETTLE' :: SETTLE
 !!--description-----------------------------------------------------------------
 !
@@ -39,6 +39,7 @@ subroutine settle(dll_integers, max_integers, &
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+use iso_c_binding, only: c_char
 implicit none
 !
 ! Local constants
@@ -57,11 +58,27 @@ character(len=256), dimension(max_strings) , intent(in)  :: dll_strings
 !
 ! Subroutine arguments: output
 !
-real(hp)          , intent(out) :: ws            ! settling velocity [m/s]
-character(len=256), intent(out) :: error_message ! not empty: echo and stop run
+real(hp)          , intent(out) :: ws                     ! settling velocity [m/s]
+character(kind=c_char), intent(out) :: error_message_c(*) ! not empty: echo and stop run
+!
+! Local variables for error message
+!
+character(len=256) :: error_message
+!
+call core_function() ! Core function call 
+!
+call message2c(error_message, error_message_c)
+
+contains
+    
+!
+! Core function definition 
+!
+subroutine core_function()
 !
 ! Local variables for input parameters
 !
+integer            :: i
 integer            :: k
 integer            :: l
 integer            :: m
@@ -175,4 +192,7 @@ else
    f = 0.5_hp * (1 - cos(pi*sal/salmax))
 endif
 ws = ws0 + (ws1 - ws0) * f
+!
+end subroutine core_function
+
 end subroutine settle

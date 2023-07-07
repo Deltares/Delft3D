@@ -1,0 +1,1118 @@
+KERN-NETWORK                                  15-05-2003
+PURPOSE
+   The  purpose  of  the  KERN-NETWORK program  is  to
+   facilitate the design of trawl nets.
+
+   Trawl nets are formed by a complex design of nets with
+   varying maze size, attached to a number of netting
+   lines. Fishing boards and bouys may be attached to
+   the net to further control its position. The final
+   shape of a trawl net under operation depends on many
+   factors.
+
+   This program computes the net dynamics and final net
+   shape by taking into account external forces such as
+   hydrodynamic resistance, towline forces, otterboard
+   forces and buoyant forces.
+
+CONSIDERATIONS
+
+FILES    OPERATIONS    DISPLAY    EDIT    ADDSUBDEL VARIOUS
+
+GENERAL PROGRAM OPERATION INSTRUCTIONS
+   The  main  menu bar is positioned at the top  of  the
+   screen. A second menu bar is positioned at the bottom
+   of  the  screen. Both menu bars can be  activated  by
+   placing the cursor on top of the bar and pressing the
+   left  mouse button. The colours of the menu bar  then
+   change from dull colours to bright colours. Also, the
+   shape of the mouse cursor changes from cross-hair  to
+   arrow, indicating that you leave graphical edit  mode
+   and enter menu mode, allowing you to indicate choices
+   in  the menus. To get back into graphical edit  mode,
+   the  cursor must have a crosshair shape.  If  it  has
+   not,  you  are still in menu mode and you must  click
+   the  mouse once in the graphical area.The bottom menu
+   bar  allows  you  to change from one edit  mode  into
+   another, e.g. from 'i'nsert mode into 'r'eplace mode.
+   This can also be done by pressing the 'r' key on  the
+   keyboard.
+
+   This  does  not  always work, because  sometimes  the
+   cursor  is  simultaneously needed  elsewhere  on  the
+   screen,  e.g.  when  you want  to  go  into  'insert'
+   starting the insertion at some specific point of  the
+   data. In that case, you have to put the cursor on top
+   of  the desired insertion point, leave it there,  and
+   then  press the 'i' key on the keyboard. The  program
+   will then first identify the starting point where you
+   left  the  cursor.  After  that,  new  data  will  be
+   inserted  starting at the indicated  point.  Although
+   this  procedure is not self explaining, it has proven
+   to  be  very  efficient in practice. If  you  do  not
+   immediately understand the meaning of the menu items,
+   you  can highlight the desired item by means  of  the
+   arrow keys and press F1 for help.
+
+HELP INSTRUCTIONS
+  F1 = help    ;
+   Press  the  F1 key for HELP. The HELP window  behaves
+   like any normal file viewer, apart from some features
+   that  have  been added for convenience. Mostly,  when
+   you  have  pressed F1, the HELP window will start  at
+   the  desired  point  in  the help  file.  The  cursor
+   scrolling  control allows quick leafing through  this
+   file,  because the horizontal cursor position governs
+   the  speed  at which vertical scrolling is performed.
+   This can be at chapter, section, subsection or normal
+   text  speed. Furthermore, the Tab key toggles between
+   a  keyword  menu  and the complete text.  Choose  the
+   desired  keyword in the keyword menu, and  press  the
+   Tab  key  again.  The corresponding  help  text  will
+   immediately appear on the screen. A search  function,
+   key  'F7'  has been added, that searches forward  for
+   the  required  text item. Leave help by pressing  the
+   Esc key.
+
+HISTORY
+  F2 = history ;
+   Press the F2 key to obtain information on the actions
+   you  have done so far. E.g. check the names of  files
+   that have been loaded earlier. In fact, HISTORY is  a
+   display  of  what has been written by the program  in
+   the  file  program.dia. HISTORY is also used  as  the
+   general  communication bulletin from the  program  to
+   the  user.  So, if you have requested information  on
+   certain  items,  e.g. volumes and  areas,  then  this
+   information is first written to the file program.dia,
+   after which HISTORY is invoked. Rename the file after
+   your  session  if  you want to keep the  results  for
+   reference.
+
+P/PRINTSCREEN;
+   Press the 'P' key to obtain a graphics hardcopy  file
+   of the current screen.
+
+FILE-MENU INSTRUCTIONS
+   The  file-menu consists of a list of files of a given
+   profile  on  the  left side of  the  screen,  with  a
+   specification  of  their  size,  date  and  time  and
+   subdirectories. The initial profile  depends  on  the
+   type  of data that you want to save or load. You  can
+   change the profile and the directory by pressing  the
+   Tab  key. Pressing the Tab key again switches control
+   back  to  the list of files on the left side  of  the
+   screen. You can also navigate through directories  by
+   pressing  the  Enter key. It is possible  to  specify
+   whether  to KEEP DIRECTORY CHANGES YES OR NO  in  the
+   VARIOUS/CHANGE PARAMETERS menu.
+
+GENERAL CURSOR AND KEYBOARD FUNCTIONS.
+   The  left mouse button activates or confirms  desired
+   actions.  The Escape key (Esc) cancels the last  edit
+   action.  The  right  mouse button  may  also  confirm
+   actions,  or  may  put  the  program  back  into  its
+   original  mode.  In many situations,  the  'Ins'  and
+   'Enter'  keys on the right hand bottom of a  keyboard
+   function in the same way as the left and right  mouse
+   button respectively.
+
+FILES
+   In  the  FILES menu, options are available to  import
+   files  required for the definition of  a  network
+   to   import previously  defined networks. The results at each  stage
+   of  the  network  definition process can be  saved.  The
+   option to quit NETWORK is located here also.
+
+ LOAD LAND BOUNDARY (*.ldb)
+   The  land  boundary is in the file '*.ldb'.  (Format,
+   see appendix A.)
+
+ LOAD NETWORK   (*.net)
+  The  network is in the file '*.net'. The dimensions given
+  in  the second line of this file are one less then the
+  dimensions that should be specified in the FLOW  *.mdf
+  file.
+
+ LOAD PASSIVE NETWORK (*.net)
+   A  passive network may also be loaded. This passive network
+   can  be used to paste two networks together. Or to  have
+   on  the screen while drawing a new network that is to be
+   pasted  later to it. The passive network is in the  file
+   '*.net'.
+
+ LOAD SAMPLES (*.xyz)
+
+ ADD SAMPLES (*.xyz)
+
+ SAVE SPLINES (*.spl)
+   Splines are saved in the file '*.spl'.
+
+ SAVE NETWORK (*.net)
+   The network is saved in the file '*.net'. Along with the
+   network file, a second file is saved (*.enc), containing
+   the  so  called  network enclosure,  that  outlines  all
+   active computational networkmazes in KERN-NETWORK.
+
+ SAVE SPLINES TO TEKAL (*.spt)
+   The  splines  can  be saved in the  so  called  TEKAL
+   format,  so  that the splines can be drawn  with  the
+   TEKAL  'image' task. The splines are saved in a  file
+   called '*.spt'.
+
+ SAVE NETWORK TO TEKAL (*.tek)
+   The  network can be saved in the so called TEKAL format,
+   so  that the network can be drawn with the TEKAL  'isof'
+   task. The network is saved in a file called '*.tek', and
+   contains  the  x, y coordinates, the resolution,  the
+   othogonality, the smoothness and the aspect ratios in
+   columns for plotting using GPP [4].
+
+ STOP PROGRAM
+   Exit from the RGFRID program.
+
+OPERATIONS
+   In  the  OPERATIONS  menu  the  user  may  choose  to
+   generate  a  network from a set splines and  to  perform
+   various  operations  (refinement,  orthogonalisation,
+   translation and rotation) on the network. Refinement and
+   orthogonalisation parameters must be changed  in  the
+   VARIOUS  menu.  Operations at individual  network-points
+   cannot  be  selected  from this  menu;  they  can  be
+   selected in the graphical EDIT menu.
+
+ CHANGE SPLINES INTO NETWORK
+   The  splines are ordered and directly refined into  a
+   regular network. The refinement factors can be specified
+   in   'VARIOUS',  'CHANGE  PARAMETERS',   M-REFINEMENT
+   FACTOR  and  N-REFINEMENT FACTOR. Spline intersection
+   points  can only be identified if the straight  lines
+   between  the control points of two splines intersect.
+   To  check this visually, one can display the  splines
+   as  straight  lines in the 'CHANGE PARAMETERS'  menu.
+   The correct ordering is only possible if a consistent
+   result-network  is feasible. At present, the spline-network
+   must satisfy the following RESTRICTIONS:
+     splines   may  not  intersect  twice  or  intersect
+       themselves
+     splines with the same orientation may not intersect
+
+ REFINE NETWORK
+   First specify (option 'CHANGE PARAMETERS') the number
+   of times that you want to refine the network in both the
+   M-   and   N-direction  (default  value  2  in   both
+   directions). (factors for refinement specified in  M-
+   REFINEMENT  FACTOR and N-REFINEMENT  FACTOR).You  can
+   identify  the  M-  and N-direction choosing  DISPLAY,
+   network, M,N coordinates.
+
+ REFINE NETWORK LOCALLY
+   First  you  specify (option 'CHANGE PARAMETERS')  the
+   number  of  times that the network has to be refined  in
+   the  M-  or N-direction (see REFINE NETWORK).  Then  you
+   specify the line along which direction the refinement
+   has to be performed.
+
+ DEREFINE NETWORK
+   The  opposite of REFINE NETWORK. One limitation  of  the
+   refinement  procedure is that it can only  refine  by
+   integer numbers. The de-refine option allows  you  to
+   also  refine by non-integer numbers. E.g.  refinement
+   by  a  factor of 1.5; first refine by a factor of  3,
+   next  de-refine by a factor of 2. Next, go  to  EDIT,
+   network, line smooth to decrease the jump in network-sizes.
+
+ DEREFINE NETWORK LOCALLY
+   The  opposite  of  REFINE  NETWORK  LOCALLY.  First  you
+   specify  (option 'CHANGE PARAMETERS'), the number  of
+   times that the network has to be derefined in the M-  or
+   N-direction (see DEREFINE NETWORK). Then you specify the
+   line  along which direction the refinement has to  be
+   performed. Next, smooth the jump in networksizes.
+
+ ORTHOGONALISE NETWORK
+   The refined network will be orthogonalised in accordance
+   with the local network maze resolution, i.e. the overall
+   shape will be conserved, but individual points may be
+   shifted  to get better orthogonality. You can specify
+   parameters  that  control  the  orthogonalisation  in
+   VARIOUS/ CHANGE ORTHOGONALISATION PARAMETERS.
+
+ CREATE RECTANGULAR OR CIRCULAR NETWORK
+   Specify the network spacing, network origin and the  number
+   of network lines in both directions to quickly create  a
+   rectangular network. Grid sizes may be increased in size
+   towards  the boundaries by specifying the  ration  of
+   the  maximum network-size at the boundaries relative  to
+   the   size  of  the  uniform  fraction.  The  uniform
+   fraction  is  the number of network-mazes  with  uniform
+   spacing  vs.  the  total number of  network-mazes  in  a
+   direction.  A circular network is created if the  radius
+   of  curvature  is non-zero. In that  case,  the  network
+   origin  is  interpreted  as  its  centre  point.  The
+   parameters involved are:
+
+     NUMBER OF NETWORK POINTS M-DIRECTION
+     NUMBER OF NETWORK POINTS N-DIRECTION
+          DELTA X   (M)
+     NETWORK CELL SIZE M-DIRECTION (M)
+          DELTA Y   (M)
+     NETWORK CELL SIZE N-DIRECTION (M)
+     ORIGIN X0 (M)
+     ORIGIN Y0 (M)
+     ROTATION LEFT (DEGREES)
+     RADIUS OF CURVATURE (M)
+     UNIFORM FRACTION M  ( )
+     MAXIMUM SIZE / UNIFORM SIZE (M)
+     UNIFORM FRACTION N  ( )
+     MAXIMUM SIZE / UNIFORM SIZE (N)
+
+ TRANSLATE OR ROTATE THE NETWORK
+   This  option may be applied if you are changing to  a
+   new  coordinate system which has a different position
+   of the origin or another orientation.
+
+ COMPILE DD BOUNDARIES FROM *.bnd
+   This  option is only relevant to users of the
+   domain-decomposition system. When you are creating  a
+   multi-domain  model, the individual  mono-blocks  are
+   coupled here, after you have indicated the open model
+   boundaries  in EDIT DD BOUNDARIES. All networks  in  the
+   current  directory  are seen as potential  candidates
+   for the coupling procedure. The DD administration  is
+   written to a file called 'ddbound'.
+
+ UNDO
+   Undo the last change of the network.
+
+
+DISPLAY
+   In  the DISPLAY menu options are presented to display
+   a  network  and  its properties. Display characteristics
+   (colours, colour scales etc.) may be changed here  as
+   well.
+   The following keys may be useful:
+
+  Z = ZOOMIN
+   Press the 'Z' key to zoom in. When at that moment the
+   cursor  is not close to the screen border, a  viewing
+   area  will be indicated by a window. When the  cursor
+   is  close  to the screen border, the screen  will  be
+   shifted ('panned').
+  LMS = ZOOM
+   LMS, left mouse key. The indicated window area can be
+   accepted  by pressing the left mouse button  (or  the
+   'Ins' -key).
+  RMS = BACK:
+   The  default viewing area can be restored by pressing
+   the  right  mouse  button (or the  'Enter'-key).  The
+   default viewing area is determined by the extremes of
+   all data loaded.
+  Z = ZOOM OUT
+  DEL = cycle through zoom sequence
+  + = LARGER
+   Press '+'-key to enlarge the viewing window.:
+  - = SMALLER:
+   Press '-'-key to shrink the viewing window.
+  A = ANCHOR:
+   When pressing the 'A' key on the keyboard a so-called
+   anchor  will  appear,  which  acts  as  zero-distance
+   point. The distance of the present cursor position to
+   this point is displayed below the X,Y position of the
+   cursor on the right upper corner of the screen, after
+   the keyword 'DIS'.
+
+ DISPLAY THE LAND BOUNDARY
+   The  following  display  options  are  available  for
+   displaying the land-boundary:
+       NO LAND BOUNDARY
+       LINES
+       LINES + DOTS
+
+ DISPLAY THE SPLINES
+   The following display options are available:
+       NO SPLINES
+       SPLINES WITH DOTS
+       SPLINES WITH DOTS AND M,N COORDINATES
+       SPLINES
+
+ DISPLAY THE NETWORK
+   The following options are available for displaying  a
+   network:
+       NO NETWORK
+       NETWORK SOLID LINES
+       NETWORK DOTTED LINES
+       NETWORK SPLINE SHAPE SOLID LINES
+       NETWORK SPLINE SHAPE DOTTED LINES
+       NETWORK SOLID LINES PLUS M,N COORDINATES
+   The  latter option is provided so that you can  check
+   and  control a network administrative lower left corner,
+   i.e.  the  location of the (1,1) point. It gives  the
+   least confusion if this point is located at the lower
+   left corner.
+
+ DISPLAY THE PREVIOUS STATE NETWORK
+   Sometimes,  when  editing  the  network,   it   may   be
+   convenient  to display the network both in  its  present
+   and  previous state on the screen at the  same  time.
+   The usual display options are available:
+       NO NETWORK
+       NETWORK SOLID LINES
+       NETWORK DOTTED LINES
+       NETWORK SPLINE SHAPE SOLID LINES
+       NETWORK SPLINE SHAPE DOTTED LINES
+       NETWORK SOLID LINES PLUS M,N COORDINATES
+
+ DISPLAY THE PASSIVE NETWORK
+   The  passive  network can be displayed  with  the  usual
+   options:
+       NO NETWORK
+       NETWORK SOLID LINES
+       NETWORK DOTTED LINES
+       NETWORK SPLINE SHAPE SOLID LINES
+       NETWORK SPLINE SHAPE DOTTED LINES
+       NETWORK SOLID LINES PLUS M,N COORDINATES
+
+ NETWORK PROPERTIES
+   Specify the desired network property to be shown:
+  NO NETWORK PROPERTY
+  ORTHOGONALITY
+   Cell centred cosine value. Keep this value low in the
+   inner  model area, e.g. 0.02-0.04. The error  in  the
+   direction  of  the  pressure  gradient  in  FLOW   is
+   proportional  to  the deviation of the  cosine  value
+   from zero. Near closed boundaries, larger values  can
+   be tolerated than in the inner model area.
+  RESOLUTION
+   Square root of networkmaze area.
+  M-SMOOTHNESS
+   Ratio   between  adjacent  networkmaze  lengths  in   M-
+   direction, value > 1.
+  N-SMOOTHNESS
+  M-CURVATURE
+   Reciproke value of radius of curvature, times 1000.
+  N-CURVATURE
+  M-SIZE
+   Gridmaze size in M-direction
+  N-SIZE
+  ASPECT-RATIO
+   Ratio of M-size/N-size, value > 1.
+
+ PRESENTATION OF NETWORK PROPERTIES
+   Specify how to display the desired network property:
+  NO NETWORK PROPERTIES
+  COLOURED DOTS
+  ISOFIL
+  ISOLINE
+  POINTS YET TO BE FOUND
+   This option is of no value in this context.
+  NUMBERS
+  VIEW ON TOP
+   View the network from above (default case).
+  VIEW PERSPECTIVE
+   In  the perspective window, the viewing angle can  be
+   changed by clicking the left mouse button. Moving the
+   cursor  up means looking from a higher point.  Moving
+   the cursor to the right means moving your head to the
+   right. When redrawing, the program may be interrupted
+   by  pressing the left mouse button. So you can  shift
+   to a new viewing position a little quicker. Press the
+   'Tab' key to go into depth cursor mode, controlled by
+   the arrow keys. Press the left mouse button to regain
+   view   angle  control,  leave  PERSPECTIVE  VIEW   by
+   pressing the right mouse button.
+
+ CHANGE ISOCOLOUR PARAMETERS
+   This  parameter  form allows you to specify  how  the
+   isocolour figures should be displayed:
+  NUMBER OF ISOCOLOURS
+   The  number  of  isocolours can be specified  in  the
+   range 2-31
+  AUTOSCALE ON OR OFF
+   Specify  whether  the  program should  determine  the
+   isocolour  values  automati-cally,  or   to   do   it
+   yourself.  If  you leave it to the program,  it  will
+   determine the minimum and maximum depth value  within
+   the viewing area and display the number of isocolours
+   specified  above.  Zooming in will always  result  in
+   display of the same number of isocolours. If you want
+   to specify the isocolour values yourself, you have to
+   specify  one  of  the  three parameters  below.  When
+   zooming in, the isocolour values will remain fixed.
+  MINIMUM ISOLINE VALUE
+   Specifying this value turns autoscale off.
+  MAXIMUM ISOLINE VALUE
+   Specifying this value turns autoscale off.
+  ISOLINE INTERVAL
+   Specifying this value turns autoscale off.
+  COLOUR NUMBER OF FIRST COLOUR
+   There  are 255 colour numbers available. The  isoline
+   colour band is evenly distributed over the number  of
+   isocolours between this index and the next.
+  COLOUR NUMBER OF LAST COLOUR
+   There  are 255 colour numbers available. The  isoline
+   colour band is evenly distributed over the number  of
+   isocolours between this index and the previous.
+  X COOR LOWER LEFT CORNER OF LEGEND (0-1)
+  Y COOR LOWER LEFT CORNER OF LEGEND (0-1)
+   These  coordinates  in  between  0  and  1  put   the
+   isocolour   scale  on  the  screen  at  the   desired
+   position.
+  NUMBER OF DECIMALS COLOURSCALE LEGEND
+  FONTSIZE OF COLOURSCALE LEGEND (0.5-1.5)
+
+ CHANGE DISPLAY PARAMETERS
+   This parameter form allows you to specify display and
+   hard-copy characteristics:
+  HARDCOPY DRIVER NUMBER
+   You can choose from the following hardcopy drivers:
+   1  :  HP-GL, 2: PostScript/EPS, 3: Acorn Draw format,
+   4: Raster printer, 5: Tektronix 4014, 6: Raster image
+   file  (PCX/BMP), 7: Lotus PIC format, 8: AutoCAD  DXF
+   format,  9:  CGM  format,  10:Window  Print  Manager,
+   11:WMF,  12:HPGL2.  The default  hardcopy  driver  is
+   selectable in the initialisation file.
+  ENCAPSULATED POSTSCRIPT
+   Encapsulated  Postscript  is  suitable  for   desktop
+   publishing packages and word processors. The position
+   on  the page depends on the package. Plain Postscript
+   is  meant for printers. The position on the  page  is
+   prescribed in the file itself.
+  LANDSCAPE
+   Or portrait, 1 or 0
+  SIZE OF DOTS
+   As a fraction of the screen size
+  SIZE OF NUMBERS
+   In Display as numbers
+  DEFAULT VALUE
+   Usually, -999
+  LEFT SCREEN MARGIN
+   Only  when plotting axis: as a fraction of the screen
+   size
+  BOTTOM SCREEN MARGIN
+   Only  when plotting axis: as a fraction of the screen
+   size
+  PLOTTING AXIS YES/NO
+  SCALEFACTOR FOR VECTORS (ONLY QUICKIN)
+  SECOND DEPTH SQUARE PLOTSIZE (ONLY QN)
+   This option is only relevant to users of DELFTFLS.
+   When using the second depth plotting options SQUARE
+   NETWORKCELL (typically for ARC-INFO rectangular networks,
+   mostly in combination with DELFT-FLS), one can plot
+   the bathymetry loaded as *.adp and the waterlevel
+   loaded as *.amz both in one figure. If you want to
+   visualise the bathymetry underlying the waterlevel,
+   reduce the second depth square plotsize.
+  VERTICAL AXIS UP(1) OR DOWN(-1)
+
+
+
+ ISOSCALE ON OR OFF
+   Show  the  colourband on the left side of the  screen
+   yes or no.
+  ISOSCALE ON
+  ISOSCALE OFF
+
+ SHOW ORTHOGONALISATION YES OR NO
+  YES
+   Do   show  orthogonalisation  by  drawing  subsequent
+   iterations.
+  NO
+   Do not show orthogonalisation. This saves time.
+
+ ZOOM IN
+   Or, press the 'Z' key to obtain the zoom facility  in
+   just one key stroke.
+ REDRAW
+   Or, press 'Z', 'Esc'.
+ HARDCOPY
+   Or, press 'P'.
+ LOAD COLOURTABLE         (in file *.hls)
+   You  can  choose  from a number of predifined  colour
+   schemes.
+
+EDIT
+   In  the EDIT menu several edit modes can be selected.
+   An  edit  mode is an operation mode, i.e.  a  set  of
+   operation  instructions which is valid for a  certain
+   dataset, and which may go with some specific  display
+   method.  The  following data groups may be  modified:
+   SPLINES, NETWORK, SECOND NETWORK and the LAND BOUNDARY. The
+   latter two are not implemented yet.
+
+  ESC = UNDO   ;
+   In  most  edit  modes,  'Esc' will  undo  the  latest
+   action.
+
+ EDIT SPLINES
+
+  I   = INSERT ;
+   If the program is in insert mode, (message 'INSERT  A
+   POINT'  at the lower left side of the screen),  click
+   the  left  mouse  button  at different  positions  to
+   create  a  spline. To start a new spline,  press  the
+   right  mouse  button. If you want  to  insert  spline
+   points next to a point on an already existing spline,
+   first put the cursor on that point, then press 'i' on
+   the  keyboard. The program will identify the  desired
+   spline  and allow insertion by now pressing the  left
+   mouse button.
+
+  R   = REPLACE;
+   Shift  spline points that have already  been  put  in
+   position  by pressing the 'R' button. You will  enter
+   'R'eplace mode. The message at the bottom left of the
+   screen now reads 'GET A POINT'. If you have got it by
+   pressing the left mouse button, the message will read
+   'PUT A POINT', and you can do so by pressing the left
+   mouse button at the new desired position.
+
+  D   = DELETE ;
+   Go  into delete mode and delete spline points by just
+   clicking them.
+
+ EDIT NETWORK
+   Selection  of  the EDIT NETWORK option  results  in  the
+   replacement  of the EDIT menu by a new sub-menu  with
+   network editing options as descibed below (you can check
+   this  by  selecting EDIT NETWORK and then selecting  the
+   EDIT option from the main menu. Choosing the BACK  TO
+   MAIN  EDIT MODES option from the sub-menu causes  the
+   primary EDIT menu to be restored.
+
+  POINT MODE
+
+  R   = REPLACE:
+   Press  the  'R' key (or the R=replace option  in  the
+   bottom  menu  line),  to enter  'R'eplace  mode.  The
+   message  at the bottom left of the screen  now  reads
+   'GET  A  POINT'. If you have got the  network  point  by
+   pressing the left mouse button, the message will read
+   'PUT A POINT', and you can do so by pressing the left
+   mouse button at the new desired position.
+
+  I   = INSERTG:
+   If the program is in insert mode, (message 'INSERT  A
+   POINT'  at the lower left side of the screen),  click
+   the  left mouse button inside a networkmaze to create  a
+   new networkmaze at the border of the network. The indicated
+   network  maze  will be 'mirrored' to the network maze  side
+   closest to the clicking point.
+
+  D   = DELETE :
+   Go  into  delete mode and delete network points by  just
+   clicking them.
+
+  TAB = DCURSOR;
+   In  'edit network' mode and 'perspective view', one  can
+   press  the  Tab  key to go into 'depth  cursor  mode'
+   (dcursor), that allows you to 'walk' (with the  arrow
+   keys),  the  cursor over the depth points,  following
+   the  network coordinates, by pressing the arrow key. (of
+   course,  mentally  replace the word  'depth'  by  the
+   words 'network property, pertaining to the most recently
+   requested network property.)
+
+  FIELD MODE
+   Modifications  will  be made by shifting  the  centre
+   point  of a field of points. The field transformation
+   is based upon the relative shift of the centre point.
+   For  all  mazes in the vicinity of the  centre,  that
+   shift  is  transformed  to  their  local  network   maze
+   orientation  and  will be decreased in  magnitude  in
+   proportion  to  the physical distance to  the  centre
+   maze.In that way a quasi-orthogonal transformation is
+   induced. The area of influence is always one sixth of
+   the  area that is currently displayed on the  screen.
+   (This is equal to the size of the window that appears
+   after  the  Z(oom) key has been pressed. So,  if  you
+   want  to  decrease or increase the area of influence,
+   zoom in or zoom out).
+
+  LINE MODE
+   The  operations  line  shift, line  attraction,  line
+   repulsion and line smooth operate in line mode.  They
+   all use the same procedure to indicate a line and  an
+   influence area.
+   You  first  have  to INDICATE A LINE by  marking  its
+   endpoints,  using  the left mouse buttons,  then  you
+   have to INDICATE INFLUENCE AREA by marking one or two
+   network-points  at  one  or  both  side  of  the   line,
+   respectively. Pressing 'Esc' enables the  replacement
+   of the last added point; pressing 'Esc'+'Esc' cancels
+   all the selected block points, after you may redo the
+   selection procedure. You press the right mouse button
+   or  the Enter key for the final selection of line and
+   area.  After the indication you perform the operation
+   (e.g.  line  shifting, attraction or  repulsion)  The
+   result is finally accepted (pressing Enter), but  can
+   still  be reversed (by pressing the 'Esc'+'Esc'+'Esc'
+   key, or pressing the UNDO menu button).
+  LINE SHIFT
+   This option is included in the program to provide the
+   possibility  to  fit  the  network's  edges  to  a  land
+   boundary.  First you INDICATE A LINE and INDICATE  AN
+   INFLUENCE AREA.
+   Then, you can SHIFT THE LINE by shifting some or  all
+   of  the individual points of that line. The endpoints
+   can also be shifted.  After pressing the Enter key or
+   the  right mouse button to indicate that the line has
+   been put into the correct new position, the points on
+   the  line  between the end-points will be shifted  by
+   linear interpolation between all repositioned points.
+   Then, a field transformation will be performed in the
+   influence  area,  similar as described  under  'FIELD
+   MODE'   above,  with  centre  points  that  are   now
+   consecutive points on the shifted centre line. If you
+   are  not satisfied with the transformed result, press
+   'Esc'+'Esc'+'Esc'. You will then  be  put  back  into
+   LINE  SHIFT  MODE.  Pressing Enter  will  accept  the
+   result  and also put you back into 'LINE SHIFT  MODE'
+   mode.  You  can  carry on shifting  lines  by  simply
+   repeating the same sequence of actions.
+
+  LINE ATTRACTION
+   Here,  you have again to INDICATE A LINE, by  marking
+   its endpoints, and to INDICATE AN INFLUENCE AREA (see
+   'LINE  MODE').  The  network will be  attracted  to  the
+   indicated line, making use of the line transformation
+   described  above,  in  the  field  indicated  by  the
+   influence  area.  Accept or refuse (by  pressing  the
+   'Esc'+'Esc'+'Esc' key) the result.
+
+
+  LINE REPULSION
+   The reverse of 'LINE ATTRACTION'.
+
+  LINE TO LAND BOUNDARY
+   A  network's  edge  can be fitted to a land-boundary  by
+   hand, using the 'LINE MODE' option, or automatically,
+   using  the  present option, 'LINE TO LAND  BOUNDARY'.
+   The  automatic option may not always deliver  exactly
+   what you want. This can be caused by irregular shapes
+   in  the land-boundary. However, we do not want to  be
+   compelled  to analyse and polish up the land-boundary
+   a priori, in the digitising phase.
+   Therefore,  both  the automated and hand  option  are
+   included in the program. Just indicate the first  and
+   last  point of the line that you want to fit  to  the
+   land-boundary. Next, all intermediate points will  be
+   translated  to their nearest land boundary.  Then,  a
+   line  shift  will  be performed,  equal  to  the  one
+   mentioned above, shifting the indicated line and  the
+   surrounding  network.  Press  Esc  if  the   result   is
+   unsatisfactory.  The  original  network  will  then   be
+   restored. The algorithm which decides to which  land-
+   boundary  line  segment  the  network  line  should   be
+   attracted,  first looks for the closest land-boundary
+   point. An error may occur here, if the closest  land-
+   boundary line segment is very long, and land-boundary
+   points  of  other  segments are  more  close  to  the
+   indicated  networkline. In that case, go to  the  option
+   MODIFY  LAND BOUNDARY (not implemented as  yet),  and
+   add some points to the long land-boundary segment, so
+   that  points  on  this segment  are  closest  to  the
+   indicated networkline.
+
+  LINE TO SPLINE
+
+  LINE SMOOTH
+   You   have  to  INDICATE  A  LINE,  by  marking   its
+   endpoints,  and  to INDICATE AN INFLUENCE  AREA  (see
+   'LINE  SHIFT MODE'). Within this area, the network  will
+   be smoothed into the direction indicated by the line.
+   Accept  or  refuse (by pressing the 'Esc'+'Esc'+'Esc'
+   key) the result.
+
+  BLOCK MODE
+   Block  delete,  block  cut, block  orthogonalise  and
+   block  smooth all operate in block mode. An influence
+   area  (block) is indicated by pressing two, three  or
+   four points.
+
+  BLOCK DELETE
+   Click  two,  three, or four points  to  indicate  the
+   corners  of the networkblock that you want to delete.  A
+   minimal  block  is selected which just  contains  the
+   selected  points. Press 'Esc' if you want to  replace
+   the  latest  indicated point, press  'Esc'-+'Esc'  to
+   redo  the selection of the block. Pressing the  right
+   mouse  button  or  the  Enter  key  results  in   the
+   annihilation    of    the    block    area.     Press
+   'Esc'+'Esc'+'Esc'  if you want to cancel  the  latest
+   action.
+
+  BLOCK CUT
+   Click  two,  three, or four points  to  indicate  the
+   corners  of  the  networkblock.   A  minimal  block   is
+   selected  which  just contains the  selected  points.
+   Press  'Esc'  if  you  want  to  replace  the  latest
+   indicated  point,  press  'Esc'+'Esc'  to  redo   the
+   selection  of  the block. Pressing  the  right  mouse
+   button  or  the Enter key results in the annihilation
+   of  the  network in the area outside the selected block.
+   Press  'Esc'+'Esc'+'Esc' if you want  to  cancel  the
+   latest action.
+
+  BLOCK ORTHOGONALISE
+   Click  two,  three, or four points  to  indicate  the
+   corners  of  the  networkblock.   A  minimal  block   is
+   selected  which  just contains the  selected  points.
+   Press  'Esc'  if  you  want  to  replace  the  latest
+   indicated  point,  press  'Esc'+'Esc'  to  redo   the
+   selection  of  the block. Pressing  the  right  mouse
+   button   or   the   Enter   key   results   in    the
+   orthogonalisation  of the network  inside  the  selected
+   block.  Press 'Esc'+'Esc'+'Esc' if you want to cancel
+   the latest action.
+
+  BLOCK SMOOTH
+   Click  two,  three, or four points  to  indicate  the
+   corners  of  the  networkblock.   A  minimal  block   is
+   selected  which  just contains the  selected  points.
+   Press  'Esc'  if  you  want  to  replace  the  latest
+   indicated  point,  press  'Esc'+'Esc'  to  redo   the
+   selection  of  the block. Pressing  the  right  mouse
+   button  or the Enter key results in the smoothing  of
+   the   network   inside   the   selected   block.   Press
+   'Esc'+'Esc'+'Esc'  if you want to cancel  the  latest
+   action.
+
+  BACK TO MAIN EDIT MODES
+   The  functionality of the main edit menu is  restored
+   under the EDIT option.
+
+ EDIT DD BOUNDARIES (and fix bnd points)
+   This  option is only relevant to users of the
+   domain-decomposition system. Open boundaries or  open
+   DD  boundaries  can  be edited by  clicking  boundary
+   points  that lie on the same networkline. One can delete
+   boundary  points by first pressing the  'D'  key  and
+   click with the left mouse button. (R)eplace mode  and
+   (I)  nsert  mode  are also available.  The  specified
+   boundaries are saved with the network in a file that  is
+   called  *.bnd  (* being the name of the saved  network),
+   see  appendix A, using the FLOW format for waterlevel
+   boundaries.
+   DD  boundaries are also used in the orthogonalisation
+   process. Because open boundaries or DD boundaries can
+   only   be   clicked   on   boundary   points,   their
+   administration can be used to fix boundary points  in
+   the orthogonalisation process.
+
+
+ EDIT POLYGON
+   A  polygon  can  be edited to that can  be  used  for
+   instance  if  you want to delete some complex  shaped
+   part  of the network in 'ADDSUBDEL'. Use the left  mouse
+   key,  press the 'I' key for insert mode, the 'R'  key
+   for replace mode, the 'D' key for delete mode, or the
+   'Esc' key to undo the last mouse press.
+
+ EDIT NETWORK
+   I Insert nodes   click new nodes if space is free, otherwise attach to existing node
+   R Replace nodes  click node to another position
+   D Delete nodes   remove node and lines
+   M Merge nodes    merge node 1 and 2
+   F Fix nodes      fix to position (node code = -1)
+   O Oneline        remove node, keep lines, only for nodes with two lines
+   B Boat nodes     mark nodes for boat (node code = -2)
+   T Ton nodes      mark nodes for buoy (node code = 3)
+   L Line nodes     mark nodes for force toward ldb (node code = 4)
+   W Wing           mark node for otterboard (node code = 2
+
+   V View           change viewplane
+   Z Zoom           zoom in/out, pan
+
+ADDSUBDEL
+   The  ADDSUBDEL  menu provides options to  delete  the
+   splines,  the  network, the second network,  and  the  land
+   boundary. Also, an option will be provided  to  paste
+   two networks together.
+
+ DELETE SPLINES
+   Delete all the splines in the spline network.
+ DELETE NETWORK
+   Delete the current network.
+ DELETE PREVIOUS STATE NETWORK
+   Delete the sprevious state network.
+ DELETE PASSIVE NETWORK
+   Delete the current second network.
+ DELETE LAND BOUNDARY
+   Delete the domain polygon.
+ DELETE LANDBOUNDARY
+   Delete the land-boundary.
+ DELETE DD BOUNDARIES
+   Delete domain-decomposition boundaries.
+ DELETE POLYGON
+   Delete the polygon.
+ PASTE PASSIVE NETWORK TO NETWORK
+   The  second network is pasted to the current  network.  The
+   M,N-orientations of both network do not have  to  match.
+   Two networks can only be pasted if the dimensions of the
+   resulting  network  fit  within  the  maximum  allowable
+   dimensions.  The network points on the junction  line(s)
+   should  be relatively close to each other, i.e.  less
+   than  one  quarter  of  a network  maze  apart.  On  the
+   junction line, the networkpoints are a weigthed  average
+   of  the  network  and  the passive network.  The  weighting
+   factor can be changed in the CHANGE PARAMETERS menu.
+ ROTATE NETWORK ADMINISTRATION (90 LEFT)
+   The  M,N  orientation of the network is rotated over  90
+   degrees  (counterclock  wise).  Maybe  you  want   to
+   arrange the 1,1 network point on the lower left side  of
+   the screen.
+ SWAP NETWORK AND PASSIVE NETWORK
+   When pasting networks, one may want to alter either  the
+   network  or the passive network to obtain better alignment.
+   To edit the passive network, just swap the network with the
+   passive network and edit it.
+ COPY NETWORK ADMINISTRATION TO PASSIVE NETWORK
+   This option allows you to visualise the network topology
+   in  the  'administrative' space (as  opposed  to  the
+   physical  space).  It  helps you  decide  which  network
+   extensions are allowable so that overlap is  avoided.
+   (The network should always be a monoblock structure).
+
+VARIOUS
+  In  the  VARIOUS  menu  various  parameters  for  network
+  control are presented.
+
+ SHORTSTOP
+   To   quit  NETWORK  quickly,  avoiding  the  WL/Delft
+   Hydraulics logo.
+
+ ACTUAL AND MAXIMUM DATA DIMENSIONS
+   The  actual  and maximum dimensions of  various  data
+   groups are presented in HISTORY.
+
+ CHANGE PARAMETERS
+   The  following parameters influence the behaviour  of
+   the  operations above. They are set via the following
+   parameter list:.
+  M-REFINEMENT FACTOR
+   A  value  of  2 gives twice as many networkmazes  in  M-
+   direction
+  N-REFINEMENT FACTOR
+   A  value  of  2 gives twice as many networkmazes  in  M-
+   direction
+  NUMBER OF SMOOTHING ITERATIONS
+   The  smoothing  in  edit mode is controlled  by  this
+   parameter.
+  SMOOTHING PARAMETER
+   The smoothing in edit mode is also controlled by this
+   parameter. A value of 0.0 results in no smoothing,  a
+   value of 1 in maximum smoothing.
+  ATTRACTION/REPULSION PARAMETER
+   Attraction / repulsion in edit mode is controlled  by
+   this parameter. The value is the fractional change in
+   size of the first network-maze adjacent to the indicated
+   line.  Increase  this value for  more  attraction  or
+   repulsion.
+  PASSIVE NETWORK OR NETWORK FIXED IN PASTE
+   When  pasting  a  network to a passive  network,  the  network
+   points  on  the  networks junction line are  a  weighted
+   average between both networks. If you want to keep these
+   points in the position of the passive network, set  this
+   parameter  to  1. To keep the position of  the  network,
+   choose 0. A value in between averages.
+  GO BACK TO STARTUP DIRECTORY YES OR NO
+   When  navigating through the directories in the  file
+   menu,  you can specify whether to always go  back  to
+   the  start-up  directory  (1),  or  keep  the  latest
+   directory so that you have to navigate only once (0).
+  LINE OR SPLINE REPRESENTATION
+   Splines,  or network boundaries in the orthogonalisation
+   process, can also be represented as straight lines if
+   this parameter is put to a zero value..
+  EQUIDISTANT OR SMOOTH INTERPOLATION
+   When   iterpolating   the  splines   into   a   network,
+   equidistant  interpolation can be specified  using  a
+   value of 0.
+
+ CHANGE ORTHOGONALISATION PARAMETERS
+   With this parameter form the orthogonalisation process
+   can be controlled:
+  ITERATIONS ATTRACTION PARAMETER
+   The  shape of the resulting network is based on  the  so
+   called  attraction parameter, i.e. the  local  aspect
+   ratio    of   the   original   network.   One   complete
+   orthogonalisation cycle consists of three loops.  The
+   outer loop is the attraction parameter loop, in which
+   this  parameter  field is established.  Only  few  of
+   these  loops  are  usually performed.  Next,  several
+   boundary  loops are performed, in each of  which  the
+   inner  area  is solved several times. Increasing  the
+   number  of  attraction parameter iterations  improves
+   orthogonality,  but at increases deviation  from  the
+   originally designed shape.
+  ITERATIONS BOUNDARY
+   In one boundary loop, all boundary points are updated
+   once,  and all inner area points are updated as  many
+   times  as specified by the next parameter. We  advise
+   values in the following range: [5 - 20].
+  ITERATIONS INNER AREA
+   The   number   of  inner  area  iterations   in   the
+   orthogonalisation  is advised in  the  range:  [10  -
+   50].
+  INFLUENCE ORIGINAL NETWORK SHAPE
+   This   parameter  specifies  the  influence  of   the
+   specified  network  shape in the inner area  during  the
+   orthogonalisation procedure. The network  shape  in  the
+   inner area can be specified in three ways, see DESIGN
+   METHOD  below. With a value of 1 the specified  shape
+   is maintained as closely as possible. With a value of
+   0,  the  shape  mostly depends on the  shape  of  the
+   boundaries and the internal cornerpoints.  Any  value
+   between 0 and 1 can be chosen.
+  POSITION BOUNDARY POINTS
+   This  parameter specifies the freedom of movement  of
+   boundary  points.  These points  move  along  splines
+   spanned by the outer points of the network. A value of 1
+   gives full freedom of movement, whereas a value of  0
+   keeps  boundary  points completely fixed.  Any  value
+   between 0 and 1 may be chosen.
+  DESIGN METHOD, 1, 2, OR 3
+   This  parameter  specifies in what way the  attraction
+   parameter  (local aspect ratio) field is  created.  In
+   the  standard  method 1 this field is based  upon  the
+   aspect  ratios  of  the  original  design  network.  With
+   method  2, the polygon can be applied to control  network
+   spacing.  Using  method  3,  the  network  resolution  is
+   controlled  based upon features in a  bathymetry  that
+   can be loaded by means of the samples. This method  is
+   therefore called  'DEPTH DESIGN'. In this method,  the
+   attraction parameter field is based upon network  spacing
+   functions  both in the M and N direction. Their  local
+   ratio  forms  the desired attraction parameter  field.
+   Both  the  M  and  N  network spacing  functions  can  be
+   controlled  by  a  number  of  parameters,  that   are
+   explained  below. The same parameters  also  apply  to
+   method  2,  that  can be seen as  a  special  case  of
+   method  3,  in  which the bathymetry is  specified  by
+   specifying  a  constant 'depth'  inside  the  polygon,
+   different  from the also constant 'depth' outside  the
+   polygon.
+  DEPTH DESIGN, SMALL/LARGE SIZE RATIO (N)
+   Both  for  the M and the N direction, the  size  ratio
+   between  the  smallest and largest  networksize  in  that
+   direction  can  be  specified. If  a  value  of  1  is
+   specified, a uniform distribution results. Choosing  a
+   small  value will result in large networksize  variation.
+   If  a  value  of 0 is specified, this  is  seen  as  a
+   special  case and the original network shape  is  applied
+   as the desired network spacing function.
+  DEPTH DESIGN, SMALL/LARGE SIZE RATIO (M)
+   See (N) above
+  DEPTH DESIGN, DEPTH VS SLOPE WEIGHT
+   Both  the depth and the slope can be applied  as  network
+   spacing   control   functions.  To   obtain   a   high
+   resolution  in deep areas only, specify a  SMALL/LARGE
+   SIZE RATIO  below 1, e.g. 0.1, and specify a DEPTH  VS
+   SLOPE WEIGHT parameter of 1. To obtain small mazes  at
+   steep slopes only, specify a value of 0. Any value  in
+   between  0  and 1 can be applied. In the  future,  the
+   slope   variation   is  foreseen  as   a   controlling
+   parameter as well.
+  DEPTH DESIGN, NR SMOOTHING ITERATIONS
+   To  obtain  smoother transitions between  sloping  and
+   non sloping area's, the network spacing functions can  be
+   smoothed. The smoothing parameters apply both  to  the
+   (M)  and  (N)  direction. Also, the smoothing  may  be
+   applied  to  'spread'  the  network  spacing  information
+   towards  networkmazes that initially may lie outside  the
+   area  that  needs  to get a high resolution.  In  each
+   attraction  parameter iteration, see above,  the  network
+   point  spacing function is evaluated, and  applied  in
+   the  following  orthogonalisation loop, which  results
+   in  shifting  the networkpoints to their final  position.
+   Once  getting  closer  to their  final  position,  the
+   smoothing  may  be decreased, so that  the  bathymetry
+   features  become  more  apparent  in  the  network.  This
+   process may be automated in future.
+  DEPTH DESIGN, SMOOTHING FACTOR
+   Smoothing weight of point itself vs neigbours.
+  DEPTH DESIGN, FIELD VS LINE WEIGHT (N)
+   The  SMALL/LARGE SIZE RATIO parameter  can  either  be
+   specified  to  apply to the whole network,  or  to  every
+   networkline.  I.e. should the specified SMALL/LARGE  SIZE
+   RATIO  in the given direction be applied to the  whole
+   network  or to every networkline. If a value of 1 is chosen,
+   this  ratio  will only occur at the maximum  value  of
+   entire  spacing function. If a value of 0  is  chosen,
+   this size ration will occur at every networkline.
+  DEPTH DESIGN, FIELD VS LINE WEIGHT (M)
+   See (N) above
+
+ NETWORK FOR DOMAIN DECOMPOSITION
+   This  option is only relevant to users of the
+   domain-decomposition system. There are two  types  of
+   networks,  normal  networks, and DD  networks.  DD  networks  are
+   normal  networks that have an extra border of network-mazes
+   surrounding the normal network as required by the domain
+   decomposition solver.
+   A  DD  network  has a first line in the network file  which
+   says:  NETWORK FOR DOMAIN DECOMPOSITION. If the  program
+   reads  such  a  network, the program first  deletes  the
+   border and flags that the current network is a DD  network.
+   Now,  you  can  treat the network like any normal  network,
+   using the principle of what you see is what you  get,
+   in   this   case  meaning  that  you  obtain   active
+   computational  network-mazes for all  (m,n)  water-level
+   points that have four surrounding network-points.  (each
+   closed  network-maze  that you can  see  on  the  screen
+   becomes a water-level maze).
+   When  writing a DD network, the program writes the first
+   line  with  NETWORK  FOR DOMAIN DECOMPOSITION  and  then
+   writes   a   network  with  the  restored  border.   The
+   corresponding   network  enclosure   file   is   treated
+   accordingly.
+
+   The  present option allows you at any time to  choose
+   whether  you want to treat the current network as  a  DD
+   network  or  a  normal network when writing to  file.  When
+   reloading that network, you will obtain the same network on
+   the screen.
+
+HARDCOPY
+   The  options are selected in the INITIALIZATION  FILE
+   in  fields  following the key word  @HARDCOPYOPTIONS.
+   Several  options  may be specified.  Each  option  is
+   indicated  by  a  number,  a  second  number   IVALUE
+   specifies  the modification made to this  option.  In
+   the  following  only the most important  options  are
+   presented.  The list of options is ended by  the  key
+   word @ENDHARDCOPY
+   Option  5  allows the image to be printed in Portrait
+   (IVALUE=0) or Landscape mode (IVALUE=1).
+   Option  9  controls the line thickness. When plotting
+   at  high print resolutions the default line thickness
+   gives  lines  which  are slightly  thicker  than  the
+   minimum   device  resolution.  The  ideal   thickness
+   depends largely on output device and personal  taste.
+   The  IVALUE  gives the linethickness in tenths  of  a
+   point.
+   Option 25 determines the area fill method to be  used
+   by  drivers which provide some form of fill primitive
+   capability,  but which are likely to  be  subject  to
+   some  form  of driver-specific limitations.  IVALUE=0
+   selects  the generic method, IVALUE=1 enables  driver
+   specific fills to be used when appropriate.
+   Option   18   controls   the  inclusion   of   replay
+   information in HP-GL output files: IVALUE=0 indicates
+   no   inclusion   of   replay  information,   IVALUE=1
+   indicates inclusion.
+   Option  22  determines wether the  PostScript  driver
+   generates  files  in  EPS  (Encapsulated  PostScript)
+   format.  By  default the PostScript driver  generates
+   printer output. If the EPS options is enabled, output
+   files  are generated in a slightly different modified
+   format  which  is  suitable for inclusion  in  WP/DTP
+   documents  which  are  to be  printed  on  PostScript
+   printers.
+   Option 23 specifies the number of colour planes in  a
+   bit  image  file generated by the raster  image  file
+   driver. IVALUE should be 1, 4 or 8, which gives 2, 16
+   or  256  colours respectively. Monochrome images  are
+   generated by default.
+

@@ -1,0 +1,265 @@
+    <testCases>
+        <!-- ======================================================================== -->
+        <testCase name="e105_f01_c010_weir_timeseries" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c010_weir_timeseries</path>
+            <checks>
+                <file name="dflowfm/output/weirtimeseries_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c013_generalstructure_lookuptable" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c013_generalstructure_lookuptable</path>
+            <checks>
+                <file name="dflowfm/output/generalstructure_realtime_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                        <parameter name="general_structure_gate_opening_width" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/generalstructure_realtime_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!--  UNST-5337
+        <testCase name="e105_f01_c070_generalstructure_door_closing_above_waterlevel" ref="dimr_trunk" ignore="true">
+            <path>e105_dflowfm-drtc/f01_general/c070_generalstructure_door_closing_above_waterlevel</path>
+            <checks>
+                <file name="dflowfm/output/t1_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_gate_lower_edge_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t1_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        -->
+        <testCase name="e105_f01_c071_generalstructure_door_closing_at_sill" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c071_generalstructure_door_closing_at_sill</path>
+            <checks>
+                <file name="dflowfm/output/t2_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_gate_lower_edge_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t2_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c072_generalstructure_lowering_open_door" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c072_generalstructure_lowering_open_door</path>
+            <checks>
+                <file name="dflowfm/output/t3_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_crest_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t3_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c073_generalstructure_lowering_closed_door" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c073_generalstructure_lowering_closed_door</path>
+            <checks>
+                <file name="dflowfm/output/t4_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_crest_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t4_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!--  UNST-5337
+        <testCase name="e105_f01_c074_gate_door_closing_above_wl" ref="dimr_trunk" ignore="true">
+            <path>e105_dflowfm-drtc/f01_general/c074_gate_door_closing_above_waterlevel</path>
+            <checks>
+                <file name="dflowfm/output/t1_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="gategen_gate_opening_width" toleranceAbsolute="0.001" />
+                        <parameter name="gategen_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t1_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        -->
+        <testCase name="e105_f01_c075_gate_door_closing_at_sill" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c075_gate_door_closing_at_sill</path>
+            <checks>
+                <file name="dflowfm/output/t2_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="gategen_gate_opening_width" toleranceAbsolute="0.001" />
+                        <parameter name="gategen_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t2_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c076_gate_lowering_open_door" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c076_gate_lowering_open_door</path>
+            <checks>
+                <file name="dflowfm/output/t3_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="gategen_gate_lower_edge_level" toleranceAbsolute="0.001" />
+                        <parameter name="gategen_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t3_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c077_gate_lowering_closed_door" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c077_gate_lowering_closed_door</path>
+            <checks>
+                <file name="dflowfm/output/t4_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="gategen_flow_through_height" toleranceAbsolute="0.001" />
+                        <parameter name="gategen_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t4_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!--  UNST-5337
+        <testCase name="e105_f01_c080_generalstructure_door_closing_above_waterlevel_v2" ref="dimr_trunk" ignore="true">
+            <path>e105_dflowfm-drtc/f01_general/c080_generalstructure_door_closing_above_waterlevel_v2</path>
+            <checks>
+                <file name="dflowfm/output/t1_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_gate_lower_edge_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t1_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        -->
+        <testCase name="e105_f01_c081_generalstructure_door_closing_at_sill_v2" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c081_generalstructure_door_closing_at_sill_v2</path>
+            <checks>
+                <file name="dflowfm/output/t2_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_gate_lower_edge_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t2_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c082_generalstructure_lowering_open_door_v2" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c082_generalstructure_lowering_open_door_v2</path>
+            <checks>
+                <file name="dflowfm/output/t3_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_crest_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t3_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f01_c083_generalstructure_lowering_closed_door_v2" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f01_general/c083_generalstructure_lowering_closed_door_v2</path>
+            <checks>
+                <file name="dflowfm/output/t4_his.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="general_structure_crest_level" toleranceAbsolute="0.001" />
+                        <parameter name="general_structure_discharge" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+                <file name="dflowfm/output/t4_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f04_c102_longculvert_timeseries_valve_TimeController" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f04_1D2D/c102_longculvert_timeseries_valve_TimeController</path>
+            <maxRunTime>20.0</maxRunTime>
+            <checks>
+              <file name="dflowfm/DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
+                <parameters>
+                  <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                  <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+                  <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+                  <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                  <parameter name="cross_section_cumulative_discharge" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_discharge" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_s1up" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_s1dn" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_head" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_flow_area" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_velocity" toleranceAbsolute="0.0001" />
+                  <parameter name="longculvert_valve_relative_opening" toleranceAbsolute="0.0001" />
+                </parameters>
+              </file>
+            </checks>
+        </testCase>
+        <testCase name="e105_f04_c103_orifice_crestLevel_TimeController" ref="dimr_trunk">
+            <path>e105_dflowfm-drtc/f04_1D2D/c103_orifice_crestLevel_TimeController</path>
+            <maxRunTime>20.0</maxRunTime>
+            <checks>
+              <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
+                <parameters>
+                  <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                  <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+                  <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+                  <parameter name="orifice_crest_level" toleranceAbsolute="0.0001" />
+                  <parameter name="orifice_discharge" toleranceAbsolute="0.0001" />
+                </parameters>
+              </file>
+            </checks>
+        </testCase>
+<!-- ======================================================================== -->
+    </testCases>

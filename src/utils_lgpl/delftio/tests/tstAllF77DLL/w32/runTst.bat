@@ -13,4 +13,4 @@ fc TESTF77LIB-res.txt ..\resultsApproved\w32\TESTF77LIB-res.txt
 fc TESTF77Map-res.txt ..\resultsApproved\w32\TESTF77Map-res.txt
 fc TESTEndTime-res.txt ..\resultsApproved\w32\TESTEndTime-res.txt
 
-exit 0
+exit /B 0

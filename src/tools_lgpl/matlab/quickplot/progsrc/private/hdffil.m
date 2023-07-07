@@ -18,7 +18,7 @@ function varargout=hdffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -101,7 +101,34 @@ switch cmd
         [XYRead,DataRead,DataInCell]=gridcelldata(cmd);
 end
 
-Ans = [];
+sz = getsize(FI,Props);
+sz = sz(Props.DimFlag~=0);
+idx = varargin;
+for i = 1:length(varargin)
+    if isequal(varargin{i},0)
+        idx{i} = 1:sz(i);
+    end
+end
+for i = length(sz):-1:length(varargin)+1
+    idx{i} = 1:sz(i);
+end
+
+if 0%strcmp(FI.FileType,'XMDF')
+else
+    start = ones(size(idx));
+    count = sz;
+    ridx = idx;
+    for i = 1:length(idx)
+        if idx{i}(1)>1
+            start(i) = idx{i}(1);
+            ridx{i} = idx{i}-idx{i}(1)+1;
+        end            
+        count(i) = idx{i}(end)-idx{i}(1)+1;
+    end
+    Info = subsref(FI.GroupHierarchy,Props.Dataset);
+    data = h5read(Info.Filename,Info.Name,start,count);
+    Ans.Data = data(ridx{:});
+end
 
 varargout={Ans OrigFI};
 % -----------------------------------------------------------------------------
@@ -110,9 +137,69 @@ varargout={Ans OrigFI};
 function Out=infile(FI,domain)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 %======================== SPECIFIC CODE =======================================
-PropNames={'Name'                   'Units' 'Geom' 'Coords' 'DimFlag' 'DataInCell' 'NVal' 'SubFld' 'MNK' 'varid'  'DimName' 'hasCoords' 'VectorDef' 'ClosedPoly' 'UseGrid'};
-DataProps={'dummy field'            ''      ''     ''      [0 0 0 0 0]  0           0      []       0     []          {}          0         0          0          0};
+PropNames={'Name'                   'Units' 'Geom' 'Coords' 'DimFlag' 'DataInCell' 'NVal' 'SubFld' 'MNK' 'Dataset' };
+DataProps={'dummy field'            ''      ''     ''      [0 0 0 0 0]  0           0      []       0    []        };
 Out=cell2struct(DataProps,PropNames,2);
+%
+if 0%strcmp(FI.FileType,'XMDF')
+    for g = 1:length(FI.GroupHierarchy.Groups)
+        FI.GroupHierarchy.Groups
+    end
+else
+    [~,sr] = domains(FI);
+    sr = sr{domain};
+    srlen = length(sr);
+    if srlen == 0
+        Group = FI.GroupHierarchy;
+    else
+        Group = subsref(FI.GroupHierarchy,sr);
+    end
+    sr(srlen+1).type = '.';
+    sr(srlen+1).subs = 'Datasets';
+    sr(srlen+2).type = '()';
+    %
+    if isstruct(Group.Attributes)
+        Attribs = {Group.Attributes.Shortname}';
+    else
+        Attribs = {};
+    end
+    if ismember('Grouptype',Attribs)
+        att = hdf5read(Group.Filename,Group.Name,'Grouptype');
+        dataset = att.Data; % General, DATASET SCALAR, DATASET VECTOR
+    else
+        dataset = 'unknown';
+    end
+    if ismember('DatasetUnits',Attribs)
+        att = hdf5read(Group.Filename,Group.Name,'DatasetUnits');
+        units = att.Data;
+    else
+        units = '';
+    end
+    %
+    ndata = length(Group.Datasets);
+    Out = repmat(Out,ndata,1);
+    for i = 1:ndata
+        Info = Group.Datasets(i);
+        %
+        Out(i).Name = Info.Name;
+        Out(i).Units = units;
+        Out(i).DimFlag(M_+(0:Info.Rank-1)) = 1;
+        if strcmp(Info.Datatype.Class,'H5T_STRING')
+            Out(i).NVal = 4;
+        else
+            Info.Datatype.Class
+            switch dataset
+                case 'DATASET SCALAR'
+                    Out(i).NVal = 1;
+                case 'DATASET VECTOR'
+                    Out(i).NVal = 2;
+            end
+        end
+        %
+        sr(srlen+2).subs = {i};
+        Out(i).Dataset = sr;
+    end
+end
 % -----------------------------------------------------------------------------
 
 
@@ -120,4 +207,38 @@ Out=cell2struct(DataProps,PropNames,2);
 function sz=getsize(FI,Props)
 ndims = length(Props.DimFlag);
 sz = zeros(1,ndims);
+Info = subsref(FI.GroupHierarchy,Props.Dataset);
+sz(Props.DimFlag~=0) = Info.Dims;
 % -----------------------------------------------------------------------------
+
+function [d,sr] = domains(FI,sr0)
+if nargin==1
+    if 0%strcmp(FI.FileType,'XMDF')
+        d = {};
+        sr = {};
+        return
+    end
+    group = FI.GroupHierarchy;
+    sr0 = [];
+else
+    group = FI;
+end
+srnext = length(sr0)+1;
+nsubgroups = length(group.Groups);
+d = cell(1+nsubgroups,1);
+sr = cell(1+nsubgroups,1);
+d{1} = group.Name;
+if nsubgroups>0
+    sr{1} = {sr0};
+    for i = 1:nsubgroups
+        sr0(srnext).type = '.';
+        sr0(srnext).subs = 'Groups';
+        sr0(srnext+1).type = '()';
+        sr0(srnext+1).subs = {i};
+        [d{i+1},sr{i+1}] = domains(group.Groups(i),sr0);
+    end
+    d = cat(1,d{:});
+    sr = cat(1,sr{:});
+else
+    sr{1} = sr0;
+end

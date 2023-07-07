@@ -1,0 +1,82 @@
+h2 {
+    border: thick none #e0e0ff;
+    background-color: #e0e0ff;
+    text-align: center;
+}
+h3 {
+    background-color: #e0e0ff;
+    text-align: left;
+}
+h4 {
+    background-color: #e0e0ff;
+    text-align: left;
+}
+pre {
+    border: medium ridge #f0f0ff;
+    background-color: #f0f0ff;
+}
+ul {
+    border: medium ridge #e0e0ff;
+}
+hr {
+    width: 80%; height: 2px;
+}
+img.photo {
+    border: 8px double grey;
+}
+body.fortran_corner {
+    background: url(fortran_corner.png) repeat;
+}
+html {
+    font-family: verdana,arial,helvetica,sans-serif;
+    font-size: 14px;
+    padding: 0px; margin: 0px; border: 0px;
+}
+div.rl1 {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 800; height: 40px;
+}
+div.rl2 {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width:800;
+
+}
+#corner {
+    position: absolute;
+    top: 0px;
+    left: 13px;
+    width: 124px; height:100%;
+}
+#header {
+    position: absolute;
+    top: 0px;
+    left: 150px;
+    width: 650px;
+    height: 100%;
+    padding: 2px;
+    text-align: center; vertical-align: top;
+}
+#navbar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 2px;
+    width: 146px; height:100%;
+}
+#news {
+    font-size: 10px;
+}
+#content {
+    position:absolute;
+    top: 0px;
+    left: 150px;
+    padding: 2px;
+    width: 650px;
+    height: 100%;
+    vertical-align:top;
+    text-align: justify;
+}

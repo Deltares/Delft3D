@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -24,7 +24,7 @@
       subroutine polpart( pol_file, nrowsmax, xpol, ypol, nrows, lunpr   )
 
 !
-!     programmer : michel jeuken
+!     programmer : michelle jeuken
 !     function   : read a single polygon from a file
 !     date       : september 2013
 !
@@ -51,7 +51,7 @@
       integer(ip), parameter            :: max_len_blockname=4
       integer(ip), parameter            :: max_len_key=20
 
-      integer(ip)                       :: lun_pol=50
+      integer(ip)                       :: lun_pol
       integer(ip)                       :: ios, ncols
       integer(ip)                       :: i, len_file
 
@@ -66,7 +66,7 @@
 
       len_file          =  len_trim(pol_file)
 
-      open(lun_pol,file=pol_file,status='old',iostat=ios)
+      open(newunit=lun_pol,file=pol_file,status='old',iostat=ios)
       if (ios /= 0) go to 900
 
       write(lunpr,*) ' '

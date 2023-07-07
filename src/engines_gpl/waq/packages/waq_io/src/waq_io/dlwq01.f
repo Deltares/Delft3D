@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,8 +22,8 @@
 !!  rights reserved.
 
       subroutine dlwq01 ( lun    , syname , nosys  , notot  , nomult ,
-     &                    multp  , iwidth , otime  , isfact , vrsion ,
-     &                    ioutpt , ierr   , iwar   )
+     &                    multp  , iwidth , otime  , isfact , refday ,
+     &                    vrsion , ioutpt , ierr   , iwar   )
 
 !       Deltares Software Centre
 
@@ -55,13 +55,16 @@
 !                           lun(29) = unit formatted output file
 !                           lun( 2) = unit system-intermediate file
 
+      use m_zoek
+      use m_srstop
+      use m_rdvers
+      use m_julian
       use rd_token     !   tokenized reading
+      use dlwq0t_data
       use timers       !   performance timers
+      use computeRefday
+
       implicit none
-
-!       Functions called  :
-
-      double precision julian  ! makes Julian date from calendar dates, returns the Julian date
 
 !     Parameters
 
@@ -76,6 +79,7 @@
       integer  ( 4), intent(  out) :: iwidth            !< width of the output file
       real     ( 8), intent(  out) :: otime             !< Offset of the system time (Julian)
       integer  ( 4), intent(  out) :: isfact            !< Units (in sec) of the system clock
+      integer  ( 4), intent(  out) :: refday            !< reference day, varying from 1 till 365
       real     ( 4), intent(  out) :: vrsion            !< version number of this input
       integer  ( 4), intent(  out) :: ioutpt            !< flag for more or less output
       integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
@@ -83,27 +87,27 @@
 
 !     Local
 
-      integer  ( 4)   itype                             !  input type  0 = any, 1 = char, 2 = int, 3 = float
-      integer  ( 4)   ierr2                             !  local error   accumulator
-      integer  ( 4)   iwar2                             !  local warning accumulator
-      character(40)   modid1, modid2,  runid1, runid2   !  model identification strings
-      integer  ( 4)   idummy                            !  integer   read help variable
-      real     ( 4)   adummy                            !  real      read help variable
-      character(255)  cdummy                            !  character read help variable
-      integer  ( 4)   isys, isys2                       !  loop counters for substances
-      logical         intread                           !  flag for read of substance numbers
-      integer  ( 4)   ilen                              !  length help variable
-      integer  ( 4)   idate                             !  date of the time offset
-      integer  ( 4)   itime                             !  time of the time offset
-      integer  ( 4)   iyear                             !  year of the time offset
-      integer  ( 4)   imonth                            !  month of the time offset
-      integer  ( 4)   iday                              !  day of the time offset
-      integer  ( 4)   ihour                             !  hour of the time offset
-      integer  ( 4)   iminut                            !  minute of the time offset
-      integer  ( 4)   isecnd                            !  second of the time offset
-      integer  ( 4)   ifound                            !  help variable for name search
-      integer  ( 4)   nosyss                            !  help variable for transported substance
-      integer  ( 4)   notots                            !  help variable for total substance
+      integer  ( 4)   :: itype                             !  input type  0 = any, 1 = char, 2 = int, 3 = float
+      integer  ( 4)   :: ierr2                             !  local error   accumulator
+      integer  ( 4)   :: iwar2                             !  local warning accumulator
+      character(40)   :: modid1, modid2,  runid1, runid2   !  model identification strings
+      integer  ( 4)   :: idummy                            !  integer   read help variable
+      real     ( 4)   :: adummy                            !  real      read help variable
+      character(255)  :: cdummy                            !  character read help variable
+      integer  ( 4)   :: isys, isys2                       !  loop counters for substances
+      logical         :: intread                           !  flag for read of substance numbers
+      integer  ( 4)   :: ilen                              !  length help variable
+      integer  ( 4)   :: idate                             !  date of the time offset
+      integer  ( 4)   :: itime                             !  time of the time offset
+      integer  ( 4)   :: iyear                             !  year of the time offset
+      integer  ( 4)   :: imonth                            !  month of the time offset
+      integer  ( 4)   :: iday                              !  day of the time offset
+      integer  ( 4)   :: ihour                             !  hour of the time offset
+      integer  ( 4)   :: iminut                            !  minute of the time offset
+      integer  ( 4)   :: isecnd                            !  second of the time offset
+      integer  ( 4)   :: ifound                            !  help variable for name search
+      integer  ( 4)   :: nosyss                            !  help variable for transported substance
+      integer  ( 4)   :: notots                            !  help variable for total substance
       integer  ( 4), allocatable :: imult(:)            !  help array for number of substances
       character(20), allocatable :: sname(:)            !  help array for substance names
       integer(4) :: ithndl = 0
@@ -175,6 +179,13 @@
             write ( lunut  , 2060 ) -isfact
          endif
       endif
+
+!     Compute refday
+      call compute_refday(iyear, imonth, iday, refday)
+
+!     Copy timers data to dlwqt0_data
+      dlwq0t_otime  = otime 
+      dlwq0t_isfact = isfact  
 
 !     Read number of transported and number of passive systems
 

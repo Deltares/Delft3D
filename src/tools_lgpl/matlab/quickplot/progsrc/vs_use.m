@@ -16,7 +16,7 @@ function VSout=vs_use(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -92,6 +92,14 @@ vs_debug=0;
 for i=1:length(INP)
    if isequal(INP{i},'debug')
       vs_debug=1;
+      INP(i)=[];
+      break
+   end
+end
+without_def=0;
+for i=1:length(INP)
+   if isequal(INP{i},'nodef')
+      without_def=1;
       INP(i)=[];
       break
    end
@@ -223,7 +231,7 @@ end
 
 if ~exist(data_file,'file')
    error('Required data file does not exist. Check name:\n%s',data_file)
-elseif ~exist(def_file,'file')
+elseif ~exist(def_file,'file') && ~without_def
    error('Required definition file does not exist. Check name:\n%s',def_file)
 end
 
@@ -383,502 +391,533 @@ try
          end
       end
       if VS.GrpDat(i).VarDim
-         CellSize=fread(fidat,1,AddressType); % Size of cell
+         DataSize=fread(fidat,1,AddressType); % Size of cell
       else
-         CellSize=Size-392-3*AddressBytes;
+         DataSize=Size-392-3*AddressBytes;
       end
+      VS.GrpDat(i).DataSize = DataSize;
       if vs_debug
-         fprintf(vs_debug,'Cell size            : %i bytes\n',CellSize);
+         fprintf(vs_debug,'Size data block      : %u bytes\n',DataSize);
          fprintf(vs_debug,'\n');
       end
    end
    
-   % =====================================================
-   % Read the def file
-   % =====================================================
-   % Format of definition file:
-   %
-   % header string: NEFIS HP-UX Versie 1.00 DEFN FILE
-   % file size
-   % ELEMENT hash table
-   % CELL hash table
-   % GROUP hash table
-   % definitions
-   
-   if onefile
-      fidef=fidat;
+   if without_def
+       % definition file shouldn't be read (most likely because it doesn't
+       % exist) as per request of the caller
+       if vs_debug
+           fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
+           fprintf(vs_debug,'"nodef" specified. Skip reading the definition file ...\n');
+           fprintf(vs_debug,'-------------------------------------------------------\n');
+       end
    else
-      fidef=fopen(def_file,'r',Format);
-      if vs_debug
-         fprintf(vs_debug,'\n\nData file      : %s.\n',data_file);
-         fprintf(vs_debug,'Definition file: %s.\n',def_file);
-         fprintf(vs_debug,'Definition file opened using filehandle: %i.\n\n',fidef);
-      end
-      Header=char(fread(fidef,[1 60],'uchar'));         % NEFIS DEFINITION FILE HEADER
-      Lfile=fread(fidef,1,AddressType);                 % Length of NEFIS definition file
-      if vs_debug
-         fprintf(vs_debug,'File header:\n%s\n',deblank(Header(1:(end-1))));
-         fprintf(vs_debug,'Neutral file format indicator: %s.\n',Header(end));
-         fprintf(vs_debug,'File length indicated: %u bytes\n',Lfile);
-      end
-   end
-   
-   % -----------------------------------------------------
-   % Read the def file: GROUP definition
-   % -----------------------------------------------------
-   loc = HeaderLength+2*AddressBytes*997;
-   if vs_debug
-      fprintf(vs_debug,'Jumping to address: %u.\n',loc);
-   end
-   % Skip ELEMENT and CELL hash tables
-   if fseek(fidef,loc,-1)<0
-      error('Out-of-file while jumping to GROUP DEFINITION hash table.')
-   end
-   if vs_debug
-      fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
-      fprintf(vs_debug,'Reading group definition hash table ...\n');
-      fprintf(vs_debug,'-------------------------------------------------------\n');
-   end
-   [NonEmptyBuck,Success,NFail]=ReadHashTableGetNonEmptyBuckets(fidef,AddressType,vs_debug);
-   if ~Success & isempty(NonEmptyBuck) & NFail>0
-      error(' ');
-   end
-   NonEmptyBuck=sort(NonEmptyBuck(:));              % Sort offsets
-   
-   % Link    : AddressType : Offset of next record in same BUCKET
-   % Size    : AddressType : Size of GROUP definition record in definition file
-   % RecType : AddressBytes char      : Record type '   3'
-   % DefName : 16 char     : Group definition name
-   % CelName : 16 char     : Cell name
-   % NDim    : uint32      : Number of dimensions <= 5
-   % SizeDim : 5 uint32    : Dimension sizes (SizeDim==0 for var. dim.)
-   % OrderDim: 5 uint32    : Order of the dimensions on disk
-   
-   for i=1:length(NonEmptyBuck)
-      if showwaitbar
-         waitbar(0.3+(i/length(NonEmptyBuck))*0.2);
-      end
-      if vs_debug
-         fprintf(vs_debug,'Jumping to group definition record %i at %u ...\n',i,NonEmptyBuck(i));
-      end
-      fseek(fidef,NonEmptyBuck(i),-1);                % Go to GROUP definition record i
-      VS.GrpDef(i).Offset=NonEmptyBuck(i);            % Offset of the GROUP definition record on definition file
-      Link=fread(fidef,[1 1],AddressType);            % Offset of next record in same BUCKET, unsigned address
-      Size=fread(fidef,[1 1],AddressType);            % Size of current record
-      Code=fread(fidef,[1 AddressBytes],'uchar');     % Code of current record (should be '   3')
-      VS.GrpDef(i).Name=deblank(char(fread(fidef,[1 16],'uchar')));
-      % Group definition name
-      VS.GrpDef(i).CelName=deblank(char(fread(fidef,[1 16],'uchar')));
-      % Associated cell name
-      VS.GrpDef(i).CelIndex=0;
-      if vs_debug
-         fprintf(vs_debug,'Record size          : %i\n',Size);
-         fprintf(vs_debug,'Record code          : ''%s''\n',char(Code));
-         fprintf(vs_debug,'Group definition name: %s\n',VS.GrpDef(i).Name);
-         fprintf(vs_debug,'Cell name            : %s\n',VS.GrpDef(i).CelName);
-      end
-      Dimens=fread(fidef,[1 11],'uint32');           % Number of dimensions, dimension sizes and order of the
-      % dimensions on disc
-      NDim=Dimens(1);                                % Number of dimensions
-      vdim=find(Dimens(1+(1:NDim))==0);
-      if vs_debug
-         fprintf(vs_debug,'Number of dimensions : %i\n',NDim);
-      end
-      if NDim==0 % If number of dimensions is zero change it to one.
-         NDim=1;
-         Dimens(1)=1;
-         if vs_debug
-            fprintf(vs_debug,'Corrected number of dimensions: %i\n',NDim);
-         end
-      end
-      VS.GrpDef(i).SizeDim=Dimens(2:(1+NDim));       % Dimension sizes
-      VS.GrpDef(i).OrderDim=Dimens(7:(6+NDim));      % Order of the dimensions on disk
-      
-      j=1;
-      Found=0;
-      while j<=length(VS.GrpDat) % Match GROUP definition name to stored info
-         if strcmp(VS.GrpDat(j).DefName,VS.GrpDef(i).Name)
-            VS.GrpDat(j).DefIndex=i;
-            VS.GrpDat(j).SizeDim=Dimens(2:(1+NDim));   % Dimension sizes
-            VS.GrpDat(j).OrderDim=Dimens(7:(6+NDim));  % Order of the dimensions on disk
-            
-            if ~isempty(vdim) % Check for variable dimension
-               % Variable dimension(s) found
-               if ~VS.GrpDat(j).VarDim
-                  % Variable dimension(s) found, but not specified in data file.
-                  if vs_debug
-                     fprintf(vs_debug,'WARNING: The group has a dimension of zero size.\n');
-                     fprintf(vs_debug,'\n');
-                  end
-                  fprintf(1,'WARNING:\nGROUP ''%s'' has a dimension of zero size.\n',VS.GrpDef(i).Name);
-               elseif ~isequal(size(vdim),[1 1])
-                  % More than one variable dimension.
-                  if vs_debug
-                     fprintf(vs_debug,'WARNING: The group has more than one variable dimension.\n');
-                     fprintf(vs_debug,'\n');
-                  end
-                  fprintf(1,'WARNING:\nGROUP ''%s'' has more than one variable dimension.\n',VS.GrpDef(i).Name);
-                  VS.GrpDat(j).VarDim=-1;
-               else
-                  % One variable dimension
-                  VS.GrpDat(j).VarDim=vdim;              % store index of variable dimension
-                  if vs_debug
-                     if onefile
-                        fprintf(vs_debug,'Scanning file to determine, size of dimension %i ...\n',vdim);
-                     else
-                        fprintf(vs_debug,'Scanning data file to determine, size of dimension %i ...\n',vdim);
-                     end
-                  end
-                  %
-                  % Determine variable dimension size by scanning the
-                  % pointer list in the data file. The pointer list starts
-                  % immediately after the data group record (type '  5').
-                  % The length of the data group is 392+4*AddressBytes.
-                  %
-                  dim=0;
-                  loc = VS.GrpDat(j).Offset+392+4*AddressBytes;
-                  fseek(fidat,loc,-1);
-                  if vs_debug
-                     fprintf(vs_debug,'Jumping to start of table 1 at %u ...\n',loc);
-                  end
-                  NByte=3;
-                  switch AddressType
-                     case 'uint32'
-                        Nil=2^32-1;
-                     case 'uint64'
-                        Nil=2^64-1;
-                  end
-                  while NByte>=0
-                     PointerList=fread(fidat,[1 256],AddressType);
-                     k=max(find(PointerList~=Nil));
-                     if vs_debug
-                        fprintf(vs_debug,'Byte %i (link=1,no link=0):\n',NByte+1);
-                        fprintf(vs_debug,[repmat(' %1i',[1 32]) '\n'],PointerList~=Nil);
-                        if isempty(k)
-                           fprintf(vs_debug,' => no reference.\n');
-                        else
-                           fprintf(vs_debug,' => max Byte %i = %i: offset = %1.0f.\n',NByte+1,k-1,PointerList(k));
-                        end
-                     end
-                     %fprintf(1,'NB=%i k=%i %s\n',[NByte,k],VS.GrpDat(j).Name);
-                     if isempty(k)
-                        break
-                     end
-                     if NByte>0
-                        dim=dim+(k-1)*256^NByte;
-                        fseek(fidat,PointerList(k),-1);
-                     else % NByte==0 % PointerList(1)==Nil, First Offset=...(2), Second Offset=...(3)
-                        dim=dim+k-1;
-                     end
-                     NByte=NByte-1;
-                  end
-                  VS.GrpDat(j).SizeDim(vdim)=dim;
-                  Dimens(1+vdim)=dim;
-               end
-            else
-               if VS.GrpDat(j).VarDim
-                  % No variable dimension(s) found, but specified in data file.
-                  if vs_debug
-                     fprintf(vs_debug,'WARNING: Variable dimension of GROUP ''%s'' not found.\n',VS.GrpDef(i).Name);
-                     fprintf(vs_debug,'\n');
-                  end
-                  fprintf(1,'WARNING:\nVariable dimension of GROUP ''%s'' not found.\n',VS.GrpDef(i).Name);
-                  VS.GrpDat(j).VarDim=-1;
-               end
-            end
-            if vs_debug
-               fprintf(vs_debug,'Dimensions           : [');
-               fprintf(vs_debug,' %i',Dimens(1+(1:NDim)));
-               fprintf(vs_debug,' ]');
-               fprintf(vs_debug,' %i',Dimens(1+((NDim+1):5)));
-               fprintf(vs_debug,'\nStored order         : [');
-               fprintf(vs_debug,' %i',Dimens(6+(1:NDim)));
-               fprintf(vs_debug,' ]');
-               fprintf(vs_debug,' %i',Dimens(6+((NDim+1):5)));
-               fprintf(vs_debug,'\n');
-            end
-            Found=1;
-         end
-         j=j+1;
-      end
-      if ~Found
-         if vs_debug
-            fprintf(vs_debug,'WARNING: This group definition name does not correspond to any data group.\n');
-            fprintf(vs_debug,'\n');
-         end
-         fprintf(1,'WARNING:\nGROUP definition name ''%s'' does not correspond to any GROUP.\n',VS.GrpDef(i).Name);
-      end
-      if vs_debug
-         fprintf(vs_debug,'\n');
-      end
-   end
-   
-   for i=1:length(VS.GrpDat)
-      if ~isfield(VS.GrpDat(i),'DefIndex')
-         if vs_debug
-            fprintf(vs_debug,'WARNING: The group %s is not defined.\n',VS.GrpDat(i).Name);
-            fprintf(vs_debug,'\n');
-         end
-         fprintf(1,'WARNING:\nGROUP ''%s'' not defined.\n',VS.GrpDat(i).Name);
-      end
-   end
-   
-   % -----------------------------------------------------
-   % Read the def file: CELL definition
-   % -----------------------------------------------------
-   loc = HeaderLength + AddressBytes*997;
-   if vs_debug
-      fprintf(vs_debug,'Jumping to address: %u.\n',loc);
-   end
-   % Skip ELEMENT hash table
-   if fseek(fidef,loc,-1)<0
-      error('Out-of-file while jumping to CELL DEFINITION hash table.')
-   end
-   if vs_debug
-      fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
-      fprintf(vs_debug,'Reading cell definition hash table ...\n');
-      fprintf(vs_debug,'-------------------------------------------------------\n');
-   end
-   [NonEmptyBuck,Success,NFail]=ReadHashTableGetNonEmptyBuckets(fidef,AddressType,vs_debug);
-   if ~Success & isempty(NonEmptyBuck) & NFail>0
-      error(' ');
-   end
-   NonEmptyBuck=sort(NonEmptyBuck(:));                 % Sort offsets
-   
-   % Link    : AddressType : Offset of next record in same BUCKET
-   % Size    : AddressType : Size of CELL record in definition file
-   % RecType : AddressBytes char      : Record type '   2'
-   % CelName : 16 char     : Cell name
-   % CellSize: AddressType : Cell Size
-   % NumElm  : uint32      : Number of ELEMENTs per CELL
-   % Elements: NumElm*16 char : Element names
-   
-   TotalNumElm=0;                                   % Total number of elements counter to zero
-   for i=1:length(NonEmptyBuck)
-      if showwaitbar
-         waitbar(0.6+i/length(NonEmptyBuck)*0.05);
-      end
-      if vs_debug
-         fprintf(vs_debug,'Jumping to cell definition record %i at %i ...\n',i,NonEmptyBuck(i));
-      end
-      fseek(fidef,NonEmptyBuck(i),-1);                % Go to CELL definition record i
-      Link=fread(fidef,[1 1],AddressType);            % Offset of next record in same BUCKET, unsigned address
-      Size=fread(fidef,[1 1],AddressType);            % Size of current record (variable)
-      Code=fread(fidef,[1 AddressBytes],'uchar');     % Code of current record (should be '   2')
-      VS.CelDef(i).Offset=NonEmptyBuck(i);
-      VS.CelDef(i).Name=deblank(char(fread(fidef,[1 16],'uchar')));
-      % Read CELL name
-      CellSize=fread(fidef,[1 1],AddressType);       % Size of data per CELL
-      NumElm=fread(fidef,[1 1],'uint32');            % Number of ELEMENTs per CELL
-      VS.CelDef(i).Elm=zeros(1,NumElm);
-      if vs_debug
-         fprintf(vs_debug,'Record size       : %u bytes\n',Size);
-         fprintf(vs_debug,'Record code       : ''%s''\n',char(Code));
-         fprintf(vs_debug,'Cell name         : %s\n',VS.CelDef(i).Name);
-         fprintf(vs_debug,'Data size         : %u bytes\n',CellSize);
-         fprintf(vs_debug,'Number of elements: %i\n',NumElm);
-      end
-      
-      j=1;
-      Found=0;
-      while j<=length(VS.GrpDef) % Match CELL name to stored info
-         if strcmp(VS.GrpDef(j).CelName,VS.CelDef(i).Name)
-            VS.GrpDef(j).CelIndex=i;
-            TotalNumElm=TotalNumElm+NumElm;              % Increase total number of elements
-            Found=1;
-         end
-         j=j+1;
-      end
-      if ~Found
-         if vs_debug
-            fprintf(vs_debug,'WARNING: This cell is not used in any group definition.\n');
-            fprintf(vs_debug,'\n');
-         end
-         fprintf(1,'WARNING:\nCELL name ''%s'' does not correspond to any GROUP.\n',VS.CelDef(i).Name);
-      end
-      if vs_debug
-         fprintf(vs_debug,'\n');
-      end
-   end
-   for i=1:length(VS.GrpDef)
-      if ~isfield(VS.GrpDef(i),'CelIndex')
-         if vs_debug
-            fprintf(vs_debug,'WARNING: The cell ''%s'' not defined.\n',VS.GrpDef(i).CelName);
-            fprintf(vs_debug,'\n');
-         end
-         fprintf(1,'WARNING:\nCELL ''%s'' not defined.\n',VS.GrpDef(i).CelName);
-      end
-   end
-   if vs_debug
-      fprintf(vs_debug,'The data contains %i elements.\n',TotalNumElm);
-   end
-   
-   % -----------------------------------------------------
-   % Read the def file: ELEMENT definition
-   % -----------------------------------------------------
-   loc = HeaderLength;
-   if vs_debug
-      fprintf(vs_debug,'Jumping to address: %u.\n',loc);
-   end
-   % Skip header
-   if fseek(fidef,loc,-1)<0
-      error('Out-of-file while jumping to ELEMENT DEFINITION hash table.')
-   end
-   
-   if vs_debug
-      fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
-      fprintf(vs_debug,'Reading element definition hash table ...\n');
-      fprintf(vs_debug,'-------------------------------------------------------\n');
-   end
-   [NonEmptyBuck,Success,NFail]=ReadHashTableGetNonEmptyBuckets(fidef,AddressType,vs_debug);
-   if ~Success & isempty(NonEmptyBuck) & NFail>0
-      error(' ');
-   end
-   NonEmptyBuck=sort(NonEmptyBuck(:));              % Sort offsets
-   
-   % Link    : AddressType : Offset of next record in same BUCKET
-   % Size    : AddressType : Size of ELEMENT record in definition file
-   % RecType : AddressBytes char      : Record type '   1'
-   % Name    : 16 char     : Element name
-   % Type    : 8 char      : Element type
-   % ElmSize : AddressType : Size of element
-   % ValSize : uint32      : Size of single value
-   % Descript: 96 char     : Description
-   % NDim    : uint32      : Number of dimensions
-   % SizeDim : 5 uint32    : Dimension sizes
-   
-   for i=1:length(NonEmptyBuck)
-      if showwaitbar
-         waitbar(0.65+i/length(NonEmptyBuck)*0.2);
-      end
-      if vs_debug
-         fprintf(vs_debug,'Jumping to element definition record %u at %i ...\n',i,NonEmptyBuck(i));
-      end
-      fseek(fidef,NonEmptyBuck(i),-1);                % Go to ELEMENT definition record i
-      Link=fread(fidef,[1 1],AddressType);            % Offset of next record in same BUCKET, unsigned address
-      Size=fread(fidef,[1 1],AddressType);            % Size of current record
-      Code=fread(fidef,[1 AddressBytes],'uchar');     % Code of current record (should be '   1')
-      Name=deblank(char(fread(fidef,[1 16],'uchar')));% Read ELEMENT name
-      Type=char(fread(fidef,[1 8],'uchar'));          % Read variable type
-      if vs_debug
-         fprintf(vs_debug,'Record size         : %u bytes\n',Size);
-         fprintf(vs_debug,'Record code         : ''%s''\n',char(Code));
-         fprintf(vs_debug,'Element name        : %s\n',strrep(Name,char(0),' '));
-         fprintf(vs_debug,'Element type        : %s\n',Type);
-      end
-      switch Type
-         case 'CHARACTE'
-            Type=1;
-         case 'COMPLEX '
-            Type=2;
-         case 'INTEGER '
-            Type=3;
-         case 'LOGICAL '
-            Type=4;
-         case 'REAL    '
-            Type=5;
-         otherwise
-            if vs_debug
-               fprintf(vs_debug,'WARNING: Unsupported elemented type!\n');
-            end
-            fprintf(1,'WARNING:\nELEMENT ''%s'' is of unknown type: ''%s''.\n',Name,deblank(Type));
-      end
-      SizeElm=fread(fidef,[1 1],AddressType);         % Size of ELEMENT
-      SizeVal=fread(fidef,[1 1],'uint32');            % Size of single value
-      Descript=char(fread(fidef,[1 96],'uchar'));     % Quantity, unit and description of ELEMENT
-      Dimens=fread(fidef,[1 6],'uint32');             % Number of dimensions, dimension sizes
-      if vs_debug
-         fprintf(vs_debug,'Element size        : %u bytes\n',SizeElm);
-         fprintf(vs_debug,'Size of datatype    : %u bytes\n',SizeVal);
-         fprintf(vs_debug,'Element quantity    : ''%s''\n',Descript(1:16));
-         fprintf(vs_debug,'Element unit        : ''%s''\n',Descript(17:32));
-         fprintf(vs_debug,'Element description : ''%s''\n',Descript(33:96));
-         fprintf(vs_debug,'Number of dimensions: %i\n',Dimens(1));
-      end
-      if Dimens(1)==0
-         Dimens(1)=1;
-         if vs_debug
-            fprintf(vs_debug,'Corrected number of dimensions: %i\n',Dimens(1));
-         end
-      end % Change any zero dimension to one
-      if vs_debug
-         fprintf(vs_debug,'Dimensions:         : [');
-         fprintf(vs_debug,' %i',Dimens(2:(1+Dimens(1))));
-         fprintf(vs_debug,' ]');
-         fprintf(vs_debug,' %i',Dimens((1+Dimens(1)+1):6));
-         fprintf(vs_debug,'\n\n');
-      end
-      
-      VS.ElmDef(i).Offset=NonEmptyBuck(i);
-      VS.ElmDef(i).Name=Name;
-      VS.ElmDef(i).Type=Type;
-      VS.ElmDef(i).SizeVal=SizeVal;
-      VS.ElmDef(i).SizeElm=SizeElm;
-      VS.ElmDef(i).Quantity=deblank(Descript(1:16));
-      VS.ElmDef(i).Units=deblank(Descript(17:32));
-      VS.ElmDef(i).Description=deblank(Descript(33:96));
-      NDim=Dimens(1);
-      VS.ElmDef(i).Size=Dimens(2:(1+NDim));
-   end
-   
-   if vs_debug
-      fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
-      fprintf(vs_debug,'Reading elements from cell definition ...\n');
-      fprintf(vs_debug,'-------------------------------------------------------\n');
-   end
-   if isempty(VS.ElmDef)
-      ElmNames={};
-   else
-      ElmNames={VS.ElmDef(:).Name};
-   end
-   for i=1:length(VS.CelDef)
-      if showwaitbar
-         waitbar(0.85+i/length(VS.CelDef)*0.1);
-      end
-      %
-      % Element names are listed at the end of the cell definition records.
-      % The length of the bare cell definition record is 16+3*AddressBytes.
-      %
-      loc = VS.CelDef(i).Offset+20+4*AddressBytes;
-      fseek(fidef,loc,-1);
-      if vs_debug
-         fprintf(vs_debug,'Jumping to elements of cell %i (%s) at %u ...\n',i,VS.CelDef(i).Name,loc);
-      end
-      for k=1:length(VS.CelDef(i).Elm)
-         Name=deblank(char(fread(fidef,[1 16],'uchar'))); % Read ELEMENT name from CELL record
-         j=strmatch(Name,ElmNames,'exact');
-         if isempty(j)
-            if vs_debug
-               fprintf(vs_debug,'WARNING: The element ''%s'' is not defined.\n',Name);
-               fprintf(vs_debug,'\n');
-            end
-            fprintf(1,'WARNING:\nELEMENT ''%s'' is not defined.\n',Name);
-         else
-            if length(j)>1
+       % =====================================================
+       % Read the def file
+       % =====================================================
+       % Format of definition file:
+       %
+       % header string: NEFIS HP-UX Versie 1.00 DEFN FILE
+       % file size
+       % ELEMENT hash table
+       % CELL hash table
+       % GROUP hash table
+       % definitions
+       
+       if onefile
+           fidef=fidat;
+       else
+           fidef=fopen(def_file,'r',Format);
+           if vs_debug
+               fprintf(vs_debug,'\n\nData file      : %s.\n',data_file);
+               fprintf(vs_debug,'Definition file: %s.\n',def_file);
+               fprintf(vs_debug,'Definition file opened using filehandle: %i.\n\n',fidef);
+           end
+           Header=char(fread(fidef,[1 60],'uchar'));         % NEFIS DEFINITION FILE HEADER
+           Lfile=fread(fidef,1,AddressType);                 % Length of NEFIS definition file
+           if vs_debug
+               fprintf(vs_debug,'File header:\n%s\n',deblank(Header(1:(end-1))));
+               fprintf(vs_debug,'Neutral file format indicator: %s.\n',Header(end));
+               fprintf(vs_debug,'File length indicated: %u bytes\n',Lfile);
+           end
+       end
+       
+       % -----------------------------------------------------
+       % Read the def file: GROUP definition
+       % -----------------------------------------------------
+       loc = HeaderLength+2*AddressBytes*997;
+       if vs_debug
+           fprintf(vs_debug,'Jumping to address: %u.\n',loc);
+       end
+       % Skip ELEMENT and CELL hash tables
+       if fseek(fidef,loc,-1)<0
+           error('Out-of-file while jumping to GROUP DEFINITION hash table.')
+       end
+       if vs_debug
+           fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
+           fprintf(vs_debug,'Reading group definition hash table ...\n');
+           fprintf(vs_debug,'-------------------------------------------------------\n');
+       end
+       [NonEmptyBuck,Success,NFail]=ReadHashTableGetNonEmptyBuckets(fidef,AddressType,vs_debug);
+       if ~Success & isempty(NonEmptyBuck) & NFail>0
+           error(' ');
+       end
+       NonEmptyBuck=sort(NonEmptyBuck(:));              % Sort offsets
+       
+       % Link    : AddressType : Offset of next record in same BUCKET
+       % Size    : AddressType : Size of GROUP definition record in definition file
+       % RecType : AddressBytes char      : Record type '   3'
+       % DefName : 16 char     : Group definition name
+       % CelName : 16 char     : Cell name
+       % NDim    : uint32      : Number of dimensions <= 5
+       % SizeDim : 5 uint32    : Dimension sizes (SizeDim==0 for var. dim.)
+       % OrderDim: 5 uint32    : Order of the dimensions on disk
+       
+       for i=1:length(NonEmptyBuck)
+           if showwaitbar
+               waitbar(0.3+(i/length(NonEmptyBuck))*0.2);
+           end
+           if vs_debug
+               fprintf(vs_debug,'Jumping to group definition record %i at %u ...\n',i,NonEmptyBuck(i));
+           end
+           fseek(fidef,NonEmptyBuck(i),-1);                % Go to GROUP definition record i
+           VS.GrpDef(i).Offset=NonEmptyBuck(i);            % Offset of the GROUP definition record on definition file
+           Link=fread(fidef,[1 1],AddressType);            % Offset of next record in same BUCKET, unsigned address
+           Size=fread(fidef,[1 1],AddressType);            % Size of current record
+           Code=fread(fidef,[1 AddressBytes],'uchar');     % Code of current record (should be '   3')
+           VS.GrpDef(i).Name=deblank(char(fread(fidef,[1 16],'uchar')));
+           % Group definition name
+           VS.GrpDef(i).CelName=deblank(char(fread(fidef,[1 16],'uchar')));
+           % Associated cell name
+           VS.GrpDef(i).CelIndex=0;
+           if vs_debug
+               fprintf(vs_debug,'Record size          : %i\n',Size);
+               fprintf(vs_debug,'Record code          : ''%s''\n',char(Code));
+               fprintf(vs_debug,'Group definition name: %s\n',VS.GrpDef(i).Name);
+               fprintf(vs_debug,'Cell name            : %s\n',VS.GrpDef(i).CelName);
+           end
+           Dimens=fread(fidef,[1 11],'uint32');           % Number of dimensions, dimension sizes and order of the
+           % dimensions on disc
+           NDim=Dimens(1);                                % Number of dimensions
+           vdim=find(Dimens(1+(1:NDim))==0);
+           if vs_debug
+               fprintf(vs_debug,'Number of dimensions : %i\n',NDim);
+           end
+           if NDim==0 % If number of dimensions is zero change it to one.
+               NDim=1;
+               Dimens(1)=1;
                if vs_debug
-                  fprintf(vs_debug,'WARNING: Multiple definitions of ELEMENT ''%s''.\n',Name);
+                   fprintf(vs_debug,'Corrected number of dimensions: %i\n',NDim);
                end
-               fprintf(1,'WARNING:\nMultiple definitions of ELEMENT ''%s''.\n',Name);
-               j=j(1);
-            end
-            VS.CelDef(i).Elm(k)=j;
-            kf = VS.CelDef(i).Elm(1:k-1)==VS.CelDef(i).Elm(k);
-            if any(kf)
-                kf = find(kf);
-                duplicate = sprintf(' WARNING: this element duplicates element %i of this cell.',kf(1));
-                fprintf(1,'WARNING:\nElement ''%s'' duplicated in cell ''%s''.\n',Name,VS.CelDef(i).Name);
-            else
-                duplicate = '';
-            end
-            if vs_debug
-               fprintf(vs_debug,'Element %2i: %3i (%s)%s\n',k,j,Name,duplicate);
-            end
-         end
-      end
-   end
-   
-   if ~onefile
-      fclose(fidef);
+           end
+           VS.GrpDef(i).SizeDim=Dimens(2:(1+NDim));       % Dimension sizes
+           VS.GrpDef(i).OrderDim=Dimens(7:(6+NDim));      % Order of the dimensions on disk
+           
+           j=1;
+           Found=0;
+           while j<=length(VS.GrpDat) % Match GROUP definition name to stored info
+               if strcmp(VS.GrpDat(j).DefName,VS.GrpDef(i).Name)
+                   VS.GrpDat(j).DefIndex=i;
+                   VS.GrpDat(j).SizeDim=Dimens(2:(1+NDim));   % Dimension sizes
+                   VS.GrpDat(j).OrderDim=Dimens(7:(6+NDim));  % Order of the dimensions on disk
+                   
+                   if ~isempty(vdim) % Check for variable dimension
+                       % Variable dimension(s) found
+                       if ~VS.GrpDat(j).VarDim
+                           % Variable dimension(s) found, but not specified in data file.
+                           if vs_debug
+                               fprintf(vs_debug,'WARNING: The group has a dimension of zero size.\n');
+                               fprintf(vs_debug,'\n');
+                           end
+                           fprintf(1,'WARNING:\nGROUP ''%s'' has a dimension of zero size.\n',VS.GrpDef(i).Name);
+                       elseif ~isequal(size(vdim),[1 1])
+                           % More than one variable dimension.
+                           if vs_debug
+                               fprintf(vs_debug,'WARNING: The group has more than one variable dimension.\n');
+                               fprintf(vs_debug,'\n');
+                           end
+                           fprintf(1,'WARNING:\nGROUP ''%s'' has more than one variable dimension.\n',VS.GrpDef(i).Name);
+                           VS.GrpDat(j).VarDim=-1;
+                       else
+                           % One variable dimension
+                           VS.GrpDat(j).VarDim=vdim;              % store index of variable dimension
+                           if vs_debug
+                               if onefile
+                                   fprintf(vs_debug,'Scanning file to determine, size of dimension %i ...\n',vdim);
+                               else
+                                   fprintf(vs_debug,'Scanning data file to determine, size of dimension %i ...\n',vdim);
+                               end
+                           end
+                           %
+                           % Determine variable dimension size by scanning the
+                           % pointer list in the data file. The pointer list starts
+                           % immediately after the data group record (type '  5').
+                           % The length of the data group is 392+4*AddressBytes.
+                           %
+                           dim=0;
+                           loc = VS.GrpDat(j).Offset+392+4*AddressBytes;
+                           fseek(fidat,loc,-1);
+                           if vs_debug
+                               fprintf(vs_debug,'Jumping to start of table 1 at %u ...\n',loc);
+                           end
+                           NByte=3;
+                           switch AddressType
+                               case 'uint32'
+                                   Nil=2^32-1;
+                               case 'uint64'
+                                   Nil=2^64-1;
+                           end
+                           while NByte>=0
+                               PointerList=fread(fidat,[1 256],AddressType);
+                               k=max(find(PointerList~=Nil));
+                               if vs_debug
+                                   fprintf(vs_debug,'Byte %i (link=1,no link=0):\n',NByte+1);
+                                   fprintf(vs_debug,[repmat(' %1i',[1 32]) '\n'],PointerList~=Nil);
+                                   if isempty(k)
+                                       fprintf(vs_debug,' => no reference.\n');
+                                   else
+                                       fprintf(vs_debug,' => max Byte %i = %i: offset = %1.0f.\n',NByte+1,k-1,PointerList(k));
+                                   end
+                               end
+                               %fprintf(1,'NB=%i k=%i %s\n',[NByte,k],VS.GrpDat(j).Name);
+                               if isempty(k)
+                                   break
+                               end
+                               if NByte>0
+                                   dim=dim+(k-1)*256^NByte;
+                                   fseek(fidat,PointerList(k),-1);
+                               else % NByte==0 % PointerList(1)==Nil, First Offset=...(2), Second Offset=...(3)
+                                   dim=dim+k-1;
+                               end
+                               NByte=NByte-1;
+                           end
+                           VS.GrpDat(j).SizeDim(vdim)=dim;
+                           Dimens(1+vdim)=dim;
+                       end
+                   else
+                       if VS.GrpDat(j).VarDim
+                           % No variable dimension(s) found, but specified in data file.
+                           if vs_debug
+                               fprintf(vs_debug,'WARNING: Variable dimension of GROUP ''%s'' not found.\n',VS.GrpDef(i).Name);
+                               fprintf(vs_debug,'\n');
+                           end
+                           fprintf(1,'WARNING:\nVariable dimension of GROUP ''%s'' not found.\n',VS.GrpDef(i).Name);
+                           VS.GrpDat(j).VarDim=-1;
+                       end
+                   end
+                   if vs_debug
+                       fprintf(vs_debug,'Dimensions           : [');
+                       fprintf(vs_debug,' %i',Dimens(1+(1:NDim)));
+                       fprintf(vs_debug,' ]');
+                       fprintf(vs_debug,' %i',Dimens(1+((NDim+1):5)));
+                       fprintf(vs_debug,'\nStored order         : [');
+                       fprintf(vs_debug,' %i',Dimens(6+(1:NDim)));
+                       fprintf(vs_debug,' ]');
+                       fprintf(vs_debug,' %i',Dimens(6+((NDim+1):5)));
+                       fprintf(vs_debug,'\n');
+                   end
+                   Found=1;
+               end
+               j=j+1;
+           end
+           if ~Found
+               if vs_debug
+                   fprintf(vs_debug,'WARNING: This group definition name does not correspond to any data group.\n');
+                   fprintf(vs_debug,'\n');
+               end
+               fprintf(1,'WARNING:\nGROUP definition name ''%s'' does not correspond to any GROUP.\n',VS.GrpDef(i).Name);
+           end
+           if vs_debug
+               fprintf(vs_debug,'\n');
+           end
+       end
+       
+       for i=1:length(VS.GrpDat)
+           if ~isfield(VS.GrpDat(i),'DefIndex')
+               if vs_debug
+                   fprintf(vs_debug,'WARNING: The group %s is not defined.\n',VS.GrpDat(i).Name);
+                   fprintf(vs_debug,'\n');
+               end
+               fprintf(1,'WARNING:\nGROUP ''%s'' not defined.\n',VS.GrpDat(i).Name);
+           end
+       end
+       
+       % -----------------------------------------------------
+       % Read the def file: CELL definition
+       % -----------------------------------------------------
+       loc = HeaderLength + AddressBytes*997;
+       if vs_debug
+           fprintf(vs_debug,'Jumping to address: %u.\n',loc);
+       end
+       % Skip ELEMENT hash table
+       if fseek(fidef,loc,-1)<0
+           error('Out-of-file while jumping to CELL DEFINITION hash table.')
+       end
+       if vs_debug
+           fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
+           fprintf(vs_debug,'Reading cell definition hash table ...\n');
+           fprintf(vs_debug,'-------------------------------------------------------\n');
+       end
+       [NonEmptyBuck,Success,NFail]=ReadHashTableGetNonEmptyBuckets(fidef,AddressType,vs_debug);
+       if ~Success & isempty(NonEmptyBuck) & NFail>0
+           error(' ');
+       end
+       NonEmptyBuck=sort(NonEmptyBuck(:));                 % Sort offsets
+       
+       % Link    : AddressType : Offset of next record in same BUCKET
+       % Size    : AddressType : Size of CELL record in definition file
+       % RecType : AddressBytes char      : Record type '   2'
+       % CelName : 16 char     : Cell name
+       % CellSize: AddressType : Cell Size
+       % NumElm  : uint32      : Number of ELEMENTs per CELL
+       % Elements: NumElm*16 char : Element names
+       
+       TotalNumElm=0;                                   % Total number of elements counter to zero
+       for i=1:length(NonEmptyBuck)
+           if showwaitbar
+               waitbar(0.6+i/length(NonEmptyBuck)*0.05);
+           end
+           if vs_debug
+               fprintf(vs_debug,'Jumping to cell definition record %i at %i ...\n',i,NonEmptyBuck(i));
+           end
+           fseek(fidef,NonEmptyBuck(i),-1);                % Go to CELL definition record i
+           Link=fread(fidef,[1 1],AddressType);            % Offset of next record in same BUCKET, unsigned address
+           Size=fread(fidef,[1 1],AddressType);            % Size of current record (variable)
+           Code=fread(fidef,[1 AddressBytes],'uchar');     % Code of current record (should be '   2')
+           VS.CelDef(i).Offset=NonEmptyBuck(i);
+           VS.CelDef(i).Name=deblank(char(fread(fidef,[1 16],'uchar')));
+           % Read CELL name
+           CellSize=fread(fidef,[1 1],AddressType);       % Size of data per CELL
+           VS.CelDef(i).CellSize = CellSize;
+           NumElm=fread(fidef,[1 1],'uint32');            % Number of ELEMENTs per CELL
+           VS.CelDef(i).Elm=zeros(1,NumElm);
+           if vs_debug
+               fprintf(vs_debug,'Record size       : %u bytes\n',Size);
+               fprintf(vs_debug,'Record code       : ''%s''\n',char(Code));
+               fprintf(vs_debug,'Cell name         : %s\n',VS.CelDef(i).Name);
+               fprintf(vs_debug,'Number of elements: %i\n',NumElm);
+               fprintf(vs_debug,'Size data block   : %u bytes\n',CellSize);
+               for igdf = 1:length(VS.GrpDef)
+                   if strcmp(VS.GrpDef(igdf).CelName, VS.CelDef(i).Name)
+                       for igd = 1:length(VS.GrpDat)
+                           if strcmp(VS.GrpDat(igd).DefName, VS.GrpDef(igdf).Name)
+                               DataSize = VS.GrpDat(igd).DataSize;
+                               fprintf(vs_debug,'- Data group %s size: %u bytes ', VS.GrpDat(igd).Name, DataSize);
+                               if DataSize == CellSize
+                                   fprintf(vs_debug,'(match)\n');
+                               elseif DataSize == 4*ceil(CellSize/4)
+                                   fprintf(vs_debug,'(matching: buffered to multiple of 4 bytes)\n');
+                               elseif DataSize > CellSize
+                                   fprintf(vs_debug,'(WARNING: more data than cell defines)\n');
+                               else
+                                   fprintf(vs_debug,'(WARNING: less data than cell defines)\n');
+                               end
+                           end
+                       end
+                   end
+               end
+           end
+           
+           j=1;
+           Found=0;
+           while j<=length(VS.GrpDef) % Match CELL name to stored info
+               if strcmp(VS.GrpDef(j).CelName,VS.CelDef(i).Name)
+                   VS.GrpDef(j).CelIndex=i;
+                   TotalNumElm=TotalNumElm+NumElm;              % Increase total number of elements
+                   Found=1;
+               end
+               j=j+1;
+           end
+           if ~Found
+               if vs_debug
+                   fprintf(vs_debug,'WARNING: This cell is not used in any group definition.\n');
+                   fprintf(vs_debug,'\n');
+               end
+               fprintf(1,'WARNING:\nCELL name ''%s'' does not correspond to any GROUP.\n',VS.CelDef(i).Name);
+           end
+           if vs_debug
+               fprintf(vs_debug,'\n');
+           end
+       end
+       for i=1:length(VS.GrpDef)
+           if ~isfield(VS.GrpDef(i),'CelIndex')
+               if vs_debug
+                   fprintf(vs_debug,'WARNING: The cell ''%s'' not defined.\n',VS.GrpDef(i).CelName);
+                   fprintf(vs_debug,'\n');
+               end
+               fprintf(1,'WARNING:\nCELL ''%s'' not defined.\n',VS.GrpDef(i).CelName);
+           end
+       end
+       if vs_debug
+           fprintf(vs_debug,'The data contains %i elements.\n',TotalNumElm);
+       end
+       
+       % -----------------------------------------------------
+       % Read the def file: ELEMENT definition
+       % -----------------------------------------------------
+       loc = HeaderLength;
+       if vs_debug
+           fprintf(vs_debug,'Jumping to address: %u.\n',loc);
+       end
+       % Skip header
+       if fseek(fidef,loc,-1)<0
+           error('Out-of-file while jumping to ELEMENT DEFINITION hash table.')
+       end
+       
+       if vs_debug
+           fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
+           fprintf(vs_debug,'Reading element definition hash table ...\n');
+           fprintf(vs_debug,'-------------------------------------------------------\n');
+       end
+       [NonEmptyBuck,Success,NFail]=ReadHashTableGetNonEmptyBuckets(fidef,AddressType,vs_debug);
+       if ~Success & isempty(NonEmptyBuck) & NFail>0
+           error(' ');
+       end
+       NonEmptyBuck=sort(NonEmptyBuck(:));              % Sort offsets
+       
+       % Link    : AddressType : Offset of next record in same BUCKET
+       % Size    : AddressType : Size of ELEMENT record in definition file
+       % RecType : AddressBytes char      : Record type '   1'
+       % Name    : 16 char     : Element name
+       % Type    : 8 char      : Element type
+       % ElmSize : AddressType : Size of element
+       % ValSize : uint32      : Size of single value
+       % Descript: 96 char     : Description
+       % NDim    : uint32      : Number of dimensions
+       % SizeDim : 5 uint32    : Dimension sizes
+       
+       for i=1:length(NonEmptyBuck)
+           if showwaitbar
+               waitbar(0.65+i/length(NonEmptyBuck)*0.2);
+           end
+           if vs_debug
+               fprintf(vs_debug,'Jumping to element definition record %u at %i ...\n',i,NonEmptyBuck(i));
+           end
+           fseek(fidef,NonEmptyBuck(i),-1);                % Go to ELEMENT definition record i
+           Link=fread(fidef,[1 1],AddressType);            % Offset of next record in same BUCKET, unsigned address
+           Size=fread(fidef,[1 1],AddressType);            % Size of current record
+           Code=fread(fidef,[1 AddressBytes],'uchar');     % Code of current record (should be '   1')
+           Name=deblank(char(fread(fidef,[1 16],'uchar')));% Read ELEMENT name
+           Type=char(fread(fidef,[1 8],'uchar'));          % Read variable type
+           if vs_debug
+               fprintf(vs_debug,'Record size         : %u bytes\n',Size);
+               fprintf(vs_debug,'Record code         : ''%s''\n',char(Code));
+               fprintf(vs_debug,'Element name        : %s\n',strrep(Name,char(0),' '));
+               fprintf(vs_debug,'Element type        : %s\n',Type);
+           end
+           switch Type
+               case 'CHARACTE'
+                   Type=1;
+               case 'COMPLEX '
+                   Type=2;
+               case 'INTEGER '
+                   Type=3;
+               case 'LOGICAL '
+                   Type=4;
+               case 'REAL    '
+                   Type=5;
+               otherwise
+                   if vs_debug
+                       fprintf(vs_debug,'WARNING: Unsupported elemented type!\n');
+                   end
+                   fprintf(1,'WARNING:\nELEMENT ''%s'' is of unknown type: ''%s''.\n',Name,deblank(Type));
+           end
+           SizeElm=fread(fidef,[1 1],AddressType);         % Size of ELEMENT
+           SizeVal=fread(fidef,[1 1],'uint32');            % Size of single value
+           Descript=char(fread(fidef,[1 96],'uchar'));     % Quantity, unit and description of ELEMENT
+           Dimens=fread(fidef,[1 6],'uint32');             % Number of dimensions, dimension sizes
+           if vs_debug
+               fprintf(vs_debug,'Element size        : %u bytes\n',SizeElm);
+               fprintf(vs_debug,'Size of datatype    : %u bytes\n',SizeVal);
+               fprintf(vs_debug,'Element quantity    : ''%s''\n',Descript(1:16));
+               fprintf(vs_debug,'Element unit        : ''%s''\n',Descript(17:32));
+               fprintf(vs_debug,'Element description : ''%s''\n',Descript(33:96));
+               fprintf(vs_debug,'Number of dimensions: %i\n',Dimens(1));
+           end
+           if Dimens(1)==0
+               Dimens(1)=1;
+               if vs_debug
+                   fprintf(vs_debug,'Corrected number of dimensions: %i\n',Dimens(1));
+               end
+           end % Change any zero dimension to one
+           if vs_debug
+               fprintf(vs_debug,'Dimensions:         : [');
+               fprintf(vs_debug,' %i',Dimens(2:(1+Dimens(1))));
+               fprintf(vs_debug,' ]');
+               fprintf(vs_debug,' %i',Dimens((1+Dimens(1)+1):6));
+               fprintf(vs_debug,'\n\n');
+           end
+           
+           VS.ElmDef(i).Offset=NonEmptyBuck(i);
+           VS.ElmDef(i).Name=Name;
+           VS.ElmDef(i).Type=Type;
+           VS.ElmDef(i).SizeVal=SizeVal;
+           VS.ElmDef(i).SizeElm=SizeElm;
+           VS.ElmDef(i).Quantity=deblank(Descript(1:16));
+           VS.ElmDef(i).Units=deblank(Descript(17:32));
+           VS.ElmDef(i).Description=deblank(Descript(33:96));
+           NDim=Dimens(1);
+           VS.ElmDef(i).Size=Dimens(2:(1+NDim));
+       end
+       
+       if vs_debug
+           fprintf(vs_debug,'\n\n-------------------------------------------------------\n');
+           fprintf(vs_debug,'Reading elements from cell definition ...\n');
+           fprintf(vs_debug,'-------------------------------------------------------\n');
+       end
+       if isempty(VS.ElmDef)
+           ElmNames={};
+       else
+           ElmNames={VS.ElmDef(:).Name};
+       end
+       for i=1:length(VS.CelDef)
+           if showwaitbar
+               waitbar(0.85+i/length(VS.CelDef)*0.1);
+           end
+           %
+           % Element names are listed at the end of the cell definition records.
+           % The length of the bare cell definition record is 16+3*AddressBytes.
+           %
+           loc = VS.CelDef(i).Offset+20+4*AddressBytes;
+           fseek(fidef,loc,-1);
+           if vs_debug
+               fprintf(vs_debug,'Jumping to elements of cell %i (%s) at %u ...\n',i,VS.CelDef(i).Name,loc);
+           end
+           for k=1:length(VS.CelDef(i).Elm)
+               Name=deblank(char(fread(fidef,[1 16],'uchar'))); % Read ELEMENT name from CELL record
+               j=strmatch(Name,ElmNames,'exact');
+               if isempty(j)
+                   if vs_debug
+                       fprintf(vs_debug,'WARNING: The element ''%s'' is not defined.\n',Name);
+                       fprintf(vs_debug,'\n');
+                   end
+                   fprintf(1,'WARNING:\nELEMENT ''%s'' is not defined.\n',Name);
+               else
+                   if length(j)>1
+                       if vs_debug
+                           fprintf(vs_debug,'WARNING: Multiple definitions of ELEMENT ''%s''.\n',Name);
+                       end
+                       fprintf(1,'WARNING:\nMultiple definitions of ELEMENT ''%s''.\n',Name);
+                       j=j(1);
+                   end
+                   VS.CelDef(i).Elm(k)=j;
+                   kf = VS.CelDef(i).Elm(1:k-1)==VS.CelDef(i).Elm(k);
+                   if any(kf)
+                       kf = find(kf);
+                       duplicate = sprintf(' WARNING: this element duplicates element %i of this cell.',kf(1));
+                       fprintf(1,'WARNING:\nElement ''%s'' duplicated in cell ''%s''.\n',Name,VS.CelDef(i).Name);
+                   else
+                       duplicate = '';
+                   end
+                   if vs_debug
+                       fprintf(vs_debug,'Element %2i: %3i (%s)%s\n',k,j,Name,duplicate);
+                   end
+               end
+           end
+       end
+       
+       if ~onefile
+           fclose(fidef);
+       end
    end
    fclose(fidat);
    

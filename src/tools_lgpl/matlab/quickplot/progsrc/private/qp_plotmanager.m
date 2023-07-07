@@ -3,7 +3,7 @@ function outdata = qp_plotmanager(cmd,UD,logfile,logtype,cmdargs)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -143,8 +143,11 @@ switch cmd
         iList = find(strcmp(List,sList));
         if isempty(iList)
             iList = 1;
+            set(PM.ShowList,'string',List,'value',iList)
+            qp_plotmanager pmshowselect
+        else
+            set(PM.ShowList,'string',List,'value',iList)
         end
-        set(PM.ShowList,'string',List,'value',iList)
         %
         shiftcontrol(PM.ItTxt,aligntop+fgprop_shf+axprop_shf)
         shiftcontrol(PM.ItList,stretchhor+stretchitm)
@@ -170,6 +173,9 @@ switch cmd
         shiftcontrol(PM.FigBorderStyleTxt,aligntop+axprop_shf+fgprop_shw)
         shiftcontrol(PM.FigBorderStyle,aligntop+axprop_shf+fgprop_shw)
         shiftcontrol(PM.FigBorder,aligntop+axprop_shf+fgprop_shw)
+        shiftcontrol(PM.FigRendererTxt,aligntop+stretch2+axprop_shf+fgprop_shw)
+        shiftcontrol(PM.FigRendererType,aligntop+shift2+stretch2+axprop_shf+fgprop_shw)
+        shiftcontrol(PM.FigSmoothing,aligntop+shift2+stretch2+axprop_shf+fgprop_shw)
         %
         if axprop_shw(2)>0
             set(PM.AxHandles,'visible','on')
@@ -200,38 +206,28 @@ switch cmd
         shiftcontrol(PM.AxHeight,aligntop+3*shift5+stretch5+fgprop_shf+axprop_shw)
         shiftcontrol(PM.AxPosUnit,aligntop+4*shift5+stretch5+fgprop_shf+axprop_shw)
         %
-        shiftcontrol(PM.XLimitTxt,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XLimitMin,aligntop+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XLimitMax,aligntop+shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XScale,aligntop+2*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XGrid,aligntop+3*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XLoc,aligntop+4*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XColor,aligntop+5*shift5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XLabelTxt,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XLabelAuto,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.XLabel,aligntop+5*stretch5+fgprop_shf+axprop_shw)
-        %
-        shiftcontrol(PM.YLimitTxt,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YLimitMin,aligntop+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YLimitMax,aligntop+shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YScale,aligntop+2*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YGrid,aligntop+3*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YLoc,aligntop+4*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YColor,aligntop+5*shift5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YLabelTxt,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YLabelAuto,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.YLabel,aligntop+5*stretch5+fgprop_shf+axprop_shw)
-        %
-        shiftcontrol(PM.ZLimitTxt,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZLimitMin,aligntop+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZLimitMax,aligntop+shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZScale,aligntop+2*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZGrid,aligntop+3*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZLoc,aligntop+4*shift5+stretch5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZColor,aligntop+5*shift5+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZLabelTxt,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZLabelAuto,aligntop+fgprop_shf+axprop_shw)
-        shiftcontrol(PM.ZLabel,aligntop+5*stretch5+fgprop_shf+axprop_shw)
+        for X = 'XYZ'
+            shiftcontrol(PM.(X).Axis,aligntop+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).AxisName,aligntop+stretch5+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).Grid,aligntop+1*shift5+stretch5+fgprop_shf+axprop_shw)
+            if X~='X'
+                shiftcontrol(PM.(X).AspectTxt,aligntop+2*shift5+stretch5+fgprop_shf+axprop_shw)
+                shiftcontrol(PM.(X).AspectAuto,aligntop+3*shift5+stretch5+fgprop_shf+axprop_shw)
+                shiftcontrol(PM.(X).AspectValue,aligntop+4*shift5+stretch5+fgprop_shf+axprop_shw)
+            end
+            shiftcontrol(PM.(X).Color,aligntop+5*shift5+fgprop_shf+axprop_shw)
+            %
+            shiftcontrol(PM.(X).LabelTxt,aligntop+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).LabelAuto,aligntop+stretch5+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).Label,aligntop+shift5+4*stretch5+fgprop_shf+axprop_shw)
+            %
+            shiftcontrol(PM.(X).LimitTxt,aligntop+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).LimitMin,aligntop+stretch5+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).LimitMax,aligntop+shift5+stretch5+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).Scale,aligntop+2*shift5+stretch5+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).Dir,aligntop+3*shift5+stretch5+fgprop_shf+axprop_shw)
+            shiftcontrol(PM.(X).Loc,aligntop+4*shift5+stretch5+fgprop_shf+axprop_shw)
+        end
         %
         pos = get(PM.Separator,'position');
         pos(1) = pos(1)+NewSize(1)-PrevSize(1);
@@ -680,6 +676,17 @@ switch cmd
                                         k=UserDatas{itloc}.PlotState.Selected{K_};
                                         if isequal(k,0)
                                             extrastr{itloc}='All K';
+                                        elseif iscell(k)
+                                            switch k{1}
+                                                case 'z'
+                                                    extrastr{itloc} = sprintf('at Z=%g',k{2});
+                                                case 'dz_below_max'
+                                                    extrastr{itloc} = sprintf('at %g below surface',k{2});
+                                                case 'dz_above_min'
+                                                    extrastr{itloc} = sprintf('at %g above bed',k{2});
+                                                case 'depth_frac'
+                                                    extrastr{itloc} = sprintf('at %g%% of depth',k{2}*100);
+                                            end
                                         elseif ~isempty(k)
                                             extrastr{itloc}=['K=' vec2str(k,'nobrackets')];
                                         end
@@ -799,6 +806,7 @@ switch cmd
         end
         qp_plotmanager updatearrows
         qp_plotmanager refreshitemprop
+        d3d_qp update_addtoplot
 
     case 'updatearrows'
         Ax = getAx(UD);
@@ -854,7 +862,7 @@ switch cmd
                     case {'moveitemdown','moveitemtoback'}
                         ItVal2 = ItVal+1;
                 end
-                if ItVal2>length(ItTags)
+                if ItVal2>length(ItTags) || ItVal2<1
                     break
                 end
                 %
@@ -1294,6 +1302,10 @@ switch cmd
 
     case 'selectedaxes'
         AxesHandles=get(UD.PlotMngr.AxList,'userdata');
+        if any(~ishandle(AxesHandles))
+            qp_plotmanager refreshaxes
+            AxesHandles=get(UD.PlotMngr.AxList,'userdata');
+        end
         if get(UD.PlotMngr.AxAll,'value') || get(UD.PlotMngr.FigAll,'value')
             iAx=1:length(AxesHandles);
         else
@@ -1508,15 +1520,32 @@ switch cmd
                 set(PM.FigBorderStyle,'value',find(strcmp(hBrdr.Name,get(PM.FigBorderStyle,'string'))))
                 set(PM.FigBorder,'enable','on')
             end
+            %
+            set(PM.FigRendererTxt, 'enable', 'on')
+            set(PM.FigRendererType, 'enable', 'on', 'backgroundcolor', Active)
+            iRenderer = find(strcmp(get(fig,'Renderer'), get(PM.FigRendererType,'string')));
+            set(PM.FigRendererType, 'value', iRenderer)
+            %
+            try
+                gsmo = get(fig,'GraphicsSmoothing');
+                set(PM.FigSmoothing, 'enable', 'on')
+                smo  = valuemap(gsmo,{'on' 'off'},[1 0]);
+                set(PM.FigSmoothing, 'value', smo)
+            catch
+                set(PM.FigSmoothing, 'enable', 'off', 'value', 0)
+            end
         else
             set(PM.FigName,'string','')
             set(PM.FigColor,'backgroundcolor',Inactive, ...
                 'enable','off')
             set([PM.FigNameTxt PM.FigColorTxt ...
-                PM.FigPaperTypeTxt PM.FigBorderStyleTxt PM.FigPaperX],'enable','off')
+                PM.FigPaperTypeTxt PM.FigBorderStyleTxt PM.FigPaperX ...
+                PM.FigRendererTxt],'enable','off')
+            set([PM.FigSmoothing],'enable','off','Value', 0)
             set([PM.FigName ...
                 PM.FigPaperType PM.FigBorderStyle PM.FigPaperOrientation ...
-                PM.FigPaperWidth PM.FigPaperHeight PM.FigPaperUnit], ...
+                PM.FigPaperWidth PM.FigPaperHeight PM.FigPaperUnit ...
+                PM.FigRendererType], ...
                 'enable','off', ...
                 'backgroundcolor',Inactive)
             set(PM.FigBorder,'enable','off')
@@ -1660,17 +1689,22 @@ switch cmd
             axt = getappdata(ax,'BasicAxesType');
             set(PM.AxTypeTxt,'enable','on')
             if isempty(axt) || strcmp(axt,'undefined')
-                axt = {'undefined','Time-Val','Time-Z','Time-X','X-Time','Distance-Val','X-Y','X-Y-Z','Lon-Lat','legend'};
+                axt = {'undefined','Time-Val','Time-Z','Time-X','X-Time','Distance-Val','X-Y','X-Y-Z','Lon-Lat','analog clock','digital clock','calendar page','legend'};
                 set(PM.AxType, ...
                     'backgroundcolor',Active, ...
                     'value',1, ...
                     'string',axt, ...
                     'enable','on')
+                axesNames = {'-','-'};
             else
                 set(PM.AxType, ...
                     'value',1, ...
                     'string',{axt}, ...
                     'enable','inactive')
+                axesNames = strsplit(axt,'-');
+                if length(axesNames)==1
+                    axesNames = {'-','-'};
+                end
             end
             %
             if isappdata(ax,'title')
@@ -1709,6 +1743,13 @@ switch cmd
                 posu = 'centimenters';
             end
             pos = get(ax,'position');
+            das = get(ax,'dataaspectratio');
+            das = das/das(1);
+            dasmode = get(ax,'dataaspectratiomode');
+            hda_forced = getappdata(ax,'haspectenforced');
+            if isempty(hda_forced)
+                hda_forced = false;
+            end
             %
             XYZ = 'XYZ';
             for d = 1:3
@@ -1716,28 +1757,61 @@ switch cmd
                 x = lower(X);
                 %
                 axq = ax;
-                if X=='Z'
+                if X == 'Z'
                     vw = get(ax,'view');
                     if secondy
                         axq = getappdata(ax,'linkedaxes');
                         x = 'y';
-                    elseif axes2d || vw(2)==90
-                        set([PM.ZLimitTxt PM.ZLabelTxt PM.ZGrid PM.ZLabelAuto], ...
-                            'enable','off')
-                        set(PM.ZLimitTxt,'string','Z Limit')
-                        set(PM.ZLabelTxt,'string','Z Label')
-                        set([PM.ZLimitMin PM.ZLimitMax PM.ZLabel], ...
+                        axesNames(2:3) = {'Y1','Y2'};
+                    elseif length(axesNames)<3
+                        axesNames{3} = '-';
+                    end
+                end
+                if strcmp(axesNames{d},'-')
+                    set(PM.(X).All,'enable','off')
+                    if X~='X'
+                        set([PM.(X).AspectValue], ...
                             'string','', ...
-                            'backgroundcolor',Inactive, ...
-                            'enable','off')
-                        set([PM.ZLoc PM.ZScale], ...
-                            'value',1, ...
-                            'backgroundcolor',Inactive, ...
-                            'enable','off')
-                        set(PM.ZColor, ...
-                            'backgroundcolor',Inactive, ...
-                            'enable','off')
-                        continue
+                            'backgroundcolor',Inactive)
+                    end
+                    set(PM.(X).Color,'backgroundcolor',Inactive)
+                    set(PM.(X).AxisName,'string','-')
+                    set([PM.(X).Label PM.(X).LimitMin PM.(X).LimitMax], ...
+                        'string','', ...
+                        'backgroundcolor',Inactive)
+                    set([PM.(X).Scale PM.(X).Dir PM.(X).Loc], ...
+                        'value',1, ...
+                        'backgroundcolor',Inactive)
+                    continue
+                else
+                    set(PM.(X).All,'enable','on')
+                    set(PM.(X).AxisName,'string',axesNames{d})
+                    if X~='X'
+                        if X=='Y' && hda_forced
+                            set([PM.(X).AspectAuto], ...
+                                'enable','off', ...
+                                'value',0)
+                            set([PM.(X).AspectValue], ...
+                                'string',num2str(1/das(d)), ...
+                                'userdata',1/das(d), ...
+                                'enable','off', ...
+                                'backgroundcolor',Inactive)
+                        elseif isequal(dasmode,'auto')
+                            set([PM.(X).AspectAuto], ...
+                                'value',1)
+                            set([PM.(X).AspectValue], ...
+                                'string',num2str(1/das(d)), ...
+                                'userdata',1/das(d), ...
+                                'enable','off', ...
+                                'backgroundcolor',Inactive)
+                        else
+                            set([PM.(X).AspectAuto], ...
+                                'value',0)
+                            set([PM.(X).AspectValue], ...
+                                'string',num2str(1/das(d)), ...
+                                'userdata',1/das(d), ...
+                                'backgroundcolor',Active)
+                        end
                     end
                 end
                 %
@@ -1746,26 +1820,12 @@ switch cmd
                 if strcmp(get(axq,[x 'dir']),'reverse')
                     Xlim = fliplr(Xlim);
                 end
-                set([PM.([X 'LimitTxt']) PM.([X 'LabelTxt'])], ...
-                    'enable','on')
-                if X=='Z' || X=='Y'
-                    if secondy
-                        if X=='Y'
-                            L = 'Y1';
-                        else
-                            L = 'Y2';
-                        end
-                    else
-                        L = X;
-                    end
-                    set(PM.([X 'LimitTxt']),'string',[L ' Limit'])
-                    set(PM.([X 'LabelTxt']),'string',[L ' Label'])
-                end
-                set([PM.([X 'LimitMin']) PM.([X 'LimitMax'])], ...
-                    'backgroundcolor',Active, ...
-                    'enable','on')
-                set(PM.([X 'LimitMin']),'string',num2str(Xlim(1)))
-                set(PM.([X 'LimitMax']),'string',num2str(Xlim(2)))
+                set(PM.(X).LimitMin, ...
+                    'string',num2str(Xlim(1)), ...
+                    'backgroundcolor',Active)
+                set(PM.(X).LimitMax, ...
+                    'string',num2str(Xlim(2)), ...
+                    'backgroundcolor',Active)
                 %
                 Xgr  = valuemap(get(axq,[x 'grid']),{'on' 'off'},[1 0]);
                 Xsc  = valuemap(get(axq,[x 'scale']),{'linear','log'},[1 2]);
@@ -1777,53 +1837,49 @@ switch cmd
                     case 'z'
                         Xlc = [];
                 end
+                Xdr  = valuemap(get(axq,[x 'dir']),{'normal' 'reverse'},[1 2]);
                 Xcl  = get(axq,[x 'color']);
                 %
                 if all(Xlim>0)
-                    set(PM.([X 'Scale']),'value',Xsc, ...
-                        'backgroundcolor',Active, ...
-                        'enable','on')
+                    set(PM.(X).Scale,'value',Xsc, ...
+                        'backgroundcolor',Active)
                 else
-                    set(PM.([X 'Scale']),'value',1, ...
+                    set(PM.(X).Scale,'value',1, ...
                         'backgroundcolor',Inactive, ...
                         'enable','off')
                 end
-                set(PM.([X 'Grid']),'value',Xgr, ...
-                    'enable','on')
+                set(PM.(X).Grid,'value',Xgr)
                 if X=='Z' && secondy
-                    set(PM.([X 'Loc']),'value',2, ...
+                    set(PM.(X).Loc,'value',2, ...
                         'backgroundcolor',Inactive, ...
                         'enable','off')
                 elseif isempty(Xlc)
-                    set(PM.([X 'Loc']),'value',1, ...
+                    set(PM.(X).Loc,'value',1, ...
                         'backgroundcolor',Inactive, ...
                         'enable','off')
                 elseif X=='Y' && secondy
-                    set(PM.([X 'Loc']),'value',Xlc, ...
+                    set(PM.(X).Loc,'value',Xlc, ...
                         'backgroundcolor',Inactive, ...
                         'enable','off')
                 else
-                    set(PM.([X 'Loc']),'value',Xlc, ...
-                        'backgroundcolor',Active, ...
-                        'enable','on')
+                    set(PM.(X).Loc,'value',Xlc, ...
+                        'backgroundcolor',Active)
                 end
-                set(PM.([X 'Color']),'backgroundcolor',Xcl, ...
-                    'enable','on')
+                set(PM.(X).Dir,'value',Xdr, ...
+                    'backgroundcolor',Active)
+                set(PM.(X).Color,'backgroundcolor',Xcl)
                 if isappdata(axq,[x 'label'])
-                    set(PM.([X 'LabelAuto']),'value',0, ...
-                        'enable','on')
+                    set(PM.(X).LabelAuto,'value',0)
                     str=getappdata(axq,[x 'label']);
-                    set(PM.([X 'Label']),'string',str, ...
-                        'backgroundcolor',Active, ...
-                        'enable','on')
+                    set(PM.(X).Label,'string',str, ...
+                        'backgroundcolor',Active)
                 else
-                    set(PM.([X 'LabelAuto']),'value',1, ...
-                        'enable','on')
+                    set(PM.(X).LabelAuto,'value',1)
                     str=get(get(axq,[x 'label']),'string');
                     if iscell(str)
                         str = strjoin(str(:)','\\n{}');
                     end
-                    set(PM.([X 'Label']),'string',str, ...
+                    set(PM.(X).Label,'string',str, ...
                         'backgroundcolor',Inactive, ...
                         'enable','off')
                 end
@@ -1859,10 +1915,8 @@ switch cmd
             set([PM.AxTitleTxt PM.AxTitleAuto ...
                 PM.AxNameTxt PM.AxTypeTxt PM.SecondY ...
                 PM.AxColorTxt PM.AxLineWTxt PM.AxPosition ...
-                PM.XLimitTxt PM.XLabelTxt PM.XLabelAuto ...
-                PM.YLimitTxt PM.YLabelTxt PM.YLabelAuto ...
-                PM.ZLimitTxt PM.ZLabelTxt PM.ZLabelAuto],'enable','off')
-            set([PM.AxPosUnit PM.XColor PM.YColor PM.ZColor], ...
+                PM.X.All PM.Y.All PM.Z.All],'enable','off')
+            set([PM.AxPosUnit PM.X.Color PM.Y.Color PM.Z.Color], ...
                 'backgroundcolor',Inactive, ...
                 'enable','off')
             set(PM.AxType, ...
@@ -1873,20 +1927,20 @@ switch cmd
             set([PM.AxName PM.AxTitle PM.AxColor ...
                 PM.AxXLowerLeft PM.AxYLowerLeft PM.AxWidth PM.AxHeight ...
                 PM.AxLineWidth ...
-                PM.XLimitMin PM.XLimitMax PM.XLabel ...
-                PM.YLimitMin PM.YLimitMax PM.YLabel ...
-                PM.ZLimitMin PM.ZLimitMax PM.ZLabel], ...
+                PM.X.LimitMin PM.X.LimitMax PM.X.Label ...
+                PM.Y.LimitMin PM.Y.LimitMax PM.Y.Label ...
+                PM.Z.LimitMin PM.Z.LimitMax PM.Z.Label], ...
                 'backgroundcolor',Inactive, ...
                 'string','', ...
                 'enable','off')
-            set([PM.XGrid PM.YGrid PM.ZGrid PM.AxBox], ...
+            set([PM.X.Grid PM.Y.Grid PM.Z.Grid PM.AxBox], ...
                 'backgroundcolor',Inactive, ...
                 'value',0, ...
                 'enable','off')
             set([PM.HasAxColor ...
-                PM.XLoc PM.XScale ...
-                PM.YLoc PM.YScale ...
-                PM.ZLoc PM.ZScale], ...
+                PM.X.Loc PM.X.Scale ...
+                PM.Y.Loc PM.Y.Scale ...
+                PM.Z.Loc PM.Z.Scale], ...
                 'backgroundcolor',Inactive, ...
                 'value',1, ...
                 'enable','off')

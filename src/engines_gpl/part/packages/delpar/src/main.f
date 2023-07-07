@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -35,6 +35,7 @@
       integer(4)                       :: i
       integer(4)                       :: imdp
       integer(4)                       :: iinp
+      integer(4)                       :: lunfil
 
 !     
 !     Retrieve input filename, either from a file called 'runid.par' or as a command line argument
@@ -45,14 +46,14 @@
          filepar = "runid.par"
          inquire ( file = filepar , exist = exi )
          if ( exi ) then
-            open(9,file=filepar)
-            read(9,'(a)',iostat=ioerr) runid
-            close(9)
+            open(newunit=lunfil,file=filepar)
+            read(lunfil,'(a)',iostat=ioerr) runid
+            close(lunfil)
             if ( ioerr .ne. 0 .or. runid.eq.' ') then
-               open(9,file=fileerr,status='replace')
+               open(newunit=lunfil,file=fileerr,status='replace')
                write(*,'(a)',iostat=ioerr) 'ERROR: No commandline argument, and "runid.par" does not contain a runid'
-               write(9,'(a)',iostat=ioerr) 'ERROR: No commandline argument, and "runid.par" does not contain a runid'
-               close(9)
+               write(lunfil,'(a)',iostat=ioerr) 'ERROR: No commandline argument, and "runid.par" does not contain a runid'
+               close(lunfil)
                call stop_exit(1)
             endif
             imdp=index(runid, ".mdp") 
@@ -66,17 +67,17 @@
             end if
             inquire ( file = filename , exist = exi )
             if (.not. exi ) then
-               open(9,file=fileerr,status='replace')
+               open(newunit=lunfil,file=fileerr,status='replace')
                write(*,'(3a)',iostat=ioerr) 'ERROR: Input file from "runid.par" named "', trim(filename), '" was not found'
-               write(9,'(3a)',iostat=ioerr) 'ERROR: Input file from "runid.par" named "', trim(filename), '" was not found'
-               close(9)
+               write(lunfil,'(3a)',iostat=ioerr) 'ERROR: Input file from "runid.par" named "', trim(filename), '" was not found'
+               close(lunfil)
                call stop_exit(1)
             endif
          else
-            open(9,file=fileerr,status='replace')
+            open(newunit=lunfil,file=fileerr,status='replace')
             write(*,'(a)',iostat=ioerr) 'ERROR: No commandline argument, and "runid.par" not found'
-            write(9,'(a)',iostat=ioerr) 'ERROR: No commandline argument, and "runid.par" not found'
-            close(9)
+            write(lunfil,'(a)',iostat=ioerr) 'ERROR: No commandline argument, and "runid.par" not found'
+            close(lunfil)
             call stop_exit(1)
          endif
       else
@@ -90,10 +91,11 @@
          endif
          inquire ( file = filename , exist = exi )
          if (.not. exi ) then
-            open(9,file=fileerr,status='replace')
+            open(newunit=lunfil,file=fileerr,status='replace')
             write(*,'(3a)',iostat=ioerr) 'ERROR: Input file from commandline argument named "', trim(filename), '" was not found'
-            write(9,'(3a)',iostat=ioerr) 'ERROR: Input file from commandline argument named "', trim(filename), '" was not found'
-            close(9)
+            write(lunfil,'(3a)',iostat=ioerr) 'ERROR: Input file from commandline argument named "', trim(filename),
+     &            '" was not found'
+            close(lunfil)
             call stop_exit(1)
          endif
       end if

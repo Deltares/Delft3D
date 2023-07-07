@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,10 +24,12 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine sortst ( c10a , c10b , val , nr )
+      use m_zoek
+
 c     Subroutine to sort (part of) tables R6-R7-R8
       integer      nr, ir, jndex
       character*10 c10a(nr), c10b(nr), evea, eveb, sortar(nr)
@@ -78,6 +80,8 @@ c     back for next sweep
 
       subroutine sorts2 ( pr    , it    , nm    , de    , do    ,
      j                    sx    , nr    , do_de , do_sx )
+      use m_zoek
+
 
 c     Subroutine to sort tables R3-R4-R5
 
@@ -146,7 +150,7 @@ c     back for next sweep
       if ( flag ) goto 100
 c      write (*,*) ' Processes sorted '
 c      do ir = 1,nr
-c          write (11,*) ir,sortnr(ir),pr(ir),it(ir)
+c          write (*,*) ir,sortnr(ir),pr(ir),it(ir)
 c      enddo
 
 c     Sort on number!!!
@@ -157,7 +161,7 @@ c     Sort on number!!!
 c         Find items within current process
 
           do ir = noffse + 1, nr
-c              write (11,*) ' ir ',ir
+c              write (*,*) ' ir ',ir
               if ( sortnr(ir) .ne. sortnr(noffse+1) ) then
                   nrsub = ir-1-noffse
                   goto 200
@@ -168,7 +172,7 @@ c              write (11,*) ' ir ',ir
               endif
           enddo
   200     continue
-c          write (11,*) ' Cycle ',irarr, ' from ',noffse+1,' to ',
+c          write (*,*) ' Cycle ',irarr, ' from ',noffse+1,' to ',
 c     j                 noffse+nrsub
 
 c         Sort

@@ -1,0 +1,88 @@
+
+[forcing]
+                           Name = zuiduxuy_0002
+                       Function = T3D
+             Time-interpolation = linear
+         Vertical position type = percentage from bed
+Vertical position specification = 1.0 0.2 0.0
+                       Quantity = time
+                           Unit = MINUTES SINCE 1992-08-31 00:00:00 +00:00
+                         Vector = uxuyadvectionvelocitybnd:ux,uy
+                       Quantity = ux
+                           Unit = -
+              Vertical position = 1
+                       Quantity = uy
+                           Unit = -
+              Vertical position = 1
+                       Quantity = ux
+                           Unit = -
+              Vertical position = 2
+                       Quantity = uy
+                           Unit = -
+              Vertical position = 2
+                       Quantity = ux
+                           Unit = -
+              Vertical position = 3
+                       Quantity = uy
+                           Unit = -
+              Vertical position = 3
+0 2.0 3.0 .50 .2 .50 .2
+60 2.0 3.0 .50 .2 .50 .2
+120 -2.0 1.4 -.50 .4 -.50 .4
+9999999 -2.0 1.4 -.50 .4 -.50 .4
+
+[forcing]
+                           Name = zuiduxuy_0001
+                       Function = T3D
+             Time-interpolation = linear
+         Vertical position type = percentage from bed
+Vertical position specification = 1.0 0.2 0.0
+                       Quantity = time
+                           Unit = MINUTES SINCE 1992-08-31 00:00:00 +00:00
+                         Vector = uxuyadvectionvelocitybnd:ux,uy
+                       Quantity = ux
+                           Unit = -
+              Vertical position = 1
+                       Quantity = uy
+                           Unit = -
+              Vertical position = 1
+                       Quantity = ux
+                           Unit = -
+              Vertical position = 2
+                       Quantity = uy
+                           Unit = -
+              Vertical position = 2
+                       Quantity = ux
+                           Unit = -
+              Vertical position = 3
+                       Quantity = uy
+                           Unit = -
+              Vertical position = 3
+0 1.0 1.7 .50 .2 .50 .2
+60 1.0 1.7 .50 .2 .50 .2
+120 -2.0 2.4 -.50 .7 -.50 .7
+9999999 -2.0 2.4 -.50 .7 -.50 .7
+
+[forcing]
+                           Name = tangnoordlev_0001
+                       Function = harmonic
+                       Quantity = harmonic component
+                           Unit = minutes
+                       Quantity = waterlevelbnd amplitude
+                           Unit = -
+                       Quantity = waterlevelbnd phase
+                           Unit = deg
+0.0           0.000         0.0
+
+[forcing]
+                           Name = tangzuidlev_0001
+                       Function = harmonic
+                       Quantity = harmonic component
+                           Unit = minutes
+                       Quantity = waterlevelbnd amplitude
+                           Unit = -
+                       Quantity = waterlevelbnd phase
+                           Unit = deg
+0.0           0.100         0.0
+
+

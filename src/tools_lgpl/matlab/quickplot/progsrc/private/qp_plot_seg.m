@@ -3,7 +3,7 @@ function [hNew,Thresholds,Param]=qp_plot_seg(hNew,Parent,Param,data,Ops,Props)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ if strcmp(Ops.presentationtype,'values')
 end
 switch NVal
     case 0
-        if multiple(M_) && ~strcmp(Ops.presentationtype,'markers') % network
+        if strcmp(Ops.presentationtype,'edges') || (multiple(M_) && ~strcmp(Ops.presentationtype,'markers')) % network
             if ishandle(hNew)
                 set(hNew,'vertices',data.XY,'faces',data.SEG(:,[1 2 2]))
             else
@@ -81,7 +81,7 @@ switch NVal
                     Ops.LineParams{:});
             end
         end
-    case 1
+    case {1,5,6}
         switch Ops.presentationtype
             case 'markers'
                 if strcmp(data.ValLocation,'EDGE')
@@ -103,7 +103,7 @@ switch NVal
                         'edgecolor','flat', ...
                         'facecolor','none');
                 end
-            case 'edge'
+            case 'edges'
                 XY=data.XY(data.SEG(:),:);
                 SEG=data.SEG; SEG(:)=1:2*size(SEG,1);
                 Val=cat(1,data.Val(:),data.Val(:));

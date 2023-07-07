@@ -1,17 +1,25 @@
-function lim=limits(ax,limtype)
-%LIMITS Determine real x,y,z,c limits.
-%   Lim=LIMITS(Axes,LimType)
-%   returns the real limits of the objects
-%   contained in the axes object, where LimType
-%   can be 'clim','xlim','ylim' or 'zlim'.
+function varargout = limits(h, limtype)
+%LIMITS Determine real x, y, z and color limits.
+%   [LIM1, LIM2, LIM3, LIM4] = LIMITS(H, LIMSTR)
+%   returns the actual upper and lower limits of the x, y, z or color
+%   values set for the objects specified by H. The order in which the
+%   limits are returned and the number of dimensions for which the limits
+%   are determined is determined by the (order of) occurrence of the
+%   characters x, y, z and c in the argument LIMSTR.
 %
-%   Lim=LIMITS(Handles,LimType)
-%   returns the real limits based on only the
-%   specified objects.
+%   [LIM1, LIM2, LIM3, LIM4] = LIMITS(AX, LIMSTR)
+%   returns the limits for the children of the selected axes object.
+%
+%   Note that this routine returns the actual limits derived from the
+%   objects, not the MATLAB derived or user specified limits set in the
+%   axes object. Use the MATLAB standard routines XLIM, YLIM, and ZLIM for
+%   that.
+%
+%   See also XLIM, YLIM, ZLIM.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -39,91 +47,86 @@ function lim=limits(ax,limtype)
 %   $HeadURL$
 %   $Id$
 
-if length(ax)==1 & isequal(get(ax,'type'),'axes')
-    ch=get(ax,'children');
-    xlab=get(ax,'xlabel');
-    ylab=get(ax,'ylabel');
-    zlab=get(ax,'zlabel');
-    titl=get(ax,'title');
-    ch=setdiff(ch,[xlab ylab zlab titl]);
+if length(h) == 1 && isequal(get(h, 'type'), 'axes')
+    ch = get(h, 'children');
+    xlab = get(h, 'xlabel');
+    ylab = get(h, 'ylabel');
+    zlab = get(h, 'zlabel');
+    titl = get(h, 'title');
+    ch = setdiff(ch, [xlab ylab zlab titl]);
 else
-    ch=ax;
+    ch = h;
 end
-ch=ch(:);
+ch = ch(:);
 %
-if isempty(ch)
-    lim=[0 1];
-else
-    lim=[inf -inf];
-end
-%
-i=1;
-while i<=length(ch)
-    if strcmp(get(ch(i),'type'),'hggroup')
-        chd=get(ch(i),'children');
-        ch(i,:)=[];
-        ch=cat(1,ch,chd);
+i = 1;
+while i <= length(ch)
+    if strcmp(get(ch(i), 'type'), 'hggroup')
+        chd = get(ch(i), 'children');
+        ch(i,:) = [];
+        ch = cat(1, ch, chd);
     else
-        i=i+1;
+        i = i+1;
     end
 end
 %
-switch lower(limtype)
-    case {'c','cl','cli','clim'}
-        for i=1:length(ch)
-            switch get(ch(i),'type')
-                case {'surface','patch','image'}
-                    c=get(ch(i),'cdata');
-                    cmap=get(ch(i),'cdatamapping');
-                    if (size(c,3)==1) & strcmp(cmap,'scaled') & ~isempty(c)
-                        lim(1)=min(lim(1),min(c(:)));
-                        lim(2)=max(lim(2),max(c(:)));
-                    end
-            end
-        end
-    case {'x','xl','xli','xlim'}
-        for i=1:length(ch)
-            switch get(ch(i),'type')
-                case {'surface','patch','line','image'}
-                    x=get(ch(i),'xdata');
-                    if ~isempty(x)
-                        lim(1)=min(lim(1),min(x(:)));
-                        lim(2)=max(lim(2),max(x(:)));
-                    end
-                case 'text'
-                    p=get(ch(i),'position');
-                    lim(1)=min(lim(1),p(1));
-                    lim(2)=max(lim(2),p(1));
-            end
-        end
-    case {'y','yl','yli','ylim'}
-        for i=1:length(ch)
-            switch get(ch(i),'type')
-                case {'surface','patch','line','image'}
-                    y=get(ch(i),'ydata');
-                    if ~isempty(y)
-                        lim(1)=min(lim(1),min(y(:)));
-                        lim(2)=max(lim(2),max(y(:)));
-                    end
-                case 'text'
-                    p=get(ch(i),'position');
-                    lim(1)=min(lim(1),p(2));
-                    lim(2)=max(lim(2),p(2));
-            end
-        end
-    case {'z','zl','zli','zlim'}
-        for i=1:length(ch)
-            switch get(ch(i),'type')
-                case {'surface','patch','line'}
-                    z=get(ch(i),'zdata');
-                    if ~isempty(z),
-                        lim(1)=min(lim(1),min(z(:)));
-                        lim(2)=max(lim(2),max(z(:)));
-                    end
-                case 'text'
-                    p=get(ch(i),'position');
-                    lim(1)=min(lim(1),p(3));
-                    lim(2)=max(lim(2),p(3));
-            end
-        end
+% reduce limit specification to just the characters c, x, y and z.
+%
+dlim = lower(limtype);
+dlim(~ismember(dlim, 'cxyz')) = [];
+if length(dlim) ~= nargout
+    if length(dlim) ~= 1 || nargout ~= 0
+        error('Number of output arguments does not match the number of quantities for which limits are requested.')
+    end
 end
+%
+ndims = length(dlim);
+if isempty(ch)
+    varargout = repmat({[0 1]}, [1, ndims]);
+    return
+else
+    lim = repmat({[inf -inf]}, [1, ndims]);
+end
+%
+for i = 1:length(ch)
+    chtype = get(ch(i), 'type');
+    if strcmp(chtype, 'text')
+        p = get(ch(i), 'position');
+        for j = 1:ndims
+            switch dlim(j)
+                case 'x'
+                    lim{j}(1) = min(lim{j}(1), p(1));
+                    lim{j}(2) = max(lim{j}(2), p(1));
+                case 'y'
+                    lim{j}(1) = min(lim{j}(1), p(2));
+                    lim{j}(2) = max(lim{j}(2), p(2));
+                case 'z'
+                    lim{j}(1) = min(lim{j}(1), p(3));
+                    lim{j}(2) = max(lim{j}(2), p(3));
+            end
+        end
+    else
+        for j = 1:ndims
+            switch dlim(j)
+                case 'c'
+                    if ~strcmp(chtype, 'line')
+                        c = get(ch(i), 'cdata');
+                        cmap = get(ch(i), 'cdatamapping');
+                        if (size(c, 3) == 1) && strcmp(cmap, 'scaled') && ~isempty(c)
+                            lim{j}(1) = min(lim{j}(1), min(c(:)));
+                            lim{j}(2) = max(lim{j}(2), max(c(:)));
+                        end
+                    end
+                case {'x','y','z'}
+                    if ~strcmp(chtype, 'image')
+                        x = get(ch(i), [dlim(j) 'data']);
+                        if ~isempty(x)
+                            lim{j}(1) = min(lim{j}(1), min(x(:)));
+                            lim{j}(2) = max(lim{j}(2), max(x(:)));
+                        end
+                    end
+            end
+        end
+    end
+end
+varargout = lim;

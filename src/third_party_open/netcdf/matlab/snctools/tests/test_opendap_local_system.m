@@ -27,8 +27,8 @@ nc_adddim(ncfile,'x',length(D.x));
 nc_adddim(ncfile,'y',length(D.y));
 
 tmp = nc_info(ncurl);
-I.x = tmp.Dataset(1);
-I.y = tmp.Dataset(2);
+I.x = clean_strings(tmp.Dataset(1));
+I.y = clean_strings(tmp.Dataset(2));
 									   
 nc_addvar(ncfile,I.x);
 nc_addvar(ncfile,I.y);
@@ -61,4 +61,23 @@ return
 
 
 
+%--------------------------------------------------------------------------
+function y = clean_strings(x)
+% Turn any cellstr of length 1 into just a char array.
+% Remove chunking, shuffle, and deflate
+
+y = x;
+
+for j = 1:numel(y.Attribute)
+    
+    % If any char arrays claim to be NC_STRING, force them to look like
+    % NC_CHAR.
+    if ischar(y.Attribute(j).Value) && ...
+            ((y.Attribute(j).Nctype == 12) || strcmp(y.Attribute(j).Datatype,'string'))
+        y.Attribute(j).Nctype = 2;
+        y.Attribute(j).Datatype = 'char';       
+    end
+    
+
+end
 

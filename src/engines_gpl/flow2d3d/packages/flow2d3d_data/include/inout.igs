@@ -1,0 +1,55 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_inout
+!
+       integer :: lunmd      !  Global data
+                             !  Unit nr. for Master Definition file
+                             !  Unit number for md-file
+                             !  unit number for md-file
+       integer :: lundia     !  Global data
+                             !  Unit number for diagnostic file
+                             !  Later in all IWE routines LUNIWE
+                             !  unit number for diagnostic file
+                             !  Unit number for diagnostic file
+                             !  Unit number of DIAGNOSTIC-file
+                             !  Unit number of diagnostic file were
+                             !  error messages should be written to
+                             ! 
+                             ! Unit number for diagnostic file
+       integer :: lunprt     !  Global data
+                             !  Unit number for print file
+                             ! Unit number for print file
+       integer :: lunscr     !  Global data
+                             !  Unit nr. for screen   (usually 6)
+                             !  unit number for screen
+                             !
+                             !  Unit number output to screen
+!
+    end type gd_inout

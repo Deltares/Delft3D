@@ -46,7 +46,7 @@ module kdtree2_priority_queue_module
   ! is the priority.
   !
   type kdtree2_result
-      ! a pair of distances, indexes
+      ! a pair of distances (squared !!!), indexes
       real(kdkind)    :: dis!=0.0
       integer :: idx!=-1   Initializers cause some bugs in compilers.
   end type kdtree2_result
@@ -755,6 +755,9 @@ contains
       integer :: i, c, m, dimen
       logical :: recompute
       real(kdkind)    :: average
+      ! Temp variables for the correction in the k-d tree algorithm
+      real(kdkind), allocatable :: toSort(:)
+      integer                   ::sizeToSort
 
 !!$      If (.False.) Then 
 !!$         If ((l .Lt. 1) .Or. (l .Gt. tp%n)) Then
@@ -788,7 +791,7 @@ contains
             call spread_in_coordinate(tp,i,l,u,res%box(i))
          end do
          res%cut_dim = 0
-         res%cut_val = 0.0
+         res%cut_val = 0.0_kdkind
          res%l = l
          res%u = u
          res%left =>null()
@@ -834,15 +837,32 @@ contains
             ! who says this helps in some degenerate cases, or 
             ! actual arithmetic average. 
             !
-            if (.true.) then
-               ! actually compute average
-               average = sum(tp%the_data(c,tp%ind(l:u))) / real(u-l+1,kdkind)
-            else
-               average = (res%box(c)%upper + res%box(c)%lower)/2.0
-            endif
-               
-            res%cut_val = average
-            m = select_on_coordinate_value(tp%the_data,tp%ind,c,average,l,u)
+             
+            !if (.true.) then
+            !   ! actually compute average
+            !   average = sum(tp%the_data(c,tp%ind(l:u))) / real(u-l+1,kdkind)
+            !else
+            !   average = (res%box(c)%upper + res%box(c)%lower)/2.0
+            !endif
+            !   
+            !res%cut_val = average
+            !m = select_on_coordinate_value(tp%the_data,tp%ind,c,average,l,u)
+             
+            ! Adapted implementation of the kd-tree algorithm: https://en.wikipedia.org/wiki/K-d_tree
+            ! Recursively devide and sort on the c-axis part of the original data (tp%the_data(c,tp%ind(l:u))
+            ! and calculate the median index of the sorted part (m = l + (u - l) / 2)
+            ! Note that the sorting of the original data occours in heapsort (time complexity O(n log n)) and select_on_coordinate_value is not needed anymore.
+            ! Indeed what select_on_coordinate_value does is another type of sorting (bubble sort), which has even a worse time complexity (O(n^2))
+            sizeToSort = u - l + 1
+            allocate(toSort(sizeToSort))
+            
+            do i = l, u
+                toSort(i-l+1) = tp%the_data(c,tp%ind(i))
+            end do
+            call heapsort(toSort, tp%ind(l:u), sizeToSort)
+            
+            m = l + (u - l) / 2 
+            
          endif
             
          ! moves indexes around
@@ -1077,7 +1097,7 @@ contains
     type(kdtree2_result), target :: results(:)
 
     kdtree2_ierror = 0
-    sr%ballsize = huge(1.0)
+    sr%ballsize = huge(1.0_kdkind)
     sr%qv => qv
     sr%nn = nn
     sr%nfound = 0
@@ -1126,7 +1146,7 @@ contains
 
     allocate (sr%qv(tp%dimen))
     sr%qv = tp%the_data(:,idxin) ! copy the vector
-    sr%ballsize = huge(1.0)       ! the largest real(kdkind) number
+    sr%ballsize = huge(1.0_kdkind)       ! the largest real(kdkind) number
     sr%centeridx = idxin
     sr%correltime = correltime
 
@@ -1531,7 +1551,7 @@ contains
           res = (amin-x)**2;
           return
        else
-          res = 0.0
+          res = 0.0_kdkind
           return
        endif
     endif
@@ -1554,7 +1574,7 @@ contains
 
     dimen = sr%dimen
     ballsize = sr%ballsize
-    dis = 0.0
+    dis = 0.0_kdkind
     res = .true.
     do i=1,dimen
        l = node%box(i)%lower
@@ -1608,7 +1628,7 @@ contains
 
     mainloop: do i = node%l, node%u
        if (rearrange) then
-          sd = 0.0
+          sd = 0.0_kdkind
           do k = 1,dimen
              sd = sd + (data(k,i) - qv(k))**2
              if (sd>ballsize) cycle mainloop
@@ -1616,7 +1636,7 @@ contains
           indexofi = ind(i)  ! only read it if we have not broken out
        else
           indexofi = ind(i)
-          sd = 0.0
+          sd = 0.0_kdkind
           do k = 1,dimen
              sd = sd + (data(k,indexofi) - qv(k))**2
              if (sd>ballsize) cycle mainloop
@@ -1732,7 +1752,7 @@ contains
        ! which index to the point do we use? 
 
        if (rearrange) then
-          sd = 0.0
+          sd = 0.0_kdkind
           do k = 1,dimen
              sd = sd + (data(k,i) - qv(k))**2
              if (sd>ballsize) cycle mainloop
@@ -1740,7 +1760,7 @@ contains
           indexofi = ind(i)  ! only read it if we have not broken out
        else
           indexofi = ind(i)
-          sd = 0.0
+          sd = 0.0_kdkind
           do k = 1,dimen
              sd = sd + (data(k,indexofi) - qv(k))**2
              if (sd>ballsize) cycle mainloop
@@ -1789,7 +1809,7 @@ contains
     end do
     ! now find 'n' smallest distances
     do i = 1, nn
-       results(i)%dis =  huge(1.0)
+       results(i)%dis =  huge(1.0_kdkind)
        results(i)%idx = -1
     end do
     do i = 1, tp%n

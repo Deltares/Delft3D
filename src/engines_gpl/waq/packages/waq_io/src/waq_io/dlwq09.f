@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -39,7 +39,7 @@
 !                         RDODEF, reads output definition block
 !                         OPT1  , handles file options
 !                         OUTBOO, calculates boot variables output system
-!                         DHOPNF, opens files
+!                         open_waq_files, opens files
 !                         RDWRK4, read part of DELWAQ system file
 !                         GETOPO, sets pointer to the arrays for output
 !                         WRIOUT, write OUTPUT system work file
@@ -47,15 +47,20 @@
 
 !     Logical units     : -
 
+      use m_rdwrk4
+      use m_open_waq_files
       use rd_token     !   for the reading of tokens
       use Output
       use timers       !   performance timers
+      use m_sysn          ! System characteristics
+      use m_sysi          ! Timer characteristics
+
 
       implicit none
 
 !     kind           function         name                Description
 
-      integer  ( 4), intent(in   ) :: lun   (*)         !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
       character( *), intent(inout) :: lchar (*)         !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       integer  ( 4), intent(in   ) :: icmax             !< size of the character workspace
@@ -71,38 +76,7 @@
       integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
       integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
 
-      INCLUDE 'sysi.inc'     !   COMMON  /  SYSI  /    Timer characteristics
-      INCLUDE 'sysn.inc'     !   COMMON  /  SYSN  /    System dimensions
 
-!     In SYSN.INC:
-
-!     NOSEG   INTEGER  1           INPUT   Number of segments
-!     NOSYS   INTEGER  1           INPUT   Number of active substances
-!     NOTOT   INTEGER  1           INPUT   Number of substances
-!     NODISP  INTEGER  1           INPUT   number of dispersion arrays
-!     NOVELO  INTEGER  1           INPUT   number of velocity arrays
-!     NOQ     INTEGER  1           INPUT   number of exchanges
-!     NODUMP  INTEGER  1           INPUT   Number of monitor point
-!     NOBND   INTEGER  1           INPUT   Number of boundaries
-!     NOWST   INTEGER  1           INPUT   Number of waste loads
-!     NOCONS  INTEGER  1           INPUT   Number of constants
-!     NOPA    INTEGER  1           INPUT   Number of parameters
-!     NOFUN   INTEGER  1           INPUT   Number of functions
-!     NOSFUN  INTEGER  1           INPUT   Number of segment functions
-!     NX      INTEGER  1           INPUT   Width of grid
-!     NY      INTEGER  1           INPUT   Depth of grid
-!     NOUTP   INTEGER  1           INPUT   Number of output files
-!     NRVART  INTEGER  1           OUTPUT  Total number of output variables
-!     NBUFMX  INTEGER  1           OUTPUT  Length of output buffer needed
-!     NCBUFM  INTEGER  1           IN/OUT  Length of character buffer
-!     NDMPAR  INTEGER  1           INPUT   number of dump areas
-!     NTDMPQ  INTEGER  1           INPUT   total number exchanges in dump area
-!     NTDMPS  INTEGER  1           INPUT   total number segments in dump area
-!     NORAAI  INTEGER  1     1     INPUT   number of raaien
-!     NTRAAQ  INTEGER  1     1     INPUT   total number of exch. in raaien
-!     NOBTYP  INTEGER  1           INPUT   nr of boundary types
-!     NOWTYP  INTEGER  1           INPUT   nr of wasteload types
-!     NOGRID  INTEGER  1           INPUT   nr of grids
 
 !     Local
 
@@ -212,7 +186,8 @@
          write ( lunut , 2020 )
       else                             !        Handle option -1 and 1
          call opt1   ( iopt1  , lun    , 18     , lchar  , filtype,
-     &                 ldummy , ldummy , 0      , ierr2  , iwar   )
+     &                 ldummy , ldummy , 0      , ierr2  , iwar   ,
+     &                 .false.)
          if ( ierr2 .gt. 0 ) goto 100
       endif
 
@@ -239,7 +214,7 @@
 
 !           Read part of delwaq file
 
-            call dhopnf( lun(2)  , lchar(2), 2       , 2       , ierr2   )
+            call open_waq_files( lun(2)  , lchar(2), 2       , 2       , ierr2   )
             call rdwrk4( lun(2)  , lunut   , modid   , sysid   , notot   ,
      &                   nodump  , nosys   , nobnd   , nowst   , nocons  ,
      &                   nopa    , noseg   , nseg2   , coname  , paname  ,
@@ -247,7 +222,7 @@
      &                   novelo  , diname  , vename  , iar     , iar     ,
      &                   ndmpar  , ntdmpq  , ntdmps  , noqtt   , noraai  ,
      &                   ntraaq  , nobtyp  , nowtyp  , nogrid  , iar     ,
-     &                   iar     , iar     , notot   )
+     &                   iar     , iar   )
             close ( lun(2) )
 
 !           Get output pointers
@@ -283,7 +258,7 @@
       allocate( Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%stdnames(nrvart),
      &          Outputs%units(nrvart), Outputs%descrs(nrvart) )
       Outputs%cursize = nrvart
-      
+
       ivar = 0
       do i = 1 , noutp
          do iv = 1 , nrvar(i)

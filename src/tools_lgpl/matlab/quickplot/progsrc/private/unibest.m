@@ -12,7 +12,7 @@ function [Out1,Out2]=unibest(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -74,7 +74,7 @@ if ~verifyascii(filename)
     error('Unibest .fun-file should be an ASCII file. Reading unexpected characters.')
 end
 
-fid=fopen(filename,'rt');
+fid=fopen(filename,'rt','n','US-ASCII');
 % skip first 8 lines (backward compatible)
 for i=1:8
     dummy=fgetl(fid);
@@ -287,18 +287,8 @@ fclose(fid);
 OTime=round(OTime*24*60)/24/60;
 
 
-function ASCII = verifyascii(arg)
-if ischar(arg)
-    fid = fopen(arg,'r');
-    pos = -1;
-else
-    fid = arg;
-    pos = ftell(fid);
-end
-S = fread(fid,[1 100],'char');
-ASCII = ~any(S~=9 & S~=10 & S~=13 & S<32); % TAB,LF,CR allowed
-if pos>=0
-    fseek(fid,pos,-1);
-else
-    fclose(fid);
-end
+function isASCII = verifyascii(arg)
+fid = fopen(arg,'r');
+S = fread(fid,[1 100],'uint8');
+fclose(fid);
+isASCII = ~any(S~=9 & S~=10 & S~=13 & S<32); % TAB,LF,CR allowed

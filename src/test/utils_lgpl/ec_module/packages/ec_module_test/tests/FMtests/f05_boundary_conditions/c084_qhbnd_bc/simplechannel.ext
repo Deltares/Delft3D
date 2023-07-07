@@ -1,0 +1,10 @@
+[boundary]
+quantity     = dischargebnd
+locationfile = left01.pli
+forcingfile  = simplechannel.bc
+
+[boundary]
+quantity     = qhbnd
+locationfile = right01.pli
+forcingfile  = simplechannel.bc
+

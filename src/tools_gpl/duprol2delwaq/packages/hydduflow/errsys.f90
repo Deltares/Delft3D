@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-subroutine errsys(string,ierr)
+subroutine write_error_message(string,ierr)
 !**********************************************************************
 !     +------------------------+
 !     |    D E L T A R E S     |
@@ -59,4 +59,4 @@ subroutine errsys(string,ierr)
     read (*,*)
     stop (1)
 
-end subroutine errsys
+end subroutine write_error_message

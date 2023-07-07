@@ -1,0 +1,24 @@
+.
+EC MODULE ITEMS:
+Target Item 00005 (name=polytim_item, vectormax=1)
+Element Set 00003
+   Connection 00025, Converter 00024, targetIndex  0001
+      Source Item 00013 (name=period, vectormax=1)
+         File Reader 00008(filename=tfl.bc)
+            BCBlock 00007
+            Quantity = period
+      Source Item 00018 (name=magnitude, vectormax=1)
+         File Reader 00008(filename=tfl.bc)
+            BCBlock 00007
+            Quantity = magnitude
+      Source Item 00023 (name=phase, vectormax=1)
+         File Reader 00008(filename=tfl.bc)
+            BCBlock 00007
+            Quantity = phase
+Target Item 00033 (name=waterlevelbnd, vectormax=1)
+Element Set 00031
+   Connection 00035, Converter 00034, targetIndex -0987
+      Source Item 00005 (name=polytim_item, vectormax=1)
+         File Reader 00001(filename=tfl_01.pli)
+            Quantity = polytim_item
+.

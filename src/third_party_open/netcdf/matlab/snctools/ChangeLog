@@ -1,3 +1,266 @@
+* November 14 2013 John Evans <john.g.evans.ne@gmail.com> -r4053
+- Fixed NC_DUMP test bug for R2010a and prior, thanks to Wenyu Zhou.
+
+* November 14 2013 John Evans <john.g.evans.ne@gmail.com> -r4051
+- Fixed "same day" opendap bug in test_nc_info, thanks to Brian Blanton.
+
+* November 06 2013 John Evans <john.g.evans.ne@gmail.com> -r4049
+- When dumping char variables, use char print specifier.
+
+* October 31 2013 John Evans <john.g.evans.ne@gmail.com> -r4047
+- Fixed NC_DUMP for global attribute with newline (Go Rutgers!)
+
+* July 15 2013 John Evans <john.g.evans.ne@gmail.com> -r4040
+- Updated NC_DUMP to look more like Unidata's ncdump.
+
+* April 18 2013 John Evans <john.g.evans.ne@gmail.com> -r4038
+- Updated motherlode thredds URL used in testing.
+- Fixed THREDDS_INFO, relaxed it for service interrogation.
+- Updated THREDDS_DUMP example.
+
+* April 4 2013 John Evans <john.g.evans.ne@gmail.com> -r4034
+- Fixed issue with NC_ADDNEWRECS with trailing singleton dimension.
+
+* January 15 2013 John Evans <john.g.evans.ne@gmail.com> -r4033
+- Fixed a bad warning on NC_GETVARINFO when java IDs being used.
+- Fixed indexing issue for string data retrieved by java backend
+-     (thanks to Brendan DeTracey).
+- Fixed issue with grib files when intra-element ordering is to be preserved.
+- Updated README for OPeNDAP string issue.
+
+* November 27 2012 John Evans <john.g.evans.ne@gmail.com> -r4028
+- SQUEEZE call sites removed.  NC_VARGET will try to restore any leading
+- singleton dimensions that were removed because of the 
+- row-major-col-major order issue.  Forcing integer COUNT argument in 
+- private/snc_get_indexing, suggested by Gerben de Boer.
+
+* October 30 2012 John Evans <john.g.evans.ne@gmail.com> -r4024
+- Fixed indexing bug that crept into java backend.
+
+* October 10 2012 John Evans <john.g.evans.ne@gmail.com> -r4020
+- Added THREDDS_DUMP and THREDDS_INFO to top-level.
+- Fixed bugs in OPeNDAP string handling.
+
+* September 29 2012 John Evans <john.g.evans.ne@gmail.com> -r4015
+- Fixed bug in netcdf-java backend where a file on the matlab path 
+- wouldn't be read.
+- Added debug code to force use of netcdf-java for all reading.
+- Minor test modifications.
+
+* September 25 2012 John Evans <john.g.evans.ne@gmail.com> -r4009
+- Fixed minor testing bug.
+
+* September 22 2012 John Evans <john.g.evans.ne@gmail.com> -r4007
+- Not erroring out on zero-size variables.
+
+* September 14 2012 John Evans <john.g.evans.ne@gmail.com> -r4005
+- No longer testing SNC2MAT or HDF4 writes.
+- Crosslinked NC_ISVAR, NC_ISDIM, NC_ISATT help.
+
+* July 19 2012 John Evans <john.g.evans.ne@gmail.com> -r4000
+- Added USE_NETCDF_JAVA preference to allow forced use of netcdf-java 
+- instead of tmw for opendap reads.
+
+* May 28 2012 John Evans <john.g.evans.ne@gmail.com> -r3998
+- Fixed testing issue with GRIB setup.
+
+* April 19 2012 John Evans <john.g.evans.ne@gmail.com> -r3996
+- Added THREDDS_INFO, THREDDS_DUMP in examples folder
+- Added NC_ISDIM (thanks to Gerben de Boer)
+
+* March 23 2012 John Evans <john.g.evans.ne@gmail.com> -r3982
+- Fixed NC_DUMP's missing file ID on a few lines (thanks to Michael Morrin).
+
+* March 13 2012 John Evans <john.g.evans.ne@gmail.com> -r3981
+- Disabling enhanced testing below R2011b
+
+* March 01 2012 John Evans <john.g.evans.ne@gmail.com> -r3978
+- Updated for R2012 support.
+
+* February 28 2012 John Evans <john.g.evans.ne@gmail.com> -r3975
+- Private function snc_turnoff_log4j modified to run just once per
+- MATLAB session.
+
+* February 22 2012 John Evans <john.g.evans.ne@gmail.com> -r3974
+- Backwards incompatibility.  NC_INFO no longer returns single cellstr
+- values for attributes.  They are instead returned as char arrays.  
+
+* February 12 2012 John Evans <john.g.evans.ne@gmail.com> -r3966
+- Fixed snctools for change in netcdf-java authentication.
+- Updated README for clearer netcdf-java requirements.
+
+* January 12 2012 John Evans <john.g.evans.ne@gmail.com> -r3958
+- No support for HDF4 on R14.
+- Updated the README for official HDF4 stance.
+
+* January 05 2012 John Evans <john.g.evans.ne@gmail.com> -r3953
+- Fixed catch-and-rethrow error situation on win64, 2008a, HDF4 layer.
+- Was not warning about bad missing value / fill value situations.
+- Fixed some bad testing situations with win64, 2008a configuration.
+
+* December 18 2011 John Evans <john.g.evans.ne@gmail.com> -r3939
+- Added NC_VARGETR, a 'raw' version of NC_VARGET.
+- Removed support for HDF4 STD SCALING preference.
+- Fixed bug that crept in NC_VARPUT, mexnc layer.
+
+* December 13 2011 John Evans <john.g.evans.ne@gmail.com> -r3925
+- Fixed testing directory issues (hopefully!)  Now we run the tests
+- from outside of the test directory.  Fixed additional tests for
+- NC_DUMP.
+
+* December 02 2011 John Evans <john.g.evans.ne@gmail.com> -r3916
+- mexnc NC_INFO backend made consistent with others on default "Group" name.
+- Fixed tabs/spaces NC_DUMP bug with enhanced datatypes.
+- Labeling unrecognized datatypes as 'UNRECOGNIZED'.
+- Some NC_DUMP testing improvements.
+
+* November 25 2011 John Evans <john.g.evans.ne@gmail.com> -r3900
+- Some improvements (hopefully) to NC_DUMP output readability.
+- Fixed NC_DUMP bug on HDF4 backend.
+- Refactored negative testing, removed some bad cases.
+
+* November 13 2011 John Evans <john.g.evans.ne@gmail.com> -r3860
+- Fixed bug in java layer where singleton dimensions were not being
+- properly squeezed out.
+- Major refactoring effort for NC_VARGET, NC_VARPUT
+- Qualified only on R2008a, R2009b, R2010b, R2011a, R2011b
+- Forcing double precision results for NC_VARGET where it makes sense.
+
+* November 10 2011 John Evans <john.g.evans.ne@gmail.com> -r3826
+- Fixed bug where column indices not gracefully handled.
+
+* November 08 2011 John Evans <john.g.evans.ne@gmail.com> -r3820
+- Added three argument syntax for NC_GETDIMINFO, NC_GETVARINFO.
+
+* November 06 2011 John Evans <john.g.evans.ne@gmail.com> -r3816
+- Requalified on R14 through 2011b both with and without java.
+
+* October 26 2011 John Evans <john.g.evans.ne@gmail.com> -r3808
+- Added some hdf5 support on 11a.
+
+* October 11 2011 John Evans <john.g.evans.ne@gmail.com> -r3801
+- Requalifying on all releases.
+
+* October 9 2011 John Evans <john.g.evans.ne@gmail.com> -r3798
+- Added proper fill value support on mexnc/netcdf-4.
+
+* October 9 2011 John Evans <john.g.evans.ne@gmail.com> -r3792
+- No longer allowing writing of uint16, uint32, uint64, int64 
+- attributes to netcdf-4 classic files on 10a, 11b
+- Splitting 2007b, 2008a mexnc backend from rest.
+
+* September 26 2011 John Evans <john.g.evans.ne@gmail.com> -r3774
+- Fixed java backend bug where not-existing variable condition was
+- not being detected.
+
+* September 26 2011 John Evans <john.g.evans.ne@gmail.com> -r3756
+- Fixed tilda issue for R2008b.
+
+* September 25 2011 John Evans <john.g.evans.ne@gmail.com> -r3750
+- Refactored TMW NC_VARGET backend.
+
+* September 23 2011 John Evans <john.g.evans.ne@gmail.com> -r3745
+- Fixed java char-vs-string issue plaguing NC_INFO.
+
+* September 22 2011 John Evans <john.g.evans.ne@gmail.com> -r3742
+- Restricting said enhanced model datatypes to 2011b, as 2011a 
+- seems to work ok only on maci.
+
+* September 17 2011 John Evans <john.g.evans.ne@gmail.com> -r3737
+- Added support simple enhanced model datatypes, 2011ab only.
+- Added generic 'NetCDF' format field for 10a and below.
+- Fixed HDF4 write backend determination for 11a.
+
+* September 06 2011 John Evans <john.g.evans.ne@gmail.com> -r3701
+- Added HDF4 SD write backend for 2011b.
+
+* August 25 2011 John Evans <john.g.evans.ne@gmail.com> -r3688
+- Fixed R14 issue with strings.
+
+* August 21 2011 John Evans <john.g.evans.ne@gmail.com> -r3683
+- Fixed a testing issue for opendap data.
+
+* August 20 2011 John Evans <john.g.evans.ne@gmail.com> -r3679
+- Support added for reading NC_STRING variables and attributes.
+- Lots of refactoring in private directory, mostly java backend.
+
+* July 25 2011 John Evans <john.g.evans.ne@gmail.com> -r3623
+- Fixed test problem on 10a and below introduced in r3619
+
+* July 24 2011 John Evans <john.g.evans.ne@gmail.com> -r3619
+- Added NaN missing_value and NaN fill_value tests.
+- Fixed some typos.
+- Clarified a few statements about fill values.
+
+* July 21 2011 John Evans <john.g.evans.ne@gmail.com> -r3609
+- Tentatively abstracting out GETPREF on PRESERVE_FVD to being mostly a
+- persistent variable operation.  Nearly doubles the speed.
+
+* July 06 2011 John Evans <john.g.evans.ne@gmail.com> -r3603
+- Added test check as to whether we can find SNCTOOLS, MEXNC.
+
+* July 03 2011 John Evans <john.g.evans.ne@gmail.com> -r3599
+- Properly erroring out if NC_VARRENAME used with HDF4.
+
+* June 24 2011 John Evans <john.g.evans.ne@gmail.com> -r3597
+- Fixed incorrect usage of inqFormat in NC_ATTPUT_TMW.
+
+* June 23 2011 John Evans <john.g.evans.ne@gmail.com> -r3595
+- Removed some test dependencies on error IDs.
+- Added 2011a HDF4 backend for NC_INFO routine.
+- Fixed bad parameter to an ERROR call.
+- Removed newlines from private hdf4 routine ERROR call sites.
+
+* June 17 2011 John Evans <john.g.evans.ne@gmail.com> -r3583
+- Moved mexnc and hdf4 NC_ADDVAR backends into private directory.
+- Fix for bad fill value handling on netcdf-4.  Improves interoperability.
+- Fixed NC_ATTPUT to handle UINT8 attributes correctly on netcdf-4 (typecast
+- them).
+
+* June 14 2011 John Evans <john.g.evans.ne@gmail.com> -r3562
+- Fixed tilda issue in HDF4 backend for older releases
+
+* June 12 2011 John Evans <john.g.evans.ne@gmail.com> -r3559
+- Added 2011a HDF4 backend for read routines.
+
+* May 24 2011 John Evans <john.g.evans.ne@gmail.com> -r3551
+- Removed USE_MEXNC preference on R14 thru R2008a.  First choice now is
+- to try mexnc and then to fall back to java if mex-file not available.
+
+* May 22 2011 John Evans <john.g.evans.ne@gmail.com> -r3547
+- Removed more PERSISTENT relics.
+
+* May 18 2011 John Evans <john.g.evans.ne@gmail.com> -r3543
+- Fixed HDF4 backend bug.
+- Removed some GETPREF call sites.
+
+* May 18 2011 John Evans <john.g.evans.ne@gmail.com> -r3538
+- Removed persistent variables scheme for handling preferences.
+- USE_JAVA preference has been removed.
+- USE_MEXNC preference is only retrieved when < R2008b.
+
+* May 09 2011 John Evans <john.g.evans.ne@gmail.com> -r3527
+- Change preference handling to use persistent variables.
+
+* May 06 2011 John Evans <john.g.evans.ne@gmail.com> -r3522
+- Added better indication of known MATLAB bugs in test suite.
+
+* Apr 21 2011 John Evans <john.g.evans.ne@gmail.com> -r3519
+- Fixed some HDF4 testing issues. 
+
+* Apr 16 2011 John Evans <john.g.evans.ne@gmail.com> -r3514
+- Fixed fallout issue when PRESERVE_FVD preference was false.
+
+* Apr 13 2011 John Evans <john.g.evans.ne@gmail.com> -r3511
+- NC_GETBUFFER and NC_ADDRECS now work with Name/Data structures.
+
+* Apr 07 2011 John Evans <john.g.evans.ne@gmail.com> -r3507
+- Removed one more negative 2007a testpoint, this time from 
+- nc_varget/opendap.
+
+* Apr 05 2011 John Evans <john.g.evans.ne@gmail.com> -r3506
+- Changed test_nc_varget to use FILESEP instead.
+
 * Sun Mar 27 2011 John Evans <john.g.evans.ne@gmail.com> -r3504
 - Adopted Gerben de Boer's suggestions for NC_GETALL.
 

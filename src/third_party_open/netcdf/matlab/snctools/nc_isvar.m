@@ -7,17 +7,17 @@ function tf = nc_isvar(ncfile,varname)
 %   Example (requires R2008b):
 %       bool = nc_isvar('example.nc','temperature')
 %       
-%   See also nc_isatt.
+%   See also nc_isatt, nc_isdim.
 
 % Both inputs must be character
 if nargin ~= 2
-	error ( 'SNCTOOLS:NC_ISVAR:badInput', 'must have two inputs' );
+	error ( 'snctools:isvar:badInput', 'must have two inputs' );
 end
 if ~ ( ischar(ncfile) || isa(ncfile,'ucar.nc2.NetcdfFile') || isa(ncfile,'ucar.nc2.dods.DODSNetcdfFile') )
-	error ( 'SNCTOOLS:NC_ISVAR:badInput', 'first argument must be character or a JAVA netCDF file object.' );
+	error ( 'snctools:isvar:badInput', 'first argument must be character or a JAVA netCDF file object.' );
 end
 if ~ischar(varname)
-	error ( 'SNCTOOLS:NC_ISVAR:badInput', 'second argument must be character.' );
+	error ( 'snctools:isvar:badInput', 'second argument must be character.' );
 end
 
 
@@ -26,14 +26,16 @@ retrieval_method = snc_read_backend(ncfile);
 switch(retrieval_method)
 	case 'tmw'
 		tf = nc_isvar_tmw(ncfile,varname);
-    case 'tmw_hdf4'
-        tf = nc_isvar_hdf4(ncfile,varname);
 	case 'java'
 		tf = nc_isvar_java(ncfile,varname);
 	case 'mexnc'
 		tf = nc_isvar_mexnc(ncfile,varname);
+    case 'tmw_hdf4'
+        tf = nc_isvar_hdf4(ncfile,varname);
+    case 'tmw_hdf4_2011a'
+        tf = nc_isvar_hdf4(ncfile,varname);
 	otherwise
-		error ( 'SNCTOOLS:NC_ISVAR:unrecognizedCase', ...
+		error ( 'snctools:isvar:unrecognizedCase', ...
 		        '%s is not recognized method for NC_ISVAR.', retrieval_method );
 end
 
@@ -43,11 +45,29 @@ end
 
 
 %--------------------------------------------------------------------------
+function bool = nc_isvar_hdf4_2011a(hfile,varname)
+import matlab.io.hdf4.*
+
+sd_id = sd.start(hfile,'read');
+
+try 
+    idx = sd.nameToIndex(sd_id,varname);
+    bool = true;
+catch
+    bool = false;
+end
+
+sd.close(sd_id);
+
+
+ 
+
+%--------------------------------------------------------------------------
 function bool = nc_isvar_hdf4(hfile,varname)
 bool = true;
 sd_id = hdfsd('start',hfile,'read');
 if sd_id < 0
-    error('SNCTOOLS:attget:hdf4:start', 'START failed on %s.', hfile);
+    error('snctools:attget:hdf4:start', 'START failed on %s.', hfile);
 end
 
 
@@ -67,18 +87,15 @@ function bool = nc_isvar_mexnc ( ncfile, varname )
 [ncid,status] = mexnc('open',ncfile, nc_nowrite_mode );
 if status ~= 0
 	ncerr = mexnc ( 'STRERROR', status );
-	error ( 'SNCTOOLS:NC_ISVAR:MEXNC:OPEN', ncerr );
+	error('snctools:isvar:mexnc:open', ncerr );
 end
 
 
 [varid,status] = mexnc('INQ_VARID',ncid,varname);
 if ( status ~= 0 )
 	bool = false;
-elseif varid >= 0
+else 
 	bool = true;
-else
-	error ( 'SNCTOOLS:NC_ISVAR:unknownResult', ...
-	        'Unknown result, INQ_VARID succeeded, but returned a negative varid.  That should not happen.' );
 end
 
 mexnc('close',ncid);
@@ -119,7 +136,7 @@ else
 		try
 			jncid = DODSNetcdfFile(ncfile);
 		catch %#ok<CTCH>
-			error ( 'SNCTOOLS:nc_varget_java:fileOpenFailure', ...
+			error ( 'snctools:isvar:fileOpenFailure', ...
                  'Could not open ''%s'' as either a local file, a regular URL, or as a DODS URL.', ...
                  ncfile);
 		end

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -67,9 +67,10 @@
       integer, parameter :: IHNC3             =  26          ! type of output file
       integer, parameter :: IHNC4             =  27          ! type of output file
 !
-!          use NetCDF output
+!          use NetCDF output and options
 !
-      logical            :: lncout
+      logical               :: lncout
+      integer, dimension(4) :: ncopt
 !
 !          this is the collection of the output pointers
 !

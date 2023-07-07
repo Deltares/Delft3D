@@ -1,13 +1,11 @@
  400.0                   cbed   =
  75.0                    cmud   =
- 0.008                    fmud   =
+ 0.008                   fmud   =
  0.008                   fwat   =
  0.000                   mers   =
  1000                    rhosus =
  1100                    rhomud =
  0.2                     taubng =
- 1                     tauers =
- 1                     tauset =
+ 1                       tauers =
+ 1                       tauset =
  0.000                   vdew   =
- 0.0                     entcof =
- 0.0000                  ws     =

@@ -1,0 +1,74 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_numeco
+   real(fp)     :: ad_epsabs         !  Absolute iteration epsilon in advection-diffusion solver (DIFU)
+   real(fp)     :: ad_epsrel         !  Relative iteration epsilon in advection-diffusion solver (DIFU)
+   real(fp)     :: chzmin            !  Minimal chezy coefficient (used with secondary flow)
+   real(fp)     :: dco               !  Marginal depth for upwind approach in shallow areas [m]
+   real(fp)     :: depini            !  Initial water depth for dry cells [m]
+   real(fp)     :: dgcuni
+   real(fp)     :: drycrt            !  Drying threshold [m]
+   real(fp)     :: dryflc            !  Drying & flooding threshold [m]
+   real(fp)     :: fwfac             !  factor for adjusting intensity of energy dissipation in wave boundary layer
+                                     !  (Tuning parameter for wave streaming)
+   real(fp)     :: ftauw             !  factor for adjusting wave-related bed shear stress in taubot.f90
+   real(fp)     :: gammax            !  Maximum wave height/water depth ratio
+   real(fp)     :: hdt               !  Description and declaration in esm_alloc_real.f90
+   real(fp)     :: nudvic            !  Viscosity at open boundaries for nudging 
+   real(fp)     :: paver             !  Average atmosferic pressure in Pa (N/m2)
+   real(fp)     :: rmincf            !  Minimal curvature for Coriolis force (used with secondary flow)
+   real(fp)     :: thetqh            !  Relaxation parameter QH boundaries
+   real(fp)     :: thetqt            !  Relaxation parameter total discharge boundaries
+   integer      :: ad_itrmax         !  Maximum number of iterations in advection-diffusion solver (DIFU)
+   integer      :: ibaroc            !  Bracoline pressure on open boundary points
+                                     !  0 = No
+                                     !  1 = Yes default
+   integer      :: iter1             !  Loop parameter for iteration over continuity equation
+                                     !  Number of iterations
+   integer      :: iter2
+   integer      :: nudge             !  Nudging at open boundaries
+                                     !  0 = No default
+                                     !  1 = Yes 
+   logical      :: bndneu            !  Old flag to redefine open boundary type Riemann into Neuman
+   logical      :: cstbnd            !  Flag for advection tangential componenton on open boundaries neglected (true)
+   logical      :: old_corio         !  Flag for the old computation of the tangential velocities in the Coriolis term
+                                     !  New way is based on Kleptsova, Pietrzak and Stelling (2009)
+                                     !  Default: .true.
+   logical      :: pcorr             !  Flag for the use of a pressure correction on boundaries using PAVER
+   logical      :: slplim            !  Flag to switch on slope limiter to avoid high velocities along steep slopes
+                                     !  (used in cucnp/z_cucnp and uzd/z_uzd)
+   logical      :: use_zavg_for_qtot !  Flag indicating whether discharge distribution at total discharge is based
+                                     !  on local water level (false) or average water level (true)
+   logical      :: v2dwbl            !  Flag for the use of velocity above wave boundary layer for computing 2d representative velocity
+   character(8) :: dpsopt            !  Drying & Flooding procedure at cell centres
+                                     !  [MEAN/MAX/MIN/NO]
+   character(8) :: dpuopt
+   character(6) :: momsol
+end type gd_numeco

@@ -18,7 +18,7 @@ function varargout=samplesfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -94,6 +94,9 @@ switch cmd
     case 'subfields'
         varargout={{}};
         return
+    case 'plotoptions'
+        varargout = {[]};
+        return
     case 'plot'
         % integrated below
         hParent = varargin{1};
@@ -159,27 +162,53 @@ if XYRead
         case 'y'
             Ans.Y = FI.XYZ(dim1,FI.Y)';
         case 'xy'
-            xyz = FI.XYZ(dim1,[FI.X FI.Y]);
+            if iscell(FI.XYZ)
+                xyz = zeros(nLoc,2);
+                nc = 0;
+                done = 0;
+                for c = 1:length(FI.XYZ)
+                    nq = size(FI.XYZ{c},2);
+                    if FI.X>nc && FI.X<=nc+nq
+                        xyz(:,1) = FI.XYZ{c}(dim1,FI.X-nc);
+                        done = done+1;
+                    end
+                    if FI.Y>nc && FI.Y<=nc+nq
+                        xyz(:,2) = FI.XYZ{c}(dim1,FI.Y-nc);
+                        done = done+1;
+                    end
+                    if done==2
+                        break
+                    end
+                    nc = nc+nq;
+                end
+            else
+                xyz = FI.XYZ(dim1,[FI.X FI.Y]);
+            end
             nPnt=size(xyz,1)/nTim;
             nCrd=size(xyz,2);
             Ans.XYZ=reshape(xyz,[nTim nPnt 1 nCrd]);
-            if strcmp(Props.Geom,'TRI')
-                if isfield(FI,'TRI')
-                    Ans.TRI=FI.TRI;
-                elseif ~isempty(FI.X) && ~isempty(FI.Y)
-                    try
-                        [xy,I]=unique(xyz,'rows');
-                        tri=delaunay(xy(:,1),xy(:,2));
-                        Ans.TRI=I(tri);
-                        if length(FI.nLoc)==1
-                            FI.TRI=Ans.TRI;
+            switch Props.Geom
+                case 'TRI'
+                    if isfield(FI,'TRI')
+                        Ans.TRI=FI.TRI;
+                    elseif ~isempty(FI.X) && ~isempty(FI.Y)
+                        try
+                            [xy,I]=unique(xyz,'rows');
+                            tri=delaunay(xy(:,1),xy(:,2));
+                            Ans.TRI=I(tri);
+                            if length(FI.nLoc)==1
+                                FI.TRI=Ans.TRI;
+                            end
+                        catch
+                            Ans.TRI=zeros(0,3);
                         end
-                    catch
-                        Ans.TRI=zeros(0,3);
                     end
-                end
-            else
-                Ans.TRI=zeros(0,3);
+                case 'sSEG'
+                    Ans.X = Ans.XYZ(:,:,1,1);
+                    Ans.Y = Ans.XYZ(:,:,1,2);
+                    Ans = rmfield(Ans, 'XYZ');
+                case 'PNT'
+                    Ans.TRI=zeros(0,3);
             end
     end
     %
@@ -236,8 +265,22 @@ switch Props.NVal
         varargout = {hNew FI};
         return
     case 0
-    case 1
-        if nLoc==0 % if variable number of locations, then nTim==1
+    case {1,4}
+        if iscell(FI.XYZ)
+            nc = 0;
+            for c = 1:length(FI.XYZ)
+                nq = size(FI.XYZ{c},2);
+                if Props.SubFld>nc && Props.SubFld<=nc+nq
+                    if nLoc==0
+                        Ans.Val = FI.XYZ{c}(dim1,Props.SubFld-nc)';
+                    else
+                        Ans.Val = reshape(FI.XYZ{c}(dim1,Props.SubFld-nc),[nTim nLoc]);
+                    end
+                    break
+                end
+                nc = nc+nq;
+            end
+        elseif nLoc==0 % if variable number of locations, then nTim==1
             Ans.Val=FI.XYZ(dim1,Props.SubFld)';
         else
             Ans.Val=reshape(FI.XYZ(dim1,Props.SubFld),[nTim nLoc]);
@@ -269,15 +312,16 @@ varargout={Ans FI};
 % -----------------------------------------------------------------------------
 function Out=infile(FI,domain)
 
-PropNames={'Name'                       'Units' 'DimFlag' 'DataInCell' 'NVal' 'VecType' 'Loc' 'ReqLoc' 'Geom' 'Coords' 'SubFld'};
-DataProps={'locations'                  ''       [0 0 1 0 0]  0          0     ''        ''    ''     'PNT'  'xy'      []
-    'triangulated locations'              ''       [0 0 1 0 0]  0          0     ''        ''    ''     'TRI'  'xy'      []
-    '-------'                             ''       [0 0 0 0 0]  0          0     ''        ''    ''     ''     ''        []
-    'sample data'                         ''       [0 0 1 0 0]  0          1     ''        ''    ''     'TRI'  'xy'      -999};
+PropNames={'Name'                       'Units' 'DimFlag' 'DataInCell' 'NVal' 'VecType' 'Loc' 'ReqLoc' 'Geom'  'Coords' 'SubFld'};
+DataProps={'locations'                  ''       [0 0 1 0 0]  0          0     ''        ''    ''      'PNT'   'xy'      []
+    'locations as line'                 ''       [0 0 1 0 0]  0          0     ''        ''    ''      'sSEG'  'xy'      []
+    'triangulated locations'            ''       [0 0 1 0 0]  0          0     ''        ''    ''      'TRI'   'xy'      []
+    '-------'                           ''       [0 0 0 0 0]  0          0     ''        ''    ''      ''      ''        []
+    'sample data'                       ''       [0 0 1 0 0]  0          1     ''        ''    ''      'TRI'   'xy'      -999};
 
 Out=cell2struct(DataProps,PropNames,2);
 
-params = 1:size(FI.XYZ,2);
+params = 1:length(FI.Params);
 params = setdiff(params,[FI.X FI.Y FI.Time]);
 if ~isempty(FI.Times)
     if length(FI.nLoc)==1
@@ -287,30 +331,36 @@ if ~isempty(FI.Times)
     end
     %
     Out(end).DimFlag(1) = 1;
-    for i = [1 2 4]
-        Out(i).DimFlag(3) = f3;
+    for i = 1:length(Out)
+        if ~strcmp(Out(i).Name, '-------')
+            Out(i).DimFlag(3) = f3;
+        end
     end
 end
 
 % Expand parameters
 NPar=length(params);
 if NPar>0
-    Out=cat(1,Out(1:3),repmat(Out(4),NPar,1));
+    NFixed = length(Out)-1;
+    Out = cat(1,Out(1:end-1),repmat(Out(end),NPar,1));
     for i = 1:NPar
-        Out(i+3).SubFld = params(i);
-        Out(i+3).Name   = FI.Params{params(i)};
+        Out(NFixed+i).SubFld = params(i);
+        Out(NFixed+i).Name   = FI.Params{params(i)};
         if isfield(FI,'ParamUnits')
-            Out(i+3).Units  = FI.ParamUnits{params(i)};
+            Out(NFixed+i).Units  = FI.ParamUnits{params(i)};
+        end
+        if iscell(FI.XYZ) % TODO: check which column contains chars.
+            Out(NFixed+i).NVal = 4;
         end
     end
 else
-    Out=Out(1:2);
+    Out=Out(1:end-2);
 end
 
 % No triangulation possible if only one or two points, or only one
-% coordinate
-if (length(FI.nLoc)==1 && FI.nLoc<2) || isempty(FI.Y) || isempty(FI.X)
-    Out(2)=[];
+% coordinate, or if all data are strings
+if (length(FI.nLoc)==1 && FI.nLoc<2) || isempty(FI.Y) || isempty(FI.X) || iscell(FI.XYZ)
+    Out(2:3)=[];
     for i=1:NPar
         if isempty(FI.X)
             if isempty(FI.Y)
@@ -350,6 +400,7 @@ if isempty(FI.X) || isempty(FI.Y)
         Out(1) = Out(Minm);
         Out(1).Name = 'error bars';
         Out(1).NVal = -1;
+        Out(1).AxesType = 'Time-Val';
         Out(1).SubFld = [Out(Minm).SubFld -999 Out(Maxm).SubFld];
         if ~isempty(Mean)
             Out(1).SubFld(2) = Out(Mean).SubFld;

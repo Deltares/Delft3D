@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -222,7 +222,8 @@ ODS_AccumulateData(
       TReal4              misval,        /* I  missing value */
       TInt4             * ndim,          /* I  array with dimensions */
       TReal4            * data,          /* IO accumulative array */
-      TReal4            * data_to_add )  /* I  data to be added */
+      TReal4            * data_to_add,   /* I  data to be added */
+      TReal4              factor      )  /* I  factor to multiply the added data by */
 {
    TInt4 i       ;
    TInt4 k       ;
@@ -246,7 +247,7 @@ ODS_AccumulateData(
          {
             if ( data[i3] != misval && data_to_add[i3] != misval )
             {
-               data[i3] = data[i3] + data_to_add[i3] ;
+               data[i3] = data[i3] + data_to_add[i3] * factor ;
             }
             else
             {
@@ -687,6 +688,7 @@ ODS_GetReferenceTime(
    TInt4             idxref           ;
    TInt4             cell_index[5][3] ;
    TReal4          * rbuffer          ;
+   TReal8          * dbuffer          ;
    TInt4             elem_size        ;
    TInt4             number_cells     ;
    TInt4             iyear            ;
@@ -780,8 +782,21 @@ ODS_GetReferenceTime(
       cell_index[0][2] = 1         ;
       GNF_GetRealBuffer( file_info, idxref, cell_index, &rbuffer, &elem_size,
          &number_cells )           ;
-      (*tscale) = rbuffer[0]       ;
-      free( rbuffer )              ;
+
+      /* We need to reckon with the possibility of a double-precision time step */
+      if ( rbuffer != NULL )
+      {
+         (*tscale) = rbuffer[0] ;
+         free( rbuffer ) ;
+      }
+      else
+      {
+         GNF_GetDoubleBuffer( file_info, idxref, cell_index, &dbuffer, &elem_size,
+            &number_cells ) ;
+
+         (*tscale) = dbuffer[0] ;
+         free( dbuffer ) ;
+      }
    }
    else
    {
@@ -799,9 +814,22 @@ ODS_GetReferenceTime(
       GNF_GetRealBuffer( file_info, idxref, cell_index, &rbuffer, &elem_size,
          &number_cells )           ;
 
-      (*tscale) = (*tscale) * rbuffer[0] / 86400.0f ;
+      /* We need to reckon with the possibility of a double-precision time step */
+      if ( rbuffer != NULL )
+      {
+         (*tscale) = (*tscale) * rbuffer[0] / 86400.0f ;
 
-      free( rbuffer )              ;
+         free( rbuffer ) ;
+      }
+      else
+      {
+         GNF_GetDoubleBuffer( file_info, idxref, cell_index, &dbuffer, &elem_size,
+            &number_cells ) ;
+
+         (*tscale) = (*tscale) * dbuffer[0] / 86400.0 ;
+
+         free( dbuffer ) ;
+      }
    }
    else
    {
@@ -868,7 +896,7 @@ ODS_GetISODateTime(
       v     = -1
       Result: u1 = sqrt(2), v1 = 0, dir = 0, mag = sqrt(2)
 */
-#ifdef TEST
+#ifdef TEST2
 void PrintData( TInt4 *ndim, TReal4 *data, TInt4 nodims )
 {
    TInt4  i                  ;

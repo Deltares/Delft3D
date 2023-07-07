@@ -1,0 +1,150 @@
+[General]
+    FileVersion           = 1.01
+    fileType              = boundConds
+
+[forcing]
+    name                  = T1_west
+    function              = constant
+    time-interpolation    = linear
+    quantity              = dischargebnd
+    unit                  = m³/s
+    1500
+
+[forcing]
+    name                  = T1_east
+    function              = constant
+    time-interpolation    = linear
+    quantity              = waterlevelbnd
+    unit                  = m
+    5
+
+[forcing]
+    name                  = T2_west
+    function              = constant
+    time-interpolation    = linear
+    quantity              = dischargebnd
+    unit                  = m³/s
+    1500
+
+[forcing]
+    name                  = T2_east
+    function              = constant
+    time-interpolation    = linear
+    quantity              = waterlevelbnd
+    unit                  = m
+    5
+
+[forcing]
+    name                  = T3_west
+    function              = constant
+    time-interpolation    = linear
+    quantity              = dischargebnd
+    unit                  = m³/s
+    1500
+
+[forcing]
+    name                  = T3_east
+    function              = constant
+    time-interpolation    = linear
+    quantity              = waterlevelbnd
+    unit                  = m
+    5
+
+[forcing]
+    name                  = T4_west
+    function              = constant
+    time-interpolation    = linear
+    quantity              = dischargebnd
+    unit                  = m³/s
+    1500
+
+[forcing]
+    name                  = T4_east
+    function              = constant
+    time-interpolation    = linear
+    quantity              = waterlevelbnd
+    unit                  = m
+    5
+
+[forcing]
+    name                  = T5_west
+    function              = constant
+    time-interpolation    = linear
+    quantity              = dischargebnd
+    unit                  = m³/s
+    1500
+
+[forcing]
+    name                  = T5_east
+    function              = constant
+    time-interpolation    = linear
+    quantity              = waterlevelbnd
+    unit                  = m
+    5
+
+[forcing]
+    name                  = T6_west
+    function              = constant
+    time-interpolation    = linear
+    quantity              = dischargebnd
+    unit                  = m³/s
+    1500
+
+[forcing]
+    name                  = T6_east
+    function              = constant
+    time-interpolation    = linear
+    quantity              = waterlevelbnd
+    unit                  = m
+    5
+
+[forcing]
+    name                  = model_wide
+    function              = timeseries
+    time-interpolation    = linear
+    quantity              = time
+    unit                  = minutes since 2017-08-29 00:00:00
+    quantity              = wind_speed
+    unit                  = m/s
+    0 0
+
+[forcing]
+    name                  = model_wide
+    function              = timeseries
+    time-interpolation    = linear
+    quantity              = time
+    unit                  = minutes since 2017-08-29 00:00:00
+    quantity              = wind_from_direction
+    unit                  = degree
+    0 0
+
+[forcing]
+    name                  = model_wide
+    function              = timeseries
+    time-interpolation    = linear
+    quantity              = time
+    unit                  = minutes since 2017-08-29 00:00:00
+    quantity              = air_temperature
+    unit                  = degrees C
+    0 0
+
+[forcing]
+    name                  = model_wide
+    function              = timeseries
+    time-interpolation    = linear
+    quantity              = time
+    unit                  = minutes since 2017-08-29 00:00:00
+    quantity              = humidity
+    unit                  = percentage
+    0 0
+
+[forcing]
+    name                  = model_wide
+    function              = timeseries
+    time-interpolation    = linear
+    quantity              = time
+    unit                  = minutes since 2017-08-29 00:00:00
+    quantity              = cloudiness
+    unit                  = percentage
+    0 0
+

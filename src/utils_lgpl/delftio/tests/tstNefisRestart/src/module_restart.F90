@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!
 !!! module_restart: Triton Restart File
@@ -404,14 +404,13 @@ function TritonRestartExists(fileName, mode) result(retVal)
             retVal = .true.
         endif
     else if ( mode == 'w' ) then
-        tempLun = DioNewLun()
         errDef = 0 ; errDat = 0
         if ( defExists ) then
-            open (tempLun, file=defFileName, iostat=errDef)
+            open (newunit=tempLun, file=defFileName, iostat=errDef)
             if (errDef == 0) close(tempLun, status='delete', iostat=errDef)
         endif
         if ( datExists ) then
-            open (tempLun, file=datFileName, iostat=errDat)
+            open (newunit=tempLun, file=datFileName, iostat=errDat)
             if (errDat == 0) close(tempLun, status='delete', iostat=errDat)
         endif
         if (errDef == 0 .and. errDat == 0) then

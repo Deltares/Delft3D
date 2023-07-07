@@ -3,7 +3,7 @@ function qp_tooltip(H,tooltip)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -37,7 +37,7 @@ if iscell(tooltip)
 end
 switch get(H(1),'type')
     case 'uicontrol'
-        set(H,'tooltip',tooltip);
+        set(H,'tooltip',tooltip)
     case {'uipushtool','uitoggletool'}
-        set(H,'tooltipstring',tooltip);
+        set(H,'tooltipstring',tooltip)
 end

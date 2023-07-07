@@ -2,7 +2,7 @@ subroutine depfil(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
                 & nfld      ,ifld      ,dims      )
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -26,8 +26,8 @@ subroutine depfil(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description----------------------------------------------------------------- 
 ! 
 !    Function: Reads the depth values from the attribute file 
@@ -70,7 +70,6 @@ subroutine depfil(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
-    integer                 , external    :: newunit 
     real(fp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing dp of entire domain 
     character(300)                        :: errmsg ! Character string containing the error message to be written to file. The message depends on the error.
     !

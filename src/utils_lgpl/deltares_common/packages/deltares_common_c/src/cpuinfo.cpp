@@ -24,7 +24,7 @@ unsigned __int64 GetUsCount()
     {
         return GetTickCount() * 1000000000;
     }
-    return unsigned __int64 (val.QuadPart/scalefactor);
+    return unsigned (__int64 (val.QuadPart/scalefactor));
 }
 
 unsigned __int64 CpuInfo::GetClockSpeed()
@@ -50,7 +50,7 @@ unsigned __int64 CpuInfo::GetClockSpeed()
 	}
 	end_tsc = __rdtsc();
 	end = GetUsCount();
-	return unsigned __int64 ((1000000000000.0 * (end_tsc-start_tsc)) / (end-start-usCountOverhead));
+	return unsigned (__int64 ((1000000000000.0 * (end_tsc-start_tsc)) / (end-start-usCountOverhead)));
 }
 
 int CpuInfo::GetCores()

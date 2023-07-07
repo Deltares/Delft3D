@@ -14,7 +14,7 @@ function S = mikemesh(cmd,FileName)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -52,7 +52,7 @@ end
 function S = local_open(FileName)
 S.FileName = FileName;
 S.FileType = 'MikeFM mesh';
-fid = fopen(FileName,'r');
+fid = fopen(FileName,'r','n','US-ASCII');
 try
     nNodes=fscanf(fid,'%i');
     if length(nNodes)>1 % e.g. 100079 1000 4875

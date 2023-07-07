@@ -1,0 +1,13 @@
+New in version 2.5:
+- Improvement and stabilisation of proj interface
+
+New in version 2.4:
+- Bug fix for some gdal interfaces missing
+- Array arguments replaced by intent(out) where required
+
+New in version 2.3:
+- Enable reading of gdal metadata and RPC info
+- Experimental interface to readosm (OpenStreetMap data)
+- Improvements for building on Windows (mingw)
+- Documentation improvements
+

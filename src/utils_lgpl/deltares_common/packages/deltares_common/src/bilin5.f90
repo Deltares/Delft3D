@@ -1,34 +1,47 @@
+!> \page deltares_common Library of common utilities
+!! \section bilinear Bilinear interpolation
+!! The routine \em bilin5 calculates the weights for the bilinear interpolation
+!! within a quadrangle. If the quadrangle is malformed or degenerate, an error
+!! code is returned and no weights are calculated. Otherwise the weights to
+!! be used with the four vertices are returned.
+!!
+!! See: \ref bilin5
+!!
+
+!> \anchor bilin5
+!! Determine weights for bilinear interpolation
+!!
 subroutine bilin5(xa, ya, x0, y0, w, ier)
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
-! NONE
+
 !!--pseudo code and references--------------------------------------------------
 !
 ! Author: H. Petit
@@ -40,12 +53,12 @@ subroutine bilin5(xa, ya, x0, y0, w, ier)
 !
 ! Global variables
 !
-    integer               , intent(out) :: ier
-    real(hp)              , intent(in)  :: x0
-    real(hp)              , intent(in)  :: y0
-    real(hp), dimension(4), intent(out) :: w
-    real(hp), dimension(4), intent(in)  :: xa
-    real(hp), dimension(4), intent(in)  :: ya
+    integer               , intent(out) :: ier     !< Error code, zero if normal, 1 if an error was found
+    real(hp)              , intent(in)  :: x0      !< X-coordinates of the point for the interpolation weights are requested
+    real(hp)              , intent(in)  :: y0      !< Y-coordinates of the point
+    real(hp), dimension(4), intent(out) :: w       !< Weights per vertex
+    real(hp), dimension(4), intent(in)  :: xa      !< X-coordinates of the quadrangle
+    real(hp), dimension(4), intent(in)  :: ya      !< Y-coordinates of the quadrangle
 !
 ! Local variables
 !
@@ -79,6 +92,8 @@ subroutine bilin5(xa, ya, x0, y0, w, ier)
 !
 !! executable statements -------------------------------------------------------
 !
+    ier = 0
+
     ! read(12,*)x1,y1,f1
     x1 = xa(1)
     y1 = ya(1)
@@ -153,8 +168,8 @@ subroutine bilin5(xa, ya, x0, y0, w, ier)
     endif
     w(1) = (1.0_hp-xi) * (1.0_hp-eta)
     w(2) =         xi  * (1.0_hp-eta)
-    w(3) =         xi  *         eta 
-    w(4) =        eta  * (1.0_hp-xi ) 
+    w(3) =         xi  *         eta
+    w(4) =        eta  * (1.0_hp-xi )
     return
 99999 continue
 end subroutine bilin5

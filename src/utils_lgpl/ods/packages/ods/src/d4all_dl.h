@@ -1,4 +1,4 @@
-/* d4all.h   (c)Copyright Sequiter Software Inc., 1991-1993. All rights reserved. */
+/* d4all.h   (c)Copyright Sequiter Software Inc., 1991-2023. All rights reserved. */
 
 /**********************************************************************/
 /**********            USER SWITCH SETTINGS AREA            ***********/

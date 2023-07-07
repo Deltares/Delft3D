@@ -1,0 +1,7 @@
+Path: This is a test file/parse_param.fod , Absolute Tolerance : 0.01, Relative Tolerance : 0.02 # This a comment
+
+ValueName::1, >THIS>IS>THE>PATH, 999
+
+ValueName, >THIS>IS>THE>PATH, 999 , absTol = 0.5  # With an absolute tolerance 
+
+ValueName::1, >THIS>IS>THE>PATH, -999

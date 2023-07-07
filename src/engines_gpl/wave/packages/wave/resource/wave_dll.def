@@ -1,0 +1,12 @@
+LIBRARY   WAVE
+EXPORTS
+   initialize   @1
+   get_version_string   @2
+   update   @3
+   finalize   @4
+   get_start_time   @5
+   get_end_time   @6
+   get_time_step   @7
+   get_current_time   @8
+   set_var   @9
+   get_var   @10

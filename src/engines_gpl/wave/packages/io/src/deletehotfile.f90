@@ -1,7 +1,11 @@
+module m_deletehotfile
+
+contains
+
 function deletehotfile(wavedata) result (dodelete)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +29,8 @@ function deletehotfile(wavedata) result (dodelete)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: Return true if the hotfile with time hotfiletime can be deleted
@@ -49,7 +53,7 @@ type(wave_data_type), target :: wavedata
 !
 real(hp)                :: rkeeptime
 real(hp)                :: rusetime
-real, pointer           :: timseckeephot
+real(hp), pointer       :: timseckeephot
 character(15), external :: datetime_to_string
 !
 !! executable statements -------------------------------------------------------
@@ -70,7 +74,7 @@ character(15), external :: datetime_to_string
    ! increase rkeeptime until it is equal to or greater than rusetime
    !
    do while (comparereal(rkeeptime,rusetime) < 0)
-      timseckeephot = timseckeephot + swan_run%int2keephotfile*60.0
+      timseckeephot = timseckeephot + swan_run%int2keephotfile*60.0_hp
       swan_run%keephottime = datetime_to_string(wavedata%time%refdate, timseckeephot)
       read (swan_run%keephottime,*) rkeeptime
    enddo
@@ -80,3 +84,5 @@ character(15), external :: datetime_to_string
       dodelete = .true.
    endif
 end function deletehotfile
+
+end module m_deletehotfile

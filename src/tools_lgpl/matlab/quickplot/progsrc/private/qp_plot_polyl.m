@@ -3,7 +3,7 @@ function [hNew,Thresholds,Param]=qp_plot_polyl(hNew,Parent,Param,data,Ops,Props)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -49,17 +49,23 @@ NVal       = Param.NVal;
 DimFlag=Props.DimFlag;
 Thresholds=Ops.Thresholds;
 
+NeedsCell = ~strcmp(Ops.facecolour,'none') || isfield(data,'Val');
+if NVal==4 && isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'polylines')
+    NeedsCell = 0;
+end
 if isfield(data,'XY') && iscell(data.XY)
-    if ~strcmp(Ops.facecolour,'none') || isfield(data,'Val')
+    if NeedsCell
         % no change
     else
-        len = cellfun('length',data.XY);
+        len = cellfun(@(a)size(a,1), data.XY);
         tlen = sum(len+1)-1;
         XY = NaN(tlen,2);
         offset = 0;
         for i = 1:length(data.XY)
-            XY(offset+(1:len(i)),:) = data.XY{i};
-            offset = offset+len(i)+1;
+            if ~isempty(data.XY{i})
+                XY(offset+(1:len(i)),:) = data.XY{i}(:,1:2);
+                offset = offset+len(i)+1;
+            end
         end
         data.XY = XY;
     end
@@ -68,7 +74,7 @@ else
         data.XY = [data.X data.Y];
         data = rmfield(data,{'X','Y'});
     end
-    if ~strcmp(Ops.facecolour,'none') || isfield(data,'Val')
+    if NeedsCell
         breaks = none(isnan(data.XY),2);
         % could use mat2cell below, but this would keep all the singleton NaNs
         PolyStartEnd = findseries(breaks);
@@ -96,18 +102,36 @@ else
     end
 end
 %
-if isfield(Ops,'presentationtype') && ...
-        (strcmp(Ops.presentationtype,'markers') ...
-        || strcmp(Ops.presentationtype,'values') ...
-        || strcmp(Ops.presentationtype,'labels'))
-    if iscell(data.XY)
-        XY = zeros(length(data.XY),2);
-        for i = 1:length(data.XY)
-            d = pathdistance(data.XY{i}(:,1),data.XY{i}(:,2));
-            uNode = d~=[NaN;d(1:end-1)];
-            XY(i,:) = interp1(d(uNode),data.XY{i}(uNode,1:2),d(end)/2);
-        end
-        data.XY = XY;
+if isfield(Ops,'presentationtype')
+    switch Ops.presentationtype
+        case {'markers','values','labels'}
+            if iscell(data.XY)
+                XY = NaN(length(data.XY),2);
+                for i = 1:length(data.XY)
+                    if ~isempty(data.XY{i})
+                        if size(data.XY{i},1)==1
+                            XY(i,:) = data.XY{i};
+                        else
+                            d = pathdistance(data.XY{i}(:,1),data.XY{i}(:,2));
+                            uNode = d~=[NaN;d(1:end-1)];
+                            XY(i,:) = interp1(d(uNode),data.XY{i}(uNode,1:2),d(end)/2);
+                        end
+                    end
+                end
+                data.XY = XY;
+            end
+        otherwise
+            if NVal==4
+                % currently converting text valued polygons to polygons
+                % without data, but it might be nicer to convert text to
+                % class labels.
+                % labels = unique(data.Val);
+                % [~,data.Val] = ismember(data.Val, labels);
+                % NVal = 1;
+                % However, it might be better to do that generically in
+                % qp_plot for all geometry types. --> DELFT3D-37699
+                NVal=0;
+            end
     end
 end
 switch NVal
@@ -131,7 +155,7 @@ switch NVal
             set(Parent,'layer','top')
         end
         qp_title(Parent,TStr,'quantity',Quant,'unit',Units,'time',TStr)
-    case 1
+    case {1,5,6}
         switch Ops.presentationtype
             case {'values'}
                 hNew=gentextfld(hNew,Ops,Parent,data.Val,data.XY(:,1),data.XY(:,2));
@@ -163,14 +187,15 @@ end
 
 
 function hNew = plot_polygons(XY,val,Parent,Ops)
-hNewL = plot_polygons_outline(XY,val,Parent,Ops);
 if strcmp(Ops.facecolour,'none')
-    hNew = hNewL;
+    hNewP = [];
 else
-    [XY,val] = process_polygons_parts(XY,val);
-    hNewP = plot_polygons_fill(XY,val,Parent,Ops);
-    hNew = [hNewL;hNewP];
+    [XYP,valP] = process_polygons_parts(XY,val);
+    hNewP = plot_polygons_fill(XYP,valP,Parent,Ops);
 end
+hNewL = plot_polygons_outline(XY,val,Parent,Ops);
+hNew = [hNewL;hNewP];
+
 
 function hNew = plot_polygons_outline(XY,val,Parent,Ops)
 len = cellfun('length',XY);
@@ -230,7 +255,11 @@ if nargin>1 && ~isempty(V)
     hasval = true;
 end
 inew = 0;
-XYnew = cell(1,1000);
+if size(XY,1) ~= 1
+    XYnew = cell(1000,1);
+else
+    XYnew = cell(1,1000);
+end
 if hasval
     Vnew = zeros(1,1000);
 end
@@ -288,7 +317,7 @@ for iobj = 1:length(XY)
         xyr = NaN(sum(BPln(ipx)+1)-1,2);
         or = 0;
         for i = ipx'
-            xyr(or+(1:BPln(i)),:) = xy(BP(i,1)+1:BP(i,2)-1,:);
+            xyr(or+(1:BPln(i)),:) = xy(BP(i,1)+1:BP(i,2)-1,1:2);
             or = or + BPln(i)+1;
         end
         bp = cumsum(BPln(ipx)+1);
@@ -325,17 +354,21 @@ for iobj = 1:length(XY)
             inew = inew+1;
             XYnew{inew} = xyr;
             if hasval
-                Vnew(inew) = V(ipol);
+                Vnew(inew) = V(iobj);
             end
         end
     end
 end
-XY = [XY XYnew(1:inew)];
+if size(XY,1) ~= 1
+    XY = [XY; XYnew(1:inew)];
+else
+    XY = [XY, XYnew(1:inew)];
+end
 if hasval
-    if size(V,2)==1
-        V = [V;Vnew(1:inew)'];
+    if size(V,1) ~= 1
+        V = [V; Vnew(1:inew)'];
     else
-        V = [V Vnew(1:inew)];
+        V = [V, Vnew(1:inew)];
     end
 end
 
@@ -344,6 +377,7 @@ function hNew = plot_polygons_fill(XY,V,Parent,Ops)
 hasval = ~isempty(V);
 nnodes = cellfun('size',XY,1);
 unodes = unique(nnodes);
+unodes(unodes==0)=[];
 hNew = zeros(length(unodes),1);
 for i = 1:length(unodes)
     n = unodes(i);
@@ -364,7 +398,7 @@ for i = 1:length(unodes)
     end
     offset = 0;
     for ip = 1:npoly
-        XYvertex(offset+(1:nr),:) = XY{poly_n(ip)}(1:nr,:);
+        XYvertex(offset+(1:nr),:) = XY{poly_n(ip)}(1:nr,1:2);
         offset = offset+nr;
         if hasval
             if iscell(V)

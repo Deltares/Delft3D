@@ -4,7 +4,7 @@ function nc_adddim_mexnc(ncfile,dimname,dimlen)
 [ncid, status] = mexnc ( 'open', ncfile, nc_write_mode );
 if status
     ncerr = mexnc ( 'strerror', status );
-    error_id = 'SNCTOOLS:nc_adddim:openFailed';
+    error_id = 'snctools:nc_adddim:openFailed';
     error ( error_id, ncerr );
 end
 
@@ -12,7 +12,7 @@ status = mexnc ( 'redef', ncid );
 if status
     mexnc ( 'close', ncid );
     ncerr = mexnc ( 'strerror', status );
-    error_id = 'SNCTOOLS:nc_adddim:redefFailed';
+    error_id = 'snctools:nc_adddim:redefFailed';
     error ( error_id, ncerr );
 end
 
@@ -20,7 +20,7 @@ end
 if status
     mexnc ( 'close', ncid );
     ncerr = mexnc ( 'strerror', status );
-    error_id = 'SNCTOOLS:nc_adddim:defdimFailed';
+    error_id = 'snctools:nc_adddim:defdimFailed';
     error ( error_id, ncerr );
 end
 
@@ -28,14 +28,14 @@ status = mexnc ( 'enddef', ncid );
 if status
     mexnc ( 'close', ncid );
     ncerr = mexnc ( 'strerror', status );
-    error_id = 'SNCTOOLS:nc_adddim:enddefFailed';
+    error_id = 'snctools:nc_adddim:enddefFailed';
     error ( error_id, ncerr );
 end
 
 status = mexnc ( 'close', ncid );
 if status 
     ncerr = mexnc ( 'strerror', status );
-    error_id = 'SNCTOOLS:nc_adddim:closeFailed';
+    error_id = 'snctools:nc_adddim:closeFailed';
     error ( error_id, ncerr );
 end
 

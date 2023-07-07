@@ -15,14 +15,6 @@ function test_java_backend()
 
 fprintf('\tTesting java backend ...\n');
 
-if ~getpref('SNCTOOLS','USE_JAVA',false)
-
-    fprintf('\t\tjava backend testing filtered out on ');
-    fprintf('configurations where SNCTOOLS ''USE_JAVA'' ');
-    fprintf('prefererence is false.\n');
-    return
-end
-
 run_http_tests;
 run_grib2_tests;
 
@@ -48,9 +40,11 @@ fprintf('\tTesting mexnc backend ...\n');
 v = version('-release');
 switch(v)
     case { '14','2006a','2006b','2007a','2007b','2008a'}
-		if ~getpref('SNCTOOLS','USE_MEXNC',false)
-		    fprintf('\t\tmexnc testing filtered out where preference USE_MEXNC set to false.\n');
-		        return
+		try
+		    mexnc('inq_libvers');
+		catch
+		    fprintf('\t\tmexnc testing filtered out where mexnc mex-file not available.\n');
+		    return
 		end
         run_nc3_tests;
         

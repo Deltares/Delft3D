@@ -1,0 +1,18 @@
+test_solve 
+x1 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=3
+x2 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=2
+test_solve_matgetvecs 
+x1 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=3
+x2 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=2

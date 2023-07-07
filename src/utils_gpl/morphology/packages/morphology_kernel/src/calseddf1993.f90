@@ -4,7 +4,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
                       & epsmax    ,epsmxc    ,seddif    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute sediment diffusion coefficient
@@ -42,7 +42,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
     integer                    , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                    , intent(in)  :: ltur   !  Description and declaration in esm_alloc_int.f90

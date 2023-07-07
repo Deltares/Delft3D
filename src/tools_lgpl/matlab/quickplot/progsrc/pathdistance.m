@@ -1,7 +1,10 @@
 function d0 = pathdistance(varargin)
 %PATHDISTANCE Computes the distance along a path.
 %   Computes the distance along the path from the first point for every
-%   point on the path.
+%   point on the path. The coordinates may be specified as row or column
+%   vectors. In case the specified coordinates arrays are matrices the
+%   columns of the matrices are treated as independent paths and the
+%   distance along each column individually is determined.
 %
 %   Distance = PATHDISTANCE(Coord) computes the distance in a linear space.
 %
@@ -30,7 +33,7 @@ function d0 = pathdistance(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -83,51 +86,117 @@ for i=1:length(varargin)
     end
 end
 
-d0=NaN(size(x0));
-
 % iopt=1 : 1D
 % iopt=2 : 2D
 % iopt=3 : 3D
 
+if isvector(x0) && size(x0,2) > 1
+    row_vectors = true;
+    x0 = x0';
+    if iopt >= 2
+        y0=y0';
+    end
+    if iopt == 3
+        z0=z0';
+    end
+else
+    row_vectors = false;
+end
+
+% process all columns ...
+npnt = size(x0,1);
+ncol = size(x0,2);
+
+d0 = NaN(size(x0));
+first_pnt = true(1,ncol);
+any_first_pnt = true;
+dp = zeros(1,ncol);
+
 if iopt==1
-    iprev=find(~isnan(x0), 1 );
-    d0(iprev)=0;
-    for i=(iprev+1):length(x0)
-        if isnan(x0(i))
-            d0(i)=NaN;
-        else
-            d0(i)=d0(iprev)+abs(x0(i)-x0(iprev));
-            iprev=i;
+    xp = NaN(1,ncol);
+    for i = 1:npnt
+        defined = ~isnan(x0(i,:));
+        if any(defined)
+            if any_first_pnt
+                start_pnt = first_pnt & defined;
+                if any(start_pnt)
+                    % set initial values for first active point
+                    xp(start_pnt) = x0(i,start_pnt);
+                    first_pnt(defined) = false;
+                    any_first_pnt = any(first_pnt);
+                end
+            end
+            xnew = x0(i,defined);
+            dnew = dp(defined) + abs(xnew-xp(defined));
+            d0(i,defined) = dnew;
+            dp(defined) = dnew;
+            xp(defined) = xnew;
         end
     end
 elseif iopt==2
-    iprev=find(~isnan(x0) & ~isnan(y0), 1 );
-    d0(iprev)=0;
-    for i=(iprev+1):length(x0)
-        if isnan(x0(i)) || isnan(y0(i))
-            d0(i)=NaN;
-        else
-            if igeo
-                d0(i)=d0(iprev)+geodist(x0(iprev), y0(iprev), x0(i), y0(i));
-            else
-                d0(i)=d0(iprev)+sqrt((x0(i)-x0(iprev))^2+(y0(i)-y0(iprev))^2);
+    xp = NaN(1,ncol);
+    yp = NaN(1,ncol);
+    for i = 1:npnt
+        defined = ~isnan(x0(i,:)) & ~isnan(y0(i,:));
+        if any(defined)
+            if any_first_pnt
+                start_pnt = first_pnt & defined;
+                if any(start_pnt)
+                    % set initial values for first active point
+                    xp(start_pnt) = x0(i,start_pnt);
+                    yp(start_pnt) = y0(i,start_pnt);
+                    first_pnt(defined) = false;
+                    any_first_pnt = any(first_pnt);
+                end
             end
-            iprev=i;
+            xnew = x0(i,defined);
+            ynew = y0(i,defined);
+            if igeo
+                dnew = dp(defined) + geodist(xp(defined), yp(defined), xnew, ynew);
+            else
+                dnew = dp(defined) + sqrt((xnew-xp(defined)).^2+(ynew-yp(defined)).^2);
+            end
+            d0(i,defined) = dnew;
+            dp(defined) = dnew;
+            xp(defined) = xnew;
+            yp(defined) = ynew;
         end
     end
 elseif iopt==3
-    iprev=find(~isnan(x0) & ~isnan(y0) & ~isnan(z0), 1 );
-    d0(iprev)=0;
-    for i=(iprev+1):length(x0)
-        if isnan(x0(i)) || isnan(y0(i)) || isnan(z0(i))
-            d0(i)=NaN;
-        else
-            if igeo
-                d0(i)=d0(iprev)+sqrt(geodist(x0(iprev), y0(iprev), x0(i), y0(i))^2+(z0(i)-z0(iprev))^2);
-            else
-                d0(i)=d0(iprev)+sqrt((x0(i)-x0(iprev))^2+(y0(i)-y0(iprev))^2+(z0(i)-z0(iprev))^2);
+    xp = NaN(1,ncol);
+    yp = NaN(1,ncol);
+    zp = NaN(1,ncol);
+    for i = 1:npnt
+        defined = ~isnan(x0(i,:)) & ~isnan(y0(i,:)) & ~isnan(z0(i,:));
+        if any(defined)
+            if any_first_pnt
+                start_pnt = first_pnt & defined;
+                if any(start_pnt)
+                    % set initial values for first active point
+                    xp(start_pnt) = x0(i,start_pnt);
+                    yp(start_pnt) = y0(i,start_pnt);
+                    zp(start_pnt) = z0(i,start_pnt);
+                    first_pnt(defined) = false;
+                    any_first_pnt = any(first_pnt);
+                end
             end
-            iprev=i;
+            xnew = x0(i,defined);
+            ynew = y0(i,defined);
+            znew = z0(i,defined);
+            if igeo
+                dnew = dp(defined) + sqrt(geodist(xp(defined), yp(defined), xnew, ynew).^2 + (znew-zp(defined)).^2);
+            else
+                dnew = dp(defined) + sqrt((xnew-xp(defined)).^2 + (ynew-yp(defined)).^2 + (znew-zp(defined)).^2);
+            end
+            d0(i,defined) = dnew;
+            dp(defined) = dnew;
+            xp(defined) = xnew;
+            yp(defined) = ynew;
+            zp(defined) = znew;
         end
     end
+end
+
+if row_vectors
+    d0 = d0';
 end

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "so_fortran_api.h"
 
@@ -41,7 +42,7 @@
 #  include <windows.h>
 #elif defined(salford32)
 #  include <windows.h>
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
 #  include <dlfcn.h>
 #endif
 
@@ -53,7 +54,7 @@
 #  define OPEN_SHARED_LIBRARY  OPEN_SHARED_LIBRARY
 #  define CLOSE_SHARED_LIBRARY CLOSE_SHARED_LIBRARY
 #  define STDCALL __stdcall
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
 #   include "config.h"
 #  define OPEN_SHARED_LIBRARY      FC_FUNC(open_shared_library,OPEN_SHARED_LIBRARY)
 #  define CLOSE_SHARED_LIBRARY     FC_FUNC(close_shared_library,CLOSE_SHARED_LIBRARY)
@@ -71,7 +72,7 @@
     typedef HMODULE DllHandle;
 #elif defined(salford32)
     typedef HMODULE DllHandle;
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
     typedef void * DllHandle;
 #endif
 
@@ -95,7 +96,7 @@ char * strFcpy(char * str_1, int len)
 
 void RemoveTrailingBlanks_dll(char * String)
 {
-  int i;
+  size_t i;
   i = strlen(String)-1;
   while ( String[i] == ' '  ||
           String[i] == '\n' ||
@@ -109,10 +110,10 @@ void RemoveTrailingBlanks_dll(char * String)
 /*
  * ============================================================================
  */
-#if defined(WIN32) || defined (HAVE_CONFIG_H)
-long STDCALL OPEN_SHARED_LIBRARY(long * sharedDLLHandle, char * library, long length_lib)
+#if defined(WIN32) || defined (linux)
+long STDCALL OPEN_SHARED_LIBRARY(long long int * sharedDLLHandle, char * library, long length_lib)
 #elif defined (salford32)
-extern "C" OPEN_SHARED_LIBRARY(long * sharedDLLHandle, char * library, long length_lib)
+extern "C" OPEN_SHARED_LIBRARY(int64_t * sharedDLLHandle, char * library, long length_lib)
 #endif
 {
     long error = 1;
@@ -128,14 +129,14 @@ extern "C" OPEN_SHARED_LIBRARY(long * sharedDLLHandle, char * library, long leng
     tmpSharedDLL->dllHandle = LoadLibrary(lib_name);
 #elif defined(salford32)
     tmpSharedDLL->dllHandle = LoadLibrary(lib_name);
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
     tmpSharedDLL->dllHandle = dlopen(lib_name, RTLD_LAZY);
 #endif
 
     if (tmpSharedDLL->dllHandle != NULL)
     {
         error = 0;
-        *sharedDLLHandle = (long) tmpSharedDLL;
+        *sharedDLLHandle = (long long int) tmpSharedDLL;
     }
 
     free(lib_name); lib_name = NULL;
@@ -146,10 +147,10 @@ extern "C" OPEN_SHARED_LIBRARY(long * sharedDLLHandle, char * library, long leng
  * ============================================================================
  */
 
-#if defined (WIN32) || defined (HAVE_CONFIG_H)
-long STDCALL CLOSE_SHARED_LIBRARY(long * sharedDLLHandle)
+#if defined (WIN32) || defined (linux)
+long STDCALL CLOSE_SHARED_LIBRARY(int64_t * sharedDLLHandle)
 #elif defined (salford32)
-extern "C" CLOSE_SHARED_LIBRARY(long * sharedDLLHandle)
+extern "C" CLOSE_SHARED_LIBRARY(int64_t * sharedDLLHandle)
 #endif
 {
     SharedDLL * sharedDLL = (SharedDLL *) (*sharedDLLHandle);
@@ -158,7 +159,7 @@ extern "C" CLOSE_SHARED_LIBRARY(long * sharedDLLHandle)
     (void) FreeLibrary(sharedDLL->dllHandle);
 #elif defined(salford32)
     (void) FreeLibrary(sharedDLL->dllHandle);
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
     (void) dlclose(sharedDLL->dllHandle);
 #endif
 

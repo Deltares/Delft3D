@@ -1,16 +1,16 @@
-function [Settings,fn]=md_print(varargin)
+function [Settings, fileNameArg] = md_print(varargin)
 %MD_PRINT Send a figure to a printer.
-%   MD_PRINT(FigureHandles)
+%   MD_PRINT(FigureHandles, Settings, FileName)
 %   Opens the user interface for the specified figures (in the
 %   specified order). If no argument is specified, the command works
 %   on the current figure (if it exists).
 %
-%   Settings=MD_PRINT(...)
+%   [Settings, FigureHandles] = MD_PRINT('getsettings', FigureHandles)
 %   Returns the (last) selected output mode and the settings. To use
 %   the UI for selection only (i.e. no actual printing/saving of a
 %   figure), use an empty list of figures: Settings=MD_PRINT([])
 %
-%   MD_PRINT(FigureHandles,Settings,FileName)
+%   MD_PRINT(FigureHandles, Settings, FileName)
 %   Prints the specified figures using the specified settings.
 %   The filename is optional for output to file (PS/EPS/TIF/JPG/EMF/PNG).
 %
@@ -18,7 +18,7 @@ function [Settings,fn]=md_print(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -58,15 +58,20 @@ function [Settings,fn]=md_print(varargin)
 persistent PL
 
 if isempty(PL)
+    % W: supported when running within MATLAB on Windows
+    % WD: supported in deployed mode on Windows
+    % L: supported when running within MATLAB on Linux
+    % LD: supported in deployed mode on Linux
     W  = 1;
     WD = 2;
-    U  = 4;
-    UD = 8;
-    all = W+WD+U+UD;
+    L  = 4;
+    LD = 8;
     win = W+WD;
-    unx = U+UD;
+    lnx = L+LD;
+    all = win+lnx;
     %
-    PL={1  'PDF file'                    all        1     1  1
+    PL={1  'PDF file'                    all        1     1  0
+        1  'Multi page PDF file'         all        1     1  1
         1  'PS file'                     all        1     0  0
         1  'EPS file'                    all        1     0  0
         0  'TIF file'                    all        2     0  0
@@ -85,342 +90,543 @@ if isempty(PL)
         if ispc
             code = WD;
         else
-            code = UD;
+            code = LD;
         end
     else
         if ispc
             code = W;
         else
-            code = U;
+            code = L;
         end
     end
     Remove = ~bitget(cat(1,PL{:,3}),log2(code)+1);
     PL(Remove,:)=[];
 end
 
-getsettings = 0;
-nArgParsed = 0;
-Local_ui_args = {};
-if nargin==0
+getSettings = 0;
+keepOpen = 0;
+printObj.PrtID = -1;
+printObj.NextNr = 1;
+printObj.GhostScript = qp_settings('ghostscript','');
+fileNameArg = '';
+if nargin == 0
     shh=get(0,'showhiddenhandles');
     set(0,'showhiddenhandles','on');
-    figlist=get(0,'currentfigure');
-    Local_ui_args={get(0,'children') figlist};
+    figlist = get(0,'currentfigure');
+    Local_ui_args = {get(0,'children') figlist};
     set(0,'showhiddenhandles',shh);
 else
-    figlist = varargin{1};
-    nArgParsed = 1;
-    if isequal(figlist,'getsettings')
-        getsettings = 1;
-        figlist = varargin{2};
-        nArgParsed = 2;
-    elseif ischar(figlist)
-        %
-        % Deal with uicontrol callbacks ...
-        %
-        UD=get(gcbf,'userdata');
-        UD{end+1}=figlist;
-        set(gcbf,'userdata',UD);
-        return
+    for i = 1:nargin
+        if ischar(varargin{i})
+            switch lower(varargin{i})
+                case 'getsettings'
+                    getSettings = 1;
+                case 'keepopen'
+                    keepOpen = 1;
+                    if nargout == 0
+                        error('Output argument required when using input argument ''keepopen''.')
+                    end
+                otherwise
+                    fileNameArg = varargin{i};
+            end
+        elseif isstruct(varargin{i})
+            printObj = varargin{i};
+        else
+            figlist = varargin{i};
+        end
     end
+    Local_ui_args = {};
 end
 
-selfiglist=intersect(figlist,allchild(0));
-if ~isequal(sort(figlist),selfiglist) && ~isempty(figlist)
+selfiglist = intersect(figlist, allchild(0));
+if length(selfiglist) < length(figlist)
     fprintf('Non-figure handles removed from print list.\n');
-    figlist=selfiglist;
+    figlist = selfiglist;
 end
 
-if nargin<nArgParsed+1
-    LocSettings.PrtID=-1;
-    LocSettings.AllFigures=0;
-else
-    LocSettings = varargin{nArgParsed+1};
-    nArgParsed = nArgParsed+1;
-end
-if ischar(LocSettings.PrtID)
-    LocSettings.PrtID=ustrcmpi(LocSettings.PrtID,PL(:,2));
-elseif LocSettings.PrtID>=0
+if ischar(printObj.PrtID)
+    printObj.PrtID = ustrcmpi(printObj.PrtID, PL(:,2));
+elseif printObj.PrtID >= 0
     error('Please replace PrtID number by printer name.')
 end
 
-if isfield(LocSettings,'SelectFrom')
-    Local_ui_args={LocSettings.SelectFrom figlist};
+if isfield(printObj, 'SelectFrom')
+    Local_ui_args = {printObj.SelectFrom figlist};
+elseif isempty(Local_ui_args) && ~isempty(figlist)
+    Local_ui_args = {figlist figlist};
 end
 
-if (isempty(figlist) && nargout>0) || getsettings
-    if nargout>0
-        [Settings,figlist]=Local_ui(PL,0,LocSettings,Local_ui_args{:});
-        Settings.AllFigures=1;
-        if Settings.PrtID>0
-            Settings.PrtID=PL{Settings.PrtID,2};
+Ex = [];
+is_fig = false(size(figlist));
+for i = 1:length(figlist)
+    if ishandle(figlist(i))
+        if strcmp(get(figlist(i),'type'),'figure')
+            is_fig(i) = true;
         end
-        fn=figlist;
     end
+end
+figlist = figlist(is_fig);
+
+if ~isempty(figlist) && printObj.PrtID < 0
+    figure(figlist(1));
+end
+if getSettings || printObj.PrtID < 0
+    [printObj, figlistnew] = print_dialog(PL, length(figlist)>1, printObj, Local_ui_args{:});
+    if printObj.PrtID > 0 && ~isempty(Local_ui_args)
+        figlist = figlistnew;
+    end
+end
+if getSettings
+    %----- return ----
+    if printObj.PrtID > 0
+        printObj.PrtID = PL{printObj.PrtID,2};
+        Settings = printObj;
+    else
+        Settings = [];
+    end
+    fileNameArg = figlist;
     return
 end
 
-if nargin>=nArgParsed+1
-    fn=varargin{nArgParsed+1};
+printObj.Append = false;
+if printObj.PrtID == 0
+    figlist = [];
 else
-    fn='';
-end
-
-i = 0;
-tempfil = '';
-pagenr = 1;
-Ex = [];
-while i<length(figlist)
-    i=i+1;
-    if ishandle(figlist(i))
-        if strcmp(get(figlist(i),'type'),'figure')
-            if LocSettings.PrtID<0
-                figure(figlist(i));
-                if i>1
-                    Local_ui_args = {};
+    printObj.Name = PL{printObj.PrtID, 2};
+    %
+    HG2 = ~ismember('zbuffer',set(0,'defaultfigurerenderer'));
+    switch PL{printObj.PrtID,1}
+        case -1 % painters/zbuffer irrelevant
+            printObj.Method=1;
+        case 0 % cannot be combined with painters, e.g. bitmap
+            if printObj.Method==1 || printObj.Method==2
+                printObj.Method = 2;
+                if HG2 % HG2 mode does not support ZBuffer printing
+                    printObj.Method = 3;
                 end
-                [LocSettings,figlistnew]=Local_ui(PL,(length(figlist)-i)>0,[],Local_ui_args{:});
-                if ~isempty(Local_ui_args)
-                    LocSettings.AllFigures = 1;
-                    figlist = figlistnew;
-                    i = 1;
-                end
-                tempfil=[tempname,'.'];
-                MoreToCome=LocSettings.AllFigures;
-            else % LocSettings.AllFigures continued
-                MoreToCome=i<length(figlist);
             end
-            if isempty(tempfil)
-                tempfil=[tempname,'.'];
+        otherwise
+            if printObj.Method==2 && HG2 % HG2 mode does not support ZBuffer printing
+                printObj.Method = 3;
             end
-
-            hvis=get(figlist(i),'handlevisibility');
-            set(figlist(i),'handlevisibility','on');
-            % figure(figlist(i));
-            if isnumeric(figlist(i))
-                FigStr=sprintf('-f%20.16f',figlist(i));
+    end
+    %
+    switch printObj.Method
+        case 1 % Painters
+            if matlabversionnumber >= 9.11
+                printObj.PrtMth = {'-vector'};
             else
-                FigStr=figlist(i);
+                printObj.PrtMth = {'-painters'};
             end
-
-            if LocSettings.PrtID==0
-                Printer='cancel';
+        case 2 % Zbuffer
+            printObj.PrtMth = {'-zbuffer', sprintf('-r%i',printObj.DPI)};
+        case 3 % OpenGL
+            if matlabversionnumber >= 9.11
+                printObj.PrtMth = {'-image', sprintf('-r%i',printObj.DPI)};
             else
-                Printer=PL{LocSettings.PrtID,2};
-                Method = LocSettings.Method;
-                %
-                HG2 = ~ismember('zbuffer',set(0,'defaultfigurerenderer'));
-                %
-                switch PL{LocSettings.PrtID,1}
-                    case -1 % painters/zbuffer irrelevant
-                        Method=1;
-                    case 0 % cannot be combined with painters, e.g. bitmap
-                        if Method==1 || Method==2
-                            Method = 2;
-                            if HG2 % HG2 mode does not support ZBuffer printing
-                                Method = 3;
-                            end
-                        end
-                    otherwise
-                        if Method==2 && HG2 % HG2 mode does not support ZBuffer printing
-                            Method = 3;
-                        end
-                end
-                %
-                switch Method
-                    case 1 % Painters
-                        PrtMth={'-painters'};
-                    case 2 % Zbuffer
-                        PrtMth={'-zbuffer',sprintf('-r%i',LocSettings.DPI)};
-                    case 3 % OpenGL
-                        PrtMth={'-opengl',sprintf('-r%i',LocSettings.DPI)};
-                end
+                printObj.PrtMth = {'-opengl', sprintf('-r%i',printObj.DPI)};
             end
-            switch Printer
-                case 'cancel'
-                    % nothing to do
-                case {'TIF file','BMP file','PNG file','JPG file','EPS file','PS file','EMF file','PDF file'}
-                    switch Printer
-                        case 'TIF file'
-                            ext='tif';
-                            dvr='-dtiff';
-                        case 'BMP file'
-                            ext='bmp';
-                            dvr='-dbmp';
-                        case 'PNG file'
-                            ext='png';
-                            dvr='-dpng';
-                        case 'JPG file'
-                            ext='jpg';
-                            dvr='-djpeg';
-                        case 'PDF file'
-                            ext='pdf';
-                            dvr='-dps';
-                            if LocSettings.Color
-                                dvr='-dpsc';
-                            end
-                        case 'EPS file'
-                            ext='eps';
-                            dvr='-deps';
-                            if LocSettings.Color
-                                dvr='-depsc';
-                            end
-                        case 'PS file'
-                            ext='ps';
-                            dvr='-dps';
-                            if LocSettings.Color
-                                dvr='-dpsc';
-                            end
-                        case 'EMF file'
-                            ext='emf';
-                            dvr='-dmeta';
-                    end
-                    if nargin<3 && pagenr==1
-                        [fn,pn]=uiputfile(['default.' ext],'Specify file name');
-                        fn = [pn,fn];
-                    end
-                    if ischar(fn)
-                        ih=get(figlist(i),'inverthardcopy');
-                        if isfield(LocSettings,'InvertHardcopy') && ~LocSettings.InvertHardcopy
-                            set(figlist(i),'inverthardcopy','off');
-                        else
-                            LocSettings.InvertHardcopy=1;
-                            set(figlist(i),'inverthardcopy','on');
-                        end
-                        if strcmp(Printer,'PDF file')
-                            switch pagenr
-                                case 1
-                                    pdfname = fn;
-                                    pagenr = 1;
-                                    fn = [tempname '.ps'];
-                                otherwise
-                                    PrtMth{end+1}='-append';
-                            end
-                        end
-                        normtext = findall(figlist(i),'fontunits','normalized');
-                        if ~isempty(normtext)
-                            set(normtext,'fontunits','points')
-                            drawnow % needed to get output file nicely formatted
-                        end
-                        try
-                            print(fn,FigStr,dvr,PrtMth{:});
-                            if strcmp(Printer,'PDF file')
-                                switch LocSettings.PageLabels
-                                    case 1
-                                        % no page label
-                                    case 2
-                                        figname = sprintf('page %i',pagenr);
-                                        add_bookmark(fn,figname,pagenr>1)                                        
-                                    case 3
-                                        figname = listnames(figlist(i),'showtype',0,'showhandle',0,'showtag',0);
-                                        add_bookmark(fn,figname{1},pagenr>1)
-                                end
-                                if ~MoreToCome
-                                    ps2pdf('psfile',fn,'pdffile',pdfname,'gspapersize','a4','deletepsfile',1)
-                                    fn = pdfname;
-                                end
-                                pagenr = pagenr+1;
-                            end
-                        catch Ex
-                            %rethrow the error after resetting a few things ...
-                        end
-                        if ~isempty(normtext)
-                            set(normtext,'fontunits','normalized')
-                        end
-                        set(figlist(i),'inverthardcopy',ih);
-                    end
-                case 'MATLAB fig file'
-                    if nargin<3
-                        [fn,pn]=uiputfile('default.fig','Specify file name');
-                        fn=[pn,fn];
-                    end
-                    if ischar(fn)
-                        try
-                            hgsave(figlist(i),fn);
-                        catch Ex
-                            %rethrow the error after resetting a few things ...
-                        end
-                    end
-                case 'QUICKPLOT session file'
-                    if nargin<3
-                        [fn,pn]=uiputfile('default.qpses','Specify file name');
-                        fn=[pn,fn];
-                    end
-                    if ischar(fn)
-                        try
-                            SES = qp_session('extract',figlist);
-                            SER = qp_session('serialize',SES);
-                            SER = qp_session('make_expandables',SER,{'filename','domain'});
-                            qp_session('save',SER,fn)
-                        catch Ex
-                            %rethrow the error after resetting a few things ...
-                        end
-                    end
-                    i = length(figlist); % all done
-                otherwise
-                    try
-                        ccd=cd;
-                        cd(tempdir);
-                        ih=get(figlist(i),'inverthardcopy');
-                        if isfield(LocSettings,'InvertHardcopy') && ~LocSettings.InvertHardcopy
-                            set(figlist(i),'inverthardcopy','off');
-                        else
-                            LocSettings.InvertHardcopy=1;
-                            set(figlist(i),'inverthardcopy','on');
-                        end
-                        switch Printer
-                            case {'other Windows printer','default Windows printer','Windows printer'}
-                                paperpos=get(figlist(i),'paperposition');
-                                %set(figlist(i),'paperposition',paperpos-[0.5 0 0.5 0]);
-                                if isdeployed && strcmp(Printer,'default Windows printer')
-                                    deployprint(figlist(i))
-                                elseif isdeployed && strcmp(Printer,'other Windows printer')
-                                    printdlg(figlist(i))
-                                else
-                                    dvr='-dwin';
-                                    if LocSettings.Color
-                                        dvr='-dwinc';
-                                    end
-                                    print(FigStr,dvr,PrtMth{:});
-                                end
-                                set(figlist(i),'paperposition',paperpos);
-                            case 'Bitmap to clipboard'
-                                set(figlist(i),'inverthardcopy','off');
-                                print(FigStr,'-dbitmap');
-                            case 'Metafile to clipboard'
-                                print(FigStr,PrtMth{:},'-dmeta');
-                        end
-                        set(figlist(i),'inverthardcopy',ih);
-                        cd(ccd);
-                    catch Ex
-                        %rethrow the error after resetting a few things ...
-                    end
+        otherwise
+            printObj.PrtMth = {};
+    end
+    
+    switch printObj.Name
+        case 'TIF file'
+            printObj.ext='tif';
+            printObj.dvr='-dtiff';
+        case 'BMP file'
+            printObj.ext='bmp';
+            printObj.dvr='-dbmp';
+        case 'PNG file'
+            printObj.ext='png';
+            printObj.dvr='-dpng';
+        case 'JPG file'
+            printObj.ext='jpg';
+            printObj.dvr='-djpeg';
+        case 'PDF file'
+            printObj.ext='pdf';
+            printObj.dvr='-dpdf';
+        case 'Multi page PDF file'
+            printObj.ext='pdf';
+            printObj.dvr='-dps';
+            if printObj.Color
+                printObj.dvr='-dpsc';
             end
-            if nargout>0
-                Settings=LocSettings;
-                Settings.AllFigures=1;
-                if Settings.PrtID>0
-                    Settings.PrtID=PL{Settings.PrtID,2};
-                end
+            printObj.Append = true;
+        case 'EPS file'
+            printObj.ext='eps';
+            printObj.dvr='-deps';
+            if printObj.Color
+                printObj.dvr='-depsc';
             end
-            set(figlist(i),'handlevisibility',hvis);
-            if ~LocSettings.AllFigures
-                LocSettings.PrtID=-1;
+        case 'PS file'
+            printObj.ext='ps';
+            printObj.dvr='-dps';
+            if printObj.Color
+                printObj.dvr='-dpsc';
             end
-            if ~isempty(Ex)
-                rethrow(Ex)
-            end
-        end
+        case 'EMF file'
+            printObj.ext='emf';
+            printObj.dvr='-dmeta';
+        case 'MATLAB fig file'
+            printObj.ext = 'fig';
+            printObj.dvr='';
+        case 'QUICKPLOT session file'
+            printObj.ext = 'qpses';
+            printObj.dvr = '';
+            printObj.Append = true;
+        otherwise
+            printObj.ext='';
+            printObj.dvr='';
     end
 end
 
-function [Settings,FigID]=Local_ui(PL,CanApplyAll,Settings,SelectFrom,FigID)
-persistent PrtID Method DPI ApplyAll Clr InvertHardcopy PageLabels
+i = 0;
+while i < length(figlist)
+    if ~isfield(printObj,'Name')
+        break
+    elseif ~isfield(printObj,'FileName') || isempty(printObj.FileName)
+        printObj.FileName = fileNameArg;
+    end
+    i=i+1;
+    fig = figlist(i);
+    if ~printObj.Append || i == 1
+        printObj = printInitialize(printObj,length(figlist));
+        fileNameArg = printObj.FileName;
+    end
+    if ~ischar(printObj.FileName)
+        break
+    end
+
+    hvis = get(fig, 'handlevisibility');
+    set(fig, 'handlevisibility', 'on');
+    
+    try
+        printObj = printAdd(printObj, fig);
+        if ~printObj.Append
+            printObj = printFinalize(printObj);
+        end
+    catch Ex
+        %rethrow the error after resetting a few things ...
+        % clear the figlist to end the loop ASAP
+        figlist = [];
+    end
+    if ~printObj.Append
+        printObj.FilePath = fileparts(printObj.FileName);
+        printObj.FileName = '';
+    end
+    set(fig,'handlevisibility',hvis);
+end
+try
+    if printObj.Append && ~keepOpen
+        printObj = printFinalize(printObj);
+    end
+catch Ex2
+    if isempty(Ex)
+        rethrow(Ex2)
+    end
+end
+if ~isempty(Ex)
+    rethrow(Ex)
+end
+
+if nargout>0
+    %----- return ----
+    if printObj.PrtID > 0
+        printObj.PrtID = PL{printObj.PrtID,2};
+    end
+    Settings = printObj;
+end
+
+
+function printObj = printInitialize(printObj,nPrints)
+if isempty(printObj.FileName) && ~isempty(printObj.ext)
+    defFile = ['default.' printObj.ext];
+    if isfield(printObj,'FilePath')
+        defFile = fullfile(printObj.FilePath, defFile);
+    end
+    [fn,pn] = uiputfile(defFile,'Specify file name');
+    printObj.FileName = [pn,fn];
+    if ~strcmp(printObj.Name,'Multi page PDF file') && nPrints > 1
+        [printObj.BaseName,printObj.NextNr,printObj.FrmtNr] = DetectBaseAndNumber(printObj.FileName);
+    end
+elseif ~isempty(printObj.ext) && ~isfield(printObj,'PDFName')
+    [f,p,e] = fileparts(printObj.FileName);
+    if ~strcmp(e,['.' printObj.ext])
+        printObj.FileName = [printObj.FileName '.' printObj.ext];
+    end
+end
+if ~isfield(printObj,'NextNr')
+    printObj.NextNr = 1;
+end
+if ischar(printObj.FileName)
+    switch printObj.Name
+        case 'Multi page PDF file'
+            if ~isfield(printObj,'PDFName')
+                printObj.PDFName = printObj.FileName;
+                printObj.FileName = [tempname '.ps'];
+            end
+    end
+end
+
+
+function [base,nr,FrmtNr] = DetectBaseAndNumber(fn)
+[p,f] = fileparts(fn);
+ndig = 0;
+while length(f)>ndig && ismember(f(end-ndig), '0123456789')
+    ndig = ndig+1;
+end
+if ndig == 0
+    ndig = 3;
+    nr = 0;
+else
+    nr = sscanf(f(end-ndig+1:end),'%d');
+    f = f(1:end-ndig);
+end
+base = fullfile(p,f);
+if ndig>0
+    ndigstr = num2str(ndig);
+    FrmtNr = strcat('%',ndigstr,'.',ndigstr,'i');
+else
+    FrmtNr = '';
+end
+
+    
+function printObj = printAdd(printObj, fig)
+if ~ischar(printObj.FileName)
+    return
+end
+if isnumeric(fig)
+    FigHandle = sprintf('-f%20.16f',fig);
+else
+    FigHandle = fig;
+end
+switch printObj.Name
+    case {'TIF file','BMP file','PNG file','JPG file','EPS file','PS file','EMF file','PDF file','Multi page PDF file'}
+        ih=get(fig,'inverthardcopy');
+        if isfield(printObj,'InvertHardcopy') && ~printObj.InvertHardcopy
+            set(fig,'inverthardcopy','off');
+        else
+            printObj.InvertHardcopy=1;
+            set(fig,'inverthardcopy','on');
+        end
+        %
+        if strcmp(printObj.Name,'Multi page PDF file') && printObj.NextNr > 1
+            append = {'-append'};
+        else
+            append = {};
+        end
+        %
+        normtext = findall(fig,'fontunits','normalized');
+        if ~isempty(normtext)
+            set(normtext,'fontunits','points')
+            drawnow % needed to get output file nicely formatted
+        end
+        
+        %
+        % make sure that the paper type is consistent with previous paper
+        % type settings
+        %
+        if isfield(printObj,'Paper')
+            pu  = get(fig,'paperunits');
+            pt = get(fig,'papertype');
+            po = get(fig,'paperorientation');
+            ps = get(fig,'papersize');
+            set(fig,'paperunits','inches')
+            set(fig,'papersize',printObj.Paper.Size)
+            set(fig,'paperorientation',printObj.Paper.Orientation)
+            if ~strcmp(printObj.Paper.Type,'<custom>')
+                set(fig,'papertype',printObj.Paper.Type)
+            end
+            set(fig,'paperunits',pu)
+        end
+        %
+        % make sure that the printed figure fits onto the page
+        %
+        pp_adjusted = false;
+        pu  = get(fig,'paperunits');
+        ppm = get(fig,'paperpositionmode');
+        pp  = get(fig,'paperposition');
+        set(fig,'paperunits','normalized')
+        ppn = get(fig,'paperposition');
+        if any(ppn(1:2) < 0) || any(ppn(1:2)+ppn(3:4) > 1)
+            % first attempt to get the whole figure always on the page. To
+            % keep the aspect ratio we may have to set the paperposition a
+            % bit more carefully ... and we may want to switch between
+            % portrait and landscape mode ...
+            set(fig,'paperposition',[ 0 0 1 1 ])
+            pp_adjusted = true;
+        end
+        % fig
+        if isfield(printObj,'BaseName')
+            figname = [printObj.BaseName sprintf(printObj.FrmtNr, printObj.NextNr) '.' printObj.ext];
+        else
+            figname = printObj.FileName;
+        end
+        %
+        % do the actual print
+        %
+        print(figname, FigHandle, printObj.dvr, printObj.PrtMth{:}, append{:});
+        %
+        % reset the paper position
+        %
+        set(fig,'paperunits',pu)
+        if pp_adjusted
+            if strcmp(ppm,'manual')
+                set(fig,'paperposition',pp)
+            else
+                set(fig,'paperpositionmode','auto')
+            end
+        end
+        %
+        % reset with the paper type
+        %
+        if isfield(printObj,'Paper')
+            set(fig,'papersize',ps)
+            set(fig,'paperorientation',po)
+            if ~strcmp(pt,'<custom>')
+                set(fig,'papertype',pt)
+            end
+        end
+        %
+        % reset other properties
+        %
+        if ~isempty(normtext)
+            set(normtext,'fontunits','normalized')
+        end
+        set(fig,'inverthardcopy',ih);
+        %
+        if strcmp(printObj.Name,'Multi page PDF file')
+            switch printObj.PageLabels
+                case 1
+                    % no page label
+                case 2
+                    figname = sprintf('page %i', printObj.NextNr);
+                    add_bookmark(printObj.FileName, figname, printObj.NextNr>1)
+                case 3
+                    figname = listnames(fig, 'showtype', 0, 'showhandle', 0, 'showtag',0);
+                    add_bookmark(printObj.FileName, figname{1}, printObj.NextNr>1)
+            end
+            printObj.Paper = getPaperType(fig);
+        end
+    case 'MATLAB fig file'
+        hgsave(fig,printObj.FileName);
+    case 'QUICKPLOT session file'
+        if isfield(printObj,'SES')
+            appendto_SES = {printObj.SES};
+        else
+            appendto_SES = {};
+        end
+        printObj.SES = qp_session('extract', fig, appendto_SES{:});
+    case {'Bitmap to clipboard', 'Metafile to clipboard', 'Windows printer', 'default Windows printer', 'other Windows printer'}
+        ccd=cd;
+        cd(tempdir);
+        ih=get(fig,'inverthardcopy');
+        if isfield(printObj,'InvertHardcopy') && ~printObj.InvertHardcopy
+            set(fig,'inverthardcopy','off');
+        else
+            printObj.InvertHardcopy=1;
+            set(fig,'inverthardcopy','on');
+        end
+        switch printObj.Name
+            case 'other Windows printer'
+                dvr='-dwin';
+                if printObj.Color
+                    dvr='-dwinc';
+                end
+                if isdeployed
+                    deployprint(fig)
+                else
+                    print(FigHandle, dvr, printObj.PrtMth{:});
+                end
+            case 'default Windows printer'
+                if exist('printdlg','file')
+                    printdlg(fig)
+                else
+                end
+            case 'Windows printer'
+                dvr='-dwin';
+                if printObj.Color
+                    dvr='-dwinc';
+                end
+                print(FigHandle,dvr,printObj.PrtMth{:});
+            case 'Bitmap to clipboard'
+                set(fig,'inverthardcopy','off');
+                print(FigHandle, '-dbitmap');
+            case 'Metafile to clipboard'
+                print(FigHandle, printObj.PrtMth{:}, '-dmeta');
+        end
+        set(fig,'inverthardcopy',ih);
+        cd(ccd)
+end
+printObj.NextNr = printObj.NextNr + 1;
+
+
+function printObj = printFinalize(printObj)
+if ~isfield(printObj,'FileName') || ~ischar(printObj.FileName)
+    return
+end
+switch printObj.Name
+    case 'Multi page PDF file'
+        if isfield(printObj,'Paper') && exist(printObj.FileName,'file')
+            ps2pdf('psfile',printObj.FileName, ...
+                'pdffile',printObj.PDFName, ...
+                'gscommand','c:\Program Files\gs\gs10.00.0\bin\gswin64c.exe', ...
+                'gspapersize',paperType2gs(printObj.Paper), ...
+                'deletepsfile',1)
+        end
+        printObj.FileName = printObj.PDFName;
+        printObj = rmfield(printObj, 'PDFName');
+    case 'QUICKPLOT session file'
+        SER = qp_session('serialize',printObj.SES);
+        SER = qp_session('make_expandables',SER,{'filename','domain'});
+        qp_session('save',SER,printObj.FileName)
+end
+printObj.FileName = '';
+
+
+function paper =  getPaperType(fig)
+paper.Type = get(fig,'papertype');
+paper.Orientation = get(fig,'paperorientation');
+pu = get(fig,'paperunits');
+set(fig, 'paperunits', 'inches');
+paper.Size = get(fig, 'papersize');
+set(fig, 'paperunits', pu)
+
+
+function papertypeGS =  paperType2gs(paper)
+papertypeGS = paper.Type;
+switch papertypeGS
+    case 'usletter'
+        papertypeGS = 'letter';
+    case 'uslegal'
+        papertypeGS = 'legal';
+    case {'A1', 'A2', 'A3', 'A4', 'A5'}
+        papertypeGS = lower(papertypeGS);
+    case {'arch-A', 'arch-B', 'arch-C', 'arch-D', 'arch-E'}
+        papertypeGS(5) = [];
+    case 'tabloid'
+        papertypeGS = '11x17';
+    otherwise % custom, A-E, B0-B5
+        papertypeGS = paper.Size;
+end
+
+
+function md_print_callback(obj,event,arg)
+UD=get(gcbf,'userdata');
+UD{end+1}=arg;
+set(gcbf,'userdata',UD);
+
+
+function [Settings,FigID] = print_dialog(PL,CanApplyAll,Settings,SelectFrom,FigID)
+persistent PrtID Method DPI Clr InvertHardcopy PageLabels
+if ~exist(qp_settings('ghostscript',''),'file')
+    PL(strcmp(PL(:,2),'Multi page PDF file'),:)=[];
+end
 if isempty(PrtID)
     PrtID=1;
     Method=2;
     DPI=150;
-    ApplyAll=0;
     InvertHardcopy=1;
     Clr=1;
     PageLabels=1;
@@ -437,9 +643,6 @@ if nargin>2 && isstruct(Settings)
     end
     if isfield(Settings,'DPI')
         DPI=Settings.DPI;
-    end
-    if isfield(Settings,'ApplyAll')
-        ApplyAll=Settings.ApplyAll;
     end
     if isfield(Settings,'InvertHardcopy')
         InvertHardcopy=Settings.InvertHardcopy;
@@ -461,9 +664,9 @@ if nargin<5
 end
 XX=xx_constants;
 
-PrintLabel=200;
+PrintLabel=300;
 TextLabel=50;
-FigListHeight=100;
+FigListHeight=200;
 
 ZBufWidth=80;
 ResWidth=50;
@@ -471,8 +674,7 @@ ResWidth=50;
 TextShift = [0 XX.Txt.Height-XX.But.Height 0 0];
 Fig_Width=TextLabel+PrintLabel+3*XX.Margin;
 Fig_Height=6*XX.Margin+9*XX.But.Height+XX.Txt.Height+ ...
-    (XX.Margin+FigListHeight)*Reselect + ...
-    (XX.Margin+XX.But.Height)*double(CanApplyAll);
+    (XX.Margin+FigListHeight)*Reselect;
 
 ss = qp_getscreen;
 swidth = ss(3);
@@ -490,29 +692,16 @@ GUI.Cancel = uicontrol('style','pushbutton', ...
     'position',rect, ...
     'string','Cancel', ...
     'parent',fig, ...
-    'callback','md_print cancel');
+    'callback',{@md_print_callback 'cancel'});
 
 rect(1) = (Fig_Width+XX.Margin)/2;
 GUI.OK=uicontrol('style','pushbutton', ...
     'position',rect, ...
     'string','OK', ...
     'parent',fig, ...
-    'callback','md_print OK');
+    'callback',{@md_print_callback 'OK'});
 
 rect(1) = XX.Margin;
-if CanApplyAll
-    rect(2) = rect(2)+rect(4)+XX.Margin;
-    rect(3) = Fig_Width-2*XX.Margin;
-    rect(4) = XX.But.Height;
-    GUI.AllFig=uicontrol('style','checkbox', ...
-        'position',rect, ...
-        'parent',fig, ...
-        'value',ApplyAll, ...
-        'string','Apply to All Remaining Figures', ...
-        'backgroundcolor',XX.Clr.LightGray, ...
-        'enable','on', ...
-        'callback','md_print ApplyAll');
-end
 
 if PL{PrtID,6}
     enab = 'on';
@@ -542,7 +731,7 @@ GUI.PLabels=uicontrol('style','popupmenu', ...
     'string',{'No Labels','Page Numbers','Figure Names'}, ...
     'backgroundcolor',clr, ...
     'enable',enab, ...
-    'callback','md_print PageLabels');
+    'callback',{@md_print_callback 'PageLabels'});
 
 rect(1) = XX.Margin;
 rect(2) = rect(2)+rect(4);
@@ -555,7 +744,7 @@ GUI.InvHard=uicontrol('style','checkbox', ...
     'string','White Background and Black Axes', ...
     'backgroundcolor',XX.Clr.LightGray, ...
     'enable','on', ...
-    'callback','md_print InvertHardcopy');
+    'callback',{@md_print_callback 'InvertHardcopy'});
 
 rect(2) = rect(2)+rect(4);
 rect(3) = Fig_Width-2*XX.Margin;
@@ -567,7 +756,7 @@ GUI.Color=uicontrol('style','checkbox', ...
     'horizontalalignment','left', ...
     'value',Clr, ...
     'enable','on', ...
-    'callback','md_print Color');
+    'callback',{@md_print_callback 'Color'});
 
 rect(1) = XX.Margin;
 rect(2) = rect(2)+rect(4)+XX.Margin;
@@ -580,7 +769,7 @@ GUI.OpenGL=uicontrol('style','radiobutton', ...
     'value',Method==3, ...
     'backgroundcolor',XX.Clr.LightGray, ...
     'enable','on', ...
-    'callback','md_print OpenGL');
+    'callback',{@md_print_callback 'OpenGL'});
 
 rect(1) = rect(1)+rect(3)+XX.Margin;
 rect(3) = ResWidth;
@@ -591,7 +780,7 @@ GUI.Resol=uicontrol('style','edit', ...
     'horizontalalignment','right', ...
     'backgroundcolor',XX.Clr.LightGray, ...
     'enable','off', ...
-    'callback','md_print DPI');
+    'callback',{@md_print_callback 'DPI'});
 
 rect(1) = rect(1)+rect(3)+XX.Margin;
 rect(3) = Fig_Width-(4*XX.Margin+ZBufWidth+ResWidth);
@@ -621,7 +810,7 @@ GUI.ZBuf=uicontrol('style','radiobutton', ...
     'string','ZBuffer', ...
     'backgroundcolor',XX.Clr.LightGray, ...
     'enable','on', ...
-    'callback','md_print Zbuffer');
+    'callback',{@md_print_callback 'Zbuffer'});
 
 rect(1) = XX.Margin;
 rect(2) = rect(2)+rect(4);
@@ -634,7 +823,7 @@ GUI.Painter=uicontrol('style','radiobutton', ...
     'string','Painters (864 DPI)', ...
     'backgroundcolor',XX.Clr.LightGray, ...
     'enable','on', ...
-    'callback','md_print Painters');
+    'callback',{@md_print_callback 'Painters'});
 
 rect(1) = XX.Margin;
 rect(2) = rect(2)+rect(4);
@@ -659,7 +848,7 @@ GUI.Opt=uicontrol('style','pushbutton', ...
     'horizontalalignment','left', ...
     'backgroundcolor',XX.Clr.LightGray, ...
     'enable','off', ...
-    'callback','md_print Options');
+    'callback',{@md_print_callback 'Options'});
 
 rect(1) = XX.Margin;
 rect(2) = rect(2)+rect(4)+XX.Margin;
@@ -684,7 +873,7 @@ GUI.Printer=uicontrol('style','popupmenu', ...
     'horizontalalignment','left', ...
     'backgroundcolor',XX.Clr.White, ...
     'enable','on', ....
-    'callback','md_print Printer');
+    'callback',{@md_print_callback 'Printer'});
 
 if Reselect
     rect(1) = 2*XX.Margin+TextLabel;
@@ -705,7 +894,7 @@ if Reselect
         'horizontalalignment','left', ...
         'backgroundcolor',XX.Clr.White, ...
         'enable','on', ....
-        'callback','md_print Figure');
+        'callback',{@md_print_callback 'Figure'});
 
     rect(1) = XX.Margin;
     rect(2) = rect(2)+rect(4)-XX.Txt.Height;
@@ -772,15 +961,16 @@ while ~gui_quit
                 gui_quit=1;
             case 'OK'
                 gui_quit=1;
-            case 'Figure'
-                FigIndex=get(GUI.FigLst,'value');
-                FigID=AllFigID(FigIndex);
-                if isempty(FigID)
-                    set(GUI.OK,'enable','off')
-                else
-                    set(GUI.OK,'enable','on')
+            case {'Figure','Printer'}
+                if strcmp(cmd,'Figure')
+                    FigIndex=get(GUI.FigLst,'value');
+                    FigID=AllFigID(FigIndex);
+                    if isempty(FigID)
+                        set(GUI.OK,'enable','off')
+                    else
+                        set(GUI.OK,'enable','on')
+                    end
                 end
-            case 'Printer'
                 PrtID=get(GUI.Printer,'value');
                 if strcmp(PL{PrtID,2},'Windows printer')
                     set(GUI.Opt,'enable','on');
@@ -806,13 +996,12 @@ while ~gui_quit
                         set(GUI.InvHard,'enable','off','value',0);
                         Clr=1;
                 end
-                switch PL{PrtID,6}
-                    case 0 % 
-                        set(GUI.PLabelTxt,'enable','off')
-                        set(GUI.PLabels,'enable','off','backgroundcolor',XX.Clr.LightGray)
-                    case 1 % 
-                        set(GUI.PLabelTxt,'enable','on')
-                        set(GUI.PLabels,'enable','on','backgroundcolor',XX.Clr.White)
+                if PL{PrtID,6}==0
+                    set(GUI.PLabelTxt,'enable','off')
+                    set(GUI.PLabels,'enable','off','backgroundcolor',XX.Clr.LightGray)
+                else
+                    set(GUI.PLabelTxt,'enable','on')
+                    set(GUI.PLabels,'enable','on','backgroundcolor',XX.Clr.White)
                 end
             case 'PageLabels'
                 PageLabels = get(GUI.PLabels,'value');
@@ -845,8 +1034,6 @@ while ~gui_quit
                 Clr=get(GUI.Color,'value');
             case 'InvertHardcopy'
                 InvertHardcopy=get(GUI.InvHard,'value');
-            case 'ApplyAll'
-                ApplyAll=get(GUI.AllFig,'value');
         end
     end
 end
@@ -857,7 +1044,6 @@ end
 Settings.PrtID=PrtID;
 Settings.Method=Method;
 Settings.DPI=DPI;
-Settings.AllFigures=ApplyAll;
 Settings.Color=Clr;
 Settings.InvertHardcopy=InvertHardcopy;
 Settings.PageLabels=PageLabels;
@@ -929,6 +1115,8 @@ switch Type
             else
                 set(GUI.ZBuf,'value',1)
             end
+        else
+            set(GUI.OpenGL,'value',1)
         end
     otherwise
         set(GUI.Painter,'value',0,'enable','on')

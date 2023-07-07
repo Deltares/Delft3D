@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@
  *  Function names for FORTRAN-C interface.
  */
 
-#if HAVE_CONFIG_H
+#if defined(linux)
 #   include "config.h"
 #   define STDCALL  /* nothing */
 #   define THROWEXCEPTION FC_FUNC(throwexception,THROWEXCEPTION)

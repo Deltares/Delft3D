@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine writex
 
@@ -46,12 +46,10 @@ c     Include data structures for tables
 
       integer i     , jndex , iexch , isubs , iitem , iinpu , ioutp ,
      j        ioutf , istoc , ivelo , idisp
-      data lu   / 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-     j            34, 35/
 
 c     Table 3.1
 
-      open ( lu(1) , file = 'tabel301.pptex' )
+      open ( newunit = lu(1) , file = 'tabel301.pptex' )
 !      write ( lu(1) , 1000 )
       write ( lu(1) , 1010 )
      j (procid(i),procnm(i),procfo(i),i=1,nproc)
@@ -60,7 +58,7 @@ c     Table 3.1
 c     Table 3.2
 
 
-      open ( lu(2) , file = 'tabel302.pptex' )
+      open ( newunit = lu(2) , file = 'tabel302.pptex' )
 !      write ( lu(2) , 1020 )
       do 100 isubs = 1,nsubs
           do 90 istoc = 1,nstoc
@@ -79,7 +77,7 @@ c     Table 3.2
 
 c     Table 3.3
 
-      open ( lu(3) , file = 'tabel303.pptex' )
+      open ( newunit = lu(3) , file = 'tabel303.pptex' )
 !s      write ( lu(3) , 1040 )
       do 120 isubs = 1,nsubs
           do 110 ivelo = 1,nvelo
@@ -98,7 +96,7 @@ c     Table 3.3
 
 c     Table 3.4
 
-      open ( lu(4) , file = 'tabel304.pptex' )
+      open ( newunit = lu(4) , file = 'tabel304.pptex' )
 !      write ( lu(4) , 1050 )
       do 140 isubs = 1,nsubs
           do 130 idisp = 1,ndisp
@@ -117,7 +115,7 @@ c     Table 3.4
 
 c     Table 3.5
 
-      open ( lu(5) , file = 'tabel305.pptex' )
+      open ( newunit = lu(5) , file = 'tabel305.pptex' )
 !      write ( lu(5) , 1060 )
       do 200 istoc = 1,nstoc
           call zoek (stocfl(istoc),noutf,outffl,10,ioutf)
@@ -132,7 +130,7 @@ c     Table 3.5
 
 c     Table 3.6
 
-      open ( lu(6) , file = 'tabel306.pptex' )
+      open ( newunit = lu(6) , file = 'tabel306.pptex' )
 !      write ( lu(6) , 1080 )
       do 210 ivelo = 1,nvelo
           call zoek (veloit(ivelo),noutp,outpit,10,ioutp)
@@ -147,7 +145,7 @@ c     Table 3.6
 
 c     Table 3.7
 
-      open ( lu(7) , file = 'tabel307.pptex' )
+      open ( newunit = lu(7) , file = 'tabel307.pptex' )
 !      write ( lu(7) , 1090 )
       do 220 idisp = 1,ndisp
           call zoek (dispit(idisp),noutp,outpit,10,ioutp)
@@ -163,14 +161,14 @@ c     Table 3.7
 c     Tables 3.8/3.9/3.10/3.11/3.12/3.13
 c     Tables 3.14/3.15
 
-      open ( lu(8) , file = 'tabel308.pptex' )
-      open ( lu(9) , file = 'tabel309.pptex' )
-      open ( lu(10) , file = 'tabel310.pptex' )
-      open ( lu(11) , file = 'tabel311.pptex' )
-      open ( lu(12) , file = 'tabel312.pptex' )
-      open ( lu(13) , file = 'tabel313.pptex' )
-      open ( lu(14) , file = 'tabel314.pptex' )
-      open ( lu(15) , file = 'tabel315.pptex' )
+      open ( newunit = lu(8) , file = 'tabel308.pptex' )
+      open ( newunit = lu(9) , file = 'tabel309.pptex' )
+      open ( newunit = lu(10) , file = 'tabel310.pptex' )
+      open ( newunit = lu(11) , file = 'tabel311.pptex' )
+      open ( newunit = lu(12) , file = 'tabel312.pptex' )
+      open ( newunit = lu(13) , file = 'tabel313.pptex' )
+      open ( newunit = lu(14) , file = 'tabel314.pptex' )
+      open ( newunit = lu(15) , file = 'tabel315.pptex' )
 
 !      write ( lu(8)  , 1100 )
 !      write ( lu(9)  , 1100 )

@@ -9,4 +9,4 @@ start ..\bin\%1\tstallf77-put.exe
 fc TESTF77Serial-res.txt ..\resultsApproved\w32\TESTF77Serial-res.txt
 fc TESTF77Synch-res.txt ..\resultsApproved\w32\TESTF77Synch-res.txt
 
-exit 0
+exit /B 0

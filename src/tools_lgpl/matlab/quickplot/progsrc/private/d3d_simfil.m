@@ -18,7 +18,7 @@ function varargout=d3d_simfil(FI,idom,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -139,8 +139,8 @@ switch FI.FileType(9:end)
     case '1D2D mapping'
         switch Props.Name
             case {'1D2D links','1D2D link numbers'}
-                XY1D = inifile('geti',FI.mapping,'1d2dLink','XY_1D');
-                XY2D = inifile('geti',FI.mapping,'1d2dLink','XY_2D');
+                XY1D = inifile('hcgeti',FI.mapping,'1d2dLink','XY_1D');
+                XY2D = inifile('hcgeti',FI.mapping,'1d2dLink','XY_2D');
                 for i = 1:length(XY1D)
                     XY1D{i}(2,:) = XY2D{i};
                 end
@@ -164,7 +164,7 @@ switch FI.FileType(9:end)
         switch Name
             case 'network'
                 if ~isfield(FI,'ntwXY')
-                    G = inifile('cgeti',FI.ntw,'Branch','geometry');
+                    G = inifile('hcgeti',FI.ntw,'Branch','geometry');
                     for i = length(G):-1:1
                         XY{i} = geom2xy(G{i});
                     end
@@ -172,43 +172,29 @@ switch FI.FileType(9:end)
                 end
                 Ans.XY = FI.ntwXY(idx{M_});
             case 'nodes'
-                X = inifile('geti',FI.ntw,'Node','x');
-                Y = inifile('geti',FI.ntw,'Node','y');
+                X = inifile('hcgeti',FI.ntw,'Node','x');
+                Y = inifile('hcgeti',FI.ntw,'Node','y');
                 Ans.X = [X{idx{M_}}];
                 Ans.Y = [Y{idx{M_}}];
-                Ans.Val = inifile('geti',FI.ntw,'Node','id');
+                Ans.Val = inifile('hgeti',FI.ntw,'Node','id');
                 Ans.Val = Ans.Val(idx{M_});
             case 'xyz cross section lines'
-                % only xyz cross section definitions seem to have xCoors
-                % and yCoors, so just request those.
+                CDx = inifile('hcgeti', FI.crsDef, 'Definition', 'xCoors', []);
+                CDy = inifile('hcgeti', FI.crsDef, 'Definition', 'yCoors', []);
+                isXYZ = ~cellfun(@isempty, CDx);
+                CDx = CDx(isXYZ);
+                CDy = CDy(isXYZ);
                 %
-                %CT = inifile('geti',FI.crsLoc,'CrossSection','type');
-                %CT = find(strcmp(CT,Props.varid));
-                %iM = CT(idx{M_});
-                %
-                %CD = inifile('geti',FI.crsLoc,'CrossSection','definition');
-                %CD = CD(iM);
-                %
-                %CDi = inifile('geti',FI.crsDef,'Definition','id');
-                % the length of CDx and CDy will be shorter than CDi since
-                % every cross section has an id, but not every cross
-                % section has x/yCoors. Need to use the second output
-                % argument of inifile('get' to figure out which coordinates
-                % belong to which id.
-                CDx = inifile('geti',FI.crsDef,'Definition','xCoors');
-                CDy = inifile('geti',FI.crsDef,'Definition','yCoors');
-                %
-                %[isDef,iDef] = ismember(CD,CDi);
-                %CDx = CDx(iDef);
-                %CDy = CDy(iDef);
+                CDx = CDx(idx{M_});
+                CDy = CDy(idx{M_});
                 for i = 1:length(CDx)
                     CDx{i} = [CDx{i}' CDy{i}'];
                 end
                 %
                 Ans.XY = CDx;
             case 'cross section points'
-                csId = inifile('geti',FI.crsLoc,'CrossSection','id');
-                CT = inifile('geti',FI.crsLoc,'CrossSection','type');
+                csId = inifile('hgeti',FI.crsLoc,'CrossSection','id');
+                CT = inifile('hgeti',FI.crsLoc,'CrossSection','type');
                 CT = find(strcmp(CT,Props.varid));
                 iM = CT(idx{M_});
                 %
@@ -218,7 +204,7 @@ switch FI.FileType(9:end)
                 Ans.Y = FI.crsXY(iM,2);
                 Ans.Val = csId(iM);
             case 'lateral discharges'
-                lId = inifile('geti',FI.latLoc,'LateralDischarge','id');
+                lId = inifile('hcgetstringi',FI.latLoc,'LateralDischarge','id');
                 FI = check_latXY(FI);
                 %
                 Ans.X = FI.latXY(idx{M_},1);
@@ -229,25 +215,34 @@ switch FI.FileType(9:end)
                 Ans.X = FI.gpXY(idx{M_},1);
                 Ans.Y = FI.gpXY(idx{M_},2);
                 Ans.Val = FI.gpId(idx{M_});
+            case 'observation points'
+                lId = inifile('hcgetstringi',FI.obs,'ObservationPoint','id');
+                FI = check_obsXY(FI);
+                %
+                Ans.X = FI.obsXY(idx{M_},1);
+                Ans.Y = FI.obsXY(idx{M_},2);
+                Ans.Val = lId(idx{M_});
             case 'boundary points'
-                F=inifile('geti',FI.bndLoc,'Boundary','type');
+                F=inifile('hcgeti',FI.bndLoc,'Boundary','type');
                 BT = [F{:}];
                 BT = find(BT==Props.varid);
                 %
-                F=inifile('getstringi',FI.bndLoc,'Boundary','nodeId');
-                BI = F(BT(idx{M_}));
+                F=inifile('hcgeti',FI.bndLoc,'Boundary','nodeId');
+                BNI = F(BT(idx{M_}));
                 %
-                NI = inifile('getstringi',FI.ntw,'Node','id');
-                ni = find(ismember(NI,BI));
-                ni = ni(idx{M_});
-                x = inifile('geti',FI.ntw,'Node','x');
-                y = inifile('geti',FI.ntw,'Node','y');
+                NI = inifile('hcgetstringi',FI.ntw,'Node','id');
+                [~,iBNI,iNI] = intersect(BNI,NI);
+                ni = zeros(size(BNI));
+                ni(iBNI)=iNI;
+                %
+                x = inifile('hcgeti',FI.ntw,'Node','x');
+                y = inifile('hcgeti',FI.ntw,'Node','y');
                 Ans.X   = [x{ni}]';
                 Ans.Y   = [y{ni}]';
                 Ans.Val = NI(ni);
             case 'structure points'
-                sId = inifile('geti',FI.strucLoc,'Structure','id');
-                ST = inifile('geti',FI.strucLoc,'Structure','type');
+                sId = inifile('hcgeti',FI.strucLoc,'Structure','id');
+                ST = inifile('hcgeti',FI.strucLoc,'Structure','type');
                 ST = find(strcmp(ST,Props.varid));
                 iM = ST(idx{M_});
                 %
@@ -258,25 +253,47 @@ switch FI.FileType(9:end)
                 Ans.Val = sId(iM);
             otherwise
                 switch Props.varid{1}
-                    case {'calcdim','calcpnt','nodes_cr','morph_gr'}
+                    case {'calcdim','calcpnt','nodes_cr'}
                         FI = check_gpXY(FI);
+                        %
                         % first N1 points are internal nodes
-                        X = inifile('geti',FI.ntw,'Node','x');
-                        Y = inifile('geti',FI.ntw,'Node','y');
-                        N = inifile('getstringi',FI.ntw,'Node','id');
+                        X = inifile('hcgeti',FI.ntw,'Node','x');
+                        Y = inifile('hcgeti',FI.ntw,'Node','y');
+                        N = inifile('hgetstringi',FI.ntw,'Node','id');
                         nodXY = [cat(1,X{:}) cat(1,Y{:})];
+                        %
                         % next N2 points are the internal nodes of the branches
                         igpXY = FI.gpXY(FI.gpInternal,:);
-                        % final N3 points are the boundary nodes
-                        B = inifile('getstringi',FI.bndLoc,'Boundary','nodeId');
-                        NisB = ismember(N,B);
-                        bndXY = nodXY(NisB,:);
-                        nodXY = nodXY(~NisB,:);
+                        %
+                        % final N3 points are the boundary nodes in the
+                        % order of the branches
+                        bNodes = [inifile('hcgetstringi',FI.ntw,'Branch','FromNode') inifile('hcgetstringi',FI.ntw,'Branch','ToNode')]';
+                        bNodes = bNodes(:);
+                        B = inifile('hcgetstringi',FI.bndLoc,'Boundary','nodeId');
+                        B = bNodes(ismember(bNodes,B));
+                        [~,locB]=ismember(B,N);
+                        bndXY = nodXY(locB,:);
+                        %
+                        % Finally remove the boundaries from the internal
+                        % nodes list
+                        nodXY(locB,:) = [];
                         %
                         Ans.X = cat(1,nodXY(:,1),igpXY(:,1),bndXY(:,1));
                         Ans.X = Ans.X(idx{M_});
                         Ans.Y = cat(1,nodXY(:,2),igpXY(:,2),bndXY(:,2));
                         Ans.Y = Ans.Y(idx{M_});
+                        [time,data] = delwaq('read',FI.(Props.varid{1}),Props.varid{2},idx{M_},idx{T_});
+                        Ans.Time = time;
+                        Ans.Val = permute(data,[3 2 1]);
+                    case 'morph_gr'
+                        FI = check_gpXY(FI);
+                        %
+                        % all grid points (including fromNode and toNode)
+                        % in order of the branches
+                        XY = FI.gpXY;
+                        %
+                        Ans.X = XY(idx{M_},1);
+                        Ans.Y = XY(idx{M_},2);
                         [time,data] = delwaq('read',FI.(Props.varid{1}),Props.varid{2},idx{M_},idx{T_});
                         Ans.Time = time;
                         Ans.Val = permute(data,[3 2 1]);
@@ -333,7 +350,8 @@ switch FI.FileType(9:end)
                 Ans.X(1:nM,1:nN) = FI.grd.X(idx{M_},idx{N_});
                 Ans.Y(1:nM,1:nN) = FI.grd.Y(idx{M_},idx{N_});
             case 'bed levels'
-                F = FI.grd;
+                F.X = FI.grd.X;
+                F.Y = FI.grd.Y;
                 F.X(end+1,:) = NaN;
                 F.Y(end+1,:) = NaN;
                 F.X(:,end+1) = NaN;
@@ -341,21 +359,27 @@ switch FI.FileType(9:end)
                 if isfield(FI,'dep')
                     F.QP_Options.AttribFiles.Data = {FI.dep};
                     F.QP_Options.AttribFiles.FileType = 'wldep';
-                    F.QP_Options.AttribFiles.QP_Options.Dpsopt = 'TODO';
+                    F.QP_Options.AttribFiles.QP_Options.Dpsopt = rmhash(inifile('hgeti',FI.mdf,'*','Dpsopt','#MEAN#'));
                     F.QP_Options.AttribFiles.QP_Options.DOrder = 2;
                     F.QP_Options.AttribFiles.QP_Options.DataLocation = 'TODO';
                     %
                     Props.VecType    = '';
-                    Props.Loc        = 'd';
-                    Props.ReqLoc     = 'd';
+                    if strcmp(F.QP_Options.AttribFiles.QP_Options.Dpsopt,'DP')
+                        Props.Loc        = 'z';
+                        Props.ReqLoc     = 'z';
+                    else
+                        Props.Loc        = 'd';
+                        Props.ReqLoc     = 'd';
+                    end
                     Props.Loc3D      = '';
                     Props.File       = 1;
                     Props.Fld        = -1;
                     Props.UseGrid    = 1;
-                    Ans = gridfil(F,idom,Props,'griddata',idx{M_},idx{N_});
+                    % cmd is griddata or gridcelldata
+                    Ans = gridfil(F,idom,Props,cmd,idx{M_},idx{N_});
                 else
                     Ans = F;
-                    depuni = inifile('geti',FI.mdf,'*','Depuni',NaN);
+                    depuni = inifile('hgeti',FI.mdf,'*','Depuni',NaN);
                     Ans.Val = repmat(depuni,size(F.X)); %size-1 if in cell centres?
                 end
             case 'thin dams'
@@ -374,16 +398,172 @@ switch FI.FileType(9:end)
                 Props.File       = 1;
                 Props.Fld        = 1;
                 Props.UseGrid    = 1;
-                Ans = gridfil(F,idom,Props,'griddata',idx{M_},idx{N_});
+                Ans = gridfil(F,idom,Props,cmd,idx{M_},idx{N_});
+            case 'dry points'
+                F = FI.grd;
+                F.X(end+1,:) = NaN;
+                F.Y(end+1,:) = NaN;
+                F.X(:,end+1) = NaN;
+                F.Y(:,end+1) = NaN;
+                F.QP_Options.AttribFiles = FI.dry;
+                F.QP_Options.AttribFiles.FileType = 'drypoint';
+                %
+                Props.VecType    = '';
+                Props.Loc        = '';
+                Props.ReqLoc     = '';
+                Props.Loc3D      = '';
+                Props.File       = 1;
+                Props.Fld        = 1;
+                Props.UseGrid    = 1;
+                Ans = gridfil(F,idom,Props,cmd,idx{M_},idx{N_});
+            case 'observation points'
+                I0 = sub2ind(size(FI.grd.X),FI.sta.MN(idx{M_},1),FI.sta.MN(idx{M_},2));
+                d1 = size(FI.grd.X,1);
+                Ans.XY =  0;
+                for i = [0 1 d1 d1+1]
+                    I = max(I0-i,1); 
+                    Ans.XY = Ans.XY + [FI.grd.X(I) FI.grd.Y(I)];
+                end
+                Ans.XY = Ans.XY/4;
+                Ans.Val = FI.sta.Name(idx{M_});
             otherwise
                 Ans = [];
         end
     case 'D-Flow FM'
         switch Props.Name
-            case 'mesh'
-                Ans = netcdffil(FI.mesh.nc_file,idom,FI.mesh.quant,'grid',idx{M_});
+            case {FI.mesh.quant.Name}
+                j = Props.varid;
+                Ans = netcdffil(FI.mesh.nc_file,idom,FI.mesh.quant(j),'griddata',idx{M_});
+            case 'initial water level samples'
+                Ans.XY  = FI.WaterLevIni(idx{M_},1:2);
+                Ans.Val = FI.WaterLevIni(idx{M_},3);
+            case 'bed levels'
+                Ans = netcdffil(FI.mesh.nc_file,idom,FI.BedLevel,'griddata',idx{M_});
+                % use uniform value for locations without value assigned.
+                Ans.Val(isnan(Ans.Val)) = FI.BedLevelUni;
+            case {'bed level','bed level on 1D mesh','bed level on 2D mesh'}
+                j = Props.varid;
+                Ans = netcdffil(FI.mesh.nc_file,idom,FI.mesh.quant(j),'grid',idx{M_});
+                Ans.Val = repmat(FI.BedLevel,size(Ans.X));
+            case 'bed level samples'
+                Ans.XY  = FI.BedLevel(idx{M_},1:2);
+                Ans.Val = FI.BedLevel(idx{M_},3);
+            case 'fixed weirs'
+                Ans.XY  = FI.FixedWeir(:,1:2);
+                Ans.Val = FI.FixedWeir(:,3);
+            case 'observation points'
+                Ans.XY  = zeros(sz(M_),2);
+                Ans.Val = cell(sz(M_),1);
+                offset = 0;
+                network_loaded = false;
+                for i = 1:length(FI.Obs)
+                    nobj = length(FI.Obs{i}.Name);
+                    Mask = idx{M_}>offset & idx{M_}<=offset+nobj;
+                    if any(Mask)
+                        iObj = idx{M_}(Mask)-offset;
+                        Ans.Val(Mask)  = FI.Obs{i}.Name(iObj);
+                        Ans.XY(Mask,:) = FI.Obs{i}.XY(iObj,:);
+                        hasBranchId    = ~cellfun(@isempty, FI.Obs{i}.BranchId(iObj));
+                        if any(hasBranchId)
+                            if ~network_loaded
+                                Network = netcdffil(FI.mesh.nc_file, idom, FI.mesh.quant(4), 'griddata');
+                                network_loaded = true;
+                            end
+                            iObj = iObj(hasBranchId);
+                            Ans.XY(offset+iObj, :) = branch_idoffset2xy(Network, FI.Obs{i}.BranchId(iObj), FI.Obs{i}.Offset(iObj));
+                        end
+                    end
+                    offset = offset+nobj;
+                end
+            case 'observation cross sections'
+                Ans.XY  = cell(sz(M_),1);
+                Ans.Val = cell(sz(M_),1);
+                offset = 0;
+                network_loaded = false;
+                for i = 1:length(FI.Crs)
+                    nobj = length(FI.Crs{i}.Name);
+                    Mask = idx{M_}>offset & idx{M_}<=offset+nobj;
+                    if any(Mask)
+                        iObj = idx{M_}(Mask)-offset;
+                        Ans.Val(Mask) = FI.Crs{i}.Name(iObj);
+                        Ans.XY(Mask)  = FI.Crs{i}.XY(iObj);
+                        hasBranchId   = ~cellfun(@isempty, FI.Crs{i}.BranchId(iObj));
+                        if any(hasBranchId)
+                            if ~network_loaded
+                                Network = netcdffil(FI.mesh.nc_file, idom, FI.mesh.quant(4), 'griddata');
+                                network_loaded = true;
+                            end
+                            iObj = iObj(hasBranchId);
+                            XYvec = branch_idoffset2xy(Network, FI.Crs{i}.BranchId(iObj), FI.Crs{i}.Offset(iObj));
+                            Ans.XY(offset+iObj) = mat2cell(XYvec,ones(1,size(XYvec,1)),2);
+                        end
+                    end
+                end
+            case 'dambreak start points'
+                [~,IndexChapter] = inifile('existsi',FI.Structure,'structure');
+                types = inifile('hcgetstringi',FI.Structure,IndexChapter,'type');
+                IndexChapter = IndexChapter(strcmp(types,'dambreak'));
+                IndexChapter = IndexChapter(idx{ST_});
+                %
+                x = inifile('hcgeti',FI.Structure,IndexChapter,'startLocationX',NaN);
+                y = inifile('hcgeti',FI.Structure,IndexChapter,'startLocationY',NaN);
+                Ans.X = [x{:}];
+                Ans.Y = [y{:}];
             otherwise
-                Ans = [];
+                if ~isempty(strfind(Props.Name,'open boundaries'))
+                    ibtp = strcmp(FI.ExtForceNew.Bnd.Types,strtok(Props.Name));
+                    bnds = FI.ExtForceNew.Bnd.Locs{ibtp};
+                    bnds = bnds(idx{M_});
+                    [~,ibloc] = ismember(bnds,FI.ExtForceNew.BndLoc.Names);
+                    bfil = FI.ExtForceNew.BndLoc.Files(ibloc);
+                    Ans.XY = cell(length(bfil),1);
+                    for i = 1:length(bfil)
+                        Ans.XY{i} = bfil{i}.Field.Data;
+                    end
+                    Ans.Val = bnds;
+                elseif length(Props.Name)>11 && strcmp(Props.Name(end-10:end),' structures')
+                    [~,IndexChapter] = inifile('existsi',FI.Structure,'structure');
+                    types = inifile('hcgetstringi',FI.Structure,IndexChapter,'type');
+                    IndexChapter = IndexChapter(strcmp(types,Props.Name(1:end-11)));
+                    IndexChapter = IndexChapter(idx{ST_});
+                    %
+                    % location could be:
+                    % - branchId, chainage: 1D structure
+                    branchIds = inifile('hcgetstringi',FI.Structure,IndexChapter,'branchId','');
+                    chainage = 'toread';
+                    % - numCoordinates, xCoordinates, yCoordinates
+                    nCoords = inifile('hgeti',FI.Structure,IndexChapter,'numCoordinates',NaN);
+                    xCoords = 'toread';
+                    % - polylinefile: v1.00 structure file
+                    pli_files = inifile('hcgetstringi',FI.Structure,IndexChapter,'polylinefile','');
+                    path_str = fileparts(FI.Structure.FileName);
+                    for j = length(IndexChapter):-1:1
+                        if ~isempty(branchIds{j})
+                            % branchId, chainage
+                            if isequal(chainage,'toread')
+                                chainage = inifile('hgeti',FI.Structure,IndexChapter,'chainage',NaN);
+                                Network = netcdffil(FI.mesh.nc_file, idom, FI.mesh.quant(4), 'griddata');
+                            end
+                            Ans.XY{j} = branch_idoffset2xy(Network, branchIds{j}, chainage(j));
+                        elseif ~isnan(nCoords(j))
+                            % numCoordinates, xCoordinates, yCoordinates
+                            if isequal(xCoords,'toread')
+                                xCoords = inifile('hcgeti',FI.Structure,IndexChapter,'xCoordinates',NaN);
+                                yCoords = inifile('hcgeti',FI.Structure,IndexChapter,'yCoordinates',NaN);
+                            end
+                            Ans.XY{j} = [xCoords{j}' yCoords{j}'];
+                        else
+                            Ans.XY{j} = landboundary('read',relpath(path_str,pli_files{j}));
+                        end
+                    end
+                    Ans.Val = inifile('hcgetstringi',FI.Structure,IndexChapter,'id','');
+                else
+                    Ans = [];
+                end
+        end
+        if isfield(Ans,'XY') && ~isfield(Ans,'XUnits')
+            Ans.XUnits = FI.mesh.XYUnits;
+            Ans.YUnits = FI.mesh.XYUnits;
         end
     case 'D-Wave'
         switch Props.Name
@@ -451,28 +631,44 @@ switch FI.FileType
         Out(2).Name = '1D2D link numbers';
         Out(2).NVal = 1;
     case 'Delft3D D-Flow1D'
-        F=inifile('geti',FI.bndLoc,'Boundary','type');
-        BT=[F{:}];
-        uBT=unique(BT);
+        if isfield(FI,'bndLoc')
+            F=inifile('hcgeti',FI.bndLoc,'Boundary','type');
+            BT=[F{:}];
+            uBT=unique(BT);
+        else
+            uBT={};
+        end
         nBT=length(uBT);
         %
-        if inifile('exists',FI.strucLoc,'Structure','type')
-            ST=inifile('getstringi',FI.strucLoc,'Structure','type');
+        if isfield(FI,'strucLoc') && inifile('exists',FI.strucLoc,'Structure')
+            ST=inifile('hcgetstringi',FI.strucLoc,'Structure','type');
             uST=unique(ST);
         else
             uST={};
         end
         nST=length(uST);
         %
+        if isfield(FI,'obs')
+            Obs=inifile('hcgetstringi',FI.obs,'ObservationPoint','id');
+        else
+            Obs = {};
+        end
+        nObs=length(Obs);
+        hasObs = nObs>0;
+        %
         % CrossSection types have been copied from their definition records
         % to the location record in MDF.
-        CT=inifile('getstringi',FI.crsLoc,'CrossSection','type');
-        uCT=unique(CT);
+        if isfield(FI,'crsLoc')
+            CT=inifile('hcgetstringi',FI.crsLoc,'CrossSection','type');
+            uCT=unique(CT);
+        else
+            uCT = {};
+        end
         nCT=length(uCT);
         hasCxyz = any(strcmp('xyz',uCT));
         %
         try
-            LAT=inifile('getstringi',FI.latLoc,'LateralDischarge','id');
+            LAT=inifile('hcgetstringi',FI.latLoc,'LateralDischarge','id');
             hasLAT=1;
         catch
             hasLAT=0;
@@ -492,7 +688,7 @@ switch FI.FileType
             end
         end
         %
-        Out(2:5+nCT+hasCxyz+1+nBT+hasLAT+1+nST+1+nFLD) = Out(1);
+        Out(2:5+nCT+hasCxyz+1+nBT+hasLAT+1+nST+1+hasObs+1+nFLD) = Out(1);
         Out(2).Name = 'network';
         Out(2).Geom = 'POLYL';
         Out(2).Coords = 'xy';
@@ -574,6 +770,16 @@ switch FI.FileType
         end
         nFLD = nFLD+nST;
         %
+        nFLD = nFLD+1; % skip one for separator
+        if hasObs
+            nFLD = nFLD+1;
+            Out(nFLD).Name = 'observation points';
+            Out(nFLD).Geom = 'PNT';
+            Out(nFLD).Coords = 'xy';
+            Out(nFLD).NVal = 4;
+            Out(nFLD).DimFlag(M_) = 1;
+        end
+        %
         for i = 1:length(flds)
             if isfield(FI,flds{i})
                 FI_fld = FI.(flds{i});
@@ -647,12 +853,15 @@ switch FI.FileType
                         Out(ifld).DimFlag([M_ N_]) = 1;
                     case 'dep'
                         Out(ifld).Name = 'bed levels';
+                        Out(ifld).Units = 'm';
                         Out(ifld).Geom = 'sQUAD';
                         Out(ifld).Coords = 'xy';
                         Out(ifld).DimFlag([M_ N_]) = 1;
                         Out(ifld).NVal = 1;
-                        dpsopt = rmhash(inifile('geti',FI.mdf,'*','Dpsopt','#MEAN#'));
+                        dpsopt = rmhash(inifile('hgeti',FI.mdf,'*','Dpsopt','#MEAN#'));
                         if strcmpi(dpsopt,'DP')
+                            Out(ifld).DataInCell = 2;
+                        else
                             Out(ifld).DataInCell = 1;
                         end
                     case 'thd'
@@ -665,8 +874,9 @@ switch FI.FileType
                         Out(ifld).Geom = 'sQUAD';
                         Out(ifld).Coords = 'xy';
                         Out(ifld).DimFlag([M_ N_]) = 1;
-                        Out(ifld).NVal = 1;
-                    case 'bnd'
+                        Out(ifld).DataInCell = 2;
+                        Out(ifld).NVal = 5;
+                    case 'TOBEIMPLEMENTED_bnd'
                         ifld = ifld-1;
                         %
                         bTypes = unique(FI.bnd.BndType);
@@ -722,8 +932,8 @@ switch FI.FileType
                         Out(ifld).Coords = 'xy';
                         Out(ifld).DimFlag(M_) = 1;
                         Out(ifld).NVal = 4;
-                    case 'crs'
-                        Out(ifld).Name = 'cross sections';
+                    case 'TOBEIMPLEMENTED_crs'
+                        Out(ifld).Name = 'observation cross sections';
                         Out(ifld).Geom = 'POLYL';
                         Out(ifld).Coords = 'xy';
                         Out(ifld).DimFlag(M_) = 1;
@@ -732,10 +942,272 @@ switch FI.FileType
             end
         end
     case 'Delft3D D-Flow FM'
-        Out(1).Name = 'mesh';
-        Out(1).Geom = 'UGRID-NODE';
-        Out(1).Coords = 'xy';
-        Out(1).DimFlag(M_) = 6;
+        flds = {'mesh','-','WaterLevIni','BedLevel','-','FixedWeir','Structure','-','ExtForce','-','ExtForceNew','-','Obs','Crs'};
+        nfld = 0;
+        for i = 1:length(flds)
+            if isequal(flds{i},'-')
+                nfld = nfld+1;
+            elseif isfield(FI,flds{i})
+                switch flds{i}
+                    case 'mesh'
+                        nfld = nfld + length(FI.mesh.quant);
+                    case 'BedLevel'
+                        if isscalar(FI.BedLevel)
+                            nfld = nfld + length(FI.mesh.meshes);
+                        elseif ~isempty(FI.BedLevel)
+                            nfld = nfld + 1;
+                        end
+                    case 'Structure'
+                        types = inifile('hcgetstringi',FI.Structure,'structure','type');
+                        utypes = unique(types);
+                        nfld = nfld + length(utypes);
+                    case 'ExtForce'
+                        nfld = nfld + length(FI.ExtForce);
+                    case 'ExtForceNew'
+                        nfld = nfld + length(FI.ExtForceNew.Bnd.Types);
+                        for iBT = 1:length(FI.ExtForceNew.Bnd.Types) % return 0 for non-time series
+                            nfld = nfld + sum(cellfun(@(f)lentim(f),FI.ExtForceNew.Bnd.Forcing{iBT}));
+                        end
+                    otherwise
+                        nfld = nfld+1;
+                end
+            end
+        end
+        %
+        Out(1:nfld) = Out(1);
+        %
+        ifld = 0;
+        for i = 1:length(flds)
+            if isequal(flds{i},'-')
+                ifld = ifld+1;
+            elseif isfield(FI,flds{i})
+                switch flds{i}
+                    case 'mesh'
+                        for j = 1:length(FI.mesh.quant)
+                            ifld = ifld+1;
+                            Out(ifld).Name = FI.mesh.quant(j).Name;
+                            Out(ifld).Geom = FI.mesh.quant(j).Geom;
+                            Out(ifld).NVal = FI.mesh.quant(j).NVal;
+                            Out(ifld).Coords = 'xy';
+                            Out(ifld).DimFlag(M_) = 6;
+                            Out(ifld).varid = j;
+                        end
+                    case 'WaterLevIni'
+                        ifld = ifld+1;
+                        Out(ifld).Name = 'initial water level samples';
+                        Out(ifld).Units = 'm';
+                        Out(ifld).Geom = 'PNT';
+                        Out(ifld).Coords = 'xy';
+                        Out(ifld).DimFlag(M_) = 1;
+                        Out(ifld).NVal = 1;
+                    case 'BedLevel'
+                        ifld = ifld+1;
+                        BL = FI.(flds{i});
+                        if isstruct(BL) % quantity on mesh
+                            if isempty(BL)
+                                ifld = ifld-1;
+                            elseif FI.BedLevelType == 1
+                                Out(ifld).Name = 'bed levels';
+                                Out(ifld).Units = 'm';
+                                Out(ifld).Geom = 'UGRID2D-FACE';
+                                Out(ifld).Coords = 'xy';
+                                Out(ifld).DimFlag(M_) = 6;
+                                Out(ifld).NVal = 1;
+                            else
+                                Out(ifld).Name = 'bed levels';
+                                Out(ifld).Units = 'm';
+                                Out(ifld).Geom = 'UGRID2D-NODE';
+                                Out(ifld).Coords = 'xy';
+                                Out(ifld).DimFlag(M_) = 6;
+                                Out(ifld).NVal = 1;
+                            end
+                        elseif isscalar(BL)
+                            for j = FI.mesh.meshes(:)'
+                                Out(ifld).Name = 'bed level';
+                                if length(FI.mesh.meshes) > 1
+                                    if ~isempty(strfind(FI.mesh.quant(j).Name,'1D'))
+                                        Out(ifld).Name = [Out(ifld).Name ' on 1D mesh'];
+                                    else
+                                        Out(ifld).Name = [Out(ifld).Name ' on 2D mesh'];
+                                    end
+                                end
+                                Out(ifld).Units = 'm';
+                                Out(ifld).Geom = 'UGRID1D-NODE';
+                                Out(ifld).Coords = 'xy';
+                                Out(ifld).DimFlag(M_) = 6;
+                                Out(ifld).NVal = 1;
+                                Out(ifld).varid = j;
+                            end
+                        else
+                            Out(ifld).Name = 'bed level samples';
+                            Out(ifld).Units = 'm';
+                            Out(ifld).Geom = 'PNT';
+                            Out(ifld).Coords = 'xy';
+                            Out(ifld).DimFlag(M_) = 1;
+                            Out(ifld).NVal = 1;
+                        end
+                    case 'FixedWeir'
+                        ifld = ifld+1;
+                        Out(ifld).Name = 'fixed weirs';
+                        Out(ifld).Units = 'm';
+                        Out(ifld).Geom = 'POLYL';
+                        Out(ifld).Coords = 'xy';
+                        Out(ifld).DimFlag(M_) = 1;
+                        Out(ifld).NVal = 1;
+                    case 'Structure'
+                        for j = 1:length(utypes)
+                            ifld = ifld+1;
+                            Out(ifld).Name = [utypes{j} ' structures'];
+                            Out(ifld).Geom = 'POLYL';
+                            Out(ifld).Coords = 'xy';
+                            Out(ifld).DimFlag(ST_) = 3;
+                            Out(ifld).NVal = 4;
+                        end
+                        if ismember('dambreak',utypes)
+                            ifld = ifld+1;
+                            Out(ifld).Name = 'dambreak start points';
+                            Out(ifld).Geom = 'PNT';
+                            Out(ifld).Coords = 'xy';
+                            Out(ifld).DimFlag(ST_) = 3;
+                            Out(ifld).NVal = 0;
+                        end
+                    case 'TOBEIMPLEMENTED_ExtForce'
+                        fNames = {FI.ExtForce.Quantity};
+                        forces = unique(fNames);
+                        translate = {'lowergatelevel'               'lower gate level'                          'm'
+                            'damlevel'                              'dam level'                                 'm'
+                            'pump'                                  'pump?'                                     '' % discharge?
+                            'horizontaleddyviscositycoefficient'    'horizontal eddy viscosity coefficient'     ''
+                            'horizontaleddydiffusivitycoefficient'  'horizontal eddy diffusivity coefficient'   ''
+                            'bedlevel'                              'bed levels'                                'm'
+                            'initialwaterlevel'                     'initial water level'                       'm'
+                            'initialsalinity'                       'initial salinity'                          'ppt'
+                            'initialsalinitytop'                    'initial salinity near water surface'       'ppt'
+                            'initialverticaltemperatureprofile'     'initial vertical temperature profile'      'degC'
+                            'initialverticalsalinityprofile'        'initial vertical salinity profile'         'ppt'
+                            'windstresscoefficient'                 'wind stress coefficient'                   ''
+                            'stemdiameter'                          'stem diameter'                             'm'
+                            'stemdensity'                           'stem density'                              ''
+                            'stemheight'                            'stem height'                               'm'
+                            'interceptionlayerthickness'            'interception layer thickness'              'm'
+                            'windx'                                 'wind velocity, x-component'                'm/s'
+                            'windy'                                 'wind velocity, y-component'                'm/s'
+                            'rainfall'                              'rainfall'                                  ''
+                            'airpressure'                           'air pressure'                              ''
+                            'atmosphericpressure'                   'air pressure'                              ''};
+                        for iuforce = 1:length(forces)
+                            fName = forces{iuforce};
+                            iforces = find(strcmp(fName,fNames));
+                            for iforce = iforces
+                                ifld = ifld+1;
+                                switch fName
+                                    case 'frictioncoefficient'
+                                        frctyp = inifile('hgeti',FI.mdu,'physics','UnifFrictType',1);
+                                        switch frctyp
+                                            case 0
+                                                ForceName  = 'Chezy C';
+                                                ForceUnits = 'm^{1/2}/s';
+                                            case 1
+                                                ForceName  = 'Manning n';
+                                                ForceUnits = 's/m^{1/3}';
+                                            case 2
+                                                ForceName  = 'White-Colebrook/Nikuradse k';
+                                                ForceUnits = 'm';
+                                            case 3
+                                                ForceName  = 'White-Colebrook/Nikuradse k (WAQUA implementation)';
+                                                ForceUnits = 'm';
+                                        end
+                                    case translate(:,1)
+                                        ifrc = find(strcmp(fName,translate(:,1)));
+                                        ForceName  = translate{ifrc,2};
+                                        ForceUnits = translate{ifrc,3};
+                                    otherwise
+                                        ForceName  = fName;
+                                        ForceUnits = '';
+                                end
+                                Out(ifld).Name  = ForceName;
+                                Out(ifld).Units = ForceUnits;
+                                Out(ifld).varid = {'ExtForce',iforce};
+                                switch FI.ExtForce(iforce).FileType
+                                    case 'uniform'
+                                        Out(ifld).Geom = 'PNT';
+                                        Out(ifld).DimFlag(T_) = 1;
+                                        Out(ifld).NVal = 1;
+                                    case 'unimagdir'
+                                        Out(ifld).Geom = 'PNT';
+                                        Out(ifld).DimFlag(T_) = 1;
+                                        Out(ifld).NVal = 2;
+                                    case {'curvi'}
+                                        Out(ifld).Geom = 'sQUAD';
+                                        Out(ifld).Coords = 'xy';
+                                        Out(ifld).DimFlag([T_,M_,N_]) = 1;
+                                        Out(ifld).NVal = 1;
+                                    case 'triangulation'
+                                        Out(ifld).Geom = 'PNT';
+                                        Out(ifld).Coords = 'xy';
+                                        Out(ifld).DimFlag(M_) = 1;
+                                        Out(ifld).NVal = 1;
+                                    case 'triangulation_magdir'
+                                        Out(ifld).Geom = 'PNT';
+                                        Out(ifld).Coords = 'xy';
+                                        Out(ifld).DimFlag(M_) = 1;
+                                        Out(ifld).NVal = 2;
+                                    case 'polyline'
+                                        Out(ifld).Geom = 'POLYL';
+                                        Out(ifld).Coords = 'xy';
+                                        Out(ifld).DimFlag(M_) = 1;
+                                        Out(ifld).NVal = 1;
+                                    otherwise
+                                        error('Not yet supported file type %s for %s', FI.ExtForce(iforce).FileType, FI.ExtForce(iforce).Quantity)
+                                end
+                                Out(ifld).Name = [Out(ifld).Name ' - ' abbrevfn(FI.ExtForce(iforce).FileName) ' - ' FI.ExtForce(iforce).Operand];
+                            end
+                        end
+                    case 'TOBEIMPLEMENTED_ExtForceNew'
+                        for itype = 1:length(FI.ExtForceNew.Bnd.Types)
+                            ifld = ifld+1;
+                            Out(ifld).Name = [FI.ExtForceNew.Bnd.Types{itype} ' open boundaries'];
+                            Out(ifld).Geom = 'POLYL';
+                            Out(ifld).Coords = 'xy';
+                            Out(ifld).DimFlag(M_) = 1;
+                            Out(ifld).NVal = 4;
+                            %
+                            for iloc = 1:length(FI.ExtForceNew.Bnd.Locs{itype})
+                                Force = FI.ExtForceNew.Bnd.Forcing{itype}{iloc};
+                                if ~isfield(Force,'Data')
+                                    continue
+                                end
+                                for ipnt = 1:size(Force.Data,1)
+                                    if ~strcmp(inifile('hgeti',Force,ipnt,'Function'),'timeseries')
+                                        continue
+                                    end
+                                    ifld = ifld+1;
+                                    Loc = inifile('hgeti',Force,ipnt,'Name');
+                                    Out(ifld).Name = [FI.ExtForceNew.Bnd.Types{itype} ' time series at ' Loc];
+                                    Out(ifld).Geom = 'PNT';
+                                    Out(ifld).Coords = 'xy';
+                                    Out(ifld).DimFlag(M_) = 1;
+                                    Out(ifld).NVal = 1;
+                                end
+                            end
+                        end
+                    case 'Obs'
+                        ifld = ifld+1;
+                        Out(ifld).Name = 'observation points';
+                        Out(ifld).Geom = 'PNT';
+                        Out(ifld).Coords = 'xy';
+                        Out(ifld).DimFlag(M_) = 1;
+                        Out(ifld).NVal = 4;
+                    case 'Crs'
+                        ifld = ifld+1;
+                        Out(ifld).Name = 'observation cross sections';
+                        Out(ifld).Geom = 'POLYL';
+                        Out(ifld).Coords = 'xy';
+                        Out(ifld).DimFlag(M_) = 1;
+                        Out(ifld).NVal = 4;
+                end
+            end
+        end
     case 'Delft3D D-Wave'
         Out(1).Name = 'grid';
         Out(1).Geom = 'sQUAD';
@@ -745,6 +1217,13 @@ switch FI.FileType
         Out(:,1) = [];
 end
 % -----------------------------------------------------------------------------
+
+function l = lentim(f)
+if isfield(f,'Data')
+    l = size(f.Data,1);
+else
+    l = 0;
+end
 
 % -----------------------------------------------------------------------------
 function subf=getsubfields(FI,Props,f)
@@ -766,37 +1245,36 @@ ndims = length(Props.DimFlag);
 sz = zeros(1,ndims);
 switch FI.FileType
     case 'Delft3D 1D2D mapping'
-        F=inifile('chapters',FI.mapping);
-        sz(M_) = sum(strcmp(F,'1d2dLink'));
+        F=inifile('chaptersi',FI.mapping);
+        sz(M_) = sum(strcmpi(F,'1d2dLink'));
     case 'Delft3D D-Flow1D'
         switch Props.Name
             case 'network'
-                F=inifile('chapters',FI.ntw);
-                sz(M_) = sum(strcmp(F,'Branch'));
+                F=inifile('chaptersi',FI.ntw);
+                sz(M_) = sum(strcmpi(F,'Branch'));
             case 'nodes'
-                F=inifile('chapters',FI.ntw);
-                sz(M_) = sum(strcmp(F,'Node'));
+                F=inifile('chaptersi',FI.ntw);
+                sz(M_) = sum(strcmpi(F,'Node'));
             case 'grid points'
-                F=inifile('cgeti',FI.ntw,'Branch','gridPointsCount');
+                F=inifile('hcgeti',FI.ntw,'Branch','gridPointsCount');
                 sz(M_) = sum([F{:}]);
             case 'lateral discharges';
-                F=inifile('geti',FI.latLoc,'LateralDischarge','id');
-                if iscell(F)
-                    sz(M_) = length(F);
-                else
-                    sz(M_) = 1;
-                end
+                F=inifile('hcgetstringi',FI.latLoc,'LateralDischarge','id');
+                sz(M_) = length(F);
+            case 'observation points'
+                F=inifile('hcgetstringi',FI.obs,'ObservationPoint','id');
+                sz(M_) = length(F);
             otherwise
                 if strcmp(Props.Name,'xyz cross section lines') || ...
                         ~isempty(strfind(Props.Name,'cross section points'))
-                    CT=inifile('geti',FI.crsLoc,'CrossSection','type');
+                    CT=inifile('hcgeti',FI.crsLoc,'CrossSection','type');
                     sz(M_)=sum(strcmp(Props.varid,CT));
                 elseif ~isempty(strfind(Props.Name,'boundary points'))
-                    F=inifile('geti',FI.bndLoc,'Boundary','type');
+                    F=inifile('hcgeti',FI.bndLoc,'Boundary','type');
                     BT = [F{:}];
                     sz(M_) = sum(BT==Props.varid);
                 elseif strncmp(Props.Name,'structure points',16)
-                    ST=inifile('geti',FI.strucLoc,'Structure','type');
+                    ST=inifile('hcgeti',FI.strucLoc,'Structure','type');
                     sz(M_)=sum(strcmp(Props.varid,ST));
                 elseif ~iscell(Props.varid)
                     % for development purposes only ...
@@ -808,16 +1286,124 @@ switch FI.FileType
                 end
         end
     case 'Delft3D D-Flow2D3D'
-        MNK = inifile('geti',FI.mdf,'*','MNKmax');
-        sz([M_ N_]) = MNK(1:2);
+        switch Props.Name
+            case 'observation points'
+                sz(M_) = size(FI.sta.MN,1);
+            otherwise
+                MNK = inifile('hgeti',FI.mdf,'*','MNKmax');
+                sz([M_ N_]) = MNK(1:2);
+        end
     case 'Delft3D D-Flow FM'
-        grdSz = netcdffil(FI.mesh.nc_file,idom,FI.mesh.quant,'size');
-        sz(M_) = grdSz(M_);
+        switch Props.Name
+            case {FI.mesh.quant.Name}
+                j = Props.varid;
+                grdSz = netcdffil(FI.mesh.nc_file,idom,FI.mesh.quant(j),'size');
+                sz(M_) = grdSz(M_);
+            case 'initial water level samples'
+                sz(M_) = size(FI.WaterLevIni,1);
+            case {'bed level','bed level on 1D mesh','bed level on 2D mesh'}
+                j = Props.varid;
+                grdSz = netcdffil(FI.mesh.nc_file,idom,FI.mesh.quant(j),'size');
+                sz(M_) = grdSz(M_);
+            case 'bed levels'
+                grdSz = netcdffil(FI.mesh.nc_file,idom,FI.BedLevel,'size');
+                sz(M_) = grdSz(M_);
+            case 'bed level samples'
+                sz(M_) = size(FI.BedLevel,1);
+            case 'fixed weirs'
+                sz(M_) = 1;
+            case 'observation points'
+                szM = 0;
+                for i = 1:length(FI.Obs)
+                    szM = szM + length(FI.Obs{i}.Name);
+                end
+                sz(M_) = szM;
+            case 'observation cross sections'
+                szM = 0;
+                for i = 1:length(FI.Crs)
+                    szM = szM + length(FI.Crs{i}.Name);
+                end
+                sz(M_) = szM;
+            case 'dambreak start points'
+                types = inifile('hcgetstringi',FI.Structure,'structure','type');
+                sz(ST_) = sum(strcmpi(types,'dambreak'));
+            otherwise
+                if iscell(Props.varid)
+                    switch Props.varid{1}
+                        case 'ExtForce'
+                            iforce = Props.varid{2};
+                            switch FI.ExtForce(iforce).FileType
+                                case 'curvi'
+                                    szX = size(FI.ExtForce(iforce).File.Header.grid_file.X);
+                                    sz(M_) = szX(1);
+                                    sz(N_) = szX(2);
+                                    sz(T_) = length(FI.ExtForce(iforce).File.Data);
+                            end
+                    end
+                elseif ~isempty(strfind(Props.Name,'open boundaries'))
+                    ibtp = strcmp(FI.ExtForceNew.Bnd.Types,strtok(Props.Name));
+                    sz(ST_) = length(FI.ExtForceNew.Bnd.Locs{ibtp});
+                elseif length(Props.Name)>11 && strcmp(Props.Name(end-10:end),' structures')
+                    types = inifile('hcgetstringi',FI.Structure,'structure','type');
+                    sz(ST_) = sum(strcmpi(types,Props.Name(1:end-11)));
+                end
+        end
     case 'Delft3D D-Wave'
         grdSz = size(FI.domain(idom).grd.X);
         sz([M_ N_]) = grdSz;
     otherwise
         % no generic default dimension code
+end
+% -----------------------------------------------------------------------------
+
+
+% -----------------------------------------------------------------------------
+function T = readtim(FI, idom, Props, t)
+if nargin <4 || t == 0
+    t = ':';
+end
+switch FI.FileType
+    case 'Delft3D D-Flow FM'
+        switch Props.Name
+            otherwise
+                if iscell(Props.varid)
+                    switch Props.varid{1}
+                        case 'ExtForce'
+                            iforce = Props.varid{2};
+                            switch FI.ExtForce(iforce).FileType
+                                case 'curvi'
+                                    T = [FI.ExtForce(iforce).File.Data(t).time];
+                            end
+                    end
+                end
+        end
+end
+% -----------------------------------------------------------------------------
+
+
+% -----------------------------------------------------------------------------
+function S=readsts(FI,Props,t)
+S={};
+switch FI.FileType
+    case 'Delft3D D-Flow FM'
+        switch Props.Name
+            case 'dambreak start points'
+                ids = inifile('hcgetstringi',FI.Structure,'structure','id');
+                types = inifile('hcgetstringi',FI.Structure,'structure','type');
+                S = ids(strcmpi(types,'dambreak'));
+                if ~isequal(t,0)
+                    S = S(t);
+                end
+            otherwise
+                if length(Props.Name)>11 && strcmp(Props.Name(end-10:end),' structures')
+                    ids = inifile('hcgetstringi',FI.Structure,'structure','id');
+                    types = inifile('hcgetstringi',FI.Structure,'structure','type');
+                    S = ids(strcmpi(types,Props.Name(1:end-11)));
+                    if ~isequal(t,0)
+                        S = S(t);
+                    end
+                end
+        end
 end
 % -----------------------------------------------------------------------------
 
@@ -827,8 +1413,9 @@ nPnt = length(bId);
 xy = NaN(nPnt,2);
 %
 [uBId,ia,ic] = unique(bId);
-G = inifile('cgeti',NTWini,'Branch','geometry');
-GId = inifile('cgetstringi',NTWini,'Branch','id');
+G = inifile('hcgeti',NTWini,'Branch','geometry');
+GId = inifile('hcgetstringi',NTWini,'Branch','id');
+GgpO = inifile('hcgeti',NTWini,'Branch','gridPointOffsets');
 for i = 1:length(uBId)
     Branch = uBId(i);
     iBranch = ustrcmpi(Branch,GId);
@@ -840,6 +1427,10 @@ for i = 1:length(uBId)
         XY(db,:) = [];
         iOut = ic==i;
         cCS  = [bCh{iOut}];
+        %
+        bLen = GgpO{iBranch}(end);
+        d = d*bLen/d(end);
+        %
         xyCS = interp1(d,XY,cCS);
         xy(iOut,:) = xyCS;
     end
@@ -847,12 +1438,42 @@ end
 % -----------------------------------------------------------------------------
 
 % -----------------------------------------------------------------------------
+function xy = branch_idoffset2xy(Network, bId, bCh)
+nPnt = length(bId);
+xy = NaN(nPnt,2);
+%
+[uBId,~,ic] = unique(bId);
+for i = 1:length(uBId)
+    Branch = uBId(i);
+    iBranch = ustrcmpi(Branch,Network.Val);
+    if iBranch>0
+        X = Network.EdgeGeometry.X{iBranch};
+        Y = Network.EdgeGeometry.Y{iBranch};
+        d     = pathdistance(X, Y);
+        db    = diff(d)==0;
+        d(db) = [];
+        X(db) = [];
+        Y(db) = [];
+        iOut  = ic==i;
+        cCS   = bCh(iOut);
+        %
+        bLen = d(end); % Need access to the branch length!
+        d = d*bLen/d(end);
+        %
+        xCS = interp1(d, X, cCS);
+        yCS = interp1(d, Y, cCS);
+        xy(iOut,:) = [xCS yCS];
+    end
+end
+% -----------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
 function FI = check_gpXY(FI)
 if ~isfield(FI,'gpXY')
-    gpCnt = inifile('cgeti',FI.ntw,'Branch','gridPointsCount');
-    gpX = inifile('cgeti',FI.ntw,'Branch','gridPointX');
-    gpY = inifile('cgeti',FI.ntw,'Branch','gridPointY');
-    gpI = inifile('cgetstringi',FI.ntw,'Branch','gridPointIds');
+    gpCnt = inifile('hcgeti',FI.ntw,'Branch','gridPointsCount');
+    gpX = inifile('hcgeti',FI.ntw,'Branch','gridPointX');
+    gpY = inifile('hcgeti',FI.ntw,'Branch','gridPointY');
+    gpI = inifile('hcgetstringi',FI.ntw,'Branch','gridPointIds');
     gpCnt = [gpCnt{:}];
     nGP   = sum(gpCnt);
     FI.gpXY       = zeros(nGP,2);
@@ -875,9 +1496,9 @@ end
 % -----------------------------------------------------------------------------
 function FI = check_reachXY(FI)
 if ~isfield(FI,'reachXY')
-    reachCnt = inifile('cgeti',FI.ntw,'Branch','gridPointsCount');
-    brId = inifile('cgetstringi',FI.ntw,'Branch','id');
-    gpO = inifile('cgeti',FI.ntw,'Branch','gridPointOffsets');
+    reachCnt = inifile('hcgeti',FI.ntw,'Branch','gridPointsCount');
+    brId = inifile('hcgetstringi',FI.ntw,'Branch','id');
+    gpO = inifile('hcgeti',FI.ntw,'Branch','gridPointOffsets');
     reachCnt = [reachCnt{:}]-1;
     nReach   = sum(reachCnt);
     FI.reachXY = zeros(nReach,2);
@@ -896,17 +1517,26 @@ end
 % -----------------------------------------------------------------------------
 function FI = check_latXY(FI)
 if ~isfield(FI,'latXY')
-    bId = inifile('cgetstringi',FI.latLoc,'LateralDischarge','branchid');
-    bCh = inifile('cgeti',FI.latLoc,'LateralDischarge','chainage');
+    bId = inifile('hcgetstringi',FI.latLoc,'LateralDischarge','branchid');
+    bCh = inifile('hcgeti',FI.latLoc,'LateralDischarge','chainage');
     FI.latXY = branch_idchain2xy(FI.ntw,bId,bCh);
+end
+% -----------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
+function FI = check_obsXY(FI)
+if ~isfield(FI,'obsXY')
+    bId = inifile('hcgetstringi',FI.obs,'ObservationPoint','branchid');
+    bCh = inifile('hcgeti',FI.obs,'ObservationPoint','chainage');
+    FI.obsXY = branch_idchain2xy(FI.ntw,bId,bCh);
 end
 % -----------------------------------------------------------------------------
 
 % -----------------------------------------------------------------------------
 function FI = check_crsXY(FI)
 if ~isfield(FI,'crsXY')
-    bId = inifile('cgetstringi',FI.crsLoc,'CrossSection','branchid');
-    bCh = inifile('cgeti',FI.crsLoc,'CrossSection','chainage');
+    bId = inifile('hcgetstringi',FI.crsLoc,'CrossSection','branchid');
+    bCh = inifile('hcgeti',FI.crsLoc,'CrossSection','chainage');
     FI.crsXY = branch_idchain2xy(FI.ntw,bId,bCh);
 end
 % -----------------------------------------------------------------------------
@@ -914,8 +1544,8 @@ end
 % -----------------------------------------------------------------------------
 function FI = check_strucXY(FI)
 if ~isfield(FI,'strucXY')
-    bId = inifile('cgetstringi',FI.strucLoc,'Structure','branchid');
-    bCh = inifile('cgeti',FI.strucLoc,'Structure','chainage');
+    bId = inifile('hcgetstringi',FI.strucLoc,'Structure','branchid');
+    bCh = inifile('hcgeti',FI.strucLoc,'Structure','chainage');
     FI.strucXY = branch_idchain2xy(FI.ntw,bId,bCh);
 end
 % -----------------------------------------------------------------------------
@@ -938,4 +1568,101 @@ elseif ischar(str)
         str = str(1:hashes(1)-1);
     end
     str = deblank(str);
+end
+
+% -----------------------------------------------------------------------------
+function [NewFI,cmdargs]=options(FI,mfig,cmd,varargin)
+T_=1; ST_=2; M_=3; N_=4; K_=5;
+%======================== SPECIFIC CODE =======================================
+Inactive=get(0,'defaultuicontrolbackground');
+Active=[1 1 1];
+NewFI=FI;
+cmd=lower(cmd);
+cmdargs={};
+
+switch cmd
+    case 'initialize'
+        switch FI.FileType
+            case 'Delft3D D-Flow2D3D'
+                OK = optfig_2D3D(mfig);
+        end
+    case {'save0', 'save90', 'save180', 'save270'}
+        angle = str2double(cmd(5:end));
+        if nargin>4
+            pf = varargin{2};
+            [p,f] = fileparts(pf);
+        else
+            cwd = pwd;
+            p = fileparts(FI.mdf.FileName);
+            cd(p)
+            if matlabversionnumber<6
+                filterspec='*.mdf';
+            else
+                filterspec = {'*.mdf' 'Delft3D-FLOW Master Definition File(*.mdf)'};
+            end
+            title = sprintf('Specify file name (clockwise rotated by %i degrees)',angle);
+            [f,p]=uiputfile(filterspec,title);
+            cd(cwd)
+        end
+        if ischar(f)
+            [~,f] = fileparts(f); % get rid of any remaining .mdf extension
+            FIR = mdf('rotate',FI,angle);
+            mdf('write',FIR,f,p)
+            cmdargs={cmd fullfile(p,[f '.mdf'])};
+        end
+end
+% -----------------------------------------------------------------------------
+
+
+% -----------------------------------------------------------------------------
+function OK = optfig_2D3D(h0)
+Inactive=get(0,'defaultuicontrolbackground');
+FigPos=get(h0,'position');
+FigPos(3:4) = getappdata(h0,'DefaultFileOptionsSize');
+set(h0,'position',FigPos)
+
+voffset=FigPos(4)-30;
+h1 = uicontrol('Parent',h0, ...
+    'BackgroundColor',Inactive, ...
+    'Position',[11 voffset 130 20], ...
+    'String','Save Rotated Input', ...
+    'HorizontalAlignment','left', ...
+    'Style','text');
+h1 = uicontrol('Parent',h0, ...
+    'BackgroundColor',Inactive, ...
+    'Callback','d3d_qp fileoptions save0', ...
+    'Position',[141 voffset 20 20], ...
+    'String','0', ...
+    'HorizontalAlignment','right', ...
+    'Tooltip','Non-rotated. Just model under a different name.');
+qp_tooltip(h1,{'Model is not rotated.','Just save model under a different name.'});
+h1 = uicontrol('Parent',h0, ...
+    'BackgroundColor',Inactive, ...
+    'Callback','d3d_qp fileoptions save90', ...
+    'Position',[171 voffset 47 20], ...
+    'String','90', ...
+    'HorizontalAlignment','right');
+qp_tooltip(h1,{'Model rotated by 90 degrees clockwise.','Positive M direction becomes negative N direction.'});
+h1 = uicontrol('Parent',h0, ...
+    'BackgroundColor',Inactive, ...
+    'Callback','d3d_qp fileoptions save180', ...
+    'Position',[228 voffset 47 20], ...
+    'String','180', ...
+    'HorizontalAlignment','right');
+qp_tooltip(h1,{'Model rotated by 180 degrees clockwise.','Positive M direction becomes negative M direction.'});
+h1 = uicontrol('Parent',h0, ...
+    'BackgroundColor',Inactive, ...
+    'Callback','d3d_qp fileoptions save270', ...
+    'Position',[284 voffset 47 20], ...
+    'String','270', ...
+    'HorizontalAlignment','right');
+qp_tooltip(h1,{'Model rotated by 270 degrees clockwise, i.e. 90 degrees counterclockwise.','Positive M direction becomes positive N direction.'});
+
+OK=1;
+
+function pf = relpath(path,file)
+if length(file)>1 && file(2)==':'
+    pf = file;
+else
+    pf = fullfile(path,file);
 end

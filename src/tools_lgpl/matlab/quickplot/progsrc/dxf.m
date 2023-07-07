@@ -12,7 +12,7 @@ function Out=dxf(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,7 @@ end
 if (length(filename)<4) | ~strcmp(lower(filename(end+(-3:0))),'.dxf')
     filename=[filename '.dxf'];
 end
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 Code=fgetl(fid); Line=fgetl(fid);
 
 while 1
@@ -381,7 +381,7 @@ end
 if (length(filename)<4) | ~strcmp(lower(filename(end+(-3:0))),'.dxf')
     filename=[filename '.dxf'];
 end
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 
 % WRITE HEADER **************************************************
 fprintf(fid,'0\nSECTION\n2\nHEADER\n');

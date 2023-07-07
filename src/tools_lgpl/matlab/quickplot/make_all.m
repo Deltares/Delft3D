@@ -1,14 +1,15 @@
-function make_all
+function make_all(release)
 %MAKE_ALL Build various tools based on the QUICKPLOT source
 %   Builds
 %     * Delft3D-MATLAB interface
 %     * QUICKPLOT
 %     * ECOPLOT
+%     * SIM2UGRID
 %   all with exactly the same version number.
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -40,13 +41,23 @@ if ~license('checkout','compiler')
     error('Compiler license currently not available.')
 end
 curdir = pwd;
-sourcedir=[curdir,filesep,'progsrc'];
-qpversion=read_identification(sourcedir,'d3d_qp.m');
-T=now;
-make_quickplot(curdir,qpversion,T)
-make_ecoplot(curdir,qpversion,T)
-c=computer;
-if c(end-1:end)=='64'
-   make_d3dmatlab(curdir,qpversion,T)
+sourcedir = [curdir,filesep,'progsrc'];
+
+[qpversion,hash,repo_url] = read_identification(sourcedir,'d3d_qp.m');
+T = now;
+
+if nargin == 0
+    Tvec = datevec(T);
+    yr = Tvec(1);
+    mn = Tvec(2);
+    release = sprintf('Build %d.%2.2d',yr,mn);
 end
-make_delwaq2raster(curdir,qpversion,T)
+
+c = computer;
+if strcmp(c(end-1:end),'64')
+   make_d3dmatlab(curdir,'version',qpversion,'url',repo_url,'hash',hash,'time',T,'release',release)
+end
+make_quickplot(curdir,qpversion,repo_url,hash,T)
+make_ecoplot(curdir,qpversion,repo_url,hash,T)
+make_delwaq2raster(curdir,qpversion,repo_url,hash,T)
+make_sim2ugrid(curdir,qpversion,repo_url,hash,T)

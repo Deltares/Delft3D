@@ -1,0 +1,81 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_procs
+   logical :: wind                 = .false. !  Wind
+   logical :: salin                = .false. !  Salinity
+   logical :: temp                 = .false. !  Temperature
+   logical :: const                = .false. !  Constituent(s)
+   logical :: culvert              = .false. !  Culvert(s)
+   logical :: dredge               = .false. ! Dredge and Dump
+   logical :: drogue               = .false. ! Drogue(s)
+   logical :: wave                 = .false. ! Waves
+   logical :: threed               = .false. ! KMAX > 1
+   logical :: secflo               = .false. ! Secondary flow
+   logical :: iweflg               = .false. ! Internal Wave Energy
+   logical :: struct               = .false. ! Structure(s)
+   logical :: cdwstruct            = .false. ! Current Deflection Wall
+   logical :: sedim                = .false. ! Sediment(s)
+   logical :: htur2d               = .false. ! HLES (Horizontal Large Eddy Simulation) sub grid turbulence model
+   logical :: flmd2l               = .false. ! 2 layer fluid mud model active (DelftIO communication required)
+   logical :: mudlay               = .false. ! True for mud layer of 2 layer fluid mud model
+   logical :: mudwave              = .false. ! Interaction between mud layer and (online) waves
+   logical :: coupleact            = .false. ! Online Couple is active
+   logical :: couplemod            = .false. ! Online Couple together with Flow
+   logical :: zmodel               = .false. ! Z-model instead of sigma layers
+   logical :: nonhyd               = .false. ! Non-hydrostatic
+   logical :: roller               = .false. ! Roller energy
+   logical :: tps_from_com         = .false. ! Flag for using the smoothed peak wave period TPS instead of the standard peak wave period TP (both from the COM-file)
+   logical :: ubot_from_com        = .false. ! Flag for using the orbital velocity near the bottom UBOT from the COM-file instead of re-computing it in FLOW
+   logical :: wlen_from_com        = .false. ! Flag for using the mean wave length WLEN from the COM-file instead of re-computing it in FLOW
+   logical :: only_distot_from_com = .false. ! Flag for reading only the total wave dissipation from the COM-file instead of reading the 4 components of the wave dissipation
+                                             ! Necessary for models with existing (old) COM-files
+                                             ! The 4 components of DIS on the COM-file
+                                             ! 1 = total wave dissipation
+                                             ! 2 = wave dissipation at the free surface
+                                             ! 3 = wave dissipation due to white capping
+                                             ! 4 = wave dissipation at the bottom
+   logical :: wavcmp               = .false.
+   logical :: cnstwv               = .false. ! Constant wave field for complete model domain
+                                             !    IMPORTANT can only be true if wave=true .and. roller=false
+   logical :: lftrto               = .false. ! Trachytope based roughness
+   logical :: veg3d                = .false. ! (Rigid) 3D Vegetation Model
+   logical :: snelli               = .false. ! Snellius
+   logical :: lrdamp               = .false. ! Low Reynolds Damping
+   logical :: sbkol                = .false. ! Online coupling with Sobek
+   logical :: bubble               = .false. ! Bubble screen
+   logical :: nfl                  = .false. ! Near field computations   
+   logical :: xbeach               = .false. ! XBeach wave driver is used   
+   logical :: lfsdu                = .false. ! Subsidence and Uplift included  
+   logical :: lfsdus1              = .false. ! Subsidence and Uplift effects waterlevel  
+   !
+   integer :: waveol               = 0       ! 0 = Waves from existing COM-file (linear interpolation)
+                                             ! 1 = Waves from existing COM-file (constant like when online)
+											 ! 2 = Waves computed by Delft3D-WAVES online
+end type gd_procs

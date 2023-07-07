@@ -1,0 +1,7 @@
+Interacter empty library
+
+Directory contents:
+   * src/ contains a STUB library, with all subroutine and function
+          interfaces, with empty bodies. This 'dummy' libraries allows
+          one to build an application with all GUI-parts switched off
+          by simply linking with libintstub.a (instead of libint.a).

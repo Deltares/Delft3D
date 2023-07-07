@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="https://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://schemas.deltares.nl/deltaresTestbench_v3 https://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+                <!--
+    Basic Windows configuration file: For "TRIANA" (TRIsula ANAlysis, tidal analysis on output files from Trisula)
+                -->
+    <config>
+        <localPaths>
+            <testCasesDir>./data/cases</testCasesDir>
+            <enginesDir>./data/engines</enginesDir>
+            <referenceDir>./data/reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+            </location>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <!--
+    The order is important. Start with the following programs:
+        command_prompt
+        svn
+        mpi
+    -->
+    <programs>
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win64\svn.exe</path>
+        </program>
+        <program name="triana" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+            <path>flow2d3d/bin/triana.exe</path>
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/win64</from>
+            </location>
+            </program>
+    </programs>
+    <!--
+    default testCases
+    -->
+    <defaultTestCases>
+        <testCase name="triana_default">
+            <programs>
+                <program ref="triana"/>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>win64/</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e67_f01_c01_tutorial" ref="triana_default">
+            <path>e67_triana/f01_general/c01_tutorial</path>
+            <programs>
+                <program ref="triana">
+                    <arguments>
+                        <argument>&lt;triana.inp &gt;triana.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="triana-fou-ex.prt" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="triana-fou-ex.tba" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="triana-fou-ex.tbb" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e67_f01_c02_test" ref="triana_default">
+            <path>e67_triana/f01_general/c02_test</path>
+            <programs>
+                <program ref="triana">
+                    <arguments>
+                        <argument>&lt;triana.inp &gt;triana.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="triana-f33.prt" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="triana-f33.tba" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="triana-f33.tbb" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e67_f01_c03_timing" ref="triana_default">
+            <path>e67_triana/f01_general/c03_timing</path>
+            <programs>
+                <program ref="triana">
+                    <arguments>
+                        <argument>&lt;triana.inp &gt;triana.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="triana-scs.prt" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="triana-scs.tba" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="triana-scs.tbb" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </testCases>
+</deltaresTestbench_v3>

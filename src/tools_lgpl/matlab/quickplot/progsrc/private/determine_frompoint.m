@@ -3,7 +3,7 @@ function DistanceState = determine_frompoint(DistanceState,point)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -31,12 +31,15 @@ function DistanceState = determine_frompoint(DistanceState,point)
 %   $HeadURL$
 %   $Id$
 
+% main routine selects between two implementations
+% currently only method 1 accessible
 if nargin<2
     point=-1;
 end
 DistanceState = determine_frompoint_1(DistanceState,point);
 
 
+% implementation 1
 function DistanceState = determine_frompoint_1(DistanceState,point)
 %
 Npnt = DistanceState.Npnt;
@@ -45,6 +48,7 @@ SEG = DistanceState.SEG;
 dist = DistanceState.dist;
 %
 if isfield(DistanceState,'distfromlast')
+    % second or later call to this routine for this mesh
     distfromlast = DistanceState.distfromlast;
     frompoint = DistanceState.frompoint;
     %
@@ -55,79 +59,81 @@ if isfield(DistanceState,'distfromlast')
     inext = DistanceState.inext;
     ds = DistanceState.ds;
 else
+    % first call to this routine for this mesh
+    % initialize variables
     distfromlast = zeros(Npnt,1);
-    distfromlast(ilast)=eps;
+    distfromlast(ilast) = eps;
     frompoint = repmat(ilast,Npnt,1);
     %
     Nseg = length(dist);
-    SEG=reshape(SEG(:,[1 2 2 1]),2*Nseg,2);
-    [SEG,i]=sortrows(SEG);
-    dist=[dist;dist];
-    dist=dist(i);
+    SEG = reshape(SEG(:,[1 2 2 1]),2*Nseg,2);
+    [SEG,i] = sortrows(SEG);
+    dist = [dist;dist];
+    dist = dist(i);
     %
-    nconn=full(sparse(SEG(:,1),1,1));
-    offset=cumsum([0;nconn(1:end-1)]);
+    nconn = full(sparse(SEG(:,1),1,1));
+    offset = cumsum([0;nconn(1:end-1)]);
     %
-    N=nconn(ilast);
-    idx=offset(ilast)+(1:N);
-    inext=SEG(idx,2);
-    ds=dist(idx);
+    N = nconn(ilast);
+    idx = offset(ilast)+(1:N);
+    inext = SEG(idx,2);
+    ds = dist(idx);
 end
 %
 curdist = 0;
-if point>0
+if point > 0
     curdist = distfromlast(point);
 end
 %
-while ~isempty(ds) && curdist==0
+while ~isempty(ds) && curdist == 0
     %
-    [dd,j]=min(ds);
-    ilast=inext(j);
-    distfromlast(ilast)=dd;
+    [dd,j] = min(ds);
+    ilast = inext(j);
+    distfromlast(ilast) = dd;
     %
-    N2=nconn(ilast);
-    idx=offset(ilast)+(1:N2);
-    inext2=SEG(idx,2);
-    ds2=dd+dist(idx);
+    N2 = nconn(ilast);
+    idx = offset(ilast)+(1:N2);
+    inext2 = SEG(idx,2);
+    ds2 = dd+dist(idx);
     %
-    done=logical(ones(N2,1));
-    for j2=1:N2
-        inext2j2=inext2(j2);
-        if distfromlast(inext2j2)==0
+    done = true(N2,1);
+    for j2 = 1:N2
+        inext2j2 = inext2(j2);
+        if distfromlast(inext2j2) == 0
             % check for shorter distances.
             %[alreadyinlist,jj]=max(inext==inext2j2);
             %if alreadyinlist
-            jj=inext==inext2j2;
+            jj = inext==inext2j2;
             if any(jj)
-                if ds(jj)>ds2(j2)
-                    ds(jj)=ds2(j2);
-                    frompoint(inext2j2)=ilast;
+                if ds(jj) > ds2(j2)
+                    ds(jj) = ds2(j2);
+                    frompoint(inext2j2) = ilast;
                 end
             else
-                done(j2)=0;
+                done(j2) = 0;
             end
         end
     end
-    inext2(done)=[];
-    ds2(done)=[];
+    inext2(done) = [];
+    ds2(done) = [];
     %
-    N2=length(inext2);
-    if N2==0
-        inext(j)=[];
-        ds(j)=[];
-        N=N-1;
+    N2 = length(inext2);
+    if N2 == 0
+        inext(j) = [];
+        ds(j) = [];
+        N = N-1;
     else
-        M=N:N+N2-1;
-        M(1)=j;
-        if N2>1
-            N=M(N2);
+        M = N:N+N2-1;
+        M(1) = j;
+        if N2 > 1
+            N = M(N2);
         end
-        inext(M)=inext2;
-        ds(M)=ds2;
-        frompoint(inext2)=ilast;
+        inext(M) = inext2;
+        ds(M) = ds2;
+        frompoint(inext2) = ilast;
     end
     %
-    if point>0
+    if point > 0
         curdist = distfromlast(point);
     end
 end
@@ -146,6 +152,7 @@ DistanceState.inext = inext;
 DistanceState.ds = ds;
 
 
+% implementation 2
 function DistanceState = determine_frompoint_2(DistanceState,point)
 %
 Npnt = DistanceState.Npnt;

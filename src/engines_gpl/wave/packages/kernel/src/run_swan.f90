@@ -1,7 +1,7 @@
 subroutine run_swan (casl)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine run_swan (casl)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !     *** Run swan; produce output file swanout with values on     ***
@@ -37,72 +37,88 @@ subroutine run_swan (casl)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use swan_input
+    use wave_mpi, only: numranks, wave_mpi_bcast, wave_mpi_barrier, engine_comm_world, MPI_SUCCESS, SWAN_GO
+    use system_utils, only: SCRIPT_EXTENSION
     !
     implicit none
 !
 ! Global variables
 !
+    integer                 :: ierr
     integer                 :: ind
-    integer                 :: strlen
-    integer                 :: ncasl 
+    integer                 :: strlen 
     integer                 :: nuerr
     logical                 :: ex
     character(*)            :: casl
     character(4)            :: labl     
-    character(4)            :: copy
     character(5)            :: prints
     character(6)            :: append
-    character(8)            :: swninp
-    character(256)          :: wvsswn
     character(256)          :: string
-    character(256)          :: swanCommand
+    character(1024)         :: swanCommand
 !
 !! executable statements -------------------------------------------------------
 !
-    wvsswn = ' '
     labl   = ' '
-    swninp = 'swan.inp'
-    write (wvsswn, '(a)') trim(casl)
-    ind    = index( wvsswn, ' ')
-    ncasl  = ind - 1
-    if (ncasl == 0) then
-       ncasl = 3
-    endif
-    wvsswn(ind:) = '.swn'
-    copy = 'copy'
-    call cp_file( swninp, wvsswn, copy, nuerr)
-    if (nuerr > 0) then
-       write (*, '(a,i3)') '*** ERROR: While copying swan.inp to waves.swn, errorcode:', nuerr
-       stop
-    endif
     !
-    if (arch == 'linux') then
-       write(swanCommand, '(3a)') 'swan.sh', ' ', trim(casl)
+    ! SWAN execution
+    !
+    if (swan_run%exemode == SWAN_MODE_LIB) then
        !
-       ! SWAN execution
+       ! As built-in function.
+       !
+       if (swan_run%scriptname /= ' ') then
+           !
+           ! The name of a preprocessing script has been specified. Call it.
+           ! The script will generate 'INPUT' based on 'swan.inp'.
+           !
+           write (*,'(2a)') 'Preprocessing SWAN input file using: ', trim(swan_run%scriptname)
+           write(swanCommand, '(3a)') trim(swan_run%scriptname)
+           !
+           ! In debug mode, util_system wants spaces at the end...
+           !
+           call util_system(swanCommand(1:len_trim(swanCommand)+5))
+           !
+           inquire (file = 'INPUT', exist = ex)
+           if (.not. ex) then
+              write (*,'(3a)') '*** ERROR: preprocessing script "', trim(swan_run%scriptname), '" ran without generating ''INPUT'' file'
+              call wavestop(1, '*** ERROR: preprocessing script ran without generating ''INPUT'' file')
+           endif
+       endif
+       !
+       write(*,'(a)')'>>...Start SWAN run'
+       if (numranks > 1) then
+          call wave_mpi_bcast(SWAN_GO, ierr)
+          if ( ierr == MPI_SUCCESS ) then
+             call swan(engine_comm_world)
+             call wave_mpi_barrier(ierr)
+          endif
+          if ( ierr /= MPI_SUCCESS ) then
+             write (*,'(a,i5)') 'MPI produces some internal error - return code is ',ierr
+             call wavestop(1, '*** ERROR: MPI produced an internal error')
+          endif
+       else
+          call swan(engine_comm_world)
+       endif
+    else
+       !
+       ! As executable
+       !
+       write(*,'(3a)')'>>...Check file swan_',SCRIPT_EXTENSION(2:),'.log'
+       write(swanCommand, '(4a)') 'swan', SCRIPT_EXTENSION
        !
        ! In debug mode, util_system wants spaces at the end...
        !
        call util_system(swanCommand(1:len_trim(swanCommand)+5))
+       !
        inquire (file = 'norm_end', exist = ex)
-       if (.not. ex) then
+       if (.not. ex .and. SCRIPT_EXTENSION=='.sh') then
           write (*,'(a)') '*** WARNING: unable to run SWAN using "swan.sh". Trying with "swan.bat" ...'
-          write(swanCommand,'(3a)') 'swan.bat', ' ', trim(casl)
-          !
-          ! SWAN execution
+          write(swanCommand,'(3a)') 'swan.bat'
           !
           ! In debug mode, util_system wants spaces at the end...
           !
           call util_system(swanCommand(1:len_trim(swanCommand)+5))
        endif
-    else
-       write(swanCommand,'(3a)') 'swan.bat', ' ', trim(casl)
-       !
-       ! SWAN execution
-       !
-       ! In debug mode, util_system wants spaces at the end...
-       !
-       call util_system(swanCommand(1:len_trim(swanCommand)+5))
     endif
     write(*,'(a)')'>>...End of SWAN run'
     !
@@ -111,7 +127,7 @@ subroutine run_swan (casl)
     inquire (file = 'norm_end', exist = ex)
     if (.not. ex) then
        write (*,'(a)') '*** ERROR: file ''norm_end'' expected to signal a correct SWAN calculation'
-       stop
+       call wavestop(1, '*** ERROR: file ''norm_end'' expected to signal a correct SWAN calculation')
     endif
     !
     ! Check SWAN output file PRINT
@@ -140,10 +156,7 @@ subroutine run_swan (casl)
     call rm_del('INSTU')
     call rm_del('BOTNOW')
     call rm_del('CURNOW')
-    string = casl(1:ncasl) // '.swn'
-    call rm_del(string)
-    string = casl(1:ncasl) // '.prt'
-    call rm_del(string)
+    call rm_del('AICENOW')
     string = 'fname'
     call rm_del(string) 
 end subroutine run_swan

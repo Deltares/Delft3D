@@ -1,4 +1,4 @@
-subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
+subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                 & kmax      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
@@ -10,7 +10,7 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
                 & message   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,8 +34,8 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
@@ -49,44 +49,45 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
-    integer                         , intent(in)   :: numrealpar
-    real(hp), dimension(numrealpar) , intent(inout):: realpar
-    !
+    logical                         , intent(in)   :: scour
     logical                         , intent(in)   :: wave
     integer                         , intent(in)   :: kmax
+    integer                         , intent(in)   :: ltur     !  Description and declaration in iidim.f90
+    integer                         , intent(in)   :: npar
+    integer                         , intent(in)   :: numrealpar
     real(fp)                        , intent(in)   :: bed
-    real(fp)                        , intent(in)   :: tauadd
-    real(fp)                        , intent(in)   :: taucr0
-    real(fp)                        , intent(in)   :: eps
+    real(fp)                        , intent(in)   :: bedw
     real(fp)                        , intent(in)   :: camax
+    real(fp), dimension(0:kmax)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
+    real(fp)                        , intent(in)   :: eps
     real(fp)                        , intent(in)   :: frac     !  Description and declaration in rjdim.f90
     real(fp), dimension(kmax)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
+    real(fp)                        , intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
+    real(fp)                        , intent(in)   :: susw
+    real(fp)                        , intent(in)   :: tauadd
+    real(fp)                        , intent(in)   :: taucr0
     real(fp), dimension(kmax)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
     real(fp), dimension(0:kmax)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
-    real(fp), dimension(0:kmax)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
-    integer                         , intent(in)   :: ltur     !  Description and declaration in iidim.f90
-    real(fp)                        , intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
-    logical                         , intent(in)   :: scour
-    real(fp)                        , intent(in)   :: bedw
-    real(fp)                        , intent(in)   :: susw
-    real(fp), dimension(30)         , intent(in)   :: par
+    real(fp), dimension(npar)       , intent(inout):: par
     !
-    real(fp)                        , intent(out)  :: aks
-    real(fp), dimension(kmax)       , intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
+    real(hp), dimension(numrealpar) , intent(inout):: realpar
+    !
+    logical                         , intent(out)  :: error
     integer                         , intent(out)  :: kmaxsd
-    real(fp)                        , intent(out)  :: taurat
+    real(fp)                        , intent(out)  :: aks
     real(fp)                        , intent(out)  :: caks
-    real(fp), dimension(0:kmax)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
+    real(fp)                        , intent(out)  :: conc2d
+    real(fp), dimension(kmax)       , intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: sbcu
     real(fp)                        , intent(out)  :: sbcv
     real(fp)                        , intent(out)  :: sbwu
     real(fp)                        , intent(out)  :: sbwv
+    real(fp), dimension(0:kmax)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: sswu
     real(fp)                        , intent(out)  :: sswv
-    logical                         , intent(out)  :: error
-    real(fp)                        , intent(out)  :: conc2d
+    real(fp)                        , intent(out)  :: taurat
     character(*)                    , intent(out)  :: message     ! Contains error message
 !
 ! Local variables
@@ -128,7 +129,9 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
     integer  :: k
     real(fp) :: avgcu
     real(fp) :: avgu
+    real(fp) :: awb
     real(fp) :: bakdif
+    real(fp) :: betam
     real(fp) :: delr
     real(fp) :: deltas
     real(fp) :: diffbt
@@ -148,11 +151,14 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
     real(fp) :: tauc
     real(fp) :: tauwav
     real(fp) :: u
+    real(fp) :: uoff
+    real(fp) :: uon
     real(fp) :: ustarc
     real(fp) :: usus
     real(fp) :: utot
     real(fp) :: uwb
     real(fp) :: v
+    real(fp) :: vcr
     real(fp) :: z
     real(fp) :: zusus
     logical  :: difvr
@@ -171,6 +177,7 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
     rlabda    = real(realpar(RP_RLAMB),fp)
     uorb      = real(realpar(RP_UORB) ,fp)
     di50      = real(realpar(RP_D50)  ,fp)
+    dss       = real(realpar(RP_DSS)  ,fp)
     !realpar(RP_DSS) = real(dss,hp)
     dstar     = real(realpar(RP_DSTAR),fp)
     d10       = real(realpar(RP_D10MX),fp)
@@ -200,6 +207,7 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
     rdw    = par(15)
     iopkcw = int(par(16))
     epspar = par(17)>0.0_fp
+    betam  = par(18)
     !
     sag    = sqrt(ag)
     !
@@ -210,7 +218,7 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
                  & tauc      ,taubcw    ,taurat    ,ta        ,caks      , &
                  & dss       ,mudfrac   ,eps       ,aksfac    ,rwave     , &
                  & camax     ,rdc       ,rdw       ,iopkcw    ,iopsus    , &
-                 & vonkar    ,wave      ,tauadd    )
+                 & vonkar    ,wave      ,tauadd    ,betam     ,awb       )
     realpar(RP_DSS)   = real(dss    ,hp)
     !
     ! Find bottom cell for SAND sediment calculations and store for use
@@ -283,9 +291,9 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
           !
           ! Set diffusion coefficient at bottom of layer
           !
+          dz        = h1 * (sig(k)-sig(k+1))
           diffbt    = seddif(k) + bakdif
-          diffbt    = max(diffbt , 0.1_fp*ws(k)*dz) ! \_ lines should be switched
-          dz        = h1 * (sig(k)-sig(k+1))        ! /
+          diffbt    = max(diffbt , 0.1_fp*ws(k)*dz)
           fact1     = 1.0_fp + dz * ws(k) / diffbt
           rsedeq(k) = rsedeq(k+1) / fact1
        enddo
@@ -339,9 +347,32 @@ subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
                     & dstar     ,ws(1)     ,hrms      ,tp        ,teta      , &
                     & rlabda    ,umod      ,sbcu      ,sbcv      ,sbwu      , &
                     & sbwv      ,sswu      ,sswv      ,rhowat    ,ag        , &
-                    & wave      ,eps       ,error     ,message   )
+                    & wave      ,eps       ,uon       ,uoff      ,vcr       , &
+                    & error     ,message   )
        if (error) return
     else
        error = .false.
+       uon   = missing_value
+       uoff  = missing_value
+       vcr   = missing_value
     endif
+
+    ! van Rijn (1993) specific output
+    par     = missing_value
+    par( 1) = tauc
+    par( 2) = tauwav
+    par( 3) = taubcw
+    par( 4) = usus
+    par( 5) = zusus
+    par( 6) = dss
+    par( 7) = caks
+    par( 8) = aks
+    par( 9) = deltas
+    par(10) = epsmxc
+    par(11) = epsmax
+    par(12) = uon
+    par(13) = uoff
+    par(14) = vcr
+    par(15) = uwb
+    par(16) = awb
 end subroutine tram1

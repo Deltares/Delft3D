@@ -1,0 +1,11 @@
+.
+EC MODULE ITEMS:
+Target Item 00057 (name=WIND_FROM_DIRECTION_interpolated, vectormax=1)
+Element Set 00038
+   Connection 00061, Converter 00060, targetIndex  0001
+      Source Item 00041 (name=WIND_FROM_DIRECTION, vectormax=1)
+         File Reader 00010(filename=BoundaryConditions.bc)
+            BCBlock 00009
+            Quantity = WIND_FROM_DIRECTION
+            Location = MODEL_WIDE
+.

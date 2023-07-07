@@ -1,3 +1,31 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!  
+!  
+
 module m_ec_bccollect
     use m_ec_parameters
     use m_ec_typedefs
@@ -37,7 +65,7 @@ module m_ec_bccollect
     integer,                           intent(out)     :: iostat
 
     integer (kind=8)    ::  fhandle
-    character*(255)     ::  rec          
+    character(:), allocatable ::  rec
     integer             ::  reclen 
     integer             ::  commentpos
     character*(1000)    ::  keyvaluestr                                    ! all key-value pairs in one header 
@@ -109,61 +137,25 @@ module m_ec_bccollect
                 endif 
              else                                                    ! switch to datamode 
                 call str_upper(keyvaluestr,len(trim(keyvaluestr)))   ! case insensitive format 
-                if (jakeyvalue(keyvaluestr,'NAME',trim(location))) then  
-                   if (jakeyvalue(keyvaluestr,'FUNCTION','ASTRONOMIC').or.jakeyvalue(keyvaluestr,'FUNCTION','ASTROCOR')) then 
-                      ! Check for harmonic or astronomic components
-                      jablock = .true.
-                      jablock = jablock .and. jakeyvalue(keyvaluestr,'QUANTITY','ASTRONOMIC COMPONENT') 
-                      jablock = jablock .and. jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'AMPLITUDE')
-                      jablock = jablock .and. jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'PHASE')
-                   elseif (jakeyvalue(keyvaluestr,'FUNCTION','HARMONIC').or.jakeyvalue(keyvaluestr,'FUNCTION','HARMCOR')) then 
-                      ! Check for harmonic or harmonic components
-                      jablock = .true.
-                      jablock = jablock .and. jakeyvalue(keyvaluestr,'QUANTITY','HARMONIC COMPONENT')
-                      jablock = jablock .and. jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'AMPLITUDE')
-                      jablock = jablock .and. jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'PHASE')
-                   elseif (jakeyvalue(keyvaluestr,'FUNCTION','QH')) then  
-                      ! Check for qh
-                      jablock = .true.
-                      jablock = jablock .and. ( jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'WATERLEVEL') .or. &
-                                                jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'WATER_LEVEL'))
-                      jablock = jablock .and. ( jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'DISCHARGE') .or. &
-                                                jakeyvalue(keyvaluestr,'QUANTITY',trim(quantity)//' '//'WATER_DISCHARGE'))
-                   elseif (jakeyvalue(keyvaluestr,'FUNCTION','T3D')) then  
-                      ! Check for timeseries on sigma- or z-levels 
-                      jablock = jakeyvalue(keyvaluestr,'QUANTITY',quantity)
-                   elseif (jakeyvalue(keyvaluestr,'FUNCTION','TIMESERIES')) then  
-                      ! Check for timeseries
-                      jablock = jakeyvalue(keyvaluestr,'QUANTITY',quantity)
-                   endif 
-                   if (jablock) then                           ! block confirmed, Create a filereader and initialize a bc-Block 
-                      bcBlockId = ecInstanceCreateBCBlock(InstancePtr)
-                      bcBlockPtr=>ecSupportFindBCBlock(instancePtr, bcBlockId)
-                      fileReaderId = ecInstanceCreateFileReader(InstancePtr)
-                      fileReaderPtr = ecSupportFindFileReader(instancePtr, fileReaderID)
-                      fileReaderPtr%bc => bcBlockPtr
-                      if (.not.processhdr_all_quantities(bcBlockPtr,nfld,nq,keyvaluestr)) return   ! dumb translation of bc-object metadata  
-                      if (.not.checkhdr(bcBlockPtr)) return                                        ! check on the contents of the bc-object 
-                      bcBlockPtr%fname = fname 
-                      if (ecSupportOpenExistingFileGnu(bcBlockPtr%fhandle, fname)) then
-                         call mf_backspace(bcBlockPtr%fhandle, savepos)           ! set newly opened file to the appropriate position 
-                         count = count + 1 
-                         iostat = EC_NOERR
-                      else 
-                         call mf_close(bcBlockPtr%fhandle)
-                         iostat = EC_DATA_NOTFOUND
-                      end if
+                if (matchblock(keyvaluestr,location,quantity)) then
+                   bcBlockId = ecInstanceCreateBCBlock(InstancePtr)
+                   bcBlockPtr=>ecSupportFindBCBlock(instancePtr, bcBlockId)
+                   fileReaderId = ecInstanceCreateFileReader(InstancePtr)
+                   fileReaderPtr = ecSupportFindFileReader(instancePtr, fileReaderID)
+                   fileReaderPtr%bc => bcBlockPtr
+                   if (.not.processhdr_all_quantities(bcBlockPtr,nfld,nq,keyvaluestr)) return   ! dumb translation of bc-object metadata  
+                   if (.not.checkhdr(bcBlockPtr)) return                                        ! check on the contents of the bc-object 
+                   bcBlockPtr%fname = fname 
+                   if (ecSupportOpenExistingFileGnu(bcBlockPtr%bcFilePtr%fhandle, fname)) then
+                      call mf_backspace(bcBlockPtr%bcFilePtr%fhandle, savepos)           ! set newly opened file to the appropriate position 
+                      count = count + 1 
+                      iostat = EC_NOERR
                    else 
-                      ! location was found, but not all required meta data was present
-                      iostat = EC_METADATA_INVALID
-                   endif                                    ! Right quantity
-                else
-                   ! location was found, but data was missing/invalid
-                   iostat = EC_DATA_NOTFOUND
+                      call mf_close(bcBlockPtr%bcFilePtr%fhandle)
+                      iostat = EC_DATA_NOTFOUND
+                   end if
                 endif                                       ! Right label
                 jaheader = .false.                          ! No, we are NOT reading a header 
-                if (jablock) then                           ! Yes, we are in the bc-block of interest
-                endif                                       ! found matching block 
              endif          ! in header mode (data lines are ignored) 
           endif             ! not a new '[forcing]' item  
        endif                ! non-empty string 
@@ -175,6 +167,7 @@ module m_ec_bccollect
 ! Collectloop: Scan a bc-file
 !              For each bc-block, create a file reader, add it to the list of file readers in the instance
     integer function collectbc_all(instancePtr, fname, iostat, k_refdate, k_timezone, k_timestep_unit, dtnodal) result (count)
+    use m_ec_alloc
     implicit none            
     type (tEcInstance),     pointer,   intent(in)      :: instancePtr     !< EC Instance, overall structure for the EC-module 
     character(len=*),                  intent(in)      :: fname           !< file name (bc-format)
@@ -185,9 +178,8 @@ module m_ec_bccollect
     real(kind=hp),          optional,  intent(in)      :: dtnodal         !< Nodal factors update interval
 
     integer (kind=8)    ::  fhandle
-    character*(255)     ::  rec          
+    character(:), allocatable :: rec
     integer             ::  reclen 
-    integer             ::  commentpos
     character*(1000)    ::  keyvaluestr                                    ! all key-value pairs in one header 
     integer             ::  posfs
     integer             ::  nfld
@@ -195,12 +187,13 @@ module m_ec_bccollect
     logical             ::  jablock, jaheader
     integer             ::  lineno 
     integer (kind=8)    ::  savepos 
-    integer             ::  iostatloc
     type (tEcBCBlock),    pointer :: bcBlockPtr
+    type (tEcBCFile),     pointer :: bcFilePtr
     type (tEcFileReader), pointer :: fileReaderPtr
     integer             :: bcBlockId, fileReaderId
     integer             :: ifr 
-    logical             :: success, isLateral
+    logical             :: isLateral
+    real(hp)            :: k_mjd                                          ! kernel reference date as Modified Julian date
 
     iostat = EC_UNKNOWN_ERROR
     lineno = 0 
@@ -208,36 +201,36 @@ module m_ec_bccollect
     jaheader = .false.
     isLateral = .false.
 
+    count = 0
     if (.not.ecSupportOpenExistingFileGnu(fhandle, fname)) then
        iostat = EC_DATA_NOTFOUND
        return
     end if
 
-    count = 0
+    if (instancePtr%nBCFiles == size(instancePtr%ecBCFilesPtr)) then
+       if (.not. ecArrayIncrease(instancePtr%ecBCFilesPtr, instancePtr%nBCFiles)) then
+          return
+       end if
+    end if
+    instancePtr%nBCFiles = instancePtr%nBCFiles + 1
+
+    allocate (bcFilePtr)
+    bcFilePtr%bcfilename = fname
+    bcFilePtr%fhandle = fhandle
+    instancePtr%ecBCFilesPtr(instancePtr%nBCFiles)%Ptr => bcFilePtr
+
     do while (.not.mf_eof(fhandle))
        call mf_read(fhandle,rec,savepos)
-       iostatloc = 0 ! mf_read always ok?
-       if (iostatloc /= 0) then 
-          iostat = iostatloc
-          return ! beter break?
-       endif  
+       if (savepos<0) then
+          iostat = EC_IO_ERROR
+          return
+       end if
        lineno = lineno + 1 
-       if (index('!#%*',rec(1:1))>0) cycle                     ! deal with various begin-of-line delimiters
-       reclen = len_trim(rec)                                  ! deal with various comment delimiters 
-       commentpos = index(rec,'//')
-       if (commentpos>0) reclen = min(reclen,commentpos-1)
-       commentpos = index(rec,' %')
-       if (commentpos>0) reclen = min(reclen,commentpos-1)
-       commentpos = index(rec,' #')
-       if (commentpos>0) reclen = min(reclen,commentpos-1)
-       commentpos = index(rec,' *')
-       if (commentpos>0) reclen = min(reclen,commentpos-1)
-       commentpos = index(rec,' !')
-       if (commentpos>0) reclen = min(reclen,commentpos-1)
-       
-       if (reclen < 3) cycle
-
-       if (len_trim(rec(1:reclen))>0) then                     ! skip empty lines 
+       if (index('!#%*',rec)==1) cycle                     ! if commentws out in the first position
+       reclen = len_trim(rec)                              ! deal with various comment delimiters 
+       if (reclen < 3) then
+          cycle
+       else
           if (index(rec,'[forcing]'         )>0 .or. &
               index(rec,'[Boundary]'        )>0 .or. &
               index(rec,'[LateralDischarge]')>0) then          ! new boundary chapter       
@@ -277,35 +270,21 @@ module m_ec_bccollect
                      return  ! dumb translation of bc-object metadata  
                    endif
 !                  if (.not.(checkhdr(bcBlockPtr))) return    ! skip check                       ! check on the contents of the bc-object       
-                   bcBlockPtr%fname = fname 
                    bcBlockPtr%ftype=BC_FTYPE_ASCII                                               ! set BC-Block filetype to ASCII
 
-                   !if (bcBlockPtr%func==BC_FUNC_TSERIES) then 
-                   !   if (.not.ecSupportTimestringToUnitAndRefdate(bcBlockPtr%timeunit, unit, ref_date)) then 
-                   !      return
-                   !   endif           ! Parsing the time string failed 
-                   !endif              ! Timeseries function 
-
                    if (present(k_refdate) .and. present(k_timezone) .and. present(k_timestep_unit)) then 
+                      k_mjd = date2mjd(k_refdate)
                       if (present(dtnodal)) then
-                         if (.not.ecProviderInitializeTimeFrame(fileReaderPtr, k_refdate, k_timezone, k_timestep_unit, dtnodal)) return
+                         if (.not.ecProviderInitializeTimeFrame(fileReaderPtr, k_mjd, k_timezone, k_timestep_unit, dtnodal)) return
                       else
-                         if (.not.ecProviderInitializeTimeFrame(fileReaderPtr, k_refdate, k_timezone, k_timestep_unit)) return
+                         if (.not.ecProviderInitializeTimeFrame(fileReaderPtr, k_mjd, k_timezone, k_timestep_unit)) return
                       endif
                    else
-                      if (.not.ecProviderInitializeTimeFrame(fileReaderPtr, -1, 0.d0, ec_second)) return
+                      if (.not.ecProviderInitializeTimeFrame(fileReaderPtr, -1.d0, 0.d0, ec_second)) return
                    endif
-
-                   if (ecSupportOpenExistingFileGnu(bcBlockPtr%fhandle, fname)) then
-                      call mf_backspace(bcBlockPtr%fhandle, savepos)           ! set newly opened file to the appropriate position 
-                      count = count + 1 
-                      iostat = EC_NOERR
-                   else 
-                      if (bcBlockPtr%fhandle /= 0) then
-                         call mf_close(bcBlockPtr%fhandle)
-                      endif
-                      iostat = EC_DATA_NOTFOUND
-                   end if
+                   bcBlockPtr%fposition = savepos
+                   bcBlockPtr%bcFilePtr => bcFilePtr 
+                   count = count + 1
                    jaheader = .false.
                 endif 
              endif          ! in header mode (data lines are ignored) 
@@ -314,10 +293,9 @@ module m_ec_bccollect
     enddo                   ! read/scan loop, ended when we reached end-of-file
     ! Create the items 
     do ifr = instancePtr%nFileReaders-count+1,instancePtr%nFileReaders                   ! The latest set of filereaders = latest set of bcBlocks       
-       success = items_from_bc_quantities(instancePtr,instancePtr%ecFileReadersPtr(ifr)%ptr)
+       if (.not.items_from_bc_quantities(instancePtr,instancePtr%ecFileReadersPtr(ifr)%ptr)) return
     enddo
-
-    call mf_close(fhandle)
+    iostat = EC_NOERR
 
     end function collectbc_all
 !============================================================================================================================
@@ -339,9 +317,9 @@ module m_ec_bccollect
 
     integer                          ::     ifld 
     integer                          ::     iostat
-    character(len=60),  allocatable  ::     hdrkeys(:)     !< All keys from header
-    character(len=60),  allocatable  ::     hdrvals(:)     !< All values from header
-    character(len=60)                ::     dumstr
+    character(len=256),  allocatable  ::     hdrkeys(:)     !< All keys from header
+    character(len=256),  allocatable  ::     hdrvals(:)     !< All values from header
+    character(len=256)                ::     dumstr
 
     integer                          ::     iq, iq_sel
 
@@ -424,6 +402,7 @@ module m_ec_bccollect
                      bc%func = BC_FUNC_TSERIES
                   case ('CONSTANT')                        ! Constant is a special version of time-series (Sobek3)
                      bc%func = BC_FUNC_CONSTANT
+                     bc%timeint = timeint_bfrom            ! Time interpolation keyword is likely absent, default to a0=1 and a1=0
                   case ('T3D')
                      bc%func = BC_FUNC_TIM3D
                      allocate(bc%quantities(1))                     ! joint quantity objects
@@ -441,13 +420,17 @@ module m_ec_bccollect
                   return
                end select 
           case ('OFFSET')                           
-               if (iq>0) cycle 
-               read(hdrvals(ifld),*) bc%quantities(iq)%offset
+               if (iq>0) then
+                  read(hdrvals(ifld),*) bc%quantities(iq)%offset
+               endif
           case ('FACTOR')
-               if (iq>0) cycle 
-               read(hdrvals(ifld),*) bc%quantities(iq)%factor
+               if (iq>0) then
+                  read(hdrvals(ifld),*) bc%quantities(iq)%factor
+               endif
           case ('MISSING VALUE DEFINITION')
-               read(hdrvals(ifld),*) bc%missing
+               if (iq>0) then
+                  read(hdrvals(ifld),*) bc%quantities(iq)%missing
+               endif
           case ('TIME INTERPOLATION')
                select case (trim(adjustl(hdrvals(ifld))))
                   case ('LINEAR')
@@ -457,7 +440,14 @@ module m_ec_bccollect
                   case ('BLOCK-TO')
                      bc%timeint = BC_TIMEINT_BTO
                   case ('BLOCK-FROM')
-                     bc%timeint = BC_TIMEINT_BFROM
+                     bc%timeint = timeint_bfrom
+               end select  
+          case ('PERIODIC')
+               select case (trim(adjustl(hdrvals(ifld))))
+               case ('TRUE','T','.T.','1','JA','YES')
+                  bc%periodic = .True.
+               case default
+                  bc%periodic = .False.
                end select  
        end select 
     enddo 

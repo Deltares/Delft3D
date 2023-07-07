@@ -1,9 +1,10 @@
       subroutine ININFS(lundia,fout  ,extnef,mnstat,thick ,namcon,
      *                  grdang,tstart,dtmin ,notims,nostat,kmax  ,
      *                  lstci ,itdate                            )
+      implicit none
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +28,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !***********************************************************************
 ! Deltares                         marine and coastal management
 !
@@ -44,23 +45,40 @@
 !***********************************************************************
 !
       integer       itdate
+      integer       lundia
+      integer       notims
+      integer       ltur
+      integer       l
+      integer       nostat
+      integer       kmax
+      integer       lstci
 
       integer       tyden (2), date(2)
 
       integer       mnstat(2     ,nostat)
 
-      real          thick (kmax  )
+      double precision thick (kmax  )
 
-      character*20  namcon(lstci + 2)
+      character*20  namcon(lstci + 2)  ! ltur has maximum of 2 (tke and eps)
 !
 !-----For nefis
 !
       integer*4     fdNef,
-     *              uindex(     15), ! 3x5
+     *              uindex(15), ! 3x5
      *              buflen,
      *              usrord(5)
       integer*4     error
       integer*4     getels, getelt, crenef, clsnef
+!
+      real dt_sp
+      real tunit_sp
+      real thick_sp(kmax)
+      real grdang_sp
+      double precision dt
+      double precision tunit
+      double precision dtmin
+      double precision tstart
+      double precision grdang
 !
       character*1   coding, access
       character*(*) extnef
@@ -93,7 +111,7 @@
       fildat = 'trih-' // trim(extnef) // '.dat'
 !
       error  = CRENEF (fdNef, fildat, fildef, coding, access)
-      if (error  .ne. 0) then
+      if (error /= 0) then
          write(lundia,'(a)')
      *        '***ERROR: opening FLOW his files'
          fout   = .true.
@@ -109,9 +127,9 @@
       uindex (3) = 1
       error      = GETELT (fdNef, grpnam, elmnam, uindex,
      *                     usrord, buflen, tyden                 )
-      if (error  .ne. 0) then
+      if (error /= 0) then
          write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (ITHISC)'
+     *        '***ERROR: reading Delft3D-FLOW his data file (ITHISC)'
          fout   = .true.
          goto 999
       endif
@@ -124,9 +142,9 @@
       uindex(3) = 1
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
      *                   usrord,buflen,date                )
-      if (error  .ne. 0) then
+      if (error /= 0) then
          write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (ITDATE)'
+     *        '***ERROR: reading Delft3D-FLOW his data file (ITDATE)'
          fout   = .true.
          goto 999
       endif
@@ -137,42 +155,56 @@
       buflen     = 4
       uindex (2) = 1
       error      = getelt (fdNef, grpnam, elmnam, uindex,
-     *                     usrord, buflen, tunit                 )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (TUNIT)'
-         fout   = .true.
-         goto 999
+     *                     usrord, buflen, tunit_sp              )
+      if (error /= 0) then
+         buflen     = 8
+         error      = getelt (fdNef, grpnam, elmnam, uindex,
+     *                        usrord, buflen, tunit                 )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (TUNIT)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+         tunit = dble(tunit_sp)
       endif
 !
       elmnam     = 'DT'
       buflen     = 4
       uindex (2) = 1
       error      = getelt (fdNef, grpnam, elmnam, uindex,
-     *                     usrord, buflen, dt                    )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (DT)'
-         fout   = .true.
-         goto 999
+     *                     usrord, buflen, dt_sp                 )
+      if (error /= 0) then
+         buflen     = 8
+         error      = getelt (fdNef, grpnam, elmnam, uindex,
+     *                        usrord, buflen, dt                    )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (DT)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          dt = dble(dt_sp)
       endif
 !----------------------------------------------------------------------
 !     time frame
 !----------------------------------------------------------------------
-      dtmin = (real(tyden(2)) - real(tyden(1))) * dt * tunit/60.
+      dtmin = (dble(tyden(2)) - dble(tyden(1))) * dt * tunit/60.d0
 !
-      tstart = real (tyden(1)) * dt * tunit
-      tstart = tstart / 60.0
+      tstart = dble (tyden(1)) * dt * tunit
+      tstart = tstart / 60.0d0
 !
-      if (nostat .gt. 0) then
+      if (nostat > 0) then
          elmnam    = 'MNSTAT'
          buflen    = 2*nostat*4
          uindex(2) = 1
          error     = GETELT(fdNef,grpnam,elmnam,uindex,
      *                      usrord,buflen,mnstat              )
-         if (error  .ne. 0) then
+         if (error /= 0) then
             write(lundia,'(a)')
-     *           '***ERROR: reading DELFT3D-FLOW his data file (MNSTAT)'
+     *           '***ERROR: reading Delft3D-FLOW his data file (MNSTAT)'
             fout   = .true.
             goto 999
          endif
@@ -182,45 +214,59 @@
       buflen    = 4*kmax
       uindex(2) = 1
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
-     *                   usrord,buflen,thick               )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (THICK)'
-         fout   = .true.
-         goto 999
+     *                   usrord,buflen,thick_sp             )
+      if (error /= 0) then
+         buflen    = 8*kmax
+         error     = GETELT(fdNef,grpnam,elmnam,uindex,
+     *                      usrord,buflen,thick             )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (THICK)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          thick = dble(thick_sp)
       endif
 
       elmnam    = 'GRDANG'
       buflen    = 4
       uindex(2) = 1
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
-     *                   usrord,buflen,grdang              )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (GRDANG)'
-         fout   = .true.
-         goto 999
-      endif
+     *                   usrord,buflen,grdang_sp           )
+      if (error /= 0) then
+         buflen    = 8
+         error     = GETELT(fdNef,grpnam,elmnam,uindex,
+     *                      usrord,buflen,grdang              )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (GRDANG)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          grdang = dble(grdang_sp)
+      endif 
 
       elmnam    = 'LTUR'
       error     = GETELT(fdNef,grpnam    ,elmnam    ,
      *                   uindex,usrord    ,buflen    ,LTUR      )
-      if (error  .ne. 0) then
+      if (error /= 0) then
          write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (LTUR)'
+     *        '***ERROR: reading Delft3D-FLOW his data file (LTUR)'
          fout   = .true.
          goto 999
       endif
 
-      if ((lstci + ltur) .gt. 0) then
+      if ((lstci + ltur) > 0) then
 
          buflen    = 20 * (lstci + ltur)
          elmnam    = 'NAMCON'
          error     = GETELS(fdNef,grpnam    ,elmnam    ,
      *                      uindex,usrord    ,buflen    ,NAMCON    )
-         if (error  .ne. 0) then
+         if (error /= 0) then
             write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (NAMCON)'
+     *        '***ERROR: reading Delft3D-FLOW his data file (NAMCON)'
             fout   = .true.
             goto 999
         endif
@@ -245,6 +291,7 @@
 !
       subroutine SIMHSH(lundia, fout, extnef, kfs, wl, uu, vv,
      *                  alfas ,grdang, notims, nostat, kmax)
+      implicit none
 !
 !-----------------------------------------------------------------------
 !     Function: 1) Read time series (hydrodynamics) from the NEFIS
@@ -253,18 +300,31 @@
 !               2) Converts u- and v-velocities to north and south
 !                  velocities
 !----------------------------------------------------------------------
-      integer*4     notims
+      integer notims
+      integer lundia
+      integer neferr
+      integer itim
+      integer istat
+      integer k
+      integer hulp
+      integer nostat
+      integer kmax
 !
-      real*4        zcurut,zcurvt,mag   ,dir   ,eps   ,
-     *              pi    ,deg2rd
+      double precision zcurut,zcurvt,mag   ,dir   ,eps   ,
+     *                 pi    ,deg2rd, grdang
 !
-      real*4        ALFAS (nostat)
+      real alfas_sp(nostat)
+      double precision ALFAS (nostat)
 !
-      real          wl  (nostat,notims),
-     *              uu  (nostat,kmax  ,notims),
-     *              vv  (nostat,kmax  ,notims)
-      integer       kfs(nostat,notims)
+      real wl_sp  (nostat,notims),
+     *     uu_sp  (nostat,kmax  ,notims),
+     *     vv_sp  (nostat,kmax  ,notims)
+      double precision wl  (nostat,notims),
+     *                 uu  (nostat,kmax  ,notims),
+     *                 vv  (nostat,kmax  ,notims)
+      integer          kfs(nostat,notims)
 
+      double precision rd2deg
 !----------------------------------------------------------------------
 !     Nefis declarations
 !----------------------------------------------------------------------
@@ -303,7 +363,7 @@
 !
       fildat    = 'trih-'//trim(extnef)//'.dat'
       error  = CRENEF (fdNef, fildat, fildef, coding, access)
-      if (error  .ne. 0) then
+      if (error /= 0) then
          write(lundia,'(a)')
      *        '***ERROR: opening FLOW his file(s)'
          fout   = .true.
@@ -326,12 +386,19 @@
       write(*,'(a,a)') 
      * '     Reading hydrodynamic data, element ', trim(elmnam)
       error     = GETELT(fdNef,grpnam    ,elmnam    ,
-     *                   uindex,usrord    ,buflen    ,alfas     )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (ALFAS)'
-         fout   = .true.
-         goto 999
+     *                   uindex,usrord    ,buflen    ,alfas_sp     )
+      if (error /= 0) then
+          buflen = 8*nostat
+         error     = GETELT(fdNef,grpnam    ,elmnam    ,
+     *                      uindex,usrord    ,buflen    ,alfas     )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (ALFAS)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          alfas = dble(alfas_sp)
       endif
 !----------------------------------------------------------------------
 !     cycle through hisfile
@@ -350,7 +417,7 @@
      * '     Reading hydrodynamic data, element ', trim(elmnam)
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
      *                   usrord,buflen,kfs )
-      if (error  .ne. 0) then
+      if (error /= 0) then
          error = neferr(fdnef, error_string)
          write(lundia,'(a)') trim(error_string)
          kfs = 1
@@ -366,12 +433,19 @@
       write(*,'(a,a)') 
      * '     Reading hydrodynamic data, element ', trim(elmnam)
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
-     *                   usrord,buflen,wl                  )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (ZWL)'
-         fout   = .true.
-         goto 999
+     *                   usrord,buflen,wl_sp                  )
+      if (error /= 0) then
+         buflen    = 8*nostat*notims
+         error     = GETELT(fdNef,grpnam,elmnam,uindex,
+     *                      usrord,buflen,wl                  )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (ZWL)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          wl = dble(wl_sp)
       endif
 !
 !------- u and v-velocities to get north and south vel
@@ -385,13 +459,21 @@
       write(*,'(a,a)') 
      * '     Reading hydrodynamic data, element ', trim(elmnam)
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
-     *                   usrord,buflen,uu                  )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (ZCURU)'
-         fout   = .true.
-         goto 999
+     *                   usrord,buflen,uu_sp                  )
+      if (error /= 0) then
+         buflen    = 8*nostat*kmax*notims
+         error     = GETELT(fdNef,grpnam,elmnam,uindex,
+     *                      usrord,buflen,uu                  )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (ZCURU)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          uu = dble(uu_sp)
       endif
+      
 !
       elmnam    = 'ZCURV'
       buflen    = 4*nostat*kmax*notims
@@ -402,13 +484,21 @@
       write(*,'(a,a)') 
      * '     Reading hydrodynamic data, element ', trim(elmnam)
       error     = GETELT(fdNef,grpnam,elmnam,uindex,
-     *                   usrord,buflen,vv                  )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading DELFT3D-FLOW his data file (ZCURV)'
-         fout   = .true.
-         goto 999
+     *                   usrord,buflen,vv_sp                  )
+      if (error /= 0) then
+         buflen    = 8*nostat*kmax*notims
+         error     = GETELT(fdNef,grpnam,elmnam,uindex,
+     *                      usrord,buflen,vv                  )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (ZCURV)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+          vv = dble(vv_sp)
       endif
+
 !-------------------------------------------------------------------
 !     Translate to south and north velocities
 !-------------------------------------------------------------------
@@ -447,15 +537,18 @@
       subroutine SIMHSC(lundia,fout  ,extnef,
      *                  notims,nostat,kmax  ,lstci ,
      *                  conc                       )
+      implicit none
 !
 !-----------------------------------------------------------------------
 !     Function: 1) Read time series (constituents) from the NEFIS
 !                  history file
 !----------------------------------------------------------------------
 
-      integer       notims
+      integer lundia, notims, nostat, kmax, lstci
 
-      real          conc   (nostat,kmax  ,lstci ,notims)
+      real*4 concsp   (nostat,kmax  ,lstci ,notims)
+      double precision conc   (nostat, kmax  ,lstci ,notims)
+      integer       istat, k, iconc, itim
 !
 !----------------------------------------------------------------------
 !     Nefis declarations
@@ -487,7 +580,7 @@
       fildef    = 'trih-'//trim(extnef)//'.def'
       fildat    = 'trih-'//trim(extnef)//'.dat'
       error  = CRENEF (fdNef, fildat, fildef, coding, access)
-      if (error  .ne. 0) then
+      if (error /= 0) then
          write(lundia,'(a)')
      *        '***ERROR: opening Delft3D-FLOW his file(s)'
          fout   = .true.
@@ -516,13 +609,29 @@
       write(*,'(a,a)') 
      * '     Reading transport data, element ', trim(elmnam)
       error    = GETELT(fdNef,grpnam    ,elmnam    ,
-     *                  uindex,usrord ,buflen    ,conc      )
-      if (error  .ne. 0) then
-         write(lundia,'(a)')
-     *        '***ERROR: reading Delft3D-FLOW his data file (GRO)'
-         fout   = .true.
-         goto 999
+     *                  uindex,usrord ,buflen    ,concsp      )
+      if (error /= 0) then
+         buflen = 8 * nostat * kmax * lstci * notims
+         error    = GETELT(fdNef,grpnam    ,elmnam    ,
+     *                     uindex,usrord ,buflen    ,conc      )
+         if (error /= 0) then
+            write(lundia,'(a)')
+     *           '***ERROR: reading Delft3D-FLOW his data file (GRO)'
+            fout   = .true.
+            goto 999
+         endif
+      else
+         do istat = 1, nostat
+            do k = 1, kmax
+               do iconc = 1, lstci
+                  do itim = 1, notims
+                     conc(istat,k,iconc,itim)=concsp(istat,k,iconc,itim)
+                  enddo
+               enddo
+            enddo
+         enddo
       endif
+      
 !----------------------------------------------------------------------
 !     close NEFIS files
 !----------------------------------------------------------------------

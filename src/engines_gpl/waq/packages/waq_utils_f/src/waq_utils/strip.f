@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_strip
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE STRIP ( LUNIN  , LFILE  , LUNUT  , LUREP  , NPOS   ,
      *                                              CCHAR  , VRSION )
+      use m_srstop
+
 !
 !
 !     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -53,6 +61,9 @@
       CHARACTER*1    CCHAR
       CHARACTER*(*)  LFILE
       LOGICAL        EMPTY, STRING
+      integer :: LUNIN, LUNUT, LUREP
+      integer :: NPOS, IL, I, IS
+      real    :: VERS2, VRSION
 !
       IF ( NPOS .GT. 2000 ) GOTO 60
 !
@@ -120,3 +131,4 @@
      *         /' In file ',I4,' , maximum is 1000 ' )
 !
       END
+      end module m_strip

@@ -1,0 +1,14 @@
+[boundary]
+quantity=uxuyadvectionvelocitybnd
+locationfile=zuiduxuy.pli
+forcingfile=tang_new.nc
+
+[boundary]
+quantity=waterlevelbnd
+locationfile=tangnoordlev.pli
+forcingfile=tang_new.bc
+
+[boundary]
+quantity=waterlevelbnd
+locationfile=tangzuidlev.pli
+forcingfile=tang_new.bc

@@ -1,4 +1,4 @@
-function nc_addhist ( ncfile, attval )
+function nc_addhist(ncfile,attval)
 %NC_ADDHIST  Add text to global history attribute.
 %
 %   NC_ADDHIST(NCFILE,TEXT) adds the TEXT string to the standard convention
@@ -15,12 +15,9 @@ function nc_addhist ( ncfile, attval )
 %
 %   See also NC_ATTPUT.
 
-if ~exist(ncfile,'file')
-	error ( 'SNCTOOLS:NC_ADDHIST:badFilename', '%s does not exist', ncfile );
-end
 if ~ischar(attval)
-	error ( 'SNCTOOLS:NC_ADDHIST:badDatatype', ...
-	        'history attribute addition must be character.' );
+	error ('snctools:addHist:badDatatype', ...
+	       'The history attribute value must be character.' );
 end
 
 

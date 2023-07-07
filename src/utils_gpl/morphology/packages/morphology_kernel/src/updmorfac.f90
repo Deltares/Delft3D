@@ -1,7 +1,7 @@
 subroutine updmorfac(morpar, timhr, refjulday)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine updmorfac(morpar, timhr, refjulday)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! update morfac in case of varyingmorfac
@@ -40,7 +40,7 @@ subroutine updmorfac(morpar, timhr, refjulday)
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
     type(morpar_type)                    , intent(inout) :: morpar
     real(fp)                             , intent(in)    :: timhr

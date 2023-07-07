@@ -1,0 +1,33 @@
+[forcing]
+Name              = left01_0001
+Function          = harmonic
+Quantity          = harmonic component
+Unit              = minutes
+Quantity          = dischargebnd amplitude
+Unit              = -
+Quantity          = dischargebnd phase
+Unit              = deg
+0.0  2500.0  0.0 
+
+[forcing]
+Name              = left01_0002
+Function          = harmonic
+Quantity          = harmonic component
+Unit              = minutes
+Quantity          = dischargebnd amplitude
+Unit              = -
+Quantity          = dischargebnd phase
+Unit              = deg
+0.0  2500.0  0.0 
+
+[forcing]
+Name              = right01
+Function          = qhtable
+Quantity          = qhbnd discharge
+Unit              = m3/s
+Quantity          = qhbnd waterlevel
+Unit              = m
+0       1.846766937769912
+2500    2.846766937769912
+5000    3.846766937769912
+7500    4.846766937769912

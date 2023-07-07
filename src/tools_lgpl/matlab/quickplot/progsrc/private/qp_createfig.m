@@ -4,7 +4,7 @@ function [fig,figoptions,createops]=qp_createfig(figtype,figname)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -94,10 +94,15 @@ if isequal(figtype,'quick')
 end
 %
 if isempty(fig)
-    if ismember('zbuffer',set(0,'defaultfigurerenderer'))
+    Renderers = set(0, 'defaultfigurerenderer');
+    if ismember('zbuffer', Renderers)
        renderer = 'zbuffer';
     else
        renderer = 'opengl';
+    end
+    usr_renderer = qp_settings('defaultrenderer', renderer);
+    if ismember(usr_renderer, Renderers)
+        renderer = usr_renderer;
     end
     fig=figure('closerequestfcn','d3d_qp closefigure', ...
         'inverthardcopy','off', ...
@@ -107,6 +112,11 @@ if isempty(fig)
         'visible','off', ...
         'userdata',figoptions, ...
         xtraprops{:});
+    try
+        usr_smooth = qp_settings('graphicssmoothing');
+        set(fig, 'graphicssmoothing', usr_smooth)
+    catch
+    end
     qp_figurebars(fig)
 end
 
@@ -194,17 +204,10 @@ set(fig,'userdata',figoptions,'visible','on');
 
 function standardfig(m,n,tags,orient)
 %set(gcf,'color',[1 1 1]);
-for i=m*n:-1:1
-    ax=subplot(m,n,i);
-    set(ax,'color',qp_settings('defaultaxescolor')/255);
-    if qp_settings('boundingbox')
-        set(ax,'box','on');
-    end
-    if matlabversionnumber>=8.04;
-        set(ax,'tag',tags{i},'sortMethod','childOrder');
-    else
-        set(ax,'tag',tags{i},'drawmode','fast');
-    end
+for i = m*n:-1:1
+    ax = subplot(m,n,i);
+    qp_defaultaxessettings(ax)
+    set(ax,'tag',tags{i});
 end
 md_paper('no edit',orient,'7box');
 

@@ -7,7 +7,7 @@ function qp_error(msg,Ex,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -51,4 +51,8 @@ elseif isequal(message(1:min(15,end)),'Error: <a href=')
     newline = find(message==char(10));
     message = message(newline(1)+5:end);
 end
-ui_message('error',{msg,message,stacklist{:}})
+if iscell(msg)
+    ui_message('error',{msg{:},message,stacklist{:}})
+else
+    ui_message('error',{msg,message,stacklist{:}})
+end

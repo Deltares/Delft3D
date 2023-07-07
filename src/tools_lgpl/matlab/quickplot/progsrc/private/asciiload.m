@@ -6,7 +6,7 @@ function z=asciiload(filename,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -34,7 +34,7 @@ function z=asciiload(filename,varargin)
 %   $HeadURL$
 %   $Id$
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 comment='%';
 i=0; % line number in file
 if nargin>2
@@ -55,8 +55,10 @@ if nargin>2
                 j = j+2;
             case 'skiplines'
                 nlines = varargin{j+1};
-                for i = 1:nlines
-                    fgetl(fid);
+                if nlines>0 % if nlines=0, then i would become [] and during line counting it remains []
+                    for i = 1:nlines
+                        fgetl(fid);
+                    end
                 end
                 j = j+2;
             case 'comment'
@@ -70,6 +72,11 @@ end
 ll=0; % line length
 nl=0; % number of data lines processed
 z = zeros(1000,1);
+%
+ncval = 0;
+ijcval = zeros(1000,2);
+cval = cell(1000,1);
+%
 nlalloc = 1000; % number of data lines allocated
 prevcomma=0;
 tryquick=1;
@@ -192,6 +199,13 @@ while ~feof(fid)
                             kyw=next-1;
                             kywval = [];
                         end
+                    case ''''
+                        [A,cnt,err,next] = sscanf(str,' ''%[^'']'' ',1);
+                        ncval = ncval+1;
+                        ijcval(ncval,:) = [nl+1 length(values)+1];
+                        cval{ncval} = A;
+                        kyw=next-1;
+                        kywval=NaN;
                 end
             end
             if kyw>0
@@ -213,16 +227,10 @@ while ~feof(fid)
                     values=cat(2,values,values2);
                 end
             else
-                % --- end of "obsolete code" ---
-                %
                 spaces=repmat(' ',1,cni);
                 fclose(fid);
                 error('Unknown text on line number %i of ASCII file %s:\n%s\n%s^',i,filename,txt,spaces)
-                %
-                % --- begin of "obsolete code" ---
             end
-            % --- end of "obsolete code" ---
-            %
         end
     end
     if prevcomma
@@ -249,3 +257,15 @@ while ~feof(fid)
 end
 fclose(fid);
 z(nl+1:end,:)=[];
+%
+if ncval>0
+    ijcval = ijcval(1:ncval,:);
+    cval = cval(1:ncval);
+    %
+    cols = unique(ijcval(:,2));
+    if length(cols)>1 || cols<size(z,2) || ~isequal(ijcval(:,1)',1:size(z,1))
+        error('String column should be last data column.')
+    else
+        z = {z(:,1:cols-1) cval};
+    end
+end

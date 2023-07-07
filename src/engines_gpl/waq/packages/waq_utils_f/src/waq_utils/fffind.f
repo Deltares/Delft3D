@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,32 +20,49 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_fffind
+      use m_julian
+
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE FFFIND ( LUNUT , SGET , AFILE , BFILE , ISTEP ,
      *                    IT2   , IT3  , IT4   , NUMBR , IERR  )
 !
+      use m_get_filepath_and_pathlen
+      use m_open_waq_files
+      use m_sysi          ! Timer characteristics
+
+      integer :: ILUN , IERR , I , K , A, IT2 , IT3 , IT4
+      integer :: IYEAR1 , IMONTH1 , IDAY1 , IHOUR1 , IMIN1 , ISEC1
+      integer :: IYEAR2 , IMONTH2 , IDAY2 , IHOUR2 , IMIN2 , ISEC2
+      integer :: IYEAR3 , IMONTH3 , IDAY3 , IHOUR3 , IMIN3 , ISEC3
+      integer :: IYEAR4 , IMONTH4 , IDAY4 , IHOUR4 , IMIN4 , ISEC4
+      integer :: IDATE , ITIME , ITIM , ITIM2 , ISTEP , IDTF , LUNUT
+      INTEGER :: NUMBR
+
       CHARACTER*25  SGET  , S1
       CHARACTER*255 AFILE , BFILE
-!
-!     COMMON  /  SYSI   /   System timers
-!
-      INCLUDE 'sysi.inc'
+
 !
 !     local declarations
 !
-      REAL*8        REFTIM, STARTTIM, STOPTIM, AFACT, JULIAN
+      REAL*8        REFTIM, STARTTIM, STOPTIM, AFACT
       CHARACTER*255 FILPATH
       INTEGER       PATHLEN
 !
 !          Open the ASCII .hyd file
 !
       ILUN = 148
-      CALL DHOPNF  ( ILUN , AFILE  , 33 , 1   , IERR )
+      CALL open_waq_files  ( ILUN , AFILE  , 33 , 1   , IERR )
       IF ( IERR .GT. 0 ) THEN
          WRITE ( LUNUT , 1000 ) AFILE
          RETURN
       ENDIF
-      CALL DHPATH(AFILE,FILPATH,PATHLEN)
+      CALL get_filepath_and_pathlen(AFILE,FILPATH,PATHLEN)
 !
 !          Search for the file name of this item
 !
@@ -91,7 +108,7 @@
 !
 !          Open the binary file for this item
 !
-      CALL DHOPNF  ( ILUN , BFILE  , 33 , 2   , IERR )
+      CALL open_waq_files  ( ILUN , BFILE  , 33 , 2   , IERR )
       IF ( IERR .GT. 0 ) THEN
          WRITE ( LUNUT , 1020 ) BFILE
          RETURN
@@ -132,3 +149,4 @@
 !
       END
 !                                      *** end of addition of July 2002
+      end module m_fffind

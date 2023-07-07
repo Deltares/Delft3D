@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -61,6 +61,7 @@ typedef enum {
   NO_DATA,               /* Indicates we need to fill an array with zeroes */
   SCALAR_DATA,
   SCALAR_DATA_SUMMED,
+  SCALAR_DATA_SUBTRACTED,
   SCALAR_DATA_FACE,      /* Data defined on the horizontal face, thus
                             introducing an extra layer */
   SCALAR_MISSING_ZERO,   /* The value 0.0 represents the missing value */
@@ -76,9 +77,17 @@ typedef enum {
   DPT_AVERAGE = 1024     /* Special attribute */
 } ParameterType ;
 
+/* NOTE: geared to use with Delft3D-FLOW only! (It is assumed that there are two parameter types */
+typedef enum {
+  FIRST_IS_1  = 10000,           /* For mass balances D3D-FLOW */
+  FIRST_IS_2  = 20000,
+  SCALE_FIRST = 10000            /* Divide by this factor */
+} SpecialParameterHandler ;
+
 typedef enum {
   LOC_IDS,
   LOC_NAMES,
+  BAL_NAMES,             /* Specially constructed names */
   GRID_LGRID,
   GRID_KCS,
   GRID_KCSINV,           /* Reversed indices */
@@ -316,7 +325,7 @@ TVoid
 
 TVoid
    GNF_ClearAllFiles(
-      TVoid
+      void
    );
 
 TVoid

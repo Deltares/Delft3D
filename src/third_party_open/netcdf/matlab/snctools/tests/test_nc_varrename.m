@@ -17,10 +17,9 @@ switch(mode)
 
 end
 
-% Only test on 7b or higher
 v = version('-release');
 switch(v)
-	case {'14','2006a','2006b','2007a'}
+	case {'14','2006a','2006b','2007a','2007b'}
 	    %
 	otherwise
 		test_nc_varrename_neg(mode);
@@ -56,11 +55,12 @@ function test_variable_is_present ( ncfile,mode )
 nc_create_empty ( ncfile,mode );
 nc_add_dimension ( ncfile, 's', 5 );
 nc_add_dimension ( ncfile, 't', 0 );
-clear varstruct;
-varstruct.Name = 't';
-varstruct.Nctype = 'double';
-varstruct.Dimension = { 't' };
-nc_addvar ( ncfile, varstruct );
+if ~strcmp(mode,'hdf4')
+    varstruct.Name = 't';
+    varstruct.Nctype = 'double';
+    varstruct.Dimension = { 't' };
+    nc_addvar ( ncfile, varstruct );
+end
 
 nc_varrename ( ncfile, 't', 't2' );
 

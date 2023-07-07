@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cpp -lang-fortran -traditional-cpp -P -D_LANGUAGE_FORTRAN -DSHAPELIB_1210 -I. -I.. -I../include $*
+

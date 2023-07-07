@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+	<!--
+	Basic Windows configuration file: For "datsel" (Data selection program)
+	-->
+	<config>
+		<localPaths>
+			<testCasesDir>.\data\cases</testCasesDir>
+			<enginesDir>.\data\engines\delft3d\win32</enginesDir>
+			<referenceDir>.\data\references</referenceDir>
+		</localPaths>
+		<locations>
+			<location name="testbench_ref_engines">
+				<credential ref="commandline"/>
+				<!--root>https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32</root-->
+				<root>https://repos.deltares.nl/repos/ds/dist/wix/source/oss/win32</root>
+			</location>
+			<location name="dsctestbench_cases">
+				<credential ref="commandline"/>
+				<root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+			</location>
+			<location name="dsctestbench_references">
+				<credential ref="commandline"/>
+				<root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+			</location>
+			<location name="testbench_local_engines">
+				<root>..\..\engines_to_compare</root>
+			</location>
+		</locations>
+	</config>
+		<!--
+		Programs
+		-->
+	<!--
+	The order is important. Start with the following programs:
+		command_prompt
+		svn
+		mpi
+	-->
+	<programs>
+		<program name="command_prompt">
+			<path>cmd</path>
+			<arguments>
+				<argument>/C</argument>
+			</arguments>
+		</program>
+		<program name="svn">
+			<path>thirdparty\svn\win64\svn.exe</path>
+		</program>
+		<program name="datsel" logOutputToFile="true" programStringRemoveQuotes="true">
+			<shell ref="command_prompt"/>
+			<location ref="testbench_ref_engines" type="reference">
+				<from>dflow2d3d</from>
+			</location>
+			<location ref="testbench_local_engines" type="check">
+				<from>bin/delft3d/win32/dflow2d3d</from>
+			</location>
+			<path>bin\datsel.exe</path>
+		</program>
+	</programs>
+	<!--
+	default testCases
+	-->
+	<defaultTestCases>
+		<testCase name="datsel_default">
+			<programs>
+				<program ref="datsel"/>
+			</programs>
+			<location ref="dsctestbench_cases" type="input">
+				<from>\</from>
+			</location>
+			<location ref="dsctestbench_references" type="reference">
+				<from>\win32\</from>
+			</location>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+	</defaultTestCases>
+	<!--
+	testCases
+	-->
+	<testCases>
+		<testCase name="e53_f01_c01_test" ref="datsel_default">
+			<path>e53_datsel/f01_general/c01_test</path>
+			<programs>
+				<program ref="datsel">
+					<arguments>
+						<argument>&lt;datsel_avgsus.inp &gt;datsel.out 2&gt;&amp;1</argument>
+					</arguments>
+				</program>
+			</programs>
+			<checks>
+				<file name="datsel.inp" type="ASCII"/>
+				<file name="datsel.log" type="ASCII"/>
+				<file name="datsel.out" type="ASCII"/>
+				<file name="datsel_avgsus.map" type="ASCII"/>
+			</checks>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+		<testCase name="e53_f01_c02_test" ref="datsel_default">
+			<path>e53_datsel/f01_general/c02_test</path>
+			<programs>
+				<program ref="datsel">
+					<arguments>
+						<argument>&lt;datsel_avgvel.inp &gt;datsel.out 2&gt;&amp;1</argument>
+					</arguments>
+				</program>
+			</programs>
+			<checks>
+				<file name="datsel.inp" type="ASCII"/>
+				<file name="datsel.log" type="ASCII"/>
+				<file name="datsel.out" type="ASCII"/>
+				<file name="datsel_avgvel.map" type="ASCII"/>
+			</checks>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+		<testCase name="e53_f01_c03_test" ref="datsel_default">
+			<path>e53_datsel/f01_general/c03_test</path>
+			<programs>
+				<program ref="datsel">
+					<arguments>
+						<argument>&lt;datsel_bot0.inp &gt;datsel.out 2&gt;&amp;1</argument>
+					</arguments>
+				</program>
+			</programs>
+			<checks>
+				<file name="datsel.inp" type="ASCII"/>
+				<file name="datsel.log" type="ASCII"/>
+				<file name="datsel.out" type="ASCII"/>
+				<file name="datsel_bot0.map" type="ASCII"/>
+			</checks>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+		<testCase name="e53_f01_c04_ijmuiden" ref="datsel_default">
+			<path>e53_datsel/f01_general/c04_ijmuiden</path>
+			<programs>
+				<program ref="datsel">
+					<arguments>
+						<argument>&lt;datsel_bag01.inp &gt;datsel.out 2&gt;&amp;1</argument>
+					</arguments>
+				</program>
+			</programs>
+			<checks>
+				<file name="datsel.inp" type="ASCII"/>
+				<file name="datsel.log" type="ASCII"/>
+				<file name="datsel.out" type="ASCII"/>
+				<file name="datsel_bag01.map" type="ASCII"/>
+			</checks>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+		<testCase name="e53_f01_c05_comm-file" ref="datsel_default">
+			<path>e53_datsel/f01_general/c05_comm-file</path>
+			<programs>
+				<program ref="datsel">
+					<arguments>
+						<argument>&lt;datsel_com01.inp &gt;datsel.out 2&gt;&amp;1</argument>
+					</arguments>
+				</program>
+			</programs>
+			<checks>
+				<file name="datsel.inp" type="ASCII"/>
+				<file name="datsel.log" type="ASCII"/>
+				<file name="datsel.out" type="ASCII"/>
+				<file name="datsel_com01.map" type="ASCII"/>
+			</checks>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+</testCases>
+</deltaresTestbench_v3>

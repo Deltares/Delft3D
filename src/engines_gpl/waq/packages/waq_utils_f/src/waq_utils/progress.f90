@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -75,8 +75,7 @@ subroutine write_progress( progress )
     call cpu_time( secsnow )
 
     if ( secsnow-progress%secsprev .gt. 0.10 .or. progress%istep >= progress%nstep ) then
-        call get_lunumber( lun )
-        open( lun, file = progress%filename )
+        open( newunit = lun, file = progress%filename )
         write( lun, * ) 1.0, progress%nstep, progress%istep, 1, 1, 0.0
         close( lun )
         progress%secsprev = secsnow

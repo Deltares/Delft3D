@@ -14,7 +14,7 @@ function S = geomesh(cmd,FileName)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -52,7 +52,7 @@ end
 function S = local_open(FileName)
 S.FileName = FileName;
 S.FileType = 'GeoSystems mesh';
-[fid,msg] = fopen(FileName,'r');
+[fid,msg] = fopen(FileName,'r','n','US-ASCII');
 if fid<0
     error('%s: %s',FileName,msg)
 end

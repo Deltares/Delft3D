@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_filldm
+
+      implicit none
+
+      contains
+
 
       subroutine filldm(elmdms    ,ielem     ,dm1       ,dm2       ,
      *                  dm3       ,dm4       ,dm5       ,dm6       )
@@ -88,3 +94,4 @@
       elmdms(6,ielem) = dm6
 !
       end
+      end module m_filldm

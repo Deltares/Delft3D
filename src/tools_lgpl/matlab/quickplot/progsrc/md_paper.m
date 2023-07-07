@@ -86,7 +86,7 @@ function Out = md_paper(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -167,13 +167,13 @@ switch lcmd
         leftpage=findobj(Fig,'tag','LeftPage');
         switch get(get(gcba,'parent'),'paperorientation')
             case 'portrait'
-                if get(leftpage,'value'), %=1
+                if get(leftpage,'value') %=1
                     set(gcba,'xdir','reverse');
                 else %=0
                     set(gcba,'xdir','normal');
                 end
             otherwise
-                if get(leftpage,'value'), %=1
+                if get(leftpage,'value') %=1
                     set(gcba,'ydir','reverse');
                 else %=0
                     set(gcba,'ydir','normal');
@@ -198,7 +198,7 @@ switch lcmd
         %first check whether it already exists ...
         Fig=findobj(allchild(0),'type','figure','tag','MD_PAPER Border Editor');
         if ~isempty(Fig)
-            for f=transpose(Fig),
+            for f=transpose(Fig)
                 if isequal(get(f,'userdata'),gcba)
                     set(f,'visible','on');
                     return
@@ -235,7 +235,7 @@ switch lcmd
         end
         set(Fig,'userdata',gcba);
         leftpage=findobj(Fig,'tag','LeftPage');
-        switch get(get(gcba,'parent'),'paperorientation'),
+        switch get(get(gcba,'parent'),'paperorientation')
             case 'portrait'
                 set(leftpage,'value',strcmp(get(gcba,'xdir'),'reverse'));
             otherwise
@@ -385,7 +385,7 @@ end
 
 function hBorder=SimpleBorder(fg,varargin)
 if ~isempty(varargin)
-    if isempty(varargin{1}),
+    if isempty(varargin{1})
         PlotText=locDateStr;
     else
         PlotText=[varargin{1},' (',locDateStr,')'];
@@ -859,6 +859,9 @@ else
         'ylim',[0 ymax], ...
         'visible','off');
     setappdata(hBorder,'NonDataObject',[]);
+    if matlabversionnumber >= 9.05 % 2018b
+        disableDefaultInteractivity(hBorder)
+    end
 end
 
 

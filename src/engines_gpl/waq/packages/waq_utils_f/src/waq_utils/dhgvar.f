@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhgvar
+      use m_monsys
+
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DHGVAR ( IAR_NR, INDX  , IVAR  )
 !
@@ -42,10 +50,109 @@
 !     IVAR    INTEGER       1     OUTPUT  Variable number, else -1
 !
 !     Declaration of arguments
+
+      use m_sysn          ! System characteristics
 !
       INTEGER             IAR_NR, INDX  , IVAR
-!
-      INCLUDE 'sysn.inc'
+
+      INTEGER IIVOL  
+      INTEGER IIAREA 
+      INTEGER IIFLOW 
+      INTEGER IILENG 
+      INTEGER IIDISP 
+      INTEGER IICONC 
+      INTEGER IIMASS 
+      INTEGER IIDERV 
+      INTEGER IIBOUN 
+      INTEGER IIBSET 
+      INTEGER IIBSAV 
+      INTEGER IIWSTE 
+      INTEGER IICONS 
+      INTEGER IIPARM 
+      INTEGER IIFUNC 
+      INTEGER IISFUN 
+      INTEGER IIDNEW 
+      INTEGER IIDIFF 
+      INTEGER IIVNEW 
+      INTEGER IIVELO 
+      INTEGER IIHARM 
+      INTEGER IIFARR 
+      INTEGER IIMAS2 
+      INTEGER IITIMR 
+      INTEGER IIVOL2 
+      INTEGER IITRAC 
+      INTEGER IIGWRK 
+      INTEGER IIGHES 
+      INTEGER IIGSOL 
+      INTEGER IIGDIA 
+      INTEGER IIGTRI 
+      INTEGER IISMAS 
+      INTEGER IIPLOC 
+      INTEGER IIDEFA 
+      INTEGER IIFLUX 
+      INTEGER IISTOC 
+      INTEGER IIFLXD 
+      INTEGER IIFLXI 
+      INTEGER IIRIOB 
+      INTEGER IIDSPX 
+      INTEGER IIVELX 
+      INTEGER IILOCX 
+      INTEGER IIDSTO 
+      INTEGER IIVSTO 
+      INTEGER IIDMPQ 
+      INTEGER IIDMPS 
+      INTEGER IITRRA 
+      INTEGER IINRSP 
+      INTEGER IIVOLL 
+      INTEGER IIVOL3 
+      INTEGER IIR1   
+      INTEGER IIQXK  
+      INTEGER IIQYK  
+      INTEGER IIQZK  
+      INTEGER IIDIFX 
+      INTEGER IIDIFY 
+      INTEGER IIDIFZ 
+      INTEGER IIVOLA 
+      INTEGER IIVOLB 
+      INTEGER IIGUV  
+      INTEGER IIGVU  
+      INTEGER IIGZZ  
+      INTEGER IIAAK  
+      INTEGER IIBBK  
+      INTEGER IICCK  
+      INTEGER IIBD3X 
+      INTEGER IIBDDX 
+      INTEGER IIBDX  
+      INTEGER IIBU3X 
+      INTEGER IIBUUX 
+      INTEGER IIBUX  
+      INTEGER IIWRK1 
+      INTEGER IIWRK2 
+      INTEGER IIAAKL 
+      INTEGER IIBBKL 
+      INTEGER IICCKL 
+      INTEGER IIDDKL 
+      
+      INTEGER IVVOL
+      INTEGER IVARE
+      INTEGER IVFLO
+      INTEGER IVLEN
+      INTEGER IVCNS
+      INTEGER IVPAR
+      INTEGER IVFUN
+      INTEGER IVSFU
+      INTEGER IVCNC
+      INTEGER IVMAS
+      INTEGER IVDER
+      INTEGER IVDSP
+      INTEGER IVVEL
+      INTEGER IVDEF
+      INTEGER IVLOC
+      INTEGER IVDSX
+      INTEGER IVVLX
+      INTEGER IVLCX
+      INTEGER IVFLX
+      INTEGER LUNREP
 !
 !     Just take the used array's in the right order
 !
@@ -255,3 +362,4 @@
  2000 FORMAT (' WARNING in DHGVAR, array or index out of range',I10,I10)
 !
       END
+      end module m_dhgvar

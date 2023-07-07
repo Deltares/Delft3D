@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -129,7 +129,7 @@ module oildsp_mod
 !                                                                  evaporation constant is 1 for light oils and 10 for heavy oils
 !                                                                 (limit at visc=500)
 !                             26 July      2011 by Leo Postma      some cosmetic redesign and paralellism
-!                             27 Jan       2015 by Frank Kleissen   To calculate the concentration of surface floating oil lgrid2 was used. the Concentration 
+!                             27 Jan       2015 by Frank Kleissen   To calculate the concentration of surface floating oil lgrid2 was used. the Concentration
 !                                                                  should be derived from lgri3 that contains the active segment numbering, this was corrected
 
 !     note                  : ioilt(1) = mapsub(1), oil in top layer, 1th fraction
@@ -151,14 +151,10 @@ module oildsp_mod
       use alloc_mod         ! to allocate arrays
       use pinpok_mod        ! determine if particle is in polygon
       use typos
+      use random_generator
 
       implicit none
       save
-
-!     functions   called    : rnd    - random number generator, external specification required for Linux
-
-      real   (rp) :: rnd
-      external       rnd
 
 !     Arguments
 
@@ -382,13 +378,14 @@ module oildsp_mod
          totfe   = 0.0
          fwatoil = 0.0
          wsume   = 0.0
+         tmpevap = 0.0
 
 !     open output files for mass balances
 
          do ifrac = 1, nfract
             luncsv(ifrac) = 70+ifrac
             write( csv_fnam, '(a,a)' ) trim(substi((ifrac-1)*3 + 1)),'.csv'
-            open ( luncsv(ifrac), file=trim(csv_fnam) )
+            open ( newunit=luncsv(ifrac), file=trim(csv_fnam) )
             write( luncsv(ifrac), 1000 )                      &
                      'Time (hours)          ,',               &
                      'Total mass-floating   ,',               &
@@ -416,8 +413,8 @@ module oildsp_mod
          pi     = 4.0*atan(1.0)
          wpartini=0.0
          npadd = 0   !additional parameters in case we use evaporatoin option 0, added to maintain backward compatibility
-         wveloi = 5.0   ! default value 
-         
+         wveloi = 5.0   ! default value
+
          do 10 ifrac = 1, nfract
             ioptev (ifrac) = const((ifrac-1)*nfcons+npadd+ 1)       ! evaporatoin option (-2 (Fingas incl. effect of waterfraction on evaporation, or -1 = fingas, >0 = first order)
             if (ioptev (ifrac).le.-1) then
@@ -437,7 +434,7 @@ module oildsp_mod
             else
               fracte(ifrac) = 0.0
             endif
-      
+
             ioilt  (ifrac) = mapsub((ifrac-1)*3 + 1)
             ioild  (ifrac) = mapsub((ifrac-1)*3 + 2)
             ioils  (ifrac) = mapsub((ifrac-1)*3 + 3)
@@ -469,10 +466,8 @@ module oildsp_mod
 !            rhooil  = 0.0
             do ifrac = 1 , nfract
                oilmass = 0.0
-              
+
                oilmass = oilmass + amassd(1+(ifrac-1)*3,id)
-!              rhooil(ifrac)  = rhooil(ifrac) + amassd(1+(ifrac-1)*3,id)*rhotmp(ifrac)
-!              if (oilmass.gt.0.0) rhooil(ifrac)=rhooil(ifrac)/oilmass
                vol0    = oilmass/rhooil(ifrac)                      !     volume = mass/rho
                difrho  = (rhow - rhooil(ifrac))/rhow
                if ( difrho .lt. 0 ) then
@@ -515,7 +510,7 @@ module oildsp_mod
                write( lun2, * ) ' Oil dispersion according to Delvigne/Sweeney'
                write( lun2, * ) ' Wind speed at which waves start to break: ', wveloi
             else
-            
+
                write( lun2, * ) ' Oil dispersion according to a fixed % : '
                write( lun2, * ) ' Fraction ',ifrac,' dispersed: ', fractd( ifrac )/idelt*86400.0,' per day '
                write( lun2, * ) ' Fraction ',ifrac,' dispersed: ', fractd(ifrac)  ,' per time step '
@@ -645,7 +640,7 @@ module oildsp_mod
             if (tydisp .eq. 1) then
                pdisapp(1:nfract) = efdisp(idisapp,1:nfract)
             else
-!              no other function implemented yet!               
+!              no other function implemented yet!
             endif
          end if
       end if
@@ -725,7 +720,7 @@ module oildsp_mod
                call stop_exit(1)
             endif
             do 40 ifrac = 1, nfract
-               if  (kpart(i) .eq. 1) then 
+               if  (kpart(i) .eq. 1) then
 !     This is the evaporation step in the model
                   if (ioptev(ifrac).ge.0)then
                      wevap                 = wpart(ioilt(ifrac),i) * tmpfracte(ifrac)
@@ -735,33 +730,33 @@ module oildsp_mod
 ! Een korte test op de evapbeschrijving van Fingas (2013) (nat log):
 ! Percentage evaporated = [.165(%D) + .045(T-15)]ln(t) iptime (npoart) is age of particle
 ! initial weight of particle is needed.NOte that the time here is in minutes
-!the timestep is less or equal to idelt(the time step), this means that the particle has just been released 
-! and initial mass of a particle is when iptime(i)<=idelt 
-                     if (iptime(i)<=idelt) then 
+!the timestep is less or equal to idelt(the time step), this means that the particle has just been released
+! and initial mass of a particle is when iptime(i)<=idelt
+                     if (iptime(i)<=idelt) then
                         wpartini(ifrac, i)= wpart(ioilt(ifrac),i) * volfrac(ifrac)
                      endif
                      tmpevapold = 0.0D0
-                     if(iptime(i)>0) then       
-                        if (d180(ifrac) >0) then 
-                           tmpevap(ifrac) = (0.165*d180(ifrac) + 0.045*temp)*log(real(iptime(i)/60.)) ! ln description, time here is in minutes (therefore the /60.)
+                     if ( iptime(i) > 0 ) then
+                        if (d180(ifrac) >0) then
+                           tmpevap(ifrac) = (0.165*d180(ifrac) + 0.045*temp)*log(1.0+real(iptime(i)/60.)) ! ln description, time here is in minutes (therefore the /60.)
                            if (iptime(i).ge.2*idelt) then
-                              tmpevapold = (0.165*d180(ifrac) + 0.045*temp)*log((real(iptime(i)-idelt)/60.)) !evaporated fraction of previous timestep
+                              tmpevapold = (0.165*d180(ifrac) + 0.045*temp)*log(1.0+(real(iptime(i)-idelt)/60.)) !evaporated fraction of previous timestep
                            endif
                         endif
-                        if (d180(ifrac) <0) then 
+                        if (d180(ifrac) <0) then
                            tmpevap(ifrac) = (-0.0254*d180(ifrac) + 0.01*temp)*sqrt(real(iptime(i)/60.)) ! sqrt description Percentage evaporated = [.0254(%D) + .01(T-15)]vt
                            if (iptime(i).ge.2*idelt) then
                               tmpevapold = (-0.0254*d180(ifrac) + 0.01*temp)*sqrt((real(iptime(i)-idelt)/60.))
                            endif
                         endif
                      endif
-                     wevap                 = wpartini(ifrac, i)*tmpevap(ifrac)/100. 
+                     wevap                 = wpartini(ifrac, i)*tmpevap(ifrac)/100.
                      if (ioptev(ifrac).le.-0.5)then
-                        tmpfracte(ifrac)         = (tmpevap(ifrac)-tmpevapold)/100.    !fraction evaporated this timestep, not scaled with the water content           
+                        tmpfracte(ifrac)         = (tmpevap(ifrac)-tmpevapold)/100.    !fraction evaporated this timestep, not scaled with the water content
                      elseif (ioptev(ifrac).lt.-1.5) then
-                        tmpfracte(ifrac)         = (1.0-fwatoil(ifrac,i))*(tmpevap(ifrac)-tmpevapold)/100.    !fraction evaporated this timestep, scaled with the water content           
+                        tmpfracte(ifrac)         = (1.0-fwatoil(ifrac,i))*(tmpevap(ifrac)-tmpevapold)/100.    !fraction evaporated this timestep, scaled with the water content
                      endif
-                     
+
                      wpart(ioilt(ifrac),i) = max( 0.0 , wpart(ioilt(ifrac),i)-tmpfracte(ifrac)*wpartini(ifrac, i))
                      wevapt(ifrac)         = wevapt(ifrac) + min(wpart(ioilt(ifrac),i) , tmpfracte(ifrac)*wpartini(ifrac, i)) !dble(wpart(ioilt(ifrac),i))
                   endif
@@ -843,7 +838,6 @@ module oildsp_mod
             dviso = visowat(ifrac) *                                                            &
                     exp( 2.5 * fwatoil(ifrac,i) /( 1.0 - 0.65 * fwatoil(ifrac,i) ) ) -          &
                     visowat(ifrac)
-!            if ( ioptd(ifrac) .eq. 1 ) then          ! this is only done when the dispersion option is  1 (Delvigne&Sweeney)
                if (ioptev(ifrac).ge.0)then
                   totfe(ifrac,i) = totfe(ifrac,i) + tmpfracte(ifrac) * ( 1.0 - totfe(ifrac,i) )  ! when fixed firt order constant for evap is used
                elseif (ioptev(ifrac).lt.-0.5) then
@@ -855,7 +849,7 @@ module oildsp_mod
                   viso(ifrac,i) = visowat(ifrac) * exp(        totfe(ifrac,i) ) + dviso
                endif
                rhooilv(ifrac,i) = rhow*fwatoil(ifrac,i) + rhooil(ifrac)*(1.0-fwatoil(ifrac,i))         &
-                                  * ( 1.0 + cde * totfe(ifrac,i)   ) * ( 1.0 - cdt * (temp0-temp0) ) !if we work with temp dependent density then change temp0-temp0 into temp-reftemp (reference temperature) 
+                                  * ( 1.0 + cde * totfe(ifrac,i)   ) * ( 1.0 - cdt * (temp0-temp0) ) !if we work with temp dependent density then change temp0-temp0 into temp-reftemp (reference temperature)
                                                                                                     !the var temp is used for the calculation of the evaporation
 !            endif
    50    continue

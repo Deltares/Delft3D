@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,11 +28,13 @@ module part14_mod
                           ictmax , nwaste , mwaste , xwaste , ywaste ,    &
                           zwaste , aconc  , rem    , npart  , ndprt  ,    &
                           mpart  , xpart  , ypart  , zpart  , wpart  ,    &
-                          iptime , nopart , pblay  , radius , lgrid  ,    &
+                          iptime , nopart , pblay  , radius , nrowswaste, &
+                          xpolwaste       , ypolwaste       , lgrid  ,    &
+                          lgrid2 , nmax   , mmax   , xp     , yp     ,    &
                           dx     , dy     , ftime  , tmassu , nosubs ,    &
                           ncheck , t0buoy , modtyp , abuoy  , t0cf   ,    &
                           acf    , lun2   , kpart  , layt   , tcktot ,    &
-                          nplay  , kwaste , nolay  , linear , track  ,    &
+                          zmodel , laytop , laybot , nplay  , kwaste , nolay  , linear , track  ,    &
                           nmconr , spart  , rhopart, noconsp, const)
 
 !       Deltares Software Centre
@@ -58,34 +60,27 @@ module part14_mod
 !>           the time step instead of the present even spreading. Something for the future.
 !>         - Then location information for the wasteload is set as the location of the
 !>           released particles.
-!>         - This information is perturbed in the <find> routine to spread the particles
+!>         - This information is perturbed in the <findcircle> routine to spread the particles
 !>           along a circle. Because even mass per distance means lower concentrations at
-!>           the edge of the circle, the find routine compensates somewhat for that.
+!>           the edge of the circle, the findcircle routine compensates somewhat for that.
 !>         - This only was the horizontal. Particles are distributed over the layers
 !>           vertically and depending on the type of modelling randomly distributed vertically
 !>           in their layer
 !>         - The particle tracking array gets the thus computed initial states of the particles
 
-!     System administration : Antoon Koster
-
-!     Created               : February 1990 by Leo Postma
-
-!     Modified              : May      1996 by Robert Vos    : 3d version
-!                             July     2001 by Antoon koster : mass conservation &
-!                                                              suppression round off errors
 
 !     Note                  : none
 
 !     Logical unit numbers  : lun2 - output file to print statistics
 
-!     Subroutines called    : find - distributes particles over a circel
-
-!     functions   called    : rnd  - random number generator
+!     Subroutines called    : findcircle - distributes particles over a circle
 
       use precision_part          ! single/double precision
       use timers
       use grid_search_mod
       use spec_feat_par
+      use random_generator
+      use m_part_modeltypes
       implicit none
 
 !     Arguments
@@ -118,7 +113,15 @@ module part14_mod
       integer  ( ip), intent(inout) :: nopart                !< number of active particles
       real     ( rp), intent(in   ) :: pblay                 !< relative thickness lower layer
       real     ( rp), intent(in   ) :: radius (nodye+nocont) !< help var. radius (speed)
+      real     ( sp), pointer       :: xpolwaste(:,:)        !< x-coordinates of waste polygon
+      real     ( sp), pointer       :: ypolwaste(:,:)        !< y-coordinates of waste polygon
+      integer  ( ip), pointer       :: nrowswaste(:)         !< length of waste polygon
       integer  ( ip), pointer       :: lgrid  (:,:)          !< grid numbering active
+      integer  ( ip), pointer       :: lgrid2(:,:)           !< total grid layout of the area
+      integer  ( ip), intent(in   ) :: nmax                  !< first dimension of the grid
+      integer  ( ip), intent(in   ) :: mmax                  !< second dimension of the grid
+      real     ( rp), pointer       :: xp     (:)            !< x of upper right corner grid point
+      real     ( rp), pointer       :: yp     (:)            !< y of upper right corner grid point
       real     ( rp), pointer       :: dx     (:)            !< dx of the grid cells
       real     ( rp), pointer       :: dy     (:)            !< dy of the grid cells
       real     ( rp), intent(in   ) :: ftime  (nocont,*)     !< time matrix for wasteloads (mass/s)
@@ -132,13 +135,16 @@ module part14_mod
       integer  ( ip), intent(in   ) :: lun2                  !< output report unit number
       integer  ( ip), intent(  out) :: kpart  (*)            !< k-values particles
       real     ( rp), intent(in   ) :: tcktot (layt)         !< thickness hydrod.layer
+      logical       , intent(in   ) :: zmodel
+      integer  ( ip), intent(in   ) :: laytop(:,:)           !< highest active layer in z-layer model
+      integer  ( ip), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( ip)                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( ip), intent(in   ) :: kwaste (nodye+nocont) !< k-values of wasteload points
       integer  ( ip), intent(in   ) :: nolay                 !< number of comp. layer
       integer  ( ip), intent(in   ) :: linear (nocont)       !< 1 = linear interpolated loads
       real     ( rp), intent(inout) :: track  (8,*)          !< track array for all particles
       character( 20), intent(in   ) :: nmconr (nocont)       !< names of the continuous loads
-      real     ( rp), intent(  in)  :: spart  (nosubs,*)     !< size of the particles
+      real     ( rp), intent(in   )  :: spart  (nosubs,*)     !< size of the particles
       real     ( rp), intent(inout) :: rhopart  (nosubs,*)   !< density of the particles
       integer  ( ip), intent(in   ) :: noconsp               !< number of constants
       real     ( rp), intent(in   ) :: const(*)              !< constant values
@@ -172,16 +178,11 @@ module part14_mod
       real   (rp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
       real   (rp) :: radiuh            ! help variable for the radius
       integer(ip) :: ilay  , isub      ! loop variables layers and substances
-!
-!     note:
-!       random function rnd() must be declared external, as it is an
-!       intrinsic function for the lahey fortran95 compiler under linux
-!
-      external rnd
-      real   (sp) :: rnd
 
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
+      integer(ip) :: np                ! Number of particles to add
+
+      integer(4), save :: ithndl = 0   ! handle to time this subroutine
+
       if ( timon ) call timstrt( "part14", ithndl )
 
 !     at first zero the remainder
@@ -267,7 +268,8 @@ module part14_mod
 !              rpnul = rest /aconu * dts
                rpnul = rest /avcon            ! time span first particle
                rest  = rest + amass
-               do i = 1 , 1 + int(rest/aconu-1.d-10)
+               np    = min( ndprt(ie) - ncheck(ic), 1 + int(rest/aconu-1.d-10) )
+               do i = 1 , np
                   iptime(ipb) = int(rpnul)
                   ipb         = ipb + 1
                   rpnul       = rpnul - dts
@@ -326,7 +328,7 @@ module part14_mod
             mpart (i) = mwasth
             xpart (i) = xwasth
             ypart (i) = ywasth
-            if ( modtyp .eq. 2 ) then
+            if ( modtyp .eq. model_two_layer_temp ) then
                t0buoy(i) = t0cf (ic)                    ! could be taken out of the particle loop
                abuoy (i) = 2.0*sqrt(acf(ic)*idelt)      ! even complete out of this routine
             else
@@ -334,10 +336,16 @@ module part14_mod
                abuoy (i) = 0.0
             endif
 
-!         spreads the particles over the circle
-
-            call find ( xpart(i), ypart(i), radiuh  , npart(i), mpart(i),   &
-                        lgrid   , dx      , dy      , lcircl  )
+            if (radiuh.ne.-999.0) then
+!              spread the particles over a circle
+               call findcircle ( xpart(i), ypart(i), radiuh  , npart(i), mpart(i),  &
+                                 lgrid   , dx      , dy      , lcircl  )
+            else
+!              spread the particles over a polygon
+               call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(ie), &
+                                xpolwaste(1:nrowswaste(ie), ie), ypolwaste(1:nrowswaste(ie), ie), &
+                                xpart(i), ypart(i), npart(i), mpart(i))
+            end if
 
 !         give the particles a layer number
 
@@ -353,17 +361,21 @@ module part14_mod
             endif
             if ( nulay .gt. nolay ) stop ' Nulay>nolay in part09 '
     80      continue
-            kpart (i)  = nulay
+            if (zmodel) then
+               kpart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
+            else
+               kpart(i) = nulay
+            endif
 
 !         give the particles a z-value within the layer
 
-            if ( modtyp .eq. 2 ) then     ! .. two layer model use a pointe discharge (as in v3.00)
+            if ( modtyp .eq. model_two_layer_temp ) then     ! .. two layer model use a pointe discharge (as in v3.00)
                if ( zwaste(ie) .gt. pblay ) then
                   zpart(i) = ( zwaste(ie) - pblay ) / ( 1.0 - pblay )
                else
                   zpart(i) =  zwaste(ie)/pblay
                endif
-            elseif ( modtyp .eq. 4 .and. kpart(i) .eq. 1 ) then   !   for one layer models (2dh),
+            elseif ( modtyp .eq. model_oil .and. kpart(i) .eq. 1 ) then   !   for one layer models (2dh),
                zpart(i) = zwaste(ie)           !      the release will be in the user-defined location
             elseif ( nolay .eq. 1 ) then
                zpart(i) = zwaste(ie)/100.0
@@ -375,9 +387,9 @@ module part14_mod
 
             do isub = 1, nosubs
                wpart (isub, i) = aconc(ie, isub)
-               if (modtyp .eq. 6) then
+               if (modtyp .eq. model_prob_dens_settling) then
                   rhopart(isub, i) = pldensity(isub)
-               endif                 
+               endif
             enddo
 
             track(1,i) = mpart(i)              !       store information required in initial part

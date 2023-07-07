@@ -1,0 +1,486 @@
+substance 'Continuity' active
+   description        'Continuity'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'NH4' active
+   description        'Ammonium (NH4)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'NO3' active
+   description        'Nitrate (NO3)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'PO4' active
+   description        'Ortho-Phosphate (PO4)'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'Si' active
+   description        'dissolved Silica (Si)'
+   concentration-unit '(gSi/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'Opal' active
+   description        'Opal-Si'
+   concentration-unit '(gSi/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'POC1' active
+   description        'POC1 (fast decomposing fraction)'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'PON1' active
+   description        'PON1 (fast decomposing fraction)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'POP1' active
+   description        'POP1 (fast decomposing fraction)'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'POS1' active
+   description        'POS1 (fast decomposing fraction)'
+   concentration-unit '(gS/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'APHANIZO_E' active
+   description        'APHANIZO energy type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'APHANIZO_N' active
+   description        'APHANIZO nitrogen type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'APHANIZO_P' active
+   description        'APHANIZO phosphorus type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'FDIATOMS_E' active
+   description        'Fresh DIATOMS energy type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'FDIATOMS_P' active
+   description        'Fresh DIATOMS P/Si type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'FFLAGELA' active
+   description        'Fresh FLAGELAT energy type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'GREENS_E' active
+   description        'GREENS energy type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'GREENS_N' active
+   description        'GREENS nitrogen type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'GREENS_P' active
+   description        'GREENS phosphorus type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'OSCILAT_E' active
+   description        'OSCILAT energy type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'OSCILAT_N' active
+   description        'OSCILAT nitrogen type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'OSCILAT_P' active
+   description        'OSCILAT phosphorus type'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+parameter 'Cl'
+   description   'Chloride'
+   unit          '(g/m3)'
+   value          0.2000E+05
+end-parameter
+parameter 'TimMultBl'
+   description   'ratio bloom/delwaq time step'
+   unit          '(-)'
+   value          0.1000E+01
+end-parameter
+parameter 'Temp'
+   description   'ambient water temperature'
+   unit          '(oC)'
+   value          0.1500E+02
+end-parameter
+parameter 'SWBloomOut'
+   description   'switch on BLOOM output (0=no,1=yes)'
+   unit          '(-)'
+   value          0.0000E+00
+end-parameter
+parameter 'FrAutFDI_E'
+   description   'frac. mort. algae  dissolved as nutrients FDIATOMS_E'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutFDI_P'
+   description   'frac. mort. algae  dissolved as nutrients FDIATOMS_P'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutFFL_E'
+   description   'frac. mort. algae  dissolved as nutrients FFLAGELA'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutGRE_E'
+   description   'frac. mort. algae  dissolved as nutrients GREENS_E'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutGRE_N'
+   description   'frac. mort. algae  dissolved as nutrients GREENS_N'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutGRE_P'
+   description   'frac. mort. algae  dissolved as nutrients GREENS_P'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutAPH_E'
+   description   'frac. mort. algae  dissolved as nutrients APHANIZO_E'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutAPH_N'
+   description   'frac. mort. algae  dissolved as nutrients APHANIZO_N'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutAPH_P'
+   description   'frac. mort. algae  dissolved as nutrients APHANIZO_P'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutOSC_E'
+   description   'frac. mort. algae  dissolved as nutrients OSCILAT_E'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutOSC_N'
+   description   'frac. mort. algae  dissolved as nutrients OSCILAT_N'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrAutOSC_P'
+   description   'frac. mort. algae  dissolved as nutrients OSCILAT_P'
+   unit          '(-)'
+   value          0.3500E+00
+end-parameter
+parameter 'FrDetFDI_E'
+   description   'frac. mort. algae  detritus production FDIATOMS_E'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetFDI_P'
+   description   'frac. mort. algae  detritus production FDIATOMS_P'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetFFL_E'
+   description   'frac. mort. algae  detritus production FFLAGELA'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetGRE_E'
+   description   'frac. mort. algae  detritus production GREENS_E'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetGRE_N'
+   description   'frac. mort. algae  detritus production GREENS_N'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetGRE_P'
+   description   'frac. mort. algae  detritus production GREENS_P'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetAPH_E'
+   description   'frac. mort. algae  detritus production APHANIZO_E'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetAPH_N'
+   description   'frac. mort. algae  detritus production APHANIZO_N'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetAPH_P'
+   description   'frac. mort. algae  detritus production APHANIZO_P'
+   unit          '(-)'
+   value          0.5500E+00
+end-parameter
+parameter 'FrDetOSC_E'
+   description   'frac. mort. algae  detritus production OSCILAT_E'
+   unit          '(-)'
+   value          0.6200E+00
+end-parameter
+parameter 'FrDetOSC_N'
+   description   'frac. mort. algae  detritus production OSCILAT_N'
+   unit          '(-)'
+   value          0.6200E+00
+end-parameter
+parameter 'FrDetOSC_P'
+   description   'frac. mort. algae  detritus production OSCILAT_P'
+   unit          '(-)'
+   value          0.6200E+00
+end-parameter
+parameter 'ExtVlFDI_E'
+   description   'extinction coeff. visible light by algae FDIATOMS_E'
+   unit          '(m2/gC)'
+   value          0.2700E+00
+end-parameter
+parameter 'ExtVlFDI_P'
+   description   'extinction coeff. visible light by algae FDIATOMS_P'
+   unit          '(m2/gC)'
+   value          0.1875E+00
+end-parameter
+parameter 'ExtVlFFL_E'
+   description   'extinction coeff. visible light by algae FFLAGELA'
+   unit          '(m2/gC)'
+   value          0.2250E+00
+end-parameter
+parameter 'ExtVlGRE_E'
+   description   'extinction coeff. visible light by algae GREENS_E'
+   unit          '(m2/gC)'
+   value          0.2250E+00
+end-parameter
+parameter 'ExtVlGRE_N'
+   description   'extinction coeff. visible light by algae GREENS_N'
+   unit          '(m2/gC)'
+   value          0.1875E+00
+end-parameter
+parameter 'ExtVlGRE_P'
+   description   'extinction coeff. visible light by algae GREENS_P'
+   unit          '(m2/gC)'
+   value          0.1875E+00
+end-parameter
+parameter 'ExtVlAPH_E'
+   description   'extinction coeff. visible light by algae APHANIZO_E'
+   unit          '(m2/gC)'
+   value          0.4500E+00
+end-parameter
+parameter 'ExtVlAPH_N'
+   description   'extinction coeff. visible light by algae APHANIZO_N'
+   unit          '(m2/gC)'
+   value          0.4000E+00
+end-parameter
+parameter 'ExtVlAPH_P'
+   description   'extinction coeff. visible light by algae APHANIZO_P'
+   unit          '(m2/gC)'
+   value          0.4000E+00
+end-parameter
+parameter 'ExtVlOSC_E'
+   description   'extinction coeff. visible light by algae OSCILAT_E'
+   unit          '(m2/gC)'
+   value          0.4000E+00
+end-parameter
+parameter 'ExtVlOSC_N'
+   description   'extinction coeff. visible light by algae OSCILAT_N'
+   unit          '(m2/gC)'
+   value          0.2875E+00
+end-parameter
+parameter 'ExtVlOSC_P'
+   description   'extinction coeff. visible light by algae OSCILAT_P'
+   unit          '(m2/gC)'
+   value          0.2875E+00
+end-parameter
+parameter 'ku_dFdcC20'
+   description   'upper limit mineralization rate fast detr-C'
+   unit          '(1/d)'
+   value          0.1800E+00
+end-parameter
+parameter 'kl_dFdcC20'
+   description   'lower limit mineralization rate fast detr-C'
+   unit          '(1/d)'
+   value          0.1200E+00
+end-parameter
+parameter 'ku_dFdcN20'
+   description   'upper limit mineralization rate fast detr-N'
+   unit          '(1/d)'
+   value          0.1800E+00
+end-parameter
+parameter 'kl_dFdcN20'
+   description   'lower limit mineralization rate fast detr-N'
+   unit          '(1/d)'
+   value          0.1200E+00
+end-parameter
+parameter 'ku_dFdcP20'
+   description   'upper limit mineralization rate fast detr-P'
+   unit          '(1/d)'
+   value          0.1800E+00
+end-parameter
+parameter 'kl_dFdcP20'
+   description   'lower limit mineralization rate fast detr-P'
+   unit          '(1/d)'
+   value          0.1200E+00
+end-parameter
+parameter 'kT_dec'
+   description   'temperature coefficient for decomposition'
+   unit          '(-)'
+   value          0.1047E+01
+end-parameter
+parameter 'ExtVlBak'
+   description   'background extinction visible light'
+   unit          '(1/m)'
+   value          0.8000E-01
+end-parameter
+parameter 'ExtVlPOC2'
+   description   'VL specific extinction coefficient POC2'
+   unit          '(m2/gC)'
+   value          0.1000E+00
+end-parameter
+parameter 'RadSurf'
+   description   'irradiation at the water surface'
+   unit          '(W/m2)'
+   value         -0.9990E+03
+end-parameter
+parameter 'Latitude'
+   description   'latitude of study area'
+   unit          'degrees'
+   value         52.1
+end-parameter
+output 'Cl'
+   description   'Chloride'
+end-output
+output 'TIC'
+   description   'total inorganic carbonate'
+end-output
+output 'TimMultBl'
+   description   'ratio bloom/delwaq time step'
+end-output
+output 'ExtVl'
+   description   'total extinction coefficient visible light'
+end-output
+output 'ExtVlPhyt'
+   description   'VL extinction by phytoplankton'
+end-output
+output 'Temp'
+   description   'ambient water temperature'
+end-output
+output 'Rad'
+   description   'irradiation at the segment upper-boundary'
+end-output
+output 'Depth'
+   description   'depth of segment'
+end-output
+output 'BloomDepth'
+   description   'average depth over Bloom time step'
+end-output
+output 'DayL'
+   description   'daylength <0-1>'
+end-output
+output 'SWBloomOut'
+   description   'switch on BLOOM output (0=no,1=yes)'
+end-output
+output 'Limit Chlo'
+   description   'total chlorophyll in algae'
+end-output
+output 'Limit nit'
+   description   'limiting factor nitrogen'
+end-output
+output 'Limit pho'
+   description   'limiting factor phosphorus'
+end-output
+output 'Limit sil'
+   description   'limiting factor silicate'
+end-output
+output 'Limit e'
+   description   'limiting factor energy'
+end-output
+output 'Limit gro'
+   description   'limiting factor growth'
+end-output
+output 'Limit mor'
+   description   'limiting factor mortality'
+end-output
+output 'fPPtot'
+   description   'total net primary production'
+end-output
+output 'Phyt'
+   description   'total carbon in phytoplankton'
+end-output
+output 'AlgN'
+   description   'total nitrogen in algae'
+end-output
+output 'AlgP'
+   description   'total phosphorus in algae'
+end-output
+output 'AlgSi'
+   description   'total silica in algae'
+end-output
+output 'TotN'
+   description   'total nitrogen (including algae)'
+end-output
+output 'KjelN'
+   description   'Kjeldahl nitrogen'
+end-output
+output 'TotP'
+   description   'total phosphorus (including algae)'
+end-output
+output 'Chlfa'
+   description   'Chlorophyll-a concentration'
+end-output
+output 'BLOOMGRP'
+   description   'algae group concentration'
+end-output
+output 'ExtVlBak'
+   description   'background extinction visible light'
+end-output
+output 'ExtVlPOC2'
+   description   'VL specific extinction coefficient POC2'
+end-output
+output 'RadSurf'
+   description   'irradiation at the water surface'
+end-output
+output 'APHANIZO'
+   description   'Aphanizomenon'
+end-output
+output 'FDIATOMS'
+   description   'Freshwater Diatoms'
+end-output
+output 'FFLAGELA'
+   description   'Freshwater flagellates'
+end-output
+output 'GREENS'
+   description   'Green algae'
+end-output
+output 'OSCILAT'
+   description   'Oscillatoria'
+end-output
+active-processes
+   name  'BLOOM_P' 'BLOOM II algae module'
+   name  'Compos' 'Composition'
+   name  'DecFast' 'Mineralization fast decomp. detritus POC1'
+   name  'DisSi' 'Dissolution of Si in opal (SWITCH defaults)'
+   name  'Phy_Blo_P' 'Computation of phytoplankton output - Bloom'
+   name  'Extinc_VLG' 'Extinction of visible-light (370-680nm) DLWQ-G'
+   name  'EXTINABVLP' 'Extinction of light by algae (Bloom)'
+   name  'CalcRad' 'Radiation at segment upper and lower boundaries'
+   name  'DynDepth' 'dynamic calculation of the depth'
+   name  'DepAve' 'Average depth for Bloom step'
+   name  'Daylength' 'Daylength calculation'
+end-active-processes

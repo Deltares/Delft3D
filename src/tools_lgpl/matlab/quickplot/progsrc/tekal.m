@@ -1,4 +1,4 @@
-function Out=tekal(cmd,varargin)
+function varargout = tekal(cmd,varargin)
 %TEKAL Read/write for Tekal files.
 %   INFO = TEKAL('open',FILENAME, ...) reads the specified Tekal file. If
 %   the FILENAME is not specified you will be asked to select a file
@@ -67,7 +67,7 @@ function Out=tekal(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -97,23 +97,23 @@ function Out=tekal(cmd,varargin)
 
 if nargin==0
     if nargout>0
-        Out=[];
+        varargout{1} = [];
     end
     return
 end
 switch lower(cmd)
     case 'open'
-        Out=Local_open_file(varargin{:});
+        varargout{1} = Local_open_file(varargin{:});
     case 'read'
-        if ischar(varargin{1}) % tekal('read','filename', ... : implicit open
-            Out=Local_open_file(varargin{:});
+        if ischar(varargin{1}) % tekal('read','filename', ... is interpreted as tekal('open' for backward compatibility
+            varargout{1} = Local_open_file(varargin{:});
         else
-            Out=Local_read_file(varargin{:});
+            [varargout{1:nargout}] = Local_read_file(varargin{:});
         end
     case 'resample'
-        Out=Local_resample(varargin{:});
+        varargout{1} = Local_resample(varargin{:});
     case 'write'
-        Out=Local_write_file(varargin{:});
+        varargout{1} = Local_write_file(varargin{:});
     otherwise
         error('Unknown command: %s',var2str(cmd))
 end
@@ -174,7 +174,7 @@ while i<=length(INP)
 end
 
 variable=0;
-fid=fopen(filename);
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Cannot open file ...')
 end
@@ -223,8 +223,8 @@ while 1
         if ~ischar(line)
             dim=[];
         else
-            dim=sscanf(line,['%f' space],[1 inf]);
-            if ~isequal(dim,round(dim))
+            [dim,~,err]=sscanf(line,['%f' space],[1 inf]);
+            if ~isequal(dim,round(dim)) || ~isempty(err)
                 if TryToCorrect
                     dim = inf;
                     fprintf(1,'Expecting block size but reading: %s\nInterpreting as missing block size; trying to automatically detect block size.\n',line);
@@ -273,6 +273,7 @@ while 1
             % create Data field but don't use it
             % This field is created to be compatible with the write statement
             FileInfo.Field(variable).Data=[];
+            FileInfo.Field(variable).ExtraData=[];
             % skip data values
             if prod(FileInfo.Field(variable).Size)==0
                 FileInfo.Field(variable).DataTp='numeric';
@@ -303,7 +304,7 @@ while 1
                         dim(1)=N;
                         FileInfo.Field(variable).Size(2)=N;
                     end
-                    [Data,ErrorFound] = read_numeric(fid,dim,TryToCorrect,variable);
+                    [Data,ErrorFound,ExtraData] = read_numeric(fid,FileInfo.Field(variable).Name,dim,TryToCorrect,variable);
                     if ErrorFound
                         break
                     end
@@ -325,7 +326,10 @@ while 1
                         if length(FileInfo.Field(variable).Size)>2
                             Data=reshape(Data,[FileInfo.Field(variable).Size(3:end) FileInfo.Field(variable).Size(2)]);
                         end
-                        FileInfo.Field(variable).Data=Data;
+                        FileInfo.Field(variable).Data = Data;
+                        if ~all(cellfun('isempty',ExtraData))
+                            FileInfo.Field(variable).ExtraData = ExtraData;
+                        end
                     end
 
                     % read closing end of line
@@ -363,7 +367,7 @@ if ~ErrorFound
     FileInfo.Check='OK';
 end
 
-function Data=Local_read_file(FileInfo,var)
+function [Data,ExtraData]=Local_read_file(FileInfo,var)
 % check whether the data has been read
 if nargin<2 || strcmp(var,':') || isequal(var,0)
     % no var argument, 0 and ':' --> in all these cases select all fields
@@ -375,21 +379,26 @@ elseif ischar(var)
     if varnr<0
         fprintf('Cannot determine which field to read.\n');
         Data=[];
+        ExtraData=[];
         return
     else
         var=varnr;
     end
 end
 Data = cell(1,length(var));
+ExtraData = Data;
 fid = -1;
 try
     for i = 1:length(var)
         v = var(i);
         if isfield(FileInfo.Field(v),'Data') && ~isempty(FileInfo.Field(v).Data)
             Data{i} = FileInfo.Field(v).Data;
+            if isfield(FileInfo.Field(v),'ExtraData') && ~isempty(FileInfo.Field(v).ExtraData)
+                ExtraData{i} = FileInfo.Field(v).ExtraData;
+            end
         else
             if fid<0
-                fid=fopen(FileInfo.FileName);
+                fid=fopen(FileInfo.FileName,'r','n','US-ASCII');
             end
             fseek(fid,FileInfo.Field(v).Offset,-1);
             if length(FileInfo.Field(v).Size)>1
@@ -402,7 +411,7 @@ try
                     data = read_annotation(fid,dim);
                 otherwise %'numeric' % all numerics; use fscanf
                     %Data=fscanf(fid,'%f',dim);
-                    data = read_numeric(fid,dim,0,v);
+                    [data,~,extradata] = read_numeric(fid,FileInfo.Field(v).Name,dim,0,v);
                     
                     % replace 999999 by Not-a-Numbers
                     data(data(:)==999999)=NaN;
@@ -413,6 +422,7 @@ try
                     end
             end
             Data{i} = data;
+            ExtraData{i} = extradata;
         end
     end
 catch
@@ -422,6 +432,7 @@ if fid>0
 end
 if length(var)==1
     Data = Data{1};
+    ExtraData = ExtraData{1};
 end
 
 
@@ -452,16 +463,47 @@ Data{1}=Data{1}';
 Data{2}=Data{2}';
 
 
-function [Data,ErrorFound] = read_numeric(fid,dim,TryToCorrect,variable)
+function [Data,ErrorFound,ExtraData] = read_numeric(fid,BlockName,dim,TryToCorrect,variable)
 offset     = ftell(fid);
 ErrorFound = 0;
 try
-    if ~isfinite(dim(2))
-        d2 = textscan(fid,[repmat('%f ',1,dim(1)) '%*s']); % read until problem occurs (hopefully the name of the next block or eof)
-    else
-        d2 = textscan(fid,[repmat('%f ',1,dim(1)) '%*s'],dim(2));
+    % read until problem occurs (hopefully the name of the next block or eof)
+    Data = [];
+    ExtraData = [];
+    found = true;
+    while found
+        found = false;
+        % unfortunately lines starting with tab and without any blanks
+        % cannot be read by one textscan statement.
+        for pre = 1:2
+            if pre == 1
+                prefix = '';
+            else
+                prefix = '%*[ \t]';
+            end
+            if ~isfinite(dim(2))
+                d2 = textscan(fid,[prefix repmat('%f%*[ \t]',1,dim(1)-1) '%f%s'],'delimiter','','whitespace','');
+            else
+                d2 = textscan(fid,[prefix repmat('%f%*[ \t]',1,dim(1)-1) '%f%s'],dim(2)-size(Data,1),'delimiter','','whitespace','');
+            end
+            Data2 = cat(2,d2{1:dim(1)});
+            if ~isempty(Data2)
+                found = true;
+                Data = cat(1,Data,Data2);
+                ExtraData2 = strtrim(d2{end});
+                ExtraData = cat(1,ExtraData,ExtraData2);
+                if size(Data,1) == dim(2)
+                    break
+                end
+            end
+        end
+        if size(Data,1) == dim(2)
+            break
+        end
     end
-    Data = cat(2,d2{:});
+    if isfinite(dim(2)) && size(Data,1) ~= dim(2)
+        error('Incomplete data block')
+    end
     textscan_failed = 0;
 catch
     textscan_failed = 1;
@@ -495,19 +537,21 @@ if textscan_failed
             if Nr<prod(dim)
                 irow = floor(Nr/dim(1))+1;
                 if irow==1
+                    rowFirst = Chars(1:Nxt-1);
                     rowStr = sscanf(Chars(2:end),n([1 3:end]),1);
                 else
                     rowFirst=fliplr(sscanf(Chars(Nxt-1:-1:1),n([1 3:end]),1));
                     rowStr = [rowFirst sscanf(Chars(Nxt:end),n([1 3:end]),1)];
                 end
                 Msg=sprintf(['Field %i labelled ''%s''\n' ...
-                    'Unable to interpret data on row %i: ''%s''\n' ...
-                    'Data field %i is probably damaged.'], ...
+                    'Unable to interpret "%s" at character %i in data row %i:\n%s\n' ...
+                    'Data field is probably damaged.'], ...
                     variable, ...
-                    FileInfo.Field(variable).Name, ...
+                    BlockName, ...
+                    Chars(Nxt), ...
+                    length(rowFirst)+1, ...
                     floor(Nr/dim(1))+1, ...
-                    sscanf(Chars(Nxt:end),n([1 3:end]),1), ...
-                    variable);
+                    rowStr);
                 if ~TryToCorrect
                     fclose(fid);
                     error(Msg)
@@ -522,11 +566,12 @@ if textscan_failed
     if length(dim)>1
         Data=Data';
     end
+    ExtraData=repmat({''},size(Data,1),1);
 end
 
 
 function NewFileInfo=Local_write_file(filename,FileInfo,varargin)
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 NewFileInfo.Check='NotOK';
 if fid<0
     error('invalid filename')

@@ -1,0 +1,23 @@
+When executing "build.bat dflowfm_interacter" on the toplevel of the source code tree, the items 1, 3 and 4 below are executed automatically by the script.
+
+1. Create on toplevel (next to "src", "examples") directory "build_dflowfm_interacter"
+2. EITHER:
+       Define environment parameter:
+       INTERACTER_DIR
+       To point to a directory containing intmwi64.lib
+   OR:
+       Copy:
+       https://repos.deltares.nl/repos/ds/branches/dflowfm/dflowfm_interacter/third_party/interacter
+       To:
+       "third_party\interacter"
+3. In "build_dflowfm_interacter", execute:
+   cmake ..\src\cmake -G "Visual Studio 15 2017" -A x64 -B "." -D CONFIGURATION_TYPE="dflowfm_interacter"
+4. In "build_dflowfm_interacter\dflowfm_interacter.sln":
+   dflowfm-cli project -> properties -> Linker -> General -> Link Library Dependencies = Yes
+5. Compile
+6. To run:
+   - Add to working dir: .ini/.hlp/.hls files from "src\engines_gpl\dflowfm\res"
+   - Add to command line options: --display:opengl=0
+7. When running D-Flow FM via Interacter, the GUI may possibly be blocked (and does not open). To solve this:
+   Open "Task Manager" -> tab "Performance" -> "Open Resource Manager" link at the bottom, right-click on "dflowfm.exe" process, "Analyze Wait Chain", end all processes in the list.
+   (see also: https://publicwiki.deltares.nl/display/DSCMEET/Way+of+Working%3A+D-Hydro+Kernel+Development+Team)

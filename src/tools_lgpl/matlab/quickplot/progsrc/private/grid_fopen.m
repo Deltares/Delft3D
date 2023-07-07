@@ -3,7 +3,7 @@ function [DataFI,FileName,Tp,Otherargs] = grid_fopen(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -121,6 +121,14 @@ while isempty(DataFI)
                 catch err1
                     try
                         DataFI=wldep('read',FileName,gridsize-1,'multiple');
+                        % if the array matches the grid size minus one then expand the
+                        % array read by one such that the indexing works consistently.
+                        for i = 1:length(DataFI)
+                            df = DataFI(i).Data;
+                            df(1:end+1,end+1) = NaN;
+                            df(end,:) = NaN;
+                            DataFI(i).Data = df;
+                        end
                     catch
                         rethrow(err1)
                     end
@@ -137,18 +145,16 @@ while isempty(DataFI)
             case 'wlfdep'
                 DataFI=wlfdep('read',FileName);
                 if ~isequal(size(DataFI),gridsize)
-                    error('Size of datafield does not match size of grid')
+                    error('Datafield dimensions [%d %d] do not match grid dimensions [%d %d]',size(DataFI),gridsize)
                 else
                     Tmp.Data={DataFI};
                     DataFI=Tmp; Tmp=[];
                 end
             case 'boxfile'
-                DataFI=boxfile('read',FileName,gridsize);
+                DataFI=boxfile('read',FileName,gridsize+1);
                 if ~isempty(DataFI)
-                    if ~isequal(size(DataFI),gridsize)
-                        %          ui_message('error','Size of datafield does not match size of grid');
-                        %          DataFI=[]; return
-                        DataFI=[];
+                    if ~isequal(size(DataFI),gridsize+1)
+                        error('Boxfile dimensions [%d %d] do not match extended grid dimensions [%d %d].',size(DataFI),gridsize+1);
                     else
                         Tmp.Data={DataFI};
                         DataFI=Tmp; Tmp=[];

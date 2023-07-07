@@ -1,0 +1,48 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_turcoe
+   real(fp) :: cde        !  Coefficient for epsilon in K-L model
+   real(fp) :: cmukl      !  Coefficient for eddy visc. in k-l model
+   real(fp) :: cmukep     !  Coefficient for eddy visc. in k-eps model
+   real(fp) :: cep1       !  Coeff. for production  in eps.  eq.
+   real(fp) :: cep2       !  Coeff. for dissipation in eps.  eq.
+   real(fp) :: cep3       !  Coeff. for buoyancy    in eps.  eq.
+   real(fp) :: sigrho     !  Prandtl/schmidt-number for density
+   real(fp) :: cewall     !  Cmukep **0.75 / Vonkar
+   real(fp) :: xlo        !  Ozmidov length scale
+   real(fp) :: zwi        !  Fixed value for zeta wind waves
+                          !     read from user defined function
+   real(fp) :: ceta
+   real(fp) :: ck
+   real(fp) :: sigq2e
+   real(fp) :: lrdamp_fac ! Used in the Low Reynolds damping formula
+                          ! See subroutine redvic
+   integer  :: inpzw      ! Flag for Zeta wave read (1) or calculated (2)
+end type gd_turcoe

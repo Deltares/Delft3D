@@ -1,0 +1,105 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_waqpar
+    !
+    ! doubles
+    !
+    !
+    ! reals
+    !
+    real(fp) :: mtimstep  !  maximum explicit time step for whole simulation
+    !
+    ! integers
+    !
+    integer  :: aggre     !  -1: no aggregation, 0: active cells only, 1: aggregation according to content of flaggr
+    integer  :: itwqff    !  start time for writing binary waq files
+    integer  :: itwqfi    !  time step for writing binary waq files
+    integer  :: itwqfl    !  end time for writing binary waq files
+    integer  :: itim      !  last writen time
+    integer  :: lunvol    !  file unit number to an output file
+    integer  :: lunare    !  file unit number to an output file
+    integer  :: lunflo    !  file unit number to an output file
+    integer  :: lunsal    !  file unit number to an output file
+    integer  :: luntem    !  file unit number to an output file
+    integer  :: lunvdf    !  file unit number to an output file
+    integer  :: luntau    !  file unit number to an output file
+    integer  :: lunsrctmp !  file unit number to an output file
+    integer  :: lunwlk    !  file unit number to an output file
+    integer  :: lunsrc    !  file unit number to an output file
+    integer  :: lunkmk    !  file unit number to an output file
+    integer  :: noseg     !  number of WAQ segments
+    integer  :: noq       !  total number of WAQ exchanges
+    integer  :: noq12     !  number of horizontal WAQ exchanges
+    integer  :: nobrk     !  number of breakpoints in loads file
+    integer  :: nowalk    !  number of walking discharges
+    !
+    integer  :: cfoutset  !  'DataCFtoWQ'
+    integer  :: wqinset   !  'DataWQtoCF'
+    integer  :: wqiinset  !  'DataWQtoWQI'
+    integer  :: wqioutset !  'DataWQItoWQ'
+    !
+    ! pointers
+    !
+    integer , dimension(:)  , pointer :: iwlk      ! walkings
+    integer , dimension(:)  , pointer :: isaggr    ! segment aggregation pointer
+    integer , dimension(:)  , pointer :: ilaggr    ! layer aggregation pointer
+    integer , dimension(:)  , pointer :: iqaggr    ! flow aggregation pointer
+    integer , dimension(:,:), pointer :: ifsmax    ! maximum active layer z-model
+    integer , dimension(:)  , pointer :: ifrmto    ! from-to pointer table
+    integer , dimension(:)  , pointer :: kmk       ! WAQ features at start of step
+    integer , dimension(:)  , pointer :: ksrwaq    ! stored value of nr of layers source locations
+    integer , dimension(:)  , pointer :: lunsed    ! file unit numbers to sediment concentration output files
+    integer , dimension(:,:), pointer :: lunsedflx ! file unit numbers to sediment sedimentation and resuspension flux output files
+    real(fp), dimension(:,:), pointer :: quwaq     ! Cumulative qxk
+    real(fp), dimension(:,:), pointer :: qvwaq     ! Cumulative qyk
+    real(fp), dimension(:,:), pointer :: qwwaq     ! Cumulative qzk
+    real(fp), dimension(:)  , pointer :: discumwaq ! Cumulated sources m3/s*nstep
+    real(fp), dimension(:,:), pointer :: cumsedflx ! Cumulative sedimentation flux
+    real(fp), dimension(:,:), pointer :: cumresflx ! Cumulative resuspension flux
+    real(sp), dimension(:)  , pointer :: vol       ! WAQ volume at start of step
+    real(sp), dimension(:)  , pointer :: vol2      ! WAQ volume at end of step
+    real(sp), dimension(:)  , pointer :: sag       ! WAQ segment aggregator
+    real(sp), dimension(:)  , pointer :: sag2      ! WAQ segment aggregator2
+    real(sp), dimension(:)  , pointer :: qag       ! WAQ flux aggregator
+    real(sp), dimension(:)  , pointer :: horsurf   ! horizontal surfaces of segments
+    real(sp), dimension(:)  , pointer :: loads     ! Value of the loads at last step
+    !
+    ! logicals
+    !
+    logical :: first_cf        ! first time of writing to binary waq files online
+    logical :: firsttime       ! first time of writing to binary waq files
+    logical :: firstwaq        ! skip the first time of getting bedlevel from WAQ
+    logical :: waqfil          ! Write binary waq files
+    logical :: waqol = .false. ! flag for online coupling via WAQ files
+    !
+    ! characters
+    !
+    character(256) :: flaggr !  Name of input aggregation file
+end type gd_waqpar

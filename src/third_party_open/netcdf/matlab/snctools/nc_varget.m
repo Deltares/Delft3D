@@ -1,4 +1,4 @@
-function data = nc_varget(ncfile, varname, varargin )
+function data = nc_varget(ncfile,varname,varargin)
 %NC_VARGET  Retrieve data from netCDF variable or HDF4 data set.
 %   DATA = NC_VARGET(NCFILE,VARNAME) retrieves all the data from the 
 %   variable VARNAME in the netCDF file NCFILE.  
@@ -13,14 +13,11 @@ function data = nc_varget(ncfile, varname, varargin )
 %   a non-contiguous portion of the dataset.  The amount of
 %   skipping along each dimension is given through the STRIDE vector.
 %
-%   A '_FillValue' attribute is honored by flagging those datums as NaN.
-%   A 'missing_value' attribute is honored by flagging those datums as 
-%   NaN.  The data is returned as double precision.
+%   DATA is returned as double precision when this is reasonable. 
+%   Consequently, '_FillValue' and 'missing_value' attributes are honored 
+%   by flagging those datums as NaN.  Any 'scale_factor' and 'add_offset' 
+%   attributes are honored by applying the linear transformation.
 %
-%   If the named NetCDF variable has valid scale_factor and add_offset 
-%   attributes, then the data is scaled accordingly. The data is returned
-%   as double precision.
-% 
 %   EXAMPLE:  This example file is shipped with R2008b.
 %       data = nc_varget('example.nc','peaks',[0 0], [20 30]);
 %
@@ -32,79 +29,92 @@ function data = nc_varget(ncfile, varname, varargin )
 %   Example:  Retrieve data from the example HDF4 file.
 %       data = nc_varget('example.hdf','Example SDS');
 % 
-%   See also:  nc_varput, nc_attget, nc_attput, nc_dump.
-%
+%   See also:  nc_vargetr, nc_varput, nc_attget, nc_attput, nc_dump.
 
 
+[data,info] = nc_vargetr(ncfile,varname,varargin{:});
 
-error(nargchk(2,5,nargin,'struct'));
-
-[start, count, stride] = parse_and_validate_args(ncfile,varname,varargin{:});
-
-retrieval_method = snc_read_backend(ncfile);
-switch(retrieval_method)
-	case 'tmw'
-		data = nc_varget_tmw(ncfile,varname,start,count,stride);
-    case 'tmw_hdf4'
-        data = nc_varget_hdf4(ncfile,varname,start,count,stride);
-	case 'java'
-		data = nc_varget_java(ncfile,varname,start,count,stride);
-	case 'mexnc'
-		data = nc_varget_mexnc(ncfile,varname,start,count,stride);
+switch(info.Datatype)
+    case {'int8','uint8','int16','uint16','int32','uint32', ...
+            'single','double'}
+        % We will post-process these datatypes.
+    otherwise
+        return;
 end
 
-return
+data = double(data);
+data = post_process_fill_value_missing_value(data,info);
+data = post_process_scaling(data,info);
+
+%--------------------------------------------------------------------------
+function data = post_process_fill_value_missing_value(data,info)
+% If the _FillValue or missing_value attributes are present, replace those
+% values with NaN.
+%
+% If both are present, then the _FillValue trumps.
+
+% Locate any fill value or missing value attributes.
+fill_value = struct([]);
+missing_value = struct([]);
 
 
+for j = 1:numel(info.Attribute)
+    switch(info.Attribute(j).Name)
+        case '_FillValue'
+            fill_value = info.Attribute(j);
+        case 'missing_value'
+            missing_value = info.Attribute(j); 
+    end
+end
+
+
+% If neither were found, then we are done here.
+if isempty(fill_value) && isempty(missing_value)
+    return
+elseif isempty(fill_value) && ~isempty(missing_value)
+    if ~strcmp(missing_value.Datatype,info.Datatype)
+        warning('snctools:nc_varget:missingValueMismatch', ...
+            'A bad missing_value attribute datatype was detected and ignored.');
+        return
+    end
+    % missing_value attribute present, but no fill value.
+    data(data==double(missing_value.Value)) = NaN;
+elseif ~isempty(fill_value) && isempty(missing_value)
+    if ~strcmp(fill_value.Datatype,info.Datatype)
+        warning('snctools:nc_varget:fillValueMismatch', ...
+            'A bad missing_value attribute datatype was detected and ignored.');
+        return
+    end
+    % _FillValue present, but no missing_value
+    data(data==double(fill_value.Value)) = NaN;
+else
+    if ~strcmp(fill_value.Datatype,info.Datatype)
+        warning('snctools:nc_varget:fillValueMismatch', ...
+            'A bad missing_value attribute datatype was detected and ignored.');
+        return
+    end
+    % both are present.  FillValue trumps.
+    data(data==double(fill_value.Value)) = NaN;
+end
 
 
 %--------------------------------------------------------------------------
-function [start, count, stride] = parse_and_validate_args(ncfile,varname,varargin)
+function data = post_process_scaling(data,info)
+% The 'scale_factor' and 'add_offset' attributes trigger a linear scaling
+% operation.
 
-%
-% Set up default outputs.
-start = [];
-count = [];
-stride = [];
+% Use these defaults if no scale_factor or add_offsets were found.
+scale_factor = 1.0;
+add_offset = 0.0;
 
 
-switch nargin
-case 4
-    start = varargin{1};
-    count = varargin{2};
-
-case 5
-    start = varargin{1};
-    count = varargin{2};
-    stride = varargin{3};
-
+for j = 1:numel(info.Attribute)
+    switch(info.Attribute(j).Name)
+        case 'scale_factor'
+            scale_factor = info.Attribute(j).Value;
+        case 'add_offset'
+            add_offset = info.Attribute(j).Value; 
+    end
 end
 
-
-
-%
-% Error checking on the inputs.
-switch(class(ncfile))
-	case { 'char', 'ucar.nc2.NetcdfFile', 'ucar.nc2.dods.DODSNetcdfFile' }
-		
-	otherwise
-    	error ( 'SNCTOOLS:NC_VARGET:badInput', ...
-			'The filename should be character or an already opened netCDF file.' );
-end
-if ~ischar(varname)
-    error ( 'SNCTOOLS:NC_VARGET:badInput', 'the variable name must be character.' );
-end
-
-if ~isnumeric ( start )
-    error ( 'SNCTOOLS:NC_VARGET:badInput', 'the ''start'' argument must be numeric.' );
-end
-if ~isnumeric ( count )
-    error ( 'SNCTOOLS:NC_VARGET:badInput', 'the ''count'' argument must be numeric.' );
-end
-if ~isnumeric ( stride )
-    error ( 'SNCTOOLS:NC_VARGET:badInput', 'the ''stride'' argument must be numeric.' );
-end
-
-
-return
-
+data = data*scale_factor + add_offset;

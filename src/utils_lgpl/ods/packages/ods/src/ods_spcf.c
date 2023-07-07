@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,8 @@
 /*
  *  ods_spcf.c -  Routines that are more or less specific to particular
  *                file types
+ *
+ *  Copyright (C) 2002-2023 Deltares
  *
  *  Arjen Markus
  */
@@ -260,7 +262,7 @@ ODS_DetermineZcoordinate(
              wl_info->group_name, wl_info->elem_name, 1,
              file_info->no_items, file_info->items, &idxpar ) ;
 
-   GNF_GetActualData( file_info, wl_info, idxpar, &cell_index[0][0],
+   GNF_GetActualData( file_info, wl_info, idxpar, cell_index,
       loc, misval, water_level, &nodummy ) ;
 
    (void) GNF_FindParameter(
@@ -271,7 +273,7 @@ ODS_DetermineZcoordinate(
    cell_index2[0][1] = 0 ;
    cell_index2[0][2] = 1 ;
 
-   GNF_GetActualData( file_info, depth_info, idxpar, &cell_index2[0][0],
+   GNF_GetActualData( file_info, depth_info, idxpar, cell_index2,
       loc, misval, depth, &nodummy ) ;
 
    nosegl = ndim[0]*ndim[1] ;
@@ -474,7 +476,8 @@ ODS_GetGrdIndices(
    TInt4    ierror    ;
    TInt4    i         ;
 
-   if ( loc_type == LOC_NAMES )
+   if ( loc_type == LOC_NAMES ||
+        loc_type == BAL_NAMES )
    {
       *truegrid = 0         ;
       ndim[3]   = 1         ; /* Cells per layer */
@@ -614,7 +617,7 @@ ODS_HeuristicCheckAccept(
       cell_index[0][0] = 0 ;
       cell_index[0][1] = 0 ;
       cell_index[0][2] = 1 ;
-      GNF_GetIntBuffer( file_info, idxl, cell_index,
+      GNF_GetIntBuffer( file_info, idxl, &cell_index[0][0],
           &ints, &elem_size, &number_ints ) ;
 
       accept = 0 ;
@@ -637,7 +640,7 @@ ODS_HeuristicCheckAccept(
       cell_index[0][0] = 0 ;
       cell_index[0][1] = 0 ;
       cell_index[0][2] = 1 ;
-      GNF_GetIntBuffer( file_info, idxl, cell_index,
+      GNF_GetIntBuffer( file_info, idxl, &cell_index[0][0],
           &ints, &elem_size, &number_ints ) ;
 
       accept = 0 ;
@@ -660,7 +663,7 @@ ODS_HeuristicCheckAccept(
       cell_index[0][0] = 0 ;
       cell_index[0][1] = 0 ;
       cell_index[0][2] = 1 ;
-      GNF_GetIntBuffer( file_info, idxl, cell_index,
+      GNF_GetIntBuffer( file_info, idxl, &cell_index[0][0],
           &ints, &elem_size, &number_ints ) ;
 
       accept = 0 ;
@@ -674,3 +677,129 @@ ODS_HeuristicCheckAccept(
 
    return 1; /* Accept in any case ... */
 }
+
+/* -------------------------------------------------------------------
+    Function: ODS_ConstructBalanceNames()
+    Author:   Arjen Markus
+    Purpose:  Check if the parameter is really available in the file
+    Context:  Used by GNF_CheckLocations()
+    Pseudo Code:
+              Read the connectivity matrix
+              Construct the combined names
+------------------------------------------------------------------- */
+
+TVoid
+ODS_ConstructBalanceNames(
+      NefisFileInfoPtr    file_info,         /* I Contents of the file */
+      LocationInfoPtr     location,          /* I Location information */
+      TString             name,              /* O Array of names */
+      TInt4             * id,                /* O Array of location IDs */
+      TInt4             * number )           /* I/O Number of locations */
+{
+   TInt4   i            ;
+   TInt4   from         ;
+   TInt4   to           ;
+   TInt4   ierror       ;
+   BInt4   elem_ndim    ;
+   BInt4   elem_dims[5] ;
+   TInt4   size         ;
+   BInt4   uindex[5][3] ;
+   BInt4   usrord[5]    ;
+   BInt4   buflen       ;
+   TString polygon_name ;
+   BInt4   nbytsg       ;
+   BInt4   nbyt_name    ;
+   TInt4 * ibuffer      ;
+
+   TChar   elem_type[NFNAMELEN]  ;
+   TChar   elem_qty [NFNAMELEN]  ;
+   TChar   elem_unit[NFNAMELEN]  ;
+   TChar   elem_desc[5*NFNAMELEN]  ;
+
+   for ( i = 0 ; i < 5 ; i ++ )
+   {
+      uindex[i][0] = 0 ;
+      uindex[i][1] = 0 ;
+      uindex[i][2] = 0 ;
+   }
+
+   elem_ndim    = 5 ;
+   elem_dims[0] = 0 ;
+   elem_dims[1] = 0 ;
+   elem_dims[2] = 0 ;
+   elem_dims[3] = 0 ;
+   elem_dims[4] = 0 ;
+
+   /* The names of the polygons */
+   ierror = Inqelm( file_info->deffds, location->elem_name, elem_type,
+                    &nbyt_name, elem_qty, elem_unit, elem_desc,
+                    &elem_ndim, elem_dims ) ;
+
+   uindex[0][0] = 1 ;
+   uindex[0][1] = 1 ; // Just one group
+   uindex[0][2] = 1 ;
+
+   usrord[0]    = 1 ;
+   usrord[1]    = 2 ;
+   usrord[2]    = 3 ;
+   usrord[3]    = 4 ;
+   usrord[4]    = 5 ;
+   buflen       = elem_dims[0] * nbyt_name * sizeof( TChar ) ; /* AM: Why is factor 4 required? */
+
+   polygon_name = (TString) malloc( buflen + 1) ;
+
+   ierror = Getelt( file_info->datfds,
+                    location->group_name, location->elem_name,
+                    uindex, usrord, &buflen, polygon_name ) ;
+   polygon_name[buflen] = '\0' ;
+
+   /* The connectivity matrix */
+   elem_ndim    = 5 ; // reset
+   ierror = Inqelm( file_info->deffds, "BALNEIGHB", elem_type,
+                    &nbytsg, elem_qty, elem_unit, elem_desc,
+                    &elem_ndim, elem_dims ) ;
+
+   size = 1 ;
+   for ( i = 0 ; i < 5 ; i ++ )
+   {
+      if ( elem_dims[i] > 0 )
+      {
+         size = size * elem_dims[i] ;
+      }
+   }
+
+   ibuffer = (int *) malloc( size * sizeof( TInt4 ) ) ;
+
+   uindex[0][0] = 1 ;
+   uindex[0][1] = 1 ; // Just one group
+   uindex[0][2] = 1 ;
+
+   usrord[0]    = 1 ;
+   usrord[1]    = 2 ;
+   usrord[2]    = 3 ;
+   usrord[3]    = 4 ;
+   usrord[4]    = 5 ;
+   buflen       = size * sizeof( TInt4 ) ;
+
+   ierror = Getelt( file_info->datfds,
+                    location->group_name, "BALNEIGHB",
+                    uindex, usrord, &buflen, ibuffer ) ;
+
+   if ( *number > 0 )
+   {
+      for ( i = 0 ; i < elem_dims[1] ; i ++ ) {
+         from = ibuffer[0+i*2] - 1 ;
+         to   = ibuffer[1+i*2] - 1 ;
+         sprintf( &name[21*i], "%9.9s->%9.9s", &polygon_name[nbyt_name*from], &polygon_name[nbyt_name*to] );
+         id[i] = i + 1 ;
+      }
+   }
+   else
+   {
+      *number = elem_dims[1] ;
+   }
+
+   free( ibuffer ) ;
+   free( polygon_name ) ;
+}
+

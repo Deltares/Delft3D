@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -64,14 +64,7 @@ subroutine dhstore_command( args )
     count = 0
     inquire( file = 'delwaq.options', exist = exists )
     if ( exists ) then
-        do i = 1,100
-            inquire( unit = i, opened = opened )
-            if ( .not. opened ) then
-                lun = i
-                exit
-            endif
-        enddo
-        open( lun, file = 'delwaq.options' )
+        open( newunit=lun, file = 'delwaq.options' )
         do
             read( lun, '(a)', iostat = ierr ) line
             if ( ierr /= 0 ) then
@@ -94,7 +87,7 @@ subroutine dhstore_command( args )
 
     if ( exists ) then
         count = size(args)
-        open( lun, file = 'delwaq.options' )
+        open( newunit=lun, file = 'delwaq.options' )
         do
             read( lun, '(a)', iostat = ierr ) line
             if ( ierr /= 0 ) then

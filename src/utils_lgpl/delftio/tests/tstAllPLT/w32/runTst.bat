@@ -10,4 +10,4 @@ fc TESTPltSynch-res.txt ..\resultsApproved\w32\TESTPltSynch-res.txt
 fc TESTPltAutoFiles-res.txt ..\resultsApproved\w32\TESTPltAutoFiles-res.txt
 fc TESTPltAutoShm-res.txt ..\resultsApproved\w32\TESTPltAutoShm-res.txt
 
-exit 0
+exit /B 0

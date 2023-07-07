@@ -3,7 +3,7 @@ function [NewFI,cmdargs]=options(FI,mfig,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -34,9 +34,9 @@ function [NewFI,cmdargs]=options(FI,mfig,cmd,varargin)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 %======================== SPECIFIC CODE =======================================
 Inactive=get(0,'defaultuicontrolbackground');
-FigPos=get(h0,'position');
-FigPos(3:4) = getappdata(h0,'DefaultFileOptionsSize');
-set(h0,'position',FigPos)
+FigPos=get(mfig,'position');
+FigPos(3:4) = getappdata(mfig,'DefaultFileOptionsSize');
+set(mfig,'position',FigPos)
 
 Active=[1 1 1];
 NewFI=FI;

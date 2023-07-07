@@ -1,0 +1,14 @@
+-I. -I../include -I../../../../nefis/packages/nefis/include
+-DUSE_WINNT -DUSE_VS2005 -DHAVE_CONFIG_H -D_FILE_OFFSET_BITS=64 -DPTR8
+../../../../nefis/packages/nefis/src/c2c.c
+../../../../nefis/packages/nefis/src/df.c
+../../../../nefis/packages/nefis/src/er.c
+../../../../nefis/packages/nefis/src/f2c.c
+../../../../nefis/packages/nefis/src/gp.c
+../../../../nefis/packages/nefis/src/gt.c
+../../../../nefis/packages/nefis/src/hs.c
+../../../../nefis/packages/nefis/src/nefis_version.cpp
+../../../../nefis/packages/nefis/src/oc.c
+../../../../nefis/packages/nefis/src/pt.c
+../../../../nefis/packages/nefis/src/rt.c
+../../../../nefis/packages/nefis/src/wl-xdr.c

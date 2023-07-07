@@ -1,0 +1,59 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_bubble
+    !
+    ! doubles
+    !
+    ! reals
+    !
+    ! integers
+    !
+    ! pointers
+    !
+    real(fp), dimension(:)  , pointer :: cpdis ! [nsrcd]  copy of bubble screen discharge volumes,
+                                               !          copied from array disch when this value is changed (per screen)
+                                               !          (fraction of) it will be copied to all bubble points
+    real(fp), dimension(:)  , pointer :: hsink ! [lstsci] recirculation amount of each constituent,
+                                               !          integrated over all bubble points that act as sinks, in one location
+    real(fp), dimension(:)  , pointer :: hsour ! [lstsci] recirculation amount of each constituent,
+                                               !          divided by the recirculation volume (=rint), in one location
+    real(fp), dimension(:)  , pointer :: xlbub ! can be removed?
+    real(fp), dimension(:)  , pointer :: zbubl ! [nsrc]   vertical position of bubble screens
+                                               !          only the bubble screen points in this array are used
+    real(fp), dimension(:)  , pointer :: zvelo ! [kmax]   downwards velocity caused by bubbles in one location
+                                               !          only the layers from top to bubble injection layer are used
+    logical , dimension(:)  , pointer :: flbub ! [nsrcd]  flag to indicate whether the discharge volume of a bubble screen
+                                               !          is changed by reading a new time value
+                                               !          only the bubble screen points in this array are used
+    ! 
+    ! logicals
+    !
+    ! characters
+end type gd_bubble

@@ -1,9 +1,18 @@
 function H=qp_uifigure(Name,closecom,tag,pos,callbackfcn)
 %QP_UIFIGURE Create a new empty dialog figure.
+%    H = QP_UIFIGURE(NAME,CLOSECOM,TAG,POS,CBF) creates a new dialog figure
+%    with the title set equal to NAME, tag equal to TAG, position equal to
+%    POS (shifted to on screen), resizing off, and close request function
+%    set to
+%        [CBF ' ' CLOSECOM] if CBF and CLOSECOM are strings
+%        {CBF CLOSECOM} otherwise
+%    The figure visibility is set to 'off'.
+%
+%    See also QP_UIMENU, FIGURE, UIMENU, UICONTROL.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -48,7 +57,11 @@ pos(1:2)=min(pos(1:2),MonPos(1:2)+MonPos(3:4)-pos(3:4)-[0 70]);
 % also in R13 compiled mode
 %
 if ~isempty(closecom)
-    closecom=sprintf('%s %s',callbackfcn,closecom);
+    if ischar(callbackfcn)
+        closecom = [callbackfcn ' ' closecom];
+    else
+        closecom = {callbackfcn closecom};
+    end
 end
 %
 H = figure('Visible','off', ...
@@ -64,9 +77,19 @@ H = figure('Visible','off', ...
     'NumberTitle','off', ...
     'Resize','off', ...
     'Position',pos, ...
+    'KeyPressFcn',@keypress, ...
     'Handlevisibility','off', ...
     'Tag',tag);
 setappdata(H,'WL_UserInterface',1)
 if matlabversionnumber >= 7
     set(H,'WindowStyle','normal','DockControls','off')
+end
+
+function keypress(handle,event)
+if isequal(event.Key,'s')
+    if isequal(event.Modifier,{'control'})
+        d3d_qp('move_onscreen',handle)
+    elseif isequal(event.Modifier,{'control','alt'})
+        d3d_qp('move_onscreen')
+    end
 end

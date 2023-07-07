@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -87,7 +87,7 @@
       integer(4) :: ithndl = 0
 
       if ( nitem .eq. 0 ) return                   !  no items specified
-      if (timon) call timstrt( "read_opt2", ithndl )
+
 
       allocate ( factor(nvals), stat=ierr2 )
       if ( ierr2 .ne. 0 ) then

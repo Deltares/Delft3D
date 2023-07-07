@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_waq_multi_instance
+
+implicit none
+
+contains
+
 
 !> @file
 !!    SE-functions for instance handling
@@ -219,3 +225,4 @@ subroutine Export_Current_Instance(doappend)
 
 end subroutine Export_Current_Instance
 !========================================
+end module m_waq_multi_instance

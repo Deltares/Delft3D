@@ -32,34 +32,20 @@ function run_open_file_handle_stress_test(mode)
 % do a series of operations about a thousand times.  That should be enough
 % to guarantee that no file handles are being left open.
 
-% Run the test without transposing
-oldpref = getpref('SNCTOOLS','PRESERVE_FVD',false);
-setpref('SNCTOOLS','PRESERVE_FVD',true);
-
 numops = 1000;
 ncfile = cell(numops,1);
 for j = 1:numops
 	if mod(j,10) == 0
-		fprintf('%d...', j);
+		fprintf('\n%d / %d...', j,numops);
 	end
 	x = tempname;
 	ncfile{j} = sprintf('%s%04d.nc', x, j);
 	create_ncfile(ncfile{j},mode);
 
-	% add records to each file
-	for k = 0:2
-		buffer.time = k;
-		buffer.temperature = single(k);
-		buffer.y = [k k*2 k*3 k*4]';
-		nc_addnewrecs(ncfile{j},buffer);
-	end
 end
 for j = 1:numops
 	delete(ncfile{j});
 end
-
-% Restore preferences.
-setpref('SNCTOOLS','PRESERVE_FVD',oldpref);
 
 %-------------------------------------------------------------------------------
 function create_ncfile ( ncfile, mode )
@@ -88,8 +74,10 @@ nc_addvar ( ncfile, varstruct );
 clear varstruct;
 varstruct.Name = 'y';
 varstruct.Datatype = 'double';
-varstruct.Dimension = { 'x', 'time' };
-
+varstruct.Dimension = {'time' , 'x'};
+% {'x','time'} would give:
+%??? Error using ==> netcdflib
+%Library failure "NetCDF: NC_UNLIMITED in the wrong index".
 nc_addvar ( ncfile, varstruct );
 
 

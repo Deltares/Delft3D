@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -57,14 +57,14 @@ module alloc_mod
 ! ----------------------------------------------------
       subroutine init_alloc ( lun    , lunut  )
 
-      integer(ip), intent(in   ) :: lun
+      integer(ip), intent(out  ) :: lun
       integer(ip), intent(in   ) :: lunut
 
       accu   = 0
       number = 0
-      lunmem = lun
       lunrep = lunut
-      open  ( lunmem, file="part_memory_map.out" )
+      open  ( newunit=lunmem, file="part_memory_map.out" )
+      lun = lunmem
       write ( lunmem, '(/'' ====> allocated array space in 4-byte words <===='' )' )
       write ( lunmem, '( ''  nr typ       kind array name          array size''/)' )
 

@@ -40,7 +40,7 @@ function H=tricontourf(tri,x,y,z,v,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -133,18 +133,18 @@ v(v(:)==+inf)=realmax;
 for LevelNr=1:length(levels)+1
     if (LevelNr==1)
         if length(levels)==0
-            level=inf;
+            level=minfinite;
         else
             level=levels(LevelNr);
         end
-        plevel=-inf;
+        plevel=minfinite;
         Smaller=logical(any(isnan(v(tri)),2)*[1 1 1]);
         Nsmaller=sum(Smaller,2);
         Larger=(v(tri)>=level) & ~Smaller;
         Nlarger=sum(Larger,2);
     elseif (LevelNr>length(levels))
         plevel=level;
-        level=inf;
+        level=maxfinite;
         Nsmaller=3-Nlarger;
         Smaller=~Larger;
         Larger=logical(zeros(size(tri)));

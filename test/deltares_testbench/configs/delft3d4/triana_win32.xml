@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+                <!--
+                Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
+                Basic Windows configuration file: tb3_cfg_win32_hp.xml
+                From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
+                From hp to parallel: Use mpi as shell (in related program)
+                                     Overrule maxruntime when needed
+                                     Only cases that run in parallel mode
+                -->
+    <config>
+        <localPaths>
+            <testCasesDir>.\data\cases</testCasesDir>
+            <enginesDir>.\data\engines\delft3d\win32</enginesDir>
+            <referenceDir>.\data\reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="testbench_ref_engines">
+                <credential ref="commandline"/>
+                <!--root>https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32</root-->
+                <root>https://repos.deltares.nl/repos/ds/dist/wix/source/delft3d/win32</root>
+            </location>
+            <location name="dsctestbench_cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="dsctestbench_reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="testbench_local_engines">
+                <root>..\..\engines_to_compare</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <!--
+    The order is important. Start with the following programs:
+        command_prompt
+        svn
+        mpi
+    -->
+    <programs>
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win64\svn.exe</path>
+        </program>
+        <program name="triana" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>dflow2d3d</from>
+            </location>
+            <location ref="testbench_local_engines" type="check">
+                <from>\bin\delft3d\win32\dflow2d3d</from>
+            </location>
+            <path>bin\triana.exe</path>
+        </program>
+    </programs>
+    <!--
+    default testCases
+        Testcases may refer to a default testCase with the attribute
+        ref="name_of_default_testcase"
+    -->
+    <defaultTestCases>
+        <testCase name="triana_default">
+            <programs>
+                <program ref="triana"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>\</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>\win32\</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e67_f01_c01_tutorial" ref="triana_default">
+            <path>e67_triana/f01_general/c01_tutorial</path>
+            <programs>
+                <program ref="triana">
+                    <arguments>
+                        <argument>&lt;triana.inp &gt;triana.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="tria-fou-ex.prt" type="ASCII"/>
+                <file name="tria-fou-ex.tba" type="ASCII"/>
+                <file name="tria-fou-ex.tbb" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e67_f01_c02_test" ref="triana_default">
+            <path>e67_triana/f01_general/c02_test</path>
+            <programs>
+                <program ref="triana">
+                    <arguments>
+                        <argument>&lt;triana.inp &gt;triana.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="org.prt" type="ASCII"/>
+                <file name="org.tba" type="ASCII"/>
+                <file name="org.tbb" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e67_f01_c03_timing" ref="triana_default">
+            <path>e67_triana/f01_general/c01_tutorial</path>
+            <programs>
+                <program ref="triana">
+                    <arguments>
+                        <argument>&lt;triana.inp &gt;triana.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="scs.prt" type="ASCII"/>
+                <file name="scs.tba" type="ASCII"/>
+                <file name="scs.tbb" type="ASCII"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+</testCases>
+</deltaresTestbench_v3>

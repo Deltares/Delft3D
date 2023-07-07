@@ -1,0 +1,52 @@
+[forcing]
+Name 			= astr01_0002 # pli 1 and point 2 is intentional!
+Function		= astronomic
+Quantity		= astronomic component		
+Unit			= -
+# comment
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+M2    0.5000000    0.0000000
+S2    1.0000000    0.0000000
+
+[forcing]
+Name 			= astr02_0001 # pli 2 and point 1 is intentional!
+Function		= astronomic
+Quantity		= astronomic component		
+Unit			= -
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+M2    0.5000000    0.0000000
+S2    1.0000000    11.2047000
+
+
+# Explicitly added data for the second support point on each pli, with duplicated data as in the original test 
+
+[forcing]
+Name 			= astr01_0001 
+Function		= astronomic
+Quantity		= astronomic component		
+Unit			= -
+# comment
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+M2    0.5000000    0.0000000
+S2    1.0000000    0.0000000
+
+[forcing]
+Name 			= astr02_0002 
+Function		= astronomic
+Quantity		= astronomic component		
+Unit			= -
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+M2    0.5000000    0.0000000
+S2    1.0000000    11.2047000

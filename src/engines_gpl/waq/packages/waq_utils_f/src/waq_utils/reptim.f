@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_reptim
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE REPTIM ( LUN , ITIME, ISFLAG, PERCIT )
 !
@@ -109,3 +115,4 @@
  2040 FORMAT ('  TIME = ',I3,'D ',I2,'H ',I2,'M ',I2,'S . ',F6.2,'% Completed')
  2050 FORMAT ('  TIME = ',I2,'Y ',I3,'D ',I2,'H ',I2,'M ',I2,'S . ',F6.2,'% Completed')
       END
+      end module m_reptim

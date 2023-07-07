@@ -1,7 +1,7 @@
 module meteo_data
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module meteo_data
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! see meteo.f90
@@ -449,7 +449,6 @@ function meteoallocateitemgrid(runid, meteoitem, m, n, gridfilnam, flowmmax, flo
    character(10)         :: dum
    logical               :: sferic
    logical               :: kw_found
-   logical, external     :: openexistingfile_meteo
    real(fp)              :: xymiss
    type(tmeteo), pointer :: meteo
    !
@@ -487,7 +486,7 @@ function meteoallocateitemgrid(runid, meteoitem, m, n, gridfilnam, flowmmax, flo
    kw_found = .false.
    xymiss   = nodata_default
    grid     =>  meteoitem%grid
-   success  = openexistingfile_meteo(gridfil,trim(gridfilnam))
+   success  = openexistingfile_meteo(gridfil,trim(gridfilnam),meteoitem%filetype)
    if (.not. success) return
     !
     ! The following part is copied (and adapted) from file:
@@ -611,8 +610,6 @@ function addnewsubdomainmeteopointer(subdomname, subdommeteo) result(success)
     success = .true.
 end function addnewsubdomainmeteopointer
 
-
-
 subroutine getmeteopointer(subdomname, meteopointer)
    implicit none
    type(tmeteo), pointer               :: meteopointer
@@ -671,6 +668,38 @@ subroutine meteoblockint()
    implicit none
    meteoint = .false.
 end subroutine meteoblockint
+
+function openexistingfile_meteo(minp, filename, meteotype) result(success)
+
+implicit none
+!
+! Global variables
+!
+    integer         :: minp
+    integer         :: meteotype
+    logical         :: success
+    character(*)    :: filename
+!
+! Local variables
+!
+    integer :: ierr
+!
+!! executable statements -------------------------------------------------------
+!
+    if (len_trim(filename) == 0) then
+       write (meteomessage, '(a,i0)') 'While opening meteo file: name is empty, for meteotype = ', meteotype
+       success = .false.
+       return
+    endif
+    inquire (file = trim(filename), exist = success)
+    if (.not. success) then
+       write(meteomessage,'(3a)') 'Meteo file ',trim(filename),' does not exist'
+       success = .false.
+       return
+    endif
+    open (newunit=minp, file = trim(filename), action = 'READ', iostat=ierr)
+    if (ierr == 0) success = .true.
+end function openexistingfile_meteo
 
 
 end module meteo_data

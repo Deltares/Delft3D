@@ -3,7 +3,7 @@ function hNew=gensurface(hOld,Ops,Parent,Val,X,Y,Z)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -50,7 +50,7 @@ if ~isequal(size(X),size(Val))
 end
 X(isnan(Val))=NaN;
 Y(isnan(Val))=NaN;
-if ~isempty(hOld) & ishandle(hOld)
+if ~isempty(hOld) && ishandle(hOld)
     hNew=hOld;
     set(hNew,'xdata',X, ...
         'ydata',Y, ...

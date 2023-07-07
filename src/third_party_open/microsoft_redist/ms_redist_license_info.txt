@@ -1,9 +1,0 @@
-
-Source: 
-http://msdn.microsoft.com/en-us/library/ms235299.aspx
-
-Redistribution and Deployment:
-When you deploy an application, you must also deploy the files that are required to support it. If any of these files are provided by Microsoft, check whether you are permitted to redistribute them. To view a list of permitted files, see Redist.txt in the ..\Microsoft Visual Studio 10.0\ folder on the computer where Visual Studio is installed. To review the Microsoft Software License Terms, see Eula.txt on the Visual Studio 2010 installation media. For more information about redistributable files, see Determining Which DLLs to Redistribute and Deployment Examples.
-
-Licence information after installation:
-c:\Program Files (x86)\Microsoft Visual Studio 10.0\redist.txt and corresponding EULA txt files.

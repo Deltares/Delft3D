@@ -9,7 +9,7 @@ function varargout=wlfdep(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -72,7 +72,7 @@ if strcmp(filename,'?')
     filename=[fpath,fname];
 end
 
-fid=fopen(filename);
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Cannot open %s.',filename)
 end
@@ -117,7 +117,7 @@ end
 
 DP(isnan(DP))=-999;
 
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 fprintf(fid,'%s\n',filename);
 fprintf(fid,'%i %i\n',fliplr(size(DP)));
 fprintf(fid,strcat('%f',repmat(' %f',1,size(DP,2)-1),'\n'),DP');

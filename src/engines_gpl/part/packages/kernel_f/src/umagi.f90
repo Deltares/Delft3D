@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -30,28 +30,12 @@
                         tcktot)
 !
 !
-!                   Deltares (former: Deltares)
+!                   Deltares
 !
-!                        d e l p a r    v3.22
-!
-!
-!     system administration : r.j. vos
-!
-!
-!     created               : june 1996, by r.j. vos
 !
 !     function              : higher order interpolation on horizontal
 !                             flows and jacobian for accuarte displacement
 !
-!     modified              : 25/11/96: adapted for analytic test pred-corr scheme
-!
-!
-!     notes                 : velocity correction in
-!                             predictor-corrector method for delpar
-!                             function computes correction factor in
-!                             particle velocity during advection step
-!                             (differs from vcipcm from dunsbergen)
-!                             application: curvilinear grid
 !
 ! umagp = magnitude of particle velocity at particle location obtained
 !         by (up,vp,wp) determined by advection procedure

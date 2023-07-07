@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -81,6 +81,7 @@
 !
 !       Look backwards
 !
+      I4 = 0
       DO 10 I1 = I,1,-1
          I2 = IAR(I1+IOFFC)
          IF ( I2 .GT. -100000 ) GOTO 20

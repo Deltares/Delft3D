@@ -4,7 +4,7 @@ function S = qp_session(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,22 @@ switch cmd
         S = local_make_expandables(varargin{:});
     case 'save'
         local_save(varargin{:})
+end
+
+function v = current_version(cmd,version)
+switch cmd
+    case 'writes'
+        v = '1.1';
+    case 'supports'
+        vn = sscanf(version,'%d.'); % 1.10 gives minor = 10, 1.01 accepted as alternative to 1.1
+        major = vn(1);
+        if length(vn) >= 2
+            minor = vn(2);
+        else
+            minor = 0;
+        end
+        v = (major == 1) & (minor <= 1);
+        
 end
 
 function S = local_make_expandables(S,explist)
@@ -103,7 +119,7 @@ function X = local_identify_expandables(filename)
 XX = cell(100,2);
 X = {};
 j = 0;
-fid = fopen(filename,'r');
+fid = fopen(filename,'r','n','UTF-8');
 Str = getline(fid);
 Expand = 0;
 while ~isempty(Str)
@@ -144,7 +160,7 @@ if nargin==1
 else
     parnames = fieldnames(PAR);
 end
-fid = fopen(filename,'r');
+fid = fopen(filename,'r','n','UTF-8');
 Str = getline(fid);
 expand = 0;
 fgi = 0;
@@ -167,9 +183,12 @@ while ~isempty(Str)
                 || ~isnumeric(args{3})
             fclose(fid);
             error('First line of session file should read:\nDelft3D-QUICKPLOT ''session file'' <versionnumber>\nHowever, first line of %s reads:\n%s',filename,Str)
-        elseif args{3}>1
-            fclose(fid);
-            error('Version %g of session file not supported.',args{3})
+        else
+            args{3} = sscanf(Str,'%*[^'']''%*[^'']'' %s',1);
+            if ~current_version('supports',args{3})
+                fclose(fid);
+                error('Version %s of session file not supported.',args{3})
+            end
         end
         Line=2;
     end
@@ -197,6 +216,7 @@ while ~isempty(Str)
             axi = length(S(fgi).axes)+1;
             S(fgi).axes(axi).name = args{2};
             S(fgi).axes(axi).position = [];
+            S(fgi).axes(axi).type = [];
             S(fgi).axes(axi).colour = [255 255 255];
             S(fgi).axes(axi).box = 'off';
             S(fgi).axes(axi).linewidth = 0.5;
@@ -316,7 +336,7 @@ function local_save(S,filename)
 if isstruct(S)
     S = local_serialize(S);
 end
-fid = fopen(filename,'w');
+fid = fopen(filename,'w','n','UTF-8');
 fprintf(fid,'%s\n',S{:});
 fclose(fid);
 
@@ -333,7 +353,7 @@ C{i} = sprintf(varargin{:});
 C{1} = i;
 
 function C = local_serialize(S)
-C = addline({},'Delft3D-QUICKPLOT ''session file'' 1.0');
+C = addline({},'Delft3D-QUICKPLOT ''session file'' %s',current_version('writes'));
 for fgi = 1:length(S)
     C = addline(C,'');
     C = addline(C,'Figure             ''%s''',quote_protect(S(fgi).name));
@@ -373,6 +393,9 @@ for fgi = 1:length(S)
         C = addline(C,'');
         C = addline(C,'  Axes        ''%s''',quote_protect(S(fgi).axes(axi).name));
         C = addline(C,'    Position  [%g %g %g %g]',S(fgi).axes(axi).position);
+        if ~isempty(S(fgi).axes(axi).type)
+            C = addline(C,'    Type      ''%s''',quote_protect(S(fgi).axes(axi).type));
+        end
         if ~strcmp(S(fgi).axes(axi).title,'<automatic>')
             C = addline(C,'    Title     ''%s''',quote_protect(S(fgi).axes(axi).title));
         end
@@ -504,6 +527,9 @@ for fgi = length(S):-1:1
     for axi = length(S(fgi).axes):-1:1
         d3d_qp('newaxes_specloc',S(fgi).axes(axi).position,'normalized')
         d3d_qp('axesname',S(fgi).axes(axi).name)
+        if ~isempty(S(fgi).axes(axi).type)
+            d3d_qp('setaxestype',S(fgi).axes(axi).type)
+        end
         if ischar(S(fgi).axes(axi).colour)
             d3d_qp('axescolour',S(fgi).axes(axi).colour)
         else
@@ -530,7 +556,7 @@ for fgi = length(S):-1:1
             %
             opened_files = file_and_domain(opened_files,S(fgi).axes(axi).items(itm));
             %
-            if d3d_qp('selectfield',S(fgi).axes(axi).items(itm).name);
+            if d3d_qp('selectfield',S(fgi).axes(axi).items(itm).name)
                 if ~isempty(S(fgi).axes(axi).items(itm).subfield)
                     d3d_qp('selectsubfield',S(fgi).axes(axi).items(itm).subfield)
                 end
@@ -761,24 +787,31 @@ if isfield(item,'domain') && ~isempty(item.domain)
 end
 
 
-function S = local_extract(H)
+function S = local_extract(H, S)
+if nargin>1
+    offset = length(S);
+else
+    offset = 0;
+end
+
 for fgi = length(H):-1:1
     HInfo = get(H(fgi));
+    fgi1 = offset + fgi;
     
-    S(fgi).name        = HInfo.Name;
-    S(fgi).papertype   = HInfo.PaperType;
-    S(fgi).paperorientation = HInfo.PaperOrientation;
-    S(fgi).papersize   = HInfo.PaperSize;
-    S(fgi).paperunits  = HInfo.PaperUnits;
-    S(fgi).windowsize  = HInfo.Position(3:4); % Units = pixels
-    S(fgi).colour      = round(HInfo.Color*255);
-    S(fgi).expandpar   = [];
+    S(fgi1).name        = HInfo.Name;
+    S(fgi1).papertype   = HInfo.PaperType;
+    S(fgi1).paperorientation = HInfo.PaperOrientation;
+    S(fgi1).papersize   = HInfo.PaperSize;
+    S(fgi1).paperunits  = HInfo.PaperUnits;
+    S(fgi1).windowsize  = HInfo.Position(3:4); % Units = pixels
+    S(fgi1).colour      = round(HInfo.Color*255);
+    S(fgi1).expandpar   = [];
     ExpandP = getappdata(H(fgi),'ExpandPAR');
     if ~isempty(ExpandP)
-        S(fgi).expandpar.filename = ExpandP.FileName;
-        S(fgi).expandpar.domain   = ExpandP.Domain;
+        S(fgi1).expandpar.filename = ExpandP.FileName;
+        S(fgi1).expandpar.domain   = ExpandP.Domain;
     end
-    S(fgi).frame.style = 'none';
+    S(fgi1).frame.style = 'none';
     
     for i = 1:length(HInfo.Children)
         A = HInfo.Children(i);
@@ -791,19 +824,19 @@ for fgi = length(H):-1:1
     end
     
     axi = 0;
-    S(fgi).axes = [];
+    S(fgi1).axes = [];
     for i = 1:length(HInfo.Children)
         A = HInfo.Children(i);
         AInfo = get(A);
         if strcmp(AInfo.Type,'axes') && strcmp(AInfo.Tag,'border')
             % use A.UserData;
             AInfo = md_paper(A,'getprops');
-            S(fgi).frame.style = AInfo.Name;
+            S(fgi1).frame.style = AInfo.Name;
             ibt = 1;
             btxt = 'BorderText1';
             ftxt = 'frametext1';
             while isfield(AInfo,btxt)
-                S(fgi).frame.(ftxt) = AInfo.(btxt);
+                S(fgi1).frame.(ftxt) = AInfo.(btxt);
                 ibt  = ibt+1;
                 btxt = sprintf('BorderText%i',ibt);
                 ftxt = sprintf('frametext%i',ibt);
@@ -813,49 +846,50 @@ for fgi = length(H):-1:1
         elseif strcmp(AInfo.Type,'axes')
             % normal axes
             axi = axi+1;
-            S(fgi).axes(axi).name      = AInfo.Tag;
-            S(fgi).axes(axi).position  = AInfo.Position;
+            S(fgi1).axes(axi).name      = AInfo.Tag;
+            S(fgi1).axes(axi).position  = AInfo.Position;
             if isappdata(A,'origPos_before_Colorbar')
-                S(fgi).axes(axi).position = getappdata(A,'origPos_before_Colorbar');
+                S(fgi1).axes(axi).position = getappdata(A,'origPos_before_Colorbar');
                 rmappdata(A,'origPos_before_Colorbar')
             end
             if ischar(AInfo.Color)
-                S(fgi).axes(axi).colour = AInfo.Color;
+                S(fgi1).axes(axi).colour = AInfo.Color;
             else
-                S(fgi).axes(axi).colour = round(AInfo.Color*255);
+                S(fgi1).axes(axi).colour = round(AInfo.Color*255);
             end
-            S(fgi).axes(axi).box       = AInfo.Box;
-            S(fgi).axes(axi).linewidth = AInfo.LineWidth;
+            S(fgi1).axes(axi).type      = getappdata(A,'BasicAxesType');
+            S(fgi1).axes(axi).box       = AInfo.Box;
+            S(fgi1).axes(axi).linewidth = AInfo.LineWidth;
             %
             if isappdata(A,'title')
-                S(fgi).axes(axi).title = getappdata(A,'title');
+                S(fgi1).axes(axi).title = getappdata(A,'title');
             else
-                S(fgi).axes(axi).title = '<automatic>';
+                S(fgi1).axes(axi).title = '<automatic>';
             end
             for x = 'xyz'
                 X = upper(x);
                 if isappdata(A,[x 'label'])
-                    S(fgi).axes(axi).([x 'label']) = getappdata(A,[x 'label']);
+                    S(fgi1).axes(axi).([x 'label']) = getappdata(A,[x 'label']);
                 else
-                    S(fgi).axes(axi).([x 'label']) = '<automatic>';
+                    S(fgi1).axes(axi).([x 'label']) = '<automatic>';
                 end
-                S(fgi).axes(axi).([x 'colour']) = round(AInfo.([X 'Color'])*255);
-                S(fgi).axes(axi).([x 'grid']) = AInfo.([X 'Grid']);
+                S(fgi1).axes(axi).([x 'colour']) = round(AInfo.([X 'Color'])*255);
+                S(fgi1).axes(axi).([x 'grid']) = AInfo.([X 'Grid']);
                 if X < 'Z'
-                    S(fgi).axes(axi).([x 'loc']) = AInfo.([X 'AxisLocation']);
+                    S(fgi1).axes(axi).([x 'loc']) = AInfo.([X 'AxisLocation']);
                 end
-                S(fgi).axes(axi).([x 'scale']) = AInfo.([X 'Scale']);
+                S(fgi1).axes(axi).([x 'scale']) = AInfo.([X 'Scale']);
                 if strcmp(AInfo.([X 'LimMode']),'manual')
                     xlm = AInfo.([X 'Lim']);
                     if strcmp(AInfo.([X 'Dir']),'reverse')
                         xlm = fliplr(xlm);
                     end
-                    S(fgi).axes(axi).([x 'lim']) = xlm;
+                    S(fgi1).axes(axi).([x 'lim']) = xlm;
                 else
                     if strcmp(AInfo.([X 'Dir']),'reverse')
-                        S(fgi).axes(axi).([x 'lim']) = 'auto-reverse';
+                        S(fgi1).axes(axi).([x 'lim']) = 'auto-reverse';
                     else
-                        S(fgi).axes(axi).([x 'lim']) = 'auto';
+                        S(fgi1).axes(axi).([x 'lim']) = 'auto';
                     end
                 end
             end
@@ -874,16 +908,16 @@ for fgi = length(H):-1:1
             else
                 u = {u};
             end
-            S(fgi).axes(axi).items = [];
+            S(fgi1).axes(axi).items = [];
             for itm = length(u):-1:1
                 IInfo = u{itm};
-                S(fgi).axes(axi).items(itm).name     = IInfo.PlotState.Props.Name;
+                S(fgi1).axes(axi).items(itm).name     = IInfo.PlotState.Props.Name;
                 if isfield(IInfo.PlotState.FI,'Otherargs') && ~isempty(IInfo.PlotState.FI.Otherargs)
-                    S(fgi).axes(axi).items(itm).filename = [{IInfo.PlotState.FI.Name} IInfo.PlotState.FI.Otherargs];
+                    S(fgi1).axes(axi).items(itm).filename = [{IInfo.PlotState.FI.Name} IInfo.PlotState.FI.Otherargs];
                 elseif isfield(IInfo.PlotState.FI,'Name')
-                    S(fgi).axes(axi).items(itm).filename = IInfo.PlotState.FI.Name;
+                    S(fgi1).axes(axi).items(itm).filename = IInfo.PlotState.FI.Name;
                 else
-                    S(fgi).axes(axi).items(itm).filename = IInfo.PlotState.FI.FileType;
+                    S(fgi1).axes(axi).items(itm).filename = IInfo.PlotState.FI.FileType;
                 end
                 %
                 dom = qpread(IInfo.PlotState.FI,'domains');
@@ -892,7 +926,7 @@ for fgi = length(H):-1:1
                 else
                     dom = dom{IInfo.PlotState.Domain};
                 end
-                S(fgi).axes(axi).items(itm).domain   = dom;
+                S(fgi1).axes(axi).items(itm).domain   = dom;
                 %
                 sub = qpread(IInfo.PlotState.FI,IInfo.PlotState.Props,'subfields');
                 if isempty(sub)
@@ -900,9 +934,9 @@ for fgi = length(H):-1:1
                 else
                     sub = sub{IInfo.PlotState.SubField{1}};
                 end
-                S(fgi).axes(axi).items(itm).subfield = sub;
+                S(fgi1).axes(axi).items(itm).subfield = sub;
                 %
-                S(fgi).axes(axi).items(itm).dimensions = [];
+                S(fgi1).axes(axi).items(itm).dimensions = [];
                 dim0 = {'time' 'station' 'm' 'n' 'k'};
                 if length(IInfo.PlotState.Props.DimFlag)>5
                     dims = [dim0 lower(IInfo.PlotState.Props.DimName)];
@@ -915,7 +949,7 @@ for fgi = length(H):-1:1
                         if isequal(val,0)
                             val = 'all';
                         end
-                        S(fgi).axes(axi).items(itm).dimensions.(dims{dim}) = val;
+                        S(fgi1).axes(axi).items(itm).dimensions.(dims{dim}) = val;
                     end
                 end
                 Ops = IInfo.PlotState.Ops;
@@ -937,7 +971,7 @@ for fgi = length(H):-1:1
                 if isfield(Ops,'version')
                     Ops = rmfield(Ops,'version');
                 end
-                S(fgi).axes(axi).items(itm).options  = Ops;
+                S(fgi1).axes(axi).items(itm).options  = Ops;
             end
         end
     end
@@ -947,11 +981,11 @@ function [liA,locB] = ismember(A,B)
 if ischar(A)
     A = {A};
 end
-liA  = logical(zeros(size(A)));
+liA  = false(size(A));
 locB = zeros(size(A));
 for j = 1:numel(A)
     for i = 1:numel(B)
-        if isequal(A{j},B{i});
+        if isequal(A{j},B{i})
             liA(j)  = true;
             locB(j) = i;
             break

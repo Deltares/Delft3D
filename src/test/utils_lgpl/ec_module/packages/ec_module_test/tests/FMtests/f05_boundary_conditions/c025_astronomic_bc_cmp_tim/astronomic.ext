@@ -1,0 +1,9 @@
+[boundary]
+quantity     = waterlevelbnd
+locationfile = astronomic_02.pli
+forcingfile  = astronomic_all.bc
+
+[boundary]
+quantity     = waterlevelbnd
+locationfile = astronomic_02.pli
+forcingfile  = surge_setup.bc

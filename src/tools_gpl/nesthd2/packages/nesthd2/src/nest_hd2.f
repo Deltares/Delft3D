@@ -1,11 +1,12 @@
       subroutine nest_hd2 (lun   ,extnef,nostat,notims,kmax  ,lstci ,
      *                     nobnd ,mincon,
-     *                     thick ,wl    ,uu    ,vv    ,alfas ,bndval,
-     *                     kfs   ,mcbsp ,ncbsp ,mnstat,
+     *                     thick ,wl    ,uu    ,vv    ,conc, alfas ,
+     *                     bndval,kfs   ,mcbsp ,ncbsp ,mnstat,
      *                     typbnd,nambnd,namcon                     )
+      implicit none
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +30,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !***********************************************************************
 ! Deltares                         marine and coastal management
 !
@@ -60,18 +61,32 @@
      *              ncbsp (nobnd ,2     )       ,
      *              mnstat(2     ,nostat)
 
-      real          thick (kmax  ),alfas (nostat),
+      double precision           thick (kmax  ),alfas (nostat),
      *              cadd  (  6   ),cmax  (   6  ),
      *              cmin  (  6   )
 
-      real          wl    (nostat,notims)
+      double precision           wl    (nostat,notims)
       integer       kfs   (nostat,notims)
       integer       iwet  (nostat)
 
-      real          uu    (nostat,kmax  ,notims),
-     *              vv    (nostat,kmax  ,notims,mincon)
+      double precision uu    (nostat,kmax  ,notims),
+     *                 vv    (nostat,kmax  ,notims),
+     *                 conc  (nostat,kmax  ,notims, mincon)
 
-      real          bndval(nobnd ,notims,kmax  ,mincon,2)
+      double precision bndval(nobnd ,notims,kmax  ,mincon,2)
+      double precision grdang
+      double precision tstart
+      double precision dtmin
+      double precision a0
+      integer itypc
+      integer nolay
+      integer nocon
+      integer nostat
+      integer notims, itim
+      integer kmax, k
+      integer lstci, iconc
+      integer nobnd, ibnd
+      integer mincon
 
       character*  1 typbnd(nobnd )
       character* 20 nambnd(nobnd )
@@ -90,17 +105,17 @@
       mcbsp = 0
       ncbsp = 0
 
-      thick = 0.0
-      alfas = 0.0
-      cadd  = 0.0
-      cmax  = 0.0
-      cmin  = 0.0
+      thick = 0.0d0
+      alfas = 0.0d0
+      cadd  = 0.0d0
+      cmax  = 0.0d0
+      cmin  = 0.0d0
 
       kfs   = 0
-      wl    = 0.0
-      uu    = 0.0
-      vv    = 0.0
-      bndval= 0.0
+      wl    = 0.0d0
+      uu    = 0.0d0
+      vv    = 0.0d0
+      bndval= 0.0d0
 
       fout = .false.
       new  = .false.
@@ -146,6 +161,7 @@
 
       call SIMHSH(lun(5), fout, extnef, kfs, wl, uu, vv,
      *            alfas, grdang, notims, nostat, kmax)
+     
       if (fout) goto 999
 
       call chkdry(iwet, kfs, notims, nostat)
@@ -175,13 +191,23 @@
       if (lstci .eq. 0) goto 999
 
       call SIMHSC(lun(5),fout  ,extnef,notims,nostat,kmax  ,lstci ,
-     *            vv                                              )
+     *            conc                                            )
       if (fout) goto 999
 
-      bndval = 0.0
+      bndval = 0.0d0
+      do ibnd = 1, nobnd
+          do itim = 1, notims
+              do k = 1, kmax
+                  do iconc = 1, lstci
+                      bndval(ibnd,itim,k,iconc,1)=0.0d0
+                      bndval(ibnd,itim,k,iconc,2)=0.0d0
+                  enddo
+              enddo
+          enddo
+      enddo
 
       call detcon (lun(5),fout  ,lun(2),bndval,mcbsp ,ncbsp ,
-     *             mnstat,vv    ,iwet  ,nobnd ,notims,nostat,
+     *             mnstat,conc  ,iwet  ,nobnd ,notims,nostat,
      *             kmax  ,lstci                             )
       if (fout) goto 999
 

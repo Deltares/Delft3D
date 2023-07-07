@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,8 +25,8 @@
       interface
 
          subroutine dlwq01 ( lun    , syname , nosys  , notot  , nomult ,
-     &                       multp  , iwidth , otime  , isfact , vrsion ,
-     &                       ioutpt , ierr   , iwar   )
+     &                       multp  , iwidth , otime  , isfact , refday ,
+     &                       vrsion ,ioutpt , ierr   , iwar   )
             integer  ( 4), intent(in   ) :: lun  (*)      ! array with unit numbers
             character(20), pointer       :: syname(:)     ! array with substance names
             integer  ( 4), intent(  out) :: nosys         ! number of transported substances
@@ -36,6 +36,7 @@
             integer  ( 4), intent(  out) :: iwidth        ! width of the output file
             real     ( 8), intent(  out) :: otime         ! Offset of the system time (Julian)
             integer  ( 4), intent(  out) :: isfact        ! Units (in sec) of the system clock
+            integer  ( 4), intent(  out) :: refday        ! Reference day, varying from 1 till 365
             real     ( 4), intent(  out) :: vrsion        ! version number of this input
             integer  ( 4), intent(  out) :: ioutpt        ! flag for more or less output
             integer  ( 4), intent(inout) :: ierr          ! cumulative error   count

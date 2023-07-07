@@ -1,0 +1,67 @@
+#gfortran -g -I. -I../include -I../../../../nefis/packages/nefis/include -Dlinux -DUSE_VS2005 \
+gfortran -g -o libODS.so -fPIC -shared -Bstatic -I. -I../include -I../../../../nefis/packages/nefis/include -Dlinux -DUSE_VS2005 \
+    -DHAVE_CONFIG_H \
+    -D_FILE_OFFSET_BITS=64 \
+    -DLINUX64 \
+    -DPTR8 \
+../../../../nefis/packages/nefis/src/c2c.c \
+../../../../nefis/packages/nefis/src/df.c \
+../../../../nefis/packages/nefis/src/er.c \
+../../../../nefis/packages/nefis/src/f2c.c \
+../../../../nefis/packages/nefis/src/gp.c \
+../../../../nefis/packages/nefis/src/gt.c \
+../../../../nefis/packages/nefis/src/hs.c \
+../../../../nefis/packages/nefis/src/nefis_version.cpp \
+../../../../nefis/packages/nefis/src/oc.c \
+../../../../nefis/packages/nefis/src/pt.c \
+../../../../nefis/packages/nefis/src/rt.c \
+../../../../nefis/packages/nefis/src/wl-xdr.c \
+dlwbin.c     \
+dlwbingr.c   \
+dlwgrid.c    \
+dlwnef.c     \
+equal.c      \
+geotext.c    \
+getdim.c     \
+getgrd.c     \
+getloc.c     \
+getmat.c     \
+getpar.c     \
+gettme.c     \
+gregor.c     \
+gx_db3.c     \
+iftype.c     \
+itrans.c     \
+jspost.c     \
+julian.c     \
+m3hbuf.c     \
+mappix.c     \
+morbagr.c    \
+morcom.c     \
+ods_bna.c    \
+ods_conv.c   \
+ods_gnf.c    \
+ods_spcf.c   \
+odserr.c     \
+odsver.c     \
+opnclose.c   \
+pharmap.c    \
+phidi2c.c    \
+readline.c   \
+samples.c    \
+shyfem.c     \
+tekasc.c     \
+tekasc2d.c   \
+tridro.c     \
+trinint.c    \
+utils.c      \
+waspro.c     \
+../srcf/getlga.f     \
+../srcf/mor_sys.f    \
+../srcf/odsaux.f     \
+../srcf/phidias.f    \
+../srcf/tri_his.f    \
+../srcf/tri_map.f
+
+gcc -o testods testods.c libODS.so -I../include -g
+#gcc -o testods testods.c *.o -I../include -g -lgfortran

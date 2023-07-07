@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdwrk3
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RDWRK3 ( LUN   , LCHAR ,ITOTA , ITOTI , ITOTC  )
 !
@@ -31,7 +37,7 @@
 !
 !     LOGICAL UNITNUMBERS : LUN(1)   - DELWAQ boot file
 !
-!     SUBROUTINES CALLED  : DHOPNF, opens files
+!     SUBROUTINES CALLED  : open_waq_files, opens files
 !
 !     PARAMETERS          :
 !
@@ -44,24 +50,19 @@
 !     ITOTC   INTEGER    1         OUT     Dimension character array
 !
 !     declarations
+      use m_open_waq_files
+      use m_dhgnam
+      use m_sysn          ! System characteristics
+      use m_sysi          ! Timer characteristics
 !
       INTEGER       ITOTA , ITOTI , ITOTC
       INTEGER       LUN(*)
       CHARACTER*(*) LCHAR(*)
-!
-!     COMMON  /  SYSN   /   System characteristics
-!
-      INCLUDE 'sysn.inc'
-!
-!     COMMON  /  SYSI  /    Timer characteristics
-!
-      INCLUDE 'sysi.inc'
-!
+      integer :: INDX, IERR, K, LCHMAX
+      
 !     input structure for boot-file
 !
       INTEGER             LUNIN
-      DIMENSION           IN(INSIZE)       , II(IISIZE)
-      EQUIVALENCE       ( IN(1)  , NOSEG ) , ( II(1), ITSTRT  )
 !
 !         boot the system
 !
@@ -71,7 +72,7 @@
       IF ( INDX .EQ. 0 ) INDX = LCHMAX + 1
       LCHAR(1) = LCHAR(1)(1:INDX-1)//'-delwaq03.wrk'
       LUNIN    = 14
-      CALL DHOPNF ( LUNIN , LCHAR(1), 1     , 2     , IERR  )
+      CALL open_waq_files ( LUNIN , LCHAR(1), 1     , 2     , IERR  )
 !
       READ  ( LUNIN )   IN
       READ  ( LUNIN )   II
@@ -83,3 +84,4 @@
 !
       RETURN
       END
+      end module m_rdwrk3

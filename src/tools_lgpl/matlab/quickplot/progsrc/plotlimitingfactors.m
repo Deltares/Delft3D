@@ -12,7 +12,7 @@ function hNew=plotlimitingfactors(FI,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -40,6 +40,7 @@ function hNew=plotlimitingfactors(FI,varargin)
 %   $HeadURL$
 %   $Id$
 
+T_=1;
 ST_=2;
 if nargin<3
    error('Not enough input arguments.')
@@ -67,6 +68,12 @@ if isempty(Chlfa)
    error('Cannot find total Chlorophyll in algae (Limit Chlo) in data file.')
 end
 
+if Quants(Chlfa).DimFlag(T_)
+    Times = Location{1};
+    Location = Location(2:end);
+else
+    Times = 0;
+end
 if Quants(Chlfa).DimFlag(ST_)
    if iscell(Location)
       Location = Location{1};
@@ -83,7 +90,7 @@ else
    LocationStr=sprintf('(%i,%i)',Location{:});
 end
 
-DataChlfa = qpread(FI,Quants(Chlfa),'data',0,Location{:});
+DataChlfa = qpread(FI,Quants(Chlfa),'data',Times,Location{:});
 H=line(DataChlfa.Time,DataChlfa.Val,'parent',Parent,'color',options.color);
 if nargout>0
    hNew=H;

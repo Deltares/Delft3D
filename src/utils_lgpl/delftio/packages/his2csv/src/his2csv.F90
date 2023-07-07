@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 program his2csv
 
@@ -178,8 +178,6 @@ program his2csv
 
     if ( retVal == 0 ) then
         
-        outFileHandle = DioNewLun()
-
         if (numArgs>2) then
             outFileName = trim(parName)
             do i = 1, len_trim(outFileName)
@@ -192,7 +190,7 @@ program his2csv
             outFileName = trim(hisFileName(1:len_trim(hisFileName)-4))//'.csv'
         endif
 
-        open(outFileHandle,file=outFileName)
+        open(newunit=outFileHandle,file=outFileName)
 
         if (parName == ' ') then  ! all values
 

@@ -1,0 +1,5 @@
+[meteo]
+Quantity     = rainfall_rate
+LocationType = global             # (one of: global, station, grid, polygon)
+LocationFile = my_location.pli    # (only required for LocationType=station or polygon)
+ForcingFile  = my_forcing.bc      # (for LocationType=global, station or polygon. For LocationType=grid, use NetCDF or Delft3D-curvi type)

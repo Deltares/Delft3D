@@ -18,7 +18,7 @@ function varargout=d3d_tridfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -137,6 +137,8 @@ if XYRead
     else
         szx=szx([1 3]);
     end
+    plsmisval = single(999.999);
+    negmisval = single(-999.999);
     switch Props.Val1
         case 'XYDRO'
             y=reshape(x(:,2,:),szx);
@@ -145,7 +147,7 @@ if XYRead
             z=reshape(x(:,3,:),szx);
             y=reshape(x(:,2,:),szx);
             x=reshape(x(:,1,:),szx);
-            x((x>999.9985 & y>999.9985 & x<999.9995 & y<999.9995) | (x==0 & y==0))=NaN;
+            x((x == plsmisval & y == plsmisval) | (x == negmisval & y == negmisval) | (x==0 & y==0))=NaN;
             y(isnan(x))=NaN;
             z(isnan(x))=NaN;
     end

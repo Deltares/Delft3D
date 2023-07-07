@@ -38,6 +38,7 @@
 %   shapewrite                  - Write ESRI shape files.
 %   shipma                      - Read Shipma project (and embedded) files.
 %   shyfemmesh                  - Read a SHYFEM mesh topology file.
+%   smsmesh                     - Read a Surface-water Modeling System mesh topology file.
 %   sobek                       - Read and plot SOBEK topology.
 %   swan                        - Read/write SWAN files.
 %   tecplot                     - Read/write for Tecplot files.
@@ -86,7 +87,6 @@
 %   setProperty                 - Generic routine to set values in PropertyName-PropertyValue pairs
 %   stdbeep                     - Produce beep sound.
 %   trim2rst                    - Extract Delft3D-FLOW restart file from TRIM-file.
-%   ui_getdir                   - Compileable platform independent open directory dialog box.
 %   ui_type                     - Simple selection dialog.
 %   ui_typeandname              - Selection dialog with name specification.
 %   uigetfolder                 - Standard Windows browse for folder dialog box.
@@ -262,7 +262,7 @@
 %
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   

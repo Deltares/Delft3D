@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,8 +33,18 @@
 //  30 oct 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
+// The following definition is needed since VisualStudio2015 before including <pthread.h>:
+#define HAVE_STRUCT_TIMESPEC
+
+#if HAVE_CONFIG_H
+#   include "config.h"
+#endif
+
+#include "bmi.h" //For enum Level
+#include "clock.h"
+#include <cstdio>
+#include <pthread.h>
 #ifdef WIN32
 #include "Windows.h"
 #define STDCALL __stdcall
@@ -45,13 +55,12 @@
 extern "C" {
 	typedef void(STDCALL * WriteCallback)(char* time, char* message, unsigned int level);
 }
-#include "dimr.h"
-#include "bmi.h"
 
 class Log {
+	
 
 public:
-	Log( FILE * output, Clock * clock, Level level = FATAL, Level feedbackLevel = FATAL );
+	Log( FILE * output, Clock * clock, Level level = INFO, Level feedbackLevel = INFO );
 
 	~Log( void );
 
@@ -75,7 +84,7 @@ public:
 
 	void SetWriteCallBack( WriteCallback writeCallback );
 
-	void SetExternalLogger( Logger logger );
+	void SetExternalLogger( BMILogger logger );
 
     void logLevelToString( int level, char ** levelString );
 
@@ -88,9 +97,21 @@ private:
 
 	pthread_key_t thkey;      // contains key for thread-specific log data
 	WriteCallback writeCallback;
-	Logger        externalLogger;
+	BMILogger        externalLogger;
 
 
 public:
 	char *        redirectFile;
 };
+
+#ifdef WIN32
+#   define DllExport   __declspec( dllexport )
+#  define strdup _strdup
+#else
+#   define DllExport
+#endif
+
+extern "C" {
+	DllExport void set_dimr_logger(Log *);
+	DllExport void set_logger_callback(WriteCallback);
+}

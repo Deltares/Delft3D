@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Deltares.UGrid</id>
+    <version>1.0.0</version>
+    <title>UGrid library</title>
+    <authors>Deltares</authors>
+    <owners></owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This is a package containing a managed dll wrapping around the native dll of io_netcdf. This native dll is a library containing functionality to read and write ugrid files.</description>
+    <copyright>Deltares</copyright>
+    <dependencies>
+      <dependency id="ProtoBufRemote" version="1.0.11"/>
+    </dependencies>
+    <tags>native</tags>
+  </metadata>
+  <files>
+    <file src="..\packages\io_netcdf_csharp\bin\Release\hdf5.dll" target="content\native\hdf5.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\hdf5_hl.dll" target="content\native\hdf5_hl.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\io_netcdf.dll" target="content\native\io_netcdf.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\libifcoremd.dll" target="content\native\libifcoremd.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\libmmd.dll" target="content\native\libmmd.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\netcdf.dll" target="content\native\netcdf.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\ucrtbase.dll" target="content\native\ucrtbase.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\vcruntime140.dll" target="content\native\vcruntime140.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\zlib1.dll" target="content\native\zlib1.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\Deltares.UGrid.dll" target="lib\net40\Deltares.UGrid.dll" />
+    <file src="..\packages\io_netcdf_csharp\bin\Release\Deltares.UGrid.xml" target="lib\net40\Deltares.UGrid.xml" />
+    <file src="Deltares.UGrid.targets" target="build\net40\Deltares.UGrid.targets" />
+  </files>
+</package>

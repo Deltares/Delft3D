@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,12 +24,14 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine upd_p2 ( c10   , c50   , value , segmnt, newtab,
      j                    grp   , io_mes, iitem , c20   , newfrm,
      j                    bodem )
+      use m_zoek
+
       include 'data.inc'
       character*10 c10, naam
       character*20 c20
@@ -198,6 +200,8 @@ c     Set item number
 
 
       subroutine upd_p3 ( c10 , newtab , io_mes )
+      use m_zoek
+
       include 'data.inc'
       character*10 c10
       logical newtab

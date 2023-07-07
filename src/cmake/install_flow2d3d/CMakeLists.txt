@@ -1,0 +1,5 @@
+install(SCRIPT "${checkout_src_root}/cmake/install_flow2d3d/install_and_bundle.cmake")
+if(NOT DEFINED COMMIT_VERSION)
+  set(COMMIT_VERSION "0")
+endif()
+configure_package_installer("Delft3D-FLOW Open" "${checkout_src_root}/cmake/install_flow2d3d/ReadMe.txt" "1" "0" "${COMMIT_VERSION}" "STGZ;TGZ")

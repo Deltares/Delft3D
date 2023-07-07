@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -57,6 +57,7 @@
 !     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
 !                         LUN(29) = unitnumber formatted output file
 
+      use m_zoek
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -107,7 +108,8 @@
          case ( -1 )                     ! old style <other ASCII file>
             write ( lunut, 2000 )  iropt1
             call opt1   ( iropt1  , lun     , 0       , lchar   , filtype ,
-     &                    ldummy  , ldummy  , 0       , ierr2   , iwar    )
+     &                    ldummy  , ldummy  , 0       , ierr2   , iwar    ,
+     &                    .false. )
             if ( ierr2 .gt. 0 ) goto 20
             if ( gettoken( noraai, ierr2 ) .gt. 0 ) goto 20
          case ( 0 )                      ! new style (October 2012) no dump transects

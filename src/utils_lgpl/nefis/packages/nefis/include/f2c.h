@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -69,8 +69,9 @@ BInt4 OC_get_version          ( BText *);
 BInt4 OC_reset_file_version( BInt4, BInt4 );
 BInt4 OC_close_all_nefis_files( void );
 
-BInt4 nefis_flush;
-BInt4 nefis_errcnt;
-BInt4 nefis_errno;
-BChar error_text[LENGTH_ERROR_MESSAGE+1];
+extern BInt4 nefis_flush;
+extern BInt4 nefis_errcnt;
+extern BInt4 nefis_errno;
+
+extern BChar error_text[LENGTH_ERROR_MESSAGE+1];
 #endif

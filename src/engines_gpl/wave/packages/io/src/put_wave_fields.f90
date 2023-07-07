@@ -1,4 +1,4 @@
-subroutine put_wave_fields (fg, fof, itide, wavetime, swflux)
+subroutine put_wave_fields (fg, fof, itide, wavedata, swflux, flowgridfile, netcdf_sp)
 !
 ! Head routine for calling crewav
 !
@@ -7,16 +7,25 @@ use swan_flow_grid_maps
 !
 implicit none
 !
-integer                    :: itide    ! time step number of wave group on com-file
-logical                    :: swflux   ! switch to indicate if mass flux is taken into account
-type (grid)                :: fg       ! flow grid
-type (output_fields)       :: fof      ! wave output fields defined on flow grid
-type (wave_time_type)      :: wavetime
+integer                    :: itide        ! time step number of wave group on com-file
+logical                    :: swflux       ! switch to indicate if mass flux is taken into account
+logical                    :: netcdf_sp    ! true: write netcdf files in single precision
+character(*)               :: flowgridfile ! ' ' when using nefis com-file; '<name>.nc' when using d-flowfm NetCDF file
+type (grid)                :: fg           ! flow grid
+type (output_fields)       :: fof          ! wave output fields defined on flow grid
+type (wave_data_type)      :: wavedata
    !
-   call crewav(fg%grid_name ,itide    ,fof%hrms  ,fof%tp      ,fof%dir     , &
-             & fof%dissip   ,fof%fx   ,fof%fy    ,fof%mx      ,fof%my      , &
-             & fof%tps      ,fof%ubot ,fof%wlen  ,fof%wsbodyu ,fof%wsbodyv , &
-             & fof%mmax     ,fof%nmax ,swflux    ,wavetime    )
+   if (flowgridfile == ' ') then
+      call crewav(fg%grid_name ,itide    ,fof%hrms  ,fof%tp      ,fof%dir     , &
+                & fof%dissip   ,fof%fx   ,fof%fy    ,fof%mx      ,fof%my      , &
+                & fof%tps      ,fof%ubot ,fof%wlen  ,fof%wsbodyu ,fof%wsbodyv , &
+                & fof%mmax     ,fof%nmax ,swflux    ,wavedata%time)
+   else
+      call crewav_netcdf(fg           ,itide    ,fof%hrms  ,fof%tp      ,fof%dir     , &
+                       & fof%dissip   ,fof%fx   ,fof%fy    ,fof%mx      ,fof%my      , &
+                       & fof%tps      ,fof%ubot ,fof%wlen  ,fof%wsbodyu ,fof%wsbodyv , &
+                       & fof%mmax     ,fof%nmax ,swflux    ,wavedata    , netcdf_sp)
+   endif
 end subroutine put_wave_fields
 
 
@@ -26,7 +35,7 @@ subroutine crewav(filnam   ,itide    ,hrms     ,tp       ,dir      , &
                 & mmax     ,nmax     ,swflux   ,wavetime )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -50,8 +59,8 @@ subroutine crewav(filnam   ,itide    ,hrms     ,tp       ,dir      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -436,3 +445,267 @@ subroutine crewav(filnam   ,itide    ,hrms     ,tp       ,dir      , &
 !
     deallocate (rbuff, stat=ierr)
 end subroutine crewav
+
+
+
+
+subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
+                       & diss     ,fx       ,fy       ,mx       ,my       , &
+                       & tps      ,ubot     ,wlen     ,wsbu     ,wsbv     , &
+                       & mmax     ,nmax     ,swflux   ,wavedata ,netcdf_sp)
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  
+!  
+!!--description-----------------------------------------------------------------
+! NONE
+!!--pseudo code and references--------------------------------------------------
+! NONE
+!!--declarations----------------------------------------------------------------
+    use wave_data
+    use swan_flow_grid_maps
+    use netcdf
+    use precision_basics
+    !
+    implicit none
+!
+! Global variables
+!
+    type (grid)                                 :: fg           ! flow grid
+    integer                         :: itide
+    integer                         :: mmax
+    integer                         :: nmax
+    real, dimension(mmax, nmax)     :: dir
+    real, dimension(mmax, nmax, 4)  :: diss
+    real, dimension(mmax, nmax)     :: fx
+    real, dimension(mmax, nmax)     :: fy
+    real, dimension(mmax, nmax)     :: hrms
+    real, dimension(mmax, nmax)     :: mx
+    real, dimension(mmax, nmax)     :: my
+    real, dimension(mmax, nmax)     :: tp
+    real, dimension(mmax, nmax)     :: tps
+    real, dimension(mmax, nmax)     :: ubot
+    real, dimension(mmax, nmax)     :: wlen
+    real, dimension(mmax, nmax)     :: wsbu
+    real, dimension(mmax, nmax)     :: wsbv
+    logical                         :: swflux
+    logical                         :: netcdf_sp
+    type (wave_data_type)                       :: wavedata
+
+!
+! Local variables
+!
+    integer                                     :: idfile
+    integer                                     :: iddim_n
+    integer                                     :: iddim_time
+    integer                                     :: idvar_x
+    integer                                     :: idvar_y
+    integer                                     :: idvar_time
+    integer                                     :: idvar_hrms
+    integer                                     :: idvar_tp
+    integer                                     :: idvar_dir
+    integer                                     :: idvar_distot
+    integer                                     :: idvar_dissurf
+    integer                                     :: idvar_diswcap
+    integer                                     :: idvar_disbot
+    integer                                     :: idvar_fx
+    integer                                     :: idvar_fy
+    integer                                     :: idvar_wsbu
+    integer                                     :: idvar_wsbv
+    integer                                     :: idvar_mx
+    integer                                     :: idvar_my
+    integer                                     :: idvar_tps
+    integer                                     :: idvar_ubot
+    integer                                     :: idvar_wlen
+    integer                                     :: ierror
+    integer                                     :: ind
+    integer                                     :: localcomcount
+    integer                                     :: mmax_read
+    integer                                     :: precision
+    integer, external                           :: nc_def_var
+    real(hp), dimension(1)                      :: time_read
+    character(50)                               :: string
+    character(256)                              :: filename
+    character(256)                              :: gridnam
+!
+!! executable statements -------------------------------------------------------
+!
+    localcomcount = wavedata%output%comcount
+    ! localcomcount might be changed in this subroutine.
+    ! wavedata%output%comcount is not allowed to be changed in this subroutine.
+    !
+    if (netcdf_sp) then
+       precision = nf90_float
+       write(*,*) "Writing data to netcdf file in single precision (except the grid)"
+    else
+       ! default
+       precision = nf90_double
+    endif
+    !
+    ! define name of output file
+    !
+    ! output-file = input-file = com-file
+    ! Assumption: it already exists and already contains global information
+    !
+    filename = fg%grid_name
+    !
+    ! open file
+    !
+    ierror = nf90_open(filename, NF90_WRITE, idfile); call nc_check_err(ierror, "opening file", filename)
+    !
+    ierror = nf90_inq_dimid(idfile, 'nFlowElemWithBnd', iddim_n); call nc_check_err(ierror, "inq_dimid nFlowElemWithBnd", filename)
+    ierror = nf90_inq_dimid(idfile, 'time' , iddim_time); call nc_check_err(ierror, "inq_dimid time", filename)
+    ierror = nf90_inq_varid(idfile, 'time' , idvar_time   ); call nc_check_err(ierror, "inq_varid time   ", filename)
+    if (localcomcount == 0) then
+       localcomcount = 1
+       !
+       ! dimensions
+       !
+       !ierror = nf90_inq_dimid(idfile, 'nNetElem', iddim_n); call nc_check_err(ierror, "inq_dimid nNetElem", filename)
+       ierror = nf90_inquire_dimension(idfile, iddim_n, string, mmax_read); call nc_check_err(ierror, "inq_dim nFlowElemWithBnd", filename)
+       if (mmax /= mmax_read) then
+          write(*,'(a,i0,a,i0,a)') "ERROR: dimension on com-file (", mmax_read, ") is not the same as the dimension to write (", mmax, ")"
+          call wavestop(1, "ERROR: dimension on com-file is not the same as the dimension to write")
+       endif
+       !
+       ierror = nf90_redef(idfile); call nc_check_err(ierror, "redef file", filename)
+       !
+       ! define vars
+       !
+       if (fg%sferic) then
+          string = 'deg'
+       else
+          string = 'm'
+       endif
+       ! name, type, dims, standardname, longname, unit, xycoordinates
+       idvar_x       = nc_def_var(idfile, 'x'       , nf90_double, 1, (/iddim_n/), '', 'x coordinate output grid', trim(string), .false., filename)
+       idvar_y       = nc_def_var(idfile, 'y'       , nf90_double, 1, (/iddim_n/), '', 'y coordinate output grid', trim(string), .false., filename)
+       idvar_hrms    = nc_def_var(idfile, 'hrms'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Root mean square wave height'                               , 'm'         , .true., filename)
+       idvar_tp      = nc_def_var(idfile, 'tp'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Peak wave period'                                           , 's'         , .true., filename)
+       idvar_dir     = nc_def_var(idfile, 'dir'    , precision  , 2, (/iddim_n, iddim_time/), '', 'Mean direction of wave propagation relative to ksi-dir. ccw', 'deg'       , .true., filename)
+       idvar_distot  = nc_def_var(idfile, 'distot' , precision  , 2, (/iddim_n, iddim_time/), '', 'Total wave energy dissipation rate'                         , 'w m-2'     , .true., filename)
+       idvar_dissurf = nc_def_var(idfile, 'dissurf', precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate at the free surface'           , 'w m-2'     , .true., filename)
+       idvar_diswcap = nc_def_var(idfile, 'diswcap', precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate due to white capping'          , 'w m-2'     , .true., filename)
+       idvar_disbot  = nc_def_var(idfile, 'disbot' , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave energy dissipation rate at the bedlevel'               , 'w m-2'     , .true., filename)
+       idvar_fx      = nc_def_var(idfile, 'fx'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term at the free surface in x-direction'       , 'n m-2'     , .true., filename)
+       idvar_fy      = nc_def_var(idfile, 'fy'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term at the free surface in y-direction'       , 'n m-2'     , .true., filename)
+       idvar_wsbu    = nc_def_var(idfile, 'wsbu'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term in water body in x-direction'             , 'n m-2'     , .true., filename)
+       idvar_wsbv    = nc_def_var(idfile, 'wsbv'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave forcing term in water body in y-direction'             , 'n m-2'     , .true., filename)
+       idvar_mx      = nc_def_var(idfile, 'mx'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave-induced volume flux in x-direction'                    , 'm3 s-1 m-1', .true., filename)
+       idvar_my      = nc_def_var(idfile, 'my'     , precision  , 2, (/iddim_n, iddim_time/), '', 'Wave-induced volume flux in y-direction'                    , 'm3 s-1 m-1', .true., filename)
+       idvar_tps     = nc_def_var(idfile, 'tps'    , precision  , 2, (/iddim_n, iddim_time/), '', 'Smoothed peak period'                                       , 's'         , .true., filename)
+       idvar_ubot    = nc_def_var(idfile, 'ubot'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Orbital motion near the bottom'                             , 'm s-1'     , .true., filename)
+       idvar_wlen    = nc_def_var(idfile, 'wlen'   , precision  , 2, (/iddim_n, iddim_time/), '', 'Mean wave length'                                           , 'm'         , .true., filename)
+       !
+       ierror = nf90_enddef(idfile); call nc_check_err(ierror, "enddef", filename)
+       !
+       ! put vars (time independent)
+       !
+       ierror = nf90_put_var(idfile, idvar_x  , fg%x  , start=(/ 1 /), count = (/ mmax /)); call nc_check_err(ierror, "put_var x", filename)
+       ierror = nf90_put_var(idfile, idvar_y  , fg%y  , start=(/ 1 /), count = (/ mmax /)); call nc_check_err(ierror, "put_var y", filename)
+    else
+       ierror = nf90_inq_varid(idfile, 'hrms'   , idvar_hrms   ); call nc_check_err(ierror, "inq_varid hrms   ", filename)
+       ierror = nf90_inq_varid(idfile, 'tp'     , idvar_tp     ); call nc_check_err(ierror, "inq_varid tp     ", filename)
+       ierror = nf90_inq_varid(idfile, 'dir'    , idvar_dir    ); call nc_check_err(ierror, "inq_varid dir    ", filename)
+       ierror = nf90_inq_varid(idfile, 'distot' , idvar_distot ); call nc_check_err(ierror, "inq_varid distot ", filename)
+       ierror = nf90_inq_varid(idfile, 'dissurf', idvar_dissurf); call nc_check_err(ierror, "inq_varid dissurf", filename)
+       ierror = nf90_inq_varid(idfile, 'diswcap', idvar_diswcap); call nc_check_err(ierror, "inq_varid diswcap", filename)
+       ierror = nf90_inq_varid(idfile, 'disbot' , idvar_disbot ); call nc_check_err(ierror, "inq_varid disbot ", filename)
+       ierror = nf90_inq_varid(idfile, 'fx'     , idvar_fx     ); call nc_check_err(ierror, "inq_varid fx     ", filename)
+       ierror = nf90_inq_varid(idfile, 'fy'     , idvar_fy     ); call nc_check_err(ierror, "inq_varid fy     ", filename)
+       ierror = nf90_inq_varid(idfile, 'wsbu'   , idvar_wsbu   ); call nc_check_err(ierror, "inq_varid wsbu   ", filename)
+       ierror = nf90_inq_varid(idfile, 'wsbv'   , idvar_wsbv   ); call nc_check_err(ierror, "inq_varid wsbv   ", filename)
+       ierror = nf90_inq_varid(idfile, 'mx'     , idvar_mx     ); call nc_check_err(ierror, "inq_varid mx     ", filename)
+       ierror = nf90_inq_varid(idfile, 'my'     , idvar_my     ); call nc_check_err(ierror, "inq_varid my     ", filename)
+       ierror = nf90_inq_varid(idfile, 'tps'    , idvar_tps    ); call nc_check_err(ierror, "inq_varid tps    ", filename)
+       ierror = nf90_inq_varid(idfile, 'ubot'   , idvar_ubot   ); call nc_check_err(ierror, "inq_varid ubot   ", filename)
+       ierror = nf90_inq_varid(idfile, 'wlen'   , idvar_wlen   ); call nc_check_err(ierror, "inq_varid wlen   ", filename)
+    endif
+    ierror = nf90_get_var(idfile, idvar_time , time_read        , start=(/ localcomcount /)   , count=(/ 1 /))
+    if (localcomcount == 1) then
+       ! When localcomcount>1, get_var(time) will result in an error, but this error can be ignored
+       call nc_check_err(ierror, "get_var time", filename)
+       if (time_read(1) /= wavedata%time%timsec) then
+          write(*,'(2(a,e20.5),a)') "ERROR: time_read(", time_read, ") is not equal to curtime (", wavedata%time%timsec, ")"
+       endif
+    endif
+    !
+    ! put vars (time dependent)
+!hrms = 5.0E-2
+!tp   = 0.9
+!dir  = 270.0
+!diss(:,:,1) = 0.0
+!diss(:,:,2) = 0.0
+!diss(:,:,3) = 0.0
+!diss(:,:,4) = 0.0
+!fx   = 2.0e-3
+!fy   = -9.0e-3
+!wsbu = 5.0e-4
+!wsbv = -4.0e-4
+!mx   = 7.0e-4
+!my   = -2.0e-3
+!tps  = 0.0
+!ubot = 0.0
+!wlen = 0.0
+!
+!hrms = 0.0
+!tp   = 0.0
+!dir  = 0.0
+!diss(:,:,1) = 0.0
+!diss(:,:,2) = 0.0
+!diss(:,:,3) = 0.0
+!diss(:,:,4) = 0.0
+!fx   = 0.0
+!fy   = 0.0
+!wsbu = 0.0
+!wsbv = 0.0
+!mx   = 0.0
+!my   = 0.0
+!tps  = 0.0
+!ubot = 0.0
+!wlen = 0.0
+    !
+    ierror = nf90_put_var(idfile, idvar_time   , wavedata%time%timsec, start=(/ localcomcount /)); call nc_check_err(ierror, "put_var time", filename)
+    ierror = nf90_put_var(idfile, idvar_hrms   , hrms           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var hrms   ", filename)
+    ierror = nf90_put_var(idfile, idvar_tp     , tp             , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var tp     ", filename)
+    ierror = nf90_put_var(idfile, idvar_dir    , dir            , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var dir    ", filename)
+    ierror = nf90_put_var(idfile, idvar_distot , diss(:,:,1)    , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var distot ", filename)
+    ierror = nf90_put_var(idfile, idvar_dissurf, diss(:,:,2)    , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var dissurf", filename)
+    ierror = nf90_put_var(idfile, idvar_diswcap, diss(:,:,3)    , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var diswcap", filename)
+    ierror = nf90_put_var(idfile, idvar_disbot , diss(:,:,4)    , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var disbot ", filename)
+    ierror = nf90_put_var(idfile, idvar_fx     , fx             , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var fx     ", filename)
+    ierror = nf90_put_var(idfile, idvar_fy     , fy             , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var fy     ", filename)
+    ierror = nf90_put_var(idfile, idvar_wsbu   , wsbu           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var wsbu   ", filename)
+    ierror = nf90_put_var(idfile, idvar_wsbv   , wsbv           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var wsbv   ", filename)
+    ierror = nf90_put_var(idfile, idvar_mx     , mx             , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var mx     ", filename)
+    ierror = nf90_put_var(idfile, idvar_my     , my             , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var my     ", filename)
+    ierror = nf90_put_var(idfile, idvar_tps    , tps            , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var tps    ", filename)
+    ierror = nf90_put_var(idfile, idvar_ubot   , ubot           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var ubot   ", filename)
+    ierror = nf90_put_var(idfile, idvar_wlen   , wlen           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var wlen   ", filename)
+    !
+    ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename)
+end subroutine crewav_netcdf

@@ -1,6 +1,0 @@
-'com-ext1.cco'        ; X,Y co-ordinates overall model (ext1, char*3)
-'com-ext1.lga'        ; grid table with active cells overall model
-'com-ext2.cco'        ; X,Y co-ordinates nested model (ext2, char*3)
-'com-ext2.lga'        ; grid table with active cells nested model
-'nestwq1.dia'         ; diagnostics NESTWQ1 (view expect this name as filename)
-'nwq-ext1.adm'        ; nest segments and weight factors overall model

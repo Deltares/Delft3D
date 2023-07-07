@@ -51,14 +51,14 @@ function nc_padheader_mexnc(ncfile,num_bytes)
 [ncid,status] = mexnc ( 'open', ncfile, nc_write_mode );
 if ( status ~= 0 )
 	ncerr = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_PADHEADER:MEXNC:OPEN', ncerr );
+	error ( 'snctools:padHeader:mexnc:open', ncerr );
 end
 
 status = mexnc ( 'redef', ncid );
 if ( status ~= 0 )
 	mexnc ( 'close', ncid );
 	ncerr = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_PADHEADER:MEXNC:REDEF', ncerr );
+	error ( 'snctools:padHeader:mexnc:redef', ncerr );
 end
 
 %
@@ -68,12 +68,12 @@ status = mexnc ( '_enddef', ncid, num_bytes, 4, 0, 4 );
 if ( status ~= 0 )
 	mexnc ( 'close', ncid );
 	ncerr = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_PADHEADER:MEXNC:PENDDEF', ncerr );
+	error ( 'snctools:padHeader:mexnc:penddef', ncerr );
 end
 
 status = mexnc ( 'close', ncid );
 if ( status ~= 0 )
 	mexnc ( 'close', ncid );
 	ncerr = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_PADHEADER:MEXNC:CLOSE', ncerr );
+	error ( 'snctools:padHeader:mexnc:close', ncerr );
 end

@@ -7,4 +7,4 @@ del TEST*.*
 
 fc TESTDioConf-res.txt ..\resultsApproved\w32\TESTDioConf-res.txt
 
-exit 0
+exit /B 0

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -58,6 +58,7 @@
       use get_key_mod
       use grid_search_mod
       use pinpok_mod
+      use random_generator
 
       implicit none ! force explicit typing
 
@@ -94,7 +95,7 @@
       integer(ip), parameter            :: max_len_blockname=4
       integer(ip), parameter            :: max_len_key=20
 
-      integer(ip)                       :: lun_ini=50
+      integer(ip)                       :: lun_ini
       integer(ip)                       :: ios, ier
       integer(ip)                       :: npart_pol, isub, i, np, nerr
       integer(ip)                       :: nrows, ncols
@@ -120,14 +121,7 @@
 !     local scalars
 !
       integer(ip) :: ipol, len_file, len_fract
-      real   (sp) :: rnd
-!
-!     required, otherwise under linux the built-in
-!     random generator will be used, rather than the
-!     part generator.
-!
-      external             rnd
-      integer(sp)          :: get_index
+      integer(ip) :: get_index
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "inipart", ithndl )
@@ -138,7 +132,7 @@
       polygone_complete = .false.
       len_file          =  len_trim(ini_file)
 
-      open(lun_ini,file=ini_file,status='old',iostat=ios)
+      open(newunit=lun_ini,file=ini_file,status='old',iostat=ios)
       if (ios /= 0) go to 900
 
       do ipol = 1,npol
@@ -315,5 +309,5 @@
       write(lunpr,'(//a)')     ' Couldn''t find cells for the initial oil particles.'
       write(lunpr,'(//a)')     ' Is (part of) the polygon within the grid range?'
       call stop_exit(1)
-      
+
       end subroutine inipart

@@ -10,7 +10,7 @@ test_add_regular_dimension(ncfile,mode);
 test_add_unlimited (ncfile,mode);                         
 test_dimension_already_exists(ncfile,mode);  
 
-run_negative_tests;
+run_negative_tests(mode);
 
 fprintf('OK\n');
 
@@ -120,137 +120,19 @@ error('succeeded when it should have failed.');
 
 
 %--------------------------------------------------------------------------
-function run_negative_tests()
-ncfile = 'foo4.nc';
-test_no_inputs ();                               
-test_too_many_inputs ( ncfile );                 
-test_not_netcdf_file ( ncfile );                 
-test_2nd_input_not_char ( ncfile );              
-test_3rd_input_not_numeric ( ncfile );           
-test_3rd_input_negative ( ncfile );              
+function run_negative_tests(mode)
 
-
-%--------------------------------------------------------------------------
-function test_no_inputs ()
-% NC_ADDDIM needs 3 arguments. 
-try
-	nc_adddim;
-catch %#ok<CTCH>
-	return
-end
-error('succeeded when it should have failed');
-
-
-
-
-
-
-%--------------------------------------------------------------------------
-function test_too_many_inputs ( ncfile )
-% NC_ADDDIM needs only 3 arguments. 
-
-
-nc_create_empty ( ncfile, nc_clobber_mode );
-try
-	nc_adddim ( ncfile, 'x', 10, 12 );
-catch %#ok<CTCH>
-	return
-end
-error('succeeded when it should have failed.');
-
-
-
-
-
-
-
-
-
-
-%--------------------------------------------------------------------------
-function test_not_netcdf_file ( ncfile )
-% The file must be a netcdf file
-
-fid = fopen(ncfile,'wb');
-fwrite(fid,magic(5),'integer*4');
-fclose(fid);
-
-try
-	nc_adddim(ncfile,'x',3);
-catch %#ok<CTCH>
-	return
-end
-error('Failed to catch non-netcdf file.');
-
-
-
-
-
-
-
-
-
-
-
-
-%--------------------------------------------------------------------------
-function test_2nd_input_not_char ( ncfile )
-% dimension name must be char.
-nc_create_empty ( ncfile, nc_clobber_mode );
-try
-	nc_adddim ( ncfile, 3, 3 );
-catch %#ok<CTCH>
+if strcmp(mode,'hdf4')
+    fprintf('no negative tests on hdf4.  ');
     return
 end
-error ('succeeded when it should have failed.');
 
-
-
-
-
-
-
-
-
-
-
-
-%--------------------------------------------------------------------------
-function test_3rd_input_not_numeric ( ncfile )
-% The dimension length must be numeric
-
-% test 5:  3rd input not numeric
-nc_create_empty ( ncfile, nc_clobber_mode );
-try
-	nc_adddim ( ncfile, 't', 't' );
-catch %#ok<CTCH>
-    return
+v = version('-release');
+switch(v)
+    case {'14','2006a','2006b','2007a','2007b'}
+        fprintf('\tNo negative tests on %s.  ' , v);
+        return
+    otherwise
+        test_nc_adddim_neg(mode);
 end
-error('succeeded when it should have failed.');
-
-
-
-
-
-
-
-
-
-
-%--------------------------------------------------------------------------
-function test_3rd_input_negative ( ncfile )
-% The dimension length must be non-negative.
-
-nc_create_empty ( ncfile, nc_clobber_mode );
-try
-	nc_adddim ( ncfile, 't', -1 );
-catch %#ok<CTCH>
-    return
-end
-error('succeeded when it should have failed.');
-
-
-
-
-
-
+        

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,6 +25,9 @@
 !     Collect the unit tests
 !
 module unit_tests_module
+    use m_dlwq_boundio
+    use m_dlwq13
+    use m_dlwq13
     use ftnunit
 
     implicit none
@@ -84,14 +87,11 @@ subroutine test_dlwq13_no_nans
 
     conc = 1.0
 
-    lun(19) = 10
-    lun(23) = 11
-
     lchar(18) = 'datafiles/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
     lchar(19) = 'test_dlwq13_no_nans.mon'
     lchar(23) = 'test_dlwq13_no_nans.res'
 
-    open( lun(19), file = lchar(19) )
+    open( newunit = lun(19), file = lchar(19) )
 
     sname = (/ ' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10' /)
 
@@ -127,14 +127,11 @@ subroutine test_dlwq13_with_nans
     conc = 1.0
     conc(1,1) = log10( -1.0 )
 
-    lun(19) = 10
-    lun(23) = 11
-
     lchar(18) = 'datafiles/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
     lchar(19) = 'test_dlwq13_with_nans.mon'
     lchar(23) = 'test_dlwq13_with_nans.res'
 
-    open( lun(19), file = lchar(19) )
+    open( newunit = lun(19), file = lchar(19) )
 
     sname = (/ ' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10' /)
 
@@ -161,6 +158,8 @@ end subroutine test_dlwq13_with_nans
 subroutine test_dlwq_boundio_hot_update
 
     integer                   :: lunrep             ! report file
+    integer                   :: lunhis             ! history file
+    integer                   :: lunopt             ! options file
     integer, parameter        :: notot = 10         ! number of substances
     integer, parameter        :: nosys = 2          ! number of active substances
     integer, parameter        :: noseg = 7          ! number of segments
@@ -175,21 +174,20 @@ subroutine test_dlwq_boundio_hot_update
     character(len=255)        :: runid              ! runid
     integer                   :: i
 
-    lunrep = 10
-    open( lunrep, file = 'unit_tests_waq.mon' )
+    open( newunit = lunrep, file = 'unit_tests_waq.mon' )
 
     syname = (/ 'A', 'B' /)
     sgname = (/ 'A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1' /)
     bndid  = (/ 'nA1', 'nC1', 'H2' /)
     ibpnt  = 0
 
-    open(  11, file = 'unit_tests_delwaq.his', form = 'unformatted',access='stream' )
-    write( 11 ) (' ', i = 1,4*40 )
-    write( 11 ) nosys, noseg
-    write( 11 ) syname(2), syname(1)
-    write( 11 ) ( i, sgname(i), i = 1,noseg )
-    write( 11 ) 100, ( 1.0*i, 2.0*i, i = 1,noseg )
-    close( 11 )
+    open(  newunit = lunhis, file = 'unit_tests_delwaq.his', form = 'unformatted',access='stream' )
+    write( lunhis ) (' ', i = 1,4*40 )
+    write( lunhis ) nosys, noseg
+    write( lunhis ) syname(2), syname(1)
+    write( lunhis ) ( i, sgname(i), i = 1,noseg )
+    write( lunhis ) 100, ( 1.0*i, 2.0*i, i = 1,noseg )
+    close( lunhis )
 
     !
     ! Fill the array with expected values:
@@ -201,10 +199,10 @@ subroutine test_dlwq_boundio_hot_update
     bound_check(1,:) = (/ 2.0, 6.0, 0.0 /)
     bound_check(2,:) = (/ 1.0, 3.0, 0.0 /)
 
-    open(  12, file = 'delwaq.options' )
-    write( 12, '(a)' ) '-hb'
-    write( 12, '(a)' ) 'unit_tests_delwaq.his'
-    close( 12 )
+    open(  newunit = lunopt, file = 'delwaq.options' )
+    write( lunopt, '(a)' ) '-hb'
+    write( lunopt, '(a)' ) 'unit_tests_delwaq.his'
+    close( lunopt )
 
     call dlwq_boundio( lunrep, notot , nosys , noseg , nobnd ,&
                        syname, bndid , ibpnt , conc  , bound ,&

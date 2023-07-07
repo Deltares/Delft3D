@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,7 +23,7 @@
 
 module part13_mod
 
-use filtyp_mod
+use m_filldm
 use openfl_mod
 
 contains
@@ -43,23 +43,6 @@ contains
 !     CREATING PLO FILE FOR PLOT GRID
 !       (Nefis and binary files / per time step)
 
-!     system administration : r.j. vos
-
-!     created               : february 1990, by l. postma
-
-!     modified              : cleared may 1996
-!                             also for isfile =1, follows from ext. mapfile
-!                             version with conc-array as delwaq standard
-!                             25/11/96: rjvos: set thickn array always!!!
-!                           : nov 1997: oil version(3.40)
-!                           : jul 1998: version with settling (v3.43)
-!                           : apr 1998: vs 3.60: version for release of 1 jun
-!                           : jun 1999: vs 3.60: error in jsub==2 when testing rel 1 jun
-!                           : febr  2003: vs 3.64: new plo file implemented similar to the
-!                                         map-file; this means that substance names will be
-!                                         written same as on the map files, without layer
-!                                         information appended as on the previous plo file.
-
 !     note                  : delpar sort different from partplot
 !                             partplot:  first layers
 !                             delpar  :  first substances
@@ -67,7 +50,7 @@ contains
 !     logical unit numbers  : lun1 - plot grid file
 !                             lun2 - output log file
 
-!     subroutines called    : part11 - converts model cooordinates to
+!     subroutines called    : part11 - converts model coordinates to
 !                                      national grid and plot coordinates,
 !                             putget
 !                             putget_chars
@@ -75,6 +58,7 @@ contains
 !     functions   called    : findcell
 
       use precision_part          ! single and double precision
+      use m_part_modeltypes       ! part model definitions
       use timers
       use putget_mod         ! explicit interface
       use genfil_mod         ! explicit interface
@@ -383,7 +367,7 @@ contains
 !       open ordinary plo output unit
 !
         write ( lun2, * ) ' Writing to new plotgrid file:', lname(1:len_trim(lname))
-        call openfl ( lun1, lname, ftype(2), 1 )
+        call openfl ( lun1, lname, 1 )
         write(lun1) title
         write(lun1) -1,nosubs+2 , nmap, mmap, nolay ,    & 
                        iyear, imonth, iofset
@@ -609,7 +593,7 @@ contains
                    call stop_exit(1)
                 endif
 !
-                if (modtyp==2) then
+                if (modtyp == model_two_layer_temp) then
                    depthl = volume(i2) / area(i2)
                    fvolum = surf * thickn(ilay) * depthl
                 elseif(lsettl.and.ilay==nolay) then
@@ -643,7 +627,7 @@ contains
 !.. then an extra layer is created hereto..
 !.. also for sticking materials (mstick(isub) > 0)
 !
-                    if(modtyp==4.and.isub <(3*nfract)) then
+                    if(modtyp == model_oil .and. isub <(3*nfract)) then
 !.. oil module
                        jsub = mod(isub,3)
                        if(jsub==0) jsub = 3
@@ -697,7 +681,7 @@ contains
                        nbin  (ilay, iy, ix) + 1
                     endif
                     if (amap(isub, ilay, iy, ix)  >  apeak(isub,ilay)) then
-                       if(modtyp /= 3.or.isub /= iredtq) then
+                       if(modtyp /= model_red_tide .or. isub /= iredtq) then
                           if(isub /= ntrack.or.isub /= itrack) then
                              apeak(isub,ilay)  = amap(isub, ilay, iy, ix)
                              adepth(isub,ilay) = depthl

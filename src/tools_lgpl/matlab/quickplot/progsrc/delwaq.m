@@ -65,7 +65,7 @@ function [Out1,Out2]=delwaq(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -643,6 +643,15 @@ S.Y(isnan(S.X))=NaN;
 %
 S.DimOrder = 'as in file';
 S=lgaflip(S);
+%
+% Try loading the bed level file ...
+%
+dpsfil = [S.FileBase 'dps'];
+try
+    dps = waqfil('open',dpsfil);
+    S.DPS = dps.Srf;
+end
+%
 S.Check='OK';
 
 

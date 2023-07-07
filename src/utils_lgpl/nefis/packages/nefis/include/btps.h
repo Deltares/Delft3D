@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,7 @@
 #elif defined GNU_PC
   typedef          long long  BInt8    ;     /* long           :  8 bytes */
   typedef unsigned long long  BUInt8   ;     /* long           :  8 bytes */
-#elif defined HAVE_CONFIG_H
+#elif defined (linux)
   typedef          long long  BInt8    ;     /* long           :  8 bytes */
   typedef unsigned long long  BUInt8   ;     /* long           :  8 bytes */
 #elif defined USE_SUN

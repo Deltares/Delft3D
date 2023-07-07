@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -127,7 +127,10 @@
 !         block interpolation : stick to the old record
 
       result = 0.0
-      result(ipnt(:)) = array1(:)
+      !result(ipnt(:)) = array1(:) -- this caused a stack overflow ...
+      do i = 1,size(ipnt)
+          result(ipnt(i)) = array1(i)
+      enddo
       goto 100
 
 !         normal rewind.

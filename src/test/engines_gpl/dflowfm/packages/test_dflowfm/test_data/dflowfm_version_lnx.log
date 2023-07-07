@@ -1,0 +1,12 @@
+Deltares, D-Flow FM Version
+Compiled with Intel ifort, version
+Compiled with support for:
+IntGUI   : no
+OpenGL   : no
+OpenMP   : no
+MPI      : yes
+PETSc    : yes
+METIS    : yes
+PROJ     : yes
+Shapelib : yes
+GDAL     : yes

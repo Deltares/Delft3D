@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -59,8 +59,12 @@
 !                           LUN( 4) = unit intermediate file (pointers)
 !                           LUN(14) = unit intermediate file (boundaries)
 
+      use m_zoek
+      use m_srstop
+      use m_getcom
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
+      use m_cnvtim
 
 !     kind           function         name                Descriptipon
 
@@ -268,12 +272,28 @@
       ENDIF
 !
 !        Read time lags
+!        Note:
+!        We may encounter strings instead, in that case skip
+!        until we find an integer
 !
       ITYPE = 2
       CALL RDTOK1 ( LUNUT , ILUN  , LCH   , LSTACK, CCHAR ,
      *              IPOSR , NPOS  , CDUMMY, IAROPT, RHULP ,
      *              ITYPE , IERR2 )
-      IF ( IERR2 .GT. 0 ) GOTO 170
+      IF ( IERR2 .GT. 0 ) THEN
+         WRITE ( LUNUT , 2101 )
+         ITYPE = 1
+         DO
+            CALL RDTOK1 ( LUNUT , ILUN  , LCH   , LSTACK, CCHAR ,
+     *                    IPOSR , NPOS  , CDUMMY, IAROPT, RHULP ,
+     *                    ITYPE , IERR2 )
+            READ( CDUMMY, *, IOSTAT = IERR2 ) IAROPT
+            IF ( IERR2 == 0 ) THEN
+               EXIT
+            ENDIF
+         ENDDO
+      ENDIF
+
       WRITE ( LUNUT , 2100 ) IAROPT
       GOTO ( 60 , 70 , 110 ) IAROPT+1
       WRITE ( LUNUT , 2110 )
@@ -454,7 +474,7 @@
      &              nosubs , nosubs , nrftot(8), nrharm(8), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
      &              filtype, dtflg3 , vrsion   , ioutpt   , ierrh  ,
-     &              iwar   )
+     &              iwar   , .false.)
       IERR = IERR + IERRH
 !
       IERR2 = 0
@@ -492,6 +512,7 @@
      *           ' of additional storage.' )
  2090 FORMAT ( //,' No active systems; no boundary conditions' )
  2100 FORMAT (  /,' Time lag option:',I3 )
+ 2101 FORMAT (  /,' Note: Skipping superfluous boundary names' )
  2110 FORMAT (    ' ERROR: Option not implemented')
  2120 FORMAT (    ' No time lags' )
  2130 FORMAT (    ' Constant time lags without defaults' )

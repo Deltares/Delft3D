@@ -48,15 +48,17 @@ TInt4 main( int argc, char *argv[] ) {
 
     lang   = 1;
 
-#if 0
+#if 1
     itype  = ODS_TRISULA_HIS_NEFIS;
     pardep = 0;
     timdep = 0;
     locdep = 0;
     strcpy( dim, "PAR" );
 
-    strcpy( filename[0], "trih-scs.dat" );
-    strcpy( filename[1], "trih-scs.def" );
+//  strcpy( filename[0], "trih-scs.dat" );
+//  strcpy( filename[1], "trih-scs.def" );
+    strcpy( filename[0], "trih-wheeler.dat" );
+    strcpy( filename[1], "trih-wheeler.def" );
     getdim( &filename[0][0], &itype, dim, &pardep, &timdep, &locdep, ndim,
         &error, option );
 
@@ -162,6 +164,7 @@ TInt4 main( int argc, char *argv[] ) {
     }
 
     for ( i = 0; i < maxtimes; i ++ ) {
+        printf( "Time: %lf\n", times[i] );
         for ( j = 0; j < 10; j ++ ) {
             printf( "%12.4e\n", value[maxtimes*j+i]);
         }

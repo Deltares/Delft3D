@@ -1,0 +1,56 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_htur2d
+!
+       real(fp) :: alpha     !  Description and declaration in esm_alloc_real.f90
+       real(fp) :: sigmat    !  Global data
+                             !  HLES parameter; Turbulence
+                             !  Prandtl/Schmidt number
+       real(fp) :: flp       !  Global data
+                             !  HLES parameter; low-pass filter
+                             !  coefficient
+       real(fp) :: reltim    !  Global data
+                             !  HLES parameter; relaxation time
+       real(fp) :: gamma     !  Global data
+                             !  HLES parameter
+                             !  (function of IINF, ALPHA and ND)
+       real(fp) :: iinf      !  Global data
+                             !  HLES constant
+       real(fp) :: dicmol    !  Global data
+                             !  HLES parameter; molecular diffusivity
+                             !  of water
+       integer :: nd         !  Global data
+                             !  HLES parameter; 2D or 3D turbulence
+       logical :: elder      !  Global data
+                             !  HLES parameter; switch to enable
+                             !  addition of Elder term to subgrid
+                             !  viscosity in case of 2D
+!
+    end type gd_htur2d

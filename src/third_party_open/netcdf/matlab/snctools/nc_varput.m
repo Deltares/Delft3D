@@ -18,6 +18,9 @@ function nc_varput(ncfile,varname,data,varargin)
 %   display the dimensions in the opposite order from what the C utility 
 %   ncdump displays.  Writing large data becomes much more efficient in
 %   this case.
+%
+%   The '_FillValue', 'missing_value', 'scale_factor', and 'add_offset'
+%   attributes of VARNAME will be honored.
 % 
 %   Example:
 %       nc_create_empty('myfile.nc');
@@ -38,9 +41,6 @@ function nc_varput(ncfile,varname,data,varargin)
 %   See also nc_varget, nc_create_empty, nc_adddim, nc_addvar.
 
 
-
-[start, count, stride] = parse_and_validate_args(ncfile,varname,varargin{:});
-
 %% for vectors make row/columnwise irrelevent
 if isvector(data)
     vinfo = nc_getvarinfo(ncfile,varname);
@@ -53,69 +53,13 @@ end
 backend = snc_write_backend(ncfile);
 switch(backend)
 	case 'tmw'
-		nc_varput_tmw(ncfile,varname,data,start,count,stride);
+		nc_varput_tmw(ncfile,varname,data,varargin{:});
 	case 'tmw_hdf4'
-		nc_varput_hdf4(ncfile,varname,data,start,count,stride);
+		nc_varput_hdf4(ncfile,varname,data,varargin{:});
+	case 'tmw_hdf4_2011b'
+		nc_varput_hdf4_2011b(ncfile,varname,data,varargin{:});
 	case 'mexnc'
-		nc_varput_mexnc(ncfile,varname,data,start,count,stride);
+		nc_varput_mexnc(ncfile,varname,data,varargin{:});
 end
 
 return
-
-
-
-
-
-%-------------------------------------------------------------------------
-function [start,count,stride] = parse_and_validate_args(ncfile,varname,varargin)
-
-% Set up default outputs.
-start = [];
-count = [];
-stride = [];
-
-switch length(varargin)
-case 2
-    start = varargin{1};
-    count = varargin{2};
-
-case 3
-    start = varargin{1};
-    count = varargin{2};
-    stride = varargin{3};
-end
-
-
-% Error checking on the inputs.
-if ~ischar(ncfile)
-    error('SNCTOOLS:NC_VARPUT:badInput','The filename must be character.');
-end
-if ~ischar(varname)
-    error('SNCTOOLS:NC_VARPUT:badInput', ...
-        'The variable name must be character.');
-end
-
-if ~isnumeric ( start )
-    error ('SNCTOOLS:NC_VARPUT:badInput', ...
-        'The ''start'' argument must be numeric.');
-end
-if ~isnumeric ( count )
-    error('SNCTOOLS:NC_VARPUT:badInput', ...
-        'The ''count'' argument must be numeric.' );
-end
-if ~isnumeric ( stride )
-    error('SNCTOOLS:NC_VARPUT:badInput', ...
-        'The ''stride'' argument must be numeric.' );
-end
-
-
-return
-
-
-
-
-
-
-
-
-

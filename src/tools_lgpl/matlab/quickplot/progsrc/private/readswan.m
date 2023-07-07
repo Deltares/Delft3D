@@ -3,7 +3,7 @@ function S=readswan(FileName)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -34,7 +34,7 @@ function S=readswan(FileName)
 S.FileName=FileName;
 S.FileType='SWAN spectral';
 S.Check='NotOK';
-fid = fopen(FileName,'r');
+fid = fopen(FileName,'r','n','US-ASCII');
 if fid<0
     error('Cannot open %s',FileName)
 end

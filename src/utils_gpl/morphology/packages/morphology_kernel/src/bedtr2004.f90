@@ -1,5 +1,5 @@
 subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
-                   & tp        ,teta      ,uon       ,uoff      ,ubw       , &
+                   & tp        ,teta      ,uon       ,uoff      ,uwb       , &
                    & taucr     ,delm      ,ra        ,z0cur     ,fc1       , &
                    & fw1       ,dstar     ,drho      ,phicur    ,qbcu      , &
                    & qbcv      ,qbwu      ,qbwv      ,qswu      ,qswv      , &
@@ -7,10 +7,11 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & concin    ,kmax      ,deltas    ,ws        ,rksrs     , &
                    & dzduu     ,dzdvv     ,rhowat    ,ag        ,bedw      , &
                    & pangle    ,fpco      ,susw      ,wave      ,eps       , &
-                   & subiw     ,error     ,message   )
+                   & subiw     ,vcr       ,error     ,message   ,wform     , &
+                   & r         ,phi_phase ,uwbih     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,8 +35,8 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute bed load transport according to Van Rijn
@@ -43,7 +44,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
 ! simulation.
 ! If no waves then use traditional Van Rijn formulation
 ! If waves then use new parameterization which
-! includes wave asymetry
+! includes wave asymmetry
 ! Note: The two methods are known to give different results
 ! (order factor 2) for situations without waves
 ! Van Rijn (1993,2000)
@@ -57,17 +58,17 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
-    integer                  , intent(in)  :: kmax     !  Description and declaration in inout.igs
+    integer                  , intent(in)  :: kmax     !< number of layers (counted top to bottom)
     real(fp)                 , intent(in)  :: aks
     real(fp)                 , intent(in)  :: d50
     real(fp)                 , intent(in)  :: d90
     real(fp)                 , intent(in)  :: delm
     real(fp)                 , intent(in)  :: drho
     real(fp)                 , intent(in)  :: dstar
-    real(fp)                 , intent(in)  :: dzduu    !  Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)  :: dzdvv    !  Description and declaration in esm_alloc_real.f90
+    real(fp)                 , intent(in)  :: dzduu    !< bed slope in U-direction
+    real(fp)                 , intent(in)  :: dzdvv    !< bed slope in V-direction
     real(fp)                 , intent(in)  :: fc1
     real(fp)                 , intent(in)  :: fsilt
     real(fp)                 , intent(in)  :: fw1
@@ -80,21 +81,21 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     real(fp)                 , intent(out) :: qswu
     real(fp)                 , intent(out) :: qswv
     real(fp)                 , intent(in)  :: ra
-    real(fp)                 , intent(in)  :: rhosol   !  Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)  :: teta     !  Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)  :: tetacr   !  Description and declaration in esm_alloc_real.f90
+    real(fp)                 , intent(in)  :: rhosol   !< specific density of sediment
+    real(fp)                 , intent(in)  :: teta     !< wave direction in degrees
+    real(fp)                 , intent(in)  :: tetacr   !< critical Shields parameter
     real(fp)                 , intent(in)  :: taucr
-    real(fp)                 , intent(in)  :: tp       !  Description and declaration in esm_alloc_real.f90
+    real(fp)                 , intent(in)  :: tp       !< peak wave period
     real(fp)                 , intent(in)  :: u2dh
-    real(fp)                 , intent(in)  :: ubw
-    real(fp)                 , intent(in)  :: uon  
-    real(fp)                 , intent(in)  :: uoff 
+    real(fp)                 , intent(in)  :: uwb
+    real(fp)                 , intent(inout)  :: uon  
+    real(fp)                 , intent(inout)  :: uoff 
     real(fp)                 , intent(in)  :: z0cur
     real(fp)                 , intent(in)  :: rksrs
     real(fp)                 , intent(in)  :: ws
     real(fp)                 , intent(in)  :: deltas
-    real(fp), dimension(kmax), intent(in)  :: sig      !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(kmax), intent(in)  :: thick    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(kmax), intent(in)  :: sig      !< sigma coordinate of the centre of each layer
+    real(fp), dimension(kmax), intent(in)  :: thick    !< thickness of each layer
     real(fp), dimension(kmax), intent(in)  :: concin
     real(fp)                 , intent(in)  :: rhowat
     real(fp)                 , intent(in)  :: ag
@@ -105,8 +106,13 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     logical                  , intent(in)  :: wave
     real(fp)                 , intent(in)  :: eps
     integer                  , intent(in)  :: subiw
+    real(fp)                 , intent(out) :: vcr
     logical                  , intent(out) :: error
-    character(*)             , intent(out) :: message  !  Contains error message
+    character(*)             , intent(out) :: message  !< error message in case of error
+    integer                  , intent(in)  :: wform
+    real(fp)                 , intent(in)  :: r
+    real(fp)                 , intent(in)  :: phi_phase
+    real(fp)                 , intent(in)  :: uwbih
 !
 ! Local variables
 !
@@ -159,11 +165,14 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     real(fp)      :: utvec
     real(fp)      :: uut
     real(fp)      :: uvt
-    real(fp)      :: vcr
     real(fp)      :: veff
     real(fp)      :: rpower
     real(fp)      :: z
     real(fp)      :: ceavgtmp
+    real(fp)      :: omega
+    real(fp)      :: deltat
+    real(fp)      :: f
+    real(fp)      :: tc	
 !
 !! executable statements -------------------------------------------------------
 !
@@ -207,7 +216,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     !
     ! coefficient related to relative strength of wave and current motion: uc/(uc+Uw)
     !
-    acw      = abs(u2dh) / max(1.0e-6_fp , (abs(ubw)+abs(u2dh)))
+    acw      = u2dh / max(1.0e-6_fp , uwb + u2dh)
     !
     ! grain friction coefficient due to currents and waves
     !
@@ -227,49 +236,94 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
        plead2 = sin(pangle*degrad)
     endif
     !
-    ! Split peak period Tp in an onshore and offshore period
-    !
-    tfor = 0.0_fp
-    if (ubw > 0.0_fp) then
-        tfor = uoff / (uon+uoff) * tp
-        tback    = tp - tfor
-        pi_tfor  = pi / tfor
-        pi_tback = pi / tback
-    endif
-    !
-    ! wave period subdivision
-    !
     if (wave .and. tp>1.0_fp .and. bedw>0.0_fp) then
        ntime = subiw
     else
        ntime = 1
     endif
-    dtt    = tp / real(ntime,fp)
+    dtt      = tp / real(ntime,fp)
+    !
+    if (wform == 1) then
+       !
+       ! WAVE VELOCITY ASYMMETRY ACCORDING TO ISOBE-HORIKAWA
+       !
+       ! Split peak period Tp in an onshore and offshore period
+       !
+       if (uwb > 0.0_fp) then
+           tfor = uoff / (uon+uoff) * tp
+           tback    = tp - tfor
+           pi_tfor  = pi / tfor
+           pi_tback = pi / tback
+       endif
+    elseif (wform == 2) then
+       !
+       ! WAVE VELOCITY SKEWNESS & ASYMMETRY ACCORDING TO RUESSINK et al 2012 CE 
+       ! Adition made by Marcio Boechat Albernaz
+       !
+       ! Makes u(0)=0 from ABREU et al 2010 CE (Part 1)
+       omega  = 2.0_fp*pi/tp
+       f      = sqrt(1.0_fp-r**2.0_fp)                            ! this ensures that (umax-umin)/2 equals Uw
+       deltat = (1.0_fp/omega)*asin(r*sin(phi_phase)/(1.0_fp+f))
+       !
+       ! substitute the algebraic solution computed @bedbc2004]
+       uon    = 0.0_fp
+       uoff   = 0.0_fp
+    endif
+    !
+    ! wave period subdivision
+    !
     do ii = 1,ntime
        !
        ! Construct instantaneous wave velocity
        !
-       if (ubw>0.0_fp .and. tp>1.0_fp) then
-          time = real(ii-1,fp) * dtt
-          if (time < tfor) then
-             udt = uon * sin(pi*time/tfor)
+       if (wform == 1) then
+          !
+          ! WAVE VELOCITY ASYMMETRY ACCORDING TO ISOBE-HORIKAWA
+          !
+          if (uwb>0.0_fp .and. tp>1.0_fp) then
+             time = real(ii-1,fp) * dtt
+             if (time < tfor) then
+                udt = uon * sin(pi_tfor*time)
+                if (pangle > 0.0_fp) then
+                  udt2 = uon * sin(pi_tfor*(time+dtt))
+                  udt1 = uon * sin(pi_tfor*(time-dtt))
+                endif
+             else
+                udt = -uoff * sin(pi_tback*(time-tfor))
+                if (pangle > 0.0_fp) then
+                  udt2 = -uoff * sin(pi_tback*(time+dtt-tfor))
+                  udt1 = -uoff * sin(pi_tback*(time-dtt-tfor))
+                endif
+             endif
              if (pangle > 0.0_fp) then
-               udt2 = uon * sin(pi_tfor*(time+dtt))
-               udt1 = uon * sin(pi_tfor*(time-dtt))
+                udt = plead1*udt + plead2*tp*(udt2-udt1)/(4.0_fp*pi*dtt)
              endif
           else
-             udt = -uoff * sin(pi_tback*(time-tfor))
-             if (pangle > 0.0_fp) then
-               udt2 = -uoff * sin(pi_tback*(time+dtt-tfor))
-               udt1 = -uoff * sin(pi_tback*(time-dtt-tfor))
+             udt  = 0.0_fp
+             dudt = 0.0_fp
+          endif
+       elseif (wform == 2) then
+          !
+          ! WAVE VELOCITY SKEWNESS & ASYMMETRY ACCORDING TO RUESSINK et al 2012 CE 
+          !
+          if (uwb>0.0_fp .and. tp>1.0_fp) then
+             time = real(ii-1,fp) * dtt
+             ! Makes u(0)=0 from ABREU et al 2010 CE (Part 2)
+             tc     = time-deltat
+             !
+             udt = uwbih*f*(sin(omega*tc)+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*tc+phi_phase))   ! Velocity u(t) from Eq. (4)
+             if (pangle > 0.0_fp) then !pangle is phase lead defined in .tra file
+                udt2 = uwbih*f*(sin(omega*(tc+dtt))+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*(tc+dtt)+phi_phase))   ! Velocity u(t) from Eq. (4) with phase lead to t+dtt
+                udt1 = uwbih*f*(sin(omega*(tc-dtt))+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*(tc-dtt)+phi_phase))   ! Velocity u(t) from Eq. (4) with phase lead to t-dtt
+                udt  = plead1*udt + plead2*tp*(udt2-udt1)/(4.0_fp*pi*dtt)                                                     ! Velocity u(t) with phase lead
              endif
+             ! update uon and uoff values
+             uon  = max(udt,uon )
+             uoff = min(udt,uoff)
+          else
+             udt  = 0.0_fp
+             dudt = 0.0_fp
           endif
-          if (pangle > 0.0_fp) then
-             udt = plead1*udt + plead2*tp*(udt2-udt1)/(4.0_fp*pi*dtt)
-          endif
-       else
-          udt  = 0.0_fp
-          dudt = 0.0_fp
        endif
        !
        ! Total instantaneous velocity
@@ -307,7 +361,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
        !
        qbcu    = qbcu + ubtotu/utvec*sbt
        qbcv    = qbcv + ubtotv/utvec*sbt
-    enddo
+    enddo 
     !
     qbcu = qbcu/real(ntime,fp)
     qbcv = qbcv/real(ntime,fp)
@@ -380,7 +434,11 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
           !
           ! Gamma has been reduced from 0.2 in TR2000 to 0.1 in TR2004
           !
-          ua    = 0.1_fp * p2 * (uon**4-uoff**4) / (uon**3+uoff**3)
+          if (abs(uon+uoff) < 1e-6_fp) then
+             ua = 0.0_fp
+          else
+             ua = 0.1_fp * p2 * (uon**4-uoff**4) / (uon**3+uoff**3)
+          endif
           uau   = ua * cosphiwav
           uav   = ua * sinphiwav
           !

@@ -1,8 +1,8 @@
       subroutine detang (x     , y     , angle , m     , n     ,
-     *                   icom  , mmax  , nmax  , maxbnd, nobnd )
+     *                   mmax  , nmax  , maxbnd, nobnd         )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !***********************************************************************
 ! Deltares                         marine and coastal management
 !
@@ -40,9 +40,8 @@
 ! notes              :
 !***********************************************************************
 
-      integer m     ( nobnd ,   2   ), n     ( nobnd ,   2   ),
-     *        icom  ( mmax  ,  *  )
-
+      integer m     ( nobnd ,   2   ), n     ( nobnd ,   2   )
+    
       real    pi
 
       real    angle ( maxbnd)
@@ -74,13 +73,8 @@
 !
 ! -------add 180 degr. for upper or lower boundary (n direction)
 !
-         if (n(ibnd,1) .eq. 1) then
-            angle (ibnd) = angle (ibnd) + 180
-            goto 10
-         endif
 
-         if ((icom (m(ibnd,1),n(ibnd,1) + 1) .eq. 1) .or.
-     *       (icom (m(ibnd,1),n(ibnd,1) - 1) .eq. 1) ) then
+         if (n(ibnd,1) .eq. n(ibnd,2)) then
             angle (ibnd) = angle (ibnd) + 180
          endif
 

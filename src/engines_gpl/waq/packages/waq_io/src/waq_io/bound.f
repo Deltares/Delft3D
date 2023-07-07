@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -66,6 +66,7 @@
       integer, allocatable :: ibnd(:,:)     !  boundary pointer structure
       integer     ierr2     ! local error count
       integer     iwar2     ! local warning count
+      integer     iwar2_old ! local warning count help variable
       integer     iq        ! loop counter exchanges
       integer     ip1, ip2  ! from and to pointers
       integer     i         ! loop counter
@@ -145,7 +146,9 @@
 
 !     Check if boundary is active
 
+      iwar2_old = 0
       do iq = 1, nobnd
+         iwar2_old = iwar2
          if ( ibnd( iq, 1 ) .eq. 0 ) then
             write ( lunut, 2070 ) iq
             iwar2 = iwar2 + 1
@@ -155,6 +158,10 @@
             iwar2 = iwar2 + 1
          endif
       enddo
+      if (iwar2 .gt. iwar2_old) then
+         write ( lunut, 2090 )
+         iwar2 = iwar2 + 1
+      end if
 
 !     Additional pointers and boundaries bottom grid
 
@@ -183,5 +190,7 @@
      &           ' with boundary nr:',I8)
  2080 format (   ' WARNING, there is no active segment associated',
      &           ' with boundary nr:',I8)
+ 2090 format (   ' WARNING REMARK, warnings about no flow and/or no active segment associated',/,
+     &           ' are normally expected in models with z-layer hydrodynamics')
 
       end

@@ -29,15 +29,15 @@ namespace General.tests
 
         public static string TestFilesDirectoryPath()
         {
-            FileInfo fileInfo = new FileInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string path = fileInfo.Directory.Parent.Parent.Parent.Parent.FullName + @"\test_data";
+            DirectoryInfo dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string path = dirInfo.Parent.Parent.Parent.Parent.Parent.FullName + @"\test_data";
             return path;
         }
 
         public static string GetLibraryPath(string libName)
         {
-            FileInfo fileInfo = new FileInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string path = fileInfo.Directory.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
+            DirectoryInfo dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string path = dirInfo.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
             bool is64bit = Environment.Is64BitProcess;
             string prefix = @"\";
             // If 64-bit process, load 64-bit DLL otherwise load the 32 bit dll 
@@ -59,20 +59,23 @@ namespace General.tests
         //this function sets the path in case the dll depends on other dlls. It is costumized for io_netcdf (e.g. @"\ifort12")
         public static void SetSharedPath(string libName)
         {
-            FileInfo fileInfo = new FileInfo(AppDomain.CurrentDomain.BaseDirectory);
-            string path = fileInfo.Directory.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
+            DirectoryInfo dirInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            string path = dirInfo.Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
+
             bool is64bit = Environment.Is64BitProcess;
-            string prefix = @"\win32";
             // If 64-bit process, load 64-bit DLL otherwise load the 32 bit dll 
             if (is64bit)
             {
-                prefix = @"\x64";
+                path = path + @"\third_party_open\" + libName + @"\netCDF 4.6.1\bin";
             }
-            path = path + @"\third_party_open\" + libName + @"\lib" + prefix + @"\" + NativeLibrary.mode + @"\ifort12";
+            else
+            {
+                path = path + @"\third_party_open\" + libName + @"\netCDF 4.6.1-32\bin";
+            }
             var envpath = Environment.GetEnvironmentVariable("PATH");
             if (envpath != null && envpath.Contains(path)) return;
 
-            envpath = envpath + ";" + path;
+            envpath = path + ";" + envpath;
             Environment.SetEnvironmentVariable("PATH", envpath, EnvironmentVariableTarget.Process);
         }
     }

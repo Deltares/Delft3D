@@ -5,7 +5,7 @@ is_var = true;
 
 sd_id = hdfsd('start',hfile,'read');
 if sd_id < 0
-    error('SNCTOOLS:attget:hdf4:start', 'START failed on %s.', hfile);
+    error('snctools:attget:hdf4:start', 'START failed on %s.', hfile);
 end
 
 if isnumeric(varname)
@@ -27,14 +27,14 @@ else
     idx = hdfsd('nametoindex',sd_id,varname);
     if idx < 0
         hdfsd('end',sd_id);
-        error('SNCTOOLS:attget:hdf4:nametoindex', ...
+        error('snctools:attget:hdf4:nametoindex', ...
             'NAMETOINDEX failed on %s, %s.', varname, hfile);
     end
     
     sds_id = hdfsd('select',sd_id,idx);
     if sds_id < 0
         hdfsd('end',sd_id);
-        error('SNCTOOLS:attget:hdf4:select', ...
+        error('snctools:attget:hdf4:select', ...
             'SELECT failed on %s, %s.', varname, hfile);
     end
     
@@ -47,7 +47,7 @@ if attr_idx < 0
         hdfsd('endaccess',obj_id);
     end
     hdfsd('end',sd_id);
-    error('SNCTOOLS:attget:hdf4:findattr', ...
+    error('snctools:attget:hdf4:findattr', ...
         'Attribute "%s" does not exist.', attname);
 end
 
@@ -57,7 +57,7 @@ if status < 0
         hdfsd('endaccess',obj_id);
     end
     hdfsd('end',sd_id);
-    error('SNCTOOLS:attget:hdf4:readattr', ...
+    error('snctools:attget:hdf4:readattr', ...
         'READATTR failed on %s, %s, %s.', hfile, varname, attname);
 end
 
@@ -65,14 +65,14 @@ end
 if is_var
     status = hdfsd('endaccess',obj_id);
     if status < 0
-        error('SNCTOOLS:attput:hdf4:endaccess', ...
+        error('snctools:attput:hdf4:endaccess', ...
             'ENDACCESS failed on %s.', varname);
     end
 end
 
 status = hdfsd('end', sd_id);
 if status < 0
-    error('SNCTOOLS:attget:hdf4:end', 'END failed on %s.', hfile);
+    error('snctools:attget:hdf4:end', 'END failed on %s.', hfile);
 end
 
 

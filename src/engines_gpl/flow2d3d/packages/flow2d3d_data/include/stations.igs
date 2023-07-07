@@ -1,0 +1,66 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_stations
+    !
+    type (handletype)                           :: moving_stat_file
+    !
+    ! doubles
+    !
+    ! reals
+    !
+    ! integers
+    !
+    !
+    ! pointers
+    !
+    integer       , dimension(:)    , pointer   :: sta_orgline ! number of station in input file 
+    integer       , dimension(:)    , pointer   :: tra_orgline ! number of transect in input file 
+    integer       , dimension(:, :) , pointer   :: mnit        ! mn indicates of transect 
+    integer       , dimension(:, :) , pointer   :: mnstat      ! mn indices of station
+    integer       , dimension(:)    , pointer   :: stat_type   ! station type
+                                                               ! 0 = fixed position
+                                                               ! 1 = moving xy path from TXY
+                                                               ! 2 = moving with drogue
+    integer       , dimension(:)    , pointer   :: stat_drogue ! matching drogue number
+    integer       , dimension(:)    , pointer   :: stat_table  ! matching table number
+    integer       , dimension(:)    , pointer   :: stat_par    ! matching parameter number
+    integer       , dimension(:)    , pointer   :: stat_tabidx ! time index in table
+    character(20) , dimension(:)    , pointer   :: namst       ! station name
+    character(20) , dimension(:)    , pointer   :: namtra      ! transect name
+    real(fp)      , dimension(:, :) , pointer   :: xystat      ! xy coordinates of station
+    ! 
+    ! logicals
+    !
+    !
+    ! characters
+    !
+    character(256)                              :: filmst      ! name of moving station file
+    !    
+end type gd_stations

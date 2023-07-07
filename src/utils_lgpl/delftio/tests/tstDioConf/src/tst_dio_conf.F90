@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,16 +24,16 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 program test_dio_conf
 
     use Dio_Plt_Rw
 
-    integer :: resLun  = 11
+    integer :: resLun
 
-    open(resLun,file='TESTDioConf-res.txt')
+    open(newunit=resLun,file='TESTDioConf-res.txt')
 
 #if (defined(WIN32))
     call DioInit('..\tstDioConf.ini')

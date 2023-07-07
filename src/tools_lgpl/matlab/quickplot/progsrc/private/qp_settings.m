@@ -15,7 +15,7 @@ function valo=qp_settings(param,val)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -57,16 +57,19 @@ end
 if nargout==1
     % retrieve value
     if length(param)>6 && strcmpi(param(end-5:end),'string')
-        cmd='getstring';
+        cmd='cgetstring';
     else
-        cmd='get';
+        cmd='cget';
     end
-    valo=inifile(cmd,Settings,grp,param,{});
-    if iscell(valo) && (nargin==1 || ~iscell(val))
-        if nargin==1
-            val={};
-        end
-        valo=qp_settings_default(param,val);
+    if nargin>1
+        dval = val;
+    else
+        dval = {};
+    end
+    dval = qp_settings_default(param, dval);
+    valo = inifile(cmd, Settings, grp, param, dval);
+    if length(valo)==1
+        valo = valo{1};
     end
 elseif isequal(param,'<SAVE>')
     Settings=qp_write_settings(Settings,qppref);
@@ -96,6 +99,7 @@ Set.UIFontUnits        = get(0,'DefaultUicontrolFontUnits');
 Set.UIFontSize         = get(0,'DefaultUicontrolFontSize');
 Set.UIFontWeight       = get(0,'DefaultUicontrolFontWeight');
 Set.figuredir          = '';
+Set.graphicssmoothing  = 0;
 Set.gridviewbackgroundcolor   = [230 230 230];
 Set.gridviewgridcolor         = [0 153 153];
 Set.gridviewselectioncolor    = [255 0 0];
@@ -118,12 +122,14 @@ Set.organizationname          = 'Deltares';
 Set.filefilterselection       = '"ARC/INFO Ascii Grid Files","Delft3D Grid Files","Delft3D Output Files","Delft3D-FLOW Bound. Cond. Files","Delft3D/SOBEK Meteo Files","Delwaq Binary Files","Delwaq Time Series Input Files","NetCDF Files","Sample Files","Simona SDS Files","Sobek Networks","Tekal Data Files"';
 Set.debugging                 = 0;
 Set.showinactiveopt           = 0;
+Set.showversion               = 'off';
 Set.stopruniferror            = 1;
 Set.timezone                  = 'Ignored';
 Set.export_max_ntimes         = 10;
 %
 Set.netcdf_use_fillvalue      = 'valid_range';
 %
+Set.delwaq_names              = 'expanded';
 Set.delwaq_procdef            = 'auto';
 %
 Set.shipma_distance_along_desired_track = 1;

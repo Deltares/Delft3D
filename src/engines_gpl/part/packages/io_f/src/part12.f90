@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,7 +23,7 @@
 
 module part12_mod
 
-use filtyp_mod
+use m_filldm
 use openfl_mod
 
 contains
@@ -41,28 +41,6 @@ contains
 
 !     CREATING MAP FILE FOR CURVILINEAR GRID
 !          (Nefis and binary files / per time step)
-!
-!     system administration : r.j. vos
-
-!     created               : february 1990, by l. postma
-
-!     modified              : cleared may 1996
-!                             july 1996: isfile = 1: conc. not updated
-!                             july 1996: vs 3.12, writes mapfile like delwaq
-!                                                 thus layers are not substances
-!                                                 also for the 2 layer model !!!
-!                             okt  1996: vs 3.21: error with -999 for modtyp=2 solved
-!                             nov  1996: vs 3.22: error with init. loop 175
-!                                                 (correct in 2.30, but wrongly copied to 3-level)
-!                             nov  1997: vs 3.40: version with oil for modtyp =4
-!                             jul  1998: vs 3.43: version with extra bottom layer for lsettl=.true.
-!                             sep  1998: vs 3.50: version with sticking material (mstick(isub)>0)
-!                             mar  1990: test-vs 3.60: version with model-type = 5 also (3d temp.model)
-!                             apr  1999: vs 3.60: version for release of 1 june
-!                             jun  1999: vs 3.60: corrected version for release june
-!                                                 correction in jsub and for dispersed oil that settles
-!                             may  2000: vs 3.60: corrected for error in model type 4(oil):
-!                                                 for this model type always output needed
 
 !     function              : generates a standard delwaq - map-file,
 !                             and concentration-array for partwq
@@ -82,6 +60,7 @@ contains
 !     functions   called    : none.
 
       use precision_part          ! single and double precision
+      use m_part_modeltypes       ! part model definitions
       use timers
       use filldm_mod         ! explicit interface
       use genfil_mod         ! explicit interface
@@ -269,8 +248,8 @@ contains
 !
 !       no map-file is to be created
 !
-        if (modtyp /= 2 .and. nosta <1 .and. modtyp /= 3 .and.       &
-            modtyp /= 4 .and. modtyp /= 5                      ) then
+        if (modtyp /= model_two_layer_temp .and. nosta <1 .and. modtyp /= model_red_tide .and.       &
+            modtyp /= model_oil .and. modtyp /= model_2d3d_temp        ) then
 !
 !         no concentration is to be calculated, except for:
 !         - no. of observations points is larger zero
@@ -288,7 +267,7 @@ contains
          if ( mapfil ) then
             first = .false.
             write ( lun2, * ) ' Writing to new map file:', lname(1:len_trim(lname))
-            call openfl ( lun1, lname, ftype(2), 1 )
+            call openfl ( lun1, lname, 1 )
             write( lun1 ) (title(i),i=1,4)
             write( lun1 ) nosubs+2, noseg
             write( lun1 ) (subst(i), i = 1, nosubs+2)
@@ -440,7 +419,7 @@ contains
             endif
             do isub = 1, nosubs
                if ( isfile(isub) .ne. 1 ) then
-                  if ( modtyp .ne. 2 ) then
+                  if ( modtyp .ne. model_two_layer_temp ) then
                      iseg            = (ilay-1)*nosegl + ic
                      conc(isub,iseg) = conc(isub,iseg) + wpart(isub,i)
                   else
@@ -463,7 +442,7 @@ contains
                ic = lgrid3(n,m)                        ! deeper in this set of loops !!
                if ( ic .gt. 0 ) then
                   do ilay = 1, layt
-                     if ( modtyp .ne. 2 ) then
+                     if ( modtyp .ne. model_two_layer_temp ) then
                         iseg                = (ilay-1)*nosegl + ic
                         conc(nosubs+1,iseg) = locdep(lgrid2(n,m),ilay)
                      else
@@ -485,7 +464,7 @@ contains
          do 350 isub = 1, nosubs
             do 360  i1 = 1, nolay
                pxlay = 1.0                     !  set correct relative thickness layer
-               if ( modtyp .eq. 2 ) then
+               if ( modtyp .eq. model_two_layer_temp ) then
                   if ( i1 .eq. 1 ) then        !  top layer
                      pxlay = ptlay
                   elseif ( i1 .eq. 2 ) then    !  bottom layer
@@ -499,7 +478,7 @@ contains
                         if ( i2 .le. 0 ) cycle
                         iseg  = i2 + (i1-1)*nosegl
                         ipos  = i1 + (isub-1)*nolay
-                        if ( modtyp .ne. 2 ) then
+                        if ( modtyp .ne. model_two_layer_temp ) then
                            if ( conc(isub,iseg) .gt. 0.0 ) then !  mass found, determine concentration
                               if ( isfile(isub) .ne. 1 ) then
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg)
@@ -509,11 +488,11 @@ contains
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg) *                 &
      &                                                               volume(lgrid2(n,m)+(i1-1)*mnmax2)
                               endif
-!.. in oil model (modtyp=4) some substances are floating..
+!.. in oil model (modtyp=model_oil) some substances are floating..
 !.. odd ones are floating: concentrations per m2
 !.. also for deposited substances on the bottom (extra layer)
 !.. also for sticking material
-                              if ( modtyp .eq. 4 .and. isub .lt. 3*nfract ) then       !.. oil module
+                              if ( modtyp .eq. model_oil .and. isub .lt. 3*nfract ) then       !.. oil module
                                  jsub = mod(isub,3)
                                  if ( jsub .eq. 0 ) jsub = 3                !.. jsub is 1, 2 or 3 (2 is stick)
                                  if ( jsub .eq. 2 ) then                               !.. dispersed
@@ -569,7 +548,7 @@ contains
                      iseg = (ilay-1)*nosegl + ic
                      do isub = 1, nosubs
                         if ( isfile(isub) .ne. 1 ) then
-                           if ( modtyp .ne. 2 ) then
+                           if ( modtyp .ne. model_two_layer_temp ) then
                               conc( isub, iseg) = -999.0
                            else
                               ipos = ilay + (isub-1)*nolay
@@ -583,9 +562,6 @@ contains
          enddo
       enddo
 !
-!     reinitialize sliding particle window start point if necessary
-!     (otherwise: return to calling program); this sliding pointer is
-!     set in part16
 !
       if ( npwndn .gt. 0 ) then
 !       reinitialize removed particles; this isn't needed but is't

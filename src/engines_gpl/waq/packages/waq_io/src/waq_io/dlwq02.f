@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -56,7 +56,7 @@
 !                           dlwq0t  converts an absolute time string to seconds
 !                           cnvtim  converts a 'DATE' integer to seconds
 !                           conver  converts an array of 'DATE' integers to seconds
-!                           dhopnf  opens files
+!                           open_waq_files  opens files
 !                           zoek    seaches a string in a set of strings
 !                           readmp  reads dump area's, new input style
 !                           rearaa  reads transects, new input style
@@ -69,13 +69,19 @@
 !                           LUN(4) = unit intermediate file (pointers)
 !                           LUN(5) = unit intermediate file (timesteps)
 
+      use m_zoek
+      use m_srstop
+      use m_open_waq_files
       use rd_token     !   for the reading of tokens
       use subs02
       use partmem      !   for PARTicle tracking
-      use filtyp_mod   !   for PARTicle tracking
       use fileinfo     !   a filename array in PART
       use alloc_mod
+      use dlwq0t_data
       use timers       !   performance timers
+      use m_sysi          ! Timer characteristics
+      use m_cnvtim
+
 
       implicit none
 
@@ -83,7 +89,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)        !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
@@ -113,7 +119,6 @@
       integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
       integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
 
-      include 'sysi.inc'         !    COMMON  /  SYSI  /    Timer characteristics
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ---------------------------------------------------------
 !     ITSTRT  INTEGER    1         INPUT   Simulation start time ( scu )
@@ -257,10 +262,9 @@
             lchar(45) = cdummy
             call rdfnam ( lunitp   , cdummy   , fnamep   , nfilesp  , 2       ,
      &                    1        , .false.  )
-            call filtyp()
             call report_date_time  ( lunitp(2))
-            call rdlgri ( nfilesp  , lunitp   , fnamep   , ftype    )
-            call rdccol ( nmaxp    , mmaxp    , lunitp(5), fnamep(5), ftype  ,
+            call rdlgri ( nfilesp  , lunitp   , fnamep   )
+            call rdccol ( nmaxp    , mmaxp    , lunitp(5), fnamep(5),
      &                    lgrid2   , xb       , yb       , lunitp(2))
             call part01 ( lgrid    , lgrid2   , xb       , yb       , dx      ,
      &                    dy       , area     , angle    , nmaxp    , mmaxp   )
@@ -324,6 +328,10 @@
             write ( lunut, 2440 ) itstop, itstopp
             ierr = ierr + 1
          endif
+      endif
+      if ( itstrt .lt. 0 ) then
+         write ( lunut , 2155 ) itstrt
+         ierr = ierr+1
       endif
       if ( itstrt .gt. itstop ) then
          write ( lunut , 2160 ) itstop, itstrt
@@ -420,7 +428,7 @@
                write ( lunut , 2300 ) iar(1) , itstrt
                ierr = ierr+1
             endif
-            call dhopnf  ( lun(5 ) , lchar(5 ) , 5      , 1     , ioerr )
+            call open_waq_files  ( lun(5 ) , lchar(5 ) , 5      , 1     , ioerr )
             do ibrk = 1,nobrk*2,2
                write ( lun(5) ) iar(ibrk), float (iar(ibrk+1))
                if ( iar(ibrk+1) .le. 0 ) then
@@ -438,6 +446,10 @@
             write ( lunut , 2330 )
             ierr = ierr + 1
       end select
+
+!     Copy timers data to dlwqt0_data
+      dlwq0t_itstrt = itstrt
+      dlwq0t_itstop = itstop
 
 !     Read monitoring area's
 
@@ -592,7 +604,11 @@
  2140 format ( /' ERROR: Absolute timer does not fit in timer format :',A,/
      &          ' Is your T0 setting in block #1 correct?'/,
      &          ' Allowed difference with T0 is usually ca. 68 years.' )
- 2150 format ( /' ERROR: String is not a valid absolute timer :',A)
+ 2150 format ( /' ERROR: String is not recognised as a keyword and',
+     &          ' it is not a valid absolute timer :',A)
+ 2155 format (  ' ERROR: Start time (',I10,') absolute timer is less than zero',
+     &          ' or auxiliary timer is set before T0.'/
+     &          '        This is not supported!' )
  2160 format (  ' ERROR, Stop time (',I10,') smaller than start time(',
      &                                I10,').' )
  2170 format ( ' Start of simulation :',I2,'Y-',I3,'D-',I2,'H-',I2,

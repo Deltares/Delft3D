@@ -1,6 +1,6 @@
 ! ---- LGPL --------------------------------------------------------------------
 !
-! Copyright (C)  Stichting Deltares, 2011-2017.
+! Copyright (C)  Stichting Deltares, 2011-2023.
 !
 ! This library is free software; you can redistribute it and/or
 ! modify it under the terms of the GNU Lesser General Public
@@ -904,8 +904,7 @@
 
 !     IF ( initlz ) THEN
 !       initlz = .FALSE.
-!       rpt = 99
-!       OPEN( rpt, FILE = 'mor_sys.rpt')
+!       OPEN( NEWUNIT = rpt, FILE = 'mor_sys.rpt')
 !     ENDIF
 !     WRITE(rpt,*) 'Enter: comdim'
 
@@ -1692,8 +1691,7 @@
 
 !     IF ( initlz ) THEN
 !       initlz = .FALSE.
-!       rpt = 99
-!       OPEN( rpt, FILE = 'mapcom.rpt')
+!       OPEN( NEWUNIT = rpt, FILE = 'mapcom.rpt')
 !     ENDIF
 !     write(rpt,*) 'Enter: mapcom'
 

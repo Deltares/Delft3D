@@ -1,0 +1,6 @@
+      subroutine DMPatchCreate(a,b,z)
+      use petscdmdef
+       integer a ! MPI_Comm
+       DM b ! DM
+       integer z
+       end subroutine

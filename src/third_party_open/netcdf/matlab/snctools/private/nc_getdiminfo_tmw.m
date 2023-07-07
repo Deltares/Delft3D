@@ -6,7 +6,7 @@ if ischar(arg1) && ischar(arg2)
 elseif isnumeric ( arg1 ) && isnumeric ( arg2 )
 	dinfo = handle_numeric_nc_getdiminfo_tmw(arg1,arg2);
 else
-	error ( 'SNCTOOLS:NC_GETDIMINFO_TMW:badInputDatatypes', ...
+	error ( 'snctools:getdiminfo:tmw:badInputDatatypes', ...
 	        'Must supply either two character or two numeric arguments.' );
 end
 
@@ -35,15 +35,27 @@ netcdf.close(ncid);
 %--------------------------------------------------------------------------
 function dinfo = handle_numeric_nc_getdiminfo_tmw ( ncid, dimid )
 
-[dud,dud,dud,unlimdim] = netcdf.inq(ncid ); %#ok<ASGLU>
 [dimname, dimlength] = netcdf.inqDim(ncid, dimid);
 dinfo.Name = dimname;
 dinfo.Length = dimlength;
 
-if dimid == unlimdim
-	dinfo.Unlimited = true;
+v = netcdf.inqLibVers();
+if v(1) == '3'
+    % there can only be one unlimited dimension in v3.
+    [dud,dud,dud,unlimdim] = netcdf.inq(ncid); %#ok<ASGLU>
+    if dimid == unlimdim
+    	dinfo.Unlimited = true;
+    else
+    	dinfo.Unlimited = false;
+    end
 else
-	dinfo.Unlimited = false;
+    % there can be many unlimited dimensions in v4.
+    unlimDimIDs = netcdf.inqUnlimDims(ncid);
+    if ismember(dimid,unlimDimIDs)
+        dinfo.Unlimited = true;
+    else
+        dinfo.Unlimited = false;
+    end
 end
 
 return

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="IONetCDFPostBuild" AfterTargets="Build">
+    <ItemGroup>
+      <_FilesToCopyIONetCDF Include="$(MSBuildThisFileDirectory)..\..\content\native\**\*"/>
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(_FilesToCopyIONetCDF)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+  </Target>
+  
+  <Target Name="IONetCDFClean" AfterTargets="Clean">
+    <ItemGroup>
+      <_OriginalFilesIONetCDF Include="$(MSBuildThisFileDirectory)..\..\content\native\**\*"/>
+      <_FilesToCleanIONetCDF Include="$(OutDir)\%(_OriginalFilesIONetCDF.RecursiveDir)%(_OriginalFilesIONetCDF.FileName)%(_OriginalFilesIONetCDF.Extension)"/>
+      
+    </ItemGroup>
+    
+    <Delete Files="@(_FilesToCleanIONetCDF)"/>    
+  </Target>
+</Project>

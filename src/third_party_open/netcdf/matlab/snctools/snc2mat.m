@@ -5,16 +5,7 @@ function snc2mat ( ncfile, matfile ) %#ok<INUSD>
 %   SNC2MAT(NCFILE,MATFILE) will save the netCDF file NCFILE to the 
 %   mat-file MATFILE.  
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% $Id$
-% $LastChangedDate$
-% $LastChangedRevision$
-% $LastChangedBy$
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-warning ( 'SNCTOOLS:snc2mat:deprecated', ...
+warning ( 'snctools:snc2mat:deprecated', ...
     'This function is deprecated and may be removed in a future version of SNCTOOLS.' );
 
 
@@ -48,7 +39,7 @@ save_command = sprintf ( 'save ( matfile, %s );', save_command );
 try
 	eval(save_command);
 catch %#ok<CTCH>
-	error ( 'SNCTOOLS:snc2mat:badCommand', ...
+	error ( 'snctools:snc2mat:badCommand', ...
         'Could not execute save command ''%s''', save_command);
 end
 

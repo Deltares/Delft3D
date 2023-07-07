@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,7 +25,7 @@
      &                    ndim2  , ndim3  , nrftot , nrharm , ifact  ,
      &                    dtflg1 , disper , volume , iwidth , lchar  ,
      &                    filtype, dtflg3 , vrsion , ioutpt , ierr   ,
-     &                    iwar   )
+     &                    iwar   , dont_read   )
 
 !       Deltares Software Centre
 
@@ -58,7 +58,7 @@
 !     Subroutines called : opt1    get & open include file
 !                          opt2    read constants ( << (include) file)
 !                          opt3    read time dep  ( << (include) file)
-!                          dhopnf  open file
+!                          open_waq_files  open file
 
 !     Functions called   : gettok  tokenized data file reading
 
@@ -70,8 +70,11 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(is) = unit intermediate file (items)
 
+      use m_open_waq_files
       use timers       !   performance timers
       use rd_token
+      use m_sysn          ! System characteristics
+
 
       implicit none
 
@@ -79,33 +82,29 @@
 
 !     kind           function         name           Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)   !< array with unit numbers
-      integer  ( 4), intent(in   ) :: is           !< entry in lun for this call
-      integer  ( 4), intent(in   ) :: noql1        !< number of exchanges 1st direction
-      integer  ( 4), intent(in   ) :: noql2        !< number of exchanges 2nd direction
-      integer  ( 4), intent(in   ) :: noql3        !< number of exchanges 3rd direction
-      integer  ( 4), intent(in   ) :: ndim2        !< number of items per block
-      integer  ( 4), intent(in   ) :: ndim3        !< number of scale factors
-      integer  ( 4), intent(inout) :: nrftot       !< number of functions
-      integer  ( 4), intent(inout) :: nrharm       !< number of harmonics
-      integer  ( 4), intent(in   ) :: ifact        !< factor between time scales
-      logical      , intent(in   ) :: dtflg1       !< 'date'-format 1st time scale
-      logical      , intent(in   ) :: disper       !< .true. then dispersion
-      integer      , intent(inout) :: volume       !< if 1 then volume ( out: 0 = computed volumes )
-      integer  ( 4), intent(in   ) :: iwidth       !< width of the output file
-      character( *), intent(inout) :: lchar  (*)   !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)   !< type of binary file
-      logical      , intent(in   ) :: dtflg3       !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion       !< version number of the input file
-      integer  ( 4), intent(in   ) :: ioutpt       !< how extensive is output ?
-      integer  ( 4), intent(inout) :: ierr         !< cumulative error count
-      integer  ( 4), intent(inout) :: iwar         !< cumulative warning count
+      integer  ( 4), intent(inout) :: lun    (*)    !< array with unit numbers
+      integer  ( 4), intent(in   ) :: is            !< entry in lun for this call
+      integer  ( 4), intent(in   ) :: noql1         !< number of exchanges 1st direction
+      integer  ( 4), intent(in   ) :: noql2         !< number of exchanges 2nd direction
+      integer  ( 4), intent(in   ) :: noql3         !< number of exchanges 3rd direction
+      integer  ( 4), intent(in   ) :: ndim2         !< number of items per block
+      integer  ( 4), intent(in   ) :: ndim3         !< number of scale factors
+      integer  ( 4), intent(inout) :: nrftot        !< number of functions
+      integer  ( 4), intent(inout) :: nrharm        !< number of harmonics
+      integer  ( 4), intent(in   ) :: ifact         !< factor between time scales
+      logical      , intent(in   ) :: dtflg1        !< 'date'-format 1st time scale
+      logical      , intent(in   ) :: disper        !< .true. then dispersion
+      integer      , intent(inout) :: volume        !< if 1 then volume ( out: 0 = computed volumes )
+      integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
+      character( *), intent(inout) :: lchar  (*)    !< array with file names of the files
+      integer  ( 4), intent(inout) :: filtype(*)    !< type of binary file
+      logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
+      real     ( 4), intent(in   ) :: vrsion        !< version number of the input file
+      integer  ( 4), intent(in   ) :: ioutpt        !< how extensive is output ?
+      integer  ( 4), intent(inout) :: ierr          !< cumulative error count
+      integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
+      logical      , intent(in)    :: dont_read     !< do not actually read tokens, if true, the information is already provided
 
-!     COMMON  /  SYSN   /   System characteristics
-!        integer    nlines       !  total number of matrix lines
-!        integer    npoins       !  total number of matrix points
-
-      include 'sysn.inc'
 
       logical        bound       !  if .true. then boundary call
       logical        waste       !  if .true. then waste call
@@ -152,27 +151,36 @@
 
 !        Read first option, write zero dispersion if OPT1=0
 
-      if ( gettoken( cdummy, iopt1, itype, ierr2 ) .gt. 0 ) goto 50
-      if ( itype .eq. 1 ) then
-         if ( volume .ne. 1 ) then
-            write ( lunut, 2070 ) cdummy
-            ierr2 = 1
-            goto 50
-         else
-            if ( cdummy .eq. 'FRAUD' ) then
-               volume = -1
-               write ( lunut, 2080 )
-               if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 50
-            else
-               write ( lunut, 2090 ) cdummy
+      if ( dont_read ) then
+         iopt1 = -2
+         if ( is == 13 ) then
+            iopt1 = 0 ! Ugly hack, all other files are time-dependent
+         endif
+      else
+         if ( gettoken( cdummy, iopt1, itype, ierr2 ) .gt. 0 ) goto 50
+         if ( itype .eq. 1 ) then
+            if ( volume .ne. 1 ) then
+               write ( lunut, 2070 ) cdummy
                ierr2 = 1
                goto 50
+            else
+               if ( cdummy .eq. 'FRAUD' ) then
+                  volume = -1
+                  write ( lunut, 2080 )
+                  if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 50
+               else
+                  write ( lunut, 2090 ) cdummy
+                  ierr2 = 1
+                  goto 50
+               endif
             endif
          endif
       endif
+
       write ( lunut , 2000 ) iopt1
       call opt1   ( iopt1   , lun     , is      , lchar   , filtype ,
-     &              dtflg1  , dtflg3  , ndtot   , ierr2   , iwar    )
+     &              dtflg1  , dtflg3  , ndtot   , ierr2   , iwar    ,
+     &              dont_read                                       )
       if ( ierr2 .gt. 0 ) goto 50
 
 !        Binary file, option = -2 (or sequence of binary files option = -4)
@@ -221,7 +229,7 @@
       select case ( iopt2 )
          case ( 1, 2 )              !   Constants with and without defaults in three directions
             allocate ( values( ndim2, max(noql1,noql2,noql3) ) )
-            call dhopnf ( lun(is) , lchar(is) , is    , 1     , ierr2 )
+            call open_waq_files ( lun(is) , lchar(is) , is    , 1     , ierr2 )
             write ( lun(is) ) idummy
             if ( noql1 .gt. 0 ) write ( lunut , 2030 )
             call opt2 ( iopt2  , values , noql1  , ndim2  , ndim3  ,

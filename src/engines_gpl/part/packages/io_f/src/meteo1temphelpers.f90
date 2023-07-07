@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,54 +25,28 @@
 !! Long term: EC-module should replace meteo1.f90 (and be free of all these cross-dependencies)
 
 
-module m_missing
+module m_missing_meteo
  implicit none
  double precision                  :: dmiss    = -999d0   !
  double precision                  :: xymis    = -999d0   !
  double precision                  :: dxymis   = -999d0
-end module m_missing
+end module m_missing_meteo
 
-
-!> Returns a new unused file pointer
-function numuni()
-implicit none
-    integer, save :: lastnum = 10
-    integer         :: numuni
-
-    logical                        :: opened
-    numuni = lastnum
-    opened = .true.
-    !                            get unit specifier
-   10 continue
-    if (opened) then
-       numuni = numuni + 1
-       inquire (unit = numuni, opened = opened)
-       goto 10
-    endif
-    !
-    if (opened) then
-       numuni = 0
-       write (*,*) 'new unit number not available'
-    endif
-    lastnum = numuni
-end function numuni
 
 !> Opens an existing file for reading.
 !!
 !! When file does not exist or is already open, program stops with
 !! an error message.
-subroutine oldfil(minp, filename)!, istat)
+subroutine oldfil(minp, filename)
 implicit none
     integer,           intent(out) :: minp     !< New file pointer to opened file.
     character(*),      intent(in)  :: filename !< Name of the file to open.
-!    integer, optional, intent(out) :: istat
 
     integer                        :: istat_
     integer                        :: i
     integer,external                        :: ifirstchar
     integer                        :: l2,l1
     integer                        :: l3
-    integer, external :: numuni
     logical                        :: jawel
     
     istat_ = 0
@@ -86,10 +60,7 @@ implicit none
     endif
     inquire (file = filename(l1:l2), exist = jawel)
     if (jawel) then
-
-       minp = numuni()
-
-       open (minp, file = filename(l1:l2))
+       open (newunit = minp, file = filename(l1:l2))
        write (*,*) 'Opened file :', filename(l1:l2)
     elseif (ifirstchar(filename)==0) then
        write (*,*) 'Filename is empty'
@@ -129,7 +100,6 @@ implicit none
     integer,external                        :: ifirstchar
     integer                        :: l2,l1
     integer                        :: l3
-    integer, external :: numuni
     character(*) RW*20
 
     istat_ = 0
@@ -142,8 +112,7 @@ implicit none
        goto 999
     endif
 
-    minp = numuni()
-    open (minp, file = filename(l1:l2), action='readwrite', IOSTAT=istat_)
+    open (newunit = minp, file = filename(l1:l2), action='readwrite', IOSTAT=istat_)
     inquire(minp, readwrite=rw)
     IF (istat_ .GT. 0 .or. trim(rw)/='YES') THEN
         write (*,*) 'File: ', filename(l1:l2), ' could not be opened for writing.'
@@ -215,26 +184,6 @@ subroutine zoekja(minp, rec, text, ja)
 end subroutine zoekja
 
 
-!> Searches for a keyword in file and returns the text value.
-!! 'key=text'
-subroutine zoekval(minp, key, val, ja)
-    implicit none
-    integer, intent(out)           :: ja    !< Whether key was found or not.
-    integer, intent(in)            :: minp  !< File pointer
-    character(*), intent(out)      :: val !< 
-    character(*), intent(in)       :: key
-
-    character(len=255) :: rec
-    integer :: l1
-
-    call zoekja(minp,rec,trim(key), ja)
-    if (ja .eq. 1) then
-        l1 = index(rec,'=') + 1
-        read(rec(l1:),*) val
-    else
-        return
-    endif
-end subroutine zoekval
 
 !> Searches for an optional keyword on current line and returns the text value.
 !! 'key=text'. Rewinds the file pointer to the original line.
@@ -248,8 +197,6 @@ subroutine zoekopt(minp, value, key, ja)
     character(len=255) :: rec
     integer :: l1
 
-    !write (msgbuf, '(a,a)') 'looking for optional keyword: ', key
-    !call msg_flush()
 
     ja = 0
 
@@ -265,7 +212,6 @@ subroutine zoekopt(minp, value, key, ja)
     endif
 
 999 continue
-    ! call mess(LEVEL_INFO, 'optional keyword', trim(key), 'NOT found.')
 end subroutine zoekopt
 
 
@@ -378,7 +324,7 @@ end subroutine ilocatestring
       !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
       !! @param[out] xcr,ycr x-coord. of intersection point.
       SUBROUTINE CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS,SL,SM,XCR,YCR,CRP)
-      use m_missing
+      use m_missing_meteo
       implicit none
       double precision :: crp
       double precision :: det
@@ -470,7 +416,7 @@ end subroutine ilocatestring
  end function getdy
 
  double precision function dbdistance(x1,y1,x2,y2)                  ! distance point 1 -> 2
- use m_missing
+ use m_missing_meteo
  implicit none
  double precision :: x1, y1, x2, y2
  ! locals
@@ -488,7 +434,7 @@ end subroutine ilocatestring
  end function dbdistance
 
       SUBROUTINE PINPOK(XL, YL, N, X, Y, INSIDE)
-      USE M_MISSING
+      USE m_missing_meteo
       implicit none
       integer :: N, INSIDE
       double precision :: X(N), Y(N), XL, YL

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 program test_get_dio_f90
 
     use Dio_Plt_Rw
@@ -46,8 +46,7 @@ program test_get_dio_f90
 
 !   Open file for storing results
 
-    resLun = 11
-    open(resLun,file='TESTHisCopy-res.txt')
+    open(newunit=resLun,file='TESTHisCopy-res.txt')
 
 !   Open data stream
 

@@ -9,21 +9,25 @@ function varargout=enclosure(cmd,varargin)
 %
 %   ENCLOSURE('write',FILENAME,MN,'waqua') writes a WAQUA enclosure file.
 %
-%   [X,Y]=ENCLOSURE('apply',MN,Xorg,Yorg) applies the enclosure, replacing
-%   grid coordinates outside the enclosure by NaN.
+%   [X,Y] = ENCLOSURE('apply',MN,Xorg,Yorg) applies the enclosure,
+%   replacing grid coordinates outside the enclosure by NaN.
 %
-%   MN=ENCLOSURE('extract',X,Y) extracts the enclosure indices from X and
+%   MASK = ENCLOSURE('inside',MN,SZ) returns an array of size SZ containing
+%   1 in the active part of the domain, and 0 outside.
+%
+%   MN = ENCLOSURE('extract',X,Y) extracts the enclosure indices from X and
 %   Y matrices containing NaN for points outside the enclosure.
 %
-%   [XC,YC]=ENCLOSURE('coordinates',MN,X,Y) obtain the X,Y coordinates from
-%   M,N enclosure indices. If the MN argument is skipped, the enclosure
-%   indices will first be determined using the extract call above.
+%   [XC,YC] = ENCLOSURE('coordinates',MN,X,Y) obtain the X,Y coordinates
+%   from M,N enclosure indices. If the MN argument is skipped, the
+%   enclosure indices will first be determined using the extract call
+%   above.
 %
 %   See also WLGRID.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -57,23 +61,39 @@ end
 
 switch lower(cmd)
     case 'read'
-        Enc=Local_encread(varargin{:});
-        varargout={Enc};
+        Enc = Local_encread(varargin{:});
+        varargout = {Enc};
     case 'extract'
-        Enc=Local_encextract(varargin{:});
-        varargout={Enc};
+        Enc = Local_encextract(varargin{:});
+        varargout = {Enc};
     case 'thindam'
-        [MNu,MNv]=Local_enc2uv(varargin{:});
-        varargout={MNu MNv};
+        [MNu,MNv] = Local_enc2uv(varargin{:});
+        varargout = {MNu MNv};
+    case 'inside'
+        MN = varargin{1};
+        sz = varargin{2} + 1;
+        Ind0 = Local_mask_WL(MN);
+        szInd0 = size(Ind0);
+        nd = ndims(szInd0);
+        %
+        idx = cell(1,nd);
+        for i = nd:-1:1
+            idx{i} = 1:min(sz(i),szInd0(i));
+        end
+        %
+        Ind = false(sz);
+        Ind(idx{:}) = Ind0(idx{:});
+        %
+        varargout = {Ind};
     case 'apply'
-        [X,Y]=Local_encapply(varargin{:});
-        varargout={X Y};
+        [X,Y] = Local_encapply(varargin{:});
+        varargout = {X Y};
     case 'coordinates'
-        XY=Local_coordinates(varargin{:});
-        if nargout==2
-            varargout={XY(:,1) XY(:,2)};
+        XY = Local_coordinates(varargin{:});
+        if nargout == 2
+            varargout = {XY(:,1) XY(:,2)};
         else
-            varargout={XY};
+            varargout = {XY};
         end
     case 'write'
         Local_encwrite(varargin{:});
@@ -82,7 +102,7 @@ switch lower(cmd)
 end
 
 
-function Enc=Local_encread(filename)
+function Enc = Local_encread(filename)
 % * ENC=ENCLOSURE('read',FileName)
 %   % Delft3D, Waqua
 % read an enclosure file
@@ -98,7 +118,7 @@ if (nargin==0) | strcmp(filename,'?')
 end
 
 % Grid enclosure file
-fid=fopen(filename);
+fid=fopen(filename,'r','n','US-ASCII');
 err=[];
 ln = 0;
 if fid>0
@@ -239,12 +259,17 @@ end
 
 function [MNu,MNv]=Local_enc2uv(MN)
 % * [MNu,MNv]=ENCLOSURE('thindam',MN)
-Ind=Local_mask_WL(MN);
-%imagesc(Ind)
-[m,n]=find(Ind(1:end-1,:)~=Ind(2:end,:));
-MNu=[m n m n];
-[m,n]=find(Ind(:,1:end-1)~=Ind(:,2:end));
-MNv=[m n m n];
+if isempty(MN)
+    MNu = zeros(0,4);
+    MNv = zeros(0,4);
+else
+    Ind=Local_mask_WL(MN);
+    %imagesc(Ind)
+    [m,n]=find(Ind(1:end-1,:)~=Ind(2:end,:));
+    MNu=[m n m n];
+    [m,n]=find(Ind(:,1:end-1)~=Ind(:,2:end));
+    MNv=[m n m n];
+end
 
 
 function MN=Local_encextract(X,Y)
@@ -345,20 +370,24 @@ function [X,Y]=Local_encapply(MN,Xorg,Yorg)
 % * [X,Y]=ENCLOSURE('apply',ENC,Xorg,Yorg)
 %   % can be implemented using inpolygon
 %   % in=inpolygon(XI,YI,x-0.5,y-0.5)
-Ind = Local_mask_DP(MN);
-if size(Ind,1)>size(Xorg,1)
-    Ind=Ind(1:size(Xorg,1),:);
-else
-    Ind(size(Xorg,1),1)=0;
+X = Xorg;
+Y = Yorg;
+if ~isempty(MN)
+    Ind = Local_mask_DP(MN);
+    if size(Ind,1)>size(X,1)
+        Ind=Ind(1:size(X,1),:);
+    else
+        Ind(size(X,1),1)=0;
+    end
+    if size(Ind,2)>size(X,2)
+        Ind=Ind(:,1:size(X,2));
+    else
+        Ind(1,size(X,2))=0;
+    end
+    Ind=Ind~=1;
+    X(Ind)=NaN;
+    Y(Ind)=NaN;
 end
-if size(Ind,2)>size(Xorg,2)
-    Ind=Ind(:,1:size(Xorg,2));
-else
-    Ind(1,size(Xorg,2))=0;
-end
-Ind=Ind~=1;
-X=Xorg; X(Ind)=NaN;
-Y=Yorg; Y(Ind)=NaN;
 
 
 function XY=Local_coordinates(MNall,X,Y)
@@ -698,7 +727,7 @@ if size(MN,1)>2
     MN=transpose(MN);
 end
 
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 if fid<0
     error('Error opening output file.')
 end

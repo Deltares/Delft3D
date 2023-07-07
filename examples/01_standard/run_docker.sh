@@ -1,39 +1,5 @@
 #!/bin/bash
-    #
-    # This script is an example for running Delft3D-FLOW
-    # Adapt and use it for your own purpose
-    #
-    # adri.mourits@deltares.nl
-    # 27 Dec 2010
-    # 
-    #
-    # This script starts a single-domain Delft3D-FLOW computation on Linux
-    #
 
+ulimit -s unlimited
 
-    #
-    # Set the config file here
-    # 
-argfile=config_d_hydro.xml
-
-
-
-
-
-    #
-    # Set the directory containing delftflow.exe here
-    #
-export ARCH=lnx64
-export D3D_HOME=/opt/delft3d_4.03.00
-exedir=$D3D_HOME/$ARCH/flow2d3d/bin
- 
-    #
-    # No adaptions needed below
-    #
-
-    # Set some (environment) parameters
-export LD_LIBRARY_PATH=$exedir:$LD_LIBRARY_PATH 
-
-    # Run
-ls -l /opt
-$exedir/d_hydro.exe $argfile
+/opt/delft3d_latest/lnx64/bin/run_dflow2d3d.sh

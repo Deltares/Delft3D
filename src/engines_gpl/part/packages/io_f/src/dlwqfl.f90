@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,8 +23,8 @@
 
       subroutine dlwqfl ( lunin  , lunout , itime  , idtime , itime1 ,    &
      &                    itime2 , ihdel  , nftot  , nrtot  , array1 ,    &
-     &                    result , ipnt   , luntxt , isflag , ifflag ,    &
-     &                    update )
+     &                    array2 , result , ipnt   , luntxt , isflag , ifflag ,    &
+     &                    update , result2)
 
 !     Deltares Software Centre
 
@@ -71,12 +71,14 @@
       integer  (ip), intent(in   ) :: nftot            !< array size in the file
       integer  (ip), intent(in   ) :: nrtot            !< array size to be delivered
       real     (sp), intent(inout) :: array1(nftot)    !< record at lower time in file
+      real     (sp), intent(inout) :: array2(nftot)    !< record at lower time in file
       real     (sp), intent(inout) :: result(nrtot)    !< record as delivered to Delpar
       integer  (ip), intent(in   ) :: ipnt  (nftot,2)  !< pointer from nftot to nrtot
       character( *), intent(in   ) :: luntxt           !< text with this unit number
       integer  (ip), intent(in   ) :: isflag           !< if 1 then 'dddhhmmss' format
       integer  (ip), intent(in   ) :: ifflag           !< if 1 then this is first invokation
       logical      , intent(  out) :: update           !< true if record is updated
+      real     (sp), intent(inout) :: result2(nrtot)   !< record as delivered to Delpar end of step
 
       character(16), dimension(4) ::                                &
      &     msgtxt(4) = (/' Rewind on      ' , ' Warning reading' ,  &
@@ -95,7 +97,8 @@
       if ( nftot  .eq. 0 ) goto 100
       if ( ifflag .eq. 1 ) then
          read ( lunin , end=30 , err=30 ) itime1 , array1
-         itime2 = itime1 + ihdel
+         read ( lunin , end=30 , err=30 ) itime2 , array2
+!jvb     itime2 = itime1 + ihdel
          idtime = 0
          update = .true.
       endif
@@ -108,12 +111,14 @@
 
    10 do while ( itime-idtime .ge. itime2 )
          update = .true.
-         read ( lunin , end=50 , err=30 ) itime1, array1
-         if ( itime2 .ne. itime1 ) then
-            write ( lunout, * ) 'Error: hydrodynamic database not equidistant'
-            write ( lunout, * ) 'in time                                    '
-         endif
-         itime2 = itime1 + ihdel
+         itime1 = itime2
+         array1 = array2
+         read ( lunin , end=50 , err=30 ) itime2, array2
+!jvb     if ( itime2 .ne. itime1 ) then
+!           write ( lunout, * ) 'Error: hydrodynamic database not equidistant'
+!           write ( lunout, * ) 'in time                                    '
+!        endif
+!jvb     itime2 = itime1 + ihdel
 
 !.. check if the last record (all zero's) must be skipped
 
@@ -127,10 +132,14 @@
 !         block interpolation : stick to the old record
 
       result = 0.0
+      result2= 0.0
       do i = 1, nftot
          if ( ipnt(i,1) .gt. 0 ) result(ipnt(i,1)) = result(ipnt(i,1)) + array1(i)
          if ( ipnt(i,2) .gt. 0 ) result(ipnt(i,2)) = result(ipnt(i,2)) + array1(i)
+         if ( ipnt(i,1) .gt. 0 ) result2(ipnt(i,1)) = result2(ipnt(i,1)) + array2(i)
+         if ( ipnt(i,2) .gt. 0 ) result2(ipnt(i,2)) = result2(ipnt(i,2)) + array2(i)
       enddo
+         
       goto 100
 
 !         normal rewind.
@@ -138,7 +147,8 @@
    20 rewind lunin
       idtime = idtime + itime1
       read ( lunin , end=40 , err=40 ) itime1 , array1
-      itime2 = itime1 + ihdel
+      read ( lunin , end=40 , err=40 ) itime2 , array2
+!jvb  itime2 = itime1 + ihdel
       idtime = idtime - itime1
       goto 10
 
@@ -175,10 +185,10 @@
       if ( timon ) call timstop ( ithndl )
       return
 
- 2000 format (   a16          ,' unit: ',i3,', reading: ',a,/            &
+ 2000 format (   a16          ,' unit: ',i,', reading: ',a,/            &
                ' at simulation time:',i12,' !',/,                        &
                ' time in file:      ',i12,' !')
- 2010 format (   a16          ,' unit: ',i3,', reading: ',a,/            &
+ 2010 format (   a16          ,' unit: ',i,', reading: ',a,/            &
                ' at simulation time:',i5,'d ',i2,'h ',i2,'m ',i2,'s !',/ &
                ' time in file:      ',i5,'d ',i2,'h ',i2,'m ',i2,'s !')
 

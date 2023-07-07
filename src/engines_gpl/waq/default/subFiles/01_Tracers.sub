@@ -1,0 +1,59 @@
+substance 'cTR1' active
+   description        'Conservative tracer 1'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+
+substance 'cTR2' active
+   description        'Conservative tracer 2'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+
+substance 'cTR3' active
+   description        'Conservative tracer 3'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+
+substance 'dTR1' active
+   description        'Decaying tracer 1'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+
+substance 'dTR2' active
+   description        'Decaying tracer 2'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+
+substance 'dTR3' active
+   description        'Decaying tracer 3'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+
+parameter 'RcDecTR1'
+   description   'decay rate tracer1 for AGE calculations'
+   unit          '(1/d)'
+   value          0.1000E-01
+end-parameter
+
+#parameter 'RcDecTR2'
+#   description   'decay rate tracer2 for AGE calculations'
+#   unit          '(1/d)'
+#   value          0.1000E-01
+#end-parameter
+
+parameter 'RcDecTR3'
+   description   'decay rate tracer3 for AGE calculations'
+   unit          '(1/d)'
+   value          0.1000E-01
+end-parameter
+
+active-processes
+   name  'Age1' 'Age of water from source 1'
+   name  'Age2' 'Age of water from source 2'
+   name  'Age3' 'Age of water from source 3'
+end-active-processes

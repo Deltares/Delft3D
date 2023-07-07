@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 subroutine write_map_long
 
     use Dio_Plt_Rw
@@ -114,8 +114,7 @@ subroutine read_map_long
     ! nullify(locs)
 !   Open file for storing results
 
-    resLun = 11
-    open(resLun,file='TESTMapLong-res.txt', iostat=ierr)
+    open(newunit=resLun,file='TESTMapLong-res.txt', iostat=ierr)
 
 !   Get MAP IN data set
 

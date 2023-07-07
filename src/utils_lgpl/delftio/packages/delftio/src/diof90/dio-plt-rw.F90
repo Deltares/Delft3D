@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!
 !!! Dio-DS-PLT-RW: Param./Loc./Time datasets
@@ -76,9 +76,9 @@ implicit none
 !
 ! PLT String sizes
 !
-integer, parameter :: DioMaxParLen    = 80   ! max len of parName string
-integer, parameter :: DioMaxLocLen    = 132  ! max len of locName string
-integer, parameter :: DioMaxDescrLen  = 132  ! max len of descr. string
+integer, parameter :: DioMaxParLen    = 256   ! max len of parName string
+integer, parameter :: DioMaxLocLen    = 256  ! max len of locName string
+integer, parameter :: DioMaxDescrLen  = 256  ! max len of descr. string
 
 !
 ! PLT String sizes for HIS Files

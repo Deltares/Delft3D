@@ -3,7 +3,7 @@ function qp_prefs(UD,mfig,cmd,cmdargs)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -64,6 +64,16 @@ switch cmd
         tzestr=get(tze,'string');
         qp_settings('timezone',tzestr{itze})
         d3d_qp updatetimezone
+        
+    case 'update_showversion'
+        sv=get(gcbo,'value');
+        if sv
+            qp_settings('showversion','on')
+            d3d_qp showversion
+        else
+            qp_settings('showversion','off')
+            d3d_qp hideversion
+        end
         
     case 'prefpane'
         currentpane = get(gcbf,'userdata');
@@ -158,6 +168,18 @@ switch cmd
                 'string','', ...
                 'backgroundcolor',Inactive)
         end
+        
+    case 'defaultrenderer'
+        dfr = findobj(gcbf,'tag','defaultrenderer');
+        Renderers = get(dfr,'string');
+        rval = get(dfr,'value');
+        rndr = Renderers{rval};
+        qp_settings('defaultrenderer', rndr)
+        
+    case 'defaultsmoothing'
+        dfs = findobj(gcbf,'tag','defaultsmoothing');
+        smo = get(dfs,'value');
+        qp_settings('graphicssmoothing', smo)
         
     case {'gridviewbackgroundcolor','gridviewgridcolor', ...
             'gridviewselectioncolor','gridviewlandboundarycolor', ...

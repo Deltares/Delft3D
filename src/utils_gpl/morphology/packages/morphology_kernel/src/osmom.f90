@@ -3,7 +3,7 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
                & od2b      ,od3b      ,od4b      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -47,7 +47,7 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
     integer , save :: itable
     real(fp), dimension(0:40, 0:40, 12), save :: table               ! Table containing the moments
 !
-! Call variables
+! Arguments
 !
     real(fp), intent(in) :: cr
     real(fp), intent(in) :: depth
@@ -75,7 +75,6 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
     integer                        :: it0
     integer                        :: it1
     integer                        :: utab
-    integer, external              :: newunit
     logical                        :: error
     real(fp)                       :: f0
     real(fp)                       :: f1

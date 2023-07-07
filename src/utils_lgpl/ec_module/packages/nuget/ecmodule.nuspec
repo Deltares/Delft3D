@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>ECmodule</id>
+    <version>1.0.0</version>
+    <title>EC module</title>
+    <authors>Deltares</authors>
+    <owners>Deltares</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>http://www.gnu.org/licenses/lgpl.html</licenseUrl>
+    <projectUrl>https://oss.deltares.nl/</projectUrl>
+    <iconUrl>http://bit.ly/192jI3c</iconUrl>
+    <description>EC module</description>
+    <summary>EC module</summary>
+    <copyright>Deltares 2018</copyright>
+    <language>en-US</language>	
+  </metadata>
+ 
+  <files>
+  	<file src="..\ec_module\dll\x64\Release\ec_module.dll" target="content\x64"/>	
+  </files>
+</package>

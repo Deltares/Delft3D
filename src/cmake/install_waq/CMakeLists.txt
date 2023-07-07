@@ -1,0 +1,5 @@
+if(NOT DEFINED COMMIT_VERSION)
+        set(COMMIT_VERSION "0")
+endif()
+install(SCRIPT "${checkout_src_root}/cmake/install_waq/install_and_bundle.cmake")
+configure_package_installer("DELWAQ" "${checkout_src_root}/cmake/install_waq/ReadMe.txt" "1" "0" "${COMMIT_VERSION}" "STGZ")

@@ -8,11 +8,14 @@
 #   Copyright (C)  Stichting Deltares, 2011-2013.
 #-------------------------------------------------------------------------------
 
-all: engelund_hansen.o partheniades_krone.o settling_velocity.o shld.o vrijn84_riv_77.o
-	ifort -O2 -recursive -reentrancy threaded -traceback -g -shared -fpic -o plugin_delftflow_traform.so engelund_hansen.o partheniades_krone.o settling_velocity.o shld.o vrijn84_riv_77.o
+all: engelund_hansen.o general_engelund_hansen.o partheniades_krone.o settling_velocity.o shld.o vrijn84_riv_77.o vrijn84_hxbs.o
+	ifort -O2 -recursive -reentrancy threaded -traceback -g -shared -fpic -o plugin_delftflow_traform.so engelund_hansen.o general_engelund_hansen.o partheniades_krone.o settling_velocity.o shld.o vrijn84_riv_77.o vrijn84_hxbs.o
 
 engelund_hansen.o: engelund_hansen.f90
 	ifort -O2 -recursive -reentrancy threaded -traceback -g -c -fpic engelund_hansen.f90
+
+general_engelund_hansen.o: general_engelund_hansen.f90
+	ifort -O2 -recursive -reentrancy threaded -traceback -g -c -fpic general_engelund_hansen.f90
 
 partheniades_krone.o: partheniades_krone.f90
 	ifort -O2 -recursive -reentrancy threaded -traceback -g -c -fpic partheniades_krone.f90
@@ -25,3 +28,6 @@ shld.o: shld.f90
 
 vrijn84_riv_77.o: vrijn84_riv_77.f90
 	ifort -O2 -recursive -reentrancy threaded -traceback -g -c -fpic vrijn84_riv_77.f90
+
+vrijn84_hxbs.o: vrijn84_hxbs.f90
+	ifort -O2 -recursive -reentrancy threaded -traceback -g -c -fpic vrijn84_hxbs.f90

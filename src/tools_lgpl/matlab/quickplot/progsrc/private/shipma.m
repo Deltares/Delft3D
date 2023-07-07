@@ -7,7 +7,7 @@ function FI = shipma(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -63,7 +63,7 @@ if nargin<2
     end
 end
 FI.SubType = SubType;
-fid = fopen(FileName,'r');
+fid = fopen(FileName,'r','n','US-ASCII');
 fld = 0;
 while ~feof(fid)
     offset = ftell(fid);
@@ -114,7 +114,7 @@ function FI = LocalShipmaOpen(FileName)
 %
 % First check whether this is an XML file to prevent the error message:
 % [Fatal Error] FileName:1:1: Content is not allowed in prolog.
-fid = fopen(FileName,'r');
+fid = fopen(FileName,'r','n','US-ASCII');
 firstchar = fread(fid,[1 2],'*char');
 fclose(fid);
 if isequal(firstchar,'<?')

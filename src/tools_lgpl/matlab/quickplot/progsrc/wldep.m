@@ -32,23 +32,23 @@ function varargout=wldep(cmd,varargin)
 %   WLDEP('write',FILENAME,'',MATRIX)
 %
 %   WLDEP('write',FILENAME,MATRIX1,MATRIX2,MATRIX3,...) writes multiple
-%   fields to the specified file. Optionally you may add keywords between
-%   data blocks by inserting Keyword strings between the matrices:
-%   WLDEP('write',FILENAME,KEYWORD1,MATRIX1,KEYWORD2,MATRIX2,...)
-%   The keywords will be enclosed in single quotes in the file:
+%   fields to the specified file. Optionally you may add data labels
+%   between data blocks by inserting strings between the matrices:
+%   WLDEP('write',FILENAME,LABEL1,MATRIX1,LABEL2,MATRIX2,...)
+%   The labels will be enclosed in single quotes in the file:
 %
-%   'KEYWORD1'
+%   'LABEL1'
 %   DATA of MATRIX1
-%   'KEYWORD2'
+%   'LABEL2'
 %   DATA of MATRIX2
 %
-%   If the keyword is empty, nothing will be written. The file format with
-%   keywords is not supported by Delft3D.
+%   If the label is empty, nothing will be written. The file format with
+%   labels is not supported by Delft3D.
 %
 %   WLDEP('write',FILENAME,STRUCT) writes the STRUCT(i).Data fields to the
-%   specified file. Optionally the STRUCT may contain Keyword fields which
-%   will be used in the same manner as the keyword arguments mentioned
-%   above.
+%   specified file. Optionally the STRUCT may contain a field 'Keyword' or
+%   'Label' which will be used in the same manner as the label arguments
+%   mentioned above.
 %
 %   The default number format used by WLDEP is a fixed point %15.7f. For
 %   small parameters like variable grain size diameters this setting may
@@ -61,7 +61,7 @@ function varargout=wldep(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -163,7 +163,7 @@ if strcmp(filename,'?')
     filename=[fpath,fname];
 end
 
-fid=fopen(filename);
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Cannot open %s.',filename)
 end
@@ -175,54 +175,53 @@ try
     else
         dim=dimvar;
     end
-    i=1;
+    i = 1;
     while 1
         %
         % Skip lines starting with *
         %
-        line='*';
-        cl=0;
+        line = '*';
+        cl = 0;
         while ~isempty(line) && line(1)=='*'
             if cl>0
-                DP(i).Comment{cl,1}=line;
+                DP(i).Comment{cl,1} = line;
             end
-            cl=cl+1;
-            currentpoint=ftell(fid);
-            line=fgetl(fid);
+            cl = cl+1;
+            currentpoint = ftell(fid);
+            line = fgetl(fid);
         end
         fseek(fid,currentpoint,-1);
         %
-        [DP(i).Data,NRead]=fscanf(fid,'%f',dim);
-        if NRead==0 % accept dredging input files containing 'keyword' on the first line ...
-            str=fscanf(fid,['''%[^' char(10) char(13) ''']%['']']);
+        [DP(i).Data,NRead] = fscanf(fid,'%f',dim);
+        if NRead == 0 % accept dredging input files containing a data label on the first line ...
+            str = fscanf(fid,['''%[^' char(10) char(13) ''']%['']']);
             if ~isempty(str) && isequal(str(end),'''')
-                [DP(i).Data,NRead]=fscanf(fid,'%f',dim);
-                DP(i).Keyword=str(1:end-1);
+                [DP(i).Data,NRead] = fscanf(fid,'%f',dim);
+                DP(i).Keyword = str(1:end-1);
             end
         end
-        DP(i).Data=DP(i).Data;
         %
         % Read remainder of last line
         %
-        Rem=fgetl(fid);
+        Rem = fgetl(fid);
         if ~ischar(Rem)
-            Rem='';
+            Rem = '';
         else
-            Rem=deblank(Rem);
+            Rem = deblank(Rem);
         end
-        if NRead<prod(dim)
+        if NRead < prod(dim)
             if isempty(Rem)
-                Str=sprintf('Not enough data in the file for complete field %i (only %i out of %i values).',i,NRead,prod(dim));
-                if i==1 % most probably wrong file format
-                    error(Str)
+                Str = sprintf('Not enough data in the file for complete field %i (only %i out of %i values).',i,NRead,prod(dim));
+                if i == 1 % most probably wrong file format
+                    error(Str) %#ok<SPERR>
                 else
-                    warning(Str)
+                    warning(Str) %#ok<SPWRN>
                 end
             else
                 error('Invalid string while reading data: %s',Rem)
             end
         end
-        pos=ftell(fid);
+        pos = ftell(fid);
         if isempty(fscanf(fid,'%f',1))
             break % no more data (at least not readable)
         elseif ~multiple
@@ -230,59 +229,77 @@ try
             break % don't read data although there seems to be more ...
         end
         fseek(fid,pos,-1);
-        i=i+1;
+        i = i+1;
     end
     fclose(fid);
-catch
+catch exception
     fclose(fid);
-    rethrow(lasterror)
+    rethrow(exception)
 end
 if ~multiple
-    DP=DP.Data;
+    DP = DP.Data;
 end
 
 
-function OK=Local_depwrite(filename,varargin)
-% DEPWRITE writes depth information to a given filename
+function OK = Local_depwrite(filename,varargin)
+% LOCAL_DEPWRITE writes depth information to a given filename
 %
-% Usage: depwrite('filename',Matrix)
+%   LOCAL_DEPWRITE(FILENAME,MATRIX1,MATRIX2,MATRIX3,...)
+%   LOCAL_DEPWRITE(FILENAME,LABEL1,MATRIX1,LABEL2,MATRIX2,...)
+%   LOCAL_DEPWRITE(FILENAME,STRUCT)
 %
-%    or: depwrite('filename',Struct)
-%        where Struct is a structure vector with one field: Data
+%   Optional keyword value pair:
+%      'format', NUMBER_FORMAT
 
-fid=fopen(filename,'w');
-Keyword='';
-interactive = length(varargin)==1;
+data = varargin;
+
 format = '%15.8f';
+for i = length(data)-1:-1:1
+    if strcmpi(data{i},'format') && ischar(data{i+1})
+        format = data{i+1};
+        data(i:i+1) = [];
+    end
+end
+
+fid = fopen(filename,'w','n','US-ASCII');
+Label = '';
+interactive = length(data)==1;
+
 idp = 0;
-while idp<length(varargin)
+while idp < length(data)
     idp = idp+1;
-    DP = varargin{idp};
+    DP = data{idp};
     %
     if ischar(DP)
-        if idp==length(varargin)
+        % data label or keyword
+        if idp == length(data)
             % ignore this last argument
         else
-            DP2 = varargin{idp+1};
+            DP2 = data{idp+1};
+            % if the format keyword occurs multiple times, the first value
+            % is used from the start. The value of following occurrence is
+            % used for data fields after that keyword.
             if strcmpi(DP,'format') && ischar(DP2)
                 format = DP2;
                 idp = idp+1;
             else
-                Keyword = DP;
+                Label = DP;
             end
         end
     elseif isstruct(DP)
         % DP(1:N).Data=Matrix;
         
-        for i=1:length(DP)
-            if isfield(DP,'Keyword')
-                Keyword = DP(i).Keyword;
+        for i = 1:length(DP)
+            if isfield(DP,'Label')
+                Label = DP(i).Label;
+            elseif isfield(DP,'Keyword')
+                Label = DP(i).Keyword;
             else
-                Keyword = '';
+                Label = '';
             end
-            writeblock(fid,DP(i).Data,Keyword,format);
+            writeblock(fid,DP(i).Data,Label,format);
         end
-        Keyword = '';
+        Label = '';
     else
         % DP=Matrix;
         if DP(end,end)~=-999 && interactive
@@ -293,20 +310,22 @@ while idp<length(varargin)
             end
             switch input('Grid extension: 9 (-999 values)/B (boundary values) /N (Don''t extend) ','s')
                 case {'9'}
-                    DP=[DP -999*ones(size(DP,1),1); ...
-                        -999*ones(1,size(DP,2)+1)];
+                    DPX = [DP -999*ones(size(DP,1),1); ...
+                           -999*ones(1,size(DP,2)+1)];
+                    DP = DPX;
                 case {'B','b'}
-                    DP=[DP DP(:,end); ...
-                        DP(end,:) DP(end,end)];
+                    DPX = [DP DP(:,end); ...
+                           DP(end,:) DP(end,end)];
+                    DP = DPX;
                 otherwise
             end
         end
-        writeblock(fid,DP,Keyword,format);
-        Keyword = '';
+        writeblock(fid,DP,Label,format);
+        Label = '';
     end
 end
 fclose(fid);
-OK=1;
+OK = 1;
 
 
 function writeblock(fid,DP,Keyword,format)
@@ -317,19 +336,19 @@ end
 DP(isnan(DP))=-999;
 
 lformat = length(format)+2;
-Frmt=repmat([format '  '],[1 size(DP,1)]);
-k=lformat*12;
+Frmt = repmat([format '  '],[1 size(DP,1)]);
+k = lformat*12;
 Frmt((k-1):k:length(Frmt))='\';
 Frmt(k:k:length(Frmt))='n';
 Frmt(end-1:end)='\n';
 Frmt=strrep(Frmt,'  ',' ');
 
-szDP=size(DP);
-if length(szDP)<3
-    kmax=1;
+szDP = size(DP);
+if length(szDP) < 3
+    kmax = 1;
 else
-    kmax=prod(szDP(3:end));
+    kmax = prod(szDP(3:end));
 end
-for k=1:kmax
+for k  =1:kmax
     fprintf(fid,Frmt,DP(:,:,k));
 end

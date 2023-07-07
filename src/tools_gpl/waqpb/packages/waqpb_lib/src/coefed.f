@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine coefed(serial,itmswi)
 c
@@ -36,14 +36,13 @@ c     Include data structures for tables
 
       integer serial, lu_out, iitem, niteml
       logical itmswi(nitemm)
-      data lu_out /129/
 
       niteml = 0
       do iitem = 1,nitem
           if ( itmswi(iitem) ) niteml = niteml + 1
       enddo
 
-      open (lu_out,file='coefedit.dat')
+      open (newunit=lu_out,file='coefedit.dat')
 
       write (lu_out, '(i10)' ) serial
       write (lu_out, '(''NC'')' ) 

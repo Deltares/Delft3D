@@ -1,4 +1,4 @@
-function bool = nc_isvar_tmw ( ncfile, varname )
+function bool = nc_isvar_tmw(ncfile,varname)
 % TMW backend for NC_ISVAR.
 
 ncid = netcdf.open(ncfile,'NOWRITE');
@@ -11,12 +11,3 @@ end
 
 netcdf.close(ncid);
 return
-
-
-
-
-
-
-
-
-

@@ -30,7 +30,7 @@ function varargout=ai_ungen(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -95,7 +95,7 @@ if nargin==0
     filename=[fp fn];
 end
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 T.FileName=filename;
 T.FileType='ArcInfoUngenerate';
 T.SubType='unknown';
@@ -114,6 +114,11 @@ T.Check='NotOK';
 autoclose=0;
 Line=fgetl(fid);
 [id,nval,err,irem]=sscanf(Line,'%f%*[ ,]');
+if nval>1 && ~isempty(err)
+    fclose(fid);
+    error('''%s'' while parsing first line ''%s''.',err,Line)
+end
+ncoords = 2;
 switch nval
     case 5
         % ID, BottomLeftX, BottomLeftY, TopRightX, TopRightY
@@ -150,10 +155,10 @@ switch nval
         end
     case 1
         % polyline
-        % ID
-        % X, Y
-        % X, Y
-        % END
+        % ID             or      ID
+        % X, Y                   X, Y, Z
+        % X, Y                   X, Y, Z
+        % END                    END
         %
         % polygon with auto label
         % ID, AUTO
@@ -165,7 +170,13 @@ switch nval
                 T.SubType='line';
             case 'AUTO'
                 T.SubType='polygon';
+            otherwise
+                fclose(fid);
+                error('Invalid string encountered ''%s''.',Line(irem:end))
         end
+        %
+        Line2=fgetl(fid);
+        [id,ncoords,err,irem]=sscanf(Line2,'%f%*[ ,]');
         fseek(fid,0,-1);
     case 0
         switch upper(strtok(Line(irem:end)))
@@ -184,6 +195,16 @@ end
 %
 i=1;
 finalEND=false;
+switch ncoords
+    case 2
+        pFormat = '%f%*[ ,]%f\n';
+    case 3
+        pFormat = '%f%*[ ,]%f%*[ ,]%f\n';
+    otherwise
+        fclose(fid);
+        error('%i coordinates not supported.',ncoords)
+end
+%
 while ~feof(fid)
     start=ftell(fid);
     Line=fgetl(fid);
@@ -206,14 +227,14 @@ while ~feof(fid)
             switch nval
                 case 1
                     T.Seg(i).ID=id;
-                    T.Seg(i).Coord=fscanf(fid,'%f%*[ ,]%f\n',[2 inf])';
+                    T.Seg(i).Coord=fscanf(fid,pFormat,[ncoords inf])';
                     if autoclose && ~isequal(T.Seg(i).Coord(end,:),T.Seg(i).Coord(1,:))
                         T.Seg(i).Coord=T.Seg(i).Coord([1:end 1],:);
                     end
                 case 2
                     i=i-1;
                     fseek(fid,start,-1);
-                    Coord=fscanf(fid,'%f%*[ ,]%f\n',[2 inf])';
+                    Coord=fscanf(fid,pFormat,[ncoords inf])';
                     if autoclose && ~isequal(Coord(end,:),Coord(1,:))
                         Coord=Coord([1:end 1],:);
                     end
@@ -488,7 +509,7 @@ else
     T=Data1;
 end
 
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 for j=1:length(T.Seg)
     if BNA
         if isfield(T.Seg(j),'ID1')

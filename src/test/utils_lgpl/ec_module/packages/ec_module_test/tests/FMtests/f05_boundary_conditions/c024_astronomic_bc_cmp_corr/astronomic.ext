@@ -1,0 +1,5 @@
+[boundary]
+quantity     = waterlevelbnd
+locationfile = astronomic_02.pli
+forcingfile  = astronomic_all.bc
+forcingfile  = astronomic_corr.bc

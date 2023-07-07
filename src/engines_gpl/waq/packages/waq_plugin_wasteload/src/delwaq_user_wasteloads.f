@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,6 +23,10 @@
 
       module delwaq_user_wasteloads
 
+      use m_zoek
+      use m_srstop
+      use m_open_waq_files
+      use m_dhnolay
       use delwaq_loads
       use waq_plugin_wasteload_version_module
 
@@ -61,7 +65,7 @@
       if (ifirst == 1) then
          ifirst = 0
 
-         call dhopnf (lunrep, 'delwaq_user_wasteloads.mon', 19, 1, ierr)
+         call open_waq_files (lunrep, 'delwaq_user_wasteloads.mon', 19, 1, ierr)
          if (ierr .ne. 0) then
             write(*,'(A)') 'Could not open delwaq_user_wasteloads.mon for writing.'
             call srstop(1)
@@ -113,6 +117,7 @@
 
       logical                  :: first = .true.    ! initialisation indicator
       integer                  :: lunrep            ! logical unit of report file
+      integer                  :: lunscr            ! logical unit of screen file
       logical                  :: l_exi             ! file exists or not
       integer                  :: noscrn            ! number of bubble screens
       integer                  :: iscrn             ! loop counter screens
@@ -133,16 +138,16 @@
          noscrn = 0
          inquire (file='screen.dat',exist=l_exi)
          if ( l_exi ) then
-            open  ( 83 , file='screen.dat' )        !  read file with
-            read  ( 83 , * ) noscrn                 !  screen-names
+            open  ( newunit = lunscr , file='screen.dat' )        !  read file with
+            read  ( lunscr , * ) noscrn                 !  screen-names
             write ( lunrep , * ) 'Number of screens:', noscrn
             if ( noscrn .gt. 0 ) then               !  may be more names
                allocate ( scrnam(noscrn) )          !  than existing in the
                do iscrn = 1, noscrn                 !  problem
-                  read  ( 83 , * ) scrnam(iscrn)
+                  read  ( lunscr , * ) scrnam(iscrn)
                   write ( lunrep , * ) 'Screen:',iscrn,' is called: ',scrnam(iscrn)
                enddo
-               close ( 83 )
+               close ( lunscr )
                allocate ( scrloc( nowst  ) )        !  pointer from waste to screen
                allocate ( scrwtd( noscrn, notot ) )
                allocate ( scrwdf( noscrn ) )
@@ -163,8 +168,6 @@
       endif
 
       if ( noscrn .eq. 0 ) return
-
-!     write ( lunrep , * ) 'Time:',itime
 
 !        First  step: sum the withdrawn masses and flow per screen
 
@@ -194,7 +197,7 @@
       do iscrn = 1, noscrn                          !  make the mixed
          wflow = scrwdf( iscrn )                    !  concentrations
          if ( wflow .ne. 0.0 ) then                 !  per active screen
-!           write ( lunrep , * ) 'Screen:',iscrn,' Abstracted:',wflow
+
             do isub = 1, notot
                scrwtd ( iscrn, isub ) = scrwtd ( iscrn, isub ) / wflow
             enddo
@@ -208,7 +211,6 @@
          if ( iscrn .ne. 0 ) then                   !  screens only
             wflow = wls(iwst)%flow
             if ( wflow .gt. 0.0 ) then              !  releases only
-!              write ( lunrep , * ) 'Screen:',iscrn,' Released:',wflow
                do isub = 1, notot
                   wls(iwst)%loads(isub ) = scrwtd ( iscrn, isub )
                enddo
@@ -246,27 +248,29 @@
 
       ! local declarations
 
-      integer, parameter  :: mxcomb = 100     ! maximum number of combinations
-      integer, save       :: ifirst = 1       ! initialisation indicator
-      integer             :: lunrep           ! report file
-      logical             :: l_exi            ! file exists or not
-      integer             :: ncomb            ! number of possible inlet outlet combinations
-      integer             :: ninout           ! actual number of inlet outlet combinations
-      character(len=20)   :: c_in             ! read buffer name inlet
-      character(len=20)   :: c_out            ! read buffer name outlet
-      character(len=20)   :: namin(mxcomb)    ! names inlet in the possible combinations
-      character(len=20)   :: namout(mxcomb)   ! names outlet in the possible combinations
-      integer             :: iwin(mxcomb)     ! wasteload number inlet of the actual combinations
-      integer             :: iwout(mxcomb)    ! wasteload number outlet of the actual combinations
-      real                :: flow             ! inlet flow rate
-      integer             :: ipin             ! wasteload number inlet
-      integer             :: ipout            ! wasteload number outlet
-      integer             :: iseg             ! inlet segment number
-      integer             :: iwst             ! loop counter wasteloads
-      integer             :: isys             ! loop counter substances
-      integer             :: icomb            ! loop counter combinations
-      integer             :: iinout           ! loop counter of inlet outlet combinations
-      integer             :: i                ! loop counter
+      integer, save       :: ifirst = 1                       ! initialisation indicator
+      integer             :: lunrep                           ! report file
+      integer             :: luninout                         ! inlet/outlet file
+      logical             :: l_exi                            ! file exists or not
+      integer             :: ncomb                            ! number of possible inlet outlet combinations
+      integer             :: ninout                           ! actual number of inlet outlet combinations
+      character(len=20)   :: c_in                             ! read buffer name inlet
+      character(len=20)   :: c_out                            ! read buffer name outlet
+      character(len=20), dimension(:), allocatable  :: namin  ! names inlet in the possible combinations
+      character(len=20), dimension(:), allocatable  :: namout ! names outlet in the possible combinations
+      integer, dimension(:), allocatable  ::           iwin   ! wasteload number inlet of the actual combinations
+      integer, dimension(:), allocatable  ::           iwout  ! wasteload number outlet of the actual combinations
+      real                :: flow                             ! inlet flow rate
+      integer             :: ipin                             ! wasteload number inlet
+      integer             :: ipout                            ! wasteload number outlet
+      integer             :: iseg                             ! inlet segment number
+      integer             :: isego                            ! outlet segment number
+      integer             :: iwst                             ! loop counter wasteloads
+      integer             :: isys                             ! loop counter substances
+      integer             :: icomb                            ! loop counter combinations
+      integer             :: iinout                           ! loop counter of inlet outlet combinations
+      integer             :: ierr                             ! local I/O error
+      integer             :: i                                ! loop counter
 
       ! Save all local variables
 
@@ -284,38 +288,40 @@
          inquire (file='inloutl.dat',exist=l_exi)
          if ( l_exi ) then
             write(lunrep,2004)
-            open ( 83 , file='inloutl.dat' )
+            open ( newunit = luninout , file='inloutl.dat' )
             ncomb = 0
-   10       continue
-               read ( 83 , '(2a20)' , end = 20 ) c_in,c_out
-               ncomb = ncomb + 1
-               if ( ncomb .gt. mxcomb ) then
-                  write(lunrep,2005) mxcomb
-                  call srstop(1)
+            do
+               read ( luninout , '(2a20)' , iostat = ierr ) c_in,c_out
+               if ( ierr /= 0 ) then
+                   exit
                endif
-               namin(ncomb) = c_in
-               namout(ncomb) = c_out
-               goto 10
-   20       continue
-            close ( 83 )
+
+               ncomb = ncomb + 1
+            enddo
+
+            allocate( namin(ncomb), namout(ncomb), iwin(ncomb), iwout(ncomb) )
+
+            rewind( luninout )
+
+            do i = 1,ncomb
+               read ( luninout , '(2a20)' ) c_in,c_out
+               namin(i) = c_in
+               namout(i) = c_out
+            enddo
+            close ( luninout )
          else
 
             ! construct the default list of combination INLETxx/OUTLETxx
 
+            ncomb = max(999,size(wasteloads))
+
+            allocate( namin(ncomb), namout(ncomb), iwin(ncomb), iwout(ncomb) )
+
             write(lunrep,2006)
-            do i = 1 , min(mxcomb,9)
-               write(namin(i),2007) i
-               write(namout(i),2008) i
+            do i = 1 , ncomb
+               write(namin(i),'(a,i0)')  'INLET',  i
+               write(namout(i),'(a,i0)') 'OUTLET', i
             enddo
-            do i = 10 , min(mxcomb,99)
-               write(namin(i),2009) i
-               write(namout(i),2010) i
-            enddo
-            do i = 100 , min(mxcomb,999)
-               write(namin(i),2011) i
-               write(namout(i),2012) i
-            enddo
-            ncomb = mxcomb
          endif
 
          ! check the actual list of wasteloads with the list of possible combinations
@@ -349,14 +355,26 @@
          ipin  = iwin(iinout)
          ipout = iwout(iinout)
          iseg  = wasteloads(ipin)%loc%segnr
+         isego = wasteloads(ipout)%loc%segnr
          flow  = wasteloads(ipin)%flow
-         wasteloads(ipout)%flow = 0.0
-         do isys = 1, nosys
-            wasteloads(ipout)%loads(isys) = -flow*conc(isys,iseg)
-         enddo
-         do isys = nosys + 1 , notot
-            wasteloads(ipout)%loads(isys) = 0.0
-         enddo
+         if ( flow <= 0.0 ) then
+            wasteloads(ipout)%flow = 0.0
+            do isys = 1, nosys
+               wasteloads(ipout)%loads(isys) = -flow*conc(isys,iseg)
+            enddo
+            do isys = nosys + 1 , notot
+               wasteloads(ipout)%loads(isys) = 0.0
+            enddo
+         else
+            ! Reversed flow - still using the flow rate at the inlet (!)
+            wasteloads(ipin)%flow = 0.0
+            do isys = 1, nosys
+               wasteloads(ipin)%loads(isys) = flow*conc(isys,isego)
+            enddo
+            do isys = nosys + 1 , notot
+               wasteloads(ipin)%loads(isys) = 0.0
+            enddo
+         endif
       enddo
 !
       return
@@ -368,12 +386,6 @@
      +        'file <inloutl.dat>')
  2005 format ('    error : number of combinations exceed maximum:',i4)
  2006 format ('    no file <inloutl.dat> using default combinations names')
- 2007 format ('INLET',i1,14x)
- 2008 format ('OUTLET',i1,13x)
- 2009 format ('INLET',i2,13x)
- 2010 format ('OUTLET',i2,12x)
- 2011 format ('INLET',i3,12x)
- 2012 format ('OUTLET',i3,11x)
  2013 format ('    no INLET/OUTLET combination found')
 
       end subroutine delwaq_user_inlet_outlet
@@ -487,7 +499,8 @@
       integer                             :: i
       integer                             :: id
       integer                             :: ierr
-      integer                             :: lunrep
+      integer                             :: lunrep, lunlga
+      integer, save                       :: lunwlk
       integer                             :: ix, iy, iz, jz, offset
       integer                             :: mmax, nmax, noq1, noq2, noq3
       logical                             :: l_exi
@@ -504,27 +517,27 @@
             write(lunrep,2000)
             write(lunrep,2001)
 
-            open( 84 , file='walking.dat' )
-            read( 84, * ) nowalk
+            open( newunit=lunwlk , file='walking.dat' )
+            read( lunwlk, * ) nowalk
             if ( nowalk > 0 ) then
-               open( 85 , file='walking.lga', access = 'stream', status = 'old' )
-               read( 85 ) mmax, nmax, nosegl, nolay, noq1, noq2, noq3
+               open( newunit=lunlga , file='walking.lga', access = 'stream', status = 'old' )
+               read( lunlga ) mmax, nmax, nosegl, nolay, noq1, noq2, noq3
 
                ! check if the grids match
 
                if ( mod(noseg, nosegl) /= 0 ) then
                    write(lunrep,2002) noseg, nosegl
                    nowalk = 0
-                   close( 85 )
-                   close( 84 )
+                   close( lunlga )
+                   close( lunwlk )
                    return
                endif
 
                call dhnolay( nolay )
 
                allocate( lgrid(mmax,nmax) )
-               read( 85 ) lgrid
-               close( 85 )
+               read( lunlga ) lgrid
+               close( lunlga )
             endif
          else
             write(lunrep,2005)
@@ -533,7 +546,7 @@
 
          offset = 0
          do i = 1,nowalk
-            read( 84, *, iostat = ierr ) id, ix, iy, iz
+            read( lunwlk, *, iostat = ierr ) id, ix, iy, iz
             if ( id > 0 .and. id+offset <= nowst ) then
                if ( iz > 0 ) then
                   newsegment = lgrid(ix,iy) + nosegl * (iz-1)
@@ -548,9 +561,9 @@
             endif
             write(lunrep,*) id, ix, iy, iz
          enddo
-         call reposition_file
+         call reposition_file( lunwlk )
 
-         call determine_times( nowalk, next_time_in_file, period, timestep )
+         call determine_times( lunwlk, nowalk, next_time_in_file, period, timestep )
          time_offset  = 0
 
          write( lunrep,2006)
@@ -568,7 +581,7 @@
          if ( next_time_in_file <= itime ) then
             offset = 0
             do i = 1,nowalk
-               read( 84, *, iostat = ierr ) id, ix, iy, iz
+               read( lunwlk, *, iostat = ierr ) id, ix, iy, iz
                if ( id > 0 .and. id+offset <= nowst ) then
                   if ( iz > 0 ) then
                      newsegment = lgrid(ix,iy) + nosegl * (iz-1)
@@ -584,9 +597,9 @@
                write(lunrep,*) id, ix, iy, iz
             enddo
 
-            read( 84, *, iostat = ierr ) next_time_in_file
+            read( lunwlk, *, iostat = ierr ) next_time_in_file
             if ( ierr /= 0 ) then
-               call reposition_file
+               call reposition_file( lunwlk )
                time_offset = time_offset + period
             endif
 
@@ -612,37 +625,37 @@
 
       contains
 
-      subroutine determine_times( nowalk, start_time, period, timestep )
+      subroutine determine_times( lunwlk, nowalk, start_time, period, timestep )
       !
       ! Scan the file to determine the start time and the period
       ! Then reposition the pointer
       !
-      integer :: nowalk, start_time, period, timestep
+      integer :: lunwlk, nowalk, start_time, period, timestep
 
       integer :: i, next_time, dummy
       integer :: ierr
 
-      read( 84, * ) start_time
+      read( lunwlk, * ) start_time
 
       ! Skip the second block
       do i = 1,nowalk
-         read( 84, * ) dummy, dummy, dummy, dummy
+         read( lunwlk, * ) dummy, dummy, dummy, dummy
       enddo
 
-      read( 84, * ) next_time
+      read( lunwlk, * ) next_time
       timestep = next_time - start_time
 
       ! Read until the end of the file
       do
          do i = 1,nowalk
-            read( 84, *, iostat = ierr ) dummy, dummy, dummy, dummy
+            read( lunwlk, *, iostat = ierr ) dummy, dummy, dummy, dummy
             if ( ierr /= 0 ) then
                write( lunrep, 2004 ) next_time
                call srstop(1)
             endif
          enddo
 
-         read( 84, *, iostat = ierr ) next_time
+         read( lunwlk, *, iostat = ierr ) next_time
          if ( ierr /= 0 ) then
             exit
          endif
@@ -651,23 +664,25 @@
       period = next_time + timestep - start_time
 
       ! Reposition the file
-      call reposition_file
+      call reposition_file( lunwlk )
 
  2004 format ('   Unexpected end of file with walking discharges at tim
      &e = ',i10)
       end subroutine determine_times
 
-      subroutine reposition_file
+      subroutine reposition_file( lunwlk )
+
+      integer, intent(in) :: lunwlk
 
       integer :: i, dummy, nolines
 
-      rewind( 84 )
-      read( 84, * ) nolines
+      rewind( lunwlk )
+      read( lunwlk, * ) nolines
       do i = 1,nolines
-         read( 84, * ) dummy, dummy, dummy
+         read( lunwlk, * ) dummy, dummy, dummy
       enddo
 
-      read( 84, * ) dummy ! The first time - we already know that!
+      read( lunwlk, * ) dummy ! The first time - we already know that!
 
       end subroutine reposition_file
 

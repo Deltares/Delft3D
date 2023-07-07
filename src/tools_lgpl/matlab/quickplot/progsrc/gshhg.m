@@ -38,7 +38,7 @@ function data = gshhg(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -91,7 +91,7 @@ while i<=nargin-1
                     type = 'GSHHS';
                 case {'r','river','rivers'}
                     type = 'river';
-                case {'b','border','borders'}
+                case {'b','border','borders','country and state borders'}
                     type = 'border';
                 otherwise
                     unknown_type = 1;

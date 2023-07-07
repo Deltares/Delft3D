@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -60,7 +60,7 @@
 !                               Introduction DLWQ5G.F for column headers
 
 !     SUBROUTINES CALLED : RDTOK1 - tokenized input
-!                          DHOPNF - opens a file
+!                          open_waq_files - opens a file
 !                          DLWQ5B - gets names of items/concentrations
 !                          DLWQ5C - gets ODS data
 !                          DLWQ5D - gets block of breakpoint data
@@ -76,13 +76,18 @@
 !                          LUN(14) = unit intermediate file (boundaries)
 !                          LUN(15) = unit intermediate file (wastes)
 
+      use m_zoek
+      use m_open_waq_files
       use rd_token
       use timers       !   performance timers
       use dlwq_data
+      use m_sysn          ! System characteristics
+      use m_sysi          ! Timer characteristics
+
 
       implicit none
-      
-      integer  ( 4), intent(in   ) :: lun  (*)      !< array with unit numbers
+
+      integer  ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
       character( *), intent(inout) :: lchar(*)      !< filenames
       integer  ( 4), intent(in   ) :: iu            !< index in LUN array of workfile
       integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
@@ -107,25 +112,7 @@
       integer  ( 4), intent(inout) :: ierr          !< cumulative error   count
       integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
 
-!     IN THE COMMON BLOCK:
 
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ---------------------------------------------------------
-!     block sysi.inc
-!     ITSTRT  INTEGER    1         INPUT   Simulation start time ( scu )
-!     ITSTOP  INTEGER    1         INPUT   Simulation stop time ( scu )
-!     ISFACT  INTEGER    1         INPUT   system clock in seconds
-!     OTIME   REAL*8     1         INPUT   Julian offset of the real time
-!     block sysn.inc
-!     NEWRSP  INTEGER    1         IN/OUT  Real array space new bounds
-!     NEWISP  INTEGER    1         IN/OUT  Integer array space new bounds
-
-!*****NB for memory map see end of routine
-
-!     System common blocks
-
-      INCLUDE 'sysi.inc'       !     COMMON  /  SYSI   /   System timers
-      INCLUDE 'sysn.inc'       !     COMMON  /  SYSN   /   System characteristics
 
 !     Local declarations
 
@@ -136,7 +123,7 @@
      +              ifilsz   , jfilsz, ipro  , itfacw , iopt  ,
      +              nobrk    , itel  , ioerr , iblock , k     ,
      +              i        , ihulp , ioff  , icm    , iim   ,
-     +              noits    , nconst, itmnr, iitm   , nocol , 
+     +              noits    , nconst, itmnr, iitm   , nocol ,
      +              idmnr    , nodis , nitm , nti    , nti2  ,
      +              ntr      , irm   , nottt, ierr3  , nr2   ,
      +              nts      , ntc   , ntd
@@ -144,7 +131,7 @@
       character     chulp*255
       logical       newrec   , scale , ods   , binfil , tdelay
       integer(4) :: ithndl = 0
-      
+
       type(t_dlwq_data_items)          :: dlwq_data_items
       type(t_dlwq_item)                :: dlwq_foritem
       character(20)                    :: data_item_name
@@ -152,8 +139,8 @@
       integer                          :: ndata_items
       integer                          :: iitem
       integer                          :: nitems
-      
-      
+
+
       if (timon) call timstrt( "dlwq5a", ithndl )
 !
 !     Initialise a number of variables
@@ -204,7 +191,7 @@
 !
 !     Open the binary work file and privide a zero overall default
 !
-      call dhopnf ( lun(iu) , lchar(iu) , iu    , 1     , ioerr )
+      call open_waq_files ( lun(iu) , lchar(iu) , iu    , 1     , ioerr )
       if ( iu .eq. 14 ) then
          write ( lunwr2 ) ' 4.900BOUND '
          calit  = 'BOUNDARIES'
@@ -325,7 +312,7 @@
      *                 itype    , rar   , nconst, itmnr , chulp    ,
      *                                    ioutpt, ierr2 , iwar     )
 ! Check if data_item already exists
-         
+
          if (dlwq_data_items%cursize .gt. 0) then
             call zoek ( data_item_name,dlwq_data_items%cursize,dlwq_data_items%name(1:dlwq_data_items%cursize),20,idata_item)
          else
@@ -421,12 +408,12 @@
                      car(ioff+iitem-1) = dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      car(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      iar(ioff+iitem-1) = dlwq_data_items%dlwq_foritem(idata_item)%ipnt(iitem)
-                     iar(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%sequence(iitem) 
+                     iar(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%sequence(iitem)
                      if (iar(ioff+iitem-1) .gt. 0) then
-                        write ( lunut, 1023) car(ioff), idata_item, calit, iar(ioff+iitem-1), 
+                        write ( lunut, 1023) car(ioff), idata_item, calit, iar(ioff+iitem-1),
      &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      else
-                        write ( lunut, 1024) car(ioff), idata_item, calit, iar(ioff+iitem-1), 
+                        write ( lunut, 1024) car(ioff), idata_item, calit, iar(ioff+iitem-1),
      &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      end if
                   end do
@@ -438,7 +425,7 @@
                   noits = 1
                   iar(ioff) = -1300000000
                   iar(ioff+1) = 1
-               end if   
+               end if
             else
                write ( lunut , 1047 )
                !data ignored
@@ -449,8 +436,8 @@
                iar(ioff+1) = 1
             end if
          endif
-         
-         
+
+
          nocol = noits
          if ( ierr2 .ne. 0 ) goto 510
          goto 30
@@ -538,7 +525,7 @@
          if ( nodim .eq. 0) then
             write(lunut,1370)
             iwar = iwar + 1
-         else  
+         else
 !          Assigns according to computational rules
             nr2 = ntr + nottt*nobrk
             call dlwq5e ( lunut, iar   , noitm, itmnr   , nodim   ,
@@ -571,18 +558,6 @@
          if ( itype .eq. 1 ) goto  30
          goto 10
       endif
-
-!          binary-file option selected
-
-!     if ( iabs(itype) .eq. 1 .and.  chulp(1:11) .eq. 'BINARY_FILE' ) then
-!        binfil = .true.
-!        if ( gettoken( chulp, ierr2 ) .gt. 0 ) goto 510
-!        write ( lun(41) , '(a240)' ) chulp
-!        write ( lunut   ,   2220   ) chulp
-!        call check_filesize( lunut, chulp, nosss*noitm, ierr )
-!        nufil = nufil + 1
-!        goto 10
-!     endif
 !
 !          ODS-file option selected
 !

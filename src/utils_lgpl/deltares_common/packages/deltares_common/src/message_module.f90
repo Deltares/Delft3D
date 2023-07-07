@@ -1,7 +1,7 @@
 module message_module
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module message_module
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Keep track of a stack of messages
@@ -88,7 +88,7 @@ subroutine initstack(stack)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack)          :: stack
     !
@@ -110,7 +110,7 @@ subroutine clearstack(stack)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack)          :: stack
     !
@@ -133,7 +133,7 @@ subroutine addmessage(stack,usermessage)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     character(*)        , intent(in) :: usermessage
     type(message_stack)              :: stack
@@ -178,7 +178,7 @@ subroutine adderror(stack,usermessage)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack)                :: stack
     character(*)          , intent(in) :: usermessage
@@ -201,7 +201,7 @@ subroutine addwarning(stack,usermessage)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack)                :: stack
     character(*)          , intent(in) :: usermessage
@@ -224,7 +224,7 @@ function isempty(stack)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack) :: stack
     logical             :: isempty
@@ -245,7 +245,7 @@ subroutine getmessage(stack,message)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack)    :: stack
     character(message_len) :: message
@@ -274,7 +274,7 @@ subroutine writemessages(stack,unit)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(message_stack)          :: stack
     integer                      :: unit
@@ -299,7 +299,7 @@ subroutine write_error(message, string, unit)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     character(*)          , intent(in) :: message
     character(*), optional, intent(out):: string
@@ -323,7 +323,7 @@ subroutine write_warning(message, string, unit)
     !
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     character(*)          , intent(in) :: message
     character(*), optional, intent(out):: string
@@ -336,7 +336,7 @@ subroutine write_warning(message, string, unit)
     !! executable statements ---------------------------------------------------
     !
     if (present(string)) string = label // message
-    if (present(unit)) write(unit,'(A)') label // message
+    if (present(unit)) write(unit,'(A)') label // trim(message)
 end subroutine write_warning
 
 end module message_module

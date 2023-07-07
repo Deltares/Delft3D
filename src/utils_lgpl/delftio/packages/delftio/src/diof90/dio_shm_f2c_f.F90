@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!
 !!! Dio_shm_f2c_f: F90 part of DioShm F90-to-C++ interface
@@ -38,6 +38,7 @@
 
 module dio_shm
 
+use precision
 !!
 !! Enumeration for Memory Type (must be equal to enum in dio_shm.h)
 !!
@@ -57,7 +58,7 @@ integer, parameter :: DioShmDataPart   = 1
 !! F90 handle to c++-pointer
 !!
 type DsShmHandle
-    integer :: cppPntr
+    integer(pntrsize) :: cppPntr
 end type DsShmHandle
 
 

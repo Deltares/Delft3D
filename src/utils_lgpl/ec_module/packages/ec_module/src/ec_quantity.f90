@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -23,14 +23,15 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of  
 !  Stichting Deltares. All rights reserved.                                     
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module contains all the methods for the datatype tEcQuantity.
 !! @author arjen.markus@deltares.nl
 !! @author adri.mourits@deltares.nl
 !! @author stef.hummel@deltares.nl
-!! @author edwin.bos@deltares.nl
+!! @author edwin.spee@deltares.nl
+!! @author robert.leander@deltares.nl
 module m_ec_quantity
    use m_ec_typedefs
    use m_ec_message
@@ -45,6 +46,8 @@ module m_ec_quantity
    public :: ecQuantityFree1dArray
    public :: ecQuantitySet
    public :: ecQuantitySetUnitsFillScaleOffsetFromNcidVarid
+   public :: ecQuantitySetName
+   public :: ecQuantitySetTimeint
    
    contains
       
@@ -106,6 +109,7 @@ module m_ec_quantity
        function ecQuantitySet(instancePtr, quantityId, name,                     &
                                                        units,                    &
                                                        vectormax,                &
+                                                       periodic, constant,       &
                                                        factor,                   &
                                                        offset,                   &
                                                        fillvalue,                &
@@ -120,6 +124,7 @@ module m_ec_quantity
          character(len=*),optional :: name
          character(len=*),optional :: units
          integer         ,optional :: vectormax
+         logical         ,optional :: periodic, constant
          real(hp)        ,optional :: factor
          real(hp)        ,optional :: offset
          real(hp)        ,optional :: fillvalue
@@ -145,20 +150,27 @@ module m_ec_quantity
 
          if (present(units)) quantityPtr%units = units  
          if (present(vectormax)) quantityPtr%vectormax = vectormax  
+         if (present(periodic)) quantityPtr%periodic = periodic  
+         if (present(constant)) quantityPtr%constant = constant  
          if (present(factor)) quantityPtr%factor = factor  
          if (present(offset)) quantityPtr%offset = offset  
          if (present(fillvalue)) quantityPtr%fillvalue = fillvalue  
          if (present(timeint)) quantityPtr%timeint = timeint  
          if (present(ncid)) quantityPtr%ncid = ncid  
          success = .true.
+         
       end function ecQuantitySet
       
       !> Change the Units, Fillvalue, Scalefactor and Offset shift of the Quantity corresponding to quantityId
       !> obtained from the variable varid in the netcdf file ncid 
       !> all in try-catch fashion: if not available, leave empty or use default
       function ecQuantitySetUnitsFillScaleOffsetFromNcidVarid(instancePtr, quantityId, ncid, varid) result(success)
-      use netcdf
-      use string_module
+         use netcdf
+         use netcdf_utils, only: ncu_get_att
+         use string_module
+         use physicalconsts, only : CtoKelvin
+         use io_ugrid 
+
          implicit none
          logical                               :: success     !< function status
          type(tEcInstance), pointer            :: instancePtr !< intent(in)
@@ -168,31 +180,118 @@ module m_ec_quantity
                                                               !< order: new = (old*scale) + offset
          character(len=:), allocatable  :: units
          integer  :: ierr
-         integer  :: attriblen
          real(hp) :: add_offset, scalefactor, fillvalue
-
+         
+         allocate(character(len=0) :: units)
+         
          success = .false.
          add_offset = 0.d0
          scalefactor = 1.d0
          fillvalue = ec_undef_hp
-         attriblen=0
-         ierr = nf90_inquire_attribute(ncid, varid, 'units', len=attriblen)
-         if (attriblen>0) then
-            allocate(character(len=attriblen) :: units) 
-            units(1:len(units)) = ''
-            if (nf90_get_att(ncid, varid, 'units', units)==NF90_NOERR) then 
-               call str_upper(units) ! make units attribute case-insensitive 
-               if (.not.(ecQuantitySet(instancePtr, quantityId, units=units))) return
+
+         units = ''
+         if (ncu_get_att(ncid, varid, 'units', units)==NF90_NOERR) then 
+            call str_upper(units) ! make units attribute case-insensitive 
+            if (.not.(ecQuantitySet(instancePtr, quantityId, units=units))) then
+                deallocate(units)
+                return
             end if
          end if
-         if (nf90_get_att(ncid, varid, '_FillValue', fillvalue)==NF90_NOERR) then                  ! RL: Possibly redundant: we store the missing value with the field
-            if (.not.(ecQuantitySet(instancePtr, quantityId, fillvalue=fillvalue))) return         !     And not with the quantity. TODO: check if this can be removed
+
+         ierr = nf90_get_att(ncid, varid, '_FillValue', fillvalue)
+         if (ierr==NF90_NOERR) then
+            if (.not.(ecQuantitySet(instancePtr, quantityId, fillvalue=fillvalue))) then
+               call setECMessage("Unable to set fillValue for quantity ", quantityId)
+               return
+            end if
          end if
-         if ((nf90_get_att(ncid, varid, 'scale_factor', scalefactor)==NF90_NOERR)         &
-              .or. (nf90_get_att(ncid, varid, 'add_offset', add_offset)==NF90_NOERR)) then
-              if (.not.(ecQuantitySet(instancePtr, quantityId, factor=scalefactor, offset=add_offset))) return
+
+         ierr = nf90_get_att(ncid, varid, 'scale_factor', scalefactor)
+         if (ierr==NF90_NOERR) then
+            if (.not.(ecQuantitySet(instancePtr, quantityId, factor=scalefactor))) then
+               call setECMessage("Unable to set scale factor for quantity ", quantityId)
+               return
+            end if
          end if
-         success = .true.
+
+         ierr = nf90_get_att(ncid, varid, 'add_offset', add_offset)
+         if (ierr /= NF90_NOERR) add_offset = 0.0_hp
+
+         if (units == 'K' .or. units == 'KELVIN') then
+            ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
+            add_offset = add_offset - CtoKelvin
+         end if
+
+         if (add_offset /= 0.0_hp) then
+            if (.not.(ecQuantitySet(instancePtr, quantityId, offset=add_offset))) then
+               call setECMessage("Unable to set offset for quantity ", quantityId)
+               return
+            end if
+         end if
+
+        deallocate(units)
+        success = .true.
+
       end function ecQuantitySetUnitsFillScaleOffsetFromNcidVarid
      
+      ! =======================================================================
+      
+      !> Change the name of the Quantity corresponding to quantityId.
+      function ecQuantitySetName(instancePtr, quantityId, newName) result(success)
+         logical                               :: success     !< function status
+         type(tEcInstance), pointer            :: instancePtr !< intent(in)
+         integer,                   intent(in) :: quantityId  !< unique Quantity id
+         character(*),              intent(in) :: newName     !< new name of the Quantity
+         !
+         type(tEcQuantity), pointer :: quantityPtr !< Quantity corresponding to quantityId
+         character(len=maxNameLen)  :: name        !< new name of the Quantity, converted to the correct length
+         !
+         success = .false.
+         quantityPtr => null()
+         !
+         if (len_trim(newName) > maxNameLen) then
+            call setECMessage("ERROR: ec_quantity::ecQuantitySetName: The new name string is too long, unable to change name.")
+         else
+            name = newName
+         end if
+         quantityPtr => ecSupportFindQuantity(instancePtr, quantityId)
+         if (associated(quantityPtr)) then
+            quantityPtr%name = name
+            success = .true.
+         else
+            call setECMessage("ERROR: ec_quantity::ecQuantitySetName: Cannot find a Quantity with the supplied id.")
+         end if
+      end function ecQuantitySetName
+
+      ! =======================================================================
+      
+      !> Change the timeinterpolation type of the Quantity corresponding to quantityId.
+      function ecQuantitySetTimeint(instancePtr, quantityId, timeint, periodic, constant) result(success)
+         logical                               :: success     !< function status
+         type(tEcInstance), pointer            :: instancePtr !< intent(in)
+         integer,                   intent(in) :: quantityId  !< unique Quantity id
+         integer,                   intent(in) :: timeint     !< new vectormax of the Quantity
+         logical, optional,         intent(in) :: periodic    !< periodic time function?
+         logical, optional,         intent(in) :: constant    !< constant value?
+         !
+         type(tEcQuantity), pointer :: quantityPtr !< Quantity corresponding to quantityId
+         !
+         success = .false.
+         quantityPtr => null()
+         !
+         quantityPtr => ecSupportFindQuantity(instancePtr, quantityId)
+         if (associated(quantityPtr)) then
+            quantityPtr%timeint = timeint
+            if (present(periodic)) then
+                   quantityPtr%periodic = periodic
+            endif
+            if (present(constant)) then
+                   quantityPtr%constant = constant
+            endif
+            success = .True.
+         else
+            call setECMessage("ERROR: ec_quantity::ecQuantitySetTimeint: Cannot find a Quantity with the supplied id.")
+         end if
+      end function ecQuantitySetTimeint
+      
 end module m_ec_quantity

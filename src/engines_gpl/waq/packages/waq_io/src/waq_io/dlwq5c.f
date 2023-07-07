@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -99,7 +99,10 @@
 !     IF (SCALE) First NODIM entries the scale factors
 !     Then the matrix of values to be read in eg in this routine
 !
+      use m_zoek
       use timers       !   performance timers
+      use m_sysi          ! Timer characteristics
+
 
       INTEGER       ICMAX  , IIMAX  , IRMAX
       CHARACTER*(*) CAR(*) , FNAME
@@ -115,9 +118,6 @@
       REAL*8        AFACT    , A1    , A2    , D_BEG    , D_END , DUMMY
       CHARACTER*3   CDUMMY
 !
-!     COMMON  /  SYSI   /   System timers
-!
-      INCLUDE 'sysi.inc'
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dlwq5c", ithndl )
 !

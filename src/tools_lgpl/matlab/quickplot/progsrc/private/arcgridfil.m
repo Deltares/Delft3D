@@ -18,7 +18,7 @@ function varargout=arcgridfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -439,7 +439,7 @@ if strcmp(FI.FileType,'SURFER')
     subf={};
     return
 end
-if length(FI.Times)>1 && Props.DimFlag(T_)==0 && Props.NVal==1
+if isfield(FI,'Times') && length(FI.Times)>1 && Props.DimFlag(T_)==0 && Props.NVal==1
     subf=cell(length(FI.Times),1);
     for i=1:length(FI.Times)
         subf{i}=sprintf('class %i',i);

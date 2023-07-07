@@ -11,7 +11,7 @@ function filtertbl = qp_filefilters(filters)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -44,20 +44,22 @@ filtertbl={...
     '*.grd;*.rgf'                                          'Delft3D Grid Files'                'wlgrid'             0
     '*.mdf;*.mdu;*.md1d;*.mdw'                             'Delft3D Simulation Files'          'md*-file'           0
     '*.mesh'                                               'Mike Flexible Mesh Files'          'mikemesh'           0
-    '*.14'                                                 'Adcirc Mesh Files'                 'adcircmesh'         0
+    '*.14;*.gr3'                                           'Adcirc Mesh Files'                 'adcircmesh'         0
     '*.shy'                                                'SHYFEM Mesh Files'                 'SHYFEM mesh'        0
+    '*_grd.dat'                                            'SMS Mesh Files'                    'smsmesh'            0
     '*.mesh;*.node;*.ele;*.n;*.e'                          'EasyMesh and Triangle Mesh Files'  'nodelemesh'         0
     '*.gem'                                                'GeoSystems Mesh Files'             'geomesh'            0
-    '*.bct;*.bcc;*.bcb'                                    'Delft3D-FLOW Bound. Cond. Files'   'bct'                0
+    '*.bct;*.bcc;*.bcb;*.bc'                               'Delft3D-FLOW Bound. Cond. Files'   'bct'                0
     'bagdpt*.*'                                            'Delft3D-MOR Ascii Dredging Output' 'bagdpt'             0
     '*.am?;*.spw;*.wnd'                                    'Delft3D/SOBEK Meteo Files'         'asciiwind'          0
     'gcmplt.*;gcmtsr.*'                                    'ECOMSED Binary Files'              'ecomsed-binary'     0
     '*.stu;*.pst'                                          'JSPost Files'                      'JSPost'             0
     '*.xyz'                                                'Sample Files'                      'samples'            0
+    '*.grb;*.grib;*.grib1;*.grib2'                         'GRIB Files'                        'grib'               0
     '*.nc'                                                 'NetCDF Files'                      'NetCDF'             0
     '*.hdf;*.hdf5'                                         'HDF5 Files'                        'HDF5'               0
-    '*.grib;*.grib1;*.grib2'                               'GRIB Files'                        'grib'               0
-    'sds-*'                                                'Simona SDS Files'                  'waquasds'           0
+    'sds-*'                                                'SIMONA SDS Files'                  'waquasds'           0
+    '*.*'                                                  'SIMONA Box Files'                  'boxfile'            0
     '*.his;*.map;*.plo;*.psf;*.lga'                        'Delwaq Binary Files'               'delwaqbin'          0
     '*.tim'                                                'Delwaq Time Series Input Files'    'DelwaqTimFile'      0
     '*.arc;*.am?;*.asc'                                    'ARC/INFO Ascii Grid Files'         'arcgrid'            0
@@ -67,6 +69,7 @@ filtertbl={...
     '*.ldb;*.pol'                                          'Land Boundary and Polygon Files'   '>tekal'             1
     '*.tek;*.ann;*.ldb;*.pol;*.spl;*.tka;*.tkp;*.tkf'      'Tekal Data Files'                  'tekal'              0
     '*.dxf'                                                'AutoCAD DXF Files'                 'AutoCAD DXF'        1
+    '*.geojson'                                            'GeoJSON Files'                     'GeoJSON'            1
     '*.shp'                                                'Shape Files'                       'shape'              1
     '*.gen'                                                'ArcInfo Ungenerate Files'          'ArcInfoUngenerate'  1
     '*.bna'                                                'BNA Files'                         'BNA File'           1
@@ -124,5 +127,5 @@ switch filters
         iFull = strncmp(lasttp,filtertbl(:,3),length(lasttp));
         filtertbl = filtertbl(iFull,:);
 end
-[dum,Reorder] = sort(filtertbl(:,2));
+[dum,Reorder] = sort(lower(filtertbl(:,2)));
 filtertbl = filtertbl(Reorder,1:3);

@@ -18,7 +18,7 @@ function varargout=usrdeffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -94,6 +94,9 @@ switch cmd
     case 'subfields'
         varargout={{}};
         return
+    case 'plotoptions'
+        varargout = {[]};
+        return
     case 'plot'
         Parent = varargin{1};
         Ops = varargin{2};
@@ -125,7 +128,9 @@ idx(fidx(1:length(varargin)))=varargin;
 
 i=Props.Fld;
 [Ans,FIi]=getdata(FI(i),cmd,idx);
-Ans.Time=readtim(FI,Props,idx{1});
+if Props.DimFlag(T_)
+    Ans.Time=readtim(FI,Props,idx{1});
+end
 FI(i)=FIi;
 
 varargout={Ans FI};
@@ -154,7 +159,10 @@ for i=1:length(FI)
     end
     DataProps{i,7}=FI(i).Props.NVal;
     DataProps{i,8}=i;
-    if isfield(FI(i),'Tri') && ~isempty(FI(i).Tri)
+    if isfield(FI(i),'Geom') && ~isempty(FI(i).Geom)
+        DataProps{i,3}=FI(i).Geom;
+        DataProps{i,9}=strcmp(FI(i).Geom, 'TRI');
+    elseif isfield(FI(i),'Tri') && ~isempty(FI(i).Tri)
         DataProps{i,9}=FI(i).Tri;
         DataProps{i,3}='TRI';
     else
@@ -254,7 +262,7 @@ if isequal(Props.FileInfo,'operator')
             if griduse~=1
                 for c = {'FaceNodeConnect','ValueLocation','TRI','XYZ','X','Y','Z'}
                     f = c{1};
-                    if isfield(Ans,f)
+                    if isfield(Ans2,f)
                         Ans.(f) = Ans2.(f);
                     end
                 end
@@ -262,15 +270,21 @@ if isequal(Props.FileInfo,'operator')
             if isfield(Ans,'Val')
                 sz1=size(Ans.Val);
                 vec1=0;
-            else
+            elseif isfield(Ans,'XComp')
                 sz1=size(Ans.XComp);
+                vec1=1;
+            elseif isfield(Ans,'XDamVal')
+                sz1=size(Ans.XDamVal);
                 vec1=1;
             end
             if isfield(Ans2,'Val')
                 sz2=size(Ans2.Val);
                 vec2=0;
-            else
+            elseif isfield(Ans2,'XComp')
                 sz2=size(Ans2.XComp);
+                vec2=1;
+            elseif isfield(Ans2,'XDamVal')
+                sz2=size(Ans2.XDamVal);
                 vec2=1;
             end
             if length(sz1)~=length(sz2)
@@ -288,6 +302,8 @@ if isequal(Props.FileInfo,'operator')
                     Ans.XComp=repmat(Ans.XComp,res1);
                     if isfield(Ans,'YComp');
                         Ans.YComp=repmat(Ans.YComp,res1);
+                    elseif isfield(Ans,'YDamVal');
+                        Ans.YComp=repmat(Ans.YDamVal,res1);
                     end
                     if isfield(Ans,'ZComp');
                         Ans.ZComp=repmat(Ans.ZComp,res1);
@@ -302,6 +318,8 @@ if isequal(Props.FileInfo,'operator')
                     Ans2.XComp=repmat(Ans2.XComp,res2);
                     if isfield(Ans2,'YComp');
                         Ans2.YComp=repmat(Ans2.YComp,res2);
+                    elseif isfield(Ans2,'YDamVal');
+                        Ans2.YComp=repmat(Ans2.YDamVal,res2);
                     end
                     if isfield(Ans2,'ZComp');
                         Ans2.ZComp=repmat(Ans2.ZComp,res2);
@@ -536,6 +554,56 @@ if isequal(Props.FileInfo,'operator')
                     data = [];
                 end
             end
+        case {'m index','n index','k index'}
+            switch Oper(1)
+                case 'm'
+                    m_ = M_;
+                    dIndex = 1;
+                case 'n'
+                    m_ = N_;
+                    dIndex = 2;
+                case 'k'
+                    m_ = K_;
+                    dIndex = kIndex;
+            end
+            [Ans,FI]=getdata(P,cmd,sel);
+            Props.Props.Data{1}=FI;
+            szP = getsize(P.FileInfo,P);
+            %
+            szData = [];
+            for i=1:length(FieldList)
+                f = FieldList{i};
+                if isfield(Ans,f)
+                    szData = size(Ans.(f));
+                    Ans = rmfield(Ans,f);
+                end
+            end
+            if isempty(szData) % NVal=0
+                szData = [1 1];
+                mm_ = [M_ 1; N_ 2; K_ kIndex];
+                for i = 1:3
+                    D_ = mm_(i,1);
+                    DI = mm_(i,2);
+                    if szP(D_)>0
+                        if isequal(sel{D_},0)
+                            szData(DI) = szP(D_);
+                        else
+                            szData(DI) = length(sel{D_});
+                        end
+                    end
+                end
+            end
+            szIdx = ones(size(szData));
+            if isequal(sel{m_},0)
+                szM = szP(m_);
+                idx = 1:szM;
+            else
+                idx = sel{m_};
+                szM = length(idx);
+            end
+            szIdx(dIndex) = szM;
+            idx = reshape(idx,szIdx);
+            Ans.Val = repmat(idx,szData./szIdx);
         case 'magnitude'
             [Ans,FI]=getdata(P,cmd,sel);
             Props.Props.Data{1}=FI;
@@ -675,7 +743,14 @@ else
     end
     [Chk,sz]=qp_getdata(Props.FileInfo,DomainNr,Props.Props,'size');
     for i=1:5
-        if ~isempty(Props.Selected{i}) && ~isequal(Props.Selected{i},0)
+        if iscell(Props.Selected{i})
+            if i == 3
+                sz(i) = 111;
+                sz(i+1) = 1;
+            elseif i == 5
+                sz(i) = 1;
+            end
+        elseif ~isempty(Props.Selected{i}) && ~isequal(Props.Selected{i},0)
             sz(i)=length(Props.Selected{i});
         end
     end
@@ -834,24 +909,31 @@ switch cmd
         end
         options(FI,mfig,'selectvar');
 
-    case 'delvar'
-        Handle_VarList=findobj(mfig,'tag','varlist');
-        Vars=get(Handle_VarList,'userdata');
-        Str=get(Handle_VarList,'string');
-        NrInList=get(Handle_VarList,'value');
-        Vars(NrInList)=[];
-        Str(NrInList)=[];
-        if isempty(Vars)
-            set(Handle_VarList,'enable','off','backgroundcolor',Inactive);
-            Handle_DelVar=findobj(mfig,'tag','delvar');
-            set(Handle_DelVar,'enable','off');
-            Str=' ';
+    case {'delvar','deletevar','deleteallvars'}
+        Handle_VarList = findobj(mfig,'tag','varlist');
+        Vars = get(Handle_VarList,'userdata');
+        if strcmp(cmd,'deleteallvars')
+            NrInList = ':';
+            Vars(1:end) = []; % Vars will be empty, but not equal to []
         else
-            NrInList=min(NrInList,length(Vars));
+            Str = get(Handle_VarList,'string');
+            NrInList = get(Handle_VarList,'value');
+            Vars(NrInList) = [];
+            Str(NrInList) = [];
+            cmd = 'deletevar';
+        end
+        if isempty(Vars)
+            NrInList = 1;
+            set(Handle_VarList,'enable','off','backgroundcolor',Inactive);
+            Handle_DelVar = findobj(mfig,'tag','delvar');
+            set(Handle_DelVar,'enable','off');
+            Str = ' ';
+        else
+            NrInList = min(NrInList,length(Vars));
         end
         set(Handle_VarList,'userdata',Vars,'string',Str,'value',NrInList);
         options(FI,mfig,'selectvar');
-        NewFI=Vars;
+        NewFI = Vars;
         cmdargs={cmd};
 
     case 'selectvar'
@@ -877,8 +959,18 @@ switch cmd
 
             NVal=Vars(i).Props.NVal;
             switch NVal
-                case {0,-1}
+                case -1
+                case 0
                     Ops={};
+                    if Vars(i).DimFlag(M_)
+                        Ops(end+1) = {'m index'};
+                    end
+                    if Vars(i).DimFlag(N_)
+                        Ops(end+1) = {'n index'};
+                    end
+                    if Vars(i).DimFlag(K_)
+                        Ops(end+1) = {'k index'};
+                    end
                 case {1,1.9,2,3}
                     Ops={'A+B','A-B','A*B','A/B','max(A,B)','min(A,B)', ...
                         '+ constant','* constant','^ constant','max(A,constant)','min(A,constant)', ...
@@ -888,19 +980,19 @@ switch cmd
                         if NVal==1
                             Ops(end+(1:2))={'min m' 'max m'};
                         end
-                        Ops(end+(1:3)) = {'alg.mean m' 'sum m' 'flip m'};
+                        Ops(end+(1:4)) = {'alg.mean m' 'sum m' 'flip m' 'm index'};
                     end
                     if Vars(i).DimFlag(N_)
                         if NVal==1
                             Ops(end+(1:2))={'min n' 'max n'};
                         end
-                        Ops(end+(1:3)) = {'alg.mean n' 'sum n' 'flip n'};
+                        Ops(end+(1:4)) = {'alg.mean n' 'sum n' 'flip n' 'n index'};
                     end
                     if Vars(i).DimFlag(K_)
                         if NVal==1
                             Ops(end+(1:2))={'min k' 'max k'};
                         end
-                        Ops(end+(1:3)) = {'alg.mean k' 'sum k' 'flip k'};
+                        Ops(end+(1:4)) = {'alg.mean k' 'sum k' 'flip k' 'k index'};
                     end
                     if NVal>1
                         Ops(end+1)={'magnitude'};
@@ -1057,7 +1149,7 @@ switch cmd
                     set(Handle_Const,'enable','on','backgroundcolor',Active);
                     set(Handle_DefVar,'enable','on')
                     set(Handle_UserOp,'enable','off','backgroundcolor',Inactive);
-                case {'magnitude','abs','10log','max m','alg.mean m','min m','sum m','max n','alg.mean n','min n','sum n','max k','alg.mean k','min k','sum k','flip m','flip n','flip k'}
+                case {'magnitude','abs','10log','max m','alg.mean m','min m','sum m','max n','alg.mean n','min n','sum n','max k','alg.mean k','min k','sum k','flip m','flip n','flip k','m index','n index','k index'}
                     set(Handle_VarList2,'enable','off','value',1,'string',{' '},'backgroundcolor',Inactive,'userdata',[]);
                     set(Handle_UserOp,'enable','off','backgroundcolor',Inactive);
                 case {'f(A) = user defined'}
@@ -1176,6 +1268,7 @@ switch cmd
         else
             set(Handle_DefVar,'enable','on')
         end
+        cmdargs={cmd Str};
 
     case 'defvariable'
         Handle_VarList=findobj(mfig,'tag','varlist');
@@ -1281,7 +1374,7 @@ switch cmd
                 Props.Oper=Ops{k};
                 Props.Data={Vars(i) c};
                 Props.DataInCell = Vars(i).DataInCell;
-            case {'10log','abs','max m','alg.mean m','min m','max n','alg.mean n','min n','max k','alg.mean k','min k','sum k','sum m','sum n','flip m','flip n','flip k'}
+            case {'10log','abs','flip m','flip n','flip k'}
                 VarName=sprintf('%s(%s)',Ops{k},Vars(i).Name);
                 switch Ops{k}
                     case '10log'
@@ -1289,6 +1382,28 @@ switch cmd
                         Props.Units = Vars(i).Units;
                 end
                 Props.NVal=Vars(i).Props.NVal;
+                Props.Oper=Ops{k};
+                Props.Data={Vars(i)};
+                Props.DataInCell = Vars(i).DataInCell;
+            case {'max m','alg.mean m','min m','max n','alg.mean n','min n','max k','alg.mean k','min k','sum k','sum m','sum n'}
+                VarName=sprintf('%s(%s)',Ops{k},Vars(i).Name);
+                Props.Units = Vars(i).Units;
+                Props.NVal=Vars(i).Props.NVal;
+                Props.Oper=Ops{k};
+                Props.Data={Vars(i)};
+                switch Ops{k}
+                    case {'max m','alg.mean m','min m','sum m'}
+                        switch Props.Geom
+                            case {'UGRID2D-FACE', 'UGRID2D-EDGE', 'UGRID2D-NODE', 'UGRID1D-EDGE', 'UGRID1D-NODE'}
+                                Props.Geom = 'PNT';
+                            otherwise
+                                % should maybe also change
+                        end
+                end
+                Props.DataInCell = Vars(i).DataInCell;
+            case {'m index','n index','k index'}
+                VarName=sprintf('%s(%s)',Ops{k},Vars(i).Name);
+                Props.NVal=1;
                 Props.Oper=Ops{k};
                 Props.Data={Vars(i)};
                 Props.DataInCell = Vars(i).DataInCell;
@@ -1766,16 +1881,15 @@ while i<length(Op)
                             fcn(2,ifcn) = 0;
                             if i+1<length(Op)
                                 if strcmp(Op{i+2},')')
-                                    Op{i} = {'rand'};
                                     Op(i+1:i+2)=[];
                                     fcn(:,ifcn) = 0;
                                     ifcn = ifcn-1;
                                 else
-                                    err = 'Too many arguments specified for function: rand';
+                                    err = ['Too many arguments specified for function: ' Op{i}];
                                     return
                                 end
                             else
-                                err = 'Unexpected end of formula while processing function: rand';
+                                err = ['Unexpected end of formula while processing function: ' Op{i}];
                                 return
                             end      
                         case f1
@@ -1873,7 +1987,7 @@ else
 end
 
 function [f0,f1,f2,f3] = supportedfunctions
-f0 = {'rand'};
+f0 = {'rand','index'};
 f1 = {'abs','acos','asin','atan','ceil','cos', ...
     'cosh','exp','floor','log','log10', ...
     'round','sin','sinh','sqrt','tan','tanh'};
@@ -1919,7 +2033,7 @@ else
         argin{i-1} = usereval(fun{i},args{:});
     end
     switch fun{1}
-        case 'rand'
+        case {'rand','index'}
             sz = size(args{1});
             if length(args)>1
                 sz = max(sz,size(args{2}));
@@ -1943,6 +2057,9 @@ else
     end
     val = feval(fun{1},argin{:});
 end
+
+function val = index(szA)
+val = reshape(1:prod(szA),szA);
 
 function val = fmod(A,B)
 val = A - fix(A/B)*B;

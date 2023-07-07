@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+                <!--
+                Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
+                Basic Windows configuration file: tb3_cfg_win32_hp.xml
+                From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
+                From hp to parallel: Use mpi as shell (in related program)
+                                     Overrule maxruntime when needed
+                                     Only cases that run in parallel mode
+                -->
+    <config>
+        <localPaths>
+            <testCasesDir>.\data\cases</testCasesDir>
+            <enginesDir>.\data\engines\delft3d\win32</enginesDir>
+            <referenceDir>.\data\reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="testbench_ref_engines">
+                <credential ref="commandline"/>
+                <root>..\..\nefis\engines_as_reference</root>
+            </location>
+            <location name="dsctestbench_reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="dsctestbench_cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>..\..\nefis\engines_to_compare</root>
+            </location>
+        </locations>
+    </config>
+
+    <!--
+    Programs
+    -->
+    <!--
+    The order is important. Start with the following programs:
+        command_prompt
+        svn
+        mpi
+    -->
+    <programs>
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win64\svn.exe</path>
+        </program>
+        <program name="test_00" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_00.exe</path>
+        </program>
+        <program name="test_01" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_01.exe</path>
+        </program>
+        <program name="test_02" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_02.exe</path>
+        </program>
+        <program name="test_03" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_03.exe</path>
+        </program>
+        <program name="test_04" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_04.exe</path>
+        </program>
+        <program name="test_05" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_05.exe</path>
+        </program>
+        <program name="test_06" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_06.exe</path>
+        </program>
+        <program name="test_07" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_07.exe</path>
+        </program>
+        <program name="test_08" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_08.exe</path>
+        </program>
+        <program name="test_09" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_09.exe</path>
+        </program>
+        <program name="test_10" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_10.exe</path>
+        </program>
+        <program name="test_11" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_11.exe</path>
+        </program>
+        <program name="test_12" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_12.exe</path>
+        </program>
+        <program name="test_14" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_14.exe</path>
+        </program>
+        <program name="test_15" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_15.exe</path>
+        </program>
+        <program name="test_16" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_16.exe</path>
+        </program>
+        <program name="test_17" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_17.exe</path>
+        </program>
+        <program name="test_18" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_18.exe</path>
+        </program>
+        <program name="test_19" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_19.exe</path>
+        </program>
+        <program name="test_20" logOutputToFile="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>win32</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>win64</from>
+            </location>
+            <path>test_20.exe</path>
+        </program>
+    </programs>
+
+    <!--
+    default testCases
+        Testcases may refer to a default testCase with the attribute
+        ref="name_of_default_testcase"
+    -->
+
+    <defaultTestCases>
+        <testCase name="test_00_default">
+            <programs>
+                <program ref="test_00"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_01_default">
+            <programs>
+                <program ref="test_01"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_02_default">
+            <programs>
+                <program ref="test_02"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_03_default">
+            <programs>
+                <program ref="test_03"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_04_default">
+            <programs>
+                <program ref="test_04"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_05_default">
+            <programs>
+                <program ref="test_05"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_06_default">
+            <programs>
+                <program ref="test_06"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_07_default">
+            <programs>
+                <program ref="test_07"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_08_default">
+            <programs>
+                <program ref="test_08"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_09_default">
+            <programs>
+                <program ref="test_09"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_10_default">
+            <programs>
+                <program ref="test_10"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_11_default">
+            <programs>
+                <program ref="test_11"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_12_default">
+            <programs>
+                <program ref="test_12"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_13_default">
+            <programs>
+                <program ref="test_13"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_14_default">
+            <programs>
+                <program ref="test_14"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_15_default">
+            <programs>
+                <program ref="test_15"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_16_default">
+            <programs>
+                <program ref="test_16"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_17_default">
+            <programs>
+                <program ref="test_17"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_18_default">
+            <programs>
+                <program ref="test_18"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_19_default">
+            <programs>
+                <program ref="test_19"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_20_default">
+            <programs>
+                <program ref="test_20"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>e80_nefis/f01</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>win32/e80_nefis/f01</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+
+    <!--
+    testCases
+    -->
+
+    <testCases>
+        <testCase name="test_00" ref="test_00_default">
+            <path>c00</path>
+            <programs>
+                <program ref="test_00">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_01" ref="test_01_default">
+            <path>c01</path>
+            <programs>
+                <program ref="test_01">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_02" ref="test_02_default">
+            <path>c02</path>
+            <programs>
+                <program ref="test_02">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_03" ref="test_03_default">
+            <path>c03</path>
+            <programs>
+                <program ref="test_03">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_04" ref="test_04_default">
+            <path>c04</path>
+            <programs>
+                <program ref="test_04">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_05" ref="test_05_default">
+            <path>c05</path>
+            <programs>
+                <program ref="test_05">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_06" ref="test_06_default">
+            <path>c06</path>
+            <programs>
+                <program ref="test_06">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_07" ref="test_07_default">
+            <path>c07</path>
+            <programs>
+                <program ref="test_07">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_08" ref="test_08_default">
+            <path>c08</path>
+            <programs>
+                <program ref="test_08">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_09" ref="test_09_default">
+            <path>c09</path>
+            <programs>
+                <program ref="test_09">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_10" ref="test_10_default">
+            <path>c10</path>
+            <programs>
+                <program ref="test_10">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_11" ref="test_11_default">
+            <path>c11</path>
+            <programs>
+                <program ref="test_11">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_12" ref="test_12_default">
+            <path>c12</path>
+            <programs>
+                <program ref="test_12">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_14" ref="test_14_default">
+            <path>c14</path>
+            <programs>
+                <program ref="test_14">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_15" ref="test_15_default">
+            <path>c15</path>
+            <programs>
+                <program ref="test_15">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_16" ref="test_16_default">
+            <path>c16</path>
+            <programs>
+                <program ref="test_16">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_17" ref="test_17_default">
+            <path>c17</path>
+            <programs>
+                <program ref="test_17">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_18" ref="test_18_default">
+            <path>c18</path>
+            <programs>
+                <program ref="test_18">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_19" ref="test_19_default">
+            <path>c19</path>
+            <programs>
+                <program ref="test_19">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="test_20" ref="test_20_default">
+            <path>c20</path>
+            <programs>
+                <program ref="test_20">
+                    <arguments>
+                        <argument>&gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </testCases>
+</deltaresTestbench_v3>

@@ -1,4 +1,15 @@
 #!/bin/bash
+    #
+    # This script executes qsub to add a job to the queue of a Linux cluster
+    # It is tailored for use at Deltares
+    # Adapt and use it for your own purpose
+    #
+    # Usage example:
+    # Execute in the working directory:
+    # /path/to/delft3d/installation/lnx64/bin/submit_dimr.sh
+    # More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
+    #
+    # Do not "qsub" this script, just run it from the command prompt
 
 function print_usage_info {
     echo "Usage: ${0##*/} [OPTION]..."
@@ -7,8 +18,8 @@ function print_usage_info {
     echo "Options:"
     echo "-c, --corespernode <M>"
     echo "       number of cores per node, default $corespernodedefault"
-    echo "-d, --debug 0xFFFFFFFF"
-    echo "       maximum debug output, default 0"
+    echo "-d, --debug <D>"
+    echo "       0:ALL, 6:SILENT, default 2:INFO"
     echo "-h, --help"
     echo "       print this help message and exit"
     echo "-j, --jobname <jobname>"
@@ -21,9 +32,12 @@ function print_usage_info {
     echo "-n, --numnode <N>"
     echo "       number of nodes, default 1"
     echo "-q, --queue <qname>"
-    echo "       queue, default normal-e3"
+    echo "       queue, default normal-e3-c7"
     echo "-s, --sequential"
     echo "       sequential (non-MPI) run, equivalent to -n 1 -c 1"
+    echo
+    echo "Starting from the first option that is not in the above list,"
+    echo "all remaining command line options are passed to run_dimr.sh."
     exit 1
 }
 
@@ -32,20 +46,18 @@ function print_usage_info {
 # === MAIN ===
 # ============
 
-
 #
 ## Defaults
-debuglevel=0
+corespernodedefault=1
+corespernode=$corespernodedefault
+debuglevel=-1
 configfile=dimr_config.xml
-queue=normal-e3
+queue=normal-e3-c7
 JOBNAME=dimr
 D3D_HOME=
 runscript_extraopts=
-corespernodedefault=1
-corespernode=$corespernodedefault
 numnode=1
 do_mpi=0
-runscript_extraopts=
 
 #
 ## Start processing command line options:
@@ -89,7 +101,7 @@ case $key in
     shift
     ;;
     --)
-    echo "-- sign detected, remained options are going to be passed to dimr"
+    echo "-- sign detected, remaining options are going to be passed to dimr"
     runscript_extraopts="$runscript_extraopts $*"
     break       # exit loop, stop shifting, all remaining arguments without dashes handled below
     ;;
@@ -101,25 +113,30 @@ case $key in
 esac
 done
 
+# Check configfile
+if [ ! -f $configfile ]; then
+    echo "ERROR: configfile $configfile does not exist"
+    print_usage_info
+fi
+
+# Check debuglevel, translate into argument for dimr
+if [ $debuglevel -eq -1 ]; then
+    debugarg=
+else
+    debugarg="-d $debuglevel"
+fi
 
 if [ ${numnode} -ge 2 ] || [ ${corespernode} -ge 2 ]; then
     do_mpi=1
 fi
 
 
-export OMP_NUM_THREADS=1
-
-
-if [ ! -f $configfile ]; then
-    echo "ERROR: configfile $configfile does not exist"
-    print_usage_info
-fi
 
 
 ## MPI processes:
 if [ -z "${numnode}" ]; then
-		echo "Error: number of nodes missing on commandline."
-		print_usage_info
+    echo "Error: number of nodes missing on commandline."
+    print_usage_info
 fi
 
 
@@ -128,17 +145,17 @@ JOBNAME="${JOBNAME}_${numnode}x${corespernode}"
 
 scriptdirname=`readlink \-f \$0`
 scriptdir=`dirname $scriptdirname`
-D3D_HOME=$scriptdir/../..
+D3D_HOME=$scriptdir/..
 RUNSCRIPT=$scriptdir/run_dimr.sh
 
-runscript_opts="-m ${configfile} -d ${debuglevel} -c $corespernode --NNODES $numnode --D3D_HOME ${D3D_HOME}"
+runscript_opts="-m ${configfile} ${debugarg} -c $corespernode --NNODES $numnode --D3D_HOME ${D3D_HOME}"
 runscript_opts="$runscript_opts $runscript_extraopts"
 if [[ $do_mpi -eq 0 ]]; then
     echo "qsub -q $queue -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}"
-    qsub -q $queue -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
+          qsub -q $queue -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
 else
     echo "qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}"
-    qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
+          qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
 fi
 
 

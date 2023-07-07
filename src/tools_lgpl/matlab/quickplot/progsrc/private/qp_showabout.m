@@ -3,7 +3,7 @@ function ifig=qp_showabout(qpversion,style,qpdate)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -102,8 +102,8 @@ switch style
             'String','Delft3D-QUICKPLOT');
         
         if strcmp(qpdate,'<CREATIONDATE>')
-            voffset = 40;
-            str = vers;
+            voffset = 20;
+            str = {vers,['running in MATLAB ' version]};
         else
             voffset = 20;
             str = {vers,qpdate};

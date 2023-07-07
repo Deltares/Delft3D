@@ -25,6 +25,7 @@ switch(mode)
 		run_common_tests(ncfile);
 		run_hdf4_tests;
 end
+run_negative_tests(ncfile,mode);
 fprintf('OK\n');
 return
 
@@ -90,49 +91,52 @@ function test_read_write_empty_att(ncfile )
 %
 % REFERENCE:  http://www.mathworks.com/support/bugreports/609383
 
+% Empty attributes cannot be created with the TMW interface on R2008b 
+% through R2010a unless the bug fix at 
+% http://www.mathworks.com/support/bugreports/609383 is applied.  Do not
+% run the test unless the user is sure to do so.
+info = nc_info(ncfile);
+v = version('-release');
+switch(v)
+    case '2008b'
+		if ~getpref('SNCTOOLS','FORCE_R2008B_TESTS',false) && strcmp(info.Format,'NetCDF')
+		    fprintf('\n\t\t\tFiltering out test_read_write_empty_att on R2008b, please consult the \n');
+		    fprintf('\t\t\tsection ''Bug Reports You Should Know About'' in the README for \n');
+		    fprintf('\t\t\tbug #609383, or go to http://www.mathworks.com/support/bugreports/609383.\n');
+            return
+		end
+        
+    case '2009a'
+		if ~getpref('SNCTOOLS','FORCE_R2009A_TESTS',false) && strcmp(info.Format,'NetCDF')
+		    fprintf('\n\t\t\tFiltering out test_read_write_empty_att on R2009a, please consult the \n');
+		    fprintf('\t\t\tsection ''Bug Reports You Should Know About'' in the README for \n');
+		    fprintf('\t\t\tbug #609383, or go to http://www.mathworks.com/support/bugreports/609383.\n');
+            return
+		end
+        
+    case '2009b'
+		if ~getpref('SNCTOOLS','FORCE_R2009B_TESTS',false)
+		    fprintf('\n\t\t\tFiltering out test_read_write_empty_att on R2009b, please consult the \n');
+		    fprintf('\t\t\tsection ''Bug Reports You Should Know About'' in the README for \n');
+		    fprintf('\t\t\tbug #609383, or go to http://www.mathworks.com/support/bugreports/609383.\n');
+            return
+		end
+        
+end
+
 
 info = nc_info(ncfile);
 if strcmp(info.Format,'HDF4')
     return
 end
 
-warning('off','SNCTOOLS:NCATTPUT:emptyAttributeBug');
 nc_attput ( ncfile, nc_global, 'emptyAtt', '' );
 x = nc_attget ( ncfile, nc_global, 'emptyAtt' );
 
-if ( ~ischar(x) )
-    error('class of retrieved attribute was not char.' );
+if ~isempty(x)
+    error ( 'retrieved attribute was not empty' );
 end
 
-
-
-v = version('-release');
-mv = mexnc('inq_libvers');
-switch(v)
-case { '2008b','2009a','2009b'}
-    if mv(1) == '4'
-        % netcdf-4 capable mex-file
-        if numel(x) ~= 0
-            error('failed');
-        end
-    else
-        if( numel(x) ~= 1 )
-            error ( 'retrieved attribute was not one char in length' );
-        end
-    end
-    %%% If you have applied the fix for bug #609383, then
-    %%% comment out the code above and uncomment the
-	%%% code below.
-    %%% if ( numel(x) ~= 0 )
-    %%%     error ( 'retrieved attribute was not empty' );
-    %%% end
-otherwise
-    if ( numel(x) ~= 0 )
-        error ( 'retrieved attribute was not empty' );
-    end
-end
-
-warning('on','SNCTOOLS:NCATTPUT:emptyAttributeBug');
 return
 
 
@@ -164,7 +168,7 @@ nc_attput ( ncfile, nc_global, 'new_att2', single(0) );
 x = nc_attget ( ncfile, nc_global, 'new_att2' );
 
 if ( ~strcmp(class(x), 'single' ) )
-	error('%class of retrieved attribute was not single.');
+	error('class of retrieved attribute was not single.');
 end
 if ( double(x) ~= 0 )
 	error ( 'retrieved attribute was not same as written value' );
@@ -202,7 +206,7 @@ end
 %--------------------------------------------------------------------------
 function test_read_write_uint8_att ( ncfile )
 
-nc_attput ( ncfile, nc_global, 'new_att5', uint8(0) );
+nc_attput ( ncfile, nc_global, 'new_att5', uint8(130) );
 x = nc_attget ( ncfile, nc_global, 'new_att5' );
 
         
@@ -211,15 +215,11 @@ if strcmp(info.Format,'HDF4')
     if ~strcmp(class(x), 'uint8' )
         error('class of retrieved attribute was not uint8.' );
     end
-elseif strfind(info.Format,'NetCDF-4')
-    if ~isa(x,'uint8')
-        error('class of retrieved attribute was not uint8.' );
+    if x ~= 130
+        error('value of retrieved attribute was not correct.' );
     end
 elseif  ~strcmp(class(x), 'int8' )
     error('class of retrieved attribute was not int8.' );
-end
-if ( double(x) ~= 0 )
-	error ( 'retrieved attribute was not same as written value' );
 end
 
 
@@ -308,3 +308,12 @@ end
 
 return
 
+%--------------------------------------------------------------------------
+function run_negative_tests(ncfile,mode)
+v = version('-release');
+switch(v)
+    case { '14','2006a','2006b','2007a','2007b'}
+        fprintf('No negative tests run on %s...  ',v);
+    otherwise
+		test_nc_attput_neg(ncfile,mode);
+end

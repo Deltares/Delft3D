@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_move
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE MOVE ( ARRAY1 , ARRAY2 , NOTOT )
 !
@@ -37,7 +43,8 @@
 !     ARRAY2  REAL      NOTOT     OUTPUT  array to copy to
 !     NOTOT   INTEGER     1       INPUT   total number of entries
 !
-      DIMENSION   ARRAY1(*) , ARRAY2(*)
+      real    :: ARRAY1(*) , ARRAY2(*)
+      integer :: I , NOTOT
 !
       DO  10 I = 1,NOTOT
    10 ARRAY2(I) = ARRAY1(I)
@@ -48,6 +55,7 @@
 
       real(8) ::  array1(*)
       real(4) ::  array2(*)
+      integer :: I , NOTOT
 
       do i = 1,notot
          array2(i) = array1(i)
@@ -59,6 +67,7 @@
 
       real(4) ::  array1(*)
       real(8) ::  array2(*)
+      integer :: I , NOTOT
 
       do i = 1,notot
          array2(i) = array1(i)
@@ -66,3 +75,4 @@
 
       return
       end
+      end module m_move

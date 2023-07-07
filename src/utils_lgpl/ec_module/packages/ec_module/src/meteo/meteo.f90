@@ -1,7 +1,7 @@
 module meteo
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module meteo
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Read time series in five possible formats:
@@ -178,7 +178,6 @@ function addmeteoitem(runid, inputfile, gridsferic, mmax, nmax) result(success)
     integer                      :: nxr
     integer                      :: minp
     logical                      :: meteogridsferic    ! type of meteo grid sferic (.true.) or cartesian (.false.)?
-    logical, external            :: openexistingfile_meteo
     logical, external            :: readmeteoheader
     logical, external            :: checkmeteoheader
     type(tmeteo)    , pointer    :: meteo
@@ -199,7 +198,8 @@ function addmeteoitem(runid, inputfile, gridsferic, mmax, nmax) result(success)
     !
     ! Open meteofile
     !
-    success = openexistingfile_meteo(minp, inputfile)
+    meteoitem%filetype = 0
+    success = openexistingfile_meteo(minp, inputfile, meteoitem%filetype)
     if (.not. success) return
     !
     meteoitem%filename = inputfile
@@ -670,6 +670,69 @@ function getmeteotypes(runid, meteotypes, mtdim) result(success)
       mtdim = dimmeteotypes
    endif
 end function getmeteotypes
+!
+!
+!===============================================================================
+function getmeteoquantities(runid, meteoquantities) result(success)
+   use m_alloc
+   implicit none
+!
+! Return value
+!
+   logical :: success
+!
+! Global variables
+!
+   character(*) , intent(in)  :: runid
+   character(60), dimension(:), allocatable, intent(out)  :: meteoquantities
+!
+! Local variables
+!
+   integer                             :: dimmeteoquantities
+   integer                             :: i
+   integer                             :: j
+   integer                             :: k
+   integer                             :: ierr
+   logical                             :: newquant
+   character(60)                       :: curquant
+   type(tmeteo)              , pointer :: meteo     ! all meteo for one subdomain
+   type(tmeteoitem)          , pointer :: meteoitem
+!
+!! executable statements -------------------------------------------------------
+!
+   success = .true.
+   call getmeteopointer(runid, meteo)
+   if ( .not. associated(meteo) ) then
+      success = .false.
+      return
+   endif
+   ierr = 0
+   do i = 1, meteo%nummeteoitems
+      do k = 1, 3
+         curquant = meteo%item(i)%ptr%quantities(k)
+         if (curquant == ' ') cycle
+         newquant = .true.
+         if (allocated(meteoquantities)) then
+            dimmeteoquantities = size(meteoquantities)
+         else
+            dimmeteoquantities = 0
+         endif
+         do j = 1, dimmeteoquantities
+            if (meteoquantities(j) == curquant) then
+               newquant = .false.
+               exit
+            endif
+         enddo
+         if (newquant) then
+            call realloc(meteoquantities, size(meteoquantities)+1, stat=ierr, keepExisting=.true.)
+            meteoquantities(size(meteoquantities)) = curquant
+         endif
+      enddo
+   enddo
+   if (ierr /= 0) then
+      success = .false.
+   endif
+end function getmeteoquantities
 !
 !
 !===============================================================================

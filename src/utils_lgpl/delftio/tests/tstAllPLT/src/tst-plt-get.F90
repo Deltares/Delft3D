@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 subroutine getDatasets_pltget(synched, auto, resFileName)
 
     use Dio_Plt_Tst
@@ -66,8 +66,7 @@ subroutine getDatasets_pltget(synched, auto, resFileName)
 
 !   Open file for results, write DioVersion
 
-    resLun = 802
-    open(resLun,file=resFileName)
+    open(newunit=resLun,file=resFileName)
     call DioGetVersion(dioVersion)
     call DioGetIdent(dioIdent)
     write(resLun,*) 'dioVersion: ', trim(dioVersion)

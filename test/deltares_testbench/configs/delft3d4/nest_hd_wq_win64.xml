@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+                <!--
+	Basic Windows configuration file: Nesting programs
+                -->
+	<config>
+		<localPaths>
+			<testCasesDir>.\data\cases</testCasesDir>
+			<enginesDir>.\data\engines</enginesDir>
+			<referenceDir>.\data\reference_results</referenceDir>
+		</localPaths>
+        <locations>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+				<!--root>https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win64</root-->
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <!--
+    The order is important. Start with the following programs:
+        command_prompt
+        svn
+        mpi
+    -->
+    <!--
+    Programs
+    -->
+	<!--
+	The order is important. Start with the following programs:
+		command_prompt
+		svn
+		mpi
+	-->
+    <programs>
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win64\svn.exe</path>
+        </program>
+        <program name="nesthd1" logOutputToFile="true" addSearchPaths="true">
+            <path>dflow2d3d/bin/nesthd1.exe</path>
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>.</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/x64</from>
+            </location>
+        </program>
+        <program name="nesthd2" logOutputToFile="true" addSearchPaths="true">
+            <path>dflow2d3d/bin/nesthd2.exe</path>
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>.</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/x64</from>
+            </location>
+        </program>
+        <program name="nestwq1" logOutputToFile="true" addSearchPaths="true">
+            <path>waq/bin/nestwq1.exe</path>
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>.</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/x64</from>
+            </location>
+        </program>
+        <program name="nestwq2" logOutputToFile="true" addSearchPaths="true">
+            <path>waq/bin/nestwq2.exe</path>
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>.</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/x64</from>
+            </location>
+        </program>
+    </programs>
+    <!--
+    default testCases
+        Testcases may refer to a default testCase with the attribute
+        ref="name_of_default_testcase"
+    -->
+    <defaultTestCases>
+        <testCase name="nesthd1_default">
+            <programs>
+                <program ref="nesthd1"/>
+            </programs>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="nesthd2_default">
+            <programs>
+                <program ref="nesthd2"/>
+            </programs>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="nestwq1_default">
+            <programs>
+                <program ref="nestwq1"/>
+            </programs>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="nestwq2_default">
+            <programs>
+                <program ref="nestwq2"/>
+            </programs>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e60_f01_c01_tutorial" ref="nesthd1_default">
+            <path>e60_nesthd1/f01_general/c01_tutorial</path>
+            <programs>
+                <program ref="nesthd1">
+                    <arguments>
+                        <argument>&lt;nesthd1.inp &gt;nesthd1.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="nesthd1.adm" type="NUMBERTEXT">
+                    <skipline>NESTHD1 Version</skipline>
+                    <skipline>Run date</skipline>
+                </file>
+                <file name="nesthd1.obs" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e60_f01_c02_test" ref="nesthd1_default">
+            <path>e60_nesthd1/f01_general/c02_test</path>
+            <programs>
+                <program ref="nesthd1">
+                    <arguments>
+                        <argument>&lt;nesthd1.inp &gt;nesthd1.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="nesthd1.adm" type="NUMBERTEXT">
+                    <skipline>NESTHD1 Version</skipline>
+                    <skipline>Run date</skipline>
+                </file>
+                <file name="nesthd1.obs" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e61_f01_c01_tutorial" ref="nesthd2_default">
+            <path>e61_nesthd2/f01_general/c01_tutorial</path>
+            <programs>
+                <program ref="nesthd2">
+                    <arguments>
+                        <argument>&lt;nesthd2.inp &gt;nesthd2.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="siulam2d.bct" type="NUMBERTEXT"/>
+                <file name="siulam2d.bcc" type="NUMBERTEXT"/>
+                <file name="nesthd2.dia" type="NUMBERTEXT">
+                    <skipline>NESTHD2 Version</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e61_f01_c02_test" ref="nesthd2_default">
+            <path>e61_nesthd2/f01_general/c02_test</path>
+            <programs>
+                <program ref="nesthd2">
+                    <arguments>
+                        <argument>&lt;nesthd2.inp &gt;nesthd2.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="nesthd2_out.bct" type="NUMBERTEXT"/>
+                <file name="nesthd2_out.bcc" type="NUMBERTEXT"/>
+                <file name="nesthd2_out.dia" type="NUMBERTEXT">
+                    <skipline>NESTHD2 Version</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e62_f01_c01_test" ref="nestwq1_default">
+            <path>e62_nestwq1/f01_general/c01_test</path>
+            <programs>
+                <program ref="nestwq1">
+                    <arguments>
+                        <argument>&lt;nestwq1.inp &gt;nestwq1.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="2d-2d.adm" type="NUMBERTEXT">
+                    <skipline>NESTWQ1 Version</skipline>
+                </file>
+                <file name="2d-2d.dia1" type="NUMBERTEXT">
+                    <skipline>NESTWQ1 Version</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e63_f01_c02_test" ref="nestwq2_default">
+            <path>e63_nestwq2/f01_general/c01_test</path>
+            <programs>
+                <program ref="nestwq2">
+                    <arguments>
+                        <argument>&lt;nestwq2.inp &gt;nestwq2.out 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="2d2dwaq.bcc" type="NUMBERTEXT"/>
+                <file name="2d-2d.dia2" type="NUMBERTEXT">
+                    <skipline>NESTWQ2 Version</skipline>
+                </file>
+                <file name="2d2dwaq.bcc.his" type="HIS">
+                    <parameters>
+                        <parameter name="Substance  1" toleranceAbsolute="0.001"/>
+                        <parameter name="Substance  2" toleranceAbsolute="0.001"/>
+                        <parameter name="Substance  3" toleranceAbsolute="0.001"/>
+                        <parameter name="Substance  4" toleranceAbsolute="0.001"/>
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </testCases>
+</deltaresTestbench_v3>

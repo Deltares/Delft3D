@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@
 #include "dimr.h"
 #include "dimr_exe_version.h"
 
-#if defined(HAVE_CONFIG_H)
+#ifndef _WIN32
 #include "config.h"
 #include <dlfcn.h>
 #include <libgen.h>
@@ -102,11 +102,13 @@ memAbort (
 //  MAIN PROGRAM
 int main (int     argc,
           char *  argv [],
-          char *  envp []) {
+          char *  envp []) {	
 #if defined (MEMCHECK)
     int rc = mcheck_pedantic (& memAbort);
     printf ("DEBUG: mcheck_pedantic returns %d\n", rc);
 #endif
+    // Do not delete the next line; it ensures that the version string is added to the binary
+	char * dimrexeversion = getversionidstring_dimr_exe();
 
     int ireturn = -1;
     DimrExe * DHE;
@@ -119,18 +121,23 @@ int main (int     argc,
         DHE->initialize(argc, argv, envp);
         if (! DHE->ready) return 1;
 
-        DHE->log->Write(FATAL, my_rank, getfullversionstring_dimr_exe());
+        DHE->log->Write(INFO, my_rank, getfullversionstring_dimr_exe());
 
         DHE->openLibrary();
         DHE->lib_initialize();
 
         doFinalize = true;
 
-        DHE->lib_update();
+        int state = DHE->lib_update();
+        if (state != 0)
+        {
+            throw Exception(true, (Exception::ErrorCode)state, "dimr_exe lib_update failed");
+        }
         
         doFinalize = false;
 
         DHE->lib_finalize();
+		DHE->timerFinish();
         delete DHE;
         ireturn = 0;
     }
@@ -208,13 +215,13 @@ void DimrExe::lib_initialize(void)
     this->log->Write (DEBUG, my_rank, "%s.SetVar(debugLevel,%d)", this->library, this->logLevel);
     (this->dllSetVar) ("debugLevel", &(this->logLevel));
     (this->dllSetVar) ("feedbackLevel", &(this->logLevel));
-    this->log->Write (INFO, my_rank, "%s.Initialize(%s)", this->library, this->configfile);
+    this->log->Write (DEBUG, my_rank, "%s.Initialize(%s)", this->library, this->configfile);
     int result = (this->dllInitialize) (this->configfile);
     if (result != 0) 
     {
         // Error occurred, but apparently no exception has been thrown.
         // Throw one now
-        this->log->Write(INFO, my_rank, "%s.Initialize(%s) returned error value %d", this->library, this->configfile, result);
+        this->log->Write(FATAL, my_rank, "%s.Initialize(%s) returned error value %d", this->library, this->configfile, result);
         // Re-throw the exception (so it will be handled in main)
         throw Exception(true, (Exception::ErrorCode)result, "%s.Initialize(%s) returned error value %d", this->library, this->configfile, result);
     }
@@ -230,7 +237,7 @@ void DimrExe::lib_initialize(void)
 }
 
 //------------------------------------------------------------------------------
-void DimrExe::lib_update(void)
+int DimrExe::lib_update(void)
 {
     double tStart;
     double tEnd;
@@ -239,7 +246,8 @@ void DimrExe::lib_update(void)
     (this->dllGetStartTime) (&tStart);
     (this->dllGetEndTime) (&tEnd);
     tStep = tEnd - tStart;
-    (this->dllUpdate) (tStep);
+    int state = (this->dllUpdate) (tStep);
+    return state;
 }
 
 //------------------------------------------------------------------------------
@@ -290,8 +298,19 @@ void DimrExe::lib_update_test(void)
 //------------------------------------------------------------------------------
 void DimrExe::lib_finalize(void)
 {
-   this->log->Write (INFO, my_rank, "    %s.Finalize()", this->library);
+   this->log->Write (DEBUG, my_rank, "    %s.Finalize()", this->library);
    (this->dllFinalize) ();
+}
+//------------------------------------------------------------------------------
+void DimrExe::timerFinish(void)
+{
+   Clock::Timestamp curtime = clock->Epoch();
+   this->timerSumStamp = curtime - this->timerStartStamp + this->timerSumStamp;
+   this->timerStartStamp = 0;
+   log->Write(INFO, my_rank, "%s\t: %d.%d sec", "DIMR_EXE",
+	   this->timerSumStamp / 1000000,
+	   this->timerSumStamp % 1000000);
+   this->timerSumStamp = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -375,22 +394,20 @@ void DimrExe::initialize (int     argc,
                               char *  envp []) {
     this->exePath = strdup (argv[0]);
 
-#if defined(HAVE_CONFIG_H)
+#ifndef _WIN32
     this->exeName = strdup (basename (argv[0]));
-    const char *dirSeparator = "/";
 #else
     char * ext = new char[5];
     this->exeName = new char[MAXSTRING];
     _splitpath (argv[0], NULL, NULL, this->exeName, ext);
     StringCbCatA (this->exeName, MAXSTRING, ext);
     delete [] ext;
-    const char *dirSeparator = "\\";
 #endif
 
     this->slaveArg  = NULL;
     this->done      = false;
 
-    this->logLevel = WARNINGS;  // selector of debugging/trace information
+    this->logLevel = INFO;  // selector of debugging/trace information
                                         // minLog: FATAL  maxLog: ALL
     FILE *      logFile = stdout;       // log file descriptor
 
@@ -416,7 +433,7 @@ void DimrExe::initialize (int     argc,
     //
     // Process command-line arguments
     int c;
-    while ((c = getopt (argc, argv, (char *) "d:l:S:v?")) != -1) {
+    while ((c = getopt (argc, argv, (char *) "d:l:S:v:i:?")) != -1) {
         switch (c) {
             case 'd': {
                 if (sscanf (optarg, "%i", &logLevel) != 1)
@@ -471,6 +488,8 @@ void DimrExe::initialize (int     argc,
     this->configfile = argv[optind];
 
     this->ready = true;
+	this->timerStartStamp = clock->Epoch();
+	this->timerSumStamp = 0;
 }
 
 
@@ -485,9 +504,9 @@ DimrExe::~DimrExe (void) {
     // to do:  (void) FreeLibrary(handle);
     freeLib();
 
-    this->log->Write (INFO, my_rank, "dimr shutting down normally");
+    this->log->Write (DEBUG, my_rank, "dimr shutting down normally");
 
-#if defined(HAVE_CONFIG_H)
+#ifndef _WIN32
     free (this->exeName);
 #else
     delete [] this->exeName;
@@ -515,12 +534,12 @@ void DimrExe::openLibrary (void) {
     // Macintosh:VERY SIMILAR TO LINUX
     throw Exception (true, Exception::ERR_OS, "ABORT: %s has not be ported to Apple Mac OS/X yet", this->exeName);
 #endif
-#if defined (HAVE_CONFIG_H)
+#ifndef _WIN32
     char *err;
 #endif
 
 
-#if defined (HAVE_CONFIG_H)
+#ifndef _WIN32
         this->library = new char[14];
         sprintf(this->library, "libdimr.so\0");
 #else
@@ -528,15 +547,15 @@ void DimrExe::openLibrary (void) {
         sprintf(this->library, "dimr_dll.dll\0");
 #endif
 
-        this->log->Write (INFO, my_rank, "Loading dimr library \"%s\"", this->library);
+        this->log->Write (DEBUG, my_rank, "Loading dimr library \"%s\"", this->library);
 
-#if defined (HAVE_CONFIG_H)
+#ifndef _WIN32
         dlerror(); /* clear error code */
         void * dllhandle = dlopen (this->library, RTLD_LAZY);
         this->libHandle = dllhandle;
         #define GETPROCADDRESS dlsym
         #define GetLastError dlerror
-        #define Sleep sleep
+        #define Sleep(msec) sleep((int)msec/1000)
 #else
         SetLastError(0); /* clear error code */
         HINSTANCE dllhandle = LoadLibrary (LPCSTR(this->library));
@@ -546,7 +565,7 @@ void DimrExe::openLibrary (void) {
 
         if (dllhandle == NULL) {
 
-#if defined (HAVE_CONFIG_H)
+#ifndef _WIN32
             if ((err = dlerror()) != NULL)
                 throw Exception (true, Exception::ERR_OS, "Cannot load component library \"%s\". Error: %s\n", this->library, err);
 #else
@@ -623,12 +642,12 @@ void DimrExe::freeLib (void) {
     // Macintosh:VERY SIMILAR TO LINUX
     throw Exception (true, Exception::ERR_OS, "ABORT: %s has not be ported to Apple Mac OS/X yet", this->exeName);
 #endif
-#if defined (HAVE_CONFIG_H)
+#ifndef _WIN32
     char *err;
 #endif
 
         this->log->Write (ALL, my_rank, "Freeing library \"%s\"", this->library);
-#if defined (HAVE_CONFIG_H)
+#ifndef _WIN32
         dlerror(); /* clear error code */
         int ierr = dlclose(this->libHandle);
         if ((err = dlerror()) != NULL) {
@@ -651,7 +670,7 @@ void DimrExe::freeLib (void) {
 static void printAbout (char * exeName) {
     printf ("\n\
 %s \n\
-Copyright (C)  Stichting Deltares, 2011-2017. \n\
+Copyright (C)  Stichting Deltares, 2011-2023. \n\
 GNU General Public License, see <http://www.gnu.org/licenses/>. \n\n\
 sales@deltaressystems.nl \n", getfullversionstring_dimr_exe());
     printf("%s\n\n", geturlstring_dimr_exe());

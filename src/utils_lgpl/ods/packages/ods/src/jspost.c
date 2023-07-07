@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,9 @@
 /*   Review:                                                          */
 /*                                                                    */
 /**********************************************************************/
-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -57,7 +59,11 @@
 #include <math.h>
 #include <float.h>
 #include <errno.h>
-#include <malloc.h>
+#ifdef HAVE_MALLOC_MALLOC_H
+#include "malloc/malloc.h"
+#else
+#include "malloc.h"
+#endif
 
 #include "ods.h"
 #include "portable.h"

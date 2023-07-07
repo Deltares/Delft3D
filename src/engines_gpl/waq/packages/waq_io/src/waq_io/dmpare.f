@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -167,6 +167,10 @@
          enddo
       enddo
 
+      if ( ierr > 0 ) then
+         goto 1000
+      endif
+
 !     allocate
 
       !jvb max_ntdmpq = 6 * ndmpar
@@ -256,7 +260,9 @@
                         write ( lurep , 2040 ) ierr2, max_ntdmpq
                         goto 1000
                      endif
-                     p2_ipdmpq(1:ntdmpq-1) = ipdmpq(1:ntdmpq-1)
+                     do idmpq = 1, ntdmpq-1
+                        p2_ipdmpq(idmpq) = ipdmpq(idmpq)
+                     end do
                      deallocate(ipdmpq)
                      ipdmpq => p2_ipdmpq
                   endif

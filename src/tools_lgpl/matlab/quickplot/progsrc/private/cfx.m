@@ -53,7 +53,7 @@ function varargout=cfx(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -182,7 +182,7 @@ if nargin==0
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'r','b');
+fid=fopen(filename,'r','b','US-ASCII');
 if (fid<0)
     return
 end
@@ -537,7 +537,7 @@ switch nargin
             end
         elseif ischar(Variable) && strcmpi(Variable,'ENTRY') % 'ENTRY' EntryNr
             EntryNr=Block;
-            fid=fopen(FileInfo.FileName,'r','b');
+            fid=fopen(FileInfo.FileName,'r','b','US-ASCII');
             fseek(fid,FileInfo.Entry(EntryNr).Loc,-1);
             if strcmp(FileInfo.FileMode,'binary')
                 Data=Local_read_bindmp_data(fid,FileInfo.Entry(EntryNr).DataType,FileInfo.Entry(EntryNr).Size);
@@ -581,7 +581,7 @@ Variable=upper(Variable);
 
 switch upper(Block)
     case 'BLOCK'
-        fid=fopen(FileInfo.FileName,'r','b');
+        fid=fopen(FileInfo.FileName,'r','b','US-ASCII');
         switch Variable
             case {'X COORDINATES','Y COORDINATES','Z COORDINATES'} % XNN
                 %
@@ -768,7 +768,7 @@ switch upper(Block)
                     end
                 end
             otherwise % CFX VARIABLE
-                fid=fopen(FileInfo.FileName,'r','b');
+                fid=fopen(FileInfo.FileName,'r','b','US-ASCII');
                 if ischar(Variable)
                     Variable=strmatch(Variable,{FileInfo.Variable(:).Name},'exact');
                     if isempty(Variable)
@@ -1111,7 +1111,7 @@ if nargin==0
     end
     filename=[fp fn];
 end
-fid=fopen(filename);
+fid=fopen(filename,'r','b','US-ASCII');
 if fid<0
     error('Unable to open %s.',filename)
 end
@@ -1189,7 +1189,7 @@ if nargin<5
     error('Not enough input arguments')
 end
 
-fid=fopen(FileName,'w');
+fid=fopen(FileName,'w','b','US-ASCII');
 
 Structure.FileName=FileName;
 Structure.FileType='geo';
@@ -1250,7 +1250,7 @@ if nargin==0
     end
     filename=[fp fn];
 end
-fid=fopen(filename);
+fid=fopen(filename,'r','b','US-ASCII');
 
 Structure.FileName=filename;
 Structure.FileType='fo';
@@ -1462,7 +1462,7 @@ if nargin<1
 elseif nargin<2
     BlockNr=1:length(FileInfo.Block);
 end
-fid=fopen(FileInfo.FileName);
+fid=fopen(FileInfo.FileName,'r','b','US-ASCII');
 for i=1:length(BlockNr)
     fseek(fid,FileInfo.Block(BlockNr(i)).Start,-1);
     X=fscanf(fid,'%f',[3 (FileInfo.Block(BlockNr(i)).I+1)*(FileInfo.Block(BlockNr(i)).J+1)*(FileInfo.Block(BlockNr(i)).K+1)]);
@@ -1551,7 +1551,7 @@ end
 
 
 function Data=Read_block_fo_file(FileName,Location,I,J,K)
-fid=fopen(FileName);
+fid=fopen(FileName,'r','b','US-ASCII');
 if fid<0
     Data=[];
     return
@@ -1580,7 +1580,7 @@ fclose(fid);
 
 
 function Data=Read_patch_fo_file(FileName,Location,I,J,K,plane)
-fid=fopen(FileName);
+fid=fopen(FileName,'r','b','US-ASCII');
 if fid<0
     Data=[];
     return
@@ -1615,7 +1615,7 @@ fclose(fid);
 
 
 function Data=Read_monitoring_fo_file(FileName,Location,NIter)
-fid=fopen(FileName);
+fid=fopen(FileName,'r','b','US-ASCII');
 if fid<0
     Data=[];
     return

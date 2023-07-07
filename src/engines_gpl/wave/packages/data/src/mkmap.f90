@@ -4,7 +4,7 @@ subroutine mkmap(code      ,x1        ,y1        ,m1        ,n1        , &
                & iref      ,iprint    ,covered   ,xymiss)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine mkmap(code      ,x1        ,y1        ,m1        ,n1        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -55,7 +55,7 @@ subroutine mkmap(code      ,x1        ,y1        ,m1        ,n1        , &
     integer , dimension(n2)                  :: nrin
     integer , dimension(n2)                  :: nrx
     integer , dimension(n2)                  :: nry
-    real                       , intent(in)  :: xymiss  ! missing value in grid 1
+    real(hp)                   , intent(in)  :: xymiss  ! missing value in grid 1
     real    , dimension(4 , n2)              :: w       ! Remains single precision!
     real(hp), dimension(m1, n1), intent(in)  :: x1
     real(hp), dimension(m1, n1), intent(in)  :: y1

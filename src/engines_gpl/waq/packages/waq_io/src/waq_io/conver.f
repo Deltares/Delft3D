@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,10 +34,6 @@
 !>        Absolute offset time should be chosen such that all relative
 !>        times fit into 68 years from the absolute offset !
 
-!     CREATED       : March 1988 by Marjolein Sileon / Leo Postma
-
-!     Modified      : April 2011 by Leo Postma
-!                                   Fortran 90 look and feel
 
 !     Logical units : none
 

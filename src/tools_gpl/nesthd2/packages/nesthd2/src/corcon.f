@@ -1,9 +1,10 @@
       subroutine corcon (bndval,thick ,namcon,itypc ,nobnd ,notims,
      *                   kmax  ,lstci ,nocon ,cgen  ,cadd  ,cmax  ,
      *                   cmin                                     )
+      implicit none
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +28,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !***********************************************************************
 ! Deltares                         marine and coastal management
 !
@@ -44,13 +45,16 @@
 !***********************************************************************
 
       integer      cgen   (  6   )
+      integer nocon, nobnd, notims, kmax
 
-      real         thick  (kmax  ),
-     *             cadd   (  6   ), cmax  (  6   ), cmin  (  6   )
+      double precision thick  (kmax  ),
+     *                 cadd   (  6   ), cmax  (  6   ), cmin  (  6   )
 
-      real         bndval (nobnd ,notims,kmax  ,lstci,2)
+      double precision bndval (nobnd ,notims,kmax  ,lstci,2)
 
       character*20 namcon(lstci  + 2)
+      integer icon, lstci, itim
+      integer ibnd, isize, k, itypc
 !
 !----adjust boundary conditions
 !

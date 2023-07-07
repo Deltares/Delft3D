@@ -48,6 +48,7 @@ Not supported functionality and limitations
 - mass balance polygons
 - writing dune output
 - bubble screen
+- Corrective boundary conditions file (Filbc0 and the old keyword: Corbnd)
 
 
 

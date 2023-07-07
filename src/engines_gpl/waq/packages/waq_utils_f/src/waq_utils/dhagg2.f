@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhagg2
+      use m_srstop
+      use m_monsys
+
+
+      implicit none
+
+      contains
+
 
       subroutine dhagg2 ( noseg1 , noseg2 , nototi , nototw , nototh ,
      &                    nototo , isysi  , isysw  , isysh  , isyso  ,
@@ -149,3 +158,4 @@
       return
  2000 format ( ' ERROR: undefind aggregation type in DHAGGR :',I8 )
       end
+      end module m_dhagg2

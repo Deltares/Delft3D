@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,14 +24,14 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !> Utility routines for memory (re)allocation.
 module m_alloc
 implicit none
 private 
 
-public realloc, reallocP, aerr
+public realloc, reallocP, aerr, allocSize
 
 ! TODO: Handle nondefault kinds properly? [AvD]
 
@@ -103,6 +103,7 @@ interface realloc
    module procedure reallocCharacter2x
    module procedure reallocCharacter3
    module procedure reallocCharacter4
+   module procedure reallocString
    module procedure reallocReal
    module procedure reallocReal2
    module procedure reallocReal2x
@@ -118,6 +119,7 @@ interface realloc
    module procedure reallocLogical2
    module procedure reallocLogical3
    module procedure reallocLogical4
+   module procedure reallocByte2
 end interface
 
 !> Reallocates memory for an existing \a pointer array. behaviour and arguments
@@ -144,6 +146,11 @@ interface reallocP
    module procedure reallocPLogical3
    module procedure reallocPLogical4
 end interface
+
+interface allocSize
+   module procedure allocSizeDouble
+end interface
+
 contains
 !
 !
@@ -1498,6 +1505,74 @@ subroutine reallocCharacter4(arr, uindex, lindex, stat, fill, shift, keepExistin
 999 continue
    if (present(stat)) stat = localErr
 end subroutine reallocCharacter4
+!
+!
+!
+!===============================================================================
+!> Reallocates a single allocatable string.
+!! NOTE: Do not confuse this with an allocatable array of strings!
+subroutine reallocString(string, newlen, stat, fill, shift, keepExisting)
+   implicit none
+   character(len=:), allocatable, intent(inout) :: string
+   integer, intent(in)                          :: newlen
+   integer, intent(out), optional               :: stat
+   character(len=*), intent(in), optional       :: fill
+   integer, intent(in), optional                :: shift
+   logical, intent(in), optional                :: keepExisting
+
+   character(len=:), allocatable                :: b
+   integer        :: curlen, minlen, shift_
+   integer        :: i, lenfill, numrep
+   integer        :: localErr
+   logical        :: docopy
+   logical        :: equalSize
+
+   if (present(shift)) then
+      shift_ = shift
+   else
+      shift_ = 0
+   endif
+
+   if (present(keepExisting)) then
+      docopy = keepExisting
+   else
+      docopy = .true.
+   end if
+
+   if (present(stat)) stat = 0
+   localErr = 0
+   if (allocated(string)) then
+      curlen = len(string)
+      equalSize = (newlen == curlen)
+      if (equalSize .and. (docopy .or. .not. present(fill)) .and. shift_==0) then
+         goto 999 ! output=input
+      end if
+!
+      if (docopy) then
+         minlen = min(curlen + shift_, newlen)
+         allocate(character(len=minlen) :: b)
+         b(1+shift_:minlen) = string(1:minlen-shift_)
+      endif
+      if (.not.equalSize) deallocate(string, stat = localErr)
+   endif
+   if (.not.allocated(string) .and. localErr==0) then
+       allocate(character(len=newlen) :: string, stat = localErr)
+   endif
+   if (present(fill) .and. localErr==0) then
+      lenfill = len(fill)
+      numrep  = int(newlen/lenfill)
+      do i=1,newlen,lenfill
+         string(i:max(newlen, i+lenfill-1)) = fill
+      end do
+   end if
+
+   if (allocated(b) .and. localErr==0 .and. len(b)>0) then
+      string(1+shift_:minlen) = b(1+shift_:minlen)
+      deallocate(b, stat = localErr)
+   endif
+999 continue
+   if (present(stat)) stat = localErr
+end subroutine reallocString
 !
 !
 !
@@ -3320,5 +3395,94 @@ subroutine reallocLogical4(arr, uindex, lindex, stat, fill, shift, keepExisting)
    if (present(stat)) stat = localErr
 end subroutine reallocLogical4
 
+!===============================================================================
+subroutine reallocByte2(arr, uindex, lindex, stat, fill, shift, keepExisting)
+   implicit none
+   integer(kind=1), allocatable, intent(inout)  :: arr(:,:)
+   integer, intent(in)                          :: uindex(2)
+   integer, intent(in), optional                :: lindex(2)
+   integer, intent(out), optional               :: stat
+   integer, intent(in), optional                :: fill
+   integer, intent(in), optional                :: shift(2)
+   logical, intent(in), optional                :: keepExisting
+
+   integer(kind=1), allocatable                 :: b(:,:)
+   integer        :: uind(2), lind(2), muind(2), mlind(2), lindex_(2), shift_(2)
+   integer        :: i1,i2
+   integer        :: localErr
+   logical        :: docopy
+   logical        :: equalSize
+
+   if (present(lindex)) then
+      lindex_ = lindex
+   else
+      lindex_ = (/ 1, 1 /)
+   endif
+
+   if (present(shift)) then
+      shift_ = shift
+   else
+      shift_ = (/ 0, 0 /)
+   endif
+
+   if (present(keepExisting)) then
+      docopy = keepExisting
+   else
+      docopy = .true.
+   end if
+
+   if (present(stat)) stat = 0
+   localErr = 0
+   if (allocated(arr)) then
+      uind = ubound(arr)
+      lind = lbound(arr)
+      equalSize = all(uindex == uind) .and. all(lindex_ == lind)
+      if (equalSize .and. (docopy .or. .not. present(fill)) .and. all(shift_==0)) then
+         goto 999 ! output=input
+      end if
+!
+      if (docopy) then
+         mlind = max(lind + shift_, lindex_)
+         muind = min(uind + shift_, uindex)
+         allocate (b(mlind(1):muind(1),mlind(2):muind(2)))
+            do i2 = mlind(2),muind(2)
+               do i1 = mlind(1),muind(1)
+                   b(i1,i2) = arr(i1-shift_(1),i2-shift_(2))
+               enddo
+            enddo
+      endif
+      if (.not.equalSize) deallocate(arr, stat = localErr)
+   endif
+   if (.not.allocated(arr) .and. localErr==0) then
+       allocate(arr(lindex_(1):uindex(1),lindex_(2):uindex(2)), stat = localErr)
+   endif
+   if (present(fill) .and. localErr==0) arr = fill
+   if (allocated(b) .and. localErr==0 .and. size(b)>0) then
+      do i2 = mlind(2),muind(2)
+         do i1 = mlind(1),muind(1)
+             arr(i1,i2) = b(i1,i2)
+         enddo
+      enddo
+      deallocate(b, stat = localErr)
+   endif
+999 continue
+   if (present(stat)) stat = localErr
+end subroutine reallocByte2
+!
+
+!===============================================================================
+
+!> Determines size of an allocatable array, returning 0 when it is not allocated.
+function allocSizeDouble(arr) result(isize)
+   implicit none
+   double precision, allocatable, intent(inout) :: arr(:) !< Array for which the extent must be determined. Is allowed to be not allocated.
+   integer                                      :: isize  !< Array length, 0 when it was not allocated.
+
+   if (allocated(arr)) then
+      isize = size(arr)
+   else
+      isize = 0
+   end if
+end function allocSizeDouble
 
 end module m_alloc

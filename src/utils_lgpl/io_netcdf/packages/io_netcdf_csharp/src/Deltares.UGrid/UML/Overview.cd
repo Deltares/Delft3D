@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Comment CommentText="Public API">
+    <Position X="1.437" Y="0.871" Height="0.307" Width="16.315" />
+  </Comment>
+  <Comment CommentText="Native (internal) API">
+    <Position X="1.604" Y="9.252" Height="0.307" Width="15.74" />
+  </Comment>
+  <Comment CommentText="Custom error for relaying narive errors (error codes)">
+    <Position X="4.726" Y="1.678" Height="0.594" Width="1.772" />
+  </Comment>
+  <Class Name="Deltares.UGrid.Api.Disposable1DMeshGeometry" Collapsed="true">
+    <Position X="9.25" Y="8.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>ABAgAAAAAQAAAAAAAAQEIAQACAAAAQACASAAAACAAQA=</HashCode>
+      <FileName>Api\Disposable1DMeshGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Deltares.UGrid.Api.Disposable2DMeshGeometry" Collapsed="true">
+    <Position X="6.75" Y="8.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>BCAgAAAAAAAAAAAAAAQAAAQAiAAAAAAACEACAAAAAAA=</HashCode>
+      <FileName>Api\Disposable2DMeshGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Deltares.UGrid.Api.DisposableLinksGeometry" Collapsed="true">
+    <Position X="14.5" Y="8.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>SAAAAAAAAAAAAAAAAAQAACAAAAAgAACAAAAAIAAIAAA=</HashCode>
+      <FileName>Api\DisposableLinksGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Deltares.UGrid.Api.DisposableMeshObject" Collapsed="true">
+    <Position X="10.25" Y="6.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AgIAAAACACEIAAAAAAAAAAAAAAAAAAAAAIAAAQAAAEA=</HashCode>
+      <FileName>Api\DisposableMeshObject.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Deltares.UGrid.Api.DisposableNetworkGeometry" Collapsed="true">
+    <Position X="11.75" Y="8.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>ABAgAAAAAMAAQAAAAAQFAIAEAAAARAAAQAAEAABQAAA=</HashCode>
+      <FileName>Api\DisposableNetworkGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Deltares.UGrid.Api.FileMetaData" Collapsed="true">
+    <Position X="4.75" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAgAAAAAAAAAAAAAABAAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>Api\FileMetaData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Deltares.UGrid.Api.IoNetCdfNativeError">
+    <Position X="4.75" Y="2.5" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAgAAAAAAAAAA=</HashCode>
+      <FileName>Api\IoNetCdfNativeError.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Deltares.UGrid.Api.UGridApi" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="1.5" Y="8.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AABwJAACAChA4AASKAVACSAMAASADCEsAEDQAQCggAA=</HashCode>
+      <FileName>Api\UGridApi.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Deltares.UGrid.Entities.IoNetCfdImports" Collapsed="true">
+    <Position X="9.25" Y="12.25" Width="3" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Delegate Name="Deltares.UGrid.Entities.IoNetCfdImports.IO_NetCDF_Message_Callback" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Entities\IoNetCfdImports.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="Deltares.UGrid.Entities.IoNetCfdImports.IO_NetCDF_Progress_Callback" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Entities\IoNetCfdImports.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAEIBuBC8koUBAQGgIAHolgSSZgqkAGsCFTNLIIEAEQ=</HashCode>
+      <FileName>Entities\IoNetCfdImports.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Deltares.UGrid.Entities.InteropMetadata" Collapsed="true">
+    <Position X="4.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAABAAAIAAAAAAAAAAAAAAAAAGAAAAACAAAA=</HashCode>
+      <FileName>Entities\InteropMetadata.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.LinksGeometry" Collapsed="true">
+    <Position X="14.5" Y="10" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAAAAAAACAAAAAgAACAAAAAIAAAAAA=</HashCode>
+      <FileName>Entities\LinksGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.LinksGeometryDimensions" Collapsed="true">
+    <Position X="14.5" Y="10.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\LinksGeometryDimensions.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.Mesh1DGeometry" Collapsed="true">
+    <Position X="9.25" Y="10" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAAAFIQAACAAAAAACACCAAACgAQA=</HashCode>
+      <FileName>Entities\Mesh1DGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.Mesh1DGeometryDimensions" Collapsed="true">
+    <Position X="9.25" Y="10.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAEAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Entities\Mesh1DGeometryDimensions.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.Mesh2DGeometry" Collapsed="true">
+    <Position X="6.75" Y="10" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>A0CgCACAEACAAQgAGAARCAQCABAgAgATACiAIACIBEA=</HashCode>
+      <FileName>Entities\Mesh2DGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.Mesh2DGeometryDimensions" Collapsed="true">
+    <Position X="6.75" Y="10.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAgQCAAAKAAAABgAAAAAAAAAgAEIAAQAAAAAAABAAA=</HashCode>
+      <FileName>Entities\Mesh2DGeometryDimensions.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.Network1DGeometry" Collapsed="true">
+    <Position X="11.75" Y="10" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AFAAAAAAAIEAQAAAAAAFAYAEAAAAAAAABACEAAAgAAA=</HashCode>
+      <FileName>Entities\Network1DGeometry.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Deltares.UGrid.Entities.Network1DGeometryDimensions" Collapsed="true">
+    <Position X="11.75" Y="10.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAgAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Network1DGeometryDimensions.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Interface Name="Deltares.UGrid.Api.IUGridApi">
+    <Position X="1.5" Y="1.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgJAAAAAhAYAACKAQACSAMAASADAEIAABAAQCggAA=</HashCode>
+      <FileName>Api\IUGridApi.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="Deltares.UGrid.Api.DataSetConventions">
+    <Position X="4.75" Y="12.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIIAAEAAAAAAAAAAAAAAAAAAIAAAAABAAAAAAAA=</HashCode>
+      <FileName>Api\DataSetConventions.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Deltares.UGrid.Api.GridLocationType">
+    <Position X="7.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIABAAAAAAABAAAAAIAAAEAAAA=</HashCode>
+      <FileName>Api\GridLocationType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Deltares.UGrid.Api.OpenMode">
+    <Position X="7.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Api\OpenMode.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Deltares.UGrid.Api.UGridMeshType">
+    <Position X="7.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAAAAAAAAIAACAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Api\UGridMeshType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Deltares.UGrid.Api.NetcdfOpenMode">
+    <Position X="7" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAiQAAQAAAAAAAAAAAAAAAAAAAAAAAAQKAAI=</HashCode>
+      <FileName>Entities\NetcdfOpenMode.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

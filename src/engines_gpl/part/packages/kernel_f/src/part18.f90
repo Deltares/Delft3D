@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,6 +33,7 @@ use precision_part               ! single/double precision
 !  module procedure(s)
 !
 use partfl_mod              ! explicit interface
+use random_generator
 !
 implicit none               ! force explicit typing
 !
@@ -45,26 +46,6 @@ contains
                           wvelo  , alpha  , nosubc , icvdf2    )
 !
 !
-!                   Deltares (former: Deltares)
-!
-!                        d e l p a r    v3.30
-!
-!
-!     system administration : r.j. vos
-!
-!
-!     created               : january 1991, by a. markus
-!
-!
-!     modified              : cleared may 1996, 3d version
-!                             26/7/1996:
-!                             v3.12: delwaq map is standard for conc-array
-!                             v3.20: recalculates dispersion without depth-aver.
-!                             11/10/1996: corrected for error in 3d version
-!                                         (icvdf2 = icvdf + nosubs)
-!                                         (lead. dim of conc array is nosubc)
-!                             v3.30: icvdf2 as argument
-!
 !     function              : calculates the exchange between the
 !                             two layers and exchanges the particles
 !                             as part of the 3d version
@@ -74,7 +55,7 @@ contains
 !                             and is mnmaxk = mnmax2 (layt must be 1)
 !                             and goes conc with mnmaxk*nolay, with nolay=2
 !
-!                             only for the two-layer model (modtyp = 2)
+!                             only for the two-layer model (modtyp = model_two_layer_temp)
 !                             for the two layer model, one layer is used for storage
 !                             the total number of substances is nosubs*nolay
 !
@@ -153,12 +134,6 @@ contains
       real   (sp),dimension(:,:)  :: flres
       real   (sp),dimension(:,:)  :: wpart
 !
-!     note:
-!       random function rnd() must be declared external, as it is an
-!       intrinsic function for the lahey fortran95 compiler under linux
-!
-      external rnd
-!
       logical  ::   first =  .true.
       real(dp) ::   rseed = 0.5d+00
 !
@@ -167,7 +142,7 @@ contains
       integer(ip) ::  i     , ic    , icvdf  , icvdf2 , idelt , layt  , lun2
       integer(ip) ::  mnmaxk, nocons, nofl1  , nofl2  , nolay , nopart
       integer(ip) ::  nosubc, nosubs, npwndw
-      real   (sp) ::  alpha , arand , flux   , pblay  , ptlay , rnd
+      real   (sp) ::  alpha , arand , flux   , pblay  , ptlay
       real   (sp) ::  tflux , vol1  , vol2
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

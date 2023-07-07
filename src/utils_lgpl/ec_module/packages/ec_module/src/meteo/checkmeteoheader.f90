@@ -1,7 +1,7 @@
 function checkmeteoheader(meteoitem) result(success)
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ function checkmeteoheader(meteoitem) result(success)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -227,13 +227,17 @@ function checkmeteoheader(meteoitem) result(success)
           & meteoitem%quantities(1) == 'precipitation'     .or. &
           & meteoitem%quantities(1) == 'sw_radiation_flux' .or. &
           & meteoitem%quantities(1) == 'cloudiness'        .or. &
-          & meteoitem%quantities(1) == 'Secchi_depth'      )   then 
+          & meteoitem%quantities(1) == 'Secchi_depth'      .or. &
+          & meteoitem%quantities(1) == 'sea_ice_area_fraction' .or. &
+          & meteoitem%quantities(1) == 'sea_ice_thickness' .or. &
+          & meteoitem%quantities(1) == 'floe_diameter'               )   then 
           !
           ! Correct quantity specified
           !
        else   
-          write(meteomessage, '(2a)') 'Meteo input: Incorrect quantity given, expecting x_wind, y_wind, air_pressure, relative_humidity, air_temperature, cloudiness, precipitation, secchi_depth, or sw_radiation_flux, but getting ', &
-              & trim(meteoitem%quantities(1))
+          write(meteomessage, '(4a)') 'Meteo input: unsupported quantity "', &
+              & trim(meteoitem%quantities(1)), '"while reading: ', &
+              & trim(meteoitem%filename)
           success = .false.
           return
        endif
@@ -289,7 +293,19 @@ function checkmeteoheader(meteoitem) result(success)
           write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for precipitation, expecting W/m2, but getting ', &
                  & trim(meteoitem%units(1))
           success = .false.
-        endif
+       elseif (meteoitem%quantities(1) == 'sea_ice_area_fraction' .and. meteoitem%units(1) /= '-') then
+          write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for sea ice area fraction, expecting -, but getting ', &
+                 & trim(meteoitem%units(1))
+          success = .false.
+       elseif (meteoitem%quantities(1) == 'sea_ice_thickness' .and. meteoitem%units(1) /= 'm') then
+          write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for sea ice thickness, expecting m, but getting ', &
+                 & trim(meteoitem%units(1))
+          success = .false.
+       elseif (meteoitem%quantities(1) == 'floe_diameter' .and. meteoitem%units(1) /= 'm') then
+          write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for floe diameter, expecting m, but getting ', &
+                 & trim(meteoitem%units(1))
+          success = .false.
+       endif
     elseif (meteoitem%meteotype == 'meteo_on_spiderweb_grid') then
        !
        ! Wind and pressure on a Spiderweb grid
@@ -382,13 +398,17 @@ function checkmeteoheader(meteoitem) result(success)
           & meteoitem%quantities(1) == 'air_temperature'   .or. &
           & meteoitem%quantities(1) == 'precipitation'     .or. &
           & meteoitem%quantities(1) == 'sw_radiation_flux' .or. &
-          & meteoitem%quantities(1) == 'cloudiness'         )   then 
+          & meteoitem%quantities(1) == 'cloudiness'        .or. &
+          & meteoitem%quantities(1) == 'sea_ice_area_fraction' .or. &
+          & meteoitem%quantities(1) == 'sea_ice_thickness' .or. &
+          & meteoitem%quantities(1) == 'floe_diameter'               )   then 
           !
           ! Correct quantity specified
           !
        else   
-          write(meteomessage, '(2a)') 'Meteo input: Incorrect quantity given, expecting x_wind, y_wind, air_pressure, relative_humidity, air_temperature, cloudiness, precipitation, or sw_radiation_flux, but getting ', &
-              & trim(meteoitem%quantities(1))
+          write(meteomessage, '(4a)') 'Meteo input: unsupported quantity "', &
+              & trim(meteoitem%quantities(1)), '"while reading: ', &
+              & trim(meteoitem%filename)
           success = .false.
           return
        endif
@@ -434,6 +454,18 @@ function checkmeteoheader(meteoitem) result(success)
           return
        elseif (meteoitem%quantities(1) == 'sw_radiation_flux' .and. meteoitem%units(1) /= 'W/m2') then
           write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for precipitation, expecting W/m2, but getting ', &
+                 & trim(meteoitem%units(1))
+          success = .false.
+       elseif (meteoitem%quantities(1) == 'sea_ice_area_fraction' .and. meteoitem%units(1) /= '-') then
+          write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for sea ice area fraction, expecting -, but getting ', &
+                 & trim(meteoitem%units(1))
+          success = .false.
+       elseif (meteoitem%quantities(1) == 'sea_ice_thickness' .and. meteoitem%units(1) /= 'm') then
+          write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for sea ice thickness, expecting m, but getting ', &
+                 & trim(meteoitem%units(1))
+          success = .false.
+       elseif (meteoitem%quantities(1) == 'floe_diameter' .and. meteoitem%units(1) /= 'm') then
+          write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for floe diameter, expecting m, but getting ', &
                  & trim(meteoitem%units(1))
           success = .false.
        endif

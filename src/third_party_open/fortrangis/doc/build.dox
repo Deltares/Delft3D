@@ -1,0 +1,26 @@
+/*! \page build How to build the library
+
+This package defines Fortran interfaces to shapelib, gdal and proj
+libraries, so you need at least one of those libraries (including
+development packages if available) installed on your system.
+
+The FortanGIS package uses GNU autoconf/automake/libtool, so it builds
+natively only on Unix-like systems, such as Linux. It has been
+reported to build successfully also on MacOS. It may build on Cygwin
+platforms, but it is untested there, please report any
+success/insuccess. If you need a Windows version, please contact the
+author, work is slowly undergoing for getting FortranGIS to build
+under mingw.
+
+For a successful build, a Fortran compiler supporting ISO_C_BINDING
+capabilities of F2003 standard is needed, e.g. GNU gfortran version
+4.1.2 or later.
+
+After unpacking the tar, please follow the usual GNU build procedure
+<tt>./configure; make; make install</tt>. Try <tt>./configure
+--help</tt> for more detailed help on switches. If you do not want to
+install the full triad of GIS libraries, you can build the package
+without any of them by using configure switches such as
+<tt>--disable-proj</tt> etc.
+
+*/

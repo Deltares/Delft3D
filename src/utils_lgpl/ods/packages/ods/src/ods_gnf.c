@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,8 @@
 /*
  *  ods_gnf.c -  ODS routines to "generically" read NEFIS files
  *
+ *  Copyright (C) 2002-2023 Deltares
+ *
  *  Arjen Markus
  */
 
@@ -39,6 +41,7 @@
  *  - GNF_GetFileContents(): Read the NEFIS file and get a table of contents
  *  - GNF_GetStringBuffer(): Get a string buffer from the file
  *  - GNF_GetRealBuffer():   Get a real buffer from the file
+ *  - GNF_GetDoubleBuffer(): Get a double-precision real buffer from the file
  *  - GNF_GetIntBuffer():    Get an integer buffer from the file
  *  - GNF_CheckParameters(): Get the number of parameters
  *  - GNF_CheckTimes():      Get the number of times
@@ -174,12 +177,15 @@ static NefisFileInfoPtr  file_info_array[MAXNFFILES] ; /* Store all the file inf
 static TInt4             no_file_info_used =  0      ; /* Number currently stored */
 static TInt4             previous_file     = -1      ; /* Index of previous file - used for caching */
 static TReal4           *gnf_real_buffer   = NULL    ; /* Cached reals */
+static TReal8           *gnf_double_buffer = NULL    ; /* Cached double-precision reals */
 static TInt4            *gnf_int_buffer    = NULL    ; /* Cached integers */
 static TChar            *gnf_char_buffer   = NULL    ; /* Cached character strings */
 static TInt4             gnf_real_idx      =  0      ; /* Index of cached real element */
+static TInt4             gnf_double_idx    =  0      ; /* Index of cached double-precision real element */
 static TInt4             gnf_int_idx       =  0      ; /* Index of cached integer element */
 static TInt4             gnf_char_idx      =  0      ; /* Index of cached character element */
 static TInt4             gnf_real_cell[15]           ; /* Cells of cached real element */
+static TInt4             gnf_double_cell[15]         ; /* Cells of cached double-precision real element */
 static TInt4             gnf_int_cell[15]            ; /* Cells of cached integer element */
 static TInt4             gnf_char_cell[15]           ; /* Cells of cached character element */
 
@@ -201,7 +207,7 @@ static TVoid
    TInt4 length ;
 
    length = strlen( string ) ;
-   for ( i = length-1 ; i >=0 ; i -- )
+   for ( i = length-1 ; i >= 0 ; i -- )
    {
       if ( string[i] == ' ' )
       {
@@ -457,11 +463,11 @@ static NefisFileInfoPtr
    TChar               elem_unit[NFNAMELEN]  ;
    TChar               elem_desc[5*NFNAMELEN]  ;
 
-   TInt4               group_ndim            ;
-   TInt4               elem_ndim             ;
-   TInt4               group_dims[NFDIM]     ;
-   TInt4               group_order[NFDIM]    ;
-   TInt4               elem_dims [NFDIM]     ;
+   BInt4               group_ndim            ;
+   BInt4               elem_ndim             ;
+   BInt4               group_dims[NFDIM]     ;
+   BInt4               group_order[NFDIM]    ;
+   BInt4               elem_dims [NFDIM]     ;
 
    NefisFileInfoPtr    file_info ;
    NefisItemInfoPtr    item_info ;
@@ -470,8 +476,8 @@ static NefisFileInfoPtr
    TInt4               error2    ;
    TInt4               no_items  ;
    TInt4               max_items ;
-   TInt4               no_elems  ;
-   TInt4               nbytsg    ;
+   BInt4               no_elems  ;
+   BInt4               nbytsg    ;
 
    TInt4               filetype2 ;
 
@@ -508,6 +514,7 @@ static NefisFileInfoPtr
    {
       /* The properties of the group
       */
+      group_ndim    = 0 ;
       group_dims[0] = 0 ;
       group_dims[1] = 0 ;
       group_dims[2] = 0 ;
@@ -522,6 +529,10 @@ static NefisFileInfoPtr
          return NULL ;
       }
 
+      if ( group_ndim == 0 )
+      {
+          continue ;
+      }
       if ( group_dims[group_ndim-1] == 0 )
       {
          error2 = Inqmxi( file_info->datfds, group_def,
@@ -559,6 +570,7 @@ static NefisFileInfoPtr
          item_info = &file_info->items[no_items] ;
 
          strcpy( item_info->group_name, group_name   ) ;
+         elem_name[i][NFNAMELEN-1] = '\0' ; /* Force the element name to be a proper C string */
          strcpy( item_info->elem_name,  elem_name[i] ) ;
          GNF_StripSpaces( item_info->group_name ) ;
          GNF_StripSpaces( item_info->elem_name  ) ;
@@ -579,7 +591,7 @@ static NefisFileInfoPtr
             return NULL ;
          }
 
-         item_info->elem_type       = 1             ; /* TODO */
+         item_info->elem_type       = 1             ; /* TODO */  // elem_type is een char !
          item_info->number_bytes    = nbytsg        ;
 
          item_info->group_ndim      = group_ndim    ;
@@ -633,10 +645,10 @@ TVoid
 {
    NefisItemInfoPtr   item         ;
    BInt4              ierror       ;
-   TInt4              buflen       ;
+   BInt4              buflen       ;
    TInt4              i            ;
-   TInt4              uindex[5][3] ;
-   TInt4              usrord[5]    ;
+   BInt4              uindex[5][3] ;
+   BInt4              usrord[5]    ;
 
 /*   printf( "GNF_GetStringBuffer\n" ) ; */
    item = &file_info->items[idx] ;
@@ -646,6 +658,12 @@ TVoid
    *number_strings = item->elem_dims[0] * item->group_dims[0] ; /* Assumption: one-dimensional! */
    *string_length  = item->number_bytes ;
 
+   for ( i = 0 ; i < 5 ; i ++ )
+   {
+      uindex[i][0] = 0 ;
+      uindex[i][1] = 0 ;
+      uindex[i][2] = 0 ;
+   }
 
    buflen          = (*number_strings) * (*string_length) ;
    *buffer = (TString)
@@ -678,7 +696,7 @@ TVoid
 
    ierror = Getelt( file_info->datfds,
                     item->group_name, item->elem_name,
-                    uindex[0], usrord, &buflen, (*buffer) ) ;
+                    uindex, usrord, &buflen, *buffer ) ;
 
    memcpy( gnf_char_buffer, *buffer, buflen ) ;
 
@@ -735,11 +753,11 @@ TVoid
 {
    NefisItemInfoPtr   item         ;
    BInt4              ierror       ;
-   TInt4              buflen       ;
+   BInt4              buflen       ;
    TInt4              i            ;
    TInt4              nd           ;
-   TInt4              uindex[5][3] ;
-   TInt4              usrord[5]    ;
+   BInt4              uindex[5][3] ;
+   BInt4              usrord[5]    ;
 
 /*   printf( "GNF_GetRealBuffer\n" ) ; */
    item = &file_info->items[idx] ;
@@ -797,17 +815,144 @@ TVoid
        }
    }
 
-   free( gnf_real_buffer ) ;
-   gnf_real_buffer = (TReal4 *) malloc( buflen ) ;
-
-   gnf_real_idx = idx ;
-   memcpy( gnf_real_cell, cell_index, sizeof(gnf_real_cell) );
 
    ierror = Getelt( file_info->datfds,
                     item->group_name, item->elem_name,
                     uindex[0], usrord, &buflen, (*buffer) ) ;
 
-   memcpy( gnf_real_buffer, *buffer, buflen ) ;
+   if ( ierror == 0 )
+   {
+      free( gnf_real_buffer ) ;
+      gnf_real_buffer = (TReal4 *) malloc( buflen ) ;
+
+   gnf_real_idx = idx ;
+   memcpy( gnf_real_cell, cell_index, sizeof(gnf_real_cell) );
+
+      memcpy( gnf_real_buffer, *buffer, buflen ) ;
+   }
+   else
+   {
+      free( *buffer ) ;
+      *buffer = NULL ;
+   }
+
+/* printf( "error (%s/%s): %d\n",
+                    item->group_name, item->elem_name, ierror ) ; */
+}
+
+/* -------------------------------------------------------------------
+    Function: GNF_GetDoubleBuffer()
+    Author:   Arjen Markus
+    Purpose:  Get a double-precision real buffer from the file
+    Context:  Used by various routines
+    Pseudo Code:
+              Allocate space for the buffer. Get it via the NEFIS
+              routines.
+    Note:
+              The cell index is to be filled according to the
+              conventions of NEFIS, with the sole exception of
+              the counting starting at 0, in the C like way.
+              More concretely:
+              - cell_index[0][0] = the first index (of the first
+                                   dimension)
+              - cell_index[0][1] = the last index (of the first
+                                   dimension)
+              - cell_index[0][2] = the step size (for the first
+                                   dimension)
+              - ... (if needed)  = similarly for the other dimensions
+              The buffer is allocated and must be freed when no
+              longer needed. This guarantees that enough memory
+              is available. (It may seem a slow algorithm, when you
+              retrieve a small buffer many times, but I/O is even slower
+              of course in most cases.)
+------------------------------------------------------------------- */
+
+TVoid
+   GNF_GetDoubleBuffer(
+      NefisFileInfoPtr      file_info,        /* I   Contents of the file     */
+      TInt4                 idx,              /* I   Index of the element     */
+      TInt4               * cell_index,       /* I   Indices of the cell to
+                                                     retrieve                 */
+      TReal8             ** buffer,           /* O   Allocated buffer         */
+      TInt4               * elem_size,        /* O   Size of individual
+                                                     elements (number of reals) */
+      TInt4               * number_cells   )  /* O   Number of cells retrieved */
+{
+   NefisItemInfoPtr   item         ;
+   BInt4              ierror       ;
+   TInt4              buflen       ;
+   TInt4              i            ;
+   TInt4              nd           ;
+   TInt4              uindex[5][3] ;
+   TInt4              usrord[5]    ;
+
+/*   printf( "GNF_GetRealBuffer\n" ) ; */
+   item = &file_info->items[idx] ;
+
+   for ( i = 0 ; i < 5 ; i ++ )
+   {
+      uindex[i][0] = 0 ;
+      uindex[i][1] = 0 ;
+      uindex[i][2] = 0 ;
+   }
+
+   usrord[0]    = 1 ;
+   usrord[1]    = 2 ;
+   usrord[2]    = 3 ;
+   usrord[3]    = 4 ;
+   usrord[4]    = 5 ;
+
+   /* Allocate the buffer
+   */
+   (*elem_size) = 1 ;
+   for ( i = 0 ; i < item->elem_ndim ; i ++ )
+   {
+      (*elem_size) *= item->elem_dims[i] ;
+   }
+
+   (*number_cells) = 1 ;
+   for ( i = 0 ; i < item->group_ndim ; i ++ )
+   {
+      uindex[i][0]    = cell_index[3*i+0] + 1 ;
+      if ( cell_index[3*i+1] != ALL_CELLS )
+      {
+         uindex[i][1]    = cell_index[3*i+1] + 1 ;
+      }
+      else
+      {
+         uindex[i][1]    = item->group_dims[i] ;
+      }
+      uindex[i][2]    = cell_index[3*i+2]     ;
+
+      nd              =  1 + ( uindex[i][1] - uindex[i][0] )
+                                / uindex[i][2] ;
+      (*number_cells) *= nd ;
+   }
+
+   buflen  = sizeof(TReal8) * (*number_cells) * (*elem_size) ;
+   *buffer = (TReal8 *) malloc( buflen ) ;
+
+   /* Was it cached? */
+   if ( gnf_double_buffer != NULL )
+   {
+       if ( GNF_CheckCache( 0, idx, cell_index ) )
+       {
+           memcpy( *buffer, gnf_double_buffer, buflen ) ;
+           return ;
+       }
+   }
+
+   free( gnf_double_buffer ) ;
+   gnf_double_buffer = (TReal8 *) malloc( buflen ) ;
+
+   gnf_double_idx = idx ;
+   memcpy( gnf_double_cell, cell_index, sizeof(gnf_double_cell) );
+
+   ierror = Getelt( file_info->datfds,
+                    item->group_name, item->elem_name,
+                    uindex, usrord, &buflen, *buffer ) ;
+
+   memcpy( gnf_double_buffer, *buffer, buflen ) ;
 
 /* printf( "error (%s/%s): %d\n",
                     item->group_name, item->elem_name, ierror ) ; */
@@ -837,14 +982,21 @@ TVoid
 {
    NefisItemInfoPtr   item         ;
    BInt4              ierror       ;
-   TInt4              buflen       ;
+   BInt4              buflen       ;
    TInt4              i            ;
    TInt4              nd           ;
-   TInt4              uindex[5][3] ;
-   TInt4              usrord[5]    ;
+   BInt4              uindex[5][3] ;
+   BInt4              usrord[5]    ;
 
 /*   printf( "GNF_GetIntBuffer\n" ) ; */
    item = &file_info->items[idx] ;
+
+   for ( i = 0 ; i < 5 ; i ++ )
+   {
+      uindex[i][0] = 0 ;
+      uindex[i][1] = 0 ;
+      uindex[i][2] = 0 ;
+   }
 
    /* Allocate the buffer
    */
@@ -864,7 +1016,7 @@ TVoid
       }
       else
       {
-         uindex[i][1]    = item->group_dims[i] ;
+         uindex[i][1]    = item->group_dims[i] > 0? item->group_dims[i] : 1 ;
       }
       uindex[i][2]    = cell_index[3*i+2]     ;
 
@@ -900,7 +1052,7 @@ TVoid
 
    ierror = Getelt( file_info->datfds,
                     item->group_name, item->elem_name,
-                    uindex[0], usrord, &buflen, (*buffer) ) ;
+                    uindex, usrord, &buflen, *buffer ) ;
 
    memcpy( gnf_int_buffer, *buffer, buflen ) ;
 }
@@ -943,6 +1095,9 @@ static TVoid
    TInt4             non_scalar     ;
    TString           buffer         ;
    TString           pstr           ;
+   TChar             dummy_char[2]  ; /* Compiler does not like a potentially uninitialised buffer */
+
+   buffer = dummy_char; /* Make the compiler stop moaning - it is a false positive */
 
    defined_params = file_info->defined_params ;
 
@@ -955,7 +1110,8 @@ static TVoid
       /* Decide whether elements with just one number are okay or not
          (per cell)
       */
-      if ( defined_params[i].location_info->type == LOC_NAMES )
+      if ( defined_params[i].location_info->type == LOC_NAMES ||
+           defined_params[i].location_info->type == BAL_NAMES )
       {
          non_scalar = 0 ; /* Was: 0 */
       }
@@ -976,7 +1132,8 @@ static TVoid
             if ( defined_params[i].type & DPT_AVERAGE )
             {
                zdim = 2 ;
-               if ( defined_params[i].location_info->type == LOC_NAMES )
+               if ( defined_params[i].location_info->type == LOC_NAMES ||
+                    defined_params[i].location_info->type == BAL_NAMES )
                {
                   zdim = 1 ;
                }
@@ -1190,7 +1347,7 @@ static TVoid
          cell_index[0][0] = 0         ;
          cell_index[0][1] = ALL_CELLS ;
          cell_index[0][2] = 1         ;
-         GNF_GetIntBuffer( file_info, idxtim, cell_index, &int_times, &elem_size,
+         GNF_GetIntBuffer( file_info, idxtim, &cell_index[0][0], &int_times, &elem_size,
             &number_cells )           ;
 
 #if 0
@@ -1404,6 +1561,13 @@ static TVoid
       free( buffer ) ;
       break ;
 
+   case BAL_NAMES : /* The locations must be constructed */
+      ODS_ConstructBalanceNames( file_info, location_info, location_names, location_ids, &maxlst );
+      ndim[0] = 1;
+      ndim[1] = maxlst;
+      /* TODO */
+      break ;
+
    case LOC_IDS : /* The locations are known by IDs (x/y indices) */
       ndim[0] =  1 ;
       ndim[1] =  0 ;
@@ -1417,9 +1581,9 @@ static TVoid
       (void) GNF_FindParameter(
                 location_info->gridinfo_group, location_info->gridinfo_elem, 0,
                 file_info->no_items, file_info->items, &idxloc2 ) ;
-      GNF_GetIntBuffer( file_info, idxloc1, cell_index,
+      GNF_GetIntBuffer( file_info, idxloc1, &cell_index[0][0],
           &index1, &elem_size, &number_indices ) ;
-      GNF_GetIntBuffer( file_info, idxloc2, cell_index,
+      GNF_GetIntBuffer( file_info, idxloc2, &cell_index[0][0],
           &index2, &elem_size, &number_indices ) ;
 
       ndim[1] = elem_size * number_indices ;
@@ -1575,6 +1739,7 @@ TInt4 GNF_FindParameter(
    TInt4              i              ;
 
 /*   printf( "GNF_FindParameter\n" ) ; */
+
    for ( i = 0 ; i < no_items ; i ++ )
    {
       item = &items[i] ;
@@ -1585,7 +1750,6 @@ TInt4 GNF_FindParameter(
          /* Always require more than one! */
          if ( !non_scalar || item->elem_ndim  > 1 || item->elem_dims[0]  > 1 )
          {
-/*            printf( "Found: %s %s\n", group_name, elem_name ) ; */
          /* Ignore difficulties with stored names first */
             *idx = i ;
             return 1 ;
@@ -1730,6 +1894,7 @@ TVoid
 
       idx = parcod[i]-1 ;
       if ( defined_params[idx].location_info->type != LOC_NAMES &&
+           defined_params[idx].location_info->type != BAL_NAMES &&
            defined_params[idx].location_info->type != LOC_IDS      )
       {
          partyp[i] = IPLMNK ;
@@ -1918,6 +2083,7 @@ TVoid
    TInt4             * idata1      ;
    TInt4             * idata2      ;
    TReal4            * zcrd        ;
+   TReal4              factor      ;
    TReal8            * timlst      ;
 
    /* printf( "GNF_GetMat parcod - %d - time %ld\n", *parcod, (long)time(NULL) ) ; */
@@ -1987,7 +2153,8 @@ TVoid
    */
    param_info = &file_info->defined_params[*parcod-1] ;
 
-   if ( file_info->defined_params[*parcod-1].location_info->type == LOC_NAMES )
+   if ( file_info->defined_params[*parcod-1].location_info->type == LOC_NAMES ||
+        file_info->defined_params[*parcod-1].location_info->type == BAL_NAMES )
    {
       non_scalar = 0 ;
    }
@@ -2061,7 +2228,7 @@ TVoid
 
    /* printf( "GNF_GetActualData - begin - time %ld\n", (long)time(NULL) ) ; */
 
-   GNF_GetActualData( file_info, param_info, idxpar, &cell_index[0][0],
+   GNF_GetActualData( file_info, param_info, idxpar, cell_index,
       loc, *misval, data, &nodata ) ;
 
    /* printf( "GNF_GetActualData - end - time %ld\n", (long)time(NULL) ) ; */
@@ -2100,7 +2267,7 @@ TVoid
                 param_info2->group_name, param_info2->elem_name, non_scalar,
                 file_info->no_items, file_info->items, &idxpar2 ) ;
 
-      GNF_GetActualData( file_info, param_info2, idxpar2, &cell_index[0][0],
+      GNF_GetActualData( file_info, param_info2, idxpar2, cell_index,
          loc, *misval, data2, &nodata2 ) ;
 
       param_info3 = &file_info->defined_params[(*parcod)+1] ;
@@ -2108,13 +2275,14 @@ TVoid
                 param_info3->group_name, param_info3->elem_name, non_scalar,
                 file_info->no_items, file_info->items, &idxpar3 ) ;
 
-      GNF_GetActualData( file_info, param_info3, idxpar3, &cell_index[0][0],
+      GNF_GetActualData( file_info, param_info3, idxpar3, cell_index,
          loc, *misval, data3, &nodata3 ) ;
 
       /* If we are dealing with TRIH files (locations with layers), then
          be particularly careful
       */
-      if ( param_info->location_info->type == LOC_NAMES )
+      if ( param_info->location_info->type == LOC_NAMES ||
+           param_info->location_info->type == BAL_NAMES )
       {
          truegrid = 0         ;
          ndim[3]  = 1         ; /* Cells per layer */
@@ -2156,8 +2324,13 @@ TVoid
    }
 
    /* Accumulate parameters */
-   if ( partype == SCALAR_DATA_SUMMED )
+   if ( partype == SCALAR_DATA_SUMMED || partype == SCALAR_DATA_SUBTRACTED )
    {
+      factor  = 1.0         ;
+      if ( partype == SCALAR_DATA_SUBTRACTED )
+      {
+         factor = -1.0 ;
+      }
       ndim[3] =   1         ;
       ndim[4] = notimes     ;
 
@@ -2174,8 +2347,8 @@ TVoid
          if ( idxpar2 >= 0 && strcmp( param_info2->public_name, "@" ) == 0 )
          {
             GNF_GetActualData( file_info, param_info2, idxpar2,
-               &cell_index[0][0], loc, *misval, data2, &nodata2 ) ;
-            ODS_AccumulateData( *misval, ndim, data, data2 ) ;
+               cell_index, loc, *misval, data2, &nodata2 ) ;
+            ODS_AccumulateData( *misval, ndim, data, data2, factor ) ;
          }
          else
          {
@@ -2187,9 +2360,9 @@ TVoid
    if ( (partype == ENCODED_DATA_U)   ||
         (partype == ENCODED_DATA_V)      )
    {
-      GNF_GetIntBuffer( file_info, idxpar, cell_index, &idata1, &elem_size,
+      GNF_GetIntBuffer( file_info, idxpar, &cell_index[0][0], &idata1, &elem_size,
          &number_cells ) ;
-      GNF_GetIntBuffer( file_info, idxpar+1, cell_index, &idata2, &elem_size,
+      GNF_GetIntBuffer( file_info, idxpar+1, &cell_index[0][0], &idata2, &elem_size,
          &number_cells ) ;
 
       indx = (TInt4 *) malloc( sizeof(TInt4) * (ndim[0]*ndim[1]) ) ;
@@ -2260,7 +2433,7 @@ GNF_GetActualData(
    TInt4              data_index[5][4] ;
    TInt4              cell_index[5][3] ;
    TInt4              cell_index_const[5][3] ;
-   TInt4              ndim[2]    ;
+   TInt4              ndim[4]    ;
    TInt4              i          ;
    TInt4              i0         ;
    TInt4              i1         ;
@@ -2285,6 +2458,7 @@ GNF_GetActualData(
    TInt4              number_cells ;
    TReal4             filter_value ;
    TReal4           * rbuffer    ;
+   TInt4              offset     ;
 
    TInt4                     do_free               ;
    static TReal4           * rscalar        = NULL ;
@@ -2330,7 +2504,7 @@ GNF_GetActualData(
    {
       do_free = 0;
       if ( previous_file != file_info || previous_param != param_info || rarray == NULL ||
-           !GNF_CheckCache( 0, idxpar, cell_index ) )
+           !GNF_CheckCache( 0, idxpar, &cell_index[0][0] ) )
       {
          /* printf( "GNF_RealBuffer - reading buffer - time %ld\n", (long)time(NULL) ) ; */
          previous_file  = file_info  ;
@@ -2338,7 +2512,7 @@ GNF_GetActualData(
          if ( rarray != NULL )
          {
             free( rarray ) ;
-            rarray = NULL ;
+            rbuffer = NULL ;
          }
 
          GNF_GetRealBuffer( file_info, idxpar, &cell_index[0][0], &rarray,
@@ -2395,9 +2569,13 @@ GNF_GetActualData(
    {
       dimlay = file_info->items[idxpar].elem_ndim ;
    }
-   else
+   else if ( param_info->fixed_last_index < SCALE_FIRST )
    {
       dimlay = file_info->items[idxpar].elem_ndim - 1 ;
+   }
+   else
+   {
+      dimlay = 1 ; /* This is for the mass balances in Delft3D-FLOW */
    }
 
    switch ( dimlay )
@@ -2479,8 +2657,8 @@ GNF_GetActualData(
    }
    else
    {
-      data_index[3][0] = param_info->fixed_last_index - 1 ; /* Correct for offset */
-      data_index[3][1] = param_info->fixed_last_index - 1 ; /* Correct for offset */
+      data_index[3][0] = param_info->fixed_last_index % SCALE_FIRST - 1 ; /* Correct for offset */
+      data_index[3][1] = param_info->fixed_last_index % SCALE_FIRST - 1 ; /* Correct for offset */
       data_index[3][2] = 1                                ;
 
       pardim = file_info->items[idxpar].elem_ndim - 1 ;
@@ -2491,6 +2669,23 @@ GNF_GetActualData(
    data_index[4][1] = cell_index[0][1] - cell_index[0][0] ;
    data_index[4][2] = 1                                   ;
    data_index[4][3] = number_cells                        ;
+
+   /* In case of Delft3D-FLOW mass balances, we need to shift some of the dimensions
+   */
+   if ( param_info->fixed_last_index >= FIRST_IS_1 )
+   {
+      data_index[1][3] = MAX(1, file_info->items[idxpar].elem_dims[1] ) ; /* Restore */
+      for ( i = 3; i >= 1; i -- )
+      {
+         data_index[i][0] = data_index[i-1][0] ;
+         data_index[i][1] = data_index[i-1][1] ;
+         data_index[i][2] = data_index[i-1][2] ;
+      }
+      data_index[0][0] = param_info->fixed_last_index / SCALE_FIRST - 1 ;
+      data_index[0][1] = param_info->fixed_last_index / SCALE_FIRST - 1 ;
+      data_index[0][2] = 1 ;
+   }
+
 
    /* Keep track of the whole cascade
    */
@@ -2638,7 +2833,7 @@ GNF_GetActualData(
       cell_index[0][1] = ALL_CELLS ;
       cell_index[0][2] = 1         ;
 
-      ODS_GetGrdIndices( file_info->filename, &file_info->filetype, param_info->location_info->type, ndim,
+      ODS_GetGrdIndices( file_info->filename[0], &file_info->filetype, param_info->location_info->type, ndim,
          &lgrid, &truegrid ) ;
 
 /*
@@ -2767,9 +2962,11 @@ TVoid
       cell_index[0][1] = ALL_CELLS ;
       cell_index[0][2] = 1         ;
 
+ ibuffer = NULL;
+
       if ( loc_info->type != GRID_TRIVIAL )
       {
-         GNF_GetIntBuffer( file_info, idxloc, cell_index, &ibuffer,
+         GNF_GetIntBuffer( file_info, idxloc, &cell_index[0][0], &ibuffer,
             &elem_size, &no_nef_cells ) ;
       }
 
@@ -2831,6 +3028,7 @@ TVoid
 ------------------------------------------------------------------- */
 
 #ifdef TEST
+#include <float.h>
 int main( int argc, char *argv[] )
 {
    TChar             option[1]             ;
@@ -2872,7 +3070,7 @@ int main( int argc, char *argv[] )
    TReal4          * data                  ;
    TReal8          * times                 ;
    TReal8            times_to_get[2]       ;
-   TReal8          * timdummy              ;
+   TReal8            timdummy[2]           ;
 
    if ( argc < 3 )
    {
@@ -2882,6 +3080,7 @@ int main( int argc, char *argv[] )
 
    strcpy( &filename[0],           argv[1] ) ;
    strcpy( &filename[0+NFFILELEN], argv[2] ) ;
+   strcpy( &filename[0+2*NFFILELEN], "" );
    sscanf( argv[3], "%d", &ftype ) ;
 
 /*
@@ -2940,7 +3139,7 @@ int main( int argc, char *argv[] )
    maxdim = maxlst ;
    i3gl   = 0      ;
 
-   for ( i = 0 ; i < nrlst ; i ++ )
+   for ( i = 2 ; i < nrlst ; i ++ )
    {
       GNF_GetDim( filename, &ftype, "T", &parcod[i], &dummy, &dummy, ndim,
                   &ierror, option ) ;
@@ -2973,6 +3172,9 @@ int main( int argc, char *argv[] )
          times  = (TReal8*) malloc( maxlst*sizeof(TReal8) ) ;
          timtyp = (TInt4 *) malloc( maxlst*sizeof(TInt4)  ) ;
          data   = (TReal4*) malloc( maxlst*sizeof(TReal4) ) ;
+
+         timdummy[0] = 0.0 ;
+         timdummy[1] = FLT_MAX ;
          GNF_GetTme( filename, &ftype, timdummy, &dummy, &parcod[i], &dummy,
                &maxlst, times, timtyp, &nrtim, &ierror, option ) ;
 
@@ -3041,7 +3243,7 @@ int main( int argc, char *argv[] )
    if ( ftype == ODS_TRISULA_MAP_NEFIS )
    {
       indx = (TInt4*) malloc( (loc[1]+1)*(loc[4]+1)*sizeof(TInt4) ) ;
-      GNF_GetGrd( filename, &ftype, &loc, indx, &number_cells, &igisty,
+      GNF_GetGrd( filename, &ftype, loc, indx, &number_cells, &igisty,
          &ierror ) ;
       printf( "Type:   %d\n", igisty       ) ;
       printf( "Nocell: %d\n", number_cells ) ;

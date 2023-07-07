@@ -1,0 +1,10 @@
+.
+EC MODULE ITEMS:
+Target Item 00013 (name=rainfall, vectormax=1)
+Element Set 00011
+   Connection 00015, Converter 00014, targetIndex -0987
+      Source Item 00006 (name=uniform_item, vectormax=1)
+         File Reader 00001(filename=rainschematic.tim)
+            Quantity = uniform_item
+            Location = rainschematic.
+.

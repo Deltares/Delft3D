@@ -17,30 +17,30 @@ function varargout=d3d_waqfil(FI,domain,field,cmd,varargin)
 %   The DataFld can only be either an element of the DataProps structure.
 
 %----- LGPL --------------------------------------------------------------------
-%                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
-%                                                                               
-%   This library is free software; you can redistribute it and/or                
-%   modify it under the terms of the GNU Lesser General Public                   
-%   License as published by the Free Software Foundation version 2.1.                         
-%                                                                               
-%   This library is distributed in the hope that it will be useful,              
-%   but WITHOUT ANY WARRANTY; without even the implied warranty of               
-%   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-%   Lesser General Public License for more details.                              
-%                                                                               
-%   You should have received a copy of the GNU Lesser General Public             
-%   License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-%                                                                               
-%   contact: delft3d.support@deltares.nl                                         
-%   Stichting Deltares                                                           
-%   P.O. Box 177                                                                 
-%   2600 MH Delft, The Netherlands                                               
-%                                                                               
-%   All indications and logos of, and references to, "Delft3D" and "Deltares"    
-%   are registered trademarks of Stichting Deltares, and remain the property of  
-%   Stichting Deltares. All rights reserved.                                     
-%                                                                               
+%
+%   Copyright (C) 2011-2023 Stichting Deltares.
+%
+%   This library is free software; you can redistribute it and/or
+%   modify it under the terms of the GNU Lesser General Public
+%   License as published by the Free Software Foundation version 2.1.
+%
+%   This library is distributed in the hope that it will be useful,
+%   but WITHOUT ANY WARRANTY; without even the implied warranty of
+%   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%   Lesser General Public License for more details.
+%
+%   You should have received a copy of the GNU Lesser General Public
+%   License along with this library; if not, see <http://www.gnu.org/licenses/>.
+%
+%   contact: delft3d.support@deltares.nl
+%   Stichting Deltares
+%   P.O. Box 177
+%   2600 MH Delft, The Netherlands
+%
+%   All indications and logos of, and references to, "Delft3D" and "Deltares"
+%   are registered trademarks of Stichting Deltares, and remain the property of
+%   Stichting Deltares. All rights reserved.
+%
 %-------------------------------------------------------------------------------
 %   http://www.deltaressystems.com
 %   $HeadURL$
@@ -92,6 +92,9 @@ switch cmd
         return
     case 'subfields'
         varargout={getsubfields(FI,Props,varargin{:})};
+        return
+    case 'plotoptions'
+        varargout = {[]};
         return
     case 'plot'
         if isfield(Props,'BalSubFld')
@@ -153,7 +156,7 @@ switch cmd
                 transout           = InOut == -1;
                 Data(transin,:,:)  = Data(transin,:,:)+Data(transout,:,:);
                 for i = find(transin)
-                   Labels{i} = ['Net transport in from ' FluxLabels{i}];
+                    Labels{i} = ['Net transport in from ' FluxLabels{i}];
                 end
                 Labels(transout)   = [];
                 Data(transout,:,:) = [];
@@ -175,7 +178,7 @@ switch cmd
             for i=1:length(Labels)
                 Labels{i}=strrep(Labels{i},'_','\_');
             end
-            legend(Parent,hNew(end-(0:length(Labels)-1)),Labels,3);
+            legend(Parent,hNew(end-(0:length(Labels)-1)),Labels,'Location','SouthWest');
             %
             setappdata(Parent,'AxesType','Time-<blocking>')
             setappdata(Parent,'BasicAxesType','Time-<blocking>')
@@ -195,6 +198,7 @@ switch cmd
             setappdata(Parent,'AxesType','LimitingFactorsAxes')
             setappdata(getappdata(Parent,'LimitingFactorsAxes'), ...
                 'AxesType','LimitingFactorsAxes2')
+            colormap(getappdata(Parent,'LimitingFactorsAxes'),'jet')
         end
         varargout={hNew FI};
         return
@@ -212,6 +216,7 @@ DimFlag=Props.DimFlag;
 % initialize and read indices ...
 idx={[] [] 0 0 0};
 fidx=find(DimFlag);
+ValVecReason = 'layers';
 
 subf=getsubfields(FI,Props);
 if isempty(subf)
@@ -219,7 +224,14 @@ if isempty(subf)
     idx(fidx(1:length(varargin)))=varargin;
 else
     % initialize and read indices ...
-    Props.Val1=Props.SubFld{1}(varargin{1});
+    if varargin{1} > length(Props.SubFld{1})
+        Props.Val1 = Props.SubFld{1};
+        ValVecReason = 'fraction_sum';
+    elseif iscell(Props.SubFld{1})
+        Props.Val1=Props.SubFld{1}{varargin{1}};
+    else
+        Props.Val1=Props.SubFld{1}(varargin{1});
+    end
     idx(fidx(1:(length(varargin)-1)))=varargin(2:end);
 end
 
@@ -252,7 +264,7 @@ for i=[M_ N_ K_]
         elseif ~isequal(idx{i},idx{i}(1):idx{i}(end))
             error('Only scalars or ranges allowed for index %i',i)
         end
-        if (i~=K_) && ~strcmp(subtype,'plot') && ~strcmp(Props.Geom,'POLYG') && ~strcmp(Props.Geom,'UGRID-FACE')
+        if (i~=K_) && ~strcmp(subtype,'plot') && ~strcmp(Props.Geom,'POLYG') && ~strcmp(Props.Geom,'UGRID2D-FACE')
             if DataInCell
                 if isequal(idx{i},1)
                     idx{i}=[1 2];
@@ -292,7 +304,8 @@ end
 x=[];
 y=[];
 z=[];
-ZUnits='';
+ZUnits='-';
+ZQuantity = 'minus layer number';
 XUnits='';
 %if XYRead || strcmp(subtype,'plot')
 %
@@ -338,14 +351,13 @@ switch subtype
                         y=FI.Grid.Discr.Y(idx{M_});
                     case 'ESRI-Shape'
                         xy=shape('read',FI.Grid,0,'polyline');
-                        Sep=[0;find(isnan(xy(:,1)));size(xy,1)+1];
-                        MaxNPnt=max(diff(Sep))-1;
+                        MaxNPnt = max(cellfun(@(v)size(v,1), xy));
                         x = NaN(FI.Grid.NShapes,MaxNPnt);
                         y = NaN(FI.Grid.NShapes,MaxNPnt);
-                        for i=1:length(Sep)-1
-                            NPnt = Sep(i+1)-Sep(i)-1;
-                            x(i,1:NPnt) = xy(Sep(i)+1:Sep(i+1)-1,1)';
-                            y(i,1:NPnt) = xy(Sep(i)+1:Sep(i+1)-1,2)';
+                        for i=1:FI.Grid.NShapes
+                            NPnt = size(xy{i},1);
+                            x(i,1:NPnt) = xy{i}(:,1)';
+                            y(i,1:NPnt) = xy{i}(:,2)';
                         end
                         getPnt=ismember(FI.Grid.Index(:,1),idx{M_});
                         if ~all(getPnt)
@@ -363,7 +375,7 @@ switch subtype
                                         select = {idx{M_}};
                                     end
                                     [Success,Ans] = qp_getdata(FI.Grid,FI.Grid.Mesh{4},'griddata',select{:});
-                                    Ans.ValLocation = Props.Geom(7:end);
+                                    Ans.ValLocation = Props.Geom(9:end);
                             end
                         else
                             if DataInCell
@@ -397,7 +409,9 @@ switch subtype
                                 %agg(clip)=[]; % For aggregation, use agg or FI.Grid.Index
                             end
                         end
-                        XUnits = FI.Grid.Unit;
+                        if isfield(FI.Grid,'Unit')
+                            XUnits = FI.Grid.Unit;
+                        end
                     case 'arcgrid'
                         eidx=idx;
                         eidx{M_}=eidx{M_}+1;
@@ -445,6 +459,7 @@ switch subtype
                 end
             end
             wlflag=strmatch('zcoordwaterlevel',lower(names));
+            dpsflag = false;
             if DataInCell
                 idxK_=[idx{K_} idx{K_}(end)+1];
             else
@@ -454,9 +469,15 @@ switch subtype
                 cthk=-(0:sz(K_));
                 cthk=cthk(idxK_);
                 cthk=reshape(cthk,[1 1 1 length(cthk)]);
-                z=repmat(cthk,[1 size(x) 1]);
+                if isempty(x)
+                    szx = [length(idx{M_}), 1];
+                else
+                    szx = size(x);
+                end
+                z=repmat(cthk,[1 szx 1]);
             else
                 ZUnits = 'm';
+                ZQuantity = 'elevation relative to water level';
                 if isbinary
                     if iscell(ld)
                         for k=length(ld):-1:1
@@ -472,6 +493,9 @@ switch subtype
                     if ~isempty(wlflag)
                         [T,wl]=delwaq('read',LocFI,wlflag,0,idx{T_});
                         wl=permute(wl,[3 2 1]);
+                    elseif isfield(FI,'Grid') && isfield(FI.Grid,'DPS');
+                        dpsflag = true;
+                        dps = FI.Grid.DPS;
                     end
                 else
                     if iscell(ld)
@@ -516,6 +540,11 @@ switch subtype
                     if wlflag
                         wl=wl(:,max(FI.Grid.Index(:,:,1),1));
                         wl=reshape(wl,[size(z,1) size(FI.Grid.Index(:,:,1))]);
+                    elseif dpsflag
+                        wlflag = true;
+                        dps = -dps(max(FI.Grid.Index(:,:,1),1));
+                        dps = reshape(dps, [1 size(dps)]);
+                        wl = max(z,[],4) + repmat(dps,size(z,1),1);
                     end
                     %
                     if strcmp(subtype,'map')
@@ -547,31 +576,33 @@ switch subtype
                 %end
                 %
                 if isempty(wlflag)
-                    szz=[size(z) 1];
-                    wl=repmat(0,szz([1 2 3]));
-                    wl(all(isnan(z(:,:,:,:)),4))=NaN;
+                    szz = [size(z) 1];
+                    wl = repmat(0,szz([1 2 3]));
+                    wl(all(isnan(z(:,:,:,:)),4)) = NaN;
+                else
+                    ZQuantity = 'elevation';
                 end
                 if DataInCell
-                    kmax=size(z,4);
-                    for i=1:size(z,1)
-                        for k=kmax+1:-1:2
-                            z(i,:,:,k)=z(i,:,:,k-1)+wl(i,:,:);
+                    kmax = size(z,4);
+                    for i = 1:size(z,1)
+                        for k = kmax+1:-1:2
+                            z(i,:,:,k) = wl(i,:,:) - z(i,:,:,k-1);
                         end
-                        z(i,:,:,1)=wl(i,:,:);
+                        z(i,:,:,1) = wl(i,:,:);
                     end
                 else
-                    for i=1:size(z,1)
-                        for k=size(z,4):-1:2
-                            z(i,:,:,k)=(z(i,:,:,k)+z(i,:,:,k-1))/2+wl(i,:,:);
+                    for i = 1:size(z,1)
+                        for k = size(z,4):-1:2
+                            z(i,:,:,k) = wl(i,:,:) - (z(i,:,:,k) + z(i,:,:,k-1))/2;
                         end
-                        z(i,:,:,1)=z(i,:,:,1)/2+wl(i,:,:);
+                        z(i,:,:,1) = wl(i,:,:) - z(i,:,:,1)/2;
                     end
                 end
                 %
                 if isequal(idx{N_},0) % unstructured data sets
-                    z=-z(:,idx{M_},1,idxK_);
+                    z = z(:,idx{M_},1,idxK_);
                 else
-                    z=-z(:,idx{[M_ N_]},idxK_);
+                    z = z(:,idx{[M_ N_]},idxK_);
                 end
             end
             %      cthk=-(0:(FI.Grid.MNK(3)-1));
@@ -586,6 +617,7 @@ switch subtype
 end
 %========================= GENERAL CODE =======================================
 x(x==-999) = NaN;
+x(x==-missingvalue) = NaN;
 %end
 
 % grid interpolation ...
@@ -610,7 +642,7 @@ TDam=0;
 T=[];
 if ~isempty(Props.SubFld) && isnumeric(Props.SubFld)
     % for S1/S2 quantities we read only the last layer
-    elidx(end+1)={Props.SubFld};
+    elidx(end+1)={':'};
 end
 if strcmp(Props.Name,'grid') && ~strcmp(Props.Geom,'POLYG')
     if isequal(FI.FileType,'DelwaqLGA')
@@ -662,7 +694,7 @@ elseif (strcmp(subtype,'map') && mapgrid) || strcmp(subtype,'plot') || strcmp(su
             end
         end
     end
-    if iscell(Props.Val1) || (isnumeric(Props.Val1) && length(Props.Val1)>1)
+    if strcmp(ValVecReason,'layers') && (iscell(Props.Val1) || (isnumeric(Props.Val1) && length(Props.Val1)>1))
         % layers shouldn't be included in index because the segment numbers
         % will be derived from index, and we don't have that many segments
         % per quantity
@@ -681,7 +713,7 @@ elseif (strcmp(subtype,'map') && mapgrid) || strcmp(subtype,'plot') || strcmp(su
     end
     %
     [seg,ia,ic] = unique(index);
-    if iscell(Props.Val1) || (isnumeric(Props.Val1) && length(Props.Val1)>1)
+    if strcmp(ValVecReason,'layers') && (iscell(Props.Val1) || (isnumeric(Props.Val1) && length(Props.Val1)>1))
         nlyr = length(Props.Val1);
         missing = repmat(missing,[ones(1,length(elidx)-1) nlyr]);
         numic = length(ic);
@@ -707,7 +739,7 @@ elseif (strcmp(subtype,'map') && mapgrid) || strcmp(subtype,'plot') || strcmp(su
         if strcmp(Props.Name,'bed level')
             val1 = -val1;
         end
-    elseif iscell(Props.Val1) && DimFlag(K_)
+    elseif strcmp(ValVecReason,'layers') && iscell(Props.Val1) && DimFlag(K_)
         %
         % Plot grid or non-aggregated map grid with multiple layers stored in
         % different substances.
@@ -721,13 +753,25 @@ elseif (strcmp(subtype,'map') && mapgrid) || strcmp(subtype,'plot') || strcmp(su
     else
         if isbinary
             [T,val1]=delwaq('read',LocFI,Props.Val1,seg,idx{T_});
+            if length(Props.Val1)>1 && strcmp(ValVecReason,'fraction_sum')
+                val1 = sum(val,1);
+            end
             val1=permute(val1,[3 2 1]);
+        elseif iscell(Props.Val1)
+            for ip = 1:length(Props.Val1)
+                [val1p,Chk]=vs_let(LocFI,Props.Group,idx(T_),Props.Val1{ip},{seg},'quiet');
+                if ip == 1
+                    val1 = val1p;
+                else
+                    val1 = val1 + val1p;
+                end
+            end
         else
             [val1,Chk]=vs_let(LocFI,Props.Group,idx(T_),Props.Val1,{seg},'quiet');
         end
         if ~isempty(Props.Val2)
             if isbinary
-                 [T,val2]=delwaq('read',LocFI,Props.Val2,seg,idx{T_});
+                [T,val2]=delwaq('read',LocFI,Props.Val2,seg,idx{T_});
                 val2=permute(val2,[3 2 1]);
             else
                 [val2,Chk]=vs_let(LocFI,Props.Group,idx(T_),Props.Val2,{seg},'quiet');
@@ -741,6 +785,33 @@ elseif (strcmp(subtype,'map') && mapgrid) || strcmp(subtype,'plot') || strcmp(su
     else
         val1 = val1(:,ic);
         val1(:,missing) = NaN;
+        if size(val1,2) ~= prod(szPerTimestep)
+            nTimes = size(val1,1);
+            nLayers = size(val1,2)/prod(szPerTimestep);
+            val1 = reshape(val1,[nTimes*prod(szPerTimestep) nLayers]);
+            val1(val1==-999) = 0;
+            bed2d_method = 'last_layer_non_zero';
+            switch bed2d_method
+                case 'last_layer_non_zero'
+                    for k = nLayers:-1:1
+                        if k==nLayers
+                            needsval = val1(:,k)==0;
+                        else
+                            getval = val1(:,k)~=0 & needsval;
+                            if any(getval)
+                                val1(getval,nLayers) = val1(getval,k);
+                                needsval(getval) = false;
+                            end
+                        end
+                    end
+                    val1 = val1(:,nLayers);
+                case 'sum_all_layers'
+                    val1 = sum(val1,2);
+                case 'last_layer'
+                    val1 = val1(:,nLayers);
+            end
+            val1 = reshape(val1,[nTimes prod(szPerTimestep)]);
+        end
         val1 = reshape(val1,[size(val1,1) szPerTimestep]);
         if ~isempty(val2)
             val2 = val2(:,ic);
@@ -760,9 +831,12 @@ else
             ival = Props.Val1;
         end
         [T,val1]=delwaq('read',LocFI,ival,idx{st_},idx{T_});
+        if length(Props.Val1)>1 && strcmp(ValVecReason,'fraction_sum')
+            val1 = sum(val,1);
+        end
         val1=permute(val1,[3 2 1]);
     else
-        if iscell(Props.Val1) && DimFlag(K_)
+        if strcmp(ValVecReason,'layers') && iscell(Props.Val1)
             %
             % Multiple layers stored in different substances.
             %
@@ -771,6 +845,15 @@ else
             for s=idx{K_}
                 i_s = i_s+1;
                 [val1(:,:,i_s),Chk]=vs_let(LocFI,Props.Group,idx(T_),Props.Val1{s},idx(st_),'quiet'); % load station
+            end
+        elseif iscell(Props.Val1)
+            for ip = 1:length(Props.Val1)
+                [val1p,Chk]=vs_let(LocFI,Props.Group,idx(T_),Props.Val1{ip},idx(st_),'quiet'); % load station
+                if ip == 1
+                    val1 = val1p;
+                else
+                    val1 = val1 + val1p;
+                end
             end
         else
             [val1,Chk]=vs_let(LocFI,Props.Group,idx(T_),Props.Val1,idx(st_),'quiet'); % load station
@@ -838,7 +921,7 @@ end
 %======================== SPECIFIC CODE =======================================
 % select active points ...
 act_from_z = 0;
-if strcmp(subtype,'map') && mapgrid && ~strcmp(Props.Geom,'TRI') && ~strcmp(Props.Geom,'POLYG') && ~strcmp(Props.Geom,'UGRID-FACE')
+if strcmp(subtype,'map') && mapgrid && ~strcmp(Props.Geom,'TRI') && ~strcmp(Props.Geom,'POLYG') && ~strcmp(Props.Geom,'UGRID2D-FACE') && ~strcmp(Props.Geom,'UGRID2D-NODE') && ~strcmp(Props.Geom,'UGRID1D-NODE')
     act=FI.Grid.Index(idx{[M_ N_]},1)~=0;
     gridact=~isnan(x(:,:,:,1));
 elseif strcmp(subtype,'plot') && ~isempty(z)
@@ -1006,8 +1089,15 @@ end
 % generate output ...
 if XYRead
     switch Props.Geom
-        case {'UGRID-FACE','UGRID-EDGE','UGRID-NODE'}
-            % Ans already filled with geometry information
+        case {'UGRID2D-FACE','UGRID2D-EDGE','UGRID2D-NODE'}
+            % Ans already filled with geometry information except for
+            % z coordinates
+            if DimFlag(K_)
+                Ans.ZName = ZQuantity;
+                Ans.ZUnits = ZUnits;
+                Ans.ZLocation = Ans.ValLocation;
+                Ans.Z = z;
+            end
         case 'POLYG'
             if size(x,2)==2 % segments
                 x(:,end+1) = NaN;
@@ -1057,8 +1147,9 @@ if XYRead
                 Ans.Y=y;
             end
             if DimFlag(K_)
-                Ans.Z=z;
-                Ans.ZUnits=ZUnits;
+                Ans.ZName = ZQuantity;
+                Ans.ZUnits = ZUnits;
+                Ans.Z = z;
             end
     end
     %
@@ -1113,6 +1204,8 @@ plotfile=0;
 includegrid=1;
 enablegridview=1;
 mass_per='n/a';
+reducebedto2d = qp_option(FI,'reducebedto2d','default',1);
+reducedptstatto2d = qp_option(FI,'reducedptstatto2d','default',1);
 switch Type
     case {'delwaqlga'}
         DataProps={'grid'          ''     '' 'xy'     [0 0 1 1 0]  0         0     ''       'd'   'd'       ''      ''               ''              ''    []       0 0
@@ -1134,7 +1227,7 @@ switch Type
                 switch name
                     case 'vol'
                         Out(end).DimFlag(T_) = 5;
-                        name = 'flow volumes';
+                        name = 'water volumes';
                         units = 'm^3';
                     case 'sal'
                         Out(end).DimFlag(T_) = 5;
@@ -1177,10 +1270,18 @@ switch Type
                         name = 'chezy - direction 2';
                         units = 'm^{1/2}/s';
                         Out(end).AttPar = {2};
-                    case 'srf'
-                        name = 'surface areas';
+                    case {'srf','srfold'}
+                        if isfield(FI.Attributes.(name),'Srf')
+                            Out(end).DimFlag(K_) = 0;
+                        else
+                            Out(end).DimFlag(T_) = 5;
+                        end
+                        if strcmp(name,'srfold')
+                            name = 'surface areas (old format)';
+                        else
+                            name = 'surface areas';
+                        end
                         units = 'm^2';
-                        Out(end).DimFlag(K_) = 0;
                     case 'dps'
                         name = 'bed level';
                         units = 'm';
@@ -1204,8 +1305,8 @@ switch Type
         mass_per='cell';
     otherwise
         DataProps={'segment number'       ''     '' 'xy'     [0 5 0 0 0]  1         1     ''       'z'   'z'       'c'     ''               ''              ''    []       0 0
-                   '-------'              ''     '' ''       [0 0 0 0 0]  0         0     ''       ''    ''        ''      ''               ''              ''    []       0 0
-                   '--constituents'       ''     '' 'xy'     [1 5 0 0 0]  1         1     ''       'z'   'z'       'c'     casemod('DELWAQ_RESULTS') casemod('SUBST_001')     ''    []       0 0};
+            '-------'              ''     '' ''       [0 0 0 0 0]  0         0     ''       ''    ''        ''      ''               ''              ''    []       0 0
+            '--constituents'       ''     '' 'xy'     [1 5 0 0 0]  1         1     ''       'z'   'z'       'c'     casemod('DELWAQ_RESULTS') casemod('SUBST_001')     ''    []       0 0};
         mass_per='cell';
         if isfield(FI,'Grid') && ~isempty(FI.Grid)
             for r = [1 3]
@@ -1226,7 +1327,19 @@ switch Type
                             enablegridview=0;
                             %
                             if isfield(FI.Grid,'Mesh')
-                                DataProps{r,3}='UGRID-FACE';
+                                switch FI.Grid.Mesh{3}
+                                    case 0
+                                        imesh = FI.Grid.Mesh{2};
+                                        nMeshDims = FI.Grid.Dataset(imesh).Mesh{2};
+                                        switch nMeshDims
+                                            case 1
+                                                DataProps{r,3}='UGRID1D-NODE';
+                                            case 2
+                                                DataProps{r,3}='UGRID2D-NODE';
+                                        end
+                                    case 2
+                                        DataProps{r,3}='UGRID2D-FACE';
+                                end
                             else
                                 DataProps{r,3}='POLYG';
                             end
@@ -1282,7 +1395,8 @@ end
 %======================== SPECIFIC CODE ADD ===================================
 icnst=strmatch('--constituents',{Out.Name});
 ii=0;
-FI=qp_option(FI,'balancefile','ifnew',0);
+FI = qp_option(FI,'balancefile','ifnew',0);
+FI = qp_option(FI,'showfractions','ifnew','subfield');
 minlen=20;
 if ~isempty(icnst)
     [Out.BedLayer]=deal(0);
@@ -1498,9 +1612,9 @@ if ~isempty(icnst)
     if strcmp(subtype,'map')
         bedlayer = 0;
         if isfield(FI.Grid,'NoSegPerLayer')
-           noseg_ifbedlayer = FI.Grid.NoSegPerLayer*(FI.Grid.MNK(3)+1);
+            noseg_ifbedlayer = FI.Grid.NoSegPerLayer*(FI.Grid.MNK(3)+1);
         else % e.g. in case of Telemac
-           noseg_ifbedlayer = prod(FI.Grid.MNK+[0 0 1]);
+            noseg_ifbedlayer = prod(FI.Grid.MNK+[0 0 1]);
         end
         if isbinary
             bedlayer = FI.DwqBin.NumSegm==noseg_ifbedlayer;
@@ -1564,6 +1678,8 @@ if ~isempty(icnst)
         end
     end
     %
+    showfractions = qp_option(FI,'showfractions');
+    %
     % check whether substance names were expanded by adding 001,002,...
     % the following algorithm requires fractions to be numbered
     % consecutively. For this puerpose we sort the entries first.
@@ -1571,99 +1687,157 @@ if ~isempty(icnst)
     [sorted_names,reorder] = sort({Ins.Name}');
     Ins = Ins(reorder);
     %
-    names=substdb;
-    onenames = names(wildstrmatch('*01',names),:);
+    names = cellstr(substdb);
+    onenames = names(wildstrmatch('*01',names));
     j=1;
     while j<=length(Ins)
-       nm = Ins(j).Name;
-       if length(nm)<3 % name to too short for name expansion
-          j=j+1;
-          continue
-       end
-       if strcmp(nm(end-1:end),'01') % do the last two characters match '01'? [two digits if there are less than 100 fractions)
-          n=2;
-          f='%s%2.2d';
-          if strcmp(nm(end-2:end),'001') % do the last three characters match '001'? (three digits if there are more than 99 fractions)
-             n=3;
-             f='%s%3.3d';
-          end
-       else % the last two characters are not '01'
-          j=j+1;
-          continue
-       end
-       if ~isempty(strmatch(lower(nm),onenames)) % there exists a name in the process definition file that matches the full name (no name expansion)
-          j=j+1;
-          continue
-       end
-       for k=j+1:length(Ins) % count expansion
-          nm2 = sprintf(f,nm(1:end-n),k-j+1);
-          if ~strcmp(Ins(k).Name,nm2)
-             k=k-1;
-             break
-          end
-       end
-       Ins(j).Name = nm(1:end-n);
-       nms = {};
-       for i=k-j+1:-1:1
-          nms{i} = sprintf('fraction %i',i);
-       end
-       Ins(j).SubFld = {[Ins(j:k).Val1] nms};
-       Ins(j+1:k)=[];
-       j=j+1;
+        nm = Ins(j).Name;
+        if length(nm)<3 % name to too short for name expansion
+            j=j+1;
+            continue
+        end
+        if strcmp(nm(end-1:end),'01') % do the last two characters match '01'? [two digits if there are less than 100 fractions)
+            n=2;
+            f='%s%2.2d';
+            if strcmp(nm(end-2:end),'001') % do the last three characters match '001'? (three digits if there are more than 99 fractions)
+                n=3;
+                f='%s%3.3d';
+            end
+        else % the last two characters are not '01'
+            j=j+1;
+            continue
+        end
+        if any(strcmpi(nm,onenames)) % there exists a name in the process definition file that matches the full name (no name expansion)
+            j=j+1;
+            continue
+        end
+        % determine first (j) and last (k) fraction entries
+        k = j+1;
+        while 1
+            nm2 = sprintf(f, nm(1:end-n), k-j+1);
+            if k>length(Ins) || ~strcmp(Ins(k).Name, nm2)
+                k = k-1;
+                break
+            elseif k == length(Ins)
+                break
+            end
+            k = k+1;
+        end
+        %
+        switch showfractions
+            case 'subfield'
+                Ins(j).Name = nm(1:end-n);
+                nms{k-j+2} = 'sum of all fractions';
+                for i = k-j+1:-1:1
+                    nms{i} = sprintf('fraction %i',i);
+                end
+                if ischar(Ins(j).Val1)
+                    Ins(j).SubFld = {{Ins(j:k).Val1} nms};
+                else
+                    Ins(j).SubFld = {[Ins(j:k).Val1] nms};
+                end
+                Ins(j+1:k)=[];
+            case 'quantities'
+                for i = j:k
+                    Ins(i).ShortName = Ins(i).Name;
+                    Ins(i).Name = Ins(i).Name(1:end-n);
+                end
+        end
+        j=j+1;
     end
-    for j=1:length(Ins)
-       s1 = strfind(Ins(j).Name,'S1');
-       s2 = strfind(Ins(j).Name,'S2');
-       s = max([s1 s2]);
-       if ~isempty(s)
-          smatch = strmatch(Ins(j).Name(s+2:end),{'','M2','TOT','-DIS','-PAR','OMP'},'exact');
-          if ~isempty(smatch)
-             if Ins(j).DimFlag(5)
-                Ins(j).DimFlag(5)=0;
-                Ins(j).SubFld=FI.Grid.MNK(3);
-             end
-          end
-       end
+    if reducebedto2d
+        for j=1:length(Ins)
+            s1 = strfind(Ins(j).Name,'S1');
+            s2 = strfind(Ins(j).Name,'S2');
+            s = max([s1 s2]);
+            if ~isempty(s)
+                smatch = strmatch(Ins(j).Name(s+2:end),{'','M2','TOT','-DIS','-PAR','OMP'},'exact');
+                if ~isempty(smatch)
+                    if Ins(j).DimFlag(5)
+                        Ins(j).DimFlag(5)=0;
+                        Ins(j).SubFld=FI.Grid.MNK(3);
+                    end
+                end
+            end
+        end
     end
+    shownames = qp_settings('delwaq_names');
     for j=1:length(Ins)
-        Ins(j).ShortName = Ins(j).Name;
-        [Ins(j).Name,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name,mass_per,'minmatchlen',minlen);
+        if isempty(Ins(j).ShortName)
+            Ins(j).ShortName = Ins(j).Name;
+            frac = '';
+        else
+            frac = sprintf(' fraction %s', Ins(j).ShortName(length(Ins(j).Name)+1:end));
+        end
+        if strncmp(Ins(j).Name,'DPTAVG_',7)
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            LN = ['depth average of ' LN1];
+            if reducedptstatto2d
+                Ins(j).DimFlag(K_) = 0;
+            end
+        elseif strncmp(Ins(j).Name,'DPTMAX_',7)
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            LN = ['maximum of ' LN1 ' over water depth'];
+            if reducedptstatto2d
+                Ins(j).DimFlag(K_) = 0;
+            end
+        elseif strncmp(Ins(j).Name,'DPTMIN_',7)
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            LN = ['minimum of ' LN1 ' over water depth'];
+            if reducedptstatto2d
+                Ins(j).DimFlag(K_) = 0;
+            end
+        else
+            [LN,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name,mass_per,'minmatchlen',minlen);
+        end
+        switch shownames
+            case 'expanded'
+                Ins(j).Name = [LN frac];
+            case 'short'
+                Ins(j).Name = Ins(j).ShortName;
+            case 'both'
+                if isempty(strfind(LN, Ins(j).Name))
+                    Ins(j).Name = [LN frac ' [' Ins(j).ShortName ']'];
+                else
+                    Ins(j).Name = [LN frac];
+                end
+        end
         if Ins(j).BedLayer>0
             Ins(j).SubsGrp=[Ins(j).SubsGrp '-bedlayer'];
             Ins(j).Name=[Ins(j).Name ' (bed layer)'];
             Ins(j).Units='kg/m^2';
         end
-        if qp_option(FI,'balancefile')
+        if qp_option(FI,'balancefile') && isfield(Ins,'BalSubFld')
             %
             % balance file
             %
             Ins(j).Units = [Ins(j).Units '/d'];
             Out(1).BalSubFld=[];
         end
-        if isequal(Ins(j).Name,'Limit Chlo') || isequal(Ins(j).Name,'total chlorophyll in algae')
+        if isequal(Ins(j).ShortName,'Limit Chlo')
             Ins(end+1)=Ins(j);
-            Ins(end).Name = 'total chlorophyll in algae (limiting factors)';
+            Ins(end).Name = [Ins(j).Name ' (limiting factors)'];
             Ins(end).NVal = -1;
-            Ins(end).DimFlag(1)=0;
+            %Ins(end).DimFlag(T_) = 0;
         end
     end
     % find vectors
     iX=find(strncmpi('x-comp',{Ins.Name}',6) | strcmpi('horizontal flow velocity first direction',{Ins.Name}'))';
     for i = iX
         if Ins(i).Name(1)=='x'
-           ystr = Ins(i).Name;
-           ystr(1) = 'y';
+            ystr = Ins(i).Name;
+            ystr(1) = 'y';
         else
-           ystr = 'horizontal flow velocity second direction';
+            ystr = 'horizontal flow velocity second direction';
         end
         iY = find(strcmpi(ystr,{Ins.Name}'));
         if length(iY)==1
             if Ins(i).Name(1)~='x'
-               Ins(i).Name = 'horizontal flow velocity';
+                Ins(i).Name = 'horizontal flow velocity';
             elseif length(Ins(i).Name)>15 && isequal('x-component of ',Ins(i).Name(1:15))
-               Ins(i).Name = Ins(i).Name(16:end);
+                Ins(i).Name = Ins(i).Name(16:end);
             elseif length(Ins(i).Name)>10 && isequal('x-comp of ',Ins(i).Name(1:10))
-               Ins(i).Name = Ins(i).Name(11:end);
+                Ins(i).Name = Ins(i).Name(11:end);
             else
                 continue
             end
@@ -1673,15 +1847,24 @@ if ~isempty(icnst)
             Ins(iY).Name = '*already processed*';
         end
     end
-    Ins(strmatch('*already processed*',{Ins.Name}))=[];
+    Ins(strcmp('*already processed*',{Ins.Name})) = [];
     %
-    [dummy,reorder]=sort({Ins.SubsGrp});
+    [~,reorder]=sort({Ins.SubsGrp});
     Ins=Ins(reorder);
-    [subsgrp,I,J]=unique({Ins.SubsGrp});
+    [subsgrp,~,J]=unique({Ins.SubsGrp});
     for i=length(subsgrp):-1:1
         j=find(J==i);
-        [dummy,reorder]=sort({Ins(j).Name});
+        [~,reorder]=sort(upper({Ins(j).Name}));
         Ins(j+i-1)=Ins(j(reorder));
+        if strcmp(showfractions,'quantities')
+            % remove any (at most 2) leading zeros in fraction number
+            % inserted to make sure the fractions are sorted in numerical
+            % order.
+            for j1 = j'+i-1
+                nm = strrep(Ins(j1).Name,'fraction 0','fraction ');
+                Ins(j1).Name = strrep(nm,'fraction 0','fraction ');
+            end
+        end
         if i>1
             j0=j(1)+i-2;
             Ins(j0).Name='-------';
@@ -1718,9 +1901,9 @@ if isfield(FI,'Grid') && ~isempty(FI.Grid) && includegrid
     Out(1).DimFlag(T_)=0;
     Out(1).DimFlag(K_)=0;
     if strcmp(FI.Grid.FileType,'netCDF')
-       Out(1).DataInCell=2;
+        Out(1).DataInCell=2;
     else
-       Out(1).DataInCell=0;
+        Out(1).DataInCell=0;
     end
     Out(1).NVal=0;
     Out(1).SubFld=[];
@@ -1749,22 +1932,29 @@ end
 
 if isPartFile(FI)
     lasti = 0;
-    for i = 3:3:length(Out)
-        Substance = Out(i-2).Name;
-        if length(Out(i).Name)>5 && strcmp(Out(i).Name(end-4:end),'stick') && ...
-                length(Out(i-1).Name)>4 && strcmp(Out(i-1).Name(end-3:end),'disp') && ...
-                strcmp(Substance,deblank(Out(i).Name(1:end-5))) && ...
-                strcmp(Substance,deblank(Out(i-1).Name(1:end-4)))
-            Out(i-2).Name = [Substance ' (floating)'];
-            Out(i-2).Units = 'kg/m^2';
-            Out(i-1).Name = [Substance ' (dispersed)'];
-            Out(i-1).Units = 'kg/m^3';
+    OilTypes = {};
+    for i = 1:length(Out)
+        Substance = Out(i).Name;
+        if length(Substance)>5 && strcmp(Substance(end-5:end),' stick')
+            Substance = deblank(Substance(1:end-6));
             Out(i).Name = [Substance ' (sticking)'];
             Out(i).Units = 'kg/m^2';
-            lasti = i;
+            OilTypes{end+1} = Substance;
+        elseif length(Substance)>4 && strcmp(Substance(end-4:end),' disp')
+            Substance = deblank(Substance(1:end-5));
+            Out(i).Name = [Substance ' (dispersed)'];
+            Out(i).Units = 'kg/m^3';
+            OilTypes{end+1} = Substance;
         end
     end
-    for i = lasti+1:length(Out)
+    OilTypes = unique(OilTypes);
+    for i = 1:length(Out)
+        if ismember(Out(i).Name,OilTypes)
+            Out(i).Name = [Out(i).Name ' (floating)'];
+            Out(i).Units = 'kg/m^2';
+        end
+    end
+    for i = 1:length(Out)
         if isempty(Out(i).Units)
             switch Out(i).Name
                 case {'grid','segment number','-------'}
@@ -1777,7 +1967,7 @@ end
 
 % enable GridView
 if (strcmp(subtype,'map') || strcmp(subtype,'plot')) && isfield(FI,'Grid') && ~isempty(FI.Grid) && enablegridview
-   [Out.UseGrid] = deal(1);
+    [Out.UseGrid] = deal(1);
 end
 % -----------------------------------------------------------------------------
 
@@ -1960,8 +2150,23 @@ if isempty(x)
     try
         ErrMsg='Cannot find or open ';
         tbl=qp_settings('delwaq_procdef');
-        if isequal(tbl,'auto') || ~exist(tbl,'file')
-            tbl=cat(2,getenv('D3D_HOME'),filesep,getenv('ARCH'),filesep,'waq',filesep,'default',filesep,'proc_def.dat');
+        for WAQDIR = {'waq','dwaq'}
+            waq = WAQDIR{1};
+            if isequal(tbl,'auto') || ~exist(tbl,'file')
+                tbl=cat(2,getenv('D3D_HOME'),filesep,getenv('ARCH'),filesep,waq,filesep,'default',filesep,'proc_def.dat');
+            end
+            if ~exist(tbl,'file')
+                if isstandalone % from d3d_qp.exe on Windows (or old Linux)
+                    % two levels up to "D3D_HOME/ARCH" and then proc_def.dat should be located in waq/default
+                    tbl=cat(2,qp_basedir('exe'),filesep,'..',filesep,'..',filesep,waq,filesep,'default',filesep,'proc_def.dat');
+                elseif ispc % from d3d_qp.m on Windows (or old Linux)
+                    % one level up to "D3D_HOME/ARCH" and then proc_def.dat should be located in waq/default
+                    tbl=cat(2,qp_basedir('exe'),'..',filesep,waq,filesep,'default',filesep,'proc_def.dat');
+                else % from d3d_qp.m on (new) Linux
+                    % one level to "share" and then proc_def.dat should be located in dwaq
+                    tbl=cat(2,qp_basedir('exe'),'..',filesep,waq,filesep,'proc_def.dat');
+                end
+            end
         end
         if ~exist(tbl,'file') && ispc
             for drive = 'cdef'
@@ -2004,61 +2209,61 @@ if isempty(x)
         ui_message('error',[ErrMsg tbl]);
         x=-1;
     end
- end
- %
- Unit='';
- GroupID='';
- if nargin==0
+end
+%
+Unit='';
+GroupID='';
+if nargin==0
     if isstruct(x)
-       Full=x.ID;
+        Full=x.ID;
     else
-       Full='';
+        Full='';
     end
- else
+else
     if isstruct(x)
-       db=ustrcmpi(lower(Abb),cellstr(x.ID),'casematch',4,varargin{:});
-       % much faster:
-       %db=strmatch(lower(Abb),x.ID,'exact');
-       %if isempty(db), db=-1; end
-       if db>0
-          Full=deblank(x.NM(db,:));
-          if isequal(lower(Full),'undefined')
-             Full=Abb;
-          end
-          Unit=deblank(x.UNIT(db,:));
-          Unit=Unit(2:end-1);
-          if strcmp(Unit,'no unit')
-              Unit = '-';
-          elseif strcmp(Unit,'various') || strcmp(Unit,'?')
-              Unit = '';
-          elseif x.NonTranspSubs(db,:)
-              if strcmp(cmd,'m2') % data file indicates /m2
-                  if length(Unit)>3 && strcmp(Unit(end-2:end),'/m2')
-                      % procdef also says /m2 --> OK, no change needed
-                  else
-                      % procdef says /cell --> add per m2
-                      Unit = [Unit '/m2'];
-                  end
-              elseif strcmp(cmd,'cell') % data file indicates /cell
-                  if length(Unit)>3 && strcmp(Unit(end-2:end),'/m2')
-                      % procdef says /m2 --> strip off m2
-                      Unit = Unit(1:end-3);
-                  else
-                      % procdef also says /cell --> OK, no change needed
-                  end
-              else % strcmp(cmd,'n/a')
-                  % don't care, no change needed
-              end
-          end
-          GroupID=deblank(x.GRPID(db,:));
-       else
-          Full=Abb;
-       end
+        db=ustrcmpi(lower(Abb),cellstr(x.ID),'casematch',4,varargin{:});
+        % much faster:
+        %db=strmatch(lower(Abb),x.ID,'exact');
+        %if isempty(db), db=-1; end
+        if db>0
+            Full=deblank(x.NM(db,:));
+            if isequal(lower(Full),'undefined')
+                Full=Abb;
+            end
+            Unit=deblank(x.UNIT(db,:));
+            Unit=Unit(2:end-1);
+            if strcmp(Unit,'no unit')
+                Unit = '-';
+            elseif strcmp(Unit,'various') || strcmp(Unit,'?')
+                Unit = '';
+            elseif x.NonTranspSubs(db,:)
+                if strcmp(cmd,'m2') % data file indicates /m2
+                    if length(Unit)>3 && strcmp(Unit(end-2:end),'/m2')
+                        % procdef also says /m2 --> OK, no change needed
+                    else
+                        % procdef says /cell --> add per m2
+                        Unit = [Unit '/m2'];
+                    end
+                elseif strcmp(cmd,'cell') % data file indicates /cell
+                    if length(Unit)>3 && strcmp(Unit(end-2:end),'/m2')
+                        % procdef says /m2 --> strip off m2
+                        Unit = Unit(1:end-3);
+                    else
+                        % procdef also says /cell --> OK, no change needed
+                    end
+                else % strcmp(cmd,'n/a')
+                    % don't care, no change needed
+                end
+            end
+            GroupID=deblank(x.GRPID(db,:));
+        else
+            Full=Abb;
+        end
     else
-       Full=Abb;
+        Full=Abb;
     end
- end
- 
+end
+
 % -----------------------------------------------------------------------------
 function [LocFI,isbinary,subtype,DELWAQ,casemod]=KeyParamFI(FI)
 %==============================================================================
@@ -2145,6 +2350,8 @@ Active=[1 1 1];
 NewFI=FI;
 cmd=lower(cmd);
 cmdargs={};
+shownames = {'expanded','short','both'};
+showfractions = {'subfield','quantities'};
 switch cmd
     case 'initialize'
         OK=optfig(mfig);
@@ -2152,19 +2359,32 @@ switch cmd
             case 'delwaqlga'
                 cellflds = {'loadvolflux'};
             otherwise
-                cellflds = {'treatas1d','balancefile','clipwherezundefined'};
+                cellflds = {'treatas1d','balancefile','clipwherezundefined','reducebedto2d','reducedptstatto2d','showfractions'};
         end
         for cellfld = cellflds
             Fld = cellfld{1};
             f = findobj(mfig,'tag',Fld);
+            enable = 'on';
             switch Fld
-                case {'clipwherezundefined'}
+                case {'showfractions'}
+                    defval = showfractions{1};
+                case {'clipwherezundefined','reducebedto2d','reducedptstatto2d'}
                     defval = 1;
+                case 'treatas1d'
+                    defval = 0;
+                    if isfield(FI,'Grid') && ~isempty(FI.Grid)
+                        enable = 'off';
+                    end
+                case 'balancefile'
+                    defval = 0;
                 otherwise
                     defval = 0;
             end
             value = qp_option(FI,Fld,'default',defval);
-            set(f,'value',value,'enable','on')
+            if ischar(value)
+                value = ustrcmpi(value,showfractions);
+            end
+            set(f,'value',value,'enable',enable)
             %
             switch Fld
                 case 'balancefile'
@@ -2187,6 +2407,9 @@ switch cmd
         options(FI,mfig,'updateprocdef');
         
     case {'updateprocdef'}
+        f1 = findobj(mfig,'tag','shownames');
+        set(f1,'value',ustrcmpi(qp_settings('delwaq_names'),shownames))
+        %
         f1 = findobj(mfig,'tag','autoprocdef');
         f2 = findobj(mfig,'tag','procdefname');
         f3 = findobj(mfig,'tag','procdefbrowse');
@@ -2201,6 +2424,25 @@ switch cmd
             set(f3,'enable','on')
         end
         
+    case {'shownames'}
+        f1 = findobj(mfig,'tag','shownames');
+        qp_settings('delwaq_names',shownames{get(f1,'value')})
+        
+    case {'showfractions'}
+        f = findobj(mfig,'tag','showfractions');
+        if nargin>3
+            Log = varargin{1};
+            value = ustrcmpi(Log, showfractions);
+            if value < 0
+                error('Invalid argument "%s" specified for %s.',Log,cmd)
+            end
+        else
+            value = get(f,'value');
+        end
+        set(f,'value',value)
+        NewFI = qp_option(NewFI,cmd,showfractions{value});
+        cmdargs = {cmd value};
+
     case {'autoprocdef'}
         f1 = findobj(mfig,'tag','autoprocdef');
         if get(f1,'value')
@@ -2212,7 +2454,7 @@ switch cmd
             qp_settings('delwaq_procdef','manual but not yet specied')
         end
         options(FI,mfig,'updateprocdef');
-
+        
     case {'procdefname'}
         f1 = findobj(mfig,'tag','procdefname');
         qp_settings('delwaq_procdef',get(f1,'string'))
@@ -2250,17 +2492,20 @@ switch cmd
                         NewFI.Attributes.(ext) = waqfil('open',[base ext],FI.NoSeg);
                     case {'.are','.flo','.poi','.len'}
                         %NewFI.Attributes.(ext) = waqfil('open',[base ext],sum(FI.NoExchMNK));
-                    case {'.srf','.dps','.chz'}
+                    case {'.srf','.dps','.chz','.srfold'}
                         NewFI.Attributes.(ext) = waqfil('open',[base ext]);
                 end
-            catch
+            catch e
+                if strcmp(e.message,'Could this be a new format srf file?')
+                    NewFI.Attributes.(ext) = waqfil('open',[base ext],FI.NoSeg);
+                end
             end
         end
         delete(H)
         f = findobj(mfig,'tag','loadvolflux');
         set(f,'string','Reload Volumes, Fluxes, ...')
         
-    case {'treatas1d','balancefile','nettransport','clipwherezundefined'}
+    case {'treatas1d','balancefile','nettransport','clipwherezundefined','reducebedto2d','reducedptstatto2d'}
         f = findobj(mfig,'tag',cmd);
         if nargin>3
             Log = varargin{1};
@@ -2292,6 +2537,7 @@ end
 
 % -----------------------------------------------------------------------------
 function OK=optfig(h0)
+Active=[1 1 1];
 Inactive=get(0,'defaultuicontrolbackground');
 FigPos=get(h0,'position');
 FigPos(3:4) = getappdata(h0,'DefaultFileOptionsSize');
@@ -2343,6 +2589,29 @@ uicontrol('Parent',h0, ...
 %
 voffset=voffset-30;
 h2 = uicontrol('Parent',h0, ...
+    'Style','popupmenu', ...
+    'BackgroundColor',Active, ...
+    'Callback','d3d_qp fileoptions shownames', ...
+    'Horizontalalignment','left', ...
+    'Position',[11 voffset width 18], ...
+    'String',{'Show Expanded Names','Show Short Code Names','Show Both Names'}, ...
+    'Enable','on', ...
+    'Tooltip','Show expanded and/or short code names for D-Water Quality quantities', ...
+    'Tag','shownames');
+voffset=voffset-25;
+h2 = uicontrol('Parent',h0, ...
+    'Style','popupmenu', ...
+    'BackgroundColor',Active, ...
+    'Callback','d3d_qp fileoptions showfractions', ...
+    'Horizontalalignment','left', ...
+    'Position',[11 voffset width 18], ...
+    'String',{'Fractions Collected in Subfield','Fractions as Separate Quantities'}, ...
+    'Enable','off', ...
+    'Tooltip','Select the way in which enumerated instances of the same quantity (so-called, fractions) are displayed.', ...
+    'Tag','showfractions');
+%
+voffset=voffset-30;
+h2 = uicontrol('Parent',h0, ...
     'Style','checkbox', ...
     'BackgroundColor',Inactive, ...
     'Callback','d3d_qp fileoptions autoprocdef', ...
@@ -2385,6 +2654,29 @@ h2 = uicontrol('Parent',h0, ...
     'Enable','off', ...
     'Tooltip','Clip values where Z Coordinate is undefined', ...
     'Tag','clipwherezundefined');
+%
+voffset=voffset-30;
+h2 = uicontrol('Parent',h0, ...
+    'Style','checkbox', ...
+    'BackgroundColor',Inactive, ...
+    'Callback','d3d_qp fileoptions reducebedto2d', ...
+    'Horizontalalignment','left', ...
+    'Position',[11 voffset width 18], ...
+    'String','Reduce S1/S2 Quantities to 2D', ...
+    'Enable','off', ...
+    'Tooltip','List quantities in bed layers S1 or S2 as 2D quantities', ...
+    'Tag','reducebedto2d');
+voffset=voffset-25;
+h2 = uicontrol('Parent',h0, ...
+    'Style','checkbox', ...
+    'BackgroundColor',Inactive, ...
+    'Callback','d3d_qp fileoptions reducedptstatto2d', ...
+    'Horizontalalignment','left', ...
+    'Position',[11 voffset width 18], ...
+    'String','Reduce Depth Statistics Quantities to 2D', ...
+    'Enable','off', ...
+    'Tooltip','List statistical quantities over water depth as 2D quantities', ...
+    'Tag','reducedptstatto2d');
 OK=1;
 % -----------------------------------------------------------------------------
 

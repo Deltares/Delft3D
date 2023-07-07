@@ -1,0 +1,52 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    gdp%gdtfzeta%tgfdef(1) = 'M2 '
+    gdp%gdtfzeta%tgfdef(2) = 'S2 '
+    gdp%gdtfzeta%tgfdef(3) = 'N2 '
+    gdp%gdtfzeta%tgfdef(4) = 'K2 '
+    gdp%gdtfzeta%tgfdef(5) = 'K1 '
+    gdp%gdtfzeta%tgfdef(6) = 'O1 '
+    gdp%gdtfzeta%tgfdef(7) = 'P1 '
+    gdp%gdtfzeta%tgfdef(8) = 'Q1 '
+    gdp%gdtfzeta%tgfdef(9) = 'MF '
+    gdp%gdtfzeta%tgfdef(10) = 'MM '
+    gdp%gdtfzeta%tgfdef(11) = 'SSA'
+!
+    gdp%gdtfzeta%tgfcon(1) = 0.242334
+    gdp%gdtfzeta%tgfcon(2) = 0.113033
+    gdp%gdtfzeta%tgfcon(3) = 0.046398
+    gdp%gdtfzeta%tgfcon(4) = 0.030704
+    gdp%gdtfzeta%tgfcon(5) = 0.141565
+    gdp%gdtfzeta%tgfcon(6) = 0.100514
+    gdp%gdtfzeta%tgfcon(7) = 0.046843
+    gdp%gdtfzeta%tgfcon(8) = 0.019256
+    gdp%gdtfzeta%tgfcon(9) = 0.041742
+    gdp%gdtfzeta%tgfcon(10) = 0.022026
+    gdp%gdtfzeta%tgfcon(11) = 0.019446

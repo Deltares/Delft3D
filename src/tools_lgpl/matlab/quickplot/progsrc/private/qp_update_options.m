@@ -3,7 +3,7 @@ function qp_update_options(OH,UD,Ops)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -129,6 +129,11 @@ if isfield(Ops,'operator')
     set(oper,'enable','on')
     oper=findobj(OH,'tag','operator=?');
     set(oper,'enable','on','backgroundcolor',Active)
+end
+
+if isfield(Ops,'unicolour')
+    cun=findobj(OH,'tag','unicolour');
+    set(cun,'enable','on','value',Ops.unicolour)
 end
 
 if isfield(Ops,'vectorstyle')

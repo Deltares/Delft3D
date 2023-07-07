@@ -1,8 +1,8 @@
-subroutine tranb1(utot      ,d50       ,c         ,h         ,par       , &
-                & sbot      ,ssus      )
+subroutine tranb1(utot      ,d50       ,c         ,h         ,npar       , &
+                & par       ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine tranb1(utot      ,d50       ,c         ,h         ,par       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! engelund hansen
@@ -38,27 +38,26 @@ subroutine tranb1(utot      ,d50       ,c         ,h         ,par       , &
     use precision
     implicit none
 !
-! Call variables
+! Arguments
 !
-    real(fp)               , intent(in)  :: c       ! Description and declaration in esm_alloc_real.f90
-    real(fp)               , intent(in)  :: d50
-    real(fp)               , intent(in)  :: h
-    real(fp)               , intent(out) :: sbot
-    real(fp)               , intent(out) :: ssus
-    real(fp)               , intent(in)  :: utot
-    real(fp), dimension(30), intent(in)  :: par
+    integer                  , intent(in)  :: npar    !< length of transport parameter array
+    real(fp)                 , intent(in)  :: c       !< Chezy value
+    real(fp)                 , intent(in)  :: d50     !< mean diameter
+    real(fp)                 , intent(in)  :: h       !< water depth
+    real(fp), dimension(npar), intent(in)  :: par     !< transport parameter array
+    real(fp)                 , intent(in)  :: utot    !< velocity magnitude
+    !
+    real(fp)                 , intent(out) :: sbot    !< bed load transport
+    real(fp)                 , intent(out) :: ssus    !< suspended load transport
 !
 ! Local variables
 ! 
-    real(fp)   :: acal
+    real(fp)   :: acal    ! user-specified calibration coefficient
     real(fp)   :: ag      ! gravity acceleration
-    real(fp)   :: cc
-    real(fp)   :: cf
     real(fp)   :: delta   ! relative density of sediment particle
-    real(fp)   :: rk
-    real(fp)   :: vster
-    real(fp)   :: suspfac
-    real(fp)   :: temp
+    real(fp)   :: suspfac ! user-specified suspended sediment factor
+    real(fp)   :: temp    ! total transport (not yet split into bedload and suspended load)
+    real(fp)   :: th      ! Shields number
 !
 !! executable statements -------------------------------------------------------
 !
@@ -68,26 +67,16 @@ subroutine tranb1(utot      ,d50       ,c         ,h         ,par       , &
     ag      = par(1)
     delta   = par(4)
     acal    = par(11)
-    rk      = par(12)
+    !rk      = par(12) ! obsolete
     suspfac = par(13)
     !
-    if ((utot<1.0e-6_fp) .or. (h<0.001_fp)) then
-       return
-    endif
-    if (c < 1.0e-6_fp) then
-       cc = 18.0_fp * log10(12.0_fp*h/rk)
-    else
-       cc = c
-    endif
+    ! bed load
     !
-    !     bed load
-    !
-    cf    = ag / cc / cc
-    vster = sqrt(cf) * utot
-    temp  = acal * 0.05_fp * utot * vster**4 / ag**2 / sqrt(cf) / delta**2 / d50
+    th = (utot/c)**2 / (delta * d50)
+    temp  = 0.05_fp * acal * (c**2 / ag) * d50**1.5_fp * sqrt(ag * delta) * th**2.5_fp
     sbot  = (1.0_fp-suspfac) * temp
     !
     ! suspended sediment transport
     !
-    ssus = suspfac*temp
+    ssus = suspfac * temp
 end subroutine tranb1

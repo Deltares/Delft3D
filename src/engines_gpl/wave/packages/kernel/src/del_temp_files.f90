@@ -1,7 +1,7 @@
 subroutine del_temp_files(n_swan_grids)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine del_temp_files(n_swan_grids)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !
@@ -54,7 +54,6 @@ subroutine del_temp_files(n_swan_grids)
     integer           :: istat
     integer           :: itide
     integer           :: fillun
-    integer, external :: new_lun
     integer           :: numtempgrid
     logical           :: ex
     character(256)    :: filnam
@@ -73,8 +72,7 @@ subroutine del_temp_files(n_swan_grids)
        filnam = swan_grids(igrid)%tmp_name
        inquire (file = trim(filnam), exist = ex, iostat = istat)
        if (istat==0 .and. ex) then
-          fillun = new_lun()
-          open (fillun, file=trim(filnam), status='unknown')
+          open (newunit=fillun, file=trim(filnam), status='unknown')
           close(fillun, status='delete')
        endif
        !
@@ -86,8 +84,7 @@ subroutine del_temp_files(n_swan_grids)
           write (filnam,'(a,i3.3)') trim(tmpfiles(i)), igrid
           inquire (file = trim(filnam), exist = ex, iostat = istat)
           if (istat==0 .and. ex) then
-             fillun = new_lun()
-             open (fillun, file=trim(filnam), status='unknown')
+             open (newunit=fillun, file=trim(filnam), status='unknown')
              close(fillun, status='delete')
           endif
        enddo
@@ -101,11 +98,10 @@ subroutine del_temp_files(n_swan_grids)
        !
     else
        do igrid = 1, n_swan_grids
-          write (filnam,'(a,i0,2a)') 'hot_', igrid, '_', trim(swan_run%writehottime)
+          write (filnam,'(a,i0,5a)') 'hot_', igrid, '_', trim(swan_run%writehottime(1:8)), '_', trim(swan_run%writehottime(10:15)), '.nc'
           inquire (file = trim(filnam), exist = ex, iostat = istat)
           if (istat==0 .and. ex) then
-             fillun = new_lun()
-             open (fillun, file = trim(filnam))
+             open (newunit=fillun, file = trim(filnam))
              close (fillun, status = 'delete')
           endif
        enddo
@@ -114,7 +110,6 @@ subroutine del_temp_files(n_swan_grids)
     ! Remove all known temporary files
     !
     tmpfiles(1) = 'TMP_write_wavm'
-    tmpfiles(2) = 'swan.inp'
     tmpfiles(3) = 'norm_end'
     tmpfiles(4) = 'BOTNOW'
     tmpfiles(5) = 'CURNOW'
@@ -124,8 +119,7 @@ subroutine del_temp_files(n_swan_grids)
        filnam = tmpfiles(i)
        inquire (file = trim(filnam), exist = ex, iostat = istat)
        if (istat==0 .and. ex) then
-         fillun = new_lun()
-         open (fillun, file=trim(filnam), status='unknown')
+         open (newunit=fillun, file=trim(filnam), status='unknown')
          close(fillun, status='delete')
        endif
     enddo

@@ -1,0 +1,10 @@
+[forcing]
+Name 			= tfl_01_0001
+Function		= harmonic
+Quantity		= harmonic component		
+Unit			= -
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+0.0000000    0.0100000    0.0000000

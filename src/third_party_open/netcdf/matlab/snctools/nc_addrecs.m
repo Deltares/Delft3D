@@ -10,29 +10,34 @@ function nc_addrecs(ncfile,new_data)
 %   See also nc_addnewrecs, nc_cat.
 
 ncinfo = nc_info(ncfile);
-preserve_fvd = getpref('SNCTOOLS','PRESERVE_FVD',false);
+
+preserve_fvd = nc_getpref('PRESERVE_FVD');
+
+% If the input structure is old-style, convert it to the name-data format.
+if ~isfield(new_data,'Name') || ~isfield(new_data,'Data')
+    new_data = convert_buffer(new_data);
+end
 
 % Check that we were given good inputs.
 if ~isstruct ( new_data )
-    err_id = 'SNCTOOLS:NC_ADD_RECS:badStruct';
+    err_id = 'snctools:addrecs:badStruct';
     error ( err_id, '2nd input argument must be a structure .\n' );
 end
 
 %
 % Check that each field of the structure has the same length.
-varnames = fieldnames ( new_data );
-num_fields = length(varnames);
-if ( num_fields <= 0 )
-    err_id = 'SNCTOOLS:NC_ADD_RECS:badRecord';
+if isempty(new_data)
+    err_id = 'snctools:addrecs:badRecord';
     error ( err_id, 'data record cannot be empty' );
 end
-field_length = zeros(num_fields,1);
-for j = 1:num_fields
 
-    v = nc_getvarinfo(ncfile,varnames{j});
+field_length = zeros(numel(new_data),1);
+for j = 1:numel(new_data)
+
+    v = nc_getvarinfo(ncfile,new_data(j).Name);
 
     if ~v.Unlimited
-        error('SNCTOOLS:addRecs:notUnlimited', ...
+        error('snctools:addRecs:notUnlimited', ...
             'All variables must have an unlimited dimension.');
     end
     
@@ -40,41 +45,38 @@ for j = 1:num_fields
 
         if numel(v.Size) == 1
             % netCDF variable is 1D
-            field_length(j) = numel(new_data.(varnames{j}));
+            field_length(j) = numel(new_data(j).Data);
         elseif (numel(v.Size) == 2) 
             % netCDF variable is 2D
-            field_length(j) = size(new_data.(varnames{j}),2);
-        elseif (numel(v.Size) > 2) && (numel(v.Size) == (ndims(new_data.(varnames{j})) + 1))
+            field_length(j) = size(new_data(j).Data,2);
+        elseif (numel(v.Size) > 2) && (numel(v.Size) == (ndims(new_data(j).Data)) + 1)
             % netCDF variable is more than 2D, but we're given just one record.
             field_length(j) = 1;
         else
             % netCDF variable is n-D
-            n = ndims(new_data.(varnames{j}));
-            command = sprintf ( 'field_length(j) = size(new_data.%s,%d);', ...
-                varnames{j}, n );
-            eval(command);
+            n = ndims(new_data(j).Data);
+            field_length(j) = size(new_data(j).Data,n);
         end
 
     else
         if numel(v.Size) == 1
             % netCDF variable is 1D
-            field_length(j) = numel(new_data.(varnames{j}));
+            field_length(j) = numel(new_data(j).Data);
         elseif (numel(v.Size) == 2) 
             % netCDF variable is 2D
-            field_length(j) = size(new_data.(varnames{j}),1);
-        elseif (numel(v.Size) > 2) && (numel(v.Size) == (ndims(new_data.(varnames{j})) + 1))
+            field_length(j) = size(new_data(j).Data,1);
+        elseif (numel(v.Size) > 2) && (numel(v.Size) == (ndims(new_data(j).Data) + 1)) && v.Size(end) ~= 1
             % netCDF variable is more than 2D, but we're given just one record.
             field_length(j) = 1;
         else
             % netCDF variable is n-D
-            command = sprintf ( 'field_length(j) = size(new_data.%s,1);', varnames{j} );
-            eval(command);
+            field_length(j) = size(new_data(j).Data,1);
         end
 
     end
 end
 if any(diff(field_length))
-    err_id = 'SNCTOOLS:NC_ADD_RECS:badFieldLengths';
+    err_id = 'snctools:addrecs:badFieldLengths';
     error ( err_id, 'Some of the fields do not have the same length.\n' );
 end
 
@@ -94,12 +96,12 @@ end
 
 % Need to retrieve the variable sizes NOW, before the first write.
 all_names = {ncinfo.Dataset.Name};
-data_names = fieldnames(new_data);
+data_names = {new_data.Name};
 num_vars = numel(data_names);
 for j = 1:num_vars
     tf = strcmp(data_names{j},all_names);
     idx = find(tf);
-    varsize.(ncinfo.Dataset(idx).Name) = ncinfo.Dataset(idx).Size;
+    varsize{j} = ncinfo.Dataset(idx).Size;
 end
 
 
@@ -109,15 +111,13 @@ record_corner = ncinfo.Dimension(unlim_idx).Length;
 
 
 % write out each data field
-for j = 1:num_vars
+for j = 1:numel(new_data)
 
-    current_var = data_names{j};
+    current_var_data = new_data(j).Data;
 
-    current_var_data = new_data.(current_var);
+    netcdf_var_size = varsize{j};
 
-    netcdf_var_size = varsize.(current_var);
-
-    corner = zeros( 1, length(netcdf_var_size) );
+    corner = zeros( 1, numel(netcdf_var_size) );
     count = netcdf_var_size;
 
     if preserve_fvd
@@ -131,7 +131,7 @@ for j = 1:num_vars
     end
 
     % Ok, we are finally ready to write some data.
-    nc_varput ( ncfile, current_var, current_var_data, corner, count );
+    nc_varput ( ncfile, new_data(j).Name, current_var_data, corner, count );
 
 end
 
@@ -148,6 +148,23 @@ return
 
 
 
+
+%--------------------------------------------------------------------------
+function newbuffer = convert_buffer(input_buffer)
+% Convert the input structure from "field_name": field_value to
+%
+%     struct(1).Name
+%     struct(1).Value
+%     struct(2).Name
+%     struct(2).Value  etc.
+
+fields = fieldnames(input_buffer);
+newbuffer = struct('Name','','Data',[]);
+newbuffer = repmat(newbuffer,numel(fields),1);
+for j = 1:numel(fields)
+    newbuffer(j).Name = fields{j};
+    newbuffer(j).Data = input_buffer.(fields{j});
+end
 
 
 

@@ -1,0 +1,32 @@
+D-Foundations DUMP FILE
+==============================================================================
+COMPANY    :    
+
+DATE       : 
+TIME       : 
+FILENAME   :
+CREATED BY : 
+==========================    BEGINNING OF DATA     ==========================
+[DUMPFILE]
+[MAX SHAFT AND POINT]
+[TABLE]
+[COLUMN INDICATION]
+MaxShaft
+MaxPoint
+[END OF COLUMN INDICATION]
+[DATA]
+    1  2
+    3  4
+    5  6
+[END OF DATA]
+[END OF TABLE]
+[END OF MAX SHAFT AND POINT]
+[CALCULATION PARAMETERS]
+Parameter1 = 1.3000
+Parameter2 = 1.4000
+[END OF CALCULATION PARAMETERS]
+[DEMANDS]
+0.06 = Parameter3
+0.02 = Parameter4
+[END OF DEMANDS]
+[END OF DUMPFILE]

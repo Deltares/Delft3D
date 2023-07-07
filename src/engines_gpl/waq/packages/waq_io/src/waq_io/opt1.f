@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,8 @@
 !!  rights reserved.
 
       subroutine opt1 ( iopt1  , lun    , is     , lchar  , filtype,
-     &                  dtflg1 , dtflg3 , nitem  , ierr   , iwar   )
+     &                  dtflg1 , dtflg3 , nitem  , ierr   , iwar   ,
+     &                  dont_read                                  )
 
 !     Deltares Software Centre
 
@@ -41,19 +42,25 @@
 !                                                         addition of filtype array for big endian files
 
 !     SUBROUTINES CALLED : STRIP   user input file
-!                          DHOPNF  open file
+!                          open_waq_files  open file
 
 !     LOGICAL UNITS      : LUN(33) = working unit for opening binary files
 
+      use m_zoek
+      use m_fffind
+      use m_open_waq_files
       use timers       !   performance timers
       use rd_token
+      use m_cnvtim
+      use m_dhfext
+
       implicit none
 
 !     Parameters    :
 !     type     kind  function         name             description
 
       integer   (4) , intent(in   ) :: iopt1          !< Input option
-      integer   (4) , intent(in   ) :: lun  (*)       !< DELWAQ Unit number array
+      integer   (4) , intent(inout) :: lun  (*)       !< DELWAQ Unit number array
       integer   (4) , intent(in   ) :: is             !< entry in LUN for item
       character*(*) , intent(inout) :: lchar(*)       !< IN/OUT  Filenames
       logical       , intent(in   ) :: dtflg1         !< 'date'-format 1st time scale
@@ -62,6 +69,7 @@
       integer   (4) , intent(inout) :: filtype(*)     !< type of binary file
       integer   (4) , intent(inout) :: ierr           !< Local error flag
       integer   (4) , intent(inout) :: iwar           !< Cumulative warning count
+      logical       , intent(in)    :: dont_read      !< do not actually read tokens, if true, the information is already provided
 
 !     local
 
@@ -107,7 +115,7 @@
             write ( lunut , 2020 )  cdummy
             ifl       = ifl + 1
             lunin     = 800 + ifl
-            call dhopnf  ( lunin , cdummy , 33 , 1 , ierr2 )    !   Open the file
+            call open_waq_files  ( lunin , cdummy , 33 , 1 , ierr2 )    !   Open the file
             if ( ierr2 .gt. 0 ) then
                ifl = ifl - 1
                write ( lunut , 2030 )
@@ -117,21 +125,25 @@
             endif
 
          case ( -2, 0 )                   !    External binairy intermediate file
-   10       if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 30     !   Get file name
-            if ( cdummy .eq. 'UNFORMATTED' ) then
-               filtype(is) = filtype(is) + 10
-               write ( lunut, * ) 'UNFORMATTED file detected'
-               goto 10
-            endif
-            if ( cdummy .eq. 'BIG_ENDIAN' ) then
-               filtype(is) = filtype(is) + 20
-               write ( lunut, * ) 'BIG_ENDIAN  file detected'
-               goto 10
+            if ( dont_read ) then
+               cdummy = lchar(is)
+            else
+   10          if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 30     !   Get file name
+               if ( cdummy .eq. 'UNFORMATTED' ) then
+                  filtype(is) = filtype(is) + 10
+                  write ( lunut, * ) 'UNFORMATTED file detected'
+                  goto 10
+               endif
+               if ( cdummy .eq. 'BIG_ENDIAN' ) then
+                  filtype(is) = filtype(is) + 20
+                  write ( lunut, * ) 'BIG_ENDIAN  file detected'
+                  goto 10
+               endif
             endif
             lchar(is) = cdummy
             write ( lunut , 2040 ) cdummy
 !                   Check if file exists
-            call dhopnf  ( lun(33) , cdummy    , 33     , 2     , ierr2 )
+            call open_waq_files  ( lun(33) , cdummy    , 33     , 2     , ierr2 )
             if ( ierr2 .gt. 0 ) then
                ierr2 = -2
             else
@@ -168,7 +180,7 @@
             lchar(is) = lchar(27)(1:max(1,(extpos-1)))//'-'//sstring
             call dhfext(lchar(is),filext,extpos,extlen)
             lchar(is)(extpos:) = '.wrk'
-            call dhopnf  ( lun(is), lchar(is),  1 , 1   , ierr2 )
+            call open_waq_files  ( lun(is), lchar(is),  1 , 1   , ierr2 )
             if ( ierr2 .gt. 0 ) then
                ierr2 = -2
                goto 30
@@ -236,7 +248,7 @@
                else                                               !     other file processing
                   cdummy = sfile
                   it2a   = 0
-                  call dhopnf  ( lun(33), cdummy   , 33    , 2    , ierr2 )
+                  call open_waq_files  ( lun(33), cdummy   , 33    , 2    , ierr2 )
                   if ( ierr2 .gt. 0 ) then
                      ierr2 = -2
                      goto 30

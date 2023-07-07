@@ -3,7 +3,7 @@ subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
                     & mwwjhe    ,nmlb      ,nmub      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Update underlayer bookkeeping system for erosion/sedimentation
@@ -45,7 +45,7 @@ subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
     real(hp), parameter :: log10_19 = 1.27875360095283_hp
     real(fp), parameter :: dmmin    = 1.0e-4_fp                                  ! minimum value of dm
 !
-! Call variables
+! Arguments
 !
     integer                                             , intent(in)  :: lsedtot
     integer                                             , intent(in)  :: nmlb

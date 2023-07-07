@@ -1,0 +1,430 @@
+    <testCases>
+	<!-- ======================================================================== -->
+        <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_default">
+            <path>e108_drr/f03_walrus/c01_Regge-regression-test</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Rainfall" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="PotEvap" location="9" toleranceAbsolute="0.0001" />						
+                        <parameter name="ActEvap" location="9" toleranceAbsolute="0.0001" />						
+                        <parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_StorageDefici" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_DepthGroundwa" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_DefinedFXS" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_FXG" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_PrecipQuick" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_PrecipVadoseZ" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_PrecipSurfWat" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_ETActLand" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_ETActSurfWate" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_QuickFlow fQS" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_GroundwaterDr" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_SurfWaterOutf" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_BetaEvapReduc" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_ActualFXS" location="9" toleranceAbsolute="0.0001" />	
+					</parameters>
+                </file>              
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Rainfall" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="PotEvap" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="ActEvap" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_StorageDeficit" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthGroundwater" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_DefinedFXS" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_FXG" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_PrecipQuick" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_PrecipVadoseZone" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_PrecipSurfWater" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_Walrus_ETActLand" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_ETActSurfWater" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_QuickFlow_fQS" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_GroundwaterDrainage_fGS" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_SurfWaterOutflow" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />	
+                        <parameter name="Walrus_ActualFXS" location="9" toleranceAbsolute="0.0001" />	
+					</parameters>
+                </file>  
+		-->	
+		
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== --> 
+        <testCase name="e108(drr)_f03(walrus)_c02_Aa-en-Maas-regression-test" ref="drr_default">
+            <path>e108_drr/f03_walrus/c02_Aa-en-Maas-regression-test</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Outflow" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="4" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="5" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="6" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+                <file name="rr/rrbalans.his" type="HIS">
+                    <parameters>
+                        <parameter name="Balance error RR Rural" location="Total RR system" toleranceAbsolute="0.0001" />
+                   </parameters>
+                </file> 
+                <file name="rr/balansdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.0001" />
+						<parameter name="CumBalanceError" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="Outflow" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Outflow" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Outflow" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Outflow" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+		<!-- Waits for SOBEK3-1457 to be fixed
+		   <file name="rr/rrbalans.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="Balance_error_RR_Rural" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Balance_error_RR_Rural" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Balance_error_RR_Rural" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Balance_error_RR_Rural" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Balance_error_RR_Rural" location="9" toleranceAbsolute="0.0001" />						
+						</parameters>
+                </file>
+		-->
+				
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/balansdt.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="9" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+		-->
+				
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+        <testCase name="e108(drr)_f03(walrus)_c03_wetness-index" ref="drr_default">
+            <path>e108_drr/f03_walrus/c03_wetness-index</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Walrus_WetnessIndex" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="Walrus_WetnessIndex" location="1" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+        <testCase name="e108(drr)_f03(walrus)_c04_transpiration-reduction-factor" ref="drr_default">
+            <path>e108_drr/f03_walrus/c04_transpiration-reduction-factor</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Walrus_BetaEvapReductFact" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="Walrus_BetaEvapReductFact" location="5" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   		
+        <testCase name="e108(drr)_f03(walrus)_c05_equilibrium-storage-deficit" ref="drr_default">
+            <path>e108_drr/f03_walrus/c05_equilibrium-storage-deficit</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Walrus_dVequilibrium" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="Walrus_dVequilibrium" location="4" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+        <testCase name="e108(drr)_f03(walrus)_c06_stage-discharge-relationship" ref="drr_default">
+            <path>e108_drr/f03_walrus/c06_stage-discharge-relationship</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Walrus_DepthSurfaceW" location="6" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutf" location="6" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutf" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="6" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutflow" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_SurfWaterOutflow" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="6" toleranceAbsolute="0.0001" />
+                        <parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+        <testCase name="e108(drr)_f03(walrus)_c07_contiguous-simulation-part1and2" ref="drr_default">
+            <path>e108_drr/f03_walrus/c07_contiguous-simulation-part1and2</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDefici" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwa" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDeficit" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwater" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+						</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+        <testCase name="e108(drr)_f03(walrus)_c08_generate-restart-file-part1" ref="drr_default">
+            <path>e108_drr/f03_walrus/c08_generate-restart-file-part1</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDefici" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwa" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDeficit" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwater" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+						</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+		    <testCase name="e108(drr)_f03(walrus)_c09_start-from-restart-file-part2" ref="drr_default">
+            <path>e108_drr/f03_walrus/c09_start-from-restart-file-part2</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDefici" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwa" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDeficit" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwater" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+						</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+		    <testCase name="e108(drr)_f03(walrus)_c10_crest-level-weir-surface-water-reservoir" ref="drr_default">
+            <path>e108_drr/f03_walrus/c10_crest-level-weir-surface-water-reservoir</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Walrus_DepthSurfaceW" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutf" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutf" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutflow" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_SurfWaterOutflow" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="1" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+		    <testCase name="e108(drr)_f03(walrus)_c11_different-computational-time-steps" ref="drr_default">
+            <path>e108_drr/f03_walrus/c11_different-computational-time-steps</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDefici" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwa" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file> 
+
+		<!-- Waits for SOBEK3-1457 to be fixed
+				<file name="rr/rrrunoff.nc" type="NETCDF">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_StorageDeficit" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthGroundwater" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
+                </file>  
+		-->		
+           
+			</checks>
+            <maxRunTime>120.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+	    <!-- ======================================================================== -->   
+	
+		</testCases>

@@ -2,10 +2,9 @@ Please run "test_snctools.m".  These produce a lot of very verbose
 output.  Don't be fooled by any of it, if any tests fail, you will
 know.
 
-In order to test java functionality with OPeNDAP, you should set
-both of these preferences.
+In order to test OPeNDAP or THREDDS_INFO, you should set this
+preference.
 
-    >> setpref('SNCTOOLS','USE_JAVA',true);
     >> setpref('SNCTOOLS','TEST_REMOTE',true);
 
 If you wish to test reading netCDF files via HTTP (not the same as 
@@ -14,8 +13,11 @@ another preference.
 
     >> setpref('SNCTOOLS','TEST_HTTP',true);
 
-HDF4 and GRIB2 support is still a bit experimental, so these tests
-are not enabled by default.  To run them, set the following preference
+GRIB2 support is still a bit experimental, so these tests are not
+enabled by default.  To run them, set the following preference
 
-    >> setpref('SNCTOOLS','TEST_HDF4',true);
     >> setpref('SNCTOOLS','TEST_GRIB2',true);
+
+Conversely, you can disable these tests by setting the preferences to
+false.
+

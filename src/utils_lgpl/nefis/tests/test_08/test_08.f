@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
       PROGRAM TEST8
       INTEGER   START, STOP, INCR
 
@@ -349,7 +349,7 @@ c     write(*,'('' SO FAR SO GOOD'
 c======================================================================
       SUBROUTINE GTALAT (FDS)
 
-      INTEGER FDS(*)
+      INTEGER FDS
 
       CHARACTER ATTNAM*16
      +         ,GRPNAM*16

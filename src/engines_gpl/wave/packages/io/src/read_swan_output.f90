@@ -8,7 +8,7 @@ implicit none
 !
 ! parameters
 type (output_fields)           :: sof
-type (swan)                    :: sr
+type (swan_type)               :: sr
 integer                        :: offset
 logical                        :: deletefile
 !
@@ -42,7 +42,7 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
                 & drtm01    ,setup     ,n_outpars ,add_out_vals)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -66,8 +66,8 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -130,7 +130,6 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
     integer           :: k
     integer           :: lunhis
     integer           :: npnt
-    integer, external :: new_lun
     integer           :: outfile          ! The SWAN output is written to n_outfiles files
     integer           :: n_outfiles       ! Can be 2 or 3, depending on whether additional output is requested
     integer           :: neg_dissip_found ! = 1,2,3,4 when a negative dissip, dissurf, diswcap or disbot is found in the swanout file, repectively
@@ -196,12 +195,11 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
        if (open) then
           inquire (file = filnam, number = lunhis)
        else
-          lunhis = new_lun()
-          open (lunhis, file=filnam, iostat=fstat, status='old')
+          open (newunit=lunhis, file=filnam, iostat=fstat, status='old')
        endif
        if (fstat /= 0) then
           write (*, '(2a)') '*** ERROR: Unable to open file ',trim(filnam)
-          stop
+          call wavestop(1, '*** ERROR: Unable to open file '//trim(filnam))
        endif
        rewind lunhis
        do j = 1, offset
@@ -346,7 +344,7 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
                 !
                 close (lunhis)
                 write (*, '(2a)') '*** ERROR: Unable to read values from file ', trim(filnam)
-                stop
+                call wavestop(1, '*** ERROR: Unable to read values from file '//trim(filnam))
              endif
           enddo
           if (outfile == 1) then

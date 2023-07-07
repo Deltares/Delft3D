@@ -1,7 +1,7 @@
 function readmeteoheader(minp, meteoitem) result(success)
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ function readmeteoheader(minp, meteoitem) result(success)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -34,6 +34,7 @@ function readmeteoheader(minp, meteoitem) result(success)
 !!--declarations----------------------------------------------------------------
     use meteo_data
     use precision
+    use string_module
     implicit none
 !
 ! Global variables
@@ -45,11 +46,12 @@ function readmeteoheader(minp, meteoitem) result(success)
 !
 ! Local variables
 !
-    integer        :: ierr           ! Error indicator used for reading
-    integer        :: il             ! Position on the read line behind the =
-    integer        :: ir             ! Position on the read line before the # (comments)
-    character(132) :: rec
-    character(10)  :: newest_version ! newest version of format of meteo input files
+    integer                   :: ierr           ! Error indicator used for reading
+    integer                   :: il             ! Position on the read line behind the =
+    integer                   :: ir             ! Position on the read line before the # (comments)
+    integer                   :: istat          ! error code of GetLine
+    character(:), allocatable :: rec            ! string for reading a whole line
+    character(len=10)         :: newest_version ! newest version of format of meteo input files
 !
 !! executable statements -------------------------------------------------------
 !
@@ -88,7 +90,8 @@ function readmeteoheader(minp, meteoitem) result(success)
     newest_version = '1.03'
     !
     do
-       read (minp, '(A)', end = 100) rec
+       call GetLine(minp, rec, istat)
+       if (istat /= 0) goto 100
        il = index(rec, '=') + 1
        ir = index(rec, '#') - 1
        if (ir == -1) then

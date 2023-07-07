@@ -9,7 +9,7 @@ function [data,scalar,vpt]=computecomponent(data,Ops)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -166,11 +166,11 @@ for d=1:length(data)
             if strncmpi(Ops.angleconvention,'Nautical To',10)
                     data(d).Val=sf*atan2(data(d).XComp,data(d).YComp);
             elseif strncmpi(Ops.angleconvention,'Nautical From',12)
-                    data(d).Val=-sf*atan2(data(d).XComp,data(d).YComp);
+                    data(d).Val=sf*atan2(-data(d).XComp,-data(d).YComp);
             elseif strncmpi(Ops.angleconvention,'Cartesian To',12)
                     data(d).Val=sf*atan2(data(d).YComp,data(d).XComp);
             elseif strncmpi(Ops.angleconvention,'Cartesian From',14)
-                    data(d).Val=-sf*atan2(data(d).YComp,data(d).XComp);
+                    data(d).Val=sf*atan2(-data(d).YComp,-data(d).XComp);
             end
             if strfind(Ops.angleconvention,'[0 to')
                 neg = data(d).Val<0;
@@ -236,7 +236,11 @@ for d=1:length(data)
                         data(d).Val(t,:)=-data(d).XComp(t,:).*dy + data(d).YComp(t,:).*dx;
                     end
                 end
-            else 
+            else
+                if ~isequal(size(data(d).XComp),size(dx))
+                    dx = repmat(dx, size(data(d).XComp)./size(dx));
+                    dy = repmat(dy, size(data(d).XComp)./size(dy));
+                end
                 if Tangential
                     data(d).Val=data(d).XComp.*dx + data(d).YComp.*dy;
                 else

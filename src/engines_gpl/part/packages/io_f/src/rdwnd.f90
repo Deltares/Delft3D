@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -77,6 +77,7 @@
       real     ( 8 ), allocatable :: xz (:)      ! x of cell centres
       real     ( 8 ), allocatable :: yz (:)      ! y of the cell centres
       integer  ( 4 ), allocatable :: kcs(:)      ! cell property
+      integer                        lunfil
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
@@ -106,13 +107,13 @@
 
 !     open the description file
 
-      open ( 86, file=sfile )
+      open ( newunit=lunfil, file=sfile )
 
 !     identify source of x-data
 
       ierr = 0
       kx   = 1
-      call readprovider           ( 86     , qid    , finamx , ftype  , method ,  &
+      call readprovider           ( lunfil     , qid    , finamx , ftype  , method ,  &
      &                              opera  , tcoef  , yes    )
       if ( qid  .ne. "windx" ) ierr = 1
       if ( yes  .ne. 1       ) ierr = 2
@@ -127,7 +128,7 @@
 
 !     identify source of y-data
 
-      call readprovider           ( 86     , qid    , finamy , ftype  , method ,  &
+      call readprovider           ( lunfil     , qid    , finamy , ftype  , method ,  &
      &                              opera  , tcoef  , yes    )
       if ( qid  .ne. "windy" ) ierr = 4
       if ( yes  .ne. 1       ) ierr = 5

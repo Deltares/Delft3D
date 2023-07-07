@@ -1,7 +1,7 @@
 subroutine cp_file(filnm1    ,filnm2    ,filtype      ,nuerr         )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine cp_file(filnm1    ,filnm2    ,filtype      ,nuerr         )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Copy or append file FILNM1 to file FILNM2
@@ -54,7 +54,6 @@ subroutine cp_file(filnm1    ,filnm2    ,filtype      ,nuerr         )
     integer           :: lunf2     ! Unit number for FILNM2
     integer           :: nr
     integer           :: nrec
-    integer, external :: new_lun
     logical           :: ex        ! Flag for existing file
     logical           :: opend1    ! Flag to test if file FILNM1 is already opened
     logical           :: opend2    ! Flag to test if file FILNM2 is already opened
@@ -85,8 +84,7 @@ subroutine cp_file(filnm1    ,filnm2    ,filtype      ,nuerr         )
     elseif (opend1) then
        rewind (lunf1)
     else
-       lunf1 = new_lun()
-       open (lunf1, file = filnm1(:lf1), form = 'formatted', status = 'old')
+       open (newunit = lunf1, file = filnm1(:lf1), form = 'formatted', status = 'old')
     endif
     !
     ! open the target file in replace or append mode
@@ -105,11 +103,10 @@ subroutine cp_file(filnm1    ,filnm2    ,filtype      ,nuerr         )
     if (ex .and. opend2) then
        close(lunf2)
     endif
-    lunf2 = new_lun()
     if (filtype=='append') then
-        open (lunf2, file = filnm2(:lf2), form = 'formatted', position = 'append')
+        open (newunit = lunf2, file = filnm2(:lf2), form = 'formatted', position = 'append')
     elseif (filtype=='copy') then
-        open (lunf2, file = filnm2(:lf2), form = 'formatted', status = 'replace')
+        open (newunit = lunf2, file = filnm2(:lf2), form = 'formatted', status = 'replace')
     else
         nuerr = 2
         return
@@ -129,6 +126,6 @@ subroutine cp_file(filnm1    ,filnm2    ,filtype      ,nuerr         )
     !
     ! close both files
     !
-    close (lunf1)
-    close (lunf2)
+    close (lunf1, iostat = iocond)
+    close (lunf2, iostat = iocond)
 end subroutine cp_file

@@ -22,6 +22,7 @@ function average_trim(source,target,varargin)
 %           'min'   : Minimum value
 %           'max'   : Maximum value
 %           'median': Median value
+%           'select': Select a single time step (TimeSteps sould be scalar).
 %
 %    AVERAGE_TRIM(TRIM_Source,TRIM_Target,TimeSteps,Operation)
 %    Uses only the selected time steps and applies the selected operation.
@@ -34,7 +35,7 @@ function average_trim(source,target,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -101,7 +102,6 @@ if exist(targetdat,'file') || exist(targetdef,'file')
     errordlg({'The .DAT and .DEF files for processed data should not yet exist.',targetdat,targetdef},'Fatal Error','modal')
     return
 end
-T=vs_ini(targetdat,targetdef);
 
 average='unspecified';
 times = 'unspecified';
@@ -122,11 +122,11 @@ if strcmp(average,'unspecified')
         average = 'mean';
     end
 end
+Info = vs_disp(S,'map-series',[]);
+Tmax = Info.SizeDim;
 if isequal(times,'unspecified')
     if isstandalone
         accepted = 0;
-        Info = vs_disp(S,'map-series',[]);
-        Tmax = Info.SizeDim;
         times = [1 Tmax];
         while ~accepted
             prompt = {'First time step:','Last time step:'};
@@ -151,11 +151,17 @@ if isequal(times,'unspecified')
                 times(2) = Tmax;
             end
         end
+        times = times(1):times(2);
     else
-        times = 0;
+        times = 1:Tmax;
     end
 end
 
+if strcmp(average,'select')
+    if length(times)>1
+        error('The select option of average_trim works only for one selected time step!')
+    end
+end
 %
 % exclude the average transport groups
 %
@@ -184,6 +190,11 @@ for g=length(tgrps):-1:1
         tgrps(g)=[];
     end
 end
+
+%
+% create the new file
+%
+T=vs_ini(targetdat,targetdef);
 %
 % copy all fields of the groups that are not in the exclgrps list and not
 % in the time dependent group (tgrps) list.
@@ -196,71 +207,79 @@ T=vs_copy(S,T,excl_tgrps{:},exclgrps{:},'quiet');
 % to be overwritten by average
 %
 copy_tgrps=tgrps;
-copy_tgrps(2,:)={{1}};
+copy_tgrps(2,:)={{times(1)}};
 T=vs_copy(S,T,'*',[],copy_tgrps{:},'quiet');
-%
-% compute averages
-%
-hPB = progressbar(0,'title','Writing ...');
-for g=1:length(tgrps)
-    elms=vs_disp(S,tgrps{g});
-    for e=1:length(elms)
-        Info=vs_disp(S,tgrps{g},elms{e});
-        progressbar(g/length(tgrps),hPB,'title',[tgrps{g} '/' elms{e}])
-        drawnow
-        %
-        % Only floating point data sets can be averaged
-        %
-        if Info.TypeVal==5
-            try
-                %
-                % The fastest way is to process all time steps at once, but
-                % this may cause an out-of-memory error.
-                %
-                [Data,Success] = vs_let(S,tgrps{g},{times},elms{e},'quiet');
-                if ~Success
-                    error('Didn''t get data for: %s',[tgrps{g} '/' elms{e}])
-                end
-                Data = feval(average,Data); % average in first (=time) direction
-            catch
-                [LASTMSG, LASTID] = lasterr;
-                switch LASTID
-                    case {'MATLAB:pmaxsize','MATLAB:nomem'}
-                        %
-                        % The data set is too big. Need to process the time steps
-                        % individually.
-                        %
-                        Data = [];
-                        for t = times
-                            DataT = vs_let(S,tgrps{g},{t},elms{e},'quiet');
-                            if isempty(Data)
-                                Data = DataT;
-                            else
-                                switch average
-                                    case 'max'
-                                        Data = max(Data,DataT);
-                                    case 'min'
-                                        Data = min(Data,DataT);
-                                    case 'mean'
-                                        Data = Data+DataT;
-                                    otherwise
-                                        error('Command ''%s'' not supported',average);
+if strcmp(average,'select')
+    %
+    % vs_copy call above did all the necessary actions ... finished!
+    %
+else
+    %
+    % compute averages
+    %
+    hPB = progressbar(0,'title','Writing ...');
+    for g=1:length(tgrps)
+        elms=vs_disp(S,tgrps{g});
+        for e=1:length(elms)
+            Info=vs_disp(S,tgrps{g},elms{e});
+            progressbar(g/length(tgrps),hPB,'title',[tgrps{g} '/' elms{e}])
+            drawnow
+            %
+            % Only floating point data sets can be averaged
+            %
+            if Info.TypeVal==5
+                try
+                    %
+                    % The fastest way is to process all time steps at once, but
+                    % this may cause an out-of-memory error.
+                    %
+                    [Data,Success] = vs_let(S,tgrps{g},{times},elms{e},'quiet');
+                    if ~Success
+                        error('Didn''t get data for: %s',[tgrps{g} '/' elms{e}])
+                    end
+                    if ~strcmp(average,'select')
+                        Data = feval(average,Data); % average in first (=time) direction
+                    end
+                catch
+                    [LASTMSG, LASTID] = lasterr;
+                    switch LASTID
+                        case {'MATLAB:pmaxsize','MATLAB:nomem'}
+                            %
+                            % The data set is too big. Need to process the time steps
+                            % individually.
+                            %
+                            Data = [];
+                            for t = times
+                                DataT = vs_let(S,tgrps{g},{t},elms{e},'quiet');
+                                if isempty(Data)
+                                    Data = DataT;
+                                else
+                                    switch average
+                                        case 'max'
+                                            Data = max(Data,DataT);
+                                        case 'min'
+                                            Data = min(Data,DataT);
+                                        case 'mean'
+                                            Data = Data+DataT;
+                                        otherwise
+                                            error('Command ''%s'' not supported',average);
+                                    end
                                 end
                             end
-                        end
-                        if strcmp(average,'mean')
-                            Data = Data/length(times);
-                        end
-                    otherwise
-                        delete(hPB)
-                        rethrow(lasterror)
+                            if strcmp(average,'mean')
+                                Data = Data/length(times);
+                            end
+                        otherwise
+                            delete(hPB)
+                            rethrow(lasterror)
+                    end
                 end
+                T = vs_put(T,tgrps{g},elms{e},Data,'quiet');
             end
-            T = vs_put(T,tgrps{g},elms{e},Data,'quiet');
         end
     end
+    delete(hPB)
 end
-delete(hPB)
 
 if isstandalone
     fprintf('\nProcessing completed successfully.\n');

@@ -1,10 +1,6 @@
-subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h         ,tp        , &
-                & d50       ,d15       ,d90       ,par       ,dzbdt     ,vicmol    ,poros     , &
-                & chezy     ,dzdx      ,dzdy      ,sbotx     ,sboty     ,ssusx     ,ssusy     , &
-                & ua        ,va        ,ubot      ,kwtur     ,vonkar    ,ubot_from_com        )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,52 +24,57 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
-!!--description-----------------------------------------------------------------
-! computes sediment transport according to
-! the transport formula of Van Thiel / Van Rijn (2008)
-! -
+!  
+!  
+!> computes sediment transport according to the transport formula of Van Thiel / Van Rijn (2008)
+subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h         ,tp        , &
+                & d50       ,d15       ,d90       ,npar      ,par       ,dzbdt     ,vicmol    , &
+                & poros     ,chezy     ,dzdx      ,dzdy      ,sbotx     ,sboty     ,cesus     , &
+                & ua        ,va        ,ubot      ,kwtur     ,ubot_from_com )
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts
+    use sed_support_routines, only: calculate_critical_velocities, calculate_velocity_asymmetry, calculate_urms
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
-    real(fp)               , intent(in)    :: d15
-    real(fp)               , intent(in)    :: d50
-    real(fp)               , intent(in)    :: d90
-    real(fp)               , intent(in)    :: poros
-    real(fp)               , intent(in)    :: chezy
-    real(fp)                               :: h
-    real(fp)                               :: hrms
-    real(fp)                               :: tp     
-    real(fp)               , intent(in)    :: rlabda   
-    real(fp)               , intent(in)    :: teta     
-    real(fp)               , intent(in)    :: kwtur    !  Breaker induced turbulence
-    real(fp)               , intent(in)    :: dzbdt    !  Erosion/sedimentation velocity
-    real(fp)               , intent(in)    :: vicmol
-    real(fp)               , intent(in)    :: ubot   
-    real(fp)               , intent(in)    :: dzdy   
-    real(fp)               , intent(in)    :: dzdx   
-    real(fp)               , intent(in)    :: u
-    real(fp)               , intent(in)    :: v
-    real(fp), dimension(30), intent(in)    :: par
-    real(fp)               , intent(in)    :: vonkar
-    logical                , intent(in)    :: ubot_from_com
-    real(fp)               , intent(out)   :: sbotx
-    real(fp)               , intent(out)   :: sboty
-    real(fp)               , intent(out)   :: ssusx
-    real(fp)               , intent(out)   :: ssusy
-    real(fp)               , intent(out)   :: ua
-    real(fp)               , intent(out)   :: va
+    logical                  , intent(in)    :: ubot_from_com
+    integer                  , intent(in)    :: npar
+    real(fp)                 , intent(in)    :: chezy
+    real(fp)                 , intent(in)    :: d15
+    real(fp)                 , intent(in)    :: d50
+    real(fp)                 , intent(in)    :: d90
+    real(fp)                 , intent(in)    :: dzbdt    !<  Erosion/sedimentation velocity
+    real(fp)                 , intent(in)    :: dzdx   
+    real(fp)                 , intent(in)    :: dzdy   
+    real(fp)                                 :: h
+    real(fp)                                 :: hrms
+    real(fp)                 , intent(in)    :: kwtur    !<  Breaker induced turbulence
+    real(fp), dimension(npar), intent(in)    :: par
+    real(fp)                 , intent(in)    :: poros
+    real(fp)                 , intent(in)    :: rlabda   
+    real(fp)                 , intent(in)    :: teta     
+    real(fp)                                 :: tp     
+    real(fp)                 , intent(in)    :: ubot   
+    real(fp)                 , intent(in)    :: u
+    real(fp)                 , intent(in)    :: v
+    real(fp)                 , intent(in)    :: vicmol
+    !
+    real(fp)                 , intent(out)   :: sbotx
+    real(fp)                 , intent(out)   :: sboty
+    real(fp)                 , intent(out)   :: cesus
+    real(fp)                 , intent(out)   :: ua
+    real(fp)                 , intent(out)   :: va
     !
     ! Local variables
     !
+    real(fp), parameter            :: DTOL = 1e-6_fp
+    real(fp), parameter            :: ONETHIRD = 1.0_fp/3.0_fp
+    
     integer                        :: waveform
     integer                        :: dilatancy
     integer                        :: sws
@@ -81,7 +82,6 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     integer                        :: bedslpeffini
     real(fp)                       :: ag
     real(fp)                       :: delta
-    real(fp)                       :: rnu
     real(fp)                       :: facua
     real(fp)                       :: facas
     real(fp)                       :: facsk
@@ -90,47 +90,35 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                       :: cmax
     real(fp)                       :: reposeangle
     real(fp)                       :: rheea
-    real(fp)                       :: cf
-    real(fp)                       :: dtol
-    real(fp)                       :: onethird
-    real(fp)                       :: twothird   
+    real(fp)                       :: cf 
     real(fp)                       :: utot   
     real(fp)                       :: uamag   
-    real(fp)                       :: phi   
-    real(fp)                       :: uorb   
+    real(fp)                       :: phi      
     real(fp)                       :: b2   
     real(fp)                       :: ucrw  
     real(fp)                       :: ucrc   
     real(fp)                       :: dster   
-    real(fp)                       :: vero
-    real(fp)                       :: srftotal
-    real(fp)                       :: srfrhee   
-    real(fp)                       :: ucr   
-    real(fp)                       :: k, kl   
-    real(fp)                       :: urms, urms2
-    real(fp)                       :: alpha1, alpha2
-    real(fp)                       :: psi, beta
+    real(fp)                       :: ucr
+    real(fp)                       :: urms       
+    real(fp)                       :: urms2
     real(fp)                       :: ucrb, ucrs, asb, ass, term1, ceqb, ceqs
+    real(fp)                       :: cmax2h
     !
     !
     !! executable statements -------------------------------------------------------
     !
     !
-    !     Initiliaze Transports to zero
+    !     Initialize Transports to zero
     !
     sbotx = 0.0_fp
     sboty = 0.0_fp
-    ssusx = 0.0_fp
-    ssusy = 0.0_fp
     ua    = 0.0_fp
     va    = 0.0_fp
+    cesus = 0.0_fp
+    utot = sqrt(u**2 + v**2)
+    if ( utot < DTOL .or. h > 200.0_fp .or. h < 0.01_fp ) return
     !
     !     Initialisations
-    !
-    dtol = 1e-6_fp
-    onethird=1.0_fp/3.0_fp
-    twothird=2.0_fp/3.0_fp
-    !
     ag = par(1)
     delta = par(4)
     facua = par(11)
@@ -166,45 +154,15 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     !
     cf = ag / chezy / chezy
     !
+    call calculate_urms(hrms, tp, h, ag, ubot_from_com, ubot, kwtur, urms, urms2)
+    !
     ! velocity asymmetry
     !
-    uamag = 0.0_fp
-    if (waveform==1) then
-       call ua_rvr(facas    ,facsk  ,sws   ,h   ,hrms   , &
-                 & rlabda   ,ubot   ,uamag )        ! to check, uorb or urms
-    else if (waveform==2) then
-       call ua_vt(facas    ,facsk   ,sws   ,h      ,   &
-                & hrms     ,tp      ,ag    ,ubot   ,   &
-                & uamag    )
-    end if
+    call calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
     !
     !     Velocity magnitude
     !
     phi = reposeangle*degrad ! Angle of internal friction
-    utot = u**2 + v**2
-    if (utot>0.0_fp) utot = sqrt(utot)
-    if (utot<dtol .or. h>200.0_fp .or. h<0.01_fp) goto 999
-    !
-    !     Wave number k, urms orbital velocity
-    !
-    if (tp>1.e-6_fp) then
-       !
-       !     Prevent small tp
-       !
-       tp = max(tp,1.0_fp)
-       !
-       call wavenr(h         ,tp        ,k         ,ag        )
-       if (ubot_from_com) then
-          uorb = ubot
-       else
-          uorb = pi*hrms/tp/sinh(k*h)
-       endif
-       urms = uorb*0.7071_fp
-       urms2 = urms**2 + 1.45_fp*kwtur
-    else
-       urms2 = 0.0_fp
-    endif
-    !
     dster=(delta*ag/1e-12_fp)**onethird*d50        ! 1e-12 = nu**2
     !
     if(d50<=0.0005_fp) then
@@ -217,51 +175,11 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
        Ucrc=1.3_fp*sqrt(delta*ag*d50)*(h/d50)**(0.5_fp*onethird)            !Maynord (1978) --> also Neill (1968) where 1.3_fp = 1.4_fp
        Ucrw=0.95_fp*(delta*ag)**0.57_fp*d50**0.43_fp*tp**0.14_fp                  !Komar and Miller (1975)
     end if
-    B2 = utot/max(utot+sqrt(urms2),1e-5_fp)
+    B2 = utot/max(utot+sqrt(urms2),5e-3_fp)
     Ucr = B2*Ucrc + (1.0_fp-B2)*Ucrw                                           !Van Rijn 2007 (Bed load transport paper)
     !
-    srfRhee  = 0.0_fp
-    srfTotal = 1.0_fp
-    if (dilatancy == 1) then
-       vero = max(0.0_fp,-dzbdt)      ! Erosion velocity
-       kl = ag/(160.0_fp*vicmol)*(d15**2)*((poros**3)/(1.0_fp-poros)**2) ! Permeability, Adel 1987
-       ! Reduction factor on the critical Shields parameter by dilatancy (Van Rhee, 2010)
-       srfRhee = vero/kl*(pormax-poros)/(1.0_fp-poros)*rheea/delta
-    endif
-    !
-    if (bedslpeffini == 0) then
-         srfTotal = 1.0_fp + srfRhee
-    elseif (bedslpeffini == 1 .or. bedslpeffini == 2) then
-       if  ((abs(u)>dtol .or. abs(v)>dtol) .and. (abs(dzdx)>dtol .or. abs(dzdy)>dtol)) then
-          ! 
-          alpha1 = atan2(v,u)
-          ! Angle between the x-axis and the bed slope vector directed in down-slope direction
-          alpha2 = mod(atan2(-dzdy,-dzdx),2.0_fp*pi)
-          psi = alpha1-(alpha2-pi) 
-          if (abs(dzdx)<dtol) then 
-              !  Beta purely based on dzdy
-              beta = atan(abs(dzdy))
-          else
-              beta = atan(abs(dzdx/sin(atan(dzdx/max(dzdy,dtol)))))     ! Maximum absolute bed slope angle, derived in de Vet 2014
-          endif
-          beta = min(beta,phi) 
-          if (dilatancy == 1) then
-             srfTotal = (cos(psi)*sin(beta)+sqrt( &
-                        (srfRhee**2+2.0_fp*srfRhee*cos(beta)+cos(beta)**2) * &
-                         tan(phi)**2-sin(psi)**2*sin(beta)**2)) / tan(phi)                   ! Soulsby (1997), modified by de Vet 2014
-          else
-             srfTotal = (cos(psi)*sin(beta) + &
-                         sqrt(cos(beta)**2*tan(phi)**2-sin(psi)**2*sin(beta)**2))/tan(phi) ! Soulsby (1997)
-          endif
-       endif
-    endif
-   ! Calculate the new critical velocity based on the modification factors on the Shields parameter
-   Ucrb = Ucr*sqrt(srfTotal)
-   if (bedslpeffini == 1) then         ! bed+sus
-      Ucrs = Ucrb
-   else
-      Ucrs = Ucr*(1.0_fp+sqrt(srfRhee)) ! bed only
-   endif
+    call calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vicmol, d15, poros, pormax, rheea, delta, u, v, &
+    dzdx, dzdy, dtol, phi, ucr, ucrb, Ucrs)
    !
    ! transport parameters
    Asb=0.015_fp*h*(d50/h)**1.2_fp/(delta*ag*d50)**0.75_fp                         !bed load coefficent
@@ -283,14 +201,13 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
       ceqs=Ass*(term1-Ucrs)**2.4_fp
    end if
    !
-   ceqb = min(ceqb/h,   cmax/2.0_fp)*h      ! maximum equilibrium bed concentration
-   ceqs = min(ceqs/h,   cmax/2.0_fp)*h      ! maximum equilibrium suspended concentration
+   cmax2h = cmax*h/2.0_fp
+   ceqb  = min(ceqb,   cmax2h)               ! maximum equilibrium bed concentration
+   cesus = min(ceqs,   cmax2h)/h             ! m2/s/m*s/m = [-], and times rhosol in eqtran
    ua = uamag*cos(teta*degrad)
    va = uamag*sin(teta*degrad)
-   sbotx = (u+ua)*ceqb
+   sbotx = (u+ua)*ceqb                       ! m2/s
    sboty = (v+va)*ceqb
-   ssusx = (u+ua)*ceqs                  ! this is now eulerian, correct?
-   ssusy = (v+va)*ceqs
    !
   999 continue
 end subroutine trab19

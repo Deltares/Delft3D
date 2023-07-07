@@ -1,7 +1,7 @@
 subroutine checkmeteoresult_wave(success)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine checkmeteoresult_wave(success)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: Handle the occurence of an error generated in the meteo module
@@ -55,9 +55,7 @@ subroutine checkmeteoresult_wave(success)
        !
        ! Error occurred: write error and stop
        !
-       write(*, '(2a)') 'Error in meteo module: ', trim(message)
-       write(*, '(a)' ) 'Stopping WAVE computation'
-       stop
+       call wavestop(1, 'Error in meteo module: ' // trim(message))
     elseif (message /= '') then
        !
        ! Message or warning issued by meteo module: write message

@@ -41,7 +41,7 @@ end
 % of bytes.
 afid = fopen(theFile,'r');
 if afid == -1
-    error('SNCTOOLS:fopen:cannotOpenFile', ...
+    error('snctools:format:cannotOpenFile', ...
         'Cannot open %s.  Make sure it is on your path.', ...
         theFile);
 end
@@ -49,7 +49,7 @@ end
 fclose(afid);
 
 if count < 4
-    error('SNCTOOLS:snc_format:truncatedFile', ...
+    error('snctools:snc_format:truncatedFile', ...
         '''%s'' is less than four bytes long, so it must have been truncated.', ...
         theFile)
 elseif (strcmp(char(signature(1:4))', 'GRIB')) && (signature(8) == 1)
@@ -69,9 +69,7 @@ elseif (strcmp(char(signature(1:3))', 'CDF')) && (signature(4) == 2)
 	fmt = fmts.NetCDF;
 	return
 elseif (strcmp(char(signature(2:4))', 'HDF'))
-    % netcdf-4 : bytes 2-4 are 'HDF'.  We just assume that it's netcdf-4.
-	% We really can't determine the difference betweeen netcdf-4 and 
-	% regular HDF5 this way.
+    % netcdf-4 : bytes 2-4 are 'HDF'.  
 	fmt = fmts.NetCDF4;
 	return
 end

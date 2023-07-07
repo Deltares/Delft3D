@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,17 +23,22 @@
 
 module rdhyd_mod
    interface
-      subroutine rdhyd  ( nfiles , lunit  , fnam   , nolay  , ihdel  ,      &
-     &                    tcktot , ndoms  , nbnds  , doms   , bnds   )
+      subroutine rdhyd  ( nfiles , lunit  , fnam   , hyd    , nolay  , zmodel , ihdel  ,      &
+     &                    tcktot , zlbot  , zltop  , ndoms  , nbnds  , doms   , bnds   )
       use precision_part       ! flexible size definition
       use typos           ! the derived types
+      use hydmod
       use openfl_mod
       integer  ( ip), intent(in   ) :: nfiles            !< nr. of files
       integer  ( ip), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
       character(256), intent(inout) :: fnam (nfiles)     !< file names of all files
+      type(t_hyd)   , intent(in   ) :: hyd               !< description of the hydrodynamics
       integer  ( ip), intent(  out) :: nolay             !< number of hydrodynamic layers
+      logical       , intent(in   ) :: zmodel            !< layer type
       integer  ( ip), intent(  out) :: ihdel             !< hydrodynamic time step (s)
       real     ( sp), pointer       :: tcktot(:)         !< relative layer thickness
+      real     ( sp), pointer       :: zlbot(:)          !< z-layer layer bottom level
+      real     ( sp), pointer       :: zltop(:)          !< z-layer layer top level
       integer  ( ip), intent(  out) :: ndoms             !< number of domains
       integer  ( ip), intent(  out) :: nbnds             !< number of DD-boundaries
       type (domain) , pointer       :: doms  (:)         !< the domains
@@ -42,8 +47,8 @@ module rdhyd_mod
    end interface
 end module
 
-      subroutine rdhyd  ( nfiles , lunit  , fnam   , nolay  , ihdel  ,      &
-     &                    tcktot , ndoms  , nbnds  , doms   , bnds   )
+      subroutine rdhyd  ( nfiles , lunit  , fnam   , hyd    , nolay  , zmodel , ihdel  ,      &
+     &                    tcktot , zlbot  , zltop  , ndoms  , nbnds  , doms   , bnds   )
 
 !       Deltares Software Centre
 
@@ -62,6 +67,7 @@ end module
 
       use precision_part       ! flexible size definition
       use typos           ! the derived types
+      use hydmod
       use timers          ! performance timers
 
       implicit none
@@ -73,9 +79,13 @@ end module
       integer  ( ip), intent(in   ) :: nfiles            !< nr. of files
       integer  ( ip), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
       character(256), intent(inout) :: fnam (nfiles)     !< file names of all files
+      type(t_hyd)   , intent(in   ) :: hyd               !< description of the hydrodynamics
       integer  ( ip), intent(  out) :: nolay             !< number of hydrodynamic layers
+      logical       , intent(in   ) :: zmodel            !< layer type
       integer  ( ip), intent(  out) :: ihdel             !< hydrodynamic time step (s)
       real     ( sp), pointer       :: tcktot(:)         !< relative layer thickness
+      real     ( sp), pointer       :: zlbot(:)          !< z-layer layer bottom level
+      real     ( sp), pointer       :: zltop(:)          !< z-layer layer top level
       integer  ( ip), intent(  out) :: ndoms             !< number of domains
       integer  ( ip), intent(  out) :: nbnds             !< number of DD-boundaries
       type (domain) , pointer       :: doms  (:)         !< the domains
@@ -90,10 +100,12 @@ end module
       integer                 i, j, k          ! loop counters
       integer                 ipath            ! if non zero, there a path to add
       real(sp)                rlay             ! helpvariable to read reals for nr of layers
+      real(sp)                zdepth           ! distance between ztop and zbot
       real   , allocatable :: hydlay(:)        ! relative thickness hydrodynami layers
       integer, allocatable :: ilay  (:)        ! number of hydrodynamic layers
       type (domain), pointer ::  d2 (:)        ! help for the reallocation of domains
       type (boundp), pointer ::  b2 (:)        ! help for the reallocation of DD-boundaries
+
       integer(4) ithndl                        ! handle to time this subroutine
       data       ithndl / 0 /
 
@@ -103,12 +115,12 @@ end module
 
       ndoms = 0
       nbnds = 0
-
+      
 !     open the .hyd file and read the required information
 
       ipath = scan(fnam(18),"\",.true.)
       if ( ipath .eq. 0 ) ipath = scan(fnam(18),"/",.true.)
-      open ( lunit(18), file = fnam(18) )
+      open ( newunit = lunit(18), file = fnam(18) )
       read ( lunit(18), '(A)', iostat=error ) line
       do while ( error .eq. 0 )
          if ( line .eq. ' ' ) then
@@ -267,6 +279,24 @@ end module
                k = k + 1
             enddo
          enddo
+      endif
+
+      if (zmodel) then
+         allocate (zlbot(hyd%nolay))
+         allocate (zltop(hyd%nolay))
+         zlbot = 0.0
+         zltop = 0.0
+         zdepth = hyd%ztop - hyd%zbot
+         zltop(1) = hyd%ztop
+         zlbot(nolay) = hyd%zbot
+         if ( nolay .gt. 1 ) then
+            zlbot(1) = zltop(1) - tcktot(1) * zdepth
+            do i = 2, nolay - 1
+               zltop(i) = zlbot(i - 1)
+               zlbot(i) = zltop(i) - tcktot(i) * zdepth
+            enddo
+            zltop(nolay) = zlbot(nolay - 1)
+         endif
       endif
 
       if ( timon ) call timstop( ithndl )

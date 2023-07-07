@@ -26,11 +26,12 @@ return
 function run_positive_tests()
 
 ncfile = 'foo.nc';
-use_mexnc = getpref('SNCTOOLS','USE_MEXNC',false);
 v = version('-release');
 switch(v)
 	case { '14', '2006a', '2006b', '2007a', '2007b', '2008a'}
-		if ~use_mexnc
+		try
+			mexnc('inq_libvers');
+		catch %#ok<CTCH>
 			fprintf('\tNo testing yet on java read-only configuration.\n');
 			return
 		end
@@ -209,6 +210,10 @@ nc_attput ( ncfile, nc_global, 'uint8', uint8(31) );
 
 
 nc_add_dimension ( ncfile, 'time', 0 );
+clear varstruct
+varstruct.Name = 'time';
+varstruct.Dimension = {'time'};
+nc_addvar(ncfile,varstruct);
 
 clear varstruct;
 varstruct.Name = 'y';
@@ -234,6 +239,13 @@ varstruct.Attribute(7).Name = 'uint8';
 varstruct.Attribute(7).Value = uint8(32);
 
 nc_addvar ( ncfile, varstruct );
+if getpref('SNCTOOLS','PRESERVE_FVD',false)
+    buf.y = zeros(6,2);
+else
+    buf.y = zeros(2,6);
+end
+buf.time = [0 1];
+nc_addnewrecs(ncfile,buf);
 
 nb = nc_getall ( ncfile );
 

@@ -15,8 +15,11 @@ function nc_adddim(ncfile,dimname,dimlen)
 %
 %   See also:  nc_addvar.
 
+if ~ischar(dimname)
+    error('snctools:adddim:badDimName', 'Dimension name must be char.');
+end
 if isnumeric(dimlen) && (dimlen < 0)
-    error('SNCTOOLS:adddim:badDimensionLength', ...
+    error('snctools:adddim:badDimensionLength', ...
         'Dimension lengths cannot be initialized to be less than zero.');
 end
     
@@ -26,10 +29,12 @@ switch(backend)
     	nc_adddim_tmw(ncfile,dimname,dimlen);
     case 'tmw_hdf4'
     	nc_adddim_hdf4(ncfile,dimname,dimlen);
+    case 'tmw_hdf4_2011b'
+    	nc_adddim_hdf4_2011b(ncfile,dimname,dimlen);
     case 'mexnc'
     	nc_adddim_mexnc(ncfile,dimname,dimlen);
     otherwise
-        error('SNCTOOLS:adddim:unhandledBackend', ...
+        error('snctools:adddim:unhandledBackend', ...
             'Encountered an unhandled backend string, ''%s''', backend);
 end
 

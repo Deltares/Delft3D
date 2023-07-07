@@ -24,16 +24,16 @@
       3 'EColi'
 ;
 #1 ; delimiter for the first block
-; 
+;
 ; second block of model input (timers)
-; 
-; integration timers 
-; 
+;
+; integration timers
+;
  86400  'ddhhmmss' 'ddhhmmss' ; system clock in sec, aux in days
  16.72   ANTICREEP ; integration option
- 1990/08/05-12:30:00      ; start time 
- 1990/08/15-12:30:00      ; stop time 
- 0                  ; constant timestep 
+ 1990/08/05-12:30:00      ; start time
+ 1990/08/15-12:30:00      ; stop time
+ 0                  ; constant timestep
  0001500      ; time step
 ;
  1     ; monitoring points/areas used
@@ -60,13 +60,13 @@
  'right lower (5)' 1 1059
  2     ; monitoring transects not used
 ;
-; start time      stop time     time step 
+; start time      stop time     time step
  1990/08/05-12:30:00       1990/08/15-12:30:00       0060000      ; monitoring
  1990/08/05-12:30:00       1990/08/15-12:30:00       0020000      ; map, dump
  1990/08/05-12:30:00       1990/08/15-12:30:00       0010000      ; history
 ;
 #2 ; delimiter for the second block
-; 
+;
 ; third block of model input (grid layout)
  1130      ; number of segments
  2        ; grid layout not used
@@ -85,38 +85,38 @@ INCLUDE 'com-tut_fti_waq.atr'  ; attributes file
 'com-tut_fti_waq.vol'  ; volumes file
 ;
 #3 ; delimiter for the third block
-; 
+;
 ; fourth block of model input (transport)
  1130  ; exchanges in direction 1
  1020  ; exchanges in direction 2
  904  ; exchanges in direction 3
-; 
+;
  0  ; dispersion arrays
  0  ; velocity arrays
-; 
- 1  ; first form is used for input 
+;
+ 1  ; first form is used for input
  0  ; exchange pointer option
 'com-tut_fti_waq.poi'  ; pointers file
-; 
+;
  1  ; first dispersion option nr
  1.0 1.0 1.0   ; scale factors in 3 directions
  1.00000e+000 1.00000e+000 ; dispersion in 1st and 2nd direction
  1.00000e-007 ; dispersion in 3rd direction
-; 
+;
  -2  ; first area option
 'com-tut_fti_waq.are'  ; area file
-; 
+;
  -2  ; first flow option
 'com-tut_fti_waq.flo'  ; flow file
-; 
+;
 ; No explicit velocity arrays
-; 
+;
   1  ; length vary
  0   ; length option
 'com-tut_fti_waq.len'  ; length file
 ;
 #4 ; delimiter for the fourth block
-; 
+;
 ; fifth block of model input (boundary condition)
 '1 (Left-right 1)' '1 (Left-right 1)' '1/1 (Left-right 1)'
 '2 (Left-right 1)' '2 (Left-right 1)' '1/1 (Left-right 1)'
@@ -265,21 +265,21 @@ TIME LINEAR
 DATA
  'Salinity' 'IM1' 'EColi'
 
-1990/08/05-12:30:00  3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-           
-1990/08/15-12:30:00  3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-            3.5000e+001  1.0000e+001  0.0000e+000 
-           
+1990/08/05-12:30:00  3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+
+1990/08/15-12:30:00  3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+            3.5000e+001  1.0000e+001  0.0000e+000
+
 ;
  #5 ; delimiter for the fifth block
-; 
+;
 ; sixth block of model input (waste loads)
    2 ; number of waste loads/continuous releases
   207 '1 (E. Coli discharge)' ' ' ' '
@@ -297,11 +297,11 @@ TIME BLOCK
 DATA
  'FLOW' 'Salinity' 'IM1' 'EColi'
 
-1990/08/05-12:30:00  1.0000e+001  5.0000e+000  1.0000e+001  1.0000e+008 
-1990/08/07-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  1.0000e+009 
-1990/08/09-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  1.0000e+007 
-1990/08/11-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  0.0000e+000 
-1990/08/15-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  0.0000e+000 
+1990/08/05-12:30:00  1.0000e+001  5.0000e+000  1.0000e+001  1.0000e+008
+1990/08/07-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  1.0000e+009
+1990/08/09-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  1.0000e+007
+1990/08/11-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  0.0000e+000
+1990/08/15-01:00:00  1.0000e+001  5.0000e+000  1.0000e+001  0.0000e+000
 
 ; Data for 'IM1 discharge'
 ITEM
@@ -315,12 +315,12 @@ TIME LINEAR
 DATA
  'FLOW' 'Salinity' 'IM1' 'EColi'
 
-1990/08/05-12:30:00  1.0000e-020  5.0000e+000  5.0000e+001  0.0000e+000 
-1990/08/15-12:30:00  1.0000e-020  5.0000e+000  5.0000e+001  0.0000e+000 
+1990/08/05-12:30:00  1.0000e-020  5.0000e+000  5.0000e+001  0.0000e+000
+1990/08/15-12:30:00  1.0000e-020  5.0000e+000  5.0000e+001  0.0000e+000
 
 ;
  #6 ; delimiter for the sixth block
-; 
+;
 ; seventh block of model input (process parameters)
 ;
 CONSTANTS
@@ -346,8 +346,7 @@ CONSTANTS
  'ACTIVE_EColiMrt'
  'ACTIVE_Extinc_VLG'
  'ACTIVE_Salinchlor'
- 'ACTIVE_CalcRadUV'
- 'ACTIVE_Extinc_UVG'
+ 'ACTIVE_CalcRadDay'
  'ACTIVE_DynDepth'
 DATA
  8.00000e-001 ; RcMrtEColi
@@ -368,8 +367,7 @@ DATA
  1.00000e+000 ; ACTIVE_EColiMrt
  1.00000e+000 ; ACTIVE_Extinc_VLG
  1.00000e+000 ; ACTIVE_Salinchlor
- 1.00000e+000 ; ACTIVE_CalcRadUV
- 1.00000e+000 ; ACTIVE_Extinc_UVG
+ 1.00000e+000 ; ACTIVE_CalcRadDay
  1.00000e+000 ; ACTIVE_DynDepth
 ;
 PARAMETERS
@@ -381,28 +379,28 @@ ALL
 BINARY_FILE  'com-tut_fti_waq.par'  ; binary file
 ; 1 - number of functions
 FUNCTIONS
-'RadSurf'
+'DayRadSurf'
 BLOCK
 DATA
 
-1990/08/05-12:30:00  2.5000e+002 
-1990/08/06-12:30:00  2.2500e+002 
-1990/08/07-12:30:00  2.0000e+002 
-1990/08/08-12:30:00  1.7500e+002 
-1990/08/09-12:30:00  2.0000e+002 
-1990/08/10-12:30:00  2.3000e+002 
-1990/08/11-12:30:00  2.2000e+002 
-1990/08/12-12:30:00  2.4000e+002 
-1990/08/13-12:30:00  2.1000e+002 
-1990/08/14-12:30:00  2.0000e+002 
-1990/08/15-12:30:00  1.9000e+002 
+1990/08/05-12:30:00  2.5000e+002
+1990/08/06-12:30:00  2.2500e+002
+1990/08/07-12:30:00  2.0000e+002
+1990/08/08-12:30:00  1.7500e+002
+1990/08/09-12:30:00  2.0000e+002
+1990/08/10-12:30:00  2.3000e+002
+1990/08/11-12:30:00  2.2000e+002
+1990/08/12-12:30:00  2.4000e+002
+1990/08/13-12:30:00  2.1000e+002
+1990/08/14-12:30:00  2.0000e+002
+1990/08/15-12:30:00  1.9000e+002
 SEG_FUNCTIONS
 'VertDisper' ; name of segment function
 ALL
 BINARY_FILE  'com-tut_fti_waq.vdf'  ; binary file
 ;
 #7 ; delimiter for the seventh block
-; 
+;
 ; eighth block of model input (initial conditions)
  MASS/M2 ; unit for inactive substances
  1 ; initial conditions follow
@@ -415,7 +413,7 @@ BINARY_FILE  'com-tut_fti_waq.vdf'  ; binary file
 ;
 ;
  #8 ; delimiter for the eighth block
-; 
+;
 ; ninth block of model input (specification of output)
   1 ; output information in this file
   2 ; all substances and extra output
@@ -426,10 +424,10 @@ BINARY_FILE  'com-tut_fti_waq.vdf'  ; binary file
   'LocalDepth' ' '
   2 ; all substances and extra output
 4 ; number of extra variables
-  'ExtUv'    
-  'MrtToEColi'    
-  'SURF'    
-  'LocalDepth'    
+  'ExtUv'
+  'MrtToEColi'
+  'SURF'
+  'LocalDepth'
   2 ; all substances and extra output
 4 ; number of extra variables
   'ExtUv' ' '
@@ -438,10 +436,10 @@ BINARY_FILE  'com-tut_fti_waq.vdf'  ; binary file
   'LocalDepth' ' '
   2 ; all substances and extra output
 4 ; number of extra variables
-  'ExtUv'    
-  'MrtToEColi'    
-  'SURF'    
-  'LocalDepth'    
+  'ExtUv'
+  'MrtToEColi'
+  'SURF'
+  'LocalDepth'
   1 ; binary history file on
   1 ; binary map     file on
   0 ; nefis  history file on

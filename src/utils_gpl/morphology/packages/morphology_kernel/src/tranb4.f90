@@ -1,8 +1,8 @@
-subroutine tranb4(utot      ,d         ,c         ,par       ,hidexp    , &
-                & sbot      ,ssus      )
+subroutine tranb4(utot      ,d         ,chezy     ,npar      ,par       , &
+                & hidexp    ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine tranb4(utot      ,d         ,c         ,par       ,hidexp    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! general formula
@@ -39,28 +39,34 @@ subroutine tranb4(utot      ,d         ,c         ,par       ,hidexp    , &
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
-    real(fp)               , intent(in)  :: c      !  Description and declaration in esm_alloc_real.f90
-    real(fp)               , intent(in)  :: d
-    real(fp)               , intent(in)  :: hidexp ! hiding & exposure factor
-                                                   ! default value, 1.0, to be used when called from Delft3D-MOR
-    real(fp)               , intent(out) :: sbot
-    real(fp)               , intent(out) :: ssus
-    real(fp)               , intent(in)  :: utot
-    real(fp), dimension(30), intent(in)  :: par
+    integer                  , intent(in)    :: npar   !< length of par array
+    real(fp)                 , intent(in)    :: chezy  !< Chezy value
+    real(fp)                 , intent(in)    :: d      !< grain diameter
+    real(fp)                 , intent(in)    :: hidexp !< hiding & exposure factor
+    real(fp), dimension(npar), intent(in)    :: par    !< sediment transport formula parameters
+    real(fp)                 , intent(in)    :: utot   !< depth averaged velocity magnitude
+    !
+    real(fp)                 , intent(out)   :: sbot   !< bedload transport rate
+    real(fp)                 , intent(out)   :: ssus   !< suspended transport rate
 !
 ! Local variables
 !
-    real(fp) :: acal
+    real(fp) :: acal  ! calibration factor for bedload
+    real(fp) :: acals ! calibration factor for suspended load
     real(fp) :: ag    ! gravity acceleration
-    real(fp) :: b     ! correction coefficient shear stress
-    real(fp) :: cc
-    real(fp) :: delta ! velocity (es/ew)  relative density of sediment particle
-    real(fp) :: f     ! real help array
-    real(fp) :: rmu
-    real(fp) :: th
-    real(fp) :: thcr
+    real(fp) :: b     ! exponent of Shields number for bedload
+    real(fp) :: bs    ! exponent of Shields number for suspended load
+    real(fp) :: cc    ! exponent of excess Shields number for bedload
+    real(fp) :: ccs   ! exponent of excess Shields number for suspended load
+    real(fp) :: delta ! relative density of sediment particle
+    real(fp) :: f     ! help variable for excess Shields number
+    real(fp) :: rmu   ! ripple factor for bedload
+    real(fp) :: rmus  ! ripple factor for suspended load
+    real(fp) :: th    ! Shields number
+    real(fp) :: thcr  ! critical Shields number for bedload
+    real(fp) :: thcrs ! critical Shields number for suspended load
 !
 !! executable statements -------------------------------------------------------
 !
@@ -74,12 +80,20 @@ subroutine tranb4(utot      ,d         ,c         ,par       ,hidexp    , &
     cc    = par(13)
     rmu   = par(14)
     thcr  = par(15)
+    acals = par(16)
+    bs    = par(17)
+    ccs   = par(18)
+    rmus  = par(19)
+    thcrs = par(20)
     !
-    if ((c<1.0e-6) .or. (utot<1.0e-6)) then
+    if ((chezy<1.0e-6) .or. (utot<1.0e-6)) then
        return
     endif
-    th = (utot/c)**2/(delta*d)
+    th = (utot/chezy)**2/(delta*d)
+    !
     f  = rmu*th - hidexp*thcr
-    if (f>1.0e-8) sbot = acal*d**1.5*sqrt(ag*delta)*th**b*f**cc
-    ssus = 0.0
+    if (f>1.0e-8) sbot = acal * d**1.5 * sqrt(ag*delta) * th**b * f**cc
+    !
+    f  = rmus*th - hidexp*thcrs
+    if (f>1.0e-8) ssus = acals * d**1.5 * sqrt(ag*delta) * th**bs * f**ccs
 end subroutine tranb4

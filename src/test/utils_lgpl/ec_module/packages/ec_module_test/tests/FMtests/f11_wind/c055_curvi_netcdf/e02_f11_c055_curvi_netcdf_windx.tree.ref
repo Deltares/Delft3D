@@ -1,0 +1,9 @@
+.
+EC MODULE ITEMS:
+Target Item 00013 (name=windx, vectormax=1)
+Element Set 00011
+   Connection 00015, Converter 00014, targetIndex -0987
+      Source Item 00006 (name=eastward_wind, vectormax=1)
+         File Reader 00001(filename=wind_deltares_matroos_hirlam72_20150418.nc)
+            Quantity = eastward_wind
+.

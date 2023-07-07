@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,6 +34,9 @@ module fileinfo
       integer(ip)  , parameter          :: nfiles =  100
       integer(ip)                       :: lunit(nfiles) = 0    ! logical unit numbers for in-/output files
       character(len=256)                :: fname(nfiles) = ' '  ! file names for in-/output files
-      character(len=20) , dimension(2)  :: ftype         = ' '  ! file types, i.e. unformatted or binary
+      character(len=255)                :: filebase             ! base for filenames
+      character(len=255)                :: partinifile          ! part FM initial particles file
+      character(len=255)                :: partrelfile          ! part FM particle release file
+
       save
 end module

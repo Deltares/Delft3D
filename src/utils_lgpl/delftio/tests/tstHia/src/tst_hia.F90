@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 subroutine read_his_long(datasetName)
 
     use Dio_Plt_Rw
@@ -47,8 +47,7 @@ subroutine read_his_long(datasetName)
 
     call DioSyncMakeBaseName(datasetName, baseName)
     resFile = 'TEST' // trim(baseName) // '-res.txt'
-    resLun = 11
-    open(resLun,file=resFile)
+    open(newunit=resLun,file=resFile)
 
 !   Get HIS IN data set
 

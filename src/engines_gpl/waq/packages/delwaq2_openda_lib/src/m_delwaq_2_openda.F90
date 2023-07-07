@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -157,8 +157,6 @@ function dlwq_create_instance() result(instance_id)
     endif
     dlwqd%PropCollArray => collection
 
-    !write(*,*) 'DELWAQ: created instance ', instance_id
-
     instance_count = instance_count + 1
 
 end function dlwq_create_instance
@@ -251,10 +249,6 @@ subroutine dlwq_select_new_instance(instance_id)
     do i = 1,dlwqd%PropCollArray(current_instance+1)%cursize
         dlwqd%PropColl%FilePropPnts(i)%pnt => dlwqd%PropCollArray(current_instance+1)%FilePropPnts(i)%pnt
     enddo
-
-    !write(*,*) 'DELWAQ: current instance selected ', current_instance
-    !write(88,*) 'DELWAQ: current instance selected ', current_instance
-
 
 end subroutine dlwq_select_new_instance
 
@@ -467,12 +461,6 @@ subroutine dlwq_create_cta_state_vector(isbackground, ierr)
   ! That part has moved to an actual corestate-export; there
   ! the first check is if the file already has been opened.
 
-  !call CTA_STRING_CREATE(sFilename,ierr)
-  !call CTA_STRING_SET(sFileName,file_names(current_instance),ierr)
-  !call CTA_FILE_CREATE(file_handles(current_instance),ierr)
-  !call CTA_FILE_OPEN(file_handles(current_instance),sFileName,CTA_NULL,ierr)
-  !call CTA_STRING_FREE(sFilename,ierr)
-
   if (state_handles(current_instance) == UNCREATED_STATE) then
     ! this will in general be the case for new instances. Costa will create a handle
     ! for the treevector. Later, when the tv is filled, memory will be allocated.
@@ -518,12 +506,10 @@ subroutine dlwq_create_cta_state_vector(isbackground, ierr)
       call CTA_TREEVECTOR_CREATE('mass','mass',s_mass, ierr)
       call CTA_TREEVECTOR_CREATE('names','names',s_names, ierr)
       call CTA_TREEVECTOR_CREATE('timeadmin','timeadmin',s_timeadmin, ierr)
-     ! call CTA_TREEVECTOR_CREATE('files','files',s_files, ierr)
       sub_pseudos(1) = s_rbuf
       sub_pseudos(2) = s_mass
       sub_pseudos(3) = s_names
       sub_pseudos(4) = s_timeadmin
- !     sub_pseudos(5) = s_files
 
 
      ! concatenate all pseudo substates to substate 'pseudo'
@@ -645,7 +631,6 @@ subroutine dlwq_set_ctastate_to_delwaq(ierr)
   call CTA_TREEVECTOR_GETVALS(s_rbuf, dlwqd%rbuf(1), size_dlwq_state%rbuf, CTA_REAL,ierr)
   call CTA_TREEVECTOR_GETSUBTREEVEC(s_pseudo, 'names', s_names, ierr)
   call CTA_TREEVECTOR_GETSUBTREEVEC(s_pseudo, 'timeadmin', s_timeadmin, ierr)
-  !call CTA_TREEVECTOR_GETSUBTREEVEC(s_pseudo, 'files', s_files, ierr)
 
 !
 ! Core state ...
@@ -670,25 +655,6 @@ subroutine dlwq_set_ctastate_to_delwaq(ierr)
   ! time admin
   call CTA_TREEVECTOR_GETVALS(s_timeadmin,vals_timeadmin,3,CTA_INTEGER,ierr)
   dlwqd%itime = vals_timeadmin(1)
-  ! file position
-! Obsolete
-! call CTA_TREEVECTOR_GETVALS(s_files,vals_files,size_dlwq_state%files,CTA_INTEGER,ierr)
-
-! kk = 0
-! do iColl=1,dlwqd%CollColl%cursize
-!    do j = 1, dlwqd%CollColl%FileUseDefColls(iColl)%cursize
-!        kk = kk + 5
-!        dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%istop    = vals_files(kk-4)
-!        dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%itime1   = vals_files(kk-3)
-!        dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%itime2   = vals_files(kk-2)
-!        dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%position = vals_files(kk-1)
-!        dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%ioffset  = vals_files(kk)
-!    enddo
-! enddo
-
-  !print *,'**************************'
-  !print *,'dlwq_set_STATE_to_delwaq: instance ',current_instance, ',file positions ',vals_files(1:size_dlwq_state%files)
-  !print *,'***************************'
 
 ! output...
   call CTA_TREEVECTOR_GETSUBTREEVEC(state_handles(current_instance), 'output', s_output, ierr)
@@ -768,23 +734,6 @@ subroutine dlwq_get_ctastate_from_delwaq(ierr)
   ! time admin
   vals_timeadmin(1) = dlwqd%itime
   call CTA_TREEVECTOR_SETVALS(s_timeadmin,vals_timeadmin,3,CTA_INTEGER,ierr)
-  !file position
-! kk = 0
-! do iColl=1,dlwqd%CollColl%cursize
-!    do j = 1, dlwqd%CollColl%FileUseDefColls(iColl)%cursize
-!        kk = kk + 5
-!        vals_files(kk-4) = dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%istop
-!        vals_files(kk-3) = dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%itime1
-!        vals_files(kk-2) = dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%itime2
-!        vals_files(kk-1) = dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%position
-!        vals_files(kk)   = dlwqd%CollColl%FileUseDefColls(iColl)%FileUseDefs(j)%aFilePnt%pnt%ioffset
-!
-!    enddo
-! enddo
-! call CTA_TREEVECTOR_SETVALS(s_files,vals_files,size_dlwq_state%files,CTA_INTEGER,ierr)
-  !print *,'**************************'
-  !print *,'dlwq_get_ctastate_from_delwaq: instance ',current_instance, ',file positions ',vals_files(1:size_dlwq_state%files)
-  !print *,'***************************'
 
   ! output...
   call CTA_TREEVECTOR_GETSUBTREEVEC(state_handles(current_instance), 'output', s_output, ierr)

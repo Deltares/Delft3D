@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,7 +25,7 @@
      &                    iimax  , iar    , irmax  , rar    , notot  ,
      &                    noseg  , sname  , nowst  , nowtyp , nrftot ,
      &                    nrharm , dtflg1 , dtflg3 , iwidth , vrsion ,
-     &                    ioutpt , ierr   , iwar   )
+     &                    ioutpt , chkpar , ierr   , iwar            )
 
 !       Deltares Software Centre
 
@@ -61,6 +61,8 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(15) = unit intermediate file (waste load)
 
+      use m_zoek
+      use m_srstop
       use rd_token
       use timers       !   performance timers
       implicit none
@@ -89,6 +91,7 @@
       integer  ( 4), intent(in   ) :: iwidth         !< width of the output file
       real     ( 4), intent(in   ) :: vrsion         !< Input file version number
       integer  ( 4), intent(in   ) :: ioutpt         !< Degree of output in report file
+      logical      , intent(out   ) :: chkpar(2)     !< Check for parameters SURF and LENGTH
       integer  ( 4), intent(inout) :: ierr           !< cumulative error count
       integer  ( 4), intent(inout) :: iwar           !< cumulative warning count
 
@@ -124,6 +127,8 @@
 
       lunwr = lun( 2)
       iposr = 0
+      chkpar = .false.
+      nowtyp = 0
 
 !        Read number of waste loads
 
@@ -131,7 +136,8 @@
       if ( nowst .lt. 0 ) then       !   it says that info comes from auxiliary file
          write ( lunut , 2000 ) nowst
          call opt1   ( -1     , lun    , 15     , lchar  , filtype,
-     &                 dtflg1 , dtflg3 , 0      , ierr2  , iwar   )
+     &                 dtflg1 , dtflg3 , 0      , ierr2  , iwar   ,
+     &                 .false.)
          if ( ierr2 .gt. 0 ) goto 20
          if ( gettoken( nowst, ierr2 ) .gt. 0 ) goto 20
       endif
@@ -143,8 +149,6 @@
 !     read waste names, from version 4.9 on names are ID's
 !                                           names are 40 characters
 !                                           types are 20 characters
-
-      nowtyp = 0
       allocate ( wstid     (nowst), wsttype     (nowst), wstname(nowst),
      &           wstid_long(nowst), wsttype_long(nowst), iwstseg(nowst),
      *           iwsttype  (nowst), iwstkind    (nowst), stat = ierr_alloc )
@@ -169,15 +173,23 @@
       do 10 i = 1 , nowst
 
          iwsttype(i)     =  0
+         iwstkind(i)     =  0
          if ( gettoken( chulp(1), iwstseg(i), itype, ierr2 ) .gt. 0 ) goto 20
          if ( itype .eq. 1 ) then                  !    character, either SURFACE, BANK or BOTTOM
             iwstseg(i) = 0
-            if ( chulp(1) .eq. "SURFACE" ) iwstseg(i) = -1      ! e.g. atmospheric deposition
-            if ( chulp(1) .eq. "BANK"    ) iwstseg(i) = -2      ! e.g. bank infiltration, 1D river systems
-            if ( chulp(1) .eq. "BED"     ) iwstseg(i) = -3      ! e.g. well and sink
+            if ( chulp(1) .eq. "SURFACE" ) iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
+            if ( chulp(1) .eq. "BANK"    ) iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
+            if ( chulp(1) .eq. "BED"     ) iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
             if ( iwstseg(i) .eq. 0 ) then
                ierr2 = 1
                goto 20
+            endif
+
+            if ( iwstseg(i) == -1 .or. iwstseg(i) == -3 ) then
+                chkpar(1) = .true.
+            endif
+            if ( iwstseg(i) == -2 ) then
+                chkpar(2) = .true.
             endif
          endif
          if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
@@ -194,8 +206,6 @@
             case ( "WELL" )
                iwstkind(i) = 4
                if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
-            case default
-               iwstkind(i) = 0
          end select
 
          if ( vrsion .ge. 4.90 ) then           ! read also name and type
@@ -283,6 +293,16 @@
 
    10 continue
 
+!          provide information about the special parameters
+
+      if ( chkpar(1) ) then
+         write( lunut, 2210 )
+      endif
+      if ( chkpar(2) ) then
+         write( lunut, 2220 )
+      endif
+
+
 !          give list of all identified wasteload types and write info to system file
 
       write ( lunut ,   *  )
@@ -324,7 +344,7 @@
      &                 notot+1, notot+1, nrftot(9), nrharm(9), 1    ,
      &                 dtflg1 , ldummy , ldummy   , iwidth   , lchar,
      &                 filtype, dtflg3 , vrsion   , ioutpt   , ierr2,
-     &                 iwar   )
+     &                 iwar   , .false.)
      &
       endif
       deallocate( wstid, wsttype )
@@ -375,5 +395,9 @@
  2140 format (    ' ERROR: truncated wasteload ID is not unique:',A)
  2150 format (    ' ERROR: truncated wasteload type not unique:',A)
  2160 format (    ' ERROR: allocating wasteload arrays:',I8)
+ 2210 format (    ' Note: one or more special waste loads - parameter/se
+     &gment function SURF required' )
+ 2220 format (    ' Note: one or more special waste loads - parameter/se
+     &gment function LENGTH required' )
 
       end

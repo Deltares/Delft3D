@@ -24,7 +24,7 @@ function md_clock(Hclock,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -365,6 +365,7 @@ monthstr={'January','February','March','April','May','June','July','August','Sep
 [year,month,day,hour,minute,second]=datevec(time);
 set(WD,'string',daystr{weekday(time)})
 set(D,'string',int2str(day))
+month = max(month,1); % month returns 0 for 0 <= time < 1
 set(M,'string',monthstr{month})
 set(Y,'string',int2str(year))
 

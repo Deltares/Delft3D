@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Merkaartor 0.18">
+  <node id="-199" timestamp="2013-07-24T14:35:09ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8171460" lat="46.9602440"/>
+  <way id="-198" timestamp="2013-07-29T12:25:49Z" version="0" user="" actor="2" dirtylevel="5" selected="true">
+    <BoundingBox>
+      <topright lon="11.8918490" lat="47.0030500"/>
+      <bottomleft lon="11.8171460" lat="46.9602440"/>
+    </BoundingBox>
+    <nd ref="-199"/>
+    <nd ref="-200"/>
+    <nd ref="-201"/>
+    <nd ref="-202"/>
+    <nd ref="-203"/>
+    <nd ref="-204"/>
+    <nd ref="-205"/>
+    <nd ref="-206"/>
+    <nd ref="-207"/>
+    <nd ref="-208"/>
+    <nd ref="-209"/>
+    <nd ref="-210"/>
+    <nd ref="-211"/>
+    <nd ref="-212"/>
+    <nd ref="-213"/>
+    <nd ref="-214"/>
+    <nd ref="-215"/>
+    <nd ref="-216"/>
+    <nd ref="-217"/>
+    <nd ref="-218"/>
+    <nd ref="-219"/>
+    <nd ref="-220"/>
+    <nd ref="-221"/>
+    <nd ref="-222"/>
+    <nd ref="-223"/>
+    <nd ref="-224"/>
+    <nd ref="-225"/>
+    <nd ref="-226"/>
+    <nd ref="-227"/>
+    <nd ref="-228"/>
+    <nd ref="-229"/>
+    <nd ref="-230"/>
+    <nd ref="-231"/>
+    <nd ref="-232"/>
+    <nd ref="-233"/>
+    <nd ref="-234"/>
+    <nd ref="-235"/>
+    <nd ref="-236"/>
+    <nd ref="-237"/>
+    <nd ref="-238"/>
+    <nd ref="-239"/>
+    <nd ref="-240"/>
+    <nd ref="-241"/>
+    <nd ref="-242"/>
+    <nd ref="-243"/>
+    <nd ref="-244"/>
+    <nd ref="-245"/>
+    <nd ref="-246"/>
+    <nd ref="-247"/>
+    <nd ref="-248"/>
+    <nd ref="-249"/>
+    <nd ref="-250"/>
+    <nd ref="-251"/>
+    <nd ref="-252"/>
+    <nd ref="-253"/>
+    <nd ref="-254"/>
+    <nd ref="-255"/>
+    <nd ref="-256"/>
+    <nd ref="-257"/>
+    <nd ref="-258"/>
+    <nd ref="-259"/>
+    <nd ref="-260"/>
+    <nd ref="-261"/>
+    <nd ref="-262"/>
+    <nd ref="-263"/>
+    <nd ref="-264"/>
+    <nd ref="-265"/>
+    <nd ref="-266"/>
+    <nd ref="-267"/>
+    <nd ref="-268"/>
+    <nd ref="-269"/>
+    <nd ref="-270"/>
+    <nd ref="-271"/>
+    <nd ref="-272"/>
+    <nd ref="-273"/>
+    <nd ref="-274"/>
+    <nd ref="-275"/>
+    <nd ref="-276"/>
+    <nd ref="-277"/>
+    <nd ref="-278"/>
+    <nd ref="-279"/>
+    <nd ref="-280"/>
+    <nd ref="-281"/>
+    <nd ref="-282"/>
+    <nd ref="-283"/>
+    <nd ref="-284"/>
+    <nd ref="-285"/>
+    <nd ref="-286"/>
+    <nd ref="-287"/>
+    <nd ref="-288"/>
+    <nd ref="-289"/>
+    <nd ref="-290"/>
+    <nd ref="-291"/>
+    <nd ref="-292"/>
+    <nd ref="-293"/>
+    <nd ref="-294"/>
+    <nd ref="-295"/>
+    <nd ref="-296"/>
+    <nd ref="-297"/>
+    <nd ref="-298"/>
+    <nd ref="-299"/>
+    <nd ref="-300"/>
+    <nd ref="-301"/>
+    <nd ref="-302"/>
+    <nd ref="-303"/>
+    <nd ref="-304"/>
+    <nd ref="-305"/>
+    <nd ref="-306"/>
+    <nd ref="-307"/>
+    <nd ref="-308"/>
+    <nd ref="-309"/>
+    <nd ref="-310"/>
+    <nd ref="-311"/>
+    <nd ref="-312"/>
+    <nd ref="-313"/>
+    <nd ref="-314"/>
+    <nd ref="-315"/>
+    <nd ref="-316"/>
+    <nd ref="-317"/>
+    <nd ref="-318"/>
+    <nd ref="-319"/>
+    <nd ref="-320"/>
+    <nd ref="-321"/>
+    <nd ref="-322"/>
+    <nd ref="-323"/>
+    <nd ref="-324"/>
+    <nd ref="-325"/>
+    <nd ref="-326"/>
+    <nd ref="-327"/>
+    <nd ref="-328"/>
+    <nd ref="-329"/>
+    <nd ref="-330"/>
+    <nd ref="-331"/>
+    <nd ref="-332"/>
+    <nd ref="-333"/>
+    <nd ref="-334"/>
+    <nd ref="-335"/>
+    <nd ref="-336"/>
+    <nd ref="-337"/>
+    <nd ref="-338"/>
+    <nd ref="-339"/>
+    <nd ref="-340"/>
+    <nd ref="-341"/>
+    <nd ref="-342"/>
+    <nd ref="-343"/>
+    <nd ref="-344"/>
+    <nd ref="-345"/>
+    <nd ref="-346"/>
+    <nd ref="-347"/>
+    <nd ref="-348"/>
+    <nd ref="-349"/>
+    <nd ref="-350"/>
+    <nd ref="-351"/>
+    <nd ref="-352"/>
+    <nd ref="-353"/>
+    <nd ref="-354"/>
+    <nd ref="-355"/>
+    <nd ref="-356"/>
+    <nd ref="-357"/>
+    <nd ref="-358"/>
+    <nd ref="-359"/>
+    <nd ref="-360"/>
+    <nd ref="-361"/>
+    <nd ref="-362"/>
+    <nd ref="-363"/>
+    <nd ref="-364"/>
+    <nd ref="-365"/>
+    <nd ref="-366"/>
+    <nd ref="-367"/>
+    <nd ref="-368"/>
+    <nd ref="-369"/>
+    <nd ref="-370"/>
+    <nd ref="-371"/>
+    <nd ref="-372"/>
+    <nd ref="-373"/>
+    <nd ref="-374"/>
+    <nd ref="-375"/>
+    <nd ref="-376"/>
+    <nd ref="-377"/>
+    <nd ref="-378"/>
+    <nd ref="-379"/>
+    <nd ref="-380"/>
+    <nd ref="-381"/>
+    <nd ref="-382"/>
+    <nd ref="-383"/>
+    <nd ref="-384"/>
+    <nd ref="-385"/>
+    <nd ref="-386"/>
+    <nd ref="-387"/>
+    <nd ref="-388"/>
+    <nd ref="-389"/>
+    <nd ref="-390"/>
+    <nd ref="-391"/>
+    <nd ref="-392"/>
+    <nd ref="-393"/>
+    <nd ref="-394"/>
+  </way>
+  <node id="-200" timestamp="2013-07-24T14:36:09ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8173810" lat="46.9604090"/>
+  <node id="-201" timestamp="2013-07-24T14:39:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8185200" lat="46.9606470"/>
+  <node id="-202" timestamp="2013-07-24T14:43:32ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8194700" lat="46.9612500"/>
+  <node id="-203" timestamp="2013-07-24T14:44:25ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8194670" lat="46.9614450"/>
+  <node id="-204" timestamp="2013-07-24T14:45:35ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8197840" lat="46.9615950"/>
+  <node id="-205" timestamp="2013-07-24T14:48:31ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8201440" lat="46.9622150"/>
+  <node id="-206" timestamp="2013-07-24T14:51:28ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8207760" lat="46.9627450"/>
+  <node id="-207" timestamp="2013-07-24T14:56:51ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8221980" lat="46.9635100"/>
+  <node id="-208" timestamp="2013-07-24T14:59:46ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8228820" lat="46.9639930"/>
+  <node id="-209" timestamp="2013-07-24T15:03:32ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8236610" lat="46.9646510"/>
+  <node id="-210" timestamp="2013-07-24T15:05:50ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8237220" lat="46.9651980"/>
+  <node id="-211" timestamp="2013-07-24T15:07:09ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8240370" lat="46.9654020"/>
+  <node id="-212" timestamp="2013-07-24T15:19:15ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8245860" lat="46.9681720"/>
+  <node id="-213" timestamp="2013-07-24T15:22:48ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8248390" lat="46.9689750"/>
+  <node id="-214" timestamp="2013-07-24T15:32:32ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8263230" lat="46.9709670"/>
+  <node id="-215" timestamp="2013-07-24T15:33:53ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8264760" lat="46.9712490"/>
+  <node id="-216" timestamp="2013-07-24T15:36:05ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8269580" lat="46.9716380"/>
+  <node id="-217" timestamp="2013-07-24T15:39:01ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8279070" lat="46.9714600"/>
+  <node id="-218" timestamp="2013-07-24T15:41:59ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8286760" lat="46.9718990"/>
+  <node id="-219" timestamp="2013-07-24T15:43:12ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8290140" lat="46.9718870"/>
+  <node id="-220" timestamp="2013-07-24T15:43:36ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8291950" lat="46.9719340"/>
+  <node id="-221" timestamp="2013-07-24T15:45:13ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8296610" lat="46.9718960"/>
+  <node id="-222" timestamp="2013-07-24T15:46:41ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8301250" lat="46.9719900"/>
+  <node id="-223" timestamp="2013-07-24T15:48:14ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8306110" lat="46.9721220"/>
+  <node id="-224" timestamp="2013-07-24T15:51:17ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8313520" lat="46.9726060"/>
+  <node id="-225" timestamp="2013-07-24T15:52:22ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8317070" lat="46.9725750"/>
+  <node id="-226" timestamp="2013-07-24T15:53:01ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8318540" lat="46.9726790"/>
+  <node id="-227" timestamp="2013-07-24T15:56:16ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8328780" lat="46.9729430"/>
+  <node id="-228" timestamp="2013-07-24T16:03:43ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8338950" lat="46.9745140"/>
+  <node id="-229" timestamp="2013-07-24T16:04:44ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8341680" lat="46.9746490"/>
+  <node id="-230" timestamp="2013-07-24T16:06:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8344590" lat="46.9749600"/>
+  <node id="-231" timestamp="2013-07-24T16:07:34ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8348620" lat="46.9750680"/>
+  <node id="-232" timestamp="2013-07-24T16:09:53ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8352290" lat="46.9755260"/>
+  <node id="-233" timestamp="2013-07-24T16:14:13ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8348630" lat="46.9764860"/>
+  <node id="-234" timestamp="2013-07-24T16:18:22ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8345680" lat="46.9769330"/>
+  <node id="-235" timestamp="2013-07-24T16:20:02ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8347310" lat="46.9772990"/>
+  <node id="-236" timestamp="2013-07-24T16:23:20ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8343420" lat="46.9780220"/>
+  <node id="-237" timestamp="2013-07-24T16:25:11ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8349620" lat="46.9779910"/>
+  <node id="-238" timestamp="2013-07-24T16:25:45ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8351220" lat="46.9780710"/>
+  <node id="-239" timestamp="2013-07-24T16:26:07ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8351020" lat="46.9781510"/>
+  <node id="-240" timestamp="2013-07-24T16:26:55ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8349060" lat="46.9782720"/>
+  <node id="-241" timestamp="2013-07-24T16:27:27ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8350340" lat="46.9783620"/>
+  <node id="-242" timestamp="2013-07-24T16:28:08ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8348160" lat="46.9784240"/>
+  <node id="-243" timestamp="2013-07-24T16:30:51ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8352250" lat="46.9789650"/>
+  <node id="-244" timestamp="2013-07-24T16:33:16ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8350540" lat="46.9795090"/>
+  <node id="-245" timestamp="2013-07-24T16:33:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8349630" lat="46.9796080"/>
+  <node id="-246" timestamp="2013-07-24T16:36:25ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8353040" lat="46.9801880"/>
+  <node id="-247" timestamp="2013-07-24T16:36:54ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8352340" lat="46.9802910"/>
+  <node id="-248" timestamp="2013-07-24T16:38:14ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8356010" lat="46.9804580"/>
+  <node id="-249" timestamp="2013-07-24T16:38:33ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8356970" lat="46.9804520"/>
+  <node id="-250" timestamp="2013-07-24T16:39:23ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8358520" lat="46.9806240"/>
+  <node id="-251" timestamp="2013-07-24T16:40:54ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8363210" lat="46.9807470"/>
+  <node id="-252" timestamp="2013-07-24T16:42:06ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8360410" lat="46.9809600"/>
+  <node id="-253" timestamp="2013-07-24T16:43:27ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8362710" lat="46.9812230"/>
+  <node id="-254" timestamp="2013-07-24T16:44:39ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8366510" lat="46.9813180"/>
+  <node id="-255" timestamp="2013-07-24T16:46:19ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8370280" lat="46.9815970"/>
+  <node id="-256" timestamp="2013-07-24T16:46:50ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8369700" lat="46.9817180"/>
+  <node id="-257" timestamp="2013-07-24T16:47:54ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8372630" lat="46.9818390"/>
+  <node id="-258" timestamp="2013-07-24T16:48:20ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8372710" lat="46.9819370"/>
+  <node id="-259" timestamp="2013-07-24T16:49:30ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8375700" lat="46.9821060"/>
+  <node id="-260" timestamp="2013-07-24T16:52:02ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8384320" lat="46.9820830"/>
+  <node id="-261" timestamp="2013-07-24T16:53:09ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8387710" lat="46.9821670"/>
+  <node id="-262" timestamp="2013-07-24T16:55:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8394860" lat="46.9822520"/>
+  <node id="-263" timestamp="2013-07-24T16:56:56ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8400480" lat="46.9821840"/>
+  <node id="-264" timestamp="2013-07-24T16:59:05ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8406210" lat="46.9824800"/>
+  <node id="-265" timestamp="2013-07-24T17:01:14ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8413450" lat="46.9825400"/>
+  <node id="-266" timestamp="2013-07-24T17:02:01ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8412290" lat="46.9826920"/>
+  <node id="-267" timestamp="2013-07-24T17:02:39ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8410240" lat="46.9827630"/>
+  <node id="-268" timestamp="2013-07-24T17:03:10ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8409470" lat="46.9828650"/>
+  <node id="-269" timestamp="2013-07-24T17:05:45ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8411120" lat="46.9834490"/>
+  <node id="-270" timestamp="2013-07-24T17:06:09ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8412430" lat="46.9834370"/>
+  <node id="-271" timestamp="2013-07-24T17:06:58ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8413110" lat="46.9832550"/>
+  <node id="-272" timestamp="2013-07-24T17:07:39ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8415450" lat="46.9832340"/>
+  <node id="-273" timestamp="2013-07-24T17:09:38ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8416590" lat="46.9836950"/>
+  <node id="-274" timestamp="2013-07-24T17:12:11ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8421330" lat="46.9841810"/>
+  <node id="-275" timestamp="2013-07-24T17:14:56ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8430300" lat="46.9843650"/>
+  <node id="-276" timestamp="2013-07-24T17:15:21ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8431250" lat="46.9843080"/>
+  <node id="-277" timestamp="2013-07-24T17:16:20ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8432040" lat="46.9845120"/>
+  <node id="-278" timestamp="2013-07-24T17:17:00ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8429800" lat="46.9844800"/>
+  <node id="-279" timestamp="2013-07-24T17:17:34ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8429090" lat="46.9845960"/>
+  <node id="-280" timestamp="2013-07-24T17:19:55ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8432020" lat="46.9850940"/>
+  <node id="-281" timestamp="2013-07-24T17:21:27ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8436650" lat="46.9850320"/>
+  <node id="-282" timestamp="2013-07-24T17:22:20ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8438280" lat="46.9848510"/>
+  <node id="-283" timestamp="2013-07-24T17:24:14ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8441590" lat="46.9852310"/>
+  <node id="-284" timestamp="2013-07-24T17:29:31ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8456920" lat="46.9858320"/>
+  <node id="-285" timestamp="2013-07-24T17:34:07ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8468850" lat="46.9865150"/>
+  <node id="-286" timestamp="2013-07-24T17:37:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8475770" lat="46.9870710"/>
+  <node id="-287" timestamp="2013-07-24T17:43:25ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8483290" lat="46.9883900"/>
+  <node id="-288" timestamp="2013-07-24T17:45:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8488700" lat="46.9885940"/>
+  <node id="-289" timestamp="2013-07-24T17:51:26ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8509010" lat="46.9888760"/>
+  <node id="-290" timestamp="2013-07-24T17:55:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8520670" lat="46.9892760"/>
+  <node id="-291" timestamp="2013-07-24T17:57:51ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8528860" lat="46.9894420"/>
+  <node id="-292" timestamp="2013-07-24T18:03:59ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8549560" lat="46.9893870"/>
+  <node id="-293" timestamp="2013-07-24T18:06:22ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8555610" lat="46.9896570"/>
+  <node id="-294" timestamp="2013-07-24T18:11:35ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8569980" lat="46.9889530"/>
+  <node id="-295" timestamp="2013-07-24T18:12:05ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8570830" lat="46.9890470"/>
+  <node id="-296" timestamp="2013-07-24T18:12:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8572740" lat="46.9889830"/>
+  <node id="-297" timestamp="2013-07-24T18:13:52ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8576160" lat="46.9891110"/>
+  <node id="-298" timestamp="2013-07-24T18:15:28ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8581470" lat="46.9890820"/>
+  <node id="-299" timestamp="2013-07-24T18:17:02ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8585570" lat="46.9893210"/>
+  <node id="-300" timestamp="2013-07-24T18:20:40ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8591780" lat="46.9900540"/>
+  <node id="-301" timestamp="2013-07-24T18:21:52ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8595370" lat="46.9901650"/>
+  <node id="-302" timestamp="2013-07-24T18:22:33ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8596680" lat="46.9900460"/>
+  <node id="-303" timestamp="2013-07-24T18:27:47ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8610120" lat="46.9908090"/>
+  <node id="-304" timestamp="2013-07-24T18:29:35ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8616110" lat="46.9908640"/>
+  <node id="-305" timestamp="2013-07-24T18:34:00ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8619070" lat="46.9918640"/>
+  <node id="-306" timestamp="2013-07-24T18:35:34ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8622580" lat="46.9921290"/>
+  <node id="-307" timestamp="2013-07-24T18:38:31ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8622170" lat="46.9928000"/>
+  <node id="-308" timestamp="2013-07-24T18:39:36ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8623330" lat="46.9930440"/>
+  <node id="-309" timestamp="2013-07-24T18:43:27ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8631500" lat="46.9937260"/>
+  <node id="-310" timestamp="2013-07-24T18:44:32ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8634330" lat="46.9938810"/>
+  <node id="-311" timestamp="2013-07-24T18:45:40ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8638030" lat="46.9939680"/>
+  <node id="-312" timestamp="2013-07-24T18:51:07ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8651230" lat="46.9948410"/>
+  <node id="-313" timestamp="2013-07-24T18:55:54ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8658180" lat="46.9958160"/>
+  <node id="-314" timestamp="2013-07-24T18:58:27ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8660540" lat="46.9963840"/>
+  <node id="-315" timestamp="2013-07-24T19:04:19ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8672260" lat="46.9974760"/>
+  <node id="-316" timestamp="2013-07-24T19:08:03ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8680760" lat="46.9978300"/>
+  <node id="-317" timestamp="2013-07-24T19:10:48ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8690030" lat="46.9978160"/>
+  <node id="-318" timestamp="2013-07-24T19:14:31ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8701150" lat="46.9974380"/>
+  <node id="-319" timestamp="2013-07-24T19:16:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8707190" lat="46.9974530"/>
+  <node id="-320" timestamp="2013-07-24T19:18:31ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8714070" lat="46.9972570"/>
+  <node id="-321" timestamp="2013-07-24T19:19:12ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8715380" lat="46.9971440"/>
+  <node id="-322" timestamp="2013-07-24T19:20:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8719120" lat="46.9971380"/>
+  <node id="-323" timestamp="2013-07-24T19:21:26ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8722670" lat="46.9970300"/>
+  <node id="-324" timestamp="2013-07-24T19:25:07ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8732550" lat="46.9965260"/>
+  <node id="-325" timestamp="2013-07-24T19:27:35ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8740850" lat="46.9965060"/>
+  <node id="-326" timestamp="2013-07-24T19:32:01ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8753690" lat="46.9959780"/>
+  <node id="-327" timestamp="2013-07-24T19:32:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8755590" lat="46.9960510"/>
+  <node id="-328" timestamp="2013-07-24T19:33:16ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8756090" lat="46.9961720"/>
+  <node id="-329" timestamp="2013-07-24T19:33:29ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8756750" lat="46.9961430"/>
+  <node id="-330" timestamp="2013-07-24T19:33:49ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8757680" lat="46.9961760"/>
+  <node id="-331" timestamp="2013-07-24T19:34:07ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8758340" lat="46.9961350"/>
+  <node id="-332" timestamp="2013-07-24T19:35:00ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8759830" lat="46.9963000"/>
+  <node id="-333" timestamp="2013-07-24T19:35:15ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8760600" lat="46.9962820"/>
+  <node id="-334" timestamp="2013-07-24T19:35:53ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8761750" lat="46.9961660"/>
+  <node id="-335" timestamp="2013-07-24T19:36:36ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8762730" lat="46.9963150"/>
+  <node id="-336" timestamp="2013-07-24T19:37:11ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8764600" lat="46.9963130"/>
+  <node id="-337" timestamp="2013-07-24T19:41:02ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8766240" lat="46.9971830"/>
+  <node id="-338" timestamp="2013-07-24T19:41:37ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8767890" lat="46.9971150"/>
+  <node id="-339" timestamp="2013-07-24T19:42:05ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8767960" lat="46.9972160"/>
+  <node id="-340" timestamp="2013-07-24T19:42:55ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8770670" lat="46.9971750"/>
+  <node id="-341" timestamp="2013-07-24T19:43:49ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8772970" lat="46.9973080"/>
+  <node id="-342" timestamp="2013-07-24T19:48:16ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8788020" lat="46.9972540"/>
+  <node id="-343" timestamp="2013-07-24T19:51:14ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8796140" lat="46.9968440"/>
+  <node id="-344" timestamp="2013-07-24T19:54:14ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8805930" lat="46.9970000"/>
+  <node id="-345" timestamp="2013-07-24T19:55:50ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8807010" lat="46.9968540"/>
+  <node id="-346" timestamp="2013-07-24T19:56:13ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8808200" lat="46.9968360"/>
+  <node id="-347" timestamp="2013-07-24T19:56:36ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8809500" lat="46.9968550"/>
+  <node id="-348" timestamp="2013-07-24T19:57:02ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8809300" lat="46.9969440"/>
+  <node id="-349" timestamp="2013-07-24T19:57:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8810090" lat="46.9969230"/>
+  <node id="-350" timestamp="2013-07-24T19:57:37ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8810810" lat="46.9969800"/>
+  <node id="-351" timestamp="2013-07-24T19:57:48ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8810960" lat="46.9969460"/>
+  <node id="-352" timestamp="2013-07-24T19:57:59ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8811480" lat="46.9969710"/>
+  <node id="-353" timestamp="2013-07-24T19:58:31ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8811950" lat="46.9970750"/>
+  <node id="-354" timestamp="2013-07-24T19:59:54ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8815590" lat="46.9972530"/>
+  <node id="-355" timestamp="2013-07-24T20:00:24ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8816900" lat="46.9971670"/>
+  <node id="-356" timestamp="2013-07-24T20:04:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8828850" lat="46.9975490"/>
+  <node id="-357" timestamp="2013-07-24T20:06:26ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8835940" lat="46.9976100"/>
+  <node id="-358" timestamp="2013-07-24T20:07:02ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8837320" lat="46.9977140"/>
+  <node id="-359" timestamp="2013-07-24T20:07:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8839590" lat="46.9976710"/>
+  <node id="-360" timestamp="2013-07-24T20:08:19ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8839990" lat="46.9975360"/>
+  <node id="-361" timestamp="2013-07-24T20:09:08ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8842600" lat="46.9976090"/>
+  <node id="-362" timestamp="2013-07-24T20:10:19ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8846080" lat="46.9974910"/>
+  <node id="-363" timestamp="2013-07-24T20:10:28ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8846120" lat="46.9974550"/>
+  <node id="-364" timestamp="2013-07-24T20:11:34ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8849450" lat="46.9974930"/>
+  <node id="-365" timestamp="2013-07-24T20:12:53ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8847890" lat="46.9972190"/>
+  <node id="-366" timestamp="2013-07-24T20:13:38ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8850320" lat="46.9971790"/>
+  <node id="-367" timestamp="2013-07-24T20:14:45ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8853230" lat="46.9973320"/>
+  <node id="-368" timestamp="2013-07-24T20:15:38ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8855800" lat="46.9972310"/>
+  <node id="-369" timestamp="2013-07-24T20:18:23ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8856530" lat="46.9978570"/>
+  <node id="-370" timestamp="2013-07-24T20:21:45ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8859020" lat="46.9986070"/>
+  <node id="-371" timestamp="2013-07-24T20:27:36ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8868850" lat="46.9997870"/>
+  <node id="-372" timestamp="2013-07-24T20:28:18ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8871190" lat="46.9998000"/>
+  <node id="-373" timestamp="2013-07-24T20:29:20ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8874560" lat="46.9997500"/>
+  <node id="-374" timestamp="2013-07-24T20:29:33ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8874580" lat="46.9997930"/>
+  <node id="-375" timestamp="2013-07-24T20:30:40ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8878280" lat="46.9998240"/>
+  <node id="-376" timestamp="2013-07-24T20:31:38ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8881440" lat="46.9997720"/>
+  <node id="-377" timestamp="2013-07-24T20:33:58ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8888070" lat="47.0000580"/>
+  <node id="-378" timestamp="2013-07-24T20:34:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8889100" lat="47.0002070"/>
+  <node id="-379" timestamp="2013-07-24T20:35:26ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8888840" lat="47.0003740"/>
+  <node id="-380" timestamp="2013-07-24T20:35:49ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8889680" lat="47.0004310"/>
+  <node id="-381" timestamp="2013-07-24T20:36:01ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8889390" lat="47.0004760"/>
+  <node id="-382" timestamp="2013-07-24T20:37:48ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8889940" lat="47.0008710"/>
+  <node id="-383" timestamp="2013-07-24T20:38:26ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8891660" lat="47.0009690"/>
+  <node id="-384" timestamp="2013-07-24T20:39:09ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8892510" lat="47.0011180"/>
+  <node id="-385" timestamp="2013-07-24T20:40:21ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8896350" lat="47.0010420"/>
+  <node id="-386" timestamp="2013-07-24T20:40:45ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8897530" lat="47.0010900"/>
+  <node id="-387" timestamp="2013-07-24T20:44:06ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8901160" lat="47.0018250"/>
+  <node id="-388" timestamp="2013-07-24T20:45:42ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8904980" lat="47.0020870"/>
+  <node id="-389" timestamp="2013-07-24T20:46:23ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8904000" lat="47.0022110"/>
+  <node id="-390" timestamp="2013-07-24T20:47:35ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8904320" lat="47.0025000"/>
+  <node id="-391" timestamp="2013-07-24T20:48:19ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8906520" lat="47.0025430"/>
+  <node id="-392" timestamp="2013-07-24T20:49:21ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8907700" lat="47.0027840"/>
+  <node id="-393" timestamp="2013-07-24T20:50:24ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8910220" lat="47.0029370"/>
+  <node id="-394" timestamp="2013-07-24T20:52:52ZZ" version="0" user="" actor="0" dirtylevel="-1" lon="11.8918490" lat="47.0030500"/>
+  <bound box="46.960244,11.817146,47.003050,11.891849" origin="http://www.openstreetmap.org/api/0.6"/>
+</osm>

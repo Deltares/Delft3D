@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -40,9 +40,12 @@
 !                           lun2 = delpar report file
 
       use rd_token        ! tokenized reading like in DELWAQ
-      use precision_part       ! flexible size definition
+      use precision_part  ! flexible size definition
       use timers          ! performance timers
       use partmem         ! <== this is the data-block that is filled by this routine
+      use m_part_modeltypes       ! part model definitions
+      use m_part_regular
+      use m_partmesh
       use typos           ! derived types
       use alloc_mod       ! to allocate arrays
       use fileinfo        ! file information for all input/output files
@@ -56,12 +59,13 @@
 
 !     kind            function         name           description
 
-      integer  ( ip), intent(in   ) :: lun1          !< unit number input file
-      integer  ( ip), intent(in   ) :: lun2          !< unit number report file
+      integer  ( ip), intent(inout) :: lun1          !< unit number input file
+      integer  ( ip), intent(inout) :: lun2          !< unit number report file
       character(256), intent(in   ) :: lnam1         !< name of the input file
 
 !     Locals
 
+      integer  ( ip)                 lunfil
       integer  ( ip)                 ierr            ! cumulative error variable
       integer  ( ip)                 ierr2           ! local error variable
       integer  ( 4 )                 itype           ! returned type of gettoken
@@ -69,7 +73,9 @@
       character( 32)                 filvers         ! to read the file version number
       character( 32)                 cwork           ! small character workstring
       character(256)                 cbuffer         ! character buffer
+      integer  ( ip)                 ibuffer         ! integer buffer
       integer  ( ip)                 i, k            ! loop variables
+      integer  ( ip)                 ios             ! help variable io-status
       integer  ( ip)                 nodac           ! help variable nodye + nocont
       integer  ( ip)                 ifract          ! help variable oil fractions
       integer  ( ip)                 isb, jsub       ! help variables for substances
@@ -85,18 +91,19 @@
       character(1)                   cchar_save      ! save value from Delwaq
       integer  ( ip)                 lunut_save      ! save value from Delwaq
       integer  ( ip)                 npos_save       ! save value from Delwaq
-      real     ( sp), allocatable :: xpoltmp(:)      ! temp x-coordinates polygon
-      real     ( sp), allocatable :: ypoltmp(:)      ! temp y-coordinates polygon
+      real     ( sp), pointer     :: xpoltmp(:)      ! temp x-coordinates polygon
+      real     ( sp), pointer     :: ypoltmp(:)      ! temp y-coordinates polygon
       integer  ( ip)                 nrowstmp        ! temp length polygon
       integer  ( ip)                 npmargin        ! allocation margin in number of particles
-      
+      integer  ( ip)              :: ipc             ! numerical integration scheme
+
       character( 20)                 cplastic        ! plastic name
-      real     ( sp)                 rdpldensity     ! read plastic density    
+      real     ( sp)                 rdpldensity     ! read plastic density
       real     ( sp)                 rdplshapefactor ! read plastic shapefactor
-      real     ( sp)                 rdplmeansize    ! read plastic meansize   
-      real     ( sp)                 rdplvarsize     ! read plastic stdevsize  
-      real     ( sp)                 rdplmusize      ! read plastic meansize   
-      real     ( sp)                 rdplsigmasize   ! read plastic stdevsize  
+      real     ( sp)                 rdplmeansize    ! read plastic meansize
+      real     ( sp)                 rdplvarsize     ! read plastic stdevsize
+      real     ( sp)                 rdplmusize      ! read plastic meansize
+      real     ( sp)                 rdplsigmasize   ! read plastic stdevsize
       real     ( sp)                 rdplfragrate    ! read plastic fragmentation rate
       integer  ( ip)                 plmissing
 
@@ -117,6 +124,7 @@
          i = 1
       else                              ! add delpar to the delwaq read-stack
          do i = 1 , lstack              ! at the first free entry
+            if ( ilun(i) .ne. 0 .and. lch (i) .eq. lnam1) exit
             if ( ilun(i) .ne. 0 ) cycle
             ilun(i) =  900 + i
             lch (i) =  lnam1
@@ -132,8 +140,12 @@
       push    = .false.
       npos    = 200
       iposr   =   0
-      close ( lun1 )
-      open  ( ilun(i), file=lch(i) )
+      open  ( newunit=ilun(i), file=lch(i), iostat=ios) ! File might already be open
+      if (ios.ne.0 .and. ios.ne.5004) then
+         write ( lun2, * ) ' Error opening PART input file'
+         call stop_exit(1)
+      endif
+      rewind (ilun(i))                          ! Be sure to rewind!
       write ( lun2, * )
 
 !       check the file version
@@ -141,9 +153,6 @@
       if ( gettoken( filvers, ierr2 ) .ne. 0 ) goto 4001
       if ( filvers(1:19) .eq. 'delpar_version_3.60' ) filvers(1:19) = 'v3.60.00'
       if ( filvers(2:19) .lt. '3.66.00') then
-         write(*   ,'(2x,a  )') ' Obsolete input file '
-         write(*   ,'(2x,a,a)') ' Version found             : ',filvers(1:19)
-         write(*   ,'(2x,a,a)') ' Lowest version requested  : ','V3.66.00'
          write(lun2,'(2x,a  )') ' Obsolete input file '
          write(lun2,'(2x,a  )') ' Version found             : ',filvers(1:19)
          write(lun2,'(2x,a  )') ' Lowest version requested  : ','V3.66.00'
@@ -159,7 +168,7 @@
       write ( lun2, 2000 ) title(1)
       write ( *   , 2000 ) title(1)
 
-!     read the name of the hyd file for ui delft3d
+!     read the name of the hyd file for ui delft3d (ignored here for now)
 
       if ( gettoken( cbuffer, ierr2 ) .ne. 0 ) goto 4003
       write ( lun2, 1997 ) cbuffer
@@ -173,10 +182,11 @@
 !                    4 - oil model
 !                    5 - (obsolete option)
 !                    6 - Probabilistic density driven settling model
+!                    7 - ABM model
 
       if ( gettoken( modtyp , ierr2 ) .ne. 0 ) goto 11
       if ( gettoken( notrak , ierr2 ) .ne. 0 ) goto 11
-      if ( gettoken( idummy , ierr2 ) .ne. 0 ) goto 11
+      if ( gettoken( idummy, ierr2 ) .ne. 0 ) goto 11
       if ( gettoken( ioption, ierr2 ) .ne. 0 ) goto 11
       if ( ioption .eq. 0 ) then
          lsettl = .false.
@@ -192,11 +202,17 @@
 
       write ( *, * ) ' Number of layers            : ', nolayp
       if ( notrak .eq. 0 ) then
-         write ( lun2, '(a)' ) '  Particle tracks not written to tracking file'
+         write ( lun2, '(/a)' ) '  Particle tracks not written to tracking file'
+      elseif ( notrak .eq. 1 ) then
+        write ( lun2, '(a)' ) '    Particle tracks written to tracking file'
+!         write ( lun2, '(/a)' ) '  Particle tracks written to tracking file every calculation time step'
+      elseif ( notrak .gt. 1 ) then
+         write ( lun2, '(/a,i0,a)' ) '  Particle tracks written to tracking file at ', notrak, ' times the calculation time step'
       else
-         write ( lun2, '(a)' ) '  Particle tracks written to tracking file'
+         write ( lun2, '(/a)' ) '  Error 1002. Particle tracks interval multiplier is negative!'
+         ierr = ierr + 1
       endif
-      oil = modtyp .eq. 4
+      oil = modtyp .eq. model_oil
 
 !     read numerical parameters
 
@@ -209,12 +225,6 @@
       write ( lun2, * ) ' Time step for hydrodynamics : ', ihdel, ' seconds '
       write ( lun2, * ) ' Time step for part. tracking: ', idelt, ' seconds '
       write ( lun2, * ) '   '
-      write ( *   , * ) '   '
-      write ( *   , * ) ' Numerical scheme            : ', ipc
-      write ( *   , * ) '   '
-      write ( *   , * ) ' Time step for hydrodynamics : ', ihdel, ' seconds '
-      write ( *   , * ) ' Time step for part. tracking: ', idelt, ' seconds '
-      write ( *   , * ) '   '
       if ( ihdel .lt. idelt ) then
          write ( lun2, 2023 )
          call stop_exit(1)
@@ -225,12 +235,10 @@
          write ( *   , 2022 )
          call stop_exit(1)
       endif
-      if ( ipc .le. 1 ) then
-         lcorr = .false.
-         write ( lun2, * ) ' Predictor corrector scheme is not used '
-      else
-         lcorr = .true.
-         write ( lun2, * ) ' Predictor corrector scheme is used '
+      if ( ipc /= 1 ) then
+         write ( lun2, '(/A,I3)')  'Error: Numerical scheme must be 1. &
+                        Current value given is: ', ipc
+         call stop_exit(1)
       endif
 
 !    read vertical diffusivity parameters
@@ -288,14 +296,13 @@
             endif
          case default
             write ( lun2, * ) ' Error: this vert.diff. option is not valid'
-            write ( *   , * ) ' Error: this vert.diff. option is not valid'
             call stop_exit(1)
       end select
       write ( lun2, * ) '   '
 
 !     layer thickness 3d models
 
-      if ( nolayp .gt. 1 .and. modtyp .ne. 2 ) then
+      if ( nolayp .gt. 1 .and. modtyp .ne. model_two_layer_temp ) then
          write ( lun2, 3115 )
          write ( lun2, 3120 ) ( i, tcktot(i), i = 1, nolayp )
       else
@@ -309,10 +316,9 @@
       if ( oil ) then
          if ( gettoken( nfract , ierr2 ) .ne. 0 ) goto 4009
       endif
-      write ( *   , *       ) ' Modelled substances : '
       write ( lun2, '(//a)' ) '  Modelled substances : '
       nosubc = nosubs
-      if ( modtyp .eq. 2 ) then
+      if ( modtyp .eq. model_two_layer_temp ) then
          nolayp = 2
          nosubc = nolayp*nosubs
       endif
@@ -321,11 +327,10 @@
       call alloc ( "mapsub", mapsub, nosub_max )
       do i = 1, nosubs
          if ( gettoken( substi(i), ierr2 ) .ne. 0 ) goto 4009
-         write ( *   , '(12x,a20)' ) substi(i)
          write ( lun2, '(12x,a20)' ) substi(i)
       enddo
 
-!     modtyp = 1 or 2 refers to 2d hydrodynamics
+!     modtyp = 1 (model_tracers) or 2 (model_two_layer_temp) refers to 2d hydrodynamics
 
       mapsub = 0
       select case ( modtyp )
@@ -339,8 +344,6 @@
          case ( 3 )
             write(lun2,*) ' You are trying to use the red tide model, but the '
             write(lun2,*) ' red tide model is obsolete. Please contact Deltares. '
-            write(*,*) ' You are trying to use the red tide model, but the '
-            write(*,*) ' red tide model is obsolete. Please contact Deltares. '
             call stop_exit(1)
          case ( 4 )
             write(*,'(//)')
@@ -350,13 +353,10 @@
             if ( nosubs .lt. 3 ) then
                write ( lun2, * ) ' For oil module at least 3 substances '
                write ( lun2, * ) '(floating, dispersed and sticking oil)'
-               write ( *   , * ) ' For oil module at least 3 substances '
-               write ( *   , * ) '(floating, dispersed and sticking oil)'
                ierr = ierr + 1
             endif
             if ( nfract*3 .gt. nosubs ) then
                write ( lun2, * ) ' For oil module at least 3 subst per fraction'
-               write ( *   , * ) ' For oil module at least 3 subst per fraction'
                ierr = ierr + 1
             endif
             do i = 1, nfract*3
@@ -372,6 +372,9 @@
             mapsub(1) = 1            !.. substance number 1 must be temperature
          case ( 6 )
             write ( *, * ) ' You are using the probabilistic density driven settling model '
+         case ( 7 )
+            write ( *, * ) ' You are using the general Agent Based Model (ABM)'
+            pblay  = 0.0
          case default
             write(lun2 , 2015) modtyp
             nolayp = 1
@@ -405,7 +408,6 @@
                   exit
                endif
                if ( jsub .eq. nosubs ) then
-                  write ( *   , * ) ' Error: sticking substance has no source ', substi(is)
                   write ( lun2, * ) ' Error: sticking substance has no source ', substi(is)
                   call stop_exit(1)
                endif
@@ -455,7 +457,7 @@
                                                       !     this overwrites something if nolayp > 1
       do ilay = 1, nolayp                             !     tsja
          do isb = 1, nosubs+1
-            if ( modtyp .eq. 2 ) then
+            if ( modtyp .eq. model_two_layer_temp ) then
                i = (isb-1)*nolayp + ilay
                subst2(i   ) = substi(isb)
             elseif ( ilay .eq. 1 ) then
@@ -479,7 +481,10 @@
             write ( lun2, 2011 ) pblay
          case ( 4 )
             write ( lun2, 2002 ) 'Oil model - dispersion and evaporation included'
+         case ( 7 )
+            write ( lun2, 2001) 'General Agent Based Model (ABM)'
       end select
+
       subst2( nosubs+2 ) = 'nr of particles'
       subst2( nosubs+1 ) = 'localdepth'         !     added for 3d datasets
 
@@ -552,10 +557,15 @@
             iwndtm(i) = id*86400 + ih*3600 + im*60 + is
          enddo
       endif
-      call alloc ( "wvelo", wvelo, mnmax2 )
-      call alloc ( "wdir" , wdir , mnmax2 )
-      write ( lun2, '(//)' )
-
+      if (fmmodel) then
+          call alloc ( "wvelo", wvelo, numcells )
+          call alloc ( "wdir" , wdir , numcells )
+          write ( lun2, '(//)' )
+      else
+          call alloc ( "wvelo", wvelo, mnmax2 )
+          call alloc ( "wdir" , wdir , mnmax2 )
+          write ( lun2, '(//)' )
+      endif
 !       read number of constants that will follow
 
       if ( gettoken( noconsp, ierr2 ) .ne. 0 ) goto 4019
@@ -650,9 +660,20 @@
 ! read special features
 ! add defaults when special features are not used first
       vertical_bounce = .true.
+      apply_wind_drag = .false.
+      max_wind_drag_depth = 0.0
       write_restart_file = .false.
       max_restart_age = -1
       pldebug = .false.
+      screens = .false.
+      nrowsscreens = 0
+      partinifile = ' '
+      partrelfile = ' '
+      abmmodel = .false.
+      abmmodelname = ""
+      abmstagedev = ""
+      chronrev = .false.
+      selstage = 0.0
 
 
       if ( gettoken( cbuffer, id, itype, ierr2 ) .ne. 0 ) then
@@ -669,25 +690,25 @@
                select case (trim(cbuffer))
                case ('no_vertical_bounce')
                   write ( lun2, '(/a)' ) '  Found keyword "no_vertical_bounce": vertical bouncing is switched off.'
-                  write ( *   , '(/a)' ) ' Found keyword "no_vertical_bounce": vertical bouncing is switched off.'
                   vertical_bounce = .false.
+               case ('max_wind_drag_depth')
+                  write ( lun2, '(/a)' ) ' Found keyword "max_wind_drag_depth".'
+                  apply_wind_drag = .true.
+                  if (gettoken (max_wind_drag_depth, ierr2) .ne. 0 ) goto 9005
+                  if (max_wind_drag_depth.lt.0.0) goto 9005
+                  write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
                case ('write_restart_file')
                   write ( lun2, '(/a)' ) '  Found keyword "write_restart_file".'
-                  write ( *   , '(/a)' ) ' Found keyword "write_restart_file".'
                   write ( lun2, '(/a,a)' ) '  At the end of a simulation, delpar will write ', &
-                                         'a file containing data for all active particles.'
-                  write ( *   , '(/a,a)' ) ' At the end of a simulation, delpar will write ', &
                                          'a file containing data for all active particles.'
                   write_restart_file = .true.
                case ('max_restart_age')
                   write ( lun2, '(/a)' ) ' Found keyword "max_restart_age".'
-                  write ( *   , '(/a)' ) ' Found keyword "max_restart_age".'
                   if (gettoken (max_restart_age, ierr2) .ne. 0 ) goto 9010
                   if (max_restart_age.eq.0) goto 9011
                   write ( lun2, '(/a,i10)' ) ' Maximum age for particles writen into restart file in seconds: ', max_restart_age
-                  write ( *   , '(/a,i10)' ) ' Maximum age for particles writen into restart file in seconds: ', max_restart_age
                case ('plastics_parameters')
-                  if (modtyp /= 6) goto 9101
+                  if (modtyp /= model_prob_dens_settling) goto 9101
                   write ( *   , 3500 )
                   write ( lun2, 3500 )
                   call alloc ( "plparset", plparset, nosubs )
@@ -759,18 +780,91 @@
                   write (lun2, 3510)
                case ('pldebug')
                   write ( lun2, '(/a)' ) '  Found keyword "pldebug": will write plastics debug info (e.g. sizes).'
-                  write ( *   , '(/a)' ) ' Found keyword "pldebug": will write plastics debug info (e.g. sizes).'
                   pldebug = .true.
+               case ('screens')
+                  write ( lun2, '(/a)' ) '  Found keyword "screens".'
+                  screens = .true.
+                  if ( gettoken( permealeft  , ierr2 ) .ne. 0 ) goto 9201   ! leftside permeability of screeens
+                  if ( gettoken( permearight , ierr2 ) .ne. 0 ) goto 9202   ! rightside permeability of screeens
+                  if ( gettoken( fiscreens   , ierr2 ) .ne. 0 ) goto 9203   ! screens polygon
+
+                  open ( newunit=lunfil, file=fiscreens, status='old', iostat=ierr2 )
+                  if ( ierr2 .ne. 0 ) go to 9204
+                  call getdim_dis ( lunfil, fiscreens, nrowsscreens, lun2 )
+                  close (lunfil)
+                  if ( nrowsscreens .gt. 0) then
+!     allocate memory for the dispersant polygons, and read them into memory
+                     call alloc ( "xpoltmp", xpolscreens, nrowsscreens )
+                     call alloc ( "ypoltmp", ypolscreens, nrowsscreens )
+                     xpolscreens = 999.999
+                     ypolscreens = 999.999
+                     call polpart(fiscreens, nrowsscreens, xpolscreens, ypolscreens, nrowstmp, lun2)
+                  else
+                     write ( lun2, '(/a)' ) '  Screens polygon doesn''t contain any coordinates'
+                     screens = .false.
+                  endif
+               case ('partinifile')
+                  write ( lun2, '(/a)' ) '  Found keyword "partinifile".'
+                  if ( gettoken( partinifile  , ierr2 ) .ne. 0 ) goto 9301   ! part FM ini file
+               case ('partrelfile')
+                  write ( lun2, '(/a)' ) '  Found keyword "partrelfile".'
+                  if ( gettoken( partrelfile  , ierr2 ) .ne. 0 ) goto 9302   ! part FM ini file
+               case ('abmmodel')
+                  if (modtyp /= model_abm) goto 9401
+                  write ( lun2, '(/a)' ) '  Found keyword "abmmodel".'
+                  abmmodel = .true.
+                  if ( gettoken( abmmodelname     , ierr2 ) .ne. 0 ) goto 9402   ! ABM model name
+                  write ( lun2, '(/a)' ) '  Found ABM model name : ', abmmodelname
+                  select case (trim(abmmodelname)) ! Set ABM model
+                    case ("test")
+                        abmmt = 0        ! model type none
+                    case ("european_eel")
+                        abmmt = 1        ! model type European eel
+                    case ("atlantic_salmon")
+                        abmmt = 2        ! model type Atlantic salmon
+                    case ("mauve_stinger")
+                        abmmt = 3        ! model type Mauve stinger
+                    case ("horseshoecrab")
+                        abmmt = 4        ! model type Horseshoe crab
+                    case ("mangrove_seeds")
+                        abmmt = 5        ! model type Mangrove propagules
+                    case ("asian_carp_eggs")
+                        abmmt = 6        ! model type Asian Carp Eggs
+                    case default         !ABM model not filled
+                        write(lun2, '(/a)') ' Unrecognised ABM model name : ', trim(abmmodelname)
+                        goto 9403
+                  end select
+                  if ( gettoken( abmstagedev , ierr2 ) .ne. 0 ) goto 9404   ! ABM stage development
+                    write ( lun2, '(/a)' ) ' Found ABM stage development name : ', abmstagedev
+                  ! Set stage development
+                  select case (trim(abmstagedev))
+                    case ("dev_fixed")
+                        abmsd = 0 !dev_fixed
+                    case ("dev_linear")
+                        abmsd = 1 !dev_linear
+                    case ("dev_interpolate")
+                        abmsd = 2 !dev_intpltd
+                    case ("dev_asian_carp_eggs")
+                        abmsd = 3 !dev_asian_carp_eggs
+                    case default        !ABM model not filled
+                        write(lun2, '(/a)') ' Unrecognised ABM model stage development : ', trim(abmstagedev)
+                        goto 9405
+                   end select
+               case ('revchron')
+                  if (modtyp /= model_abm) goto 9406
+                  write ( lun2, '(/a)' ) '  Found keyword "revchron".'
+                  chronrev = .true.
+                  if ( gettoken( selstage     , ierr2 ) .ne. 0 ) goto 9407   ! Give stage for release
+                  write ( lun2, '(/a,f10.3)' ) '  Found stage for reversed release : ', selstage
                case default
                   write ( lun2, '(/a,a)' ) '  Unrecognised keyword: ', trim(cbuffer)
-                  write ( *   , '(/a,a)' ) ' Unrecognised keyword: ', trim(cbuffer)
                   goto 9000
                end select
                if ( gettoken( cbuffer, id, itype, ierr2 ) .ne. 0 ) goto 4021
             end do
          end if
       end if
-      
+
 !     read the simulation timers
 !     simulation start time (the value of id is read above in the special features section)
 
@@ -821,12 +915,21 @@
            is = mod(iwndtm(i),    60)
            write ( lun2, 2074 ) id, ih, im, is, wveloa(i), wdira(i)
            if ( i .eq. 1 ) then
-              if ( iwndtm(i) .ne. itstrtp ) write(lun2 , 2072)
+              if ( iwndtm(i) .gt. itstrtp ) then
+                 ierr = ierr + 1
+                 write(lun2 , 2072)
+              endif
            else
-              if ( iwndtm(i) .le. iwndtm(i-1) ) write(lun2 , 2073)
+              if ( iwndtm(i) .le. iwndtm(i-1) ) then
+                 ierr = ierr + 1
+                 write(lun2 , 2073)
+              endif
            endif
          enddo
-         if ( iwndtm(nowind) .ne. itstopp ) write(lun2 , 2075)
+         if ( iwndtm(nowind) .lt. itstopp ) then
+            ierr = ierr + 1
+            write(lun2 , 2075)
+         endif
       endif
 
 !     map file start time
@@ -865,7 +968,6 @@
       icwste = id*86400 + ih*3600 + im*60 + is
       if ( icwste .le.  0 ) then
          write(lun2, *) ' Error: time step mapfile must be positive '
-         write(*   , *) ' Error: time step mapfile must be positive '
          ierr = ierr + 1
       endif
 
@@ -905,7 +1007,6 @@
       ihstepp = id*86400 + ih*3600 + im*60 + is
       if ( ihstepp  .le.  0 ) then
          write(lun2, *) ' Error: time step hisfile must be positive '
-         write(*   , *) ' Error: time step hisfile must be positive '
          ierr = ierr + 1
       endif
 
@@ -922,7 +1023,8 @@
 
 !     write t0-string to title string
 
-      write ( title(4), '(a3,1x,i4.4,5(1x,i2.2) )' ) 'T0:',iyear,imonth,id,ih,im,is
+      write( title(4), '(a4,i4.4,a,i2.2,a,i2.2,a,i2.2,a,i2.2,a,i2.2,a)' ) &
+            'T0: ', iyear, '.', imonth,  '.', id,    ' ', ih, ':', im, ':', is, '  (scu=       1s)'
 
       if (oil) then
 
@@ -940,7 +1042,6 @@
 !     oil_opt = 0xx : no boom introductions
 !             = 1xx : boom introductions with direct chance per day to pass the oilboom
 !
-         nrowsmax  = 0
          ndisapp = 0
          nboomint = 0
          if ( gettoken( oil_opt, ierr2 ) .ne. 0 ) goto 6001
@@ -950,27 +1051,27 @@
 
          if (ini_opt .eq. 1 ) then
             if ( gettoken( ini_file, ierr2 ) .ne. 0 ) goto 6012
-            open ( 50, file=ini_file, status='old', iostat=ierr2 )
+            open ( newunit=lunfil, file=ini_file, status='old', iostat=ierr2 )
             if ( ierr2 .ne. 0 ) go to 1710
 
 !           get maximum no. of initial particles (npmax) and
 !           maximum no. of rows for polygones (nrowsmax)
             write ( lun2, * ) ' Reading number of initial particles from polygon file:', trim(ini_file)
 
-            call getdim_ini ( 50, ini_file, npmax, npolmax, nrowsmax, lun2 )
-            close ( 50 )
+            call getdim_ini ( lunfil, ini_file, npmax, npolmax, nrowsmax, lun2 )
+            close ( lunfil )
          endif
 !        ini_opt = 2 : ascii text file from rasterdata
-         if (ini_opt .eq. 2 ) then                              
+         if (ini_opt .eq. 2 ) then
             if ( gettoken( ini_file, ierr2 ) .ne. 0 ) goto 6012
-            open ( 50, file=ini_file, status='old', iostat=ierr2 )
+            open ( newunit=lunfil, file=ini_file, status='old', iostat=ierr2 )
             if ( ierr2 .ne. 0 ) go to 1710
 
 !           get maximum no. of initial particles (npmax) and
 !           maximum no. of rows for coordinates (nrowsmax)
             write ( lun2, * ) ' Reading number of initial particles from ascii file:', trim(ini_file)
-            call getdim_asc ( 50, ini_file, npmax, nrowsmax, lun2 )
-            close ( 50 )
+            call getdim_asc ( lunfil, ini_file, npmax, nrowsmax, lun2 )
+            close ( lunfil )
          endif
 
 
@@ -1003,10 +1104,10 @@
 !     read dispersant polygon file
                   if ( gettoken( fidisp(i), ierr2 ) .ne. 0 ) goto 6010
 !     determine maximum no. of rows for polygons (nrowsmax)
-                  open ( 50, file=fidisp(i), status='old', iostat=ierr2 )
+                  open ( newunit=lunfil, file=fidisp(i), status='old', iostat=ierr2 )
                   if ( ierr2 .ne. 0 ) go to 1700
-                  call getdim_dis ( 50, fidisp(i), nrowsmax, lun2 )
-                  close (50)
+                  call getdim_dis ( lunfil, fidisp(i), nrowsmax, lun2 )
+                  close (lunfil)
 
 !     check for ascending order of events, and one per timestep
                   idisset (i) = id*86400 + ih*3600 + im*60 + is
@@ -1060,10 +1161,10 @@
                   end do
                   if ( gettoken( fiboom(i), ierr2 ) .ne. 0 ) goto 6010
 !     determine maximum no. of rows for polygones (nrowsmax)
-                  open ( 50, file=fiboom(i), status='old', iostat=ierr2 )
+                  open ( newunit=lunfil, file=fiboom(i), status='old', iostat=ierr2 )
                   if ( ierr2 .ne. 0 ) go to 1701
-                  call getdim_dis ( 50, fiboom(i), nrowsmax, lun2 )
-                  close (50)
+                  call getdim_dis ( lunfil, fiboom(i), nrowsmax, lun2 )
+                  close (lunfil)
 
 !     check for ascending order of events, and one per timestep
                   iboomset (i) = id*86400 + ih*3600 + im*60 + is
@@ -1091,9 +1192,10 @@
             endif
          endif
 
-         allocate ( xpoltmp(nrowsmax) )
-         allocate ( ypoltmp(nrowsmax) )
-         if ( ndisapp .gt. 0 ) then
+         call alloc ( "xpoltmp", xpoltmp, max( nrowsmax, 1 ) )
+         call alloc ( "ypoltmp", ypoltmp, max( nrowsmax, 1 ) )
+
+         if ( ndisapp .gt. 0 .and. nrowsmax .gt. 0) then
 !     allocate memory for the dispersant polygons, and read them into memory
             call alloc ( "xpoldis", xpoldis, nrowsmax, ndisapp )
             call alloc ( "ypoldis", ypoldis, nrowsmax, ndisapp )
@@ -1136,12 +1238,11 @@
       if ( itype .eq. 1) then
          idp_file = cbuffer
          if ( idp_file .ne. ' ' ) then
-            write ( *, * ) ' Reading number of initial particles from file:', idp_file(1:len_trim(idp_file))
             write ( lun2, * ) ' Reading number of initial particles from file:', idp_file(1:len_trim(idp_file))
-            call openfl ( 50, idp_file, ftype(2), 0 )
+            call openfl ( lunfil, idp_file, 0 )
 !           get maximum no. of initial particles (nrespart), don't combine ini_oil with this!
-            read ( 50 ) idummy, nopart_res, idummy
-            close ( 50 )
+            read ( lunfil ) idummy, nopart_res, idummy
+            close ( lunfil )
             npmax = nopart_res
          endif
          if ( gettoken( nosta, ierr2 ) .ne. 0 ) goto 4031
@@ -1203,9 +1304,9 @@
       if ( gettoken( i, xw1f, itype, ierr2 ) .ne. 0 ) goto 4038
       if ( itype .eq. 2 ) then
          npgrid = i
-         write ( lun2, '(A,I4)' ) 'Number of plot grids: ',npgrid
+         write ( lun2, '(A,I4)' ) '  Number of plot grids: ',npgrid
       endif
-      if ( npgrid .ne. 0 ) allocate ( pg(npgrid) )
+      allocate ( pg(max(1,npgrid)) )
       do i = 1, npgrid
          if ( npgrid .gt. 1 ) write ( lun2, '(/A,i4)' ) 'Information for plotgrid: ', i
          if ( itype .eq. 2 ) then
@@ -1283,6 +1384,7 @@
       call alloc ( "zwaste ", zwaste , i )
       call alloc ( "ioptrad", ioptrad, i )
       call alloc ( "radius ", radius , i )
+      call alloc ( "fidye  ", fidye  , i )
       call alloc ( "wparm  ", wparm  , i )
       call alloc ( "ndprt  ", ndprt  , i )
       call alloc ( "amassd ", amassd , nosubs, i )
@@ -1334,7 +1436,20 @@
 
          if ( gettoken( ioptrad(i), ierr2 ) .ne. 0 ) goto 4043
          if ( ioptrad(i) .eq. 0 ) then
-            if ( gettoken( radius(i), ierr2 ) .ne. 0 ) goto 4043
+            ! read all tokens
+            if ( gettoken( fidye(i), ibuffer, radius(i), itype, ierr2 ) .ne. 0 ) goto 4043
+            if (itype.eq.2) then
+               radius(i) = real(ibuffer)
+               fidye(i) = ' '
+            elseif (itype.eq.3) then
+               fidye(i) = ' '
+            else
+               radius(i) = -999.0
+               open ( newunit=lunfil, file=fidye(i), status='old', iostat=ierr2 )
+               if ( ierr2 .ne. 0 ) go to 1702
+               call getdim_dis ( lunfil, fidye(i), nrowsmax, lun2 )
+               close (lunfil)
+            endif
          else
             radius(i) = 0
          endif
@@ -1346,10 +1461,13 @@
 
          if ( nolayp .eq. 1 ) then
             write ( lun2, 2280 ) xwaste(i), ywaste(i), zwaste(i)
-            write ( lun2, 2282 ) radius(i), wparm(i)
          else
             write ( lun2, 2281 ) xwaste(i), ywaste(i), kwaste(i)
+         endif
+         if ( radius(i) .ge. 0.0 ) then
             write ( lun2, 2282 ) radius(i), wparm(i)
+         else
+            write ( lun2, 2283 ) trim(fidye(i)), wparm(i)
          endif
 
 !       mass of the instantaneous release
@@ -1384,6 +1502,10 @@
       call alloc ( "zwaste", zwaste, i )
       call alloc ( "kwaste", kwaste, i )
       call alloc ( "radius", radius, i )
+      call alloc ( "fiwaste",fiwaste, i )
+      do k = 1, nodye
+         fiwaste(k) = fidye(k)
+      enddo
       call alloc ( "wparm ", wparm , i )
       call alloc ( "ndprt ", ndprt , i )
       if ( nocont .gt. 0 ) then
@@ -1421,16 +1543,33 @@
 
 !       radius and scale (% of particles)
 
-         if ( gettoken( radius(i+nodye), ierr2 ) .ne. 0 ) goto 4043
+         ! read all tokens because it might be the name of a polygon
+         if ( gettoken( fiwaste(i+nodye), ibuffer, radius(i+nodye), itype, ierr2 ) .ne. 0 ) goto 4043
+         if (itype.eq.2) then
+            radius(i+nodye) = real(ibuffer)
+            fiwaste(i+nodye) = ' '
+         elseif (itype.eq.3) then
+            fiwaste(i+nodye) = ' '
+         else
+            radius(i+nodye) = -999.0
+            open ( newunit=lunfil, file=fiwaste(i+nodye), status='old', iostat=ierr2 )
+            if ( ierr2 .ne. 0 ) go to 1703
+            call getdim_dis ( lunfil, fiwaste(i+nodye), nrowsmax, lun2 )
+            close (lunfil)
+         endif
+
          if ( gettoken( wparm (i+nodye), ierr2 ) .ne. 0 ) goto 4043
          ndprt(i+nodye) = int(wparm(i+nodye)*nopart/100.0 + 0.5)
 
          if ( nolayp .eq. 1 ) then
             write ( lun2, 2280 ) xwaste(i+nodye), ywaste(i+nodye), zwaste(i+nodye)
-            write ( lun2, 2282 ) radius(i+nodye), wparm (i+nodye)
          else
             write ( lun2, 2281 ) xwaste(i+nodye), ywaste(i+nodye), kwaste(i+nodye)
+         endif
+         if ( radius(i+nodye) .ge. 0.0 ) then
             write ( lun2, 2282 ) radius(i+nodye), wparm (i+nodye)
+         else
+            write ( lun2, 2283 ) trim(fiwaste(i+nodye)), wparm(i+nodye)
          endif
 
 !       scale factors (ascal) for each load
@@ -1507,6 +1646,28 @@
    20 continue
       if ( nocont .gt. 0 ) deallocate(ascal)
 
+! read actual waste polygons
+      if (nodac .gt. 0 .and. nrowsmax .gt. 0) then
+         call alloc ( "xpoltmp", xpoltmp, nrowsmax )
+         call alloc ( "ypoltmp", ypoltmp, nrowsmax )
+!        allocate memory for the waste polygons, and read them into memory
+         call alloc ( "xpolwaste", xpolwaste, nrowsmax, nodac )
+         call alloc ( "ypolwaste", ypolwaste, nrowsmax, nodac )
+         call alloc ( "nrowswaste", nrowswaste, nodac )
+         xpolwaste = 999.999
+         ypolwaste = 999.999
+         nrowswaste = 0
+
+         do i = 1 , nodac
+            if (radius(i).eq.-999.0) then
+               call polpart(fiwaste(i), nrowsmax, xpoltmp, ypoltmp, nrowstmp, lun2)
+               xpolwaste(1:nrowstmp, i) = xpoltmp(1:nrowstmp)
+               ypolwaste(1:nrowstmp, i) = ypoltmp(1:nrowstmp)
+               nrowswaste(i) = nrowstmp
+            endif
+         enddo
+      endif
+
 !       user defined releases
 
       if ( gettoken( noudef, ierr2 ) .ne. 0 ) goto 4053
@@ -1577,7 +1738,7 @@
             iftime(i) = id*86400 + ih*3600 + im*60 + is
          else
             lunin = 51
-            call openfl ( lunin, finud(i), ftype(2), 0  )
+            call openfl ( lunin, finud(i), 0  )
             read  ( lunin, err=5001 )
             read  ( lunin, err=5002 ) iftime(i)
             write ( lun2 , 2389 ) iftime(i)
@@ -1713,7 +1874,7 @@
 
 !     close input file
 
-      close ( lun1 )
+      close ( ilun(1) )
 
 !     check on the total number of particles:
 
@@ -1734,15 +1895,24 @@
       do i = 1, nodye + nocont + noudef
          npmax = npmax + ndprt(i)
       enddo
-      if ( npmax .ne. nopart ) then
-         npmax = max(npmax,nopart)           ! the whole computation is a bit strange
-         write ( lun2, 3100 ) npmax          ! nopart variable is only used for
-      endif                                  ! dimensioning and is set to 0 in delpar
+
+      ! 'npmax' is the estimate (maximum) number of particles used in the calculation based on the wastes.
+      ! This is used for the allocation of the arrays instead of the user provided 'nopart' read from the
+      ! inp-file, because the sum of particles used for the wastes could be more (or less) than 100%.
+      ! 'nopart' is used to scale the total number of particles in the calculation, only relative numbers are
+      ! given for the wastes.
+      write ( lun2, 3100 ) npmax
+
+      ! Add 1% + 1 uncertainty margin here for the actual allocation because round offs might add some extra particles
       npmargin = npmax / 100
-      npmax = npmax + npmargin + 1           ! we add a 1% + 1 uncertainty margin here...
+      npmax = npmax + npmargin + 1
+      write ( lun2, 3110 ) npmax
 
 !     further allocations
 
+      if (zmodel) then
+         call alloc ( "locdepp", locdepp, mnmax2   , noslay )
+      endif
       call alloc ( "locdep", locdep, mnmax2   , noslay )
       call alloc ( "adepth", adepth, nosubs   , noslay )
       call alloc ( "apeak ", apeak , nosubs   , noslay )
@@ -1774,7 +1944,6 @@
             call alloc ( cwork, pg(i)%imask ,                    pg(i)%nmap, pg(i)%mmap )
          enddo
       endif
-      if ( idummy .gt. 0 ) call alloc ( "subsud", subsud, idummy*2 )
       call alloc ( "dfact ", dfact , nosubs       )
       call alloc ( "fstick", fstick, nosubs       )
       call alloc ( "isfile", isfile, nosub_max    )
@@ -1797,12 +1966,11 @@
       call alloc ( "imap  ", imap  , npmax       , 3      )
       call alloc ( "kpart ", kpart , npmax        )
       call alloc ( "mpart0", mpart0, npmax        )
-!      call alloc ( "vrtdsp", vrtdsp, 7           , npmax  )  ! only used for debugging
       call alloc ( "npart0", npart0, npmax        )
       call alloc ( "npart ", npart , npmax        )
       call alloc ( "rbuff ", rbuff , 3           , npmax  )
       call alloc ( "t0buoy", t0buoy, npmax        )
-      call alloc ( "track ", track , 8           , npmax  )
+      call alloc ( "track ", track , 10          , npmax  )
       call alloc ( "mpart ", mpart , npmax        )
       call alloc ( "wsettl", wsettl, npmax        )
       call alloc ( "xa0   ", xa0   , npmax        )
@@ -1835,6 +2003,9 @@
       call alloc ( "elt_dims ", elt_dims , 6, 8+nosub_max*noslay )
       bufsize = max(noslay*pg(1)%nmap*pg(1)%mmap,noslay*mnmax2,nosta)
       call alloc ( "rbuffr   ", rbuffr   , bufsize )
+      call alloc ( "v_swim", v_swim, npmax        )
+      call alloc ( "d_swim", d_swim, npmax        )
+      call alloc ( "ebb_flow", d_swim, npmax        )
 
       npmax = npmax - npmargin ! Deduct margin again
 
@@ -1855,16 +2026,15 @@
       t0buoy = 0.0
       apeak  = 0.0
       wsettl = 0.0
+      v_swim = 0.0
+      d_swim = 0.0
 
 !     stop when errors occured during reading
 
       if ( ierr .ne. 0 ) then
-         write (  *  , '(A,i3)' ) ' Number of errors in processing input file:', ierr
          write ( lun2, '(A,i3)' ) ' Number of errors in processing input file:', ierr
          call stop_exit(1)
       else
-         write (  *  , '(A   )' ) ' '
-         write (  *  , '(A   )' ) '  Input file succesfully read.'
          write ( lun2, '(A   )' ) ' '
          write ( lun2, '(A   )' ) '  Input file succesfully read.'
          write ( lun2, '(A   )' ) ' '
@@ -1935,19 +2105,21 @@
  2259 format(8x,'Station name :',a20  )
  2260 format(12x,'Release time            =',   &
                          i4,'D-',i2.2,'H-',i2.2,'M-',i2.2,'S.')
- 2280 format(12x,'Coordinates             = (',f11.2,',',f11.2,')'/  &
-             12x,'Depth(%) under surface  =  ',f11.0)
- 2281 format(12x,'Coordinates             = (',f11.2,',',f11.2,')'/  &
+ 2280 format(12x,'Coordinates             = (',f13.4,',',f13.4,')'/  &
+             12x,'Depth(%) under surface  =  ',f12.1)
+ 2281 format(12x,'Coordinates             = (',f13.4,',',f13.4,')'/  &
              12x,'Layer                   =  ',i11  )
- 2282 format(12x,'Initial radius          =   ',f11.0, ' m.',/,      &
-             12x,'Percentage of particles =   ',f11.0, ' %')
+ 2282 format(12x,'Initial radius          =   ',f13.2, ' m.',/,      &
+             12x,'Percentage of particles =   ',f12.1, ' %')
+ 2283 format(12x,'Release in polygon      =   ',A,' (The coordinates above are ignored)'/, &
+             12x,'Percentage of particles =   ',f12.1, ' %')
  2289 format(12x,'Released masses : ')
  2290 format(20x,'  Substance : ',a20,e13.4,'  kg/m3')
  2300 format(/'  Number of continuous release stations:', i2  /       )
  2301 format(/'  Number of user defined releases    :', i2  /         )
  2316 format( '  User defined release: ',i3,' no. of particles: ', i9,/,  &
-              '  Percentage of particles =   ',f11.0, ' %'           ,/,  &
-              '  Scale factor of release =   ',f11.0, '  '             )
+              '  Percentage of particles =   ',f12.1, ' %'           ,/,  &
+              '  Scale factor of release =   ',f12.1, '  '             )
  2317 format( '  Filename ud release : ',  a80,                       /,  &
               '  Option for this file: ',i3,                          /)
  2329 format(/8x,'Station name :',a,' released substances')
@@ -1973,7 +2145,8 @@
              ,'  dd-hh-mm-ss '                                         )
  2379 format( ' ',i4.2,'-',i2.2,'-',i2.2,'-',i2.2,':',2(i4,4x)         )
  2389 format(/'   time on file for mud release = ',i9                   )
- 3100 format(/,'   Number of particles for calculation set to',i11, '.')
+ 3100 format(/,'   The estimated number of particles in the calculation is approximately ',i11, '.')
+ 3110 format(  '   The number of particles used for memory allocation (ca. 1% extra) is  ',i11, '.')
  3115 format(  '  Relative thickness per layer')
  3120 format(  '        layer ',i4,'; relative thickness = ',f12.5    )
  3125 format(/,'  Critical shear stress sedimentation= ',f12.5,' (Pa)',    &
@@ -1997,7 +2170,7 @@
 !     error formats
 !
  2015 format('  Error 1001. Model-type-choice', i5, '; out of range!'  )
- 2022 format('  Error 1101. Time step is not a diviior of time step ',  &
+ 2022 format('  Error 1101. Time step is not a divider of time step ',  &
              '  in hydrodynamic database: interpol. errors will occur' )
  2023 format('  Error 1100. Time step should be less equal than step',  &
               ' in hydrodynamic database '                          )
@@ -2008,11 +2181,11 @@
  2070 format(/' Error 1104. Number of wind variations; min. 2, max.',  &
                 i4, '; choosen :', i4, '!'                             )
  2072 format(/' Error 1201. Start time wind series must be equal to',  &
-              ' start time simulation!'                                )
+              ' or lower than start time simulation!'                  )
  2073 format(/' Error 1202. Wind time serie must be in ascending',     &
               ' order!'                                                )
  2075 format(/' Error 1203. Stop time wind series must be equal to',   &
-              ' stop time simulation!'                                 )
+              ' or greater than stop time simulation!'                 )
  2100 format(/' Error 1301. Start time flow-file: ',i4,'D-',i2,'H-',i2,&
                'M-',i2,'s; times do not match!'                        )
  2120 format('  Error 1302. Simulation time does not divide by time',  &
@@ -2286,43 +2459,67 @@
       call stop_exit(1)
 1701  write(*,*) ' Error: could not open boom-file ',fiboom(i)
       call stop_exit(1)
+1702  write(*,*) ' Error: could not open instantaneous waste polygon-file ',fidye(i)
+      call stop_exit(1)
+1703  write(*,*) ' Error: could not open continuous waste polygon-file ',fiwaste(i+nodye)
+      call stop_exit(1)
 1710  write(*,*) ' Error: could not open ini-file ',ini_file
       call stop_exit(1)
 
 9000  write(lun2,*) ' Error: reading special features '
-      write(*   ,*) ' Error: reading special features '
+      call stop_exit(1)
+9005  write(lun2,*) ' Error: reading value of max_wind_drag_depth constant'
+      call stop_exit(1)
+9006  write(lun2,*) ' Error: value of max_wind_drag_depth is less than zero'
       call stop_exit(1)
 9010  write(lun2,*) ' Error: value of max_restart_age constant'
-      write(*   ,*) ' Error: value of max_restart_age constant'
       call stop_exit(1)
 9011  write(lun2,*) ' Error: max_restart_age is zero. Did you specify a value?'
-      write(*   ,*) ' Error: max_restart_age is zero. Did you specify a value?'
       call stop_exit(1)
 
-9101  write(lun2,*) ' Error: found plastics_parameters, but this is not a plastics model (modtype /= 6) '
-      write(*   ,*) ' Error: found plastics_parameters, but this is not a plastics model (modtype /= 6) '
+9101  write(lun2,*) ' Error: found plastics_parameters, but this is not a plastics model (modtye /= 6 (model_prob_dens_settling) '
       call stop_exit(1)
 9103  write(lun2,*) ' Error: expected substance name of a plastic to be specified '
-      write(*   ,*) ' Error: expected substance name of a plastic to be specified '
       call stop_exit(1)
 9104  write(lun2,*) ' Error: could not read plastic parameter correctly for ', trim(cplastic)
-      write(*   ,*) ' Error: could not read plastic parameter correctly for ', trim(cplastic)
       call stop_exit(1)
 9105  write(lun2,*) ' Error: zero or negative mean size specified for ', trim(cplastic)
-      write(*   ,*) ' Error: zero or negative mean size specified for ', trim(cplastic)
       call stop_exit(1)
 9106  write(lun2,*) ' Error: plastic "', trim(cplastic), '" was already defined! '
-      write(*   ,*) ' Error: plastic "', trim(cplastic), '" was already defined! '
       call stop_exit(1)
 9107  write(lun2,'(/A,I3,A)') '  Error: ', plmissing, ' plastic(s) is/are not parametrised! '
-      write(*   ,'(/A,I3,A)')  ' Error: ', plmissing, ' plastic(s) is/are not parametrised! '
+      call stop_exit(1)
+9201  write(lun2,*) ' Error: expected leftside permeability of screens!'
+      call stop_exit(1)
+9202  write(lun2,*) ' Error: expected rightside permeability of screens!'
+      call stop_exit(1)
+9203  write(lun2,*) ' Error: expected screens polygon file name!'
+9204  write(lun2,*) ' Error: could not open screens polygon-file: '//trim(fiscreens)
+      call stop_exit(1)
+9301  write(lun2,*) ' Error: reading part FM ini file name!'
+      call stop_exit(1)
+9302  write(lun2,*) ' Error: reading part FM elease file name!'
+      call stop_exit(1)
+9401  write(lun2,*) ' Error: found "ABMmodel" keyword, but this is not a ABM model (modtyp /= 7 (model_abm)) '
+      call stop_exit(1)
+9402  write(lun2,*) ' Error: expected abm model name!'
+      call stop_exit(1)
+9403  write(lun2,*) ' Error: no suitable abm model name supplied!'
+      call stop_exit(1)
+9404  write(lun2,*) ' Error: expected abm stage development method name!'
+      call stop_exit(1)
+9405  write(lun2,*) ' Error: no suitable stage delelopment method name supplied!'
+      call stop_exit(1)
+9406  write(lun2,*) ' Error: found "RevChron" keyword, but this is not a ABM model (modtyp /= 7 (model_abm)) '
+      call stop_exit(1)
+9407  write(lun2,*) ' Error: expected stage of reversed release!'
       call stop_exit(1)
 
       end
-   
+
       subroutine getdim_dis ( lun      , dis_file , nrowsmax, lunlog   )
 !
-!     programmer : michel jeuken
+!     programmer : michelle jeuken
 !     credits    : derived from getdim_ini
 !     function   : get dimensions from dispersant-file
 !                  (only max. no. of rows per polygone)
@@ -2364,9 +2561,6 @@
       read(lun,'(a)') line ! get last read line
       len_line = len_trim(line)
       len_file = len_trim(dis_file)
-      write(*     ,'(a,a)')  &
-        '           last line read : ',line(:len_line)
-      write(*     ,'(/a)') ' Please check file !!'
       write(lunlog,'(//a,a)')  &
         ' Error: problem while reading dis-file ',dis_file(:len_file)
       write(lunlog,'(a,a)')    &
@@ -2438,12 +2632,7 @@
 
 !     error handling
 
- 1000 write(*,'(//a,a)')  &
-        ' Error: problem while reading ini-file ',ini_file(:len_file)
-      write(*     ,'(//a,a,a,a)')  &
-        ' Error: could not find key ',key
-      write(*     ,'(/a)') ' Please check file !!'
-      write(lunlog,'(//a,a)')  &
+ 1000 write(lunlog,'(//a,a)')  &
         ' Error: problem while reading ini-file ',ini_file(:len_file)
       write(lunlog,'(//a,a,a,a)')  &
         ' Error: could not find key ',key
@@ -2455,21 +2644,13 @@
       read(lun,'(a)') line ! get last read line
       len_line = len_trim(line)
       len_file = len_trim(ini_file)
-      write(*     ,'(a,a)')  &
-        '           last line read : ',line(:len_line)
-      write(*     ,'(/a)') ' Please check file !!'
       write(lunlog,'(//a,a)')  &
         ' Error: problem while reading ini-file ',ini_file(:len_file)
       write(lunlog,'(a,a)')    &
         '          last line read : ',line(:len_line)
       write(lunlog,'(/a)') ' Please check file !!'
       call stop_exit(1)
- 1020 write(*,'(//a,a)')  &
-        ' Error: problem while reading ini-file ',ini_file(:len_file)
-      backspace lun
-      write(*     ,'(//a)') ' Error: premature end-of-file found'
-      write(*     ,'(/a )') ' Please check file !!'
-      write(lunlog,'(//a,a)')  &
+ 1020write(lunlog,'(//a,a)')  &
         ' Error: problem while reading ini-file ',ini_file(:len_file)
       write(lunlog,'(//a)') ' Error: premature end-of-file found'
       write(lunlog,'(/a )') ' Please check file !!'
@@ -2520,12 +2701,7 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
 
 !     error handling
 
- 1000 write(*,'(//a,a)')  &
-        ' Error: problem while reading ini-file ',asc_file(:len_file)
-      write(*     ,'(//a,a,a,a)')  &
-        ' Error: could not find key ',key
-      write(*     ,'(/a)') ' Please check file !!'
-      write(lunlog,'(//a,a)')  &
+ 1000 write(lunlog,'(//a,a)')  &
         ' Error: problem while reading ini-file ',asc_file(:len_file)
       write(lunlog,'(//a,a,a,a)')  &
         ' Error: could not find key ',key
@@ -2572,31 +2748,4 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       return
       end function more_data
 
-      subroutine open_inifile ( lun, finam, ftype)
-      use precision_part       ! flexible size definition
-      implicit none
-
-      character(len=20)  :: ftype
-      character(len=256) :: finam
-!
-!     local scalars
-!
-      integer(ip) :: lun
-!
-      if(ftype=='unformatted') then
-         open ( lun, file = finam, form = ftype, status ='old',  &
-                 err = 99)
-      elseif (ftype=='binary') then
-            open ( lun, file = finam, form = ftype, status = 'old', &
-                   err = 99)
-      endif
-!
-      return
-!
- 99   write(*,'(//a,a40)') ' Error on opening file: ',finam
-      write(*,'(  a,a  )') ' Expected file type   : ',ftype
-      write(*,'(  a    )') ' Please check if file exists'
-      write(*,'(  a    )') ' Please check correct file type'
-      call stop_exit(1)
-!
-      end subroutine
+      

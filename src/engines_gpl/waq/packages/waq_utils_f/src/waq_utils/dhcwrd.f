@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhcwrd
+
+      implicit none
+
+      contains
+
 
       INTEGER FUNCTION DHCWRD ( LINE  )
 !
@@ -40,6 +46,9 @@
 !     Local declaration
 !
       CHARACTER*(*) LINE
+      integer :: IA
+      integer :: LENLIN
+      integer :: ICH
 !
       IA = 0
       LENLIN = LEN(LINE)
@@ -60,3 +69,4 @@
 !
       RETURN
       END
+      end module m_dhcwrd

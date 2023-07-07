@@ -1,9 +1,0 @@
-substance_group 'General' 
-    substance 'Continuity' 
-    name      'Continuity' 
-    unit      '' 
-    active     1  
-    selected_processes
-    end-selected_processes 
-    end-substance
-end-substance_group

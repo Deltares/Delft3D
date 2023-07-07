@@ -1,6 +1,6 @@
 #!/bin/sh
-echo "running autoreconf"
-autoreconf -imvf
+echo "create configure"
+./autogen.sh
 echo "running configure"
 ./configure
 echo "running make"

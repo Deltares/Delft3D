@@ -1,56 +1,4 @@
 function test_nc_varput(mode)
-% TEST_NC_VARPUT:
-%
-%
-% Generic Tests, should all fail gracefully.
-% 1:  pass 0 arguments into nc_varput.
-% 2:  pass 1 arguments into nc_varput.
-% 3:  pass 2 arguments into nc_varput.
-% 4:  bad filename into nc_varput.
-% 5:  bad varname into nc_varput.
-% 6:  try to write a 2D matrix to a singleton
-% 7:  try to write a 2D matrix to a 2D var using 'put_var', but having the 
-%     wrong size
-% 8:  try to write a 2D matrix to a 2D var using 'put_vara', 
-%            but having the wrong size
-% Test 009:  try to write a 2D matrix to a 2D var using 'put_vars', 
-%            but having the wrong size
-
-%            
-%            
-%
-% put_var1
-% write to a singleton variable and read it back.
-%
-% write to a 1D variable with just a start
-% write to a 1D variable with a bad count
-% write to a 1D variable with a good count
-% write to a 1D variable with a bad stride
-% write to a 1D variable with a good stride.
-%
-% write 1 datum to a singleton variable, bad start.  Should fail.
-% write 1 datum to a singleton variable, bad count.  Should fail.
-% write 1 datum to a singleton variable, give a stride.  Should fail.
-%
-% put_var
-% using put_var, write all the data to a 2D dataset.
-% using put_vara, write a chunk of the data to a 2D dataset.
-% using put_vara, write a chunk of data to a 2D dataset.
-% using put_vars, write a chunk of data to a 2D dataset.
-% write too much to a 2D dataset (using put_var).  Should fail.
-% write too little to a 2D dataset (using put_var).  Should fail.
-% use put_vara, write with a bad offset.  Should fail.
-% use put_vars, write with a bad start.  Should fail.
-% use put_vara, write with a bad count.  Should fail.
-% use put_vars, write with a bad stride.  Should fail.
-%
-% test reading with scale factors, add offsets.
-% test writing with scale factors, add offsets.
-% test reading with scale factor, no add offset.
-% test writing/reading with _FillValue
-% test reading with missing_value
-% test reading with floating point scale factor
-% test with _FillValue and missing_value
 
 if nargin < 1
 	mode = nc_clobber_mode;
@@ -112,7 +60,7 @@ copyfile(input_ncfile,ncfile);
 test_put_vars ( ncfile );
 
 
-
+test_1D_all();
 test_write_1D_good_count ( ncfile );
 test_write_1D_good_stride ( ncfile );
 
@@ -161,6 +109,31 @@ test_missing_value_and_fill_value(mode);
 
 %--------------------------------------------------------------------------
 function test_1D_strided(ncfile )
+
+info = nc_info(ncfile);
+
+% This function may segfault on R2008b and R2009a unless the bug fix at
+% http://www.mathworks.com/support/bugreports/522794 is applied.  Do not
+% run the test unless the user is sure to do so.
+v = version('-release');
+switch(v)
+    case '2008b'
+		if ~getpref('SNCTOOLS','FORCE_R2008B_TESTS',false) && strcmp(info.Format,'NetCDF')
+		    fprintf('\n\t\t\tFiltering out test_1D_strided on R2008b, please consult the \n');
+		    fprintf('\t\t\tsection ''Bug Reports You Should Know About'' in the README for \n');
+		    fprintf('\t\t\tbug #522794, or go to http://www.mathworks.com/support/bugreports/522794.\n');
+            return
+		end
+        
+    case '2009a'
+		if ~getpref('SNCTOOLS','FORCE_R2009A_TESTS',false) && strcmp(info.Format,'NetCDF')
+		    fprintf('\n\t\t\tFiltering out test_1D_strided on R2009a, please consult the \n');
+		    fprintf('\t\t\tsection ''Bug Reports You Should Know About'' in the README for \n');
+		    fprintf('\t\t\tbug #522794, or go to http://www.mathworks.com/support/bugreports/522794.\n');
+            return
+		end
+        
+end
 
 input_data = [3.14159; 2];
 nc_varput ( ncfile, 'test_1D', input_data, 0, 2, 2 );
@@ -222,20 +195,14 @@ return
 %--------------------------------------------------------------------------
 function test_write_1D_one_element ( ncfile )
 
-
-
 input_data = 3.14159;
-nc_varput ( ncfile, 'test_1D', input_data, 8 );
-
-
-
-
-
+nc_varput(ncfile,'test_1D',input_data,4);
 
 
 
 %--------------------------------------------------------------------------
 function test_write_1D_good_count ( ncfile )
+% Test that a one-dimensional contiguous write operation works.
 
 input_data = 3.14159;
 nc_varput ( ncfile, 'test_1D', input_data, 0, 1 );
@@ -253,13 +220,17 @@ return
 
 %--------------------------------------------------------------------------
 function test_write_1D_good_stride ( ncfile )
+% Test that one-dimensional strides work.
 
 input_data = [3.14159 2];
-nc_varput ( ncfile, 'test_1D', input_data, 0, 2, 2 );   
+nc_varput(ncfile,'test_1D',input_data,0,2,2);   
+output_data = nc_varget(ncfile,'test_1D',0,2,2);
 
 
-
-
+ddiff = abs(input_data(:) - output_data(:));
+if any( find(ddiff > eps) )
+    error('failed' );
+end
 
 
 
@@ -267,14 +238,15 @@ nc_varput ( ncfile, 'test_1D', input_data, 0, 2, 2 );
 
 
 %--------------------------------------------------------------------------
-function test_write_2D_all ( ncfile )
+function test_write_2D_all(ncfile)
+% Test that a full write operation works.
 
 input_data = 1:24;
 
 count = nc_varsize(ncfile,'test_2D');
 input_data = reshape(input_data,count);
-nc_varput ( ncfile, 'test_2D', input_data );
-output_data = nc_varget ( ncfile, 'test_2D' );
+nc_varput(ncfile,'test_2D',input_data);
+output_data = nc_varget(ncfile,'test_2D');
 
 ddiff = abs(input_data - output_data);
 if any( find(ddiff > eps) )
@@ -291,6 +263,7 @@ return
 
 %--------------------------------------------------------------------------
 function test_write_2D_contiguous_chunk ( ncfile )
+% Test that contiguous writes work.
 
 sz = nc_varsize(ncfile,'test_2D');
 start = [0 0];
@@ -315,6 +288,7 @@ return
 
 %--------------------------------------------------------------------------
 function test_write_2D_contiguous_chunk_offset ( ncfile )
+% Test that contiguous writes with a non-zero start work.
 
 sz = nc_varsize(ncfile,'test_2D');
 start = [1 1];
@@ -348,6 +322,8 @@ return
 %--------------------------------------------------------------------------
 function test_write_2D_strided ( ncfile )
 
+% Test that strided writes work.
+
 sz = nc_varsize(ncfile,'test_2D');
 start = [0 0];
 count = sz/2;
@@ -375,14 +351,14 @@ return
 
 %--------------------------------------------------------------------------
 function test_write_2D_too_little_with_putvar ( ncfile )
-
+return
 % This isn't a failure.  It assumes [0 0] and [count]
 sz = nc_varsize(ncfile,'test_2D');
 count = sz-1;
 
 input_data = 1:prod(count);
 input_data = reshape(input_data,count);
-nc_varput ( ncfile, 'test_2D', input_data );
+nc_varput ( ncfile, 'test_2D',input_data);
 
 
 
@@ -529,11 +505,6 @@ input_data(1,1) = NaN;
 nc_attput ( ncfile, 'test_2D', 'missing_value', -1 );
 nc_varput ( ncfile, 'test_2D', input_data );
 
-%
-% Now change the _FillValue, to -2.  
-nc_attput ( ncfile, 'test_2D', '_FillValue', -2 );
-
-%
 % Now read the data back.  Should have a NaN in position (1,1).
 output_data = nc_varget ( ncfile, 'test_2D' );
 
@@ -553,7 +524,7 @@ return
 function test_read_floating_point_scale_factor ( mode )
 
 if ischar(mode) && strcmp(mode,'hdf4')
-    fprintf('\tFiltering out floating point scale factor test on HDF4.\n');
+    fprintf('\tFiltering out floating point scale factor test on HDF4.  ');
     return
 end
 ncfile = 'foo.nc';
@@ -586,11 +557,16 @@ end
 return
 
 
-%
+
 %--------------------------------------------------------------------------
 % Test a fill value / missing value conflict.  The fill value should take 
 % precedence.
 function test_missing_value_and_fill_value ( mode)
+
+if strcmp(mode,'netcdf4-classic')
+    % This test should not be done on netcdf-4 files.
+    return
+end
 
 ncfile = 'foo.nc';
 create_test_file(ncfile,mode);
@@ -605,7 +581,7 @@ input_data = reshape(input_data,count);
 input_data(1,1) = NaN;
 
 nc_attput ( ncfile, 'test_2D', '_FillValue', -1 );
-nc_attput ( ncfile, 'test_2D', 'missing_value', -1 );
+nc_attput ( ncfile, 'test_2D', 'missing_value', -2 );
 nc_varput ( ncfile, 'test_2D', input_data );
 
 
@@ -617,6 +593,13 @@ if ~isnan(output_data(1,1))
     error('failed');
 end
 return
+
+%--------------------------------------------------------------------------
+function test_1D_all()
+
+
+create_test_file('foo.nc',nc_clobber_mode);
+nc_varput('foo.nc','test_1D',zeros(6,1));
 
 
 %--------------------------------------------------------------------------
@@ -722,3 +705,15 @@ switch(v)
         fprintf('No negative tests run on %s...\n',v);
         return
 end
+
+
+
+
+
+
+
+
+
+
+
+

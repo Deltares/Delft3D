@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getcom
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETCOM ( COMSTR, ARGMOD, FOUND , INTARG, REAARG,
      +                    CHAARG, IERR  )
@@ -53,15 +59,20 @@
 !
 !     Declaration of arguments
 !
+      use m_dhucas
       USE Timers
+      use m_dhcarg
+      use m_dhgarg
+
       INTEGER        ARGMOD, INTARG, IERR
+      INTEGER        I , I1 , I2 , IA , IF ,  ILEN , ILENC
       REAL           REAARG
       LOGICAL        FOUND
       CHARACTER*(*)  COMSTR, CHAARG
 !
 !     Local
 !
-      INTEGER        DHCARG
+
       CHARACTER*256  ARGV , ARG , COM
       integer(4) ithndl /0/
       if ( timon ) call timstrt( "getcom", ithndl )
@@ -158,3 +169,4 @@
       if ( timon ) call timstop( ithndl )
       RETURN
       END
+      end module m_getcom

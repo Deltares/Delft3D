@@ -1,0 +1,21 @@
+[forcing]
+Name                = tfl_01_0001
+Function            = timeseries
+Time-interpolation  = linear
+Quantity            = time
+Unit                = days since 0001-01-01
+Quantity            = waterlevelbnd
+Unit                = m
+727443.000    0.0100000
+727443.084    0.0100000
+
+[forcing]
+Name                = tfl_01_0002
+Function            = timeseries
+Time-interpolation  = linear
+Quantity            = time
+Unit                = days since 0001-01-01
+Quantity            = waterlevelbnd
+Unit                = m
+727443.000    0.0100000
+727443.084    0.0100000

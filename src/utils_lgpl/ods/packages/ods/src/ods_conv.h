@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -59,7 +59,8 @@ ODS_AccumulateData(
       TReal4              misval,
       TInt4             * ndim,
       TReal4            * data,
-      TReal4            * data_to_add ) ;
+      TReal4            * data_to_add,
+      TReal4              factor      );
 
 TVoid
 ODS_AccumulateOverTime(

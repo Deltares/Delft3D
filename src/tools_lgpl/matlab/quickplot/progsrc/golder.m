@@ -19,7 +19,7 @@ function Data = golder(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -58,7 +58,7 @@ end
 
 
 function Data = readgolder(FileName)
-fid = fopen(FileName,'r');
+fid = fopen(FileName,'r','n','US-ASCII');
 Line = fgetl(fid);
 if length(Line)<7 | ~strcmp(Line(1:7),'# Cell[')
    fclose(fid);
@@ -130,7 +130,7 @@ for i = 1:2:length(varargin)
    %
    data(j+3,:) = varargin{i+1}(:)';
 end
-fid = fopen(FileName,'w');
+fid = fopen(FileName,'w','n','US-ASCII');
 fprintf(fid,['# Cell[I_J_K]' repmat(' "%s"',1,ndatafields),'\n'],Name{:});
 fprintf(fid,['Cell[%i_%i_%i]' repmat(' %f',1,ndatafields) ,'\n'],data);
 fclose(fid);

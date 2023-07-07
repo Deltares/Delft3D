@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,12 +53,6 @@
 !>         Temporary solution: particles are unique substances or otherwise settling velocity is averaged
 !>         over substances hoping that they are defined in the same units responsibility for user.
 
-!     System administration : Antoon Koster
-
-!     Created      : June 1996      by Robert Vos
-
-!     Modified     : July 2011      by Leo Postma, cosmetic redesign and OMP paralellism
-
 !     logical unit numbers  : lun2  output report file
 
 !     subroutines called    : none.
@@ -68,6 +62,7 @@
       use precision_part    ! single/double precision
       use spec_feat_par
       use timers
+      use m_part_modeltypes
       implicit none    ! explicit typing
 
 !     Arguments
@@ -162,7 +157,7 @@
          vs6 = 0.0
          vst = 0.0
          do isub = 1, nosubs
-            if (modtyp .eq. 6) then
+            if (modtyp .eq. model_prob_dens_settling) then
                ! density dependent settling velocity 
                ic = lgrid3(npart(ipart), mpart(ipart))
 !              active cell's only

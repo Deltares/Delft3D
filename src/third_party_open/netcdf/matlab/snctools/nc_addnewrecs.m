@@ -1,10 +1,8 @@
-function new_data = nc_addnewrecs(ncfile,input_buffer,record_variable) %#ok<INUSD>
+function nc_addnewrecs(ncfile,input_buffer,record_variable) %#ok<INUSD>
 %NC_ADDNEWRECS:  Append records to netcdf file.
 %   new_data = nc_addnewrecs(ncfile,record_struct) appends records in
 %   record_struct to the end of a netcdf file.  The data for the record
-%   variable itself must be monotonically increasing.   Only those records
-%   that are actually newer (in the sense of time series) than the last
-%   record in the file are returned in the new_data structure.  Any records
+%   variable itself must be monotonically increasing.   Any records
 %   that are "older" than the last record are ignored.
 %   
 %   The difference between this m-file and nc_add_recs is that this 
@@ -14,8 +12,8 @@ function new_data = nc_addnewrecs(ncfile,input_buffer,record_variable) %#ok<INUS
 %   Example:
 %       nc_create_empty('myfile.nc');
 %       nc_adddim('myfile.nc','time',0);
-%       v.Name = 'time';
-%       v.Dimension = {'time'};
+%       v(1).Name = 'time';
+%       v(1).Dimension = {'time'};
 %       nc_addvar('myfile.nc',v);
 %       v.Name = 'money';
 %       v.Dimension = {'time'};
@@ -34,19 +32,18 @@ function new_data = nc_addnewrecs(ncfile,input_buffer,record_variable) %#ok<INUS
 %  
 %   See also nc_varput, nc_cat.
 
+preserve_fvd = nc_getpref('PRESERVE_FVD');
 
-new_data = [];
-error(nargchk(2,3,nargin,'struct'));
-
-if isempty ( input_buffer )
-    return
+% If the input structure is old-style, convert it to the name-value format.
+if ~isfield(input_buffer,'Name') || ~isfield(input_buffer,'Data')
+    input_buffer = convert_buffer(input_buffer);
 end
 
-record_variable = find_record_variable(ncfile);
+record_variable = snc_find_record_variable(ncfile);
 
 % Check that the record variable is present in the input buffer.
-if ~isfield ( input_buffer, record_variable )
-    error ( 'SNCTOOLS:NC_ADDNEWRECS:missingRecordVariable', ...
+if ~any(strcmp(record_variable,{input_buffer.Name}));
+    error ( 'snctools:addnewrecs:missingRecordVariable', ...
             'input structure is missing the record variable ''%s''.', ...
             record_variable );
 end
@@ -70,7 +67,8 @@ varinfo = nc_getvarinfo(ncfile,record_variable);
 
 % Get the last time value.   If the record variable is empty, then
 % only take datums that are more recent than the latest old datum
-input_buffer_time_values = input_buffer.(record_variable);
+rec_idx = find(strcmp(record_variable,{input_buffer.Name}));
+input_buffer_time_values = input_buffer(rec_idx).Data;
 if varinfo.Size > 0
     last_time = nc_getlast ( ncfile, record_variable, 1 );
     recent_inds = find( input_buffer_time_values > last_time );
@@ -84,19 +82,18 @@ if isempty(recent_inds)
 end
 
 % Go thru each variable.  Restrict to what's new.
-varnames = fieldnames ( input_buffer );
-for j = 1:numel(varnames)
-    data = input_buffer.(varnames{j});
+for j = 1:numel(input_buffer)
+    data = input_buffer(j).Data;
 
-    if getpref('SNCTOOLS','PRESERVE_FVD',false) 
+    if preserve_fvd
         %&& (ndims(data) > 1) && (size(data,ndims(data)) > 1)
-        if numel(vsize.(varnames{j})) == 1
+        if numel(vsize{j}) == 1
             % netCDF variable is 1D
             restricted_data = data(recent_inds);
-        elseif (numel(vsize.(varnames{j})) == 2) 
+        elseif (numel(vsize{j}) == 2) 
             % netCDF variable is 2D
             restricted_data = data(:,recent_inds);
-        elseif (ndims(data) < numel(vsize.(varnames{j}))) && (numel(recent_inds) == 1)
+        elseif (ndims(data) < numel(vsize{j})) && (numel(recent_inds) == 1)
             % netCDF variable is more than 2D, but we are given just one record.
             restricted_data = data;
         else
@@ -105,13 +102,13 @@ for j = 1:numel(varnames)
             eval(cmdstring);
         end
     else
-        if numel(vsize.(varnames{j})) == 1
+        if numel(vsize{j}) == 1
             % netCDF variable is 1D
             restricted_data = data(recent_inds);
-        elseif (numel(vsize.(varnames{j})) == 2) 
+        elseif (numel(vsize{j}) == 2) 
             % netCDF variable is 2D
             restricted_data = data(recent_inds,:);
-        elseif (ndims(data) < numel(vsize.(varnames{j}))) && (numel(recent_inds) == 1)
+        elseif (ndims(data) < numel(vsize{j})) && (numel(recent_inds) == 1)
             % netCDF variable is more than 2D, but we are given just one record.
             restricted_data = data;
         else
@@ -122,18 +119,33 @@ for j = 1:numel(varnames)
     end
 
 
-    input_buffer.(varnames{j}) = restricted_data;
+    input_buffer(j).Data = restricted_data;
 end
 
 % Write the records out to file.
-nc_add_recs(ncfile,input_buffer);
-
-new_data = input_buffer;
+nc_addrecs(ncfile,input_buffer);
 
 return;
 
 
 
+
+%--------------------------------------------------------------------------
+function newbuffer = convert_buffer(input_buffer)
+% Convert the input structure from "field_name": field_value to
+%
+%     struct(1).Name
+%     struct(1).Value
+%     struct(2).Name
+%     struct(2).Value  etc.
+
+fields = fieldnames(input_buffer);
+newbuffer = struct('Name','','Data',[]);
+newbuffer = repmat(newbuffer,numel(fields),1);
+for j = 1:numel(fields)
+    newbuffer(j).Name = fields{j};
+    newbuffer(j).Data = input_buffer.(fields{j});
+end
 
 
 %--------------------------------------------------------------------------
@@ -144,30 +156,33 @@ function input_buffer = force_rank_match(ncfile,input_buffer,record_variable)
 % of the incoming data to match that of the infile variable.  We address 
 % this by forcing the leading dimension in these cases to be 1.
 
-varnames = fieldnames ( input_buffer );
-num_vars = length(varnames);
-if length(input_buffer.(record_variable)) == 1 
-    for j = 1:num_vars
+preserve_fvd = nc_getpref('PRESERVE_FVD');
+
+rec_idx = strcmp(record_variable,{input_buffer.Name});
+
+if numel(input_buffer(rec_idx).Data) == 1 
+    for j = 1:numel(input_buffer)
 
         % Skip the record variable, it's irrelevant at this stage.
-        if strcmp ( varnames{j}, record_variable )
+        if strcmp ( input_buffer(j).Name, record_variable )
             continue;
         end
 
-        infile_vsize = nc_varsize(ncfile, varnames{j} );
+        infile_vsize = nc_varsize(ncfile, input_buffer(j).Name );
 
         % Disregard any trailing singleton dimensions.
         %effective_nc_rank = calculate_effective_nc_rank(infile_vsize);
 
-        if (numel(infile_vsize) > 2) && (ndims(input_buffer.(varnames{j})) ~= numel(infile_vsize))
-            %
+        if (numel(infile_vsize) > 2) && (ndims(input_buffer(j).Data) ~= numel(infile_vsize))
+            
             % Ok we have a mismatch.
-            if getpref('SNCTOOLS','PRESERVE_FVD',false)
-                rsz = [infile_vsize(1:end-1) numel(input_buffer.(record_variable))]; 
+            if preserve_fvd
+                rsz = [infile_vsize(1:end-1) numel(input_buffer(rec_idx))]; 
             else
-                rsz = [numel(input_buffer.(record_variable)) infile_vsize(2:end) ]; 
+                %rsz = [numel(input_buffer(rec_idx)) infile_vsize(2:end) ];
+                rsz = [numel(input_buffer(rec_idx)) infile_vsize(2:end) ]; 
             end
-            input_buffer.(varnames{j}) = reshape( input_buffer.(varnames{j}), rsz );
+            input_buffer(j).Data = reshape( input_buffer(j).Data, rsz );
         end
 
 
@@ -184,25 +199,18 @@ nc = nc_info ( ncfile );
 num_nc_vars = length(nc.Dataset);
 
 vsize = [];
-
-fnames = fieldnames ( input_buffer );
-num_fields = length(fnames);
-for j = 1:num_fields
-    not_present = 1;
+idx = [];
+count = 0;
+for j = 1:numel(input_buffer)
     for k = 1:num_nc_vars
-        if strcmp(fnames{j}, nc.Dataset(k).Name)
-            not_present = 0;
-
-            % Store the dataset size.
-            vsize.(fnames{j}) = nc.Dataset(k).Size;
+        if strcmp(input_buffer(j).Name, nc.Dataset(k).Name)
+            count = count+1;
+            idx(count) = j;
+            vsize{count} = nc.Dataset(k).Size;
         end
     end
-    if not_present
-        warning('SNCTOOLS:NC_ADDNEWRECS:varNotPresent', ...
-            '%s not present in file %s.  Ignoring it...', ...
-            fnames{j}, ncfile );
-        input_buffer = rmfield ( input_buffer, fnames{j} );
-    end
 end
+
+input_buffer = input_buffer(idx);
 
 

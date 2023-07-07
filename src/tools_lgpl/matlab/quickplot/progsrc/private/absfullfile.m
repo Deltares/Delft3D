@@ -10,7 +10,7 @@ function file = absfullfile(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -39,28 +39,38 @@ function file = absfullfile(varargin)
 %   $Id$
 
 file = varargin{1};
-if isequal(file(1),'/') || isequal(file(1),'\')
-    % assume OK \\OtherComputer\folder\file or /folder/file
-    % use fullfile to combine and simplify file expresssion
-    file = fullfile(varargin{:});
-else
-    cl = strfind(file,':');
-    if ~isempty(cl)
-        % assume OK d:\folder\file or http://server/folder/file
-        if isequal(cl,2)
-            % use fullfile to combine and simplify file expresssion
-            file = fullfile(varargin{:});
-        else
-            % don't use fullfile to concat webserver path because it also
-            % converts forward slashes to backward slashes on Windows
-            if nargin>1
-                error('Multiple arguments to absfullfile not yet supported for web addresses')
-            end
-        end
-    else
-        % just simply file or folder\file
-        % attach pwd to create absolute path
-        % use fullfile to combine and simplify file expresssion
-        file = fullfile(pwd,varargin{:});
-    end
+
+% verify whether the first argument is an absolute location
+
+% option 1: Linux local or UNC network location starting with / or //
+if isequal(file(1),'/')
+    % fullfile converts / and \ to filesep, make sure to use Linux-style / in result
+    file = strrep(fullfile(varargin{:}),filesep,'/');
+    return
 end
+
+% option 2: Windows UNC location starting with \\
+if length(file)>1 && isequal(file(1:2),'\\')
+    % fullfile converts / and \ to filesep, make sure to use Windows-style \ in result
+    file = strrep(fullfile(varargin{:}),filesep,'\');
+    return
+end
+
+% Optioen 3: Windows drive location starting with .: or webservice
+cl = strfind(file,':');
+if ~isempty(cl)
+    % assume OK d:\folder\file or http://server/folder/file
+    if isequal(cl,2)
+        % absolute location starting with drive-letter a:-z:
+        % fullfile converts / and \ to filesep, make sure to use Windows-style \ in result
+        file = strrep(fullfile(varargin{:}),filesep,'\');
+    else
+        % absolute location starting with non-drive-letter:, typically webserver locations.
+        % fullfile converts / and \ to filesep, make sure to use Linux-style / in result
+        file = strrep(fullfile(varargin{:}),filesep,'/');    end
+    return
+end
+
+% the first entry is not recognized as an absolute location
+% so prepend pwd to create an absolute path
+file = fullfile(pwd,varargin{:});

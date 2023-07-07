@@ -1,0 +1,10 @@
+[forcing]
+Name 			= astr02_0001 
+Function		= astronomic-correction
+Quantity		= astronomic component		
+Unit			= -
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+S2    1.0    0.5

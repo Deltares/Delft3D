@@ -29,9 +29,11 @@ fprintf('OK\n');
 %--------------------------------------------------------------------------
 function run_nc_tests(ncfile)
 
-test_limitedVariable(ncfile);
-test_unlimitedVariable(ncfile);
-test_unlimitedVariableWithOneAttribute(ncfile);
+test_limited_variable(ncfile);
+test_unlimited_variable(ncfile);
+test_unlimited_variable_with_one_attribute(ncfile);
+
+test_fields(ncfile);
 
 return
 
@@ -157,9 +159,11 @@ error('failed');
 %--------------------------------------------------------------------------
 function test_fileIsNumeric_varIsChar ()
 
+warning('off','snctools:nc_getvarinfo:deprecatedSyntax');
 try
 	nc_getvarinfo ( 0, 't1' );
 catch %#ok<CTCH>
+    warning('on','snctools:nc_getvarinfo:deprecatedSyntax');
     return
 end
 error('failed');
@@ -169,6 +173,7 @@ error('failed');
 
 %--------------------------------------------------------------------------
 function test_fileIsChar_varIsNumeric()
+
 
 testroot = fileparts(mfilename('fullpath'));
 ncfile = fullfile(testroot,'testdata/full.nc');
@@ -184,7 +189,51 @@ error('failed');
 
 
 %--------------------------------------------------------------------------
-function test_limitedVariable(ncfile)
+function test_fields(ncfile)
+
+v = nc_getvarinfo(ncfile,'x','Name');
+if ~strcmp(v, 'x' )
+    error('failed');
+end
+
+v = nc_getvarinfo(ncfile,'x','Nctype');
+if (v~=6 )
+    error('failed');
+end
+
+v = nc_getvarinfo(ncfile,'x','Unlimited');
+if (v~=0 )
+    error('failed');
+end
+
+v = nc_getvarinfo(ncfile,'x','Dimension');
+if (length(v)~=1 )
+    error('failed');
+end
+if ( ~strcmp(v{1},'x') )
+    error('failed');
+end
+
+v = nc_getvarinfo(ncfile,'x','Size');
+if (v~=2 )
+    error('failed');
+end
+if (numel(v)~=1 )
+    error('failed');
+end
+
+v = nc_getvarinfo(ncfile,'x','Attribute');
+if (~isempty(v) )
+    error('failed');
+end
+
+return
+
+
+
+
+%--------------------------------------------------------------------------
+function test_limited_variable(ncfile)
 
 v = nc_getvarinfo ( ncfile, 'x' );
 
@@ -220,7 +269,7 @@ return
 
 
 %--------------------------------------------------------------------------
-function test_unlimitedVariable(ncfile)
+function test_unlimited_variable(ncfile)
 
 v = nc_getvarinfo ( ncfile, 't1' );
 
@@ -255,7 +304,7 @@ return
 
 
 %--------------------------------------------------------------------------
-function test_unlimitedVariableWithOneAttribute(ncfile)
+function test_unlimited_variable_with_one_attribute(ncfile)
 
 v = nc_getvarinfo ( ncfile, 't4' );
 

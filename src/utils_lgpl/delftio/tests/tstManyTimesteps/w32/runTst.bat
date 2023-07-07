@@ -9,4 +9,4 @@ fc TESTMany-res.txt ..\resultsApproved\w32\TESTMany-res.txt
 
 pause
 
-exit 0
+exit /B 0

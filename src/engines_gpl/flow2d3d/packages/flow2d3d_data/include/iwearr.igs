@@ -1,0 +1,80 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_iwearr
+!
+       real(fp) :: ricrit        !  Global data
+                             !  Critical Richardson number
+       real(fp) :: bvmin         !  Global data
+                             !  Truncation value for mean buoyancy
+                             !  frequency squared
+       real(fp) :: accur
+       real(fp) :: epsuko
+       real(fp) :: argsnh
+       real(fp) :: argexp
+       real(fp) :: epsbv2        !  Global data
+                             !  Minimal bouyancy frequency defining
+                             !  borders of strat .layer.
+                             !  Ratio minimal/maximal bouyancy
+                             !  frequency for defining borders of
+                             !  stratified layer
+       real(fp) :: alfaz         !  Global data
+                             !  RMS of ratio wave-induced density
+                             !  gradient and mean density gradient
+                             ! 
+       real(fp) :: xmu0
+       real(fp) :: clu           !  Global data
+                             !  Coeff. for x/u-length scale
+       real(fp) :: clw           !  Global data
+                             !  Coeff. for z/w-length scale
+       real(fp) :: ckw           !  Global data
+                             !  Ratio w-variance and kin. energy
+                             !  (of IW's)
+       real(fp) :: viscof        !  Global data
+                             !  Kinematic viscosity of water
+                             !  Kinematic viscosity
+       real(fp) :: tol
+       integer :: nrange     !  Global data
+                             !  Angle range [degrees] for detection
+                             !  of lee waves.
+       integer :: ninc       !  Global data
+                             !  Increment/bracket for searching lee-
+                             !  wave roots
+       integer :: mwriwe     !  Global data
+                             !  M-coordinate user defined observation
+                             !  point if IWEDIA=.true.
+       integer :: nwriwe     !  Global data
+                             !  N-coordinate user defined observation
+                             !  point if IWEDIA=.true.
+       integer :: mdebug
+       integer :: ndebug
+       logical :: iwedia     !  Global data
+                             !  Logical flag to switch on the write
+!
+    end type gd_iwearr

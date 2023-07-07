@@ -27,7 +27,7 @@ function H = ui_message(Cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -115,6 +115,10 @@ if nargin==1 && isequal(Cmd,'resize')
 end
 
 fig=findobj(allchild(0),'tag','UI_MESSAGE window');
+if nargin>1 && isequal(Cmd,'reset')
+    delete(fig)
+    fig = [];
+end
 
 if isempty(UD)
     if ~isempty(fig) && ishandle(fig)
@@ -225,7 +229,7 @@ else
         Msg = '';
     end
     switch lower(Cmd)
-        case {'error','warning',''}
+        case {'error','warning','message',''}
             if nargin>2
                 Msg = sprintf(varargin{:});
             end
@@ -280,7 +284,8 @@ else
             while length(Msg)>1 && isempty(Msg{end})
                 Msg(end)=[];
             end
-            errors={errors{:} Separator{:} Msg{:}};
+            Msg = strrep(Msg,char(9),'   ');
+            errors=[errors(:)' Separator(:)' Msg(:)'];
             if length(MessageOffset)>MaxNMessages
                 MessageOffset(1)=[];
                 errors(1:(MessageOffset(1)-1))=[];
@@ -307,7 +312,7 @@ else
         case 'clear'
             errors={};
             MessageOffset=[];
-            set(findobj(fig,'tag','errorlist'),'string',errors);
+            set(findobj(fig,'tag','errorlist'),'string',errors,'listboxtop',1);
         case 'clipboard'
             i=sort(get(findobj(fig,'tag','errorlist'),'value')); % always copy lines from top to bottom
             clipboard('copy',sprintf('%s\n',errors{i}))
@@ -331,6 +336,9 @@ else
         case 'close'
             set(fig,'visible','off');
         case 'max'
+            if ischar(Msg)
+                Msg = str2double(Msg);
+            end
             MaxNMessages=max(1,Msg);
             while length(MessageOffset)>MaxNMessages
                 MessageOffset(1)=[];

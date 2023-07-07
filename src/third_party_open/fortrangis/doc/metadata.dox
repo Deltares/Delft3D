@@ -1,0 +1,82 @@
+/*! \page metadata How to retrieve metadata and RPC information with gdal/FortranGIS
+
+This Fortran interface to gdal allows also to perform advanced
+operations such as retrieving metadata, i.e. a set of key/value pairs
+which are sometimes embedded in datasets understood by gdal.
+
+\section generic Retrieving generic metadata
+
+The main function for this purpose is \a GDALGetMetadata, which
+returns a \c char** object; this object should be handled in Fortran
+by means of the fortranc::c_ptr_ptr derived type, like in the following
+code snippet:
+
+\code
+...
+USE gdal
+TYPE(gdaldataseth) :: ds
+TYPE(c_ptr_ptr) :: meta
+...
+CALL gdalallregister()
+ds = gdalopen(TRIM(infile)//CHAR(0), GA_ReadOnly)
+meta = c_ptr_ptr_new(GDALGetMetadata(gdalmajorobjecth_new(ds), CHAR(0)))
+...
+\endcode
+
+The object conversion \c gdalmajorobjecth_new(ds) is required because
+\a GDALGetMetadata requires a generic gdal object of type \a
+gdalmajorobjecth which can be either a dataset, a rasterband or a
+driver object.
+
+The second argument to \a GDALGetMetadata, \c CHAR(0) , indicates an
+empty string i.e. the default metadata domain.
+
+In order to unpack the \c meta object we can use the corresponding
+methods described in the fortranc module:
+
+\code
+DO i = 1, c_ptr_ptr_getsize(meta)
+  WRITE(*,'(I2,A)'),i,TRIM(strtofchar(c_ptr_ptr_getptr(meta, i), 100))
+ENDDO
+\endcode
+
+\section rpc Retrieving RPC information
+
+RPC stands for rational polynomial coefficients, it is an additional
+information which can be embedded in raster datasets in order to allow
+a generic and accurate georeferencing of the dataset.
+
+In order to extract RPC information from a dataset, the procedure is
+similar to the metadata extraction procedure:
+
+\code
+...
+USE gdal
+TYPE(gdaldataseth) :: ds
+TYPE(c_ptr_ptr) :: rpc
+TYPE(GDALRPCInfo) :: info
+INTEGER :: ierr
+...
+CALL gdalallregister()
+ds = gdalopen(TRIM(infile)//CHAR(0), GA_ReadOnly)
+rpc = c_ptr_ptr_new(GDALGetMetadata(gdalmajorobjecth_new(ds), 'RPC'//CHAR(0)))
+ierr = GDALExtractRPCInfo(c_ptr_ptr_getobject(rpc), info)
+...
+\endcode
+
+in this case we ask \a GDALGetMetadata to retrieve the \a RPC domain
+rather than the default domain. The result is passed to the \a
+GDALExtractRPCInfo function, which, on success, fills the \c info
+object with the relevant RPC fields, thus we can access them as
+\c info%%line_off, \c info%%line_num_coeff(:), etc.
+
+Sample geotiff datasets containing RPC information can be downloaded
+from the web site of Japanese Aerospace Exploration Agency:
+http://www.alos-restec.jp/en/staticpages/index.php/service-sampledata-08.
+
+*/
+
+
+
+
+

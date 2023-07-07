@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -185,11 +185,6 @@ function SE_get_values_for_time_span(exchange_item_id, start_time, end_time, nva
 
     if (ret_val /= 0) then
         write(*,'(A,I2)') 'Error in get_values_for_time_span: ', ret_val
-    else
-!        write(*,'(A,I4,A,F8.2,A,F8.2,A)') 'get_values_for_time_span(', &
-!                                   exchange_item_id,&
-!                                    ',', start_time, ',', end_time, '):'
-!        write(*,*) '   ', values
     endif
 
 end function SE_get_values_for_time_span

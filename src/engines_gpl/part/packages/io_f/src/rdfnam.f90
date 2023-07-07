@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,7 +34,7 @@
       use delete_file_mod
       implicit none             ! force explicit typing
 !
-!                   Deltares (former: Deltares)
+!                   Deltares
 !
 !                        d e l p a r    v2.00
 !
@@ -86,6 +86,7 @@
       integer  ( ip)                 npos_save       ! save value from Delwaq
       integer(ip) :: i , ierr , indx , ipp , isep , max, ifil
       integer(4) ithndl              ! handle to time this subroutine
+      integer(4) luninfil
       character(len=256)   finame
       data       ithndl / 0 /
       if ( timon ) call timstrt( "rdfnam", ithndl )
@@ -105,9 +106,9 @@
 !          15 files in file filename.dat
 !          2 extra files will be generated (see below)
 
-      open (610, file = ifnam)
+      open ( newunit = luninfil, file = ifnam)
      do i = 1,  15 ! initial it was 15
-         read (610, *, end=100) lun(i), fnam(i)
+         read (luninfil, *, end=100) lun(i), fnam(i)
          lun(i) = lun(i) + 900
       enddo
 100   continue
@@ -136,9 +137,9 @@
 
 101   continue
 
-!     total number of files
+!     18. hyd file
 
-      open  (lun(iout), file = fnam(iout))
+      open  (newunit = lun(iout), file = fnam(iout))
       call write_version ( lun(2) )
       call write_version ( 0 )
 
@@ -165,7 +166,8 @@
       push    = .false.
       npos    = 200
       iposr   =   0
-      open  ( ilun(ifil), file=lch(ifil) )
+      open  ( newunit=ilun(ifil), file=lch(ifil) )
+      lun(1) = ilun(ifil)
 
 !       read irrelevant information
 
@@ -174,11 +176,17 @@
       if ( gettoken( finame  , ierr ) .ne. 0 ) goto 1000
       if ( gettoken( finame  , ierr ) .ne. 0 ) goto 1000
       if ( gettoken( finame  , ierr ) .ne. 0 ) goto 1000
-      if ( gettoken( fnam(18), ierr ) .ne. 0 ) goto 1000   ! name of the hyd file
+      if ( gettoken( fnam(18), ierr ) .ne. 0 ) goto 1000   ! name of the hyd file (actually used)
       lun(18) = lun(17)+1
 
+!     25. base file name for tracking binary his file (trk-... *.his)
+!        (base file name derived from input file - 1rst file)
+
+      fnam(25) = fnam(16)(:indx)//'.his'
+      call delete_file ( fnam(25), ierr )
+
       if      (ipri==0) then
-         open (lun(iout), file = fnam(iout), form='formatted')
+         open (newunit = lun(iout), file = fnam(iout), form='formatted')
       else
          write (lun(iout), *)  ' Filenames :'
          do 200 i = 1, 18
@@ -197,7 +205,7 @@
             npos  = npos_save
          endif
       endif
-      close(610)
+      close(luninfil)
       if ( timon ) call timstop ( ithndl )
       return
 

@@ -3,7 +3,7 @@ function url = uigeturl
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -124,8 +124,14 @@ function browse_list(h,event)
 if isempty(event)
     % mouse
     key = get(get(h,'Parent'),'selectiontype');
-else
+elseif isfield(event,'Key')
     key = event.Key;
+else
+    key = event.EventName;
+    switch key
+        case 'Action'
+            key = 'open';
+    end
 end
 j=get(h,'value');
 UD=get(h,'userdata');
@@ -160,7 +166,7 @@ elseif open
         drawnow
         flds = read_server(server,space,UD{j,4});
         while size(flds,1)==1 && strcmp(UD{j,1},flds{1,1}(3:end))
-            flds = expand_dataset(flds{2},space,flds{4},flds{5});
+            flds = expand_dataset(flds{2},space,flds{4},flds{5},flds{6});
         end
         set(get(h,'Parent'),'pointer','arrow')
         if isempty(flds)
@@ -171,7 +177,7 @@ elseif open
     else
         % expand dataset
         elm = UD{j,2};
-        flds = expand_dataset(elm,space,UD{j,4},UD{j,5});
+        flds = expand_dataset(elm,space,UD{j,4},UD{j,5},UD{j,6});
         UD{j,2} = {'opened' j+1:j+size(flds,1) elm};
         UD = cat(1,UD(1:j,:),flds,UD(j+1:end,:));
     end
@@ -209,82 +215,87 @@ catch
     ui_message('error','Error while contacting:\n%s',server)
     return
 end
-catalog = getChildren(X);
-if length(catalog)~=1 || ~strcmp(catalog.getNodeName,'catalog')
+NameSpaces = xparse('getNameSpaces',X.getFirstChild);
+catalog = xparse('getChildren',X);
+if length(catalog)~=1 || ~xparse('checkNameNS',NameSpaces,catalog,thredds,'catalog')
     ui_message('error','Unable to locate <catalog> field:\n%s',server)
     return
 end
-elm = getChildren(catalog);
-flds = expand_dataset(elm,space,server,'/thredds/dodsC/');
+elm = xparse('getChildren',catalog);
+default_base = '/thredds/dodsC/';
+flds = expand_dataset(elm,space,server,default_base,NameSpaces);
 
 
-function str = getopendap(elm)
-str = '';
-for i = 1:length(elm)
-    if strcmp(elm(i).getNodeName,'service')
-        stype = char(elm(i).getAttribute('serviceType'));
-        switch stype
-            case 'Compound'
-                elmC = getChildren(elm(i));
-                str = getopendap(elmC);
-            case 'OPENDAP'
-                str = char(elm(i).getAttribute('base'));
+function base = getopendap(base,NameSpaces,services)
+for i = 1:length(services)
+    if xparse('checkNameNS',NameSpaces,services(i),thredds,'service')
+        stype = xparse('getAttribute',services(i),'serviceType'); % or 'name' equal 'dap'
+        switch lower(stype)
+            case 'compound'
+                elmC = xparse('getChildren',services(i));
+                base = getopendap(base,NameSpaces,elmC);
+            case {'opendap','dods'}
+                base = xparse('getAttribute',services(i),'base');
+        end
+        if ~isempty(base)
+            break
         end
     end
 end
 
 
-function flds = expand_dataset(elm,space,server,odap)
+function flds = expand_dataset(elm,space,server,opendap_base,NameSpaces)
 if ischar(elm)
     flds = read_server(elm,space,server);
     return
 end
 nrec = 0;
 for i = 1:length(elm)
-    switch char(elm(i).getNodeName)
-        case 'service'
-            odap = getopendap(elm(i));
-        case {'dataset','catalogRef'}
-            nrec = nrec+1;
+    if xparse('checkNameNS',NameSpaces,elm(i),thredds,'service')
+        opendap_base = getopendap(opendap_base,NameSpaces,elm(i));
+    elseif xparse('checkNameNS',NameSpaces,elm(i),thredds,'dataset') || ...
+            xparse('checkNameNS',NameSpaces,elm(i),thredds,'catalogRef')
+        nrec = nrec+1;
     end
 end
 flds = cell(nrec,5);
 nrec = 0;
 for i = 1:length(elm)
-    switch char(elm(i).getNodeName)
-        case 'dataset'
-            nrec = nrec+1;
-            urlPath = char(elm(i).getAttribute('urlPath'));
-            if isempty(urlPath)
-                flds{nrec,1} = [space '+ ' char(elm(i).getAttribute('name'))];
-                flds{nrec,2} = getChildren(elm(i));
-            else
-                flds{nrec,1} = [space '  ' char(elm(i).getAttribute('name'))];
-                flds{nrec,2} = {'urlpath' urlPath};
+    if xparse('checkNameNS',NameSpaces,elm(i),thredds,'dataset')
+        nrec = nrec+1;
+        if isempty(xparse('getNamedChildrenNS',elm(i),NameSpaces,thredds,'dataSize'))
+            flds{nrec,1} = [space '+ ' xparse('getAttribute',elm(i),'name')];
+            flds{nrec,2} = xparse('getChildren',elm(i));
+        else
+            [urlPath,err] = xparse('getAttribute',elm(i),'urlPath');
+            if err
+                Access = xparse('getNamedChildrenNS',elm(i),NameSpaces,thredds,'access');
+                if length(Access)==1 % serviceName = 'dap' or whatever
+                    [urlPath,err] = xparse('getAttribute',Access(1),'urlPath');
+                end
+                if err
+                    urlPath = '<unkown urlPath>';
+                end
             end
-            flds{nrec,3} = space;
-            flds{nrec,4} = server;
-            flds{nrec,5} = odap;
-        case 'catalogRef'
-            nrec = nrec+1;
-            flds{nrec,1} = [space '+ ' char(elm(i).getAttribute('xlink:title'))];
-            flds{nrec,2} = char(elm(i).getAttribute('xlink:href'));
-            flds{nrec,3} = space;
-            flds{nrec,4} = server;
-            flds{nrec,5} = odap;
-        otherwise % #text
+            %
+            flds{nrec,1} = [space '  ' xparse('getAttribute',elm(i),'name')];
+            flds{nrec,2} = {'urlpath' urlPath};
+        end
+        flds{nrec,3} = space;
+        flds{nrec,4} = server;
+        flds{nrec,5} = opendap_base;
+        flds{nrec,6} = NameSpaces;
+    elseif xparse('checkNameNS',NameSpaces,elm(i),thredds,'catalogRef')
+        nrec = nrec+1;
+        flds{nrec,1} = [space '+ ' xparse('getAttributeNS',elm(i),NameSpaces,xlink,'title')];
+        flds{nrec,2} = xparse('getAttributeNS',elm(i),NameSpaces,xlink,'href');
+        flds{nrec,3} = space;
+        flds{nrec,4} = server;
+        flds{nrec,5} = opendap_base;
+        flds{nrec,6} = NameSpaces;
+    else % #text
     end
 end
-
-
-function Children = getChildren(Node)
-nChild = Node.getLength;
-c = cell(1,nChild);
-c{1} = Node.getFirstChild;
-for i = 2:nChild
-    c{i} = c{i-1}.getNextSibling;
-end
-Children = [c{:}];
 
 
 function resize(fig,arg2)
@@ -320,10 +331,6 @@ aligntop   = [0 NewSize(2)-PrevSize(2) 0 0];
 alignright = [NewSize(1)-PrevSize(1) 0 0 0];
 stretchhor = [0 0 NewSize(1)-PrevSize(1) 0];
 stretchver = [0 0 0 NewSize(2)-PrevSize(2)];
-stretch2   = stretchhor/2;
-shift2     = alignright/2;
-stretch5   = stretchhor/5;
-shift5     = alignright/5;
 %
 % Shift the buttons
 %
@@ -333,3 +340,9 @@ shiftcontrol(findobj(fig,'tag','List'),stretchver+stretchhor)
 shiftcontrol(findobj(fig,'tag','URL'),stretchhor)
 shiftcontrol(findobj(fig,'tag','Cancel'),alignright)
 shiftcontrol(findobj(fig,'tag','Open'),alignright)
+
+function thredds = thredds
+thredds = 'http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0';
+
+function xlink = xlink
+xlink = 'http://www.w3.org/1999/xlink';

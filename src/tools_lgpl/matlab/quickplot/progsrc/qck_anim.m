@@ -5,7 +5,7 @@ function qck_anim(cmd,afig,ANISteps)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -32,15 +32,6 @@ function qck_anim(cmd,afig,ANISteps)
 %   http://www.deltaressystems.com
 %   $HeadURL$
 %   $Id$
-
-persistent savedir
-if ~ischar(savedir)
-    savedir='';
-elseif ~isempty(savedir)
-    if savedir(end)~=filesep
-        savedir(end+1)=filesep;
-    end
-end
 
 if nargin<2
     afig=gcbf;
@@ -130,108 +121,24 @@ switch cmd
         set(animstop,'userdata',0)
         i0=getappdata(asld,'minival');
         i1=getappdata(asld,'maxival');
-        background=0;
-        animloop=0;
-        maxfps=25;
-        scriptname='';
+        OPS.Type = '';
+        OPS.background = 0;
+        OPS.steps = i0:i1;
+        OPS.AnimLoop = 0;
+        OPS.maxfps = 25;
+        OPS.scriptname = '';
+        ANISteps = OPS.steps;
         if nargin<3
-            [ANISteps,output,Cancel,background,animloop,maxfps,scriptname]=local_ui(i0,i1);
+            [Cancel,OPS] = runAnimationDialog(i0,i1);
             if Cancel
                 return
             end
-        else
-            output='';
+            ANISteps = OPS.steps;
         end
-        if strcmp(output,'print/export')
-            I=md_print([]);
-            if isequal(I.PrtID,0)
-                return
-            end
-            if strcmp(I.PrtID(max(1,end-4):end),' file')
-                ext=lower(strtok(I.PrtID(max(1,end-8):end)));
-                [fn,pn]=uiputfile([savedir '*.' ext],'Specify location and base ...');
-                if ~ischar(fn)
-                    return
-                end
-                savedir=pn;
-                [p,f,e]=fileparts(fn);
-                if isempty(e)
-                    e=['.' ext];
-                end
-                n='';
-                while length(f)>0 & ismember(f(end),'0123456789')
-                    n=[f(end),n];
-                    f=f(1:end-1);
-                end
-                if isempty(n)
-                    n=0;
-                    ndig=3;
-                else
-                    ndig=length(n);
-                    n=str2num(n);
-                end
-                I.BaseStr=fullfile(pn,f);
-                I.NextNr=n;
-                ndigstr=num2str(ndig);
-                I.FrmtNr=strcat('%',ndigstr,'.',ndigstr,'i');
-                I.ExtStr=e;
-            end
-        elseif strcmp(output,'avi file')
-            ext=strtok(output);
-            [fn,pn]=uiputfile([savedir '*.' ext],'Specify output file ...');
-            if ~ischar(fn)
-                return
-            end
-            savedir=pn;
-            [p,f,e]=fileparts(fn);
-            if isempty(e)
-                fn=[fn '.avi'];
-            end
-            drawnow;
-            AVIHandle = avi('initialize');
-            AVIHandle = avi('open',AVIHandle,[pn fn]);
-        elseif ~strcmp(output,'')
-            ext=strtok(output);
-            [fn,pn]=uiputfile([savedir '*.' ext],'Specify location and base ...');
-            if ~ischar(fn)
-                return
-            end
-            savedir=pn;
-            [p,f,e]=fileparts(fn);
-            n='';
-            while length(f)>0 & ismember(f(end),'0123456789')
-                n=[f(end),n];
-                f=f(1:end-1);
-            end
-            if isempty(n)
-                n=0;
-                ndig=3;
-            else
-                ndig=length(n);
-                n=str2num(n);
-            end
-            if ~isempty(strmatch(lower(e),{'.tif','.tiff','.jpg','.jpeg','.png','.bmp'},'exact'))
-                e=[e(2:end) '_'];
-            elseif ~isempty(strmatch(lower(ext),{'tif','jpg','png','bmp'},'exact'))
-                e=[ext '_'];
-            else
-                e=ext;
-            end
-            opsarg={};
-            for afgi=1:length(par_fig)
-                if length(par_fig)>1
-                    %
-                    % add some figure identification. Now: A,B,C, ...
-                    % thus limited to 26 figures parallel but should be sufficient.
-                    %
-                    opsarg={'subcase' char(64+afgi)};
-                end
-                SERIES{afgi}=series_init(fullfile(pn,f),n,'digits',ndig,opsarg{:},e);
-            end
-        end
+        streamObj = streamInitialize(OPS, par_fig);
         set(sld,'vis','off')
         set(psh,'vis','off')
-        if background
+        if OPS.background
             set(par_fig,'vis','off')
             pbfig=progressbar('cancel','closereq');
         else
@@ -251,25 +158,18 @@ switch cmd
             enable_listeners(fg,mversion)
         end
         try
-            if strcmp(output,'avi file')
-                Fig=getframe(par_fig(1));
-                %A=avi('options');
-                [AVIHandle,OK] = avi('addvideo',AVIHandle,maxfps,Fig.cdata);
-                if ~OK
-                    error('Cannot add video stream to output file.')
-                end
-            end
             NSteps=length(ANISteps);
             doloop=1;
-            min_seconds_per_frame=1/maxfps;
+            min_seconds_per_frame=1/OPS.maxfps;
             user_time_new=now*24*3600;
+            scriptname = OPS.scriptname;
             while doloop
-                if ~animloop
+                if ~OPS.AnimLoop
                     doloop=0;
                 end
-                for i0=1:NSteps,
+                for i0 = 1:NSteps
                     user_time_prev = user_time_new;
-                    i=ANISteps(i0);
+                    i = ANISteps(i0);
                     for iobj=1:length(UDh)
                         AnimObj=UDh{iobj};
                         %
@@ -295,7 +195,7 @@ switch cmd
                         local_eval(scriptname,i0);
                     end
                     drawnow
-                    if background
+                    if OPS.background
                         H=progressbar(i0/NSteps,pbfig);
                         ish=ishandle(animstop);
                         if (H<0) & any(ish)
@@ -309,30 +209,7 @@ switch cmd
                             user_time_new=now*24*3600;
                         end
                     end
-                    switch output
-                        case ''
-                        case 'print/export'
-                            if isfield(I,'BaseStr') % to file ...
-                                SubCase='';
-                                for afgi=1:length(par_fig)
-                                    if length(par_fig)>1
-                                        SubCase=char(64+afgi);
-                                    end
-                                    filename=[I.BaseStr sprintf(I.FrmtNr,I.NextNr) SubCase I.ExtStr];
-                                    md_print(par_fig(afgi),I,filename);
-                                end
-                                I.NextNr=I.NextNr+1;
-                            else % to printer ...
-                                md_print(par_fig,I);
-                            end
-                        case 'avi file'
-                            Fig=getframe(par_fig(1));
-                            AVIHandle = avi('addframe',AVIHandle,Fig.cdata);
-                        otherwise
-                            for afgi=1:length(par_fig)
-                                SERIES{afgi}=series_frame(par_fig(afgi),SERIES{afgi});
-                            end
-                    end
+                    streamObj = streamAdd(streamObj, par_fig);
                     ish=ishandle(animstop);
                     stop=get(animstop(ish),'userdata');
                     if iscell(stop)
@@ -345,17 +222,11 @@ switch cmd
                     end
                 end
             end
-            switch output
-                case 'avi file'
-                    avi('finalize',AVIHandle);
-            end
-        catch
-            ui_message('error',lasterr)
+            streamFinalize(streamObj)
+        catch Ex
+            qp_error('Catch in qck_anim:',Ex,'d3d_qp_core')
             try
-                switch output
-                    case 'avi file'
-                        avi('finalize',AVIHandle);
-                end
+                streamFinalize(streamObj)
             catch
             end
         end
@@ -594,140 +465,708 @@ end
 set(par_fig(existpar),'pointer','arrow')
 
 
-function local_eval(scriptname,i)
-eval(scriptname,'')
-
-
-function [ANISteps,output,Cancel,background,animloop,maxfps,scriptname]=local_ui(MinT,MaxT)
-Inactive = qp_settings('UIInActiveColor');
-Active   = qp_settings('UIActiveColor');
-
-outputtypes={'no output','tif files','jpg files','png files','bmp files','print/export'};
-NoBackRend=1;
-OptionsFnc={'','','','','',''};
-if strncmp(computer,'PC',2) & matlabversionnumber>=6
-    outputtypes{end+1}='avi file';
-    NoBackRend(1,end+1)=length(outputtypes);
-    %TODO: Try to render AVI in background by means of hardcopy
-    OptionsFnc{end+1}='avi options';
+function OPS = streamOptions(outputtype, OPS, interactiveMode)
+if nargin<3
+    interactiveMode = true;
 end
-Cancel=1;
-background=0;
-animloop=0;
-maxfps=25;
-scriptname='';
-uifig = local_draw_ui;
+switch outputtype
+    case 'avi file'
+        if interactiveMode
+            avi('options')
+            % options stored globally
+        end
+        
+    case 'video file'
+        if ~isfield(OPS,'vidOps')
+            OPS.vidOps = videoOptions('default');
+        end
+        if interactiveMode
+            OPS.vidOps = videoOptions(OPS.vidOps);
+        end
 
-Houtp=findobj(uifig,'tag','animation output');
-set(Houtp,'string',outputtypes);
-
-Hrendback=findobj(uifig,'tag','renderback');
-Hoptions=findobj(uifig,'tag','options');
-Hanimloop=findobj(uifig,'tag','animloop');
-
-Hscr=findobj(uifig,'tag','script','style','edit');
-if isstandalone
-    Hscripts=findobj(uifig,'tag','script');
-    set(Hscripts,'enable','off')
-    set(Hscr,'backgroundcolor',Inactive)
+    otherwise
+        % no options (or not implemented)
 end
-Hfps=findobj(uifig,'tag','max_fps');
-set(Hfps,'string',num2str(maxfps));
 
-Htim=findobj(uifig,'tag','time steps');
-ANISteps=MinT:MaxT;
-set(Htim,'string',vec2str(ANISteps,'noones','nobrackets'))
-Hnoan=findobj(uifig,'tag','noanim list');
-Han=findobj(uifig,'tag','anim list');
 
-set(uifig,'userdata',3);
-anim=1;
-animdone=0;
-output='';
-while ~animdone,
-    if isempty(get(uifig,'userdata')),
-        waitfor(uifig,'userdata');
-    end;
-    if ishandle(uifig),
-        cmd=get(uifig,'userdata');
-        set(uifig,'userdata',[]);
-    else, % figure deleted equivalent with cancel
-        % animdone=1; cmd=-1;
-        return;
-    end;
-    
-    switch cmd,
-        case -1 % cancel
-            if ishandle(uifig)
-                delete(uifig);
-            end;
-            return;
-        case 0 % continue
-            i=get(Han,'userdata');
-            output=get(Houtp,'value');
-            if ismember(output,NoBackRend)
-                background=0;
-            else
-                background=get(Hrendback,'value');
-            end
-            if output==1
-                output='';
-                animloop=get(Hanimloop,'value');
-            else
-                output=outputtypes{output};
-                animloop=0;
-            end
-            animdone=1;
-        case 3 % simsteps
-            ANISteps=str2vec(get(Htim,'string'),'range',[MinT MaxT],'applylimit');
-            set(Htim,'string',vec2str(ANISteps,'noones','nobrackets'));
-        case 4 % output options
-            output=get(Houtp,'value');
-            if ismember(output,NoBackRend)
-                set(Hrendback,'enable','off')
-            else
-                set(Hrendback,'enable','on')
-            end
-            if ~isempty(OptionsFnc{output})
-                set(Hoptions,'enable','on')
-            else
-                set(Hoptions,'enable','off')
-            end
-            if output==1
-                set(Hanimloop,'enable','on')
-            else
-                set(Hanimloop,'enable','off')
-            end
-        case 5 % max_fps
-            newfps=str2num(get(Hfps,'string'));
-            if ~isempty(newfps)
-                maxfps = newfps(1);
-            end
-            set(Hfps,'string',num2str(maxfps),'userdata',maxfps);
-        case 6 % scriptname
-            scriptname=get(Hscr,'string');
-        case 7 % options
-            output=get(Houtp,'value');
-            eval(OptionsFnc{output});
+function vidOps = videoOptions(vidOps)
+if isequal(vidOps,'default')
+    videoProfs = VideoWriter.getProfiles;
+    vidOps = [];
+    iProf = max(1,ustrcmpi('MPEG-4', {videoProfs.Name}));
+    vidOps.Profile = videoProfs(iProf);
+    return
+else
+    uifig = createVideoOptionsDialog(vidOps);
+    waitfor(uifig, 'userdata')
+    if ishandle(uifig)
+        vidOps = get(uifig,'userdata');
+        delete(uifig)
     end
 end
-if ishandle(uifig), delete(uifig); end;
-Cancel=0;
 
 
-function a=local_draw_ui
+function videoDialogCallback(hObj, varargin)
+cmd = get(hObj, 'tag');
 Inactive=get(0,'defaultuicontrolbackgroundcolor');
 Active=[1 1 1];
 
+uifig = get(hObj, 'parent');
+hProf = findobj(uifig, 'tag', 'video profile');
+hLoss = findobj(uifig, 'tag', 'lossless');
+hCRat = findobj(uifig, 'tag', 'cratio');
+hCRa2 = findobj(uifig, 'tag', 'cratio text');
+hQual = findobj(uifig, 'tag', 'quality');
+hQua2 = findobj(uifig, 'tag', 'quality text');
+hBitd = findobj(uifig, 'tag', 'bitdepth');
+hBit2 = findobj(uifig, 'tag', 'bitdepth text');
+
+iProf = get(hProf, 'value');
+Profiles = get(hProf, 'userdata');
+Profile = Profiles(iProf);
+
+VW = VideoWriter('dummy',Profile.Name);
+setProp = fieldnames(set(VW));
+
+vidOps = get(uifig, 'userdata');
+switch cmd
+    case 'video profile'
+        if ismember('LosslessCompression', setProp)
+            Lossless = Profile.LosslessCompression;
+            if isfield(vidOps,'LosslessCompression')
+                Lossless = vidOps.LosslessCompression;
+            end
+            set(hLoss, 'value', Lossless, 'enable', 'on')
+        else
+            Lossless = false;
+            set(hLoss, 'value', false, 'enable',  'off')
+        end
+        if ismember('CompressionRatio', setProp) && ~Lossless
+            CRatio = Profile.CompressionRatio;
+            if isfield(vidOps,'CompressionRatio')
+                CRatio = vidOps.CompressionRatio;
+            end
+            set(hCRat, 'string', num2str(CRatio), 'enable', 'on', 'backgroundcolor', Active, 'userdata', CRatio)
+            set(hCRa2, 'enable', 'on') 
+        else
+            set(hCRat, 'string', '', 'enable',  'off', 'backgroundcolor', Inactive)
+            set(hCRa2, 'enable', 'off') 
+        end
+        if ismember('Quality', setProp) && ~Lossless
+            Quality = Profile.Quality;
+            if isfield(vidOps,'Quality')
+                Quality = vidOps.Quality;
+            end
+            set(hQual, 'string', num2str(Quality), 'enable', 'on', 'backgroundcolor', Active, 'userdata', Quality)
+            set(hQua2, 'enable', 'on') 
+        else
+            set(hQual, 'string', '', 'enable',  'off', 'backgroundcolor', Inactive)
+            set(hQua2, 'enable', 'off') 
+        end
+        if ismember('MJ2BitDepth', setProp)
+            MJ2BitDepth = Profile.MJ2BitDepth;
+            if isfield(vidOps,'MJ2BitDepth')
+                MJ2BitDepth = vidOps.MJ2BitDepth;
+            end
+            set(hBitd, 'string', num2str(MJ2BitDepth), 'enable', 'on', 'backgroundcolor', Active, 'userdata', MJ2BitDepth)
+            set(hBit2, 'enable', 'on') 
+        else
+            set(hBitd, 'string', '', 'enable',  'off', 'backgroundcolor', Inactive)
+            set(hBit2, 'enable', 'off') 
+        end
+        
+    case 'lossless'
+        Lossless = get(hLoss, 'value');
+        if ismember('CompressionRatio', setProp) && ~Lossless
+            CRatio = Profile.CompressionRatio;
+            if isfield(vidOps,'CompressionRatio')
+                CRatio = vidOps.CompressionRatio;
+            end
+            set(hCRat, 'string', num2str(CRatio), 'enable', 'on', 'backgroundcolor', Active, 'userdata', CRatio)
+            set(hCRa2, 'enable', 'on') 
+        else
+            set(hCRat, 'string', '', 'enable',  'off', 'backgroundcolor', Inactive)
+            set(hCRa2, 'enable', 'off') 
+        end
+        if ismember('Quality', setProp) && ~Lossless
+            Quality = Profile.Quality;
+            if isfield(vidOps,'Quality')
+                Quality = vidOps.Quality;
+            end
+            set(hQual, 'string', num2str(Quality), 'enable', 'on', 'backgroundcolor', Active, 'userdata', Quality)
+            set(hQua2, 'enable', 'on') 
+        else
+            set(hQual, 'string', '', 'enable',  'off', 'backgroundcolor', Inactive)
+            set(hQua2, 'enable', 'off') 
+        end
+        
+    case 'cratio'
+        CRatio = str2double(get(hCRat, 'string'));
+        if isnan(CRatio) || CRatio <= 1
+            ui_message('error', 'CompressionRatio should be a value > 1.')
+            CRatio = Profile.CompressionRatio;
+        end
+        set(hCRat, 'string', num2str(CRatio), 'userdata', CRatio)
+        
+    case 'quality'
+        Quality = str2double(get(hQual, 'string'));
+        if isnan(Quality) || Quality < 0 || Quality > 100
+            ui_message('error', 'Quality should be a value >= 0 and <= 100.')
+            Quality = Profile.Quality;
+        end
+        set(hCRat, 'string', num2str(Quality), 'userdata', Quality)
+        
+    case 'bitdepth'
+        MJ2BitDepth = str2double(get(hBitd, 'string'));
+        if isnan(MJ2BitDepth) || MJ2BitDepth < 1 || MJ2BitDepth > 16 || round(MJ2BitDepth)~=MJ2BitDepth
+            ui_message('error', 'Bit Depth should be an integer in the range 1 to 16.')
+            MJ2BitDepth = Profile.MJ2BitDepth;
+        end
+        set(hBitd, 'string', num2str(MJ2BitDepth), 'userdata', MJ2BitDepth)
+        
+    case 'cancel'
+        delete(uifig)
+        return
+        
+    case 'ok'
+        vidOps.Profile = Profile;
+        Lossless = false;
+        if ismember('LosslessCompression', setProp)
+            Lossless = logical(get(hLoss,'value'));
+            vidOps.LosslessCompression = Lossless;
+        elseif isfield(vidOps, 'LosslessCompression')
+            vidOps = rmfield(vidOps, 'LosslessCompression');
+        end
+        if ismember('CompressionRatio', setProp) && ~Lossless
+            vidOps.CompressionRatio = get(hCRat,'userdata');
+        elseif isfield(vidOps, 'CompressionRatio')
+            vidOps = rmfield(vidOps, 'CompressionRatio');
+        end
+        if ismember('Quality', setProp) && ~Lossless
+            vidOps.Quality = get(hQual,'userdata');
+        elseif isfield(vidOps, 'Quality')
+            vidOps = rmfield(vidOps, 'Quality');
+        end
+        if ismember('MJ2BitDepth', setProp) && ~isempty(get(hBitd,'userdata'))
+            vidOps.MJ2BitDepth = get(hBitd,'userdata');
+        elseif isfield(vidOps, 'MJ2BitDepth')
+            vidOps = rmfield(vidOps, 'MJ2BitDepth');
+        end
+        %
+        set(uifig, 'userdata', vidOps)
+        
+    otherwise
+        ui_message('error', 'Command %s not yet implemented in videoDialogCallback.', cmd)
+end
+
+
+function a = createVideoOptionsDialog(vidOps)
+Inactive=get(0,'defaultuicontrolbackgroundcolor');
+Active=[1 1 1];
+
+Width = 400;
+LineHeight = 25;
 ss=qp_getscreen;
-figsize=[320 45+6*25];
+figsize=[Width 45+6*LineHeight];
 VOffset=figsize(2)-5;
 
-a=qp_uifigure('Specify Animation Parameters','','QuickPlot animate items',[ss(1:2)+(ss(3:4)-figsize)/2 figsize]);
+a=qp_uifigure('Video Settings','','QuickPlot video options dialog',[ss(1:2)+(ss(3:4)-figsize)/2 figsize]);
 %
 % Output format ...
 %
-VOffset=VOffset-25;
+VOffset=VOffset-LineHeight;
+b = uicontrol('Parent',a, ...
+    'BackgroundColor',Inactive, ...
+    'Position',[10 VOffset 50 18], ...
+    'HorizontalAlignment','left', ...
+    'String','Profile', ...
+    'Style','text', ...
+    'Tag','');
+
+Profiles = VideoWriter.getProfiles;
+ProfNames = {Profiles.Name};
+iProf = max(1, ustrcmpi(vidOps.Profile.Name, ProfNames));
+hProf = uicontrol('Parent',a, ...
+    'BackgroundColor',Active, ...
+    'Position',[60 VOffset Width-70 20], ...
+    'HorizontalAlignment','right', ...
+    'callback',@videoDialogCallback, ...
+    'String',ProfNames, ...
+    'Value',iProf, ...
+    'Style','popupmenu', ...
+    'Tag','video profile', ...
+    'Tooltip','Select the video file type.', ...
+    'UserData',Profiles);
+%
+% Lossless compression ...
+%
+VOffset=VOffset-LineHeight;
+b = uicontrol('Parent',a, ...
+    'Position',[60 VOffset Width-170 18], ...
+    'HorizontalAlignment','left', ...
+    'String','Lossless Compression', ...
+    'Style','checkbox', ...
+    'callback',@videoDialogCallback, ...
+    'Value',0, ...
+    'Tooltip','Select whether lossless compression should be used.', ...
+    'Tag','lossless');
+%
+% Compression Ratio ...
+%
+VOffset=VOffset-LineHeight;
+b = uicontrol('Parent',a, ...
+    'Position',[60 VOffset Width-170 18], ...
+    'HorizontalAlignment','left', ...
+    'String','Compression Ratio', ...
+    'Style','text', ...
+    'Tag','cratio text');
+
+b = uicontrol('Parent',a, ...
+    'BackgroundColor',Active, ...
+    'Position',[Width-110 VOffset 100 20], ...
+    'HorizontalAlignment','right', ...
+    'callback',@videoDialogCallback, ...
+    'String','', ...
+    'Style','edit', ...
+    'Tooltip','The compression ratio is the ratio between the number of bytes in the input image and the number of bytes in the compressed image. Compression Ratio >= 1.', ...
+    'Tag','cratio');
+%
+% Quality ...
+%
+VOffset=VOffset-LineHeight;
+b = uicontrol('Parent',a, ...
+    'Position',[60 VOffset Width-170 18], ...
+    'HorizontalAlignment','left', ...
+    'String','Quality', ...
+    'Style','text', ...
+    'Tag','quality text');
+
+b = uicontrol('Parent',a, ...
+    'BackgroundColor',Active, ...
+    'Position',[Width-110 VOffset 100 20], ...
+    'HorizontalAlignment','right', ...
+    'callback',@videoDialogCallback, ...
+    'String','', ...
+    'Style','edit', ...
+    'Tooltip', 'Video quality, specified as an integer in the range, [0,100]. Higher quality numbers result in higher video quality and larger file sizes. Lower quality numbers result in lower video quality and smaller file sizes.', ...
+    'Tag','quality');
+%
+% MJ2BitDepth ...
+%
+VOffset=VOffset-LineHeight;
+b = uicontrol('Parent',a, ...
+    'Position',[60 VOffset Width-170 18], ...
+    'HorizontalAlignment','left', ...
+    'String','Bit Depth', ...
+    'Style','text', ...
+    'Tag','bitdepth text');
+
+b = uicontrol('Parent',a, ...
+    'BackgroundColor',Active, ...
+    'Position',[Width-110 VOffset 100 20], ...
+    'HorizontalAlignment','right', ...
+    'callback',@videoDialogCallback, ...
+    'String','', ...
+    'Style','edit', ...
+    'Tooltip', 'Bit depth for Motion JPEG 2000 files, specified as an integer in the range [1,16]. The bit depth is the number of least-significant bits in the input image data. Use empty for automatic.', ...
+    'Tag','bitdepth');
+
+%    'Colormap'
+
+%
+% Cancel or OK  ...
+%
+W = (Width-30)/2;
+b = uicontrol('Parent',a, ...
+    'callback',@videoDialogCallback, ...
+    'Position',[20+W 10 W 20], ...
+    'String','OK', ...
+    'Tag','ok');
+b = uicontrol('Parent',a, ...
+    'callback',@videoDialogCallback, ...
+    'Position',[10 10 W 20], ...
+    'String','Cancel', ...
+    'Tag','cancel');
+%
+% Show figure ...
+%
+set(a,'userdata',vidOps)
+videoDialogCallback(hProf)
+set(a,'visible','on')
+
+function streamObj = streamInitialize(OPS, figures)
+persistent savedir
+if ~ischar(savedir)
+    savedir = '';
+elseif ~isempty(savedir)
+    if savedir(end) ~= filesep
+        savedir(end+1) = filesep;
+    end
+end
+
+streamObj.Type = '';
+streamObj.maxfps = OPS.maxfps;
+switch OPS.Type
+    case ''
+        return
+
+    case 'print/export'
+        streamObj.printObj = md_print([]);
+        PrtID = streamObj.printObj.PrtID;
+        if isequal(PrtID, 0)
+            return
+        end
+        if strcmp(PrtID(max(1,end-4):end), ' file')
+            ext = streamObj.printObj.ext;
+            [fn, pn] = uiputfile([savedir, '*.', ext], 'Specify location and base ...');
+            if ~ischar(fn)
+                return
+            end
+            [p,f,e] = fileparts(fn);
+            if isempty(e)
+                e = ['.' ext];
+            end
+            nr = 0;
+            ndig = 0;
+            if ~ismember(PrtID,{'Multi page PDF file','QUICKPLOT session file'})
+                while length(f)>ndig && ismember(f(end-ndig), '0123456789')
+                    ndig = ndig+1;
+                end
+                if ndig == 0
+                    ndig = 3;
+                else
+                    nr = sscanf(f(end-ndig+1:end),'%d');
+                    f = f(1:end-ndig);
+                end
+            end
+            streamObj.BaseStr = fullfile(pn,f);
+            streamObj.NextNr = nr;
+            if ndig>0
+                ndigstr = num2str(ndig);
+                streamObj.FrmtNr = strcat('%',ndigstr,'.',ndigstr,'i');
+            else
+                streamObj.FrmtNr = '';
+            end
+            streamObj.ExtStr = e;
+        end
+
+    case 'avi file'
+        [fn,pn]=uiputfile([savedir '*.avi'], 'Specify output file ...');
+        if ~ischar(fn)
+            return
+        end
+        [p,f,e] = fileparts(fn);
+        if isempty(e)
+            fn = [fn '.avi'];
+        end
+        aviObj = avi('initialize');
+        aviObj = avi('open', aviObj, [pn, fn]);
+        streamObj.aviObj = aviObj;
+        streamObj.First = true;
+
+    case 'video file'
+        e0 = OPS.vidOps.Profile.FileExtensions{1};
+        [fn, pn] = uiputfile([savedir, '*', e0], 'Specify output file ...');
+        if ~ischar(fn)
+            return
+        end
+        [p,f,e] = fileparts(fn);
+        if isempty(e)
+            fn = [fn, e0];
+        end
+        vidObj = VideoWriter([pn, fn], OPS.vidOps.Profile.Name);
+        vidObj.FrameRate = OPS.maxfps;
+        open(vidObj);
+        streamObj.vidObj = vidObj;
+
+    otherwise
+        ext = strtok(OPS.Type);
+        [fn, pn] = uiputfile([savedir, '*.', ext], 'Specify location and base ...');
+        if ~ischar(fn)
+            return
+        end
+        [p,f,e] = fileparts(fn);
+        n = '';
+        while length(f)>0 && ismember(f(end),'0123456789')
+            n = [f(end),n];
+            f = f(1:end-1);
+        end
+        if isempty(n)
+            n = 0;
+            ndig = 3;
+        else
+            ndig = length(n);
+            n = str2num(n);
+        end
+        if ~isempty(strmatch(lower(e),{'.tif','.tiff','.jpg','.jpeg','.png','.bmp'},'exact'))
+            e = [e(2:end) '_'];
+        elseif ~isempty(strmatch(lower(ext),{'tif','jpg','png','bmp'},'exact'))
+            e = [ext '_'];
+        else
+            e = ext;
+        end
+        opsarg = {};
+        for afgi = 1:length(figures)
+            if length(figures)>1
+                %
+                % add some figure identification. Now: A,B,C, ...
+                % thus limited to 26 figures parallel but should be sufficient.
+                %
+                opsarg = {'subcase' char(64+afgi)};
+            end
+            streamObj.imgSeries{afgi} = series_init(fullfile(pn,f),n,'digits',ndig,opsarg{:},e);
+        end
+end
+streamObj.Type = OPS.Type;
+savedir = pn;
+
+
+function streamObj = streamAdd(streamObj, figures)
+switch streamObj.Type
+    case ''
+        % nothing
+        
+    case 'print/export'
+        if isfield(streamObj,'BaseStr') % to file ...
+            SubCase = '';
+            for ifig = 1:length(figures)
+                if length(figures) > 1
+                    SubCase = char(64+ifig);
+                end
+                filename = [streamObj.BaseStr sprintf(streamObj.FrmtNr, streamObj.NextNr) SubCase streamObj.ExtStr];
+                streamObj.printObj = md_print(figures(ifig), streamObj.printObj, filename, 'keepopen');
+            end
+            streamObj.NextNr = streamObj.NextNr + 1;
+        else % to printer ...
+            md_print(figures, streamObj.printObj);
+        end
+        
+    case 'avi file'
+        if streamObj.First
+            Fig = getframe(figures(1));
+            [streamObj.aviObj, OK] = avi('addvideo', streamObj.aviObj, streamObj.maxfps, Fig.cdata);
+            if ~OK
+                error('Cannot add video stream to output file.')
+            end
+            streamObj.First = false;
+        end
+        Fig = getframe(figures(1));
+        streamObj.aviObj = avi('addframe', streamObj.aviObj, Fig.cdata);
+        
+    case 'video file'
+        Fig = getframe(figures(1));
+        if strcmp(streamObj.vidObj.VideoFormat,'Indexed')
+            if isfield(streamObj,'Colormap')
+                X = rgb2ind(Fig.cdata,streamObj.Colormap);
+                Fig.cdata = X;
+                Fig.colormap = streamObj.Colormap;
+            else
+                [X,map] = rgb2ind(Fig.cdata,256);
+                Fig.cdata = X;
+                Fig.colormap = map;
+                streamObj.Colormap = map;
+            end
+            writeVideo(streamObj.vidObj, Fig);
+        else
+            writeVideo(streamObj.vidObj, Fig.cdata);
+        end
+        
+    otherwise
+        for ifig = 1:length(figures)
+            streamObj.imgSeries{ifig} = series_frame(figures(ifig), streamObj.imgSeries{ifig});
+        end
+end
+
+
+function streamFinalize(streamObj)
+switch streamObj.Type
+    case 'print/export'
+        if isfield(streamObj,'BaseStr') % close print file if open ...
+            streamObj.printObj = md_print([], streamObj.printObj);
+        end
+        
+    case 'avi file'
+        avi('finalize',streamObj.aviObj);
+        
+    case 'video file'
+        close(streamObj.vidObj);
+        
+    otherwise
+        % nothing
+end
+
+
+function local_eval(scriptname, i)
+eval(scriptname,'')
+
+
+function [Cancel,OPS] = runAnimationDialog(MinT,MaxT)
+output_ops = {...
+    ... % name, background render, options
+    'no output'   , 0, 0
+    'tif files'   , 1, 0
+    'jpg files'   , 1, 0
+    'png files'   , 1, 0
+    'bmp files'   , 1, 0
+    'print/export', 1, 0};
+if 1
+    % VideoWriter
+    output_ops(end+1,:) = {'video file', 0, 1};
+end
+if strncmp(computer,'PC',2) && matlabversionnumber>=6
+    % writeavi option available using Video for Windows
+    output_ops(end+1,:) = {'avi file', 0, 1};
+    %TODO: Try to render AVI in background by means of hardcopy
+end
+%
+outputtypes = output_ops(:,1)';
+output_ops = cell2struct(output_ops, {'Name', 'SupportsBackground', 'HasOptions'},2);
+
+uifig = createAnimationDialog;
+
+Houtp = findobj(uifig, 'tag', 'animation output');
+set(Houtp, ...
+    'string' ,outputtypes, ...
+    'userdata', output_ops);
+
+OPS.maxfps = 25;
+Hfps=findobj(uifig,'tag','max_fps');
+set(Hfps,'string',num2str(OPS.maxfps),'userdata',OPS.maxfps);
+
+Htim = findobj(uifig, 'tag', 'time steps');
+set(Htim, 'string', sprintf('%i:%i', MinT, MaxT), 'userdata', MinT:MaxT);
+setappdata(Htim, 'range', [MinT, MaxT]);
+
+waitfor(uifig, 'userdata');
+if ishandle(uifig)
+    OPS = get(uifig, 'userdata');
+    Cancel = 0;
+    %
+    delete(uifig);
+else
+    Cancel = 1;
+end
+
+
+function animationDialogCallback(hObj, varargin)
+cmd = get(hObj, 'tag');
+
+uifig = get(hObj, 'parent');
+Houtp     = findobj(uifig, 'tag', 'animation output');
+Hrendback = findobj(uifig, 'tag', 'renderback');
+Hanimloop = findobj(uifig, 'tag', 'animloop');
+Hoptions  = findobj(uifig, 'tag', 'options');
+Htim      = findobj(uifig, 'tag', 'time steps');
+Hfps      = findobj(uifig, 'tag', 'max_fps');
+Hscr      = findobj(uifig, 'tag', 'script');
+Hok       = findobj(uifig, 'tag', 'ok');
+
+output = get(Houtp, 'value');
+outputtypes = get(Houtp, 'string');
+outputtype = outputtypes{output};
+
+switch cmd
+    case 'animation output'
+        %
+        output_ops = get(Houtp, 'userdata');
+        if output_ops(output).SupportsBackground
+            set(Hrendback, 'enable', 'on')
+        else
+            set(Hrendback, 'enable', 'off')
+        end
+        if output_ops(output).HasOptions
+            set(Hoptions,'enable','on')
+            OPS = get(Hoptions, 'userdata');
+            OPS = streamOptions(outputtype, OPS, false);
+            set(Hoptions, 'userdata', OPS)
+        else
+            set(Hoptions,'enable','off')
+        end
+        if output==1
+            set(Hanimloop,'enable','on')
+        else
+            set(Hanimloop,'enable','off')
+        end
+        
+    case 'options'
+        OPS = get(Hoptions, 'userdata');
+        OPS = streamOptions(outputtype, OPS);
+        set(Hoptions, 'userdata', OPS)
+
+    case 'time steps'
+         Range = getappdata(Htim, 'range');
+         try
+             ANISteps = str2vec(get(Htim, 'string'), 'range', Range, 'applylimit');
+             set(Htim, ...
+                 'foregroundcolor','k', ...
+                 'userdata', ANISteps)
+             % 'string', vec2str(ANISteps, 'noones', ...
+             set(Hok,'enable','on') % conditional on other checks?
+         catch
+             set(Htim, ...
+                 'foregroundcolor','r')
+             set(Hok,'enable','off')
+         end
+        
+    case 'max_fps'
+        newfps = str2num(get(Hfps,'string'));
+        if ~isempty(newfps)
+            maxfps = newfps(1);
+        end
+        set(Hfps, 'string', num2str(maxfps), 'userdata', maxfps);
+        
+    case 'script'
+        %no check yet ... 
+        %
+        %scriptname = get(Hscr, 'string');
+        %if exist(scriptname) ~= 2
+        %   ui_message('error','A script named ''%s'' does not exist.',scriptname)
+        %end
+        
+    case 'cancel'
+        delete(uifig)
+        return
+        
+    case 'ok'
+        OPS = get(Hoptions, 'userdata');
+        
+        if strcmp(get(Hrendback,'enable'),'on')
+            OPS.background = get(Hrendback,'value');
+        else
+            OPS.background = 0;
+        end
+        if output == 1
+            OPS.Type = '';
+            OPS.AnimLoop = get(Hanimloop,'value');
+        else
+            OPS.Type = outputtype;
+            OPS.AnimLoop = 0;
+        end
+        OPS.steps  = get(Htim, 'userdata');
+        OPS.maxfps = get(Hfps, 'userdata');
+        OPS.scriptname = get(Hscr, 'string');
+        set(uifig, 'userdata', OPS)
+        
+    otherwise
+        ui_message('error', 'Command %s not yet implemented in animationDialogCallback.', cmd)
+end
+
+
+function a = createAnimationDialog
+Inactive=get(0,'defaultuicontrolbackgroundcolor');
+Active=[1 1 1];
+
+LineHeight = 25;
+Width = 400;
+ss=qp_getscreen;
+figsize=[Width 45+6*LineHeight];
+VOffset=figsize(2)-5;
+
+a=qp_uifigure('Animation Settings','','QuickPlot animate items',[ss(1:2)+(ss(3:4)-figsize)/2 figsize]);
+%
+% Output format ...
+%
+VOffset=VOffset-LineHeight;
 b = uicontrol('Parent',a, ...
     'BackgroundColor',Inactive, ...
     'Position',[10 VOffset 50 18], ...
@@ -738,18 +1177,18 @@ b = uicontrol('Parent',a, ...
 
 b = uicontrol('Parent',a, ...
     'BackgroundColor',Active, ...
-    'Position',[60 VOffset 250 20], ...
+    'Position',[60 VOffset Width-70 20], ...
     'HorizontalAlignment','right', ...
-    'callback','set(gcbf,''userdata'',4)', ...
+    'callback',@animationDialogCallback, ...
     'String','Animation Output', ...
     'Style','popupmenu', ...
     'Tag','animation output');
 %
 % Render in background ...
 %
-VOffset=VOffset-25;
+VOffset=VOffset-LineHeight;
 b = uicontrol('Parent',a, ...
-    'Position',[60 VOffset 150 18], ...
+    'Position',[60 VOffset Width-170 18], ...
     'HorizontalAlignment','left', ...
     'String','Render in Background', ...
     'Style','checkbox', ...
@@ -760,16 +1199,16 @@ b = uicontrol('Parent',a, ...
 % Render options ...
 %
 b = uicontrol('Parent',a, ...
-    'Position',[210 VOffset 100 20], ...
+    'Position',[Width-110 VOffset 100 20], ...
     'HorizontalAlignment','left', ...
-    'callback','set(gcbf,''userdata'',7)', ...
+    'callback',@animationDialogCallback, ...
     'String','Options', ...
     'Enable','off', ...
     'Tag','options');
 %
 % Simulation steps ...
 %
-VOffset=VOffset-25;
+VOffset=VOffset-LineHeight;
 b = uicontrol('Parent',a, ...
     'BackgroundColor',Inactive, ...
     'Position',[10 VOffset 50 18], ...
@@ -780,18 +1219,18 @@ b = uicontrol('Parent',a, ...
 
 b = uicontrol('Parent',a, ...
     'BackgroundColor',Active, ...
-    'Position',[60 VOffset 250 20], ...
+    'Position',[60 VOffset Width-70 20], ...
     'HorizontalAlignment','left', ...
-    'callback','set(gcbf,''userdata'',3)', ...
+    'callback',@animationDialogCallback, ...
     'String','1', ...
     'Style','edit', ...
     'Tag','time steps');
 %
-% Render in background ...
+% Loop until stopped  ...
 %
-VOffset=VOffset-25;
+VOffset=VOffset-LineHeight;
 b = uicontrol('Parent',a, ...
-    'Position',[60 VOffset 250 18], ...
+    'Position',[60 VOffset Width-70 18], ...
     'HorizontalAlignment','left', ...
     'String','Loop until Stopped', ...
     'Style','checkbox', ...
@@ -800,58 +1239,65 @@ b = uicontrol('Parent',a, ...
 %
 % Maximum frame rate ...
 %
-VOffset=VOffset-25;
+VOffset=VOffset-LineHeight;
 b = uicontrol('Parent',a, ...
-    'Position',[60 VOffset 150 18], ...
+    'Position',[60 VOffset Width-170 18], ...
     'HorizontalAlignment','left', ...
     'String','Maximum Frame Rate (fps)', ...
     'Style','text');
 
 b = uicontrol('Parent',a, ...
     'BackgroundColor',Active, ...
-    'Position',[210 VOffset 100 20], ...
+    'Position',[Width-110 VOffset 100 20], ...
     'HorizontalAlignment','right', ...
-    'callback','set(gcbf,''userdata'',5)', ...
+    'callback',@animationDialogCallback, ...
     'String','', ...
     'Style','edit', ...
     'Tag','max_fps');
 %
 % Script name ...
 %
-VOffset=VOffset-25;
-b = uicontrol('Parent',a, ...
+VOffset=VOffset-LineHeight;
+h1 = uicontrol('Parent',a, ...
     'BackgroundColor',Inactive, ...
     'Position',[10 VOffset 50 18], ...
     'HorizontalAlignment','left', ...
     'String','Script', ...
     'Style','text', ...
-    'Tag','script');
+    'Tag','script_txt');
 
-b = uicontrol('Parent',a, ...
+h2 = uicontrol('Parent',a, ...
     'BackgroundColor',Active, ...
-    'Position',[60 VOffset 250 20], ...
+    'Position',[60 VOffset Width-70 20], ...
     'HorizontalAlignment','left', ...
-    'callback','set(gcbf,''userdata'',6)', ...
+    'callback',@animationDialogCallback, ...
     'String','', ...
     'Style','edit', ...
     'Tag','script');
+
+if isstandalone
+    set(h1,'enable','off')
+    set(h2, 'enable', 'off', 'backgroundcolor', Inactive)
+end
 %
-% Cancel or continue  ...
+% Cancel or OK  ...
 %
+W = (Width-30)/2;
 b = uicontrol('Parent',a, ...
-    'callback','set(gcbf,''userdata'',0)', ...
-    'Position',[165 10 145 20], ...
-    'String','Continue', ...
-    'Tag','continue');
+    'callback',@animationDialogCallback, ...
+    'Position',[20+W 10 W 20], ...
+    'String','OK', ...
+    'Tag','ok');
 b = uicontrol('Parent',a, ...
-    'callback','set(gcbf,''userdata'',-1)', ...
-    'Position',[10 10 145 20], ...
+    'callback',@animationDialogCallback, ...
+    'Position',[10 10 W 20], ...
     'String','Cancel', ...
     'Tag','cancel');
 %
 % Show figure ...
 %
 set(a,'visible','on')
+
 
 function disable_listeners(fg,mversion)
 %Disable listeners

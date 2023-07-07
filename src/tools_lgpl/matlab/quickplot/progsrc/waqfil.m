@@ -19,6 +19,7 @@ function S = waqfil(cmd,file,varargin)
 %
 %   Volume, salinity, temperature, and shear stress files
 %     * .vol, .sal, .tem, .vdf, .tau files: NSeg
+%     * new .srf files fall into this category as well
 %
 %   Segment function and parameter files
 %     * .segfun files                     : NSeg, NPar
@@ -36,7 +37,7 @@ function S = waqfil(cmd,file,varargin)
 %     * .chz files                        : -
 %
 %   Segment surface area and depth files
-%     * .srf, *.dps files                 : -
+%     * .srf (old format), *.dps files    : -
 %
 %   table files
 %     * .lgt files                        : -
@@ -45,7 +46,7 @@ function S = waqfil(cmd,file,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -96,8 +97,12 @@ switch lower(cmd(1:4))
                 S = openlen(file,varargin{:});
             case '.chz'
                 S = openchz(file,varargin{:});
-            case {'.srf','.dps'}
-                S = opensrf(file,varargin{:});
+            case {'.srf','.srfold','.dps'}
+                if nargin==3
+                    S = openvol(file,varargin{:});
+                else
+                    S = opensrf(file,varargin{:});
+                end
             case '.lgt'
                 S = openlgt(file,varargin{:});
             otherwise
@@ -119,11 +124,13 @@ switch lower(cmd(1:4))
             case '.len'
                 S = readlen(file,varargin{:});
             case '.chz'
-                %S = readchz(file,varargin{:});
                 S = file.Chezy(varargin{end},:)';
-            case {'.srf','.dps'}
-                %S = readsrf(file,varargin{:});
-                S = file.Srf;
+            case {'.srf','.srfold','.dps'}
+                if isfield(file,'Srf')
+                    S = file.Srf;
+                else
+                    S = readvol(file,varargin{:});
+                end
             case '.lgt'
                 S = readlgt(file,varargin{:});
         end
@@ -271,6 +278,9 @@ else
     X = fread(fid,[1 6],'int32');
 end
 %
+if X(1)==0
+    error('Could this be a new format srf file?')
+end
 S.Dims    = X(1:2);
 S.NAct    = X(3);
 S.XXX     = X(4:6);

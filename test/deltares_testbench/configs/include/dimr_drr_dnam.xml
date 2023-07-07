@@ -1,0 +1,1853 @@
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e108(drr)_f02(dnam)_c01_382_baseflow" ref="drr_default">
+            <path>e108_drr/f02_dnam/c01_382_baseflow</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file> 
+                <!--                
+                <file name="dimr_screen.log" type="NUMBERTEXT">
+                    <skipline>Dimr</skipline>
+                </file>
+                -->
+                <file name="rr/3b_bal.out" type="NUMBERTEXT">
+                    <skipline>Balance error</skipline>
+                 </file>
+                 <file name="rr/3b_gener.out" type="NUMBERTEXT">
+                    <skipline>Run datum</skipline>
+                </file>
+                 <file name="rr/bound3b.out" type="NUMBERTEXT">
+                    <skipline>Run datum</skipline>
+                </file>
+                 <file name="rr/rr-ready" type="NUMBERTEXT">
+                </file>
+                <file name="rr/sobek_3b.dbg" type="NUMBERTEXT">
+                </file>
+                <file name="rr/sobek_3b.rtn" type="NUMBERTEXT">
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
+
+
+        <testCase name="e108(drr)_f02(dnam)_c02_448_baseflow" ref="drr_default">
+            <path>e108_drr/f02_dnam/c02_448_baseflow</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+		
+	-->	
+		
+		
+         <testCase name="e108(drr)_f02(dnam)_c03_449_gwpump" ref="drr_default">
+            <path>e108_drr/f02_dnam/c03_449_gwpump</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>    
+        <testCase name="e108(drr)_f02(dnam)_c04_450_gwpump" ref="drr_default">
+            <path>e108_drr/f02_dnam/c04_450_gwpump</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>  
+        <testCase name="e108(drr)_f02(dnam)_c05_451_gwpump" ref="drr_default">
+            <path>e108_drr/f02_dnam/c05_451_gwpump</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
+
+
+		
+        <testCase name="e108(drr)_f02(dnam)_c06_452_gwinflow" ref="drr_default">
+            <path>e108_drr/f02_dnam/c06_452_gwinflow</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+		
+	-->	
+		
+        <testCase name="e108(drr)_f02(dnam)_c07_453_capillary_rise" ref="drr_default">
+            <path>e108_drr/f02_dnam/c07_453_capillary_rise</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>     
+        <testCase name="e108(drr)_f02(dnam)_c08_454_transpiration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c08_454_transpiration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>     
+        <testCase name="e108(drr)_f02(dnam)_c09_455_evaporation" ref="drr_default">
+            <path>e108_drr/f02_dnam/c09_455_evaporation</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>              
+        <testCase name="e108(drr)_f02(dnam)_c10_456_transpiration_evaporation" ref="drr_default">
+            <path>e108_drr/f02_dnam/c10_456_transpiration_evaporation</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>                  
+        <testCase name="e108(drr)_f02(dnam)_c11_457_rainfall" ref="drr_default">
+            <path>e108_drr/f02_dnam/c11_457_rainfall</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>                        
+        <testCase name="e108(drr)_f02(dnam)_c12_458_interflow" ref="drr_default">
+            <path>e108_drr/f02_dnam/c12_458_interflow</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>          
+        <testCase name="e108(drr)_f02(dnam)_c13_459_overland_flow" ref="drr_default">
+            <path>e108_drr/f02_dnam/c13_459_overland_flow</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>          
+        <testCase name="e108(drr)_f02(dnam)_c14_460_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c14_460_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c15_461_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c15_461_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c16_462_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c16_462_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c17_463_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c17_463_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c18_464_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c18_464_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c19_465_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c19_465_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c20_466_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c20_466_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c21_467_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c21_467_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c22_468_infiltration" ref="drr_default">
+            <path>e108_drr/f02_dnam/c22_468_infiltration</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c23_469_correction_NH_distribution" ref="drr_default">
+            <path>e108_drr/f02_dnam/c23_469_correction_NH_distribution</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+        <testCase name="e108(drr)_f02(dnam)_c24_470_correction_NH_distribution" ref="drr_default">
+            <path>e108_drr/f02_dnam/c24_470_correction_NH_distribution</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+		
+		
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen		
+		
+		
+		
+        <testCase name="e108(drr)_f02(dnam)_c25_471_correction_NH_distribution" ref="drr_default">
+            <path>e108_drr/f02_dnam/c25_471_correction_NH_distribution</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase> 
+
+	-->
+
+
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
+
+
+        <testCase name="e108(drr)_f02(dnam)_c26_472_baseflow_timestep_consistency" ref="drr_default">
+            <path>e108_drr/f02_dnam/c26_472_baseflow_timestep_consistency</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase> 
+		
+	-->	
+		
+		
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen	
+
+	
+        <testCase name="e108(drr)_f02(dnam)_c27_473_gwinflow_timestep_consistency" ref="drr_default">
+            <path>e108_drr/f02_dnam/c27_473_gwinflow_timestep_consistency</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase> 
+
+    -->
+
+        <testCase name="e108(drr)_f02(dnam)_c28_474_interflow_timestep_consistency" ref="drr_default">
+            <path>e108_drr/f02_dnam/c28_474_interflow_timestep_consistency</path>
+            <checks>
+                <file name="rr/3bareas.his" type="HIS">
+                    <parameters>
+                        <parameter name="Node area" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/3blinks.his" type="HIS">
+                    <parameters>
+                        <parameter name="Link flow" location="D-NAM_1_Outflow" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                        <parameter name="Boundary Level" location="h_Bnd_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+                        <parameter name="Rainfall" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="PotEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="ActEvap" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Runoff" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="Outflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpDefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZoneLayer" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapRootZonePartGWStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM EvapLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM OverlandFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Interflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM FastBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM SlowBaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM ExternalGWInflowGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpAbsGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpSupGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Infiltration" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM InfiltrationLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM Percolation" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM CapillaryRise" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM DepthGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeSurfaceStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeLowerZoneStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM VolumeGroundwaterStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterLevel" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GroundWaterTableDepth" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM AvailableSoilStorage" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM BaseFlow" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActualDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                        <parameter name="D-NAM GWPumpActual-DefinedDischarge" location="D-NAM_1" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>              
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase> 
+    </testCases>

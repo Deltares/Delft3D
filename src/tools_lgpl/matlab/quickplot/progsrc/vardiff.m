@@ -23,7 +23,7 @@ function out=vardiff(var1,var2,fid,formatflag,var1name,var2name)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -58,13 +58,17 @@ if nargin<3
     fid = double(nargout==0);
 end
 if nargin>3
-    switch lower(formatflag)
+    formatflag = lower(formatflag);
+    switch formatflag
         case 'html'
             br='<br>\n';
+        case {'latex','latex-longtable'}
+            br='\\newline\n';
         otherwise
             br='\n';
     end
 else
+    formatflag='';
     br='\n';
 end
 if fid
@@ -74,114 +78,218 @@ if fid
     if nargin<5
         var1name = inputname(1);
     end
-    printdiff(fid,br,'init',var1name,var2name)
+    printdiff(fid,br,'init',formatflag,var1name,var2name)
 end
 
-DiffFound=0;
+DiffFound = 0;
 try
     if isequal(var1,var2)
         myfprintf(fid,['The variables are identical and they don''t contain NaNs.' br]);
     else
-        DiffFound=1+detailedcheck(var1,var2,fid,br,'');
+        DiffFound = 1 + detailedcheck(var1,var2,fid,formatflag,br,'');
         switch DiffFound
             case 1
                 myfprintf(fid,['The variables are identical, but they do contain NaNs.' br])
+            otherwise
+                switch formatflag
+                    case 'latex'
+                        myfprintf(fid,['\\end{tabular}' br]);
+                    case 'latex-longtable'
+                        myfprintf(fid,'\\end{longtable}\n');
+                    otherwise
+                        % nothing to end
+                end
         end
     end
-catch
-    error('An unexpected error occurred while comparing the files:\n%s',lasterr)
+catch Ex
+    Ex2.message = ['An unexpected error occurred while comparing the files:\n' Ex.message];
+    Ex2.identifier = '';
+    Ex2.stack = Ex.stack;
+    rethrow(Ex2)
 end
 if nargout>0
-    out=DiffFound;
+    out = DiffFound;
 end
 
 
 % -----------------------------------------------------------------------
 %  Function used for printing ...
 % -----------------------------------------------------------------------
-function printdiff(fid,br,pflag,varargin)
-persistent var1 var2
+function printdiff(fid,br,pflag,formatflag,varargin)
+persistent var1 var2 firstdiff
+if ~isequal(pflag,'init') 
+    if firstdiff
+        startEnvironment(fid,var1,var2,formatflag)
+        firstdiff = false;
+    end
+end
 switch pflag
     case 'init'  % varname1, varname2
-        myfprintf(fid,['Comparing variables ...' br]);
         s1=varargin{1};
         s2=varargin{2};
-        myfprintf(fid,'Variable 1: ');
         if isempty(s1)
             var1='VAR1';
-            myfprintf(fid,['<expression> indicated as VAR1' br]);
         else
             var1=s1;
-            myfprintf(fid,['%s' br],var1);
         end
-        myfprintf(fid,'Variable 2: ');
         if isempty(s2)
             var2='VAR2';
-            myfprintf(fid,['<expression> indicated as VAR2' br br]);
         else
             var2=s2;
-            myfprintf(fid,['%s' br br],var2);
         end
+        myfprintf(fid,['Comparing ',var1,' with ',var2, br]);
+        firstdiff = true;
     case 'class'  % classvar1, classvar2, subscript string
         cls1=varargin{1};
         cls2=varargin{2};
         substr=varargin{3};
-        myfprintf(fid,['Class (%s) of %s%s differs from class (%s) of %s%s.' br],cls1,var1,substr,cls2,var2,substr);
+        switch formatflag
+            case {'latex','latex-longtable'}
+                myfprintf(fid,'\\STRUT %s class & %s & %s \\\\ \\hline\n',substr,cls1,cls2);
+            otherwise
+                myfprintf(fid,['Class (%s) of %s%s differs from class (%s) of %s%s.' br],cls1,var1,substr,cls2,var2,substr);
+        end
     case 'size'   % classvar1, classvar2, subscript string
         sz1=varargin{1};
         sz2=varargin{2};
         substr=varargin{3};
-        myfprintf(fid,'Size of %s%s is [%i',var1,substr,sz1(1));
-        myfprintf(fid,' %i',sz1(2:end));
-        myfprintf(fid,'], but size of %s%s is [%i',var2,substr,sz2(1));
-        myfprintf(fid,' %i',sz2(2:end));
-        myfprintf(fid,['].' br]);
+        sz1_str = sprintf('%i ',sz1);
+        sz1_str = ['[' sz1_str(1:end-1) ']'];
+        sz2_str = sprintf('%i ',sz2);
+        sz2_str = ['[' sz2_str(1:end-1) ']'];
+        switch formatflag
+            case {'latex','latex-longtable'}
+                myfprintf(fid,'\\STRUT %s size & %s & %s \\\\ \\hline\n',substr,sz1_str,sz2_str);
+            otherwise
+                myfprintf(fid,['Size of %s%s is %s, but size of %s%s is %s.' br],var1,substr,sz1_str,var2,substr,sz2_str);
+        end
     case 'data'  % subscript string
-        substr=varargin{1};
-        myfprintf(fid,['Data of %s%s differs from data contained in %s%s.' br],var1,substr,var2,substr);
+        d1_str=var2str(varargin{1});
+        d2_str=var2str(varargin{2});
+        substr=varargin{3};
+        switch formatflag
+            case {'latex','latex-longtable'}
+                if isequal(d1_str,d2_str) || size(d1_str,1)>1 || size(d2_str,1)>1
+                    myfprintf(fid,'\\STRUT %s & \\multicolumn{2}{c}{%s} \\\\ \\hline\n',substr,'data differs');
+                else
+                    myfprintf(fid,'\\STRUT %s & %s & %s \\\\ \\hline\n',substr,d1_str,d2_str);
+                end
+            otherwise
+                myfprintf(fid,['Data of %s%s differs from data contained in %s%s.' br],var1,substr,var2,substr);
+        end
     case 'fieldnames'  % fieldnames1,fieldnames2,subscript string
         fn1=varargin{1};
         fn2=varargin{2};
         substr=varargin{3};
         sfn1=setdiff(fn1,fn2);
-        if ~isempty(sfn1)
-            myfprintf(fid,['%s%s contains the following fields not part of %s%s:' br],var1,substr,var2,substr);
-            myfprintf(fid,['  %s' br],sfn1{:});
-        end
         sfn2=setdiff(fn2,fn1);
+        if ~isempty(sfn1)
+            switch formatflag
+                case {'latex','latex-longtable'}
+                    lend = '';
+                    for i = 1:length(sfn1)
+                        if i == length(sfn1)
+                            lend = ' \hline';
+                        end
+                        myfprintf(fid,'\\STRUT %s.%s & %s & %s \\\\%s\n',substr,sfn1{i},'\cmark','\xmark',lend);
+                    end
+                otherwise
+                    myfprintf(fid,['%s%s contains the following fields not part of %s%s:' br],var1,substr,var2,substr);
+                    myfprintf(fid,['  %s' br],sfn1{:});
+            end
+        end
         if ~isempty(sfn2)
-            myfprintf(fid,['%s%s contains the following fields not part of %s%s:' br],var2,substr,var1,substr);
-            myfprintf(fid,['  %s' br],sfn2{:});
+            switch formatflag
+                case {'latex','latex-longtable'}
+                    lend = '';
+                    for i = 1:length(sfn2)
+                        if i == length(sfn2)
+                            lend = ' \hline';
+                        end
+                        myfprintf(fid,'\\STRUT %s.%s & %s & %s \\\\%s\n',substr,sfn2{i},'\xmark','\cmark',lend);
+                    end
+                otherwise
+                    myfprintf(fid,['%s%s contains the following fields not part of %s%s:' br],var2,substr,var1,substr);
+                    myfprintf(fid,['  %s' br],sfn2{:});
+            end
         end
         if isempty(sfn1) && isempty(sfn2)
-            myfprintf(fid,['The order of fields in %s%s differs from those in %s%s:' br],var2,substr,var1,substr);
             sfn1 = char(fn1);
             sfn2 = char(fn2);
             [f1,i1] = sort(fn1);
             [f2,i2] = sort(fn2);
             [ii,r2] = sort(i2);
-            for i = 1:length(fn1)
-               if strcmp(fn1{i},fn2{i})
-                  myfprintf(fid,['  %2i %s [same]' br],i,sfn1(i,:));
-               else
-                  myfprintf(fid,['  %2i %s - %2i %s' br],i,sfn1(i,:),i1(r2(i)),sfn2(i,:));
-               end
+            switch formatflag
+                case {'latex','latex-longtable'}
+                    myfprintf(fid,'\\STRUT %s field & %s & %s \\\\\n',substr,'','');
+                    lend = '';
+                    for i = 1:length(fn1)
+                        if i == length(fn1)
+                            lend = ' \hline';
+                        end
+                        if strcmp(fn1{i},fn2{i})
+                            myfprintf(fid,'\\STRUT field %2i & %s & %s \\\\%s\n',i,sfn1(i,:),'[same]',lend);
+                        else
+                            myfprintf(fid,'\\STRUT field %2i & %s & %s \\\\%s\n',i,sfn1(i,:),sfn2(i,:),lend);
+                        end
+                    end
+                otherwise
+                    myfprintf(fid,['The order of fields in %s%s differs from those in %s%s:' br],var2,substr,var1,substr);
+                    for i = 1:length(fn1)
+                        if strcmp(fn1{i},fn2{i})
+                            myfprintf(fid,['  %2i %s [same]' br],i,sfn1(i,:));
+                        else
+                            myfprintf(fid,['  %2i %s [%s] - %2i %s [%s]' br],i,sfn1(i,:),var1,i1(r2(i)),sfn2(i,:),var2);
+                        end
+                    end
             end
         end
+end
+
+
+function startEnvironment(fid,var1,var2,formatflag)
+switch formatflag
+    case 'latex'
+        myfprintf(fid,'%s\n','\begin{tabular}{|l|l|l|}');
+        myfprintf(fid,'%s\n',['\hline \STRUT & ',var1,' & ',var2,' \\ \hline']);
+    case 'latex-longtable'
+        myfprintf(fid,'%s\n','\begin{longtable}{|l|l|l|}');
+        myfprintf(fid,'%s\n','\hiderowcolors');
+        myfprintf(fid,'%s\n','\caption{Overview of the differences} \\');
+        myfprintf(fid,'%s\n','\showrowcolors');
+        myfprintf(fid,'%s\n','\hline');
+        myfprintf(fid,'%s%s%s%s%s\n','\rowcolor{magenta!25!cyan!50} \STRUT & \textbf{',var1,'} & \textbf{',var2,'} \\ [1ex] \hline');
+        myfprintf(fid,'%s\n','\endfirsthead');
+        myfprintf(fid,'%s\n','%');
+        myfprintf(fid,'%s\n','\hiderowcolors');
+        myfprintf(fid,'%s\n','\multicolumn{3}{c}{{\STRUT \tablename\ \thetable{} -- continued from previous page}} \\ [1ex] \hline');
+        myfprintf(fid,'%s\n','\showrowcolors');
+        myfprintf(fid,'%s%s%s%s%s\n','\rowcolor{magenta!25!cyan!50} \STRUT & \textbf{',var1,'} & \textbf{',var2,'} \\ [1ex] \hline');
+        myfprintf(fid,'%s\n','\endhead');
+        myfprintf(fid,'%s\n','%');
+        myfprintf(fid,'%s\n','\hline');
+        myfprintf(fid,'%s\n','\hiderowcolors');
+        myfprintf(fid,'%s\n','\multicolumn{3}{r}{{\STRUT \tablename \thetable{} -- continued on next page}} \\');
+        myfprintf(fid,'%s\n','\showrowcolors');
+        myfprintf(fid,'%s\n','\endfoot');
+        myfprintf(fid,'%s\n','%');
+        myfprintf(fid,'%s\n','\endlastfoot');
+    otherwise
+        % nothing to start
 end
 
 
 % -----------------------------------------------------------------------
 %  Function used for recursive checking ...
 % -----------------------------------------------------------------------
-function DiffFound=detailedcheck(s1,s2,fid,br,substr)
-DiffFound=0;
+function DiffFound = detailedcheck(s1,s2,fid,formatflag,br,substr)
+DiffFound = 0;
 if ~isequal(class(s1),class(s2))  % different classes?
-    DiffFound=1;
-    printdiff(fid,br,'class',class(s1),class(s2),substr);
+    DiffFound = 1;
+    printdiff(fid,br,'class',formatflag,class(s1),class(s2),substr);
 elseif ~isequal(size(s1),size(s2))  % different size?
-    DiffFound=1;
-    printdiff(fid,br,'size',size(s1),size(s2),substr);
+    DiffFound = 1;
+    printdiff(fid,br,'size',formatflag,size(s1),size(s2),substr);
 elseif iscell(s1)  % & s2 is also cell! if cell -> check per element
     if ndims(s1)==2 && min(size(s1))==1
         % vector
@@ -197,12 +305,22 @@ elseif iscell(s1)  % & s2 is also cell! if cell -> check per element
         if length(ivec)>1
             [ivec{:}] = ind2sub(size(s1),i);
             istr = sprintf('%i,',ivec{:});
-            str = sprintf('%s{%s}',substr,istr(1:end-1));
+            switch formatflag
+                case {'latex','latex-longtable'}
+                    str = sprintf('%s\\{%s\\}',substr,istr(1:end-1));
+                otherwise
+                    str = sprintf('%s{%s}',substr,istr(1:end-1));
+            end
         else
-            str = sprintf('%s{%i}',substr,i);
+            switch formatflag
+                case {'latex','latex-longtable'}
+                    str = sprintf('%s\\{%i\\}',substr,i);
+                otherwise
+                    str = sprintf('%s{%i}',substr,i);
+            end
         end
         if ~isequal(s1{i},s2{i})
-            Diff=detailedcheck(s1{i},s2{i},fid,br,str);
+            Diff = detailedcheck(s1{i},s2{i},fid,formatflag,br,str);
             if Diff
                 if ~DiffFound
                     DiffFound=Diff;
@@ -225,17 +343,35 @@ elseif isstruct(s1) || isobject(s1)
     nf=length(fn1);
     [sfn1,i1] = sort(fn1);
     [sfn2,i2] = sort(fn2);
+    if ~isequal(fn1,fn2) && ~isequal(sfn1,sfn2) % fieldnames the same?
+        DiffFound = 1;
+        printdiff(fid,br,'fieldnames',formatflag,fn1,fn2,substr);
+        rfn1 = setdiff(fn1,fn2);
+        rfn2 = setdiff(fn2,fn1);
+        s1 = rmfield(s1,rfn1);
+        s2 = rmfield(s2,rfn2);
+        if fid == 0
+            return
+        end
+        switch formatflag
+            case {'latex','latex-longtable'}
+                % print nothing
+            otherwise
+                myfprintf(fid,'Checking other fields ...\n')
+        end
+        fn1=fieldnames(s1);
+        fn2=fieldnames(s2);
+        nf=length(fn1);
+        [sfn1,i1] = sort(fn1);
+        [sfn2,i2] = sort(fn2);
+    end
     if ~isequal(fn1,fn2) && isequal(sfn1,sfn2)
         s1=struct2cell(s1);
         s2=struct2cell(s2);
         s1 = s1(i1,:);
         s2 = s2(i2,:);
         fields = sfn1;
-        printdiff(fid,br,'fieldnames',fn1,fn2,substr);
-    elseif ~isequal(fn1,fn2)  % fieldnames the same?
-        DiffFound=1;
-        printdiff(fid,br,'fieldnames',fn1,fn2,substr);
-        return
+        printdiff(fid,br,'fieldnames',formatflag,fn1,fn2,substr);
     else
         s1=struct2cell(s1);
         s2=struct2cell(s2);
@@ -247,14 +383,17 @@ elseif isstruct(s1) || isobject(s1)
         if j>nf
             j=1;
         end
-        if numel(s1)~=nf
-            Nsubstr=sprintf('%s(%i).%s',substr,(i-j)/nf+1,fields{j});
-        else
-            Nsubstr=sprintf('%s.%s',substr,fields{j});
-        end
-        if ~isequal(s1{i},s2{i})
-            Diff=detailedcheck(s1{i},s2{i},fid,br,Nsubstr);
+        s1i = s1{i};
+        s2i = s2{i};
+        if ~isequal(s1i,s2i) || ~isequal(class(s1i),class(s2i)) 
+            if numel(s1)~=nf
+                Nsubstr=sprintf('%s(%i).%s',substr,(i-j)/nf+1,fields{j});
+            else
+                Nsubstr=sprintf('%s.%s',substr,fields{j});
+            end
+            Diff = detailedcheck(s1i,s2i,fid,formatflag,br,Nsubstr);
             if Diff
+                Diff = Diff+1;
                 if ~DiffFound
                     DiffFound=Diff;
                 else
@@ -262,9 +401,6 @@ elseif isstruct(s1) || isobject(s1)
                 end
             end
         end
-    end
-    if DiffFound
-        DiffFound=DiffFound+1;
     end
 else  % some numeric type of equal size
     if isempty(s1)  % same size, numeric, empty -> no difference
@@ -276,7 +412,7 @@ else  % some numeric type of equal size
         DiffFound=~isequal(s1,s2);
     end
     if DiffFound
-        printdiff(fid,br,'data',substr);
+        printdiff(fid,br,'data',formatflag,s1,s2,substr);
     end
 end
 

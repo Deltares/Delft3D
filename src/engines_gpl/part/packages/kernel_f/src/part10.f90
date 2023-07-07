@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -30,11 +30,12 @@ contains
                           area   , angle  , nmax   , mnmaxk , idelt  ,      &
                           nopart , npart  , mpart  , xpart  , ypart  ,      &
                           zpart  , iptime , rough  , drand  , lgrid2 ,      &
+                          zmodel , laytop , laybot , &
                           wvelo  , wdir   , decays , wpart  , pblay  ,      &
                           npwndw , vdiff  , nosubs , dfact  , modtyp ,      &
                           t0buoy , abuoy  , kpart  , mmax   , layt   ,      &
-                          wsettl , depth  , ldiffz , ldiffh , lcorr  ,      &
-                          acomp  , ipc    , accur  , xcor   , ycor   ,      &
+                          wsettl , depth  , ldiffz , ldiffh , &
+                          acomp  , accur  , xcor   , ycor   , &
                           tcktot , lun2   , alpha  , mapsub , nfract ,      &
                           taucs  , tauce  , chezy  , rhow   , lsettl ,      &
                           mstick , nstick , ioptdv , cdisp  , dminim ,      &
@@ -43,73 +44,18 @@ contains
                           mpart0 , za     , locdep , dps    , nolay  ,      &
                           vrtdsp , stickdf, subst  , nbmax  , nconn  ,      &
                           conn   , tau    , caltau , nboomint , iboomset ,  &
-                          tyboom , efboom , xpolboom , ypolboom , nrowsboom , itime)
+                          tyboom , efboom , xpolboom , ypolboom , nrowsboom , &
+                          itime  , v_swim , d_swim )
 !
 !    CALCULATES PARTICLE MOTION FROM ADVECTION, DISPERSION AND SETTLING
 !                 (per time step)
-!
 
-!     system administration : frank kleissen
-
-
-!     created               : january 1990, by l. postma
-
-
-!     modified              : August 1990 by r.j.diependaal
-!                             uses a vertical dispersion coefficient
-!                             that is averaged over the vertical
-!                             August 1990 by l.postma
-!                             particle displacement is calculated in a
-!                             more sophisticated manner (cross-overs to other
-!                             segments induce a new calculation!)
-!                           : February 1991 by a. hendriks and a. markus
-!                             account for oil particles ( z coordinate
-!                             larger than 1, and a two-layer system,
-!                             where the two layers are recognised by
-!                             positive and negative z coordinates and
-!                             a separate parameter in drand)
-!                           : March 1991 by a. markus (no oil anymore)
-!                           : July 1992 by r.j. vos, for 8 substances
-!                             with identical transport but different
-!                             decay
-!               delparv2.20:  April  1994 by r.j. vos, for buoyancy
-!                             with more than 1 discharge and only in
-!                             upper layer !!!
-!               delparv3.00:  May    1994 by l.postma, smooth loading
-!                             for continuous releases
-!                             June   1994 by r.j. vos, uniform sampling
-!                             in x and y direction for horizontal
-!                             random walk
-!               delparv3.10:  May    1996 by r.j. vos  3d version
-!                             for the time being no pred-corr and uniform diff.
-!                             including predictor-corrector of dunsbergen
-!               delparv3.21:  Okt    1996 by r.j. vos  3d version
-!               delparv3.22:  Nov    1996 by r.j. vos: correction pred-corr scheme 3d version
-!               delparv3.40:  Nov    1997 by r.j. vos: 3d version with oil
-!                             oil is transported as floating when any of the fractions
-!                             of oil within the particle has a mass larger zero.
-!               delparv3.43:  July   1998 by r.j. vos: settling/erosion at the bed
-!                             a particle at the bed gets kp = 0
-!               delparv3.50:  Sept   1998 by r.j. vos: mass may stick to land
-!                                                      by horizontal diffusion or settling
-!               delparv3.60:  April  1999 by r.j. vos: constant vertical diffusivity added
-!                                                      sticking oil: definitions changed
-!                                                      sticking parameter introduced
-!               delparv3.60:  July     2000 by r.j. vos: when floating oil
-!                                                         sticks, then prevent dispersed to
-!                                                         overwrite the stick array
-!                             July     2007 by Leo Postma: redesign of this routine, thin dams
-!                                                          for advection and diffusion
-!                             ????     ???? by Jan van Beek: unofficial DD support
-!                             June     2011 by Leo Postma: support OMP parallelism
-!                             October  2011 by Leo Postma: official support Domain Decomposition
 
 !     logical unit numbers  : standard output: error messages
 !                             lun2           : error and debug messages
 
 
 !     subroutines called    : stop_exit  - stops with return code (typical 1 for stop on error)
-!                             p10cor  - function unknow
 !                             part07  - not documented here
 !                             part11  - not documented here
 
@@ -118,23 +64,17 @@ contains
 !                             vdisp   - not documented here
 !
 !
-!**   modules and externals
-!     note:
-!       random function rnd() must be declared external, as it is an
-!       intrinsic function for the lahey fortran95 compiler under linux
-!
 !  data definition module(s)
 !
       use precision_part        ! single/double precision
       use timers           ! performance timer
       use typos
-      use p10cor_mod
       use grid_search_mod
       use spec_feat_par    ! special feature parameters
+      use random_generator
+      use m_part_modeltypes
 !
       implicit none             ! force explicit typing
-
-      real   (sp), external      :: rnd                 ! random number function
 
 !**   parameters used for dimensioning
 
@@ -150,17 +90,20 @@ contains
       integer(ip), intent(in)    :: idelt               ! time step size in seconds
       integer(ip), intent(in)    :: ioptdv              ! if 0 constant vertical diffusion &
                                                         ! if 1 depth averaged algebraic model
-      integer(ip), intent(in)    :: ipc                 ! if > 1 predictor corrector method used &
-                                                        ! if   5 something special happens
-      integer(ip), pointer    :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-      integer(ip), pointer    :: lgrid2( :, : )      ! total grid with grid numbers
-      integer(ip), intent(in)    :: lun2                ! unit number debug in formation file
-      integer(ip), pointer    :: mapsub( : )         ! index for substances, used for oil
-      integer(ip), intent(in)    :: modtyp              ! 1 = tracer model              &
+      integer(ip), pointer    :: lgrid (:, : )          ! grid with active grid numbers, negatives for open boundaries
+      integer(ip), pointer    :: lgrid2(:, : )          ! total grid with grid numbers
+      logical    , intent(in) :: zmodel                 ! layer type
+      integer(ip), intent(in) :: laytop(:, :)           ! highest active layer in z-layer model
+      integer(ip), intent(in) :: laybot(:, :)           ! deepest active layer in z-layer model
+      integer(ip), intent(in) :: lun2                   ! unit number debug in formation file
+      integer(ip), pointer    :: mapsub(: )             ! index for substances, used for oil
+      integer(ip), intent(in) :: modtyp                 ! 1 = tracer model              &
                                                         ! 2 = 2-layer temperature model &
                                                         ! 3 = obsolete                  &
                                                         ! 4 = oil model                 &
-                                                        ! 5 = 1-layer temperature model
+                                                        ! 5 = 1-layer temperature model &
+                                                        ! 6 = plastics model
+                                                        ! 7 = abm model
       integer(ip), intent(in)    :: nfract              ! nr of oil fractions, each fraction 3 substances &
                                                         ! floating, dispersed and sticked
       integer(ip), intent(in)    :: npwndw              ! first active particle
@@ -178,7 +121,6 @@ contains
       integer(ip), pointer :: floil ( : )         ! contains values 1 or 0
 !
       logical    , intent(in)    :: acomp               ! use an analytical function for umagi
-      logical    , intent(in)    :: lcorr               ! if true, apply the corrector step
       logical    , intent(in)    :: ldiffh              ! horizontal diffusion is on/off
       logical    , intent(in)    :: ldiffz              ! vertical diffusion is on/off
       logical    , intent(in)    :: lsettl              ! if on deposition/erosion may occur at the bed
@@ -250,6 +192,9 @@ contains
 
       integer(ip), intent(in   ) :: itime
 
+      real   (sp), pointer       :: v_swim( : )         ! horizontal swimming velocity m/s
+      real   (sp), pointer       :: d_swim( : )         ! horizontal swimming direction (degree)
+
 !**   local parameters
 
 
@@ -264,7 +209,6 @@ contains
       integer(ip)   :: ierror                  ! needed to call part07
       integer(ip)   :: ifract                  ! loop counter for nfract
       integer(ip)   :: ipart                   ! loop counter particle loop
-      integer(ip)   :: ipcgo                   ! unclear helpvariable
       integer(ip)   :: isub                    ! loop counter nosubs
       integer(ip)   :: itdelt                  ! delta-t of the particle for smooth loading
       integer(ip)   :: ivisit( 4 )             ! part of the strange construct of icvis
@@ -272,9 +216,12 @@ contains
       integer(ip)   :: kd                      ! loop counter of vertical layers
       integer(ip)   :: kp                      ! k of the particle
       integer(ip)   :: kpp                     ! local k of the particle
+      integer(ip)   :: ktopp                   ! local k top of the particle
+      integer(ip)   :: kbotp                   ! local k bot of the particle
       integer(ip)   :: mp                      ! m of the particle
       integer(ip)   :: n0                      ! segment number 2d
       integer(ip)   :: n03d                    ! segment number 3d
+      integer(ip)   :: n0old                   ! old value of segment number 2d
       integer(ip)   :: n0new                   ! new value of segment number 2d
       integer(ip)   :: n1                      ! one back from n0 in first index
       integer(ip)   :: n2                      ! one back from n0 in second index
@@ -287,9 +234,9 @@ contains
       logical       :: dstick                  ! logical that determines sticking
       logical       :: ldispo                  ! vertical diffusion is on (true) or off (false) for oil particle
       logical       :: lstick                  ! keeps the possibility to stick
-      logical       :: oilmod                  ! = modtyp .eq. 4
+      logical       :: oilmod                  ! = modtyp .eq. model_oil
       logical       :: threed                  ! = layt .gt. 1
-      logical       :: twolay                  ! = modtyp .eq. 2
+      logical       :: twolay                  ! = modtyp .eq. model_two_layer_temp
       real(dp)      :: a                       ! tsja
       real(sp)      :: codef                   ! cosine of deflection angle
       real(sp)      :: dxx                     ! delta x with deflected oil
@@ -304,7 +251,6 @@ contains
       real(sp)      :: c2g                     ! = grav / chezy / chezy
       real(sp)      :: c3                      ! something undeterminded yet, fixed at 1.0
       real(sp)      :: cdrag                   ! wind drag in fraction = drand(3)
-      real(sp)      :: cf                      ! help variable
       real(sp)      :: chi0                    ! variable in correction process
       real(sp)      :: chi1                    ! variable in correction process
       real(sp)      :: dax                     ! delta of diffusive spreading x
@@ -367,6 +313,7 @@ contains
       real(sp)      :: vz0                     ! particle velocity in z dir. 0
       real(sp)      :: vz1                     ! particle velocity in z dir. 1
       real(sp)      :: vznew                   ! particle velocity in z dir. corrected
+      real(sp)      :: vzs                     ! vertical velocity due to settling
       real(sp)      :: wdirr                   ! is wind direction in radians
       real(sp)      :: wstick                  ! used in fraction computation with oil
       real(sp)      :: wsum                    ! used to sum the weights of a particle
@@ -378,6 +325,7 @@ contains
       real(sp)      :: ypold                   ! old y of the particle needed for the correction routine
       real(sp)      :: znew                    ! new z value
       real(sp)      :: zp                      ! z of the particle
+      real(sp)      :: zpabs                   ! absolute z of the particle
       real(sp)      :: zp2                     ! help variable to correct z of the particle for twolay
       real(sp)      :: zpold                   ! old z of the particle needed for the correction routine
       integer(ip)   :: n03d2                   ! help variable sequence number of cell in next layer
@@ -408,8 +356,15 @@ contains
       logical       :: bouncefirsttry
       real(sp)      :: xabounce
       real(sp)      :: yabounce
+      real(sp)      :: sdir                ! swimming direction
+      real(sp)      :: displacement        ! swimming displacement
+      real(sp)      :: dx_swim             ! dx swimming displacement
+      real(sp)      :: dy_swim             ! dy swimming displacement
 
       integer(ip)   :: nboomtry
+      integer(ip)   :: nscreenstry
+      logical       :: screensfirsttry
+      logical       :: leftside
 
 !**   maintain all values
 
@@ -425,6 +380,8 @@ contains
       logical  :: first  = .true.
       logical  :: lbott  = .true.
       logical  :: lland  = .true.
+
+      logical  :: timon_org
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "part10", ithndl )
@@ -440,8 +397,8 @@ contains
          twopi  = 8.0 * atan(1.0)
          defang = defang * twopi / 360.0    !  deflection angle oil modelling
          coriol = abs(defang) .ge. 1.0e-6   !  deflection from the equator aparently
-         twolay = modtyp .eq. 2
-         oilmod = modtyp .eq. 4
+         twolay = modtyp .eq. model_two_layer_temp
+         oilmod = modtyp .eq. model_oil
          threed = layt .gt. 1
          cdrag  = drand(3) / 100.0          !  wind drag as a fraction
          ptlay  = 1.0 - pblay
@@ -522,23 +479,26 @@ contains
       nopart_sed=0
       nopart_ero=0
 
-      timon = .false.
-!$OMP PARALLEL DO PRIVATE ( np, mp, kp, kpp, n0, a, n03d, xp, yp, zp, tp,          &
-!$OMP                       itdelt, ddfac, dran1, abuac, deltt, dred, kd, icvis,   &
-!$OMP                       icvist, ivisit, lstick, wsum, isub, jsub, ifract,      &
-!$OMP                       pstick, wstick, ldispo, trp, t0, dax, day,             &
+      timon_org = timon
+      timon     = .false.
+!$OMP PARALLEL DO PRIVATE ( np, mp, kp, kpp, ktopp, kbotp, n0, n0old, a, n03d, xp, &
+!$OMP                       yp, zp, tp, itdelt, ddfac, dran1, abuac, deltt, dred,  &
+!$OMP                       kd, icvis, icvist, ivisit, lstick, wsum, isub, jsub,   &
+!$OMP                       ifract, pstick, wstick, ldispo, trp, t0, dax, day,     & 
 !$OMP                       n1, n2, dxp, dyp, depth1, idep, vol, vy0, vy1,         &
 !$OMP                       vx0, vx1, vvx, vvy, vx, vy, vxr, vyr, ubstar, ubstar_b,&
-!$OMP                       vz0, vz1, disp, dvz, depthl, dvzs, dvzt, icounz,       &
-!$OMP                       znew, sangl, zp2, c1, f1, c2, c3, ipc, xnew,           &
-!$OMP                       idepm1, vvz, vz, umagp, cf, rtimx, idx, rtimy, idy,    &
-!$OMP                       rtimz, idz, rtim, rtim1, ipcgo, xpold, ypold, zpold,   &
+!$OMP                       vz0, vz1, disp, dvz, depthl, dvzs, dvzt, vzs, icounz,  &
+!$OMP                       znew, sangl, zp2, c1, f1, c2, c3, xnew,                &
+!$OMP                       idepm1, vvz, vz, umagp, rtimx, idx, rtimy, idy,        &
+!$OMP                       rtimz, idz, rtim, rtim1, xpold, ypold, zpold,          &
 !$OMP                       chi0, vxnew, vynew, vznew, chi1, ynew, vxw, vyw,       &
 !$OMP                       deppar, yy, n0new, depth2, dstick, xx, n03d2, disp2,   &
 !$OMP                       pbounce, xpnew, ypnew, xrest, yrest, dxpnew,           &
-!$OMP                       dypnew, mpnew, npnew, ddshift, wdirr, uwstar,          &
-!$OMP                       nboomtry, boomseffective, xaold, yaold, xanew, yanew,  &
-!$OMP                       xacatch, yacatch, catch, xabounce, yabounce, bounce) , &
+!$OMP                       dypnew, mpnew, npnew, ddshift, wdirr, uwstar, nboomtry,&
+!$OMP                       boomseffective, bouncefirsttry, xaold, yaold, xanew,   &
+!$OMP                       yanew, xacatch, yacatch, catch, xabounce, yabounce,    &
+!$OMP                       bounce, screensfirsttry, nscreenstry, leftside ,       &
+!$OMP                       sdir, displacement, dx_swim, dy_swim) ,                &
 !$OMP           REDUCTION ( +   : ninact, nstpar, nopart_ero, nopart_sed,          &
 !$OMP                             nrms  , dsprms ) ,                               &
 !$OMP           REDUCTION ( MIN : dspmin ) , REDUCTION ( MAX : dspmax ),           &
@@ -552,9 +512,18 @@ contains
          mp  = mpart(ipart)
          kp  = kpart(ipart)
          kpp = kp
+
          if ( twolay ) kpp = 1             !   two layers are dealt with as one
                                            !   settling particles at the bed come in layer layt + 1
-         kpp = min0 ( kp, layt )           !   kpp is a pointer that won't reach the bed..
+         if(zmodel) then
+            kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
+            ktopp = laytop(np,mp)
+            kbotp = laybot(np,mp)
+         else
+            kpp = min0 ( kp, layt )           !   kpp is a pointer that won't reach the bed..
+            ktopp = 1
+            kbotp = layt
+         endif
          n0  = lgrid( np, mp   )
          if ( n0 .lt. 1 ) then             !   not an active grid-cell
             ninact       = ninact + 1
@@ -592,8 +561,8 @@ contains
             elseif ( kp .eq. 2 ) then
                dred = pblay
             else
-               write (*,*) ' The layer-number is too large for modtyp=2'
-               write( lun2,*) ' The layer-number is too large for modtyp=2'
+               write (*,*) ' The layer-number is too large for modtyp=2 (model_two_layer_temp)'
+               write( lun2,*) ' The layer-number is too large for modtyp=2 (model_two_layer_temp)'
                call stop_exit(1)
             endif
          endif
@@ -651,7 +620,7 @@ contains
 !**     look whether the (oil)particle floats (version 3.40)
 
          ldispo = .true.
-         if ( oilmod .and. kp==1 .and. zpart(ipart)<=zsurf ) then
+         if ( oilmod .and. kp==ktopp .and. zpart(ipart)<=zsurf ) then
             wsum = 0.0                             !   location must be floating
             do isub = 1, nfract                    !   and at least one of the
                jsub = mapsub( (isub-1)*3 + 1 )     !   fractions has floating
@@ -668,8 +637,8 @@ contains
             if ( twolay .and. t0 .gt. 0.0 .and. kp .eq. 1 ) then
                trp = max( trp , abuac * (tp+t0)**(-0.125) )     ! bouyancy spreading parameter
             endif
-            dax = sq6 * trp * (rnd(rseed) - 0.5)
-            day = sq6 * trp * (rnd(rseed) - 0.5)
+            dax = sq6 * trp * (rnd(rseed) - 0.5) ! jvb: This should be changd into a distance and angle rather than x and y direction
+            day = sq6 * trp * (rnd(rseed) - 0.5) ! if we want to make dispersion dependent on direction of wind/current
          else
             dax = 0.0
             day = 0.0
@@ -694,8 +663,12 @@ contains
 
          ! first calculate or get ubstar_b at the bottom used for sedimentation and erosion
 
-         if ( kpp .ne. layt ) then                  ! tau from file is only defined for bottom layer
-            idep   = (layt - 1) * nmax * mmax
+         if ( kpp .ne. kbotp ) then                  ! tau from file is only defined for bottom layer
+            if (zmodel) then
+               idep   = (kbotp - 1) * nmax * mmax
+            else
+               idep   = (layt - 1) * nmax * mmax
+            endif
             if ( caltau ) then
                vol    = volume(n0 + idep  )
                vy0    = flow  (n1 + idep  ) / vol
@@ -710,13 +683,22 @@ contains
                vyr    = vy  * dyp
                ubstar_b = sqrt(c2g*(vxr*vxr + vyr*vyr))
             else
-               ubstar_b = tau(n0 + idep) / rhow
+               ubstar_b = sqrt(tau(n0 + idep) / rhow)
             endif
          endif
 
 
          idep   = (kpp - 1) * nmax * mmax
          vol    = volume( n03d )
+         
+         ! Particles should not find themselves in a segment with zero volume, but it
+         ! might happen with restarted calculations. If so, let them be - there is no
+         ! sensible transport step we can take
+
+         if ( vol == 0.0 ) then
+            cycle
+         endif
+         
          vy0    = flow  (n1 + idep  ) / vol
          vy1    = flow  (n0 + idep  ) / vol
          vx0    = flow  (n2 + idep + mnmaxk) / vol
@@ -730,11 +712,11 @@ contains
 
          ! get or calculate ubstar for the actual layer
 
-         if ( kpp .eq. layt ) then
+         if ( kpp .eq. kbotp ) then
             if ( caltau ) then
                ubstar = sqrt(c2g*(vxr*vxr + vyr*vyr))  ! ubstar this is requiered for disersion
             else
-               ubstar = tau(n03d) / rhow
+               ubstar = sqrt(tau(n03d) / rhow)
             endif
             ubstar_b   = ubstar                     ! ubstar_bot is required for sedimentation and erosion
          else
@@ -743,7 +725,7 @@ contains
 
          if ( lsettl .and. kp .eq. layt+1 ) then
             if ( ubstar_b .ge. uecrit ) then
-               kp = layt
+               kp = kbotp
                zp = 0.05
                nopart_ero = nopart_ero + 1
             else
@@ -798,8 +780,12 @@ contains
             dvz         = 2.0 * sq6 * sqrt( disp*itdelt ) *   &
                              ( rnd(rseed)-0.5 ) / depthl / dred
          endif
-         dvzs = wsettl(ipart)*itdelt/depthl          !  settling
-         dvzt = dvzs + dvz                           !  vertical diffusion
+        if (modtyp.ne.model_abm) then
+          dvzs = wsettl(ipart)*itdelt/depthl          !  settling      ?? what is the effect of this?? jvb: no bouncing for settling particles
+          dvzt = dvzs + dvz                           !  vertical diffusion
+        else
+          dvzt = dvz                                  !  vertical diffusion
+        endif
 
 !**      oil: if floating, no vertical dispersion and no settling...
 
@@ -816,27 +802,12 @@ contains
          icounz = 0
          znew   = zp + dvzt
          do while ( znew .gt. 1.0 .or. znew .lt. 0.0 )
-!           icounz = icounz + 1
-!           if ( icounz .gt. 90 ) then
-!              write(*,*) ' Error: particle now',icounz,' times back '
-!              write(*,*) ' Vertical displacements too large ?? '
-!              write(*,*) ' Particle no.= ',ipart
-!              write(lun2,*) ' Error: particle now',icounz,' times back'
-!              write(lun2,*) '    Particle number  = ',ipart
-!              write(lun2,*) '    Last     layer   = ',kp
-!              write(lun2,*) '    Last     z-value = ',dvzt
-!              write(lun2,*) '    Last     dvz     = ',dvz
-!              write(lun2,*) '    Last     dvzs    = ',dvzs
-!              write(lun2,*) '    Last     z-value = ',dvzt
-!              write(lun2,*) '    Last     depth   = ',depthl
-!              if(icounz > 100) call stop_exit(1)
-!           endif
 
 !**      boundary conditions, check here also settling and erosion
 !**      of particles with critical velocities at the bed
 
             if ( znew .gt. 1.0 ) then
-               if ( .not. twolay .and. kp .ne. layt ) then
+               if ( .not. twolay .and. kp .ne. kbotp ) then
                   n03d2 = n03d + nmax*mmax
                   if ( ioptdv .eq. 2 ) then
                      disp2 = max( cdisp + alpha*vdiff(n03d2) , dminim )
@@ -882,7 +853,7 @@ contains
                   endif
                endif
             elseif ( znew .lt. 0.0 ) then
-               if ( .not. twolay .and. kp .ne. 1 ) then
+               if ( .not. twolay .and. kp .ne. ktopp ) then
                   n03d2 = n03d - nmax*mmax
                   if ( ioptdv .eq. 2 ) then
                      disp2 = max( cdisp + alpha*vdiff(n03d2) , dminim )
@@ -971,9 +942,9 @@ contains
 
 !** determine the velocities in the 3 directions
 
-         kpp  = kp
+         kpp = min0 ( kp, kbotp )           !   kpp is a pointer that won't reach the bed..
          if ( twolay ) kpp = 1
-         if ( kpp .lt. 1 .or. kpp .gt. layt ) then
+         if ( kpp .lt. 1 .or. kpp .gt. kbotp ) then
             write(*,*) ' program error part10: kpp out of range '
             call stop_exit(1)
          endif
@@ -987,9 +958,9 @@ contains
          vz1  = 0.0
 
          if ( threed ) then
-            if     ( kpp .eq.   1  ) then  ! first layer
+            if     ( kpp .eq. ktopp  ) then  ! first layer
                vz1    = flow ( n0 + idep   + 2*mnmaxk) / vol
-            elseif ( kpp .eq. layt ) then  ! last  layer
+            elseif ( kpp .eq. kbotp ) then  ! last  layer
                idepm1 = idep - nmax * mmax
                vz0    = flow ( n0 + idepm1 + 2*mnmaxk) / vol
             else
@@ -997,6 +968,12 @@ contains
                vz0    = flow ( n0 + idepm1 + 2*mnmaxk) / vol
                vz1    = flow ( n0 + idep   + 2*mnmaxk) / vol
             endif
+         endif
+         if (modtyp.eq.model_abm) then
+            depthl = volume(n0+idep)/area(n0)
+            vzs  = wsettl(ipart)/depthl             !  settling
+            if ( kpp .ne. ktopp ) vz0  = vz0 + vzs
+            if ( kpp .ne. kbotp ) vz1  = vz1 + vzs
          endif
 
          if ( oilmod .and. .not. ldispo ) then   ! floating oil
@@ -1026,25 +1003,6 @@ contains
          vxr = vx  * dxp         !     only used for dispersion
          vyr = vy  * dyp         !     only used for dispersion
 
-!**      velocity correction directly in first step..
-
-         if ( lcorr ) then
-            if ( ipc .eq. 5 ) then
-               umagp = sqrt(vx*vx + vy*vy + vz*vz)   ! normal magnitude
-               if ( abs(umagp) .le. 1.0e-15) then
-                  cf = 1.0
-               else           ! higher order ( and thus not conserving ! ) velocity
-                  cf = umagi ( xp    , yp    , vz    , np    , mp    ,   &
-                               kpp   , nmax  , mmax  , layt  , flow  ,   &
-                               depth , lgrid , vol   , xcor  , ycor  ,   &
-                               lgrid2, mnmaxk, acomp , tcktot)
-                  cf = cf/umagp
-               endif
-            else
-               cf = 1.0
-            endif
-            c2 = c2*cf
-         endif
 
 !**      time of flight particle in x direction
 
@@ -1112,6 +1070,9 @@ contains
          rtimz = float(itdelt)
          idz   = 0
          if ( abs(c3*vvz) .gt. accur ) then
+            if ( vz .eq. 0.0 ) then
+                vz = sign(1.0e-10,vz1)
+            endif 
             if ( vz .gt. 0.0 ) then
                if ( vz1 .gt.  1.0e-25 ) then
                   rtimz = alog(vz1/vz) / (c3*vvz)
@@ -1140,7 +1101,6 @@ contains
 
          rtim  = min( rtimx, rtimy, rtimz, deltt )
          rtim1 = rtim
-         ipcgo = 1
 
          if ( abs(vvx) .gt. accur ) then
             xp = ( vx/vvx ) * exp( vvx*c2*rtim ) - vx0/vvx
@@ -1160,50 +1120,11 @@ contains
             zp = zp + vz*c3*rtim
          endif
 
-!**
-         if ( lcorr ) then
-            ipcgo = 1
-            xpold = xp
-            ypold = yp
-            zpold = zp
-            umagp = sqrt(vx*vx + vy*vy + vz*vz)   ! normal magnitude
-            if ( abs(umagp) .le. 1.0e-15) then
-               chi0 = 1.0
-            else           ! higher order ( and thus not conserving ! ) velocity
-               chi0 = umagi ( xpold , ypold , vz    , np    , mp    ,  &
-                              kpp   , nmax  , mmax  , layt  , flow  ,  &
-                              depth , lgrid , vol   , xcor  , ycor  ,  &
-                              lgrid2, mnmaxk, acomp , tcktot)
-               chi0 = chi0/umagp
-            endif
-            vxnew = vx0 + xp * vvx
-            vynew = vy0 + yp * vvy
-            vznew = vz0 + zp * vvz
-            umagp = sqrt(vxnew*vxnew + vynew*vynew + vznew*vznew)
-            if ( abs(umagp) .le. 1.0e-15 ) then
-               chi1 = 1.0
-            else
-               chi1 = umagi ( xp    , yp    , vznew , np    , mp    ,   &
-                              kpp   , nmax  , mmax  , layt  , flow  ,   &
-                              depth , lgrid , vol   , xcor  , ycor  ,   &
-                              lgrid2, mnmaxk, acomp , tcktot)
-               chi1 = chi1 / umagp
-            endif
-
-            call p10cor ( rtim1 , rtim  , xp    , yp    , zp    ,   &
-                          xpold , ypold , zpold , chi0  , chi1  ,   &
-                          deltt , vol   , vx    , vy    , vz    ,   &
-                          vvx   , vvy   , vvz   , c2    , c3    ,   &
-                          ipc   , vx0   , vy0   , vz0   , ipcgo ,   &
-                          accur )
-
-         endif
 
 !**      did the time step end ?
 
          if ( rtim1 .lt. deltt ) then
-            if ( rtim  .lt. deltt .and.   &    ! see p10cor for the meaning of these
-                 ipcgo .eq.  1         ) then  ! strange things  !lp!
+            if ( rtim  .lt. deltt ) then
 
 !             logically one of the 3 conditions below should hold,
 !             so either rtim=rtimx or rtim=rtimy or rtim=rtimz
@@ -1225,12 +1146,18 @@ contains
                   kp = kp + idz
                   zp = zp - float(idz)
                   ddshift = 0
-                  if (   kp .le. 0 .or.   &
-                       ( kp .gt. layt .and. .not. twolay ) ) then
-                     write(*,*) ' Particle = ',ipart,  &
-                                ' not on an active layer'
-                     write(*,*) ' Programming error in rtim in part10'
-                     call stop_exit(1)
+                  if (   kp .lt. ktopp .or.   &
+                       ( kp .gt. kbotp .and. .not. twolay ) ) then
+                     if(kp .lt. ktopp .and. zmodel) then        ! this seems to cause problems in Z-model where model layers change
+                         kp = ktopp  
+                     elseif(kp .gt. kbotp .and. zmodel ) then   ! this seems to cause problems in Z-model where model layers change
+                         kp = kbotp
+                     else     
+                         write(*,*) ' Particle = ',ipart, kp, kbotp, ktopp, &
+                                    ' not on an active layer'
+                         write(*,*) ' Programming error in rtim in part10'
+                         call stop_exit(1)
+                     endif
                   endif
                else
                   write(*,*) ' ipart, rtim, rtimx, rtimy, rtimz '
@@ -1242,6 +1169,7 @@ contains
                endif
             endif
 
+            n0old = n0
             n0 = lgrid( np, mp)
             if ( n0 .lt. -nbmax ) then
                n0 = - n0 - nbmax
@@ -1259,6 +1187,18 @@ contains
                goto 90                   ! next particle
             endif
 
+            if (zmodel .and. ddshift .gt. 0) then
+               call update_k_near_top(lun2, kp, ktopp, laytop(np,mp), zp, locdep, n0old, n0, zsurf)
+               kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
+               idep = (kpp - 1) * nmax * mmax
+               ktopp = laytop(np,mp)
+               kbotp = laybot(np,mp)
+               if (kp .gt. kbotp) then
+                  kp = kbotp
+                  zp = 1.0
+               end if
+            endif
+
             deltt = deltt - rtim1        ! reduce remaining part of time step
             xp = amax1( amin1(xp,1.0), 0.0 ) ! this is not strong
             yp = amax1( amin1(yp,1.0), 0.0 )
@@ -1270,7 +1210,8 @@ contains
             icvist = icvist + 1
             if ( icvis .eq. 5 ) icvis = 1
                                                       !  this is all not so clear
-            kpp = kp
+
+            kpp = min0 ( kp, kbotp )           !   kpp is a pointer that won't reach the bed..
             if ( twolay ) kpp = 1
             n03d = n0 + (kpp - 1)*nmax*mmax
             if ( ivisit(icvis) .ne. n03d .and. icvist .lt. 10000 ) then
@@ -1281,9 +1222,19 @@ contains
 
 !**      xnew,ynew is inclusive of diffusion (dax,day); c1 = 0.0 for 3d
 
+         if (modtyp.eq.model_abm) then 
+            sdir         = d_swim(ipart) * twopi / 360.0
+            displacement = v_swim(ipart)*idelt
+            dx_swim      = displacement*sin(sdir+sangl)
+            dy_swim      = displacement*cos(sdir+sangl)
+         else
+            dx_swim = 0.0
+            dy_swim = 0.0
+         endif
+ 
          wdirr = wdir(n0) * twopi / 360.0
-         xnew  = xp + (dax - c1 * sin(wdirr + sangl)) / dxp
-         ynew  = yp + (day - c1 * cos(wdirr + sangl)) / dyp
+         xnew  = xp + (dax - c1 * sin(wdirr + sangl) + dx_swim) / dxp
+         ynew  = yp + (day - c1 * cos(wdirr + sangl) + dy_swim) / dyp
 
 !**      floating oil
 
@@ -1298,6 +1249,19 @@ contains
                xnew = xnew  + (cdrag*(vxw-vxr)/dxp) * itdelt    !
                ynew = ynew  + (cdrag*(vyw-vyr)/dyp) * itdelt    !
             endif
+         else
+            if (apply_wind_drag) then
+               if (kp==ktopp) then
+                  zpabs = zp * locdep(n0, kp)
+                  if (zpabs .lt. max_wind_drag_depth) then
+                     vxw  = - wvelo(n0) * sin( wdirr + sangl )
+                     vyw  = - wvelo(n0) * cos( wdirr + sangl )
+!                    drag on the difference vector: cd * (wind - flow)
+                     xnew = xnew  + (cdrag*(vxw-vxr)/dxp) * itdelt    !
+                     ynew = ynew  + (cdrag*(vyw-vyr)/dyp) * itdelt    !
+                  end if
+               end if
+            end if
          endif
          znew = zp
 
@@ -1371,9 +1335,21 @@ contains
                     yy    .ne. 0.0     ) then   !  and there is no thin dam
                   depth2 = depth( n0new )
                   if ( deppar .lt. depth2 ) then
+                     n0old = n0
                      n0   = n0new
                      np   = npnew
                      mp   = mpnew
+                     if (zmodel) then
+                        call update_k_near_top(lun2, kp, ktopp, laytop(np,mp), zp, locdep, n0old, n0, zsurf)
+                        kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
+                        idep = (kpp - 1) * nmax * mmax
+                        ktopp = laytop(np,mp)
+                        kbotp = laybot(np,mp)
+                        if (kp .gt. kbotp) then
+                           kp = kbotp
+                           zp = 1.0
+                        end if
+                     endif
                      n1   = lgrid2(np - 1, mp    )
                      n2   = lgrid2(np    , mp - 1)
                      ynew = ( ynew - 0.5*(1+idy) ) * dyp
@@ -1443,9 +1419,21 @@ contains
                     xx    .ne. 0.0     ) then  !  and there is no thin dam
                   depth2 = depth( n0new )
                   if ( deppar .lt. depth2 ) then
+                     n0old = n0
                      n0   = n0new
                      np   = npnew
                      mp   = mpnew
+                     if (zmodel) then
+                        call update_k_near_top(lun2, kp, ktopp, laytop(np,mp), zp, locdep, n0old, n0, zsurf)
+                        kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
+                        idep = (kpp - 1) * nmax * mmax
+                        ktopp = laytop(np,mp)
+                        kbotp = laybot(np,mp)
+                        if (kp .gt. kbotp) then
+                           kp = kbotp
+                           zp = 1.0
+                        end if
+                     endif
                      n1   = lgrid2(np - 1, mp    )
                      n2   = lgrid2(np    , mp - 1)
                      xnew = ( xnew - 0.5*(1+idx) ) * dxp
@@ -1483,13 +1471,89 @@ contains
             endif
          endif
 
-         if (   kp .le. 0 .or. &
-              ( kp .gt. layt .and. .not. twolay ) ) then
-            write(*,*) ' Particle = ',ipart, &
-                       ' not on an active layer:', kp, layt
-            write(*,*) ' Programming error in rtim in part10'
-            call stop_exit(1)
+         if (   kp .lt. ktopp .or. &
+              ( kp .gt. kbotp .and. .not. twolay ) ) then
+                if(kp .lt. ktopp .and. zmodel) then        ! this seems to cause problems in Z-model where model layers change
+                     kp = ktopp  
+                elseif(kp .gt. kbotp .and. zmodel ) then   ! this seems to cause problems in Z-model where model layers change
+                     kp = kbotp
+                else 
+                     write(*,*) ' Particle = ',ipart, &
+                         ' not on an active layer:', kp, ktopp, kbotp
+                     write(*,*) ' Programming error in rtim in part10'
+                     call stop_exit(1)
+                endif
          endif
+
+         nscreenstry=1
+         screensfirsttry=.true.
+         if (screens) then
+!**      compute absolute x's and y's for a single particle end point
+            call part11sp ( lgrid , xcor  , ycor  , nmax   , np     , mp    ,    &
+                            xnew  , ynew  , xanew , yanew  , lgrid2 , mmax  )
+            if (iptime(ipart) .le. 0 .and. nscreenstry==1) then
+!      determine absolute location of starting point as well for new particles
+               call part11sp ( lgrid , xcor  , ycor  , nmax   , npart(ipart)     , mpart(ipart)    ,    &  !  new coordinates
+                               xpart(ipart)  , ypart(ipart)  , xaold , yaold  , lgrid2 , mmax  )
+            else
+               xaold = xa(ipart)
+               yaold = ya(ipart)
+            end if
+            call boombounce( xaold, yaold, xanew, yanew, nrowsscreens, &
+                             xpolscreens(1:nrowsscreens), ypolscreens(1:nrowsscreens), &
+                             xacatch, yacatch, catch, xabounce, yabounce, bounce, leftside )
+            if (catch) then
+               a = rnd(rseed)
+               if (leftside) then
+                  catch = a .gt. permealeft
+               else
+                  catch = a .gt. permearight
+               endif
+            end if
+            if (catch) then
+               if (bounce .and. bouncefirsttry) then
+!                 go back to relative coordinates from the original cell(!), set boomseffective to false (!?) and go back to check for checking of inactive cells etc... (30)
+!                 a new bounce may mean that the booms must be effective again... hm, more complicated than I thought... Skip for the first implementation
+                  np = npart(ipart)
+                  mp = mpart(ipart)
+                  kp = kpart(ipart)
+                  znew = zpart(ipart)
+                  call part07nm ( lgrid  , lgrid2 , nmax   , mmax   , xcor  , & ! make relative
+                                  ycor   , xabounce , yabounce, np   , &        ! coordinates
+                                  mp, xnew, ynew  , ierror )                    ! again
+                  if (ierror/=0) then
+                        mpart(ipart) = mpart0(ipart)
+                        npart(ipart) = npart0(ipart)
+                  end if
+                  screensfirsttry = .false.
+                  goto 30
+               else
+                  if (nscreenstry==1) then
+                     screensfirsttry = .true.
+!                 go back to the original location and try with dispersion only...
+                     np = npart(ipart)
+                     mp = mpart(ipart)
+                     kp = kpart(ipart)
+                     xnew = xpart(ipart)
+                     ynew = ypart(ipart)
+                     znew = zpart(ipart)
+                     !**      xnew,ynew is inclusive of diffusion (dax,day); c1 = 0.0 for 3d
+                     xnew  = xnew + (dax - c1 * sin(wdirr + sangl)) / dxp
+                     ynew  = ynew + (day - c1 * cos(wdirr + sangl)) / dyp
+                     nscreenstry = 2
+                     goto 30
+                  else
+!                 finally just put it back to the old location!
+                     np = npart(ipart)
+                     mp = mpart(ipart)
+                     kp = kpart(ipart)
+                     xnew = xpart(ipart)
+                     ynew = ypart(ipart)
+                     znew = zpart(ipart)
+                  end if
+               end if
+            end if
+         end if
 
          if (boomseffective) then
 !**      compute absolute x's and y's for a single particle end point
@@ -1506,13 +1570,11 @@ contains
             call boombounce( xaold, yaold, xanew, yanew, nrowsboom(iboomint), &
                              xpolboom(1:nrowsboom(iboomint), iboomint), &
                              ypolboom(1:nrowsboom(iboomint), iboomint), &
-                             xacatch, yacatch, catch, xabounce, yabounce, bounce )
-!            bounce = mod(ipart,2) .eq. 0
+                             xacatch, yacatch, catch, xabounce, yabounce, bounce, leftside )
             if (catch) then
                if (bounce .and. bouncefirsttry) then
 !                 go back to relative coordinates from the original cell(!), set boomseffective to false (!?) and go back to check for checking of inactive cells etc... (30)
 !                 a new bounce may mean that the booms must be effective again... hm, more complicated than I thought... Skip for the first implementation
-!                  nm   = lgrid2( n  , m   )
                   np = npart(ipart)
                   mp = mpart(ipart)
                   kp = kpart(ipart)
@@ -1597,7 +1659,7 @@ contains
    90    iptime(ipart) = iptime(ipart) + idelt
   100 continue
 !$OMP END PARALLEL DO
-       timon = .true.
+       timon = timon_org
 
       if (lsettl) then
          write(lun2,'(4x,a,i12,a,i4,a)') '  No. of particles settled into bed layer  : ', &
@@ -1708,4 +1770,79 @@ contains
 
       return
       end function
+
+!     subroutine to keep a particle near the surface in z-layer models
+      subroutine update_k_near_top(lun2, kp, ktopold, ktopnew, zp, locdep, n0old, n0, zsurf)
+
+      use precision_part
+
+      implicit none
+
+!     Arguments
+
+!     kind                       name                   description
+      integer                 :: lun2                !< error and debug messages
+      integer                 :: kp                  !< particle layernr
+      integer                 :: ktopold             !< previous time or location k top
+      integer                 :: ktopnew             !< current k top
+      real(sp)                :: zp                  !< relative location in layer (shouldn't this be absolute?
+      real(sp)                :: locdep(:,:)         !< depth per layer
+      integer(ip)             :: n0                  !< segment number 2d
+      integer(ip)             :: n0old               !< old value of segment number 2d
+      real(sp)                :: zsurf               !< threshold for a particle to be close enought to the surface to stat there
+
+!     local variables
+
+!     kind                       name                  description
+      real(sp)                :: partdep             ! absolute location of particle from the top of the water column
+      integer(ip)             :: ilay                ! layer loop counter
+
+      if (ktopold == ktopnew) return ! nothing to do when the toplayer doesn't change
+      if (kp > ktopold .and. kp > ktopnew) return ! nothing to do when the particle was and is not in the top layer
+
+      if (kp < ktopold) then
+         ! the particle was and is (floating) above the top layer, this should not happen...
+         write ( * , 1000) kp, ktopold
+         write ( lun2 , 1000) kp, ktopold
+    1000 format (/'  WARNING: Particle found in layer ',i4,' which was less than ktop (=',i4,')'/)
+         kp = ktopold
+      end if
+
+      if (kp == ktopold .and. zp <= zsurf) then
+         ! do not update zp when close to the surface (floating), just move to the new top layer and keep zp
+         kp = ktopnew
+      elseif (ktopold < ktopnew) then
+         ! moving to less active layers
+         ! calculate absolute position from the top of the water column in the old layers
+         if (kp == 1) then
+            partdep = zp * locdep(n0old,kp)
+         else
+            partdep = locdep(n0old, kp - 1) + zp * (locdep(n0old, kp) - locdep(n0old, kp - 1))
+         endif
+         ! calculate the relative location of the particle over all old layers that merge into the new toplayer
+         zp = partdep / locdep(n0old, ktopnew)
+         kp = ktopnew
+      else
+         ! moving to more active layers
+         ! calculate absolute position from the top of the water column in the new layers
+         partdep = zp * locdep(n0, ktopold)
+         ! search in which layer we are
+         do ilay = ktopnew, ktopold
+            if (partdep <= locdep(n0, ilay)) then
+               ! the particle is now in this layer
+               kp = ilay
+               exit
+            endif
+         enddo
+         if (ilay == 1) then
+            ! in the top layer the relative lacation is the particle depth divided by the
+            zp = partdep / locdep(n0, ilay)
+         else
+            zp = (partdep - locdep(n0, ilay - 1)) / (locdep(n0, ilay) - locdep(n0, ilay - 1))
+         endif
+      endif
+
+      return
+      end subroutine
+
 end module

@@ -1,31 +1,31 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       SUBROUTINE PDFNEF ( LUNREP, SERIAL, VERSIO, IERROR)
 C
@@ -47,14 +47,18 @@ C     LUNREP       INT    1       I       Unit number report file
 C     IERROR       INT    1       O       Error
 C
 C     IMPLICIT NONE for extra compiler checks
+      
+      use m_obtain_number_decimals
 C
       IMPLICIT NONE
 C
 C     Declaration of arguments
 C
       INTEGER       LUNREP      , SERIAL     ,
-     +              IERROR
+     +              IERROR      , lunfil
       REAL          VERSIO
+      character(len=10) num_decimals_version_char
+      integer       num_decimals_version
 C
 C     Common declarations
 C
@@ -348,28 +352,34 @@ C
       SOURCE = 'Deltares'
       REMARK = ' '
       REMARK(1) = '@(#)Deltares, DELWAQ Process Definition '
-      WRITE(REMARK(2), '(A12,F5.2,A1,I10,A2,A10)') 'File Version',VERSIO, '.', SERIAL, ', ', RUNDAT(1:10)
+      
+      ! obtain number of decimals of version number
+      num_decimals_version = obtain_num_decimals_version(versio)
+      write(num_decimals_version_char,'(I10)') num_decimals_version
+      
+      WRITE(REMARK(2), '(A12,F5.'//num_decimals_version_char//',A1,I10,A2,A10)')
+     *  'File Version',VERSIO, '.', SERIAL, ', ', RUNDAT(1:10)
       REMARK(3) = RUNDAT(11:20)
       REMARK(4) = ' '
       CALL WR_FILID ( DEFFDS, FFORM , VFFORM, CONTEN,
      +                VERSIO, SERIAL, RUNDAT, SOURCE, REMARK,
      +                LUNREP, IERROR)
 
-      open(88, file='filid.pptex')
-      write(88,'(a30,'' colsep '', a20, '' \\'')')
+      open(newunit=lunfil, file='filid.pptex')
+      write(lunfil,'(a30,'' colsep '', a20, '' \\'')')
      *         'Creation date', rundat
-      write(88,'(a30,'' colsep '', i, '' \\'')')
+      write(lunfil,'(a30,'' colsep '', i10, '' \\'')')
      *         'File serial number', serial
-      write(88,'(a30,'' colsep '', f12.3, '' \\'')')
+      write(lunfil,'(a30,'' colsep '', f12.3, '' \\'')')
      *         'Version processes library', versio
-      close(88)
+      close(lunfil)
 
-      open(88, file='conf_name.pptex')
+      open(newunit=lunfil, file='conf_name.pptex')
       do ic = 1, nconf
-          write(88,'(a10,'' colsep '', a50, '' \\'')')
+          write(lunfil,'(a10,'' colsep '', a50, '' \\'')')
      *              confid(ic), confnm(ic)
       enddo
-      close(88)
+      close(lunfil)
 
       IF ( IERROR .NE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR writing file identification group'

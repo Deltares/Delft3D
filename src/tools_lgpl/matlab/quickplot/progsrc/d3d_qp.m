@@ -1,4 +1,4 @@
-function outdata=d3d_qp(cmd,varargin)
+function outdata = d3d_qp(cmd,varargin)
 %D3D_QP QuickPlot user interface: plotting interface for Delft3D output data.
 %   To start the interface type: d3d_qp
 %
@@ -6,7 +6,7 @@ function outdata=d3d_qp(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,6 @@ function outdata=d3d_qp(cmd,varargin)
 %   http://www.deltaressystems.com
 %   $HeadURL$
 %   $Id$
-
 try
     if nargin==0
         cmd='initialize';
@@ -48,8 +47,10 @@ catch Ex
 end
 
 function outdata=d3d_qp_core(cmd,varargin)
-%VERSION = 2.30
+%VERSION = 2.70
 qpversionbase = 'v<VERSION>';
+gitrepo = '<GITREPO>';
+githash = '<GITHASH>';
 qpcreationdate = '<CREATIONDATE>';
 %
 persistent qpversion logfile logtype
@@ -79,19 +80,23 @@ if ~ischar(cmd)
     return
 end
 cmd=lower(cmd);
-if (nargout~=0)
+if nargout~=0
     if strcmp(cmd,'initialize')
-        outdata=[];
+        outdata = [];
     elseif strcmp(cmd,'iswl')
-        outdata=isequal(qp_settings('WLextensions','off'),'on');
+        outdata = isequal(qp_settings('WLextensions','off'),'on');
         return
     elseif strcmp(cmd,'version')
-        outdata=qpversion;
+        if nargin>1
+            outdata = qp_checkversion(varargin{:});
+        else
+            outdata = qpversion;
+        end
         return
     elseif isstandalone % allow standalone auto start ...
-        outdata=[];
-    elseif none(strcmp(cmd,{'loaddata','selectedfigure','selectedaxes','selecteditem','selectfield','selectedfield','qpmanual','matlabmanual'}))
-        error('Too many output arguments.');
+        outdata = [];
+    elseif none(strcmp(cmd,{'loaddata','selected','selectedfigure','selectedaxes','selecteditem','selectfield','selectedfield','qpmanual','matlabmanual'}))
+        error('Too many output arguments.')
     end
 end
 
@@ -133,10 +138,15 @@ end
 switch cmd
     case {'slider','startanim','animselect','animpush','stopanim'}
         qck_anim(cmd,cmdargs{:});
+
     case 'set'
         if length(cmdargs)==2
             qp_settings(cmdargs{:})
         end
+        
+    case 'debug'
+        error('Insert a break point HERE for debugging!')
+
     case {'gridviewpoint','gridviewline','gridviewlineseg', ...
             'gridviewpiecewise','gridviewarbline','gridviewrange', ...
             'gridviewall','gridviewarbrect','gridviewarbarea', ...
@@ -200,6 +210,7 @@ switch cmd
             PS.Parent = parent;
             PS.Handles = [];
             PS.Stations = [];
+            PS.Ops.version = 1.3;
             PS.Ops.axestype = getappdata(parent,'AxesType');
             PS.Ops.basicaxestype = getappdata(parent,'BasicAxesType');
             [hNew,Error,Info]=qp_plot(PS);
@@ -248,75 +259,25 @@ switch cmd
         showUI = isequal(cmd,'initialize');
         mfig=findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
         %
-        % To hide version number from QuickPlot title, include the
-        % following line
-        %
-        % qpversion='';
-        %
         if length(mfig)>1
             delete(mfig(2:length(mfig)));
             mfig=mfig(1);
         elseif isempty(mfig)
             if isstandalone && matlabversionnumber>7.10
-                % Until MATLAB 7.10 (R2010a) it was possible to mix
-                % c/c++ files in with the MATLAB executable. This was
-                % used to include the @(#) identification string in the
-                % executable that could be located using the WHAT tool.
-                % Unfortunately, this option is no longer supported by
-                % later MATLAB versions. For later versions we'll need
-                % to use a separate text file which is easy to mess up
-                % and therefore we only start QuickPlot if that file is
-                % consistent with the actual executable.
-                whatfile = fullfile(qp_basedir('exe'),'d3d_qp.version');
-                Str = ['@(#)Deltares, Delft3D-QUICKPLOT, Version ' qpversionbase(2:end) ', ' qpcreationdate ];
-                fid = fopen(whatfile,'r');
-                if fid>0
-                    % file exists, read its contents
-                    Str2 = fgetl(fid);
-                    if ~ischar(Str2)
-                        Str2 = '';
-                    end
-                    fclose(fid);
-                    if ~isequal(Str,Str2)
-                        % if contents does not match, do as if file
-                        % does not exist (which will try to write it)
-                        fid = -1;
-                    end
-                end
-                if fid<0
-                    % file does not exist, try to write it
-                    fid = fopen(whatfile,'w');
-                    if fid>0
-                        % file can be opened for writing, write string
-                        try
-                            fprintf(fid,'%s\n',Str);
-                            fclose(fid);
-                            % reopen the file to check whether string
-                            % was written correctly
-                            fid = fopen(whatfile,'r');
-                            Str2 = fgetl(fid);
-                            if ~ischar(Str2)
-                                Str2 = '';
-                            end
-                            fclose(fid);
-                        catch
-                            fid = -1;
-                        end
-                    end
-                end
-                if fid>0
-                    if ~isequal(Str,Str2)
-                        ui_message('error',{['First line in ' whatfile],Str2,'doesn''t match the string',Str,'Please correct.'})
-                        return
-                    end
-                else
-                    ui_message('error',{'Copy the following line:',Str,['to ' whatfile ' to start QuickPlot.']})
+                if ~qp_checkversion(qpversionbase,gitrepo,githash,qpcreationdate)
                     return
                 end
             end
             %
             if ~isstandalone
-                cmdx = qp_settings('autoruncmd',{});
+                cmdx = qp_settings('autoruncmd','');
+                if ~iscell(cmdx)
+                    if isempty(cmdx)
+                        cmdx = {};
+                    else
+                        cmdx = {cmdx};
+                    end
+                end
                 for i = 1:length(cmdx)
                     try
                         eval(cmdx{i});
@@ -347,9 +308,8 @@ switch cmd
         if showUI
             figure(mfig);
         end
+        init_netcdf_settings
         if isstandalone
-            setpref('SNCTOOLS','USE_JAVA',true);
-            javaaddpath([qp_basedir('exe') filesep 'netcdfAll-4.1.jar'])
             try
                 CloseSplashScreen;
             end
@@ -437,19 +397,50 @@ switch cmd
         end
         d3d_qp selectfile*
         
-    case 'difffiles'
+    case {'difffiles','diff_files','diff_files_one_domain'}
         pos = get(mfig,'position');
-        pos(4) = 190;
+        pos(4) = 310;
+        %
+        dfig = findall(0,'type','figure','tag','Diff Files');
+        delete(dfig);
+        %
         dfig = qp_uifigure('Diff Files','','Diff Files',pos);
         %
         voffset=pos(4)-29;
+        w = (pos(3)-40)/3;
+        uicontrol('Parent',dfig, ...
+            'Enable','off', ...
+            'Position',[11 voffset w 18], ...
+            'String','Domains Per File', ...
+            'Style','text', ...
+            'Horizontalalignment','left', ...
+            'Tag','txt_domain');
+        uicontrol('Parent',dfig, ...
+            'Callback','d3d_qp all_domains', ...
+            'Enable','off', ...
+            'Position',[21+w voffset w 18], ...
+            'String','All Defined', ...
+            'Style','radiobutton', ...
+            'Horizontalalignment','left', ...
+            'Value',1, ...
+            'Tag','all_domains');
+        h1D = uicontrol('Parent',dfig, ...
+            'Callback','d3d_qp one_domain', ...
+            'Enable','off', ...
+            'Position',[31+2*w voffset w 18], ...
+            'String','Select One', ...
+            'Style','radiobutton', ...
+            'Horizontalalignment','left', ...
+            'Value',0, ...
+            'Tag','one_domain');
+        voffset=voffset-30;
         uicontrol('Parent',dfig, ...
             'Enable','on', ...
             'Position',[11 voffset pos(3)-20 18], ...
             'String','Compare File', ...
             'Style','text', ...
             'Horizontalalignment','left', ...
-            'Tag','txt_difffile2');
+            'Tag','txt_difffile1');
         voffset=voffset-20;
         L1 = uicontrol('Parent',dfig, ...
             'Callback','d3d_qp difffile1', ...
@@ -469,6 +460,23 @@ switch cmd
             'Callback','d3d_qp openfile1', ...
             'Tooltip','Open a data file', ...
             'Tag','openfile1');
+        voffset=voffset-30;
+        uicontrol('Parent',dfig, ...
+            'Enable','off', ...
+            'Position',[11 voffset 80 18], ...
+            'String','Domain', ...
+            'Style','text', ...
+            'Horizontalalignment','left', ...
+            'Tag','txt_diffdomain1');
+        dom1 = uicontrol('Parent',dfig, ...
+            'Callback','d3d_qp diffdomain1', ...
+            'Enable','off', ...
+            'Position',[101 voffset pos(3)-110 20], ...
+            'String','-- none defined --', ...
+            'BackgroundColor',Inactive, ...
+            'Style','popupmenu', ...
+            'Tag','diffdomain1', ...
+            'Value',1);
         %
         voffset=voffset-30;
         uicontrol('Parent',dfig, ...
@@ -497,6 +505,42 @@ switch cmd
             'Callback','d3d_qp openfile2', ...
             'Tooltip','Open a data file', ...
             'Tag','openfile2');
+        voffset=voffset-30;
+        uicontrol('Parent',dfig, ...
+            'Enable','off', ...
+            'Position',[11 voffset 80 18], ...
+            'String','Domain', ...
+            'Style','text', ...
+            'Horizontalalignment','left', ...
+            'Tag','txt_diffdomain2');
+        dom2 = uicontrol('Parent',dfig, ...
+            'Callback','d3d_qp diffdomain2', ...
+            'Enable','off', ...
+            'Position',[101 voffset pos(3)-110 20], ...
+            'String','-- none defined --', ...
+            'BackgroundColor',Inactive, ...
+            'Style','popupmenu', ...
+            'Tag','diffdomain2', ...
+            'Value',1);
+        %
+        voffset=voffset-30;
+        DTp = uicontrol('Parent',dfig, ...
+            'Enable','on', ...
+            'Position',[11 voffset w 20], ...
+            'Style','text', ...
+            'String','Differencing Method', ...
+            'HorizontalAlignment','left', ...
+            'Tag','txt_difftype');
+        DTp = uicontrol('Parent',dfig, ...
+            'Enable','on', ...
+            'Position',[21+w voffset pos(3)-30-w 20], ...
+            'Style','popupmenu', ...
+            'String',{'Simply by Index', 'Correct for Renumbering'}, ...
+            'BackgroundColor',Active, ...
+            'HorizontalAlignment','left', ...
+            'Tag','difftype', ...
+            'Tooltip','Select the method of differencing');
+        DTpStr = {'index','renum'};
         %
         voffset=voffset-30;
         uicontrol('Parent',dfig, ...
@@ -548,31 +592,65 @@ switch cmd
                 'BackgroundColor',Active, ...
                 'string',Str, ...
                 'value',NrInList)
-            set(L1, ...
-                'userdata',File, ...
-                'tooltip', ['Select data file A' char(10) ...
-                ' ' char(10) ...
-                'Currently selected:' char(10) ...
-                File(NrInList).Name char(10) ...
-                'Type: ' File(NrInList).FileType])
-            set(L2, ...
-                'tooltip', ['Select reference data file B' char(10) ...
-                ' ' char(10) ...
-                'Currently selected:' char(10) ...
-                File(NrInList).Name char(10) ...
-                'Type: ' File(NrInList).FileType])
+            set(L1,'userdata',File)
         end
         %
         interactive = 1;
         if ~isempty(cmdargs)
-            d3d_qp('difffile1',cmdargs{1})
-            if nargin>2
-                d3d_qp('difffile2',cmdargs{2})
-                interactive = isequal(cmdargs{1},cmdargs{2});
+            switch cmd
+                case 'diff_files_one_domain'
+                    d3d_qp('difffile1',cmdargs{1})
+                    d3d_qp('one_domain')
+                    if nargin>2
+                        domList = get(dom1,'string');
+                        idom = ustrcmpi(cmdargs{2},domList);
+                        if idom<0
+                            ui_message('warning','Unable to identify domain ''%s'' in file %s.',cmdargs{2},cmdargs{1})
+                        else
+                            set(dom1,'value',idom)
+                        end
+                    end
+                    if nargin>3
+                        d3d_qp('difffile2',cmdargs{3})
+                        interactive = isequal(cmdargs{1},cmdargs{3});
+                    end
+                    if nargin>4
+                        domList = get(dom2,'string');
+                        idom = ustrcmpi(cmdargs{4},domList);
+                        if idom<0
+                            ui_message('warning','Unable to identify domain ''%s'' in file %s.',cmdargs{4},cmdargs{3})
+                        else
+                            set(dom2,'value',idom)
+                        end
+                    end
+                    if nargin>5
+                        d3d_qp('difflabel',cmdargs{5})
+                    end
+                    if nargin>6
+                        iTp = ustrcmpi(varargin{6},DTpStr);
+                        if iTp > 0
+                            set(DTp,'value',iTp)
+                        end
+                    end
+                otherwise
+                    d3d_qp('difffile1',cmdargs{1})
+                    if nargin>2
+                        d3d_qp('difffile2',cmdargs{2})
+                        interactive = isequal(cmdargs{1},cmdargs{2});
+                    end
+                    if nargin>3
+                        d3d_qp('difflabel',cmdargs{3})
+                    end
+                    if nargin>4
+                        iTp = ustrcmpi(varargin{4},DTpStr);
+                        if iTp > 0
+                            set(DTp,'value',iTp)
+                        end
+                    end
             end
-            if nargin>3
-                d3d_qp('difflabel',cmdargs{3})
-            end
+        elseif ~isempty(File)
+            d3d_qp('difffile1')
+            d3d_qp('difffile2')
         end
         %
         if interactive
@@ -585,13 +663,35 @@ switch cmd
         Label = get(Lb,'string');
         Indices = get(dfig,'userdata');
         DiffFile = get(L1,'userdata');
+        DiffType = DTpStr{get(DTp,'value')};
+        if strcmp(get(h1D,'enable'),'on') && get(h1D,'value')
+            Domains = [get(dom1,'value') get(dom2,'value')];
+            domList = get(dom1,'string');
+            if iscell(domList)
+                Domain1 = domList{Domains(1)};
+            else
+                Domain1 = '';
+            end
+            domList = get(dom2,'string');
+            if iscell(domList)
+                Domain2 = domList{Domains(2)};
+            else
+                Domain2 = '';
+            end
+            cmd = 'diff_files_one_domain';
+        else
+            Domains = [];
+            cmd = 'diff_files';
+        end
         delete(dfig)
         %
         if ~isempty(Indices)
             FileName=Label;
             NewRecord.QPF=1;
             NewRecord.Name=FileName;
-            NewRecord.Data=DiffFile(Indices);
+            NewRecord.Data.Files=DiffFile(Indices);
+            NewRecord.Data.DiffDomain = Domains;
+            NewRecord.Data.DiffType = DiffType;
             NewRecord.FileType='diff';
             NewRecord.Options=0;
             NewRecord.Otherargs={};
@@ -613,18 +713,63 @@ switch cmd
             d3d_qp selectfile*
             %
             if logfile
-                writelog(logfile,logtype,cmd,NewRecord.Data(1).Name,NewRecord.Data(2).Name,Label);
+                switch cmd
+                    case 'diff_files_one_domain'
+                        writelog(logfile,logtype,cmd,NewRecord.Data.Files(1).Name,Domain1,NewRecord.Data.Files(2).Name,Domain2,Label,DiffType);
+                    otherwise
+                        writelog(logfile,logtype,cmd,NewRecord.Data.Files(1).Name,NewRecord.Data.Files(2).Name,Label,DiffType);
+                end
             end
         end
+        
+    case {'all_domains','one_domain'}
+        hDiff = findall(0,'tag','Diff Files');
+        if length(hDiff)~=1, return, end
+        hDomSelAll = findobj(hDiff,'tag','all_domains');
+        hDomSelOne = findobj(hDiff,'tag','one_domain');
+        if strcmp(cmd,'all_domains')
+            set(hDomSelAll,'value',1)
+            set(hDomSelOne,'value',0)
+            for filnr = '12'
+                hDomText = findobj(hDiff,'tag',['txt_diffdomain' filnr]);
+                hDom     = findobj(hDiff,'tag',['diffdomain' filnr]);
+                Domains  = get(hDom,'userdata');
+                if ~isempty(Domains)
+                    set(hDomText,'enable','off')
+                    set(hDom, ...
+                        'enable','off', ...
+                        'backgroundcolor',Inactive, ...
+                        'value',1, ...
+                        'string','-- all domains --')
+                end
+            end
+        else
+            set(hDomSelOne,'value',1)
+            set(hDomSelAll,'value',0)
+            for filnr = '12'
+                hDomText = findobj(hDiff,'tag',['txt_diffdomain' filnr]);
+                hDom     = findobj(hDiff,'tag',['diffdomain' filnr]);
+                Domains  = get(hDomText,'userdata');
+                if ~isempty(Domains) && ~strcmp(get(hDomText,'enable'),'on')
+                    set(hDomText,'enable','on')
+                    set(hDom, ...
+                        'enable','on', ...
+                        'backgroundcolor',Active, ...
+                        'string',Domains, ...
+                        'value',length(Domains))
+                end
+            end
+        end
+        d3d_qp difflabel
         
     case {'openfile1','openfile2'}
         hDiff = findall(0,'tag','Diff Files');
         if length(hDiff)~=1, return, end
-        Handle_File1 = findobj(hDiff,'tag','difffile1');
-        Handle_File2 = findobj(hDiff,'tag','difffile2');
+        hDiffFile1 = findobj(hDiff,'tag','difffile1');
+        hDiffFile2 = findobj(hDiff,'tag','difffile2');
         Handle_FileI = findobj(hDiff,'tag',['difffile' cmd(end)]);
-        File=get(Handle_File1,'userdata');
-        Str=get(Handle_File1,'string');
+        File=get(hDiffFile1,'userdata');
+        Str=get(hDiffFile1,'string');
         %
         NrInList=get(Handle_FileI,'value');
         %
@@ -654,45 +799,87 @@ switch cmd
                     File(NrInList)=NewRecord;
                 end
             end
-            set(Handle_File1,'userdata',File);
-            set([Handle_File1 Handle_File2],'string',Str,'enable','on','backgroundcolor',Active);
+            set(hDiffFile1,'userdata',File);
+            set([hDiffFile1 hDiffFile2],'string',Str,'enable','on','backgroundcolor',Active);
             d3d_qp(['difffile' cmd(end)],NrInList)
         end
         
     case 'difflabel'
         hDiff = findall(0,'tag','Diff Files');
         if length(hDiff)~=1, return, end
-        Handle_File1 = findobj(hDiff,'tag','difffile1');
-        File = get(Handle_File1,'userdata');
-        NrInList1 = get(Handle_File1,'value');
-        Handle_File2 = findobj(hDiff,'tag','difffile2');
-        NrInList2 = get(Handle_File2,'value');
-        Handle_Label = findobj(hDiff,'tag','difflabel');
-        Handle_Define = findobj(hDiff,'tag','diffdefine');
-        if ~isempty(cmdargs)
-            setappdata(Handle_Label,'LabelMode','manual')
-            setappdata(Handle_Label,'Label',cmdargs{1})
-            set(Handle_Label,'String',cmdargs{1})
-        end
-        if NrInList1 == NrInList2
-            if strcmp(get(Handle_Label,'enable'),'on')
-                set(Handle_Label,'userdata',get(Handle_Label,'string'))
+        hDiffFile1 = findobj(hDiff,'tag','difffile1');
+        hDiffDom1 = findobj(hDiff,'tag','diffdomain1');
+        File = get(hDiffFile1,'userdata');
+        %
+        NrInList1 = get(hDiffFile1,'value');
+        hDiffFile2 = findobj(hDiff,'tag','difffile2');
+        hDiffDom2 = findobj(hDiff,'tag','diffdomain2');
+        %
+        NrInList2 = get(hDiffFile2,'value');
+        hDiffLabel = findobj(hDiff,'tag','difflabel');
+        hDiffDefine = findobj(hDiff,'tag','diffdefine');
+        %
+        hAllDomains = findobj(hDiff,'tag','all_domains');
+        multiDomains = get(hAllDomains,'value');
+        domList1 = get(hDiffDom1,'userdata');
+        if isempty(domList1)
+            Dom1 = '';
+        elseif multiDomains
+            if length(domList1) == 1
+                Dom1 = domList1{1};
+            else
+                Dom1 = domList1;
             end
-            set(Handle_Label,'String','Data File Equals Reference File', ...
+        else
+            Dom1 = domList1{get(hDiffDom1,'value')};
+        end
+        domList2 = get(hDiffDom2,'userdata');
+        if isempty(domList2)
+            Dom2 = '';
+        elseif multiDomains
+            if length(domList1) == 1
+                Dom2 = domList2{1};
+            else
+                Dom2 = domList2;
+            end
+        else
+            Dom2 = domList2{get(hDiffDom2,'value')};
+        end
+        compatible_domains = (ischar(Dom1) & ischar(Dom2)) | ...
+            isequal(Dom1, Dom2);
+        %
+        if ~isempty(cmdargs)
+            setappdata(hDiffLabel,'LabelMode','manual')
+            setappdata(hDiffLabel,'Label',cmdargs{1})
+            set(hDiffLabel,'String',cmdargs{1})
+        end
+        if ~compatible_domains
+            if strcmp(get(hDiffLabel,'enable'),'on')
+                set(hDiffLabel,'userdata',get(hDiffLabel,'string'))
+            end
+            set(hDiffLabel,'String','Incompatible Selection of Domains', ...
                 'BackgroundColor',Inactive, ...
                 'Enable','off')
-            set(Handle_Define,'Enable','off')
+            set(hDiffDefine,'Enable','off')
+        elseif NrInList1 == NrInList2
+            if strcmp(get(hDiffLabel,'enable'),'on')
+                set(hDiffLabel,'userdata',get(hDiffLabel,'string'))
+            end
+            set(hDiffLabel,'String','Data File Equals Reference File', ...
+                'BackgroundColor',Inactive, ...
+                'Enable','off')
+            set(hDiffDefine,'Enable','off')
         else
-            if isequal(gcbo,Handle_Label)
+            if isequal(gcbo,hDiffLabel)
                 % user edited the label
-                Label = get(Handle_Label,'string');
-                LabelRef = getappdata(Handle_Label,'Label');
+                Label = get(hDiffLabel,'string');
+                LabelRef = getappdata(hDiffLabel,'Label');
                 if ~isequal(Label,LabelRef)
-                    setappdata(Handle_Label,'LabelMode','manual')
-                    setappdata(Handle_Label,'Label',Label)
+                    setappdata(hDiffLabel,'LabelMode','manual')
+                    setappdata(hDiffLabel,'Label',Label)
                 end
             else
-                if isequal(getappdata(Handle_Label,'LabelMode'),'auto')
+                if isequal(getappdata(hDiffLabel,'LabelMode'),'auto')
                     File1 = File(NrInList1).Name;
                     Sep1 = [0 sort([strfind(File1,'/') strfind(File1,'\')]) length(File1)+1];
                     File2 = File(NrInList2).Name;
@@ -725,24 +912,25 @@ switch cmd
                     else
                         Label = ['(' Mid1 ') - (' Mid2 ')'];
                     end
-                    set(Handle_Label,'String',Label)
-                    setappdata(Handle_Label,'Label',Label)
+                    set(hDiffLabel,'String',Label)
+                    setappdata(hDiffLabel,'Label',Label)
                 else
-                    Label = getappdata(Handle_Label,'Label');
-                    set(Handle_Label,'String',Label)
+                    Label = getappdata(hDiffLabel,'Label');
+                    set(hDiffLabel,'String',Label)
                 end
             end
-            set(Handle_Label, ...
+            set(hDiffLabel, ...
                 'BackgroundColor',Active, ...
                 'Enable','on')
-            set(Handle_Define,'Enable','on')
+            set(hDiffDefine,'Enable','on')
         end
         
     case {'difffile1','difffile2'}
+        filnr = cmd(end);
         hDiff = findall(0,'tag','Diff Files');
         if length(hDiff)~=1, return, end
-        Handle_File1 = findobj(hDiff,'tag','difffile1');
-        File=get(Handle_File1,'userdata');
+        hDiffFile1 = findobj(hDiff,'tag','difffile1');
+        File=get(hDiffFile1,'userdata');
         %
         Handle_SelectFile=findobj(hDiff,'tag',cmd);
         %
@@ -769,10 +957,47 @@ switch cmd
         else
             NrInList=get(Handle_SelectFile,'value');
         end
-        switch cmd
-            case 'difffile1'
+        %
+        [Success,Domains] = qp_getdata(File(NrInList),'domains');
+        hDomSelText = findobj(hDiff,'tag','txt_domain');
+        hDomSelAll  = findobj(hDiff,'tag','all_domains');
+        hDomSelOne  = findobj(hDiff,'tag','one_domain');
+        hDomText    = findobj(hDiff,'tag',['txt_diffdomain' filnr]);
+        filnr2 = char(sum('12')-filnr);
+        hDomText2   = findobj(hDiff,'tag',['txt_diffdomain' filnr2]);
+        hDom = findobj(hDiff,'tag',['diffdomain' filnr]);
+        if ~Success || isempty(Domains)
+            set(hDomText,'enable','off', ...
+                'userdata',{})
+            set(hDom,'enable','off', ...
+                'value',1, ...
+                'string','-- none defined --', ...
+                'backgroundcolor',Inactive, ...
+                'userdata',{})
+            if isempty(get(hDomText2,'userdata'))
+                set([hDomSelText,hDomSelAll,hDomSelOne],'enable','off')
+            end
+        else
+            set(hDomText,'userdata',Domains)
+            set([hDomSelText,hDomSelAll,hDomSelOne],'enable','on')
+            if get(hDomSelAll,'value')
+                set(hDom,'enable','off', ...
+                    'value',1, ...
+                    'string','-- all domains --', ...
+                    'backgroundcolor',Inactive)
+            else
+                set(hDomText,'enable','on')
+                set(hDom,'enable','on', ...
+                    'value',1, ...
+                    'string',Domains, ...
+                    'backgroundcolor',Active)
+                set(hDom,'value',length(Domains))
+            end
+        end
+        switch filnr
+            case '1'
                 SelA = 'Select data file A';
-            case 'difffile2'
+            case '2'
                 SelA = 'Select reference data file B';
         end
         set(Handle_SelectFile, ...
@@ -783,6 +1008,9 @@ switch cmd
             'Type: ' File(NrInList).FileType])
         d3d_qp difflabel
         
+    case {'diffdomain1','diffdomain2'}
+        % nothing to do yet
+        
     case 'diffcancel'
         hDiff = findall(0,'tag','Diff Files');
         if length(hDiff)~=1, return, end
@@ -791,10 +1019,10 @@ switch cmd
     case 'diffdefine'
         hDiff = findall(0,'tag','Diff Files');
         if length(hDiff)~=1, return, end
-        Handle_File1 = findobj(hDiff,'tag','difffile1');
-        NrInList1 = get(Handle_File1,'value');
-        Handle_File2 = findobj(hDiff,'tag','difffile2');
-        NrInList2 = get(Handle_File2,'value');
+        hDiffFile1 = findobj(hDiff,'tag','difffile1');
+        NrInList1 = get(hDiffFile1,'value');
+        hDiffFile2 = findobj(hDiff,'tag','difffile2');
+        NrInList2 = get(hDiffFile2,'value');
         set(hDiff,'userdata',[NrInList1 NrInList2]);
         set(hDiff,'visible','off')
         
@@ -993,11 +1221,16 @@ switch cmd
         d3d_qp updatedatafields
         
     case 'selectdomain'
-        domains=findobj(mfig,'tag','selectdomain');
-        Domains=get(domains,'string');
+        domains = findobj(mfig,'tag','selectdomain');
+        Domains = get(domains,'string');
         if ~isempty(cmdargs)
-            i=ustrcmpi(cmdargs{1},Domains);
-            if i<0
+            if ischar(cmdargs{1})
+                i = ustrcmpi(cmdargs{1},Domains);
+            elseif isnumeric(cmdargs{1})
+                i = cmdargs{1};
+                cmdargs{1} = sprintf('%g',i); % only for error handling
+            end
+            if i < 0 || i > length(Domains)
                 error('Cannot select field: %s',cmdargs{1})
             else
                 set(domains,'value',i);
@@ -1023,8 +1256,6 @@ switch cmd
         datafields=findobj(mfig,'tag','selectfield');
         if ~Succes
             set(datafields,'string',' ','value',1,'enable','off','backgroundcolor',Inactive,'userdata',Props);
-            set(mfig,'pointer','arrow')
-            d3d_qp updatefieldprop
         else
             Handle_Domain=findobj(mfig,'tag','selectdomain');
             DomainNr=get(Handle_Domain,'value');
@@ -1037,14 +1268,10 @@ switch cmd
                     'enable','off', ...
                     'backgroundcolor',Inactive, ...
                     'userdata',Props);
-                set(mfig,'pointer','arrow')
-                d3d_qp updatefieldprop
             else
                 names={Props.Name};
                 if isempty(names),
                     set(datafields,'string','<no datafields found>','value',1,'enable','off','backgroundcolor',Inactive,'userdata',Props);
-                    set(mfig,'pointer','arrow')
-                    d3d_qp updatefieldprop
                 else
                     df=1;
                     if strcmp(get(datafields,'enable'),'on')
@@ -1092,7 +1319,7 @@ switch cmd
                 writelog(logfile,logtype,cmd);
             end
         end
-       
+        
     case 'selectedfield'
         sf   = findobj(mfig,'tag','selectfield');
         ifld = get(sf,'value');
@@ -1410,7 +1637,7 @@ switch cmd
                 end
             else
                 mstr(mstr>maxm)=[];
-                m=mstr;
+                m=mstr(:)';
             end
         catch
             lasterr('')
@@ -1513,9 +1740,13 @@ switch cmd
         d3d_qp('editm*',MN')
         
     case 'convertmn2xy'
-        MW=UD.MainWin;
         XY = qp_gridview('convertmn2xy',UD.GridView.Fig);
         d3d_qp('editxy*',XY)
+        
+    case 'reversemn'
+        MW=UD.MainWin;
+        MN = get(MW.EditMN,'userdata');
+        d3d_qp('editmn*',flipud(MN))
         
     case {'editmn*','editmn','editxy*','editxy','loadxy'}
         MW=UD.MainWin;
@@ -1683,6 +1914,12 @@ switch cmd
             z=[];
         elseif ~isequal(size(z),[1 1])
             z=z(1);
+            switch getvalstr(UD.MainWin.VSelType)
+                case {'dZ below surface','dZ above bed'}
+                    z = max(0,z);
+                case 'depth percentage'
+                    z = min(max(0,z),100);
+            end
         end
         set(UD.MainWin.EditZ,'string',sprintf('%g',z),'userdata',z)
         d3d_qp updateoptions
@@ -1690,7 +1927,7 @@ switch cmd
             writelog(logfile,logtype,cmd,z);
         end
         
-    case {'defvariable','loaddata','quickview','updateoptions','exportdata','addtoplot','addtoplot_left','addtoplot_right'}
+    case {'selected','defvariable','loaddata','quickview','updateoptions','exportdata','addtoplot','addtoplot_left','addtoplot_right'}
         Handle_SelectFile=findobj(mfig,'tag','selectfile');
         File=get(Handle_SelectFile,'userdata');
         NrInList=get(Handle_SelectFile,'value');
@@ -1712,6 +1949,16 @@ switch cmd
         if Succes
             Info=File(NrInList);
             [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mfig,UD);
+            if ~strcmp(cmd,'updateoptions') && iscell(selected{K_}) && isempty(selected{K_}{2})
+                switch selected{K_}{1}
+                    case {'z'}
+                        error('No horizontal slice level Z specified!')
+                    case {'dz_below_max', 'dz_above_min'}
+                        error('No horizontal slice level dZ specified!')
+                    case 'percentage depth'
+                        error('No depth percentage for horizontal slice specified!')
+                end
+            end
             if isempty(Ops)
                 cmd='error';
             end
@@ -1722,6 +1969,17 @@ switch cmd
         switch cmd
             case 'error'
                 
+            case 'selected'
+                outdata.Domain = DomainNr;
+                outdata.Quantity = Props;
+                outdata.Subfield = subf;
+                outdata.Time = selected{1};
+                outdata.Station = selected{2};
+                outdata.M = selected{3};
+                outdata.N = selected{4};
+                outdata.K = selected{5};
+                return
+            
             case 'defvariable'
                 Handle_SelectFile=findobj(mfig,'tag','selectfile');
                 File=get(Handle_SelectFile,'userdata');
@@ -1794,6 +2052,12 @@ switch cmd
                     File(NrInList).Data(i).Selected=selected;
                     File(NrInList).Data(i).SubField=subf;
                     File(NrInList).Data(i).DimFlag=Props.DimFlag;
+                    if iscell(selected{3})
+                        File(NrInList).Data(i).DimFlag(3) = inf;
+                        File(NrInList).Data(i).DimFlag(4) = 0;
+                    elseif iscell(selected{5})
+                        File(NrInList).Data(i).DimFlag(5) = 0;
+                    end
                     File(NrInList).Data(i).DataInCell=0;
                     if isfield(Props,'DataInCell')
                         File(NrInList).Data(i).DataInCell=Props.DataInCell;
@@ -1819,15 +2083,10 @@ switch cmd
                         writelog(logfile,logtype,cmd,VarName);
                     end
                 end
-
+                
             case 'exportdata'
                 lasterr('');
                 try
-                    if isempty(cmdargs)
-                        FileName='';
-                    else
-                        FileName=cmdargs{1};
-                    end
                     set(mfig,'pointer','watch')
                     DS.FI=Info;
                     DS.Domain=DomainNr;
@@ -1835,59 +2094,23 @@ switch cmd
                     DS.SubField=subf;
                     DS.Selected=selected;
                     DS.Ops=Ops;
-                    FileName=qp_export(getappdata(findobj(UD.Options.Handles,'tag','exportdata'),'exporttype'),FileName,DS);
+                    cmdargs=qp_export(getappdata(findobj(UD.Options.Handles,'tag','exportdata'),'exporttype'),DS,cmdargs);
                     set(mfig,'pointer','arrow')
                 catch Ex
-                    FileName='';
+                    cmdargs={};
                     set(mfig,'pointer','arrow')
                     qp_error('Catch in d3d_qp\exportdata',Ex)
                 end
-                if ~isempty(FileName) && logfile
-                    writelog(logfile,logtype,cmd,FileName);
+                if ~isempty(cmdargs) && logfile
+                    writelog(logfile,logtype,cmd,cmdargs{:});
                 end
                 
-            case 'loaddata'
-                if logfile
-                    writelog(logfile,logtype,cmd);
-                end
-                lasterr('');
-                try
-                    Ops=qp_state_version(Ops);
-                    if isfield(Props,'MNK') && Props.MNK
-                        Props.MNK = xyz_or_mnk(Ops,selected,Props.MNK);
-                    end
-                    %
-                    selected(~Props.DimFlag)=[];
-                    set(mfig,'pointer','watch')
-                    switch Ops.presentationtype
-                        case {'patches','patches with lines','polygons'}
-                            [Chk,data,Info]=qp_getdata(Info,DomainNr,Props,'gridcelldata',subf{:},selected{:});
-                        otherwise
-                            [Chk,data,Info]=qp_getdata(Info,DomainNr,Props,'griddata',subf{:},selected{:});
-                    end
-                    data = qp_thinning(data,Ops);
-                    % reset pointer ...
-                    set(mfig,'pointer','arrow')
-                    if Chk
-                        % update FileInfo ...
-                        File(NrInList)=Info;
-                        set(Handle_SelectFile,'userdata',File);
-                        % return data ...
-                        if nargout>0
-                            outdata=data;
-                        else
-                            assignin('base','data',data)
-                        end
-                    end
-                catch Ex
-                    set(mfig,'pointer','arrow')
-                    qp_error('Catch in d3d_qp\loaddata',Ex)
-                end
-                
-            case {'quickview','addtoplot','addtoplot_left','addtoplot_right'}
+            case {'quickview','addtoplot','addtoplot_left','addtoplot_right','loaddata'}
                 set(mfig,'pointer','watch')
                 % minimal addpath d:\src\trunk_os\src\tools_lgpl\matlab\quickplot\progsrc\drawnow needed for updating pointer
-                if matlabversionnumber>=7.06 % 'update' option available as of 2008a
+                if strcmp(cmd,'loaddata')
+                    % no drawnow
+                elseif matlabversionnumber>=7.06 % 'update' option available as of 2008a
                     drawnow('update')
                 else
                     drawnow
@@ -1909,7 +2132,9 @@ switch cmd
                     %
                     T=1;
                     Animate = getappdata(findobj(mfig,'tag','quickview'),'animate');
-                    if Animate && Props.DimFlag(T_)
+                    if strcmp(cmd,'loaddata')
+                        % keep all selected times
+                    elseif Animate && Props.DimFlag(T_)
                         if selected{T_}==0
                             maxt=get(findobj(mfig,'tag','max_t'),'userdata');
                             T=1:maxt;
@@ -1919,7 +2144,7 @@ switch cmd
                         selected{T_}=T(1);
                     end
                     
-                    if Props.NVal==-2
+                    if strcmp(cmd,'loaddata') || isequal(Props.NVal, -2)
                         % selfplotfig will create its own figure
                         Parent=0;
                         pfig=[];
@@ -1937,10 +2162,8 @@ switch cmd
                         end
                         if isempty(ax)
                             %Parent=qp_createaxes(pfig,'oneplot');
-                            Parent=axes('layer','top','color',qp_settings('defaultaxescolor')/255);
-                            if qp_settings('boundingbox')
-                                set(Parent,'box','on');
-                            end
+                            Parent = axes('Parent',pfig);
+                            qp_defaultaxessettings(Parent)
                         else
                             Parent=ax(1);
                         end
@@ -1964,22 +2187,41 @@ switch cmd
                         PS.Props=Props;
                         PS.SubField=subf;
                         PS.Selected=selected;
-                        PS.Parent=Parent;
+                        if strcmp(cmd,'loaddata')
+                            PS.Parent='loaddata';
+                        else
+                            PS.Parent=Parent;
+                        end
                         PS.Handles=hNew;
                         PS.Stations=stats;
                         PS.Ops=Ops;
                         [hNew,Error,Info]=qp_plot(PS);
                     end
                     
-                    if ~isempty(pfig)
-                        set(UD.PlotMngr.FigList,'value',1,'string',listnames(pfig,'showType','no','showHandle','no','showTag','no'),'userdata',pfig);
-                        set(UD.PlotMngr.ItList,'value',[]) % clear item selection such that new item will be selected
-                        d3d_qp refreshfigs
-                    end
-                    qp_updatescroller(hNew,pfig)
-                    
-                    if Animate
-                        qck_anim('start',pfig,T);
+                    if strcmp(cmd,'loaddata')
+                        % hNew contains the data ...
+                        if ~Error
+                            % update FileInfo ...
+                            File(NrInList)=Info;
+                            set(Handle_SelectFile, 'userdata', File);
+                            % return data ...
+                            if nargout>0
+                                outdata = hNew;
+                            else
+                                assignin('base', 'data', hNew)
+                            end
+                        end
+                    else
+                        if ~isempty(pfig)
+                            set(UD.PlotMngr.FigList,'value',1,'string',listnames(pfig,'showType','no','showHandle','no','showTag','no'),'userdata',pfig);
+                            set(UD.PlotMngr.ItList,'value',[]) % clear item selection such that new item will be selected
+                            d3d_qp refreshfigs
+                        end
+                        qp_updatescroller(hNew,pfig)
+                        
+                        if Animate
+                            qck_anim('start',pfig,T);
+                        end
                     end
                 catch Ex
                     qp_error('Catch in d3d_qp\quickview',Ex)
@@ -2040,8 +2282,9 @@ switch cmd
     case {'selectiontype','axestype','plotcoordinate','component','plottype', ...
             'climmode','presenttype','vecscalem','vertscalem','thinfld', ...
             'linestyle','marker','threshdistr','horizontalalignment', ...
-            'verticalalignment','exporttype','vectorcolour','dataunits', ...
-            'vectorstyle','angleconvention','axestimezone','operator'}
+            'verticalalignment','exporttype','trackcolour','vectorcolour', ...
+            'dataunits','vectorstyle','angleconvention','axestimezone', ...
+            'operator'}
         % commands require an input string
         %
         % nothing to do except refreshing the options
@@ -2149,8 +2392,9 @@ switch cmd
             writelog(logfile,logtype,cmd,clr);
         end
         
-    case {'colourvectors','usemarkercolour','usemarkerfillcolour','colclassify','colourbar','colourdams','textbox','fillpolygons', ...
-            'colvector','coldams'}
+    case {'colourtracks','colourvectors','usemarkercolour', ...
+            'usemarkerfillcolour','colclassify','colourbar','colourdams', ...
+            'textbox','fillpolygons','colvector','coldams','unicolour'}
         % commands require an input logical
         %
         % nothing do except refreshing the options
@@ -2246,7 +2490,7 @@ switch cmd
             writelog(logfile,logtype,cmd,c);
         end
         
-    case {'xclipping','yclipping','clippingvals'}
+    case {'xclipping','yclipping','zclipping','clippingvals'}
         cv=findobj(UOH,'tag',[cmd '=?']);
         if isempty(cmdargs)
             Str=get(cv,'string');
@@ -2404,44 +2648,76 @@ switch cmd
         end
         
     case 'update_addtoplot'
-        qv=findobj(mfig,'tag','quickview');
-        atp= findobj(mfig,'tag','addtoplot');
-        multi = get(UD.PlotMngr.FigAll,'value') | get(UD.PlotMngr.AxAll,'value');
+        qv=findobj(mfig, 'tag', 'quickview');
+        atp = findobj(mfig, 'tag', 'addtoplot');
+        multi = get(UD.PlotMngr.FigAll, 'value') | get(UD.PlotMngr.AxAll, 'value');
         if ~multi && ~isempty(UD.PlotMngr.CurrentAxes) ...
                 && ishandle(UD.PlotMngr.CurrentAxes) ...
-                && strcmp(get(qv,'enable'),'on')
-            axestype=getappdata(UD.PlotMngr.CurrentAxes,'AxesType');
+                && (strcmp(get(qv, 'enable'), 'on') ...
+                    || (isfield(UD.State,'axestype') ...
+                        && strcmp(UD.State.axestype, 'Time')))
+            axestype=getappdata(UD.PlotMngr.CurrentAxes, 'BasicAxesType');
             %
             % Temporarily replace Lon-Lat by X-Y.
             %
             if ischar(axestype)
-                axestype=strrep(axestype,'Lon-Lat','X-Y');
+                axestype=strrep(axestype, 'Lon-Lat', 'X-Y');
             end
             %
-            if ~ischar(axestype) || strcmp(axestype,UD.State.axestype)
+            if ~ischar(axestype)
+                %
+                % new axes type without type assigned.
+                %
+                atp_on = 1;
+            elseif strcmp(UD.State.axestype, 'Time')
+                %
+                % a time line needs a time axis
+                %
+                switch axestype
+                    case {'analog clock', 'digital clock', 'calendar page'}
+                        % only one data set can be added to these types of axes
+                        atp_on = isempty(get(UD.PlotMngr.ItList, 'userdata'));
+                    otherwise
+                        atp_on = ~isempty(strfind(axestype, 'Time'));
+                end
+            elseif ~ischar(axestype) || strcmp(axestype, UD.State.axestype)
                 %
                 % perfect match of axes types (including units in case of Val)
                 %
-                set(atp,'enable','on','foregroundcolor','k')
+                atp_on = 1;
             else
                 %
                 % no exact match
                 %
-                if strcmp(strtok(axestype),strtok(UD.State.axestype)) && ...
-                        (isempty(strfind(axestype,' ')) || ...
-                        isempty(strfind(UD.State.axestype,' ')))
+                if strcmp(strtok(axestype), strtok(UD.State.axestype)) && ...
+                        (isempty(strfind(axestype, ' ')) || ...
+                        isempty(strfind(UD.State.axestype, ' ')))
                     %
                     % if one of the two axes types lacks a unit specifier,
                     % and the axes types without unit specifier match, then
                     % still okay to combine plots.
                     %
-                    set(atp,'enable','on','foregroundcolor','k')
+                    atp_on = 1;
                 else
-                    set(atp,'enable','on','foregroundcolor','r')
+                    switch axestype
+                        case {'analog clock', 'digital clock', 'calendar page'}
+                            % only Time quantity can be added
+                            atp_on = 0;
+                        otherwise
+                            atp_on = 0.5;
+                    end
                 end
             end
         else
-            set(atp,'enable','off','foregroundcolor','k')
+            atp_on = 0;
+        end
+        switch atp_on
+            case 1   % yes!
+                set(atp, 'enable', 'on', 'foregroundcolor', 'k')
+            case 0.5 % not wise, but maybe ...
+                set(atp, 'enable', 'on', 'foregroundcolor', 'r')
+            case 0   % no!
+                set(atp, 'enable', 'off', 'foregroundcolor', 'k')
         end
         
     case 'close'
@@ -2541,15 +2817,21 @@ switch cmd
             currentstatus='on';
         else
             try
-                warnJF = warning('query','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
-                warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
-                jFrame = get(handle(UD.PlotMngr.Fig),'JavaFrame');
-                warning(warnJF);
-                if jFrame.isMinimized
-                    jFrame.setMinimized(0)
-                    return
+                if strcmp(get(UD.PlotMngr.Fig,'windowState'),'minimized')
+                    set(UD.PlotMngr.Fig,'windowState','normal')
                 end
             catch
+                try % before 2018a
+                    warnJF = warning('query','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame');
+                    warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
+                    jFrame = get(handle(UD.PlotMngr.Fig),'JavaFrame');
+                    warning(warnJF);
+                    if jFrame.isMinimized
+                        jFrame.setMinimized(0)
+                        return
+                    end
+                catch
+                end
             end
         end
         switch currentstatus
@@ -2567,8 +2849,13 @@ switch cmd
         
     case {'comline','hidecomline'}
         currentstatus=get(UD.ComLine.Fig,'visible');
-        if strcmp(cmd,'hidecomline'),
+        if strcmp(cmd,'hidecomline')
             currentstatus='on';
+        elseif matlabversionnumber >= 9.04 % 2018a
+            winstate = get(UD.ComLine.Fig,'WindowState');
+            if ~strcmp(winstate,'normal')
+                set(UD.ComLine.Fig,'WindowState','normal')
+            end
         else
             try
                 jFrame = get(handle(UD.ComLine.Fig),'JavaFrame');
@@ -2608,6 +2895,7 @@ switch cmd
             zlim;
             qpsf;
             qpsa;
+            qpfile
         end
         
     case 'showmessagewin'
@@ -2739,6 +3027,8 @@ switch cmd
                             mm=get(MW.EditM,'userdata');
                             range{1}=mm;
                         end
+                    elseif strcmp(get(MW.MaxM,'enable'),'on')
+                        range{1}=1;
                     end
                     %----
                     if strcmp(get(MW.N,'enable'),'on')
@@ -2750,6 +3040,8 @@ switch cmd
                             nn=get(MW.EditN,'userdata');
                             range{2}=nn;
                         end
+                    elseif strcmp(get(MW.MaxN,'enable'),'on')
+                        range{2}=1;
                     end
                     %----
                 case '(M,N) point/path'
@@ -2802,7 +3094,7 @@ switch cmd
         
     case {'gridview','hidegridview'}
         currentstatus=get(UD.GridView.Fig,'visible');
-        if strcmp(cmd,'hidegridview'),
+        if strcmp(cmd,'hidegridview')
             currentstatus='on';
         end
         switch currentstatus
@@ -2834,8 +3126,14 @@ switch cmd
                 Handle_Domain=findobj(mfig,'tag','selectdomain');
                 DomainNr=get(Handle_Domain,'value');
                 %
-                qp_gridviewhelper(UD,Info,DomainNr,Props,fld)
-                d3d_qp('gridview_update')
+                try
+                    qp_gridviewhelper(UD,Info,DomainNr,Props,fld)
+                    d3d_qp('gridview_update')
+                catch err
+                    qp_gridview('setgrid',UD.GridView.Fig,[],[])
+                    set(UD.GridView.Fig,'userdata',[])
+                    rethrow(err)
+                end
             else
                 qp_gridview('setgrid',UD.GridView.Fig,[],[])
                 set(UD.GridView.Fig,'userdata',[])
@@ -2898,7 +3196,7 @@ switch cmd
                     fn=[fn ftype(2:end)];
                 end
                 try
-                    logfile=fopen([pn fn],'w');
+                    logfile=fopen([pn fn],'w','n','UTF-8');
                 catch Ex
                     qp_error('Catch in d3d_qp\logfile',Ex)
                 end
@@ -3102,6 +3400,50 @@ switch cmd
             end
         end
         
+    case 'figurerenderer'
+        fig = qpsf;
+        PM = UD.PlotMngr;
+        %
+        rdrs = get(PM.FigRendererType, 'string');
+        if ~isempty(cmdargs)
+            rdr = cmdargs{1};
+            rdri = ustrcmpi(rdr, rdrs);
+            if rdri<0
+                if ischar(rdr)
+                    error('Invalid renderer: %s', rdr)
+                else
+                    error('Invalid renderer: <non string>')
+                end
+            end
+        else
+            rdri = get(PM.FigRendererType, 'value');
+            rdr  = rdrs{rdri};
+        end
+        %
+        set(fig, 'renderer', rdr)
+        d3d_qp refreshfigprop
+        if logfile
+            writelog(logfile, logtype, cmd, rdr);
+        end
+        
+    case 'figuresmoothing'
+        fig = qpsf;
+        %
+        if isempty(cmdargs)
+            PM = UD.PlotMngr;
+            smo = get(PM.FigSmoothing,'value');
+        else
+            smo = cmdargs{1};
+        end
+        if isequal(size(smo),[1 1])
+            smotext = valuemap(smo,[1 0],{'on' 'off'});
+            set(fig,'graphicssmoothing',smotext)
+            d3d_qp refreshfigprop
+            if logfile
+                writelog(logfile,logtype,cmd,smo);
+            end
+        end
+        
     case 'axesname'
         ax = qpsa;
         PM = UD.PlotMngr;
@@ -3147,6 +3489,7 @@ switch cmd
             tp = tps{itp};
             setaxesprops(ax,tp)
             d3d_qp refreshaxes
+            d3d_qp update_addtoplot
             %
             if logfile
                 writelog(logfile,logtype,cmd,tp);
@@ -3205,24 +3548,24 @@ switch cmd
         zdr = {};
         zlm = [];
         PM = UD.PlotMngr;
-        if strcmp(get(PM.ZLimitMin,'enable'),'on')
+        if strcmp(get(PM.Z.LimitMin,'enable'),'on')
             zdr = {'zdir','normal'};
-            zlm(1,1) = str2double(get(PM.ZLimitMin,'string'));
-            zlm(1,2) = str2double(get(PM.ZLimitMax,'string'));
+            zlm(1,1) = str2double(get(PM.Z.LimitMin,'string'));
+            zlm(1,2) = str2double(get(PM.Z.LimitMax,'string'));
             if zlm(1)>zlm(2)
                 zlm = fliplr(zlm);
                 zdr{2} = 'reverse';
             end
         end
         if isempty(cmdargs)
-            xlm(1,1) = str2double(get(PM.XLimitMin,'string'));
-            xlm(1,2) = str2double(get(PM.XLimitMax,'string'));
+            xlm(1,1) = str2double(get(PM.X.LimitMin,'string'));
+            xlm(1,2) = str2double(get(PM.X.LimitMax,'string'));
             if xlm(1)>xlm(2)
                 xlm = fliplr(xlm);
                 xdr{2} = 'reverse';
             end
-            ylm(1,1) = str2double(get(PM.YLimitMin,'string'));
-            ylm(1,2) = str2double(get(PM.YLimitMax,'string'));
+            ylm(1,1) = str2double(get(PM.Y.LimitMin,'string'));
+            ylm(1,2) = str2double(get(PM.Y.LimitMax,'string'));
             if ylm(1)>ylm(2)
                 ylm = fliplr(ylm);
                 ydr{2} = 'reverse';
@@ -3335,9 +3678,9 @@ switch cmd
     case 'axesgrid'
         ax = qpsa;
         PM = UD.PlotMngr;
-        xgrid = get(PM.XGrid,'value');
-        ygrid = get(PM.YGrid,'value');
-        zgrid = get(PM.ZGrid,'value');
+        xgrid = get(PM.X.Grid,'value');
+        ygrid = get(PM.Y.Grid,'value');
+        zgrid = get(PM.Z.Grid,'value');
         if ~isempty(cmdargs)
             xgrid = cmdargs{1};
             ygrid = cmdargs{2};
@@ -3350,7 +3693,7 @@ switch cmd
             ygr = valuemap(ygrid,[1 0],{'on' 'off'});
             zgr = valuemap(zgrid,[1 0],{'on' 'off'});
             set(ax,'xgrid',xgr,'ygrid',ygr,'zgrid',zgr);
-            if strcmp(get(PM.ZGrid,'enable'),'off')
+            if strcmp(get(PM.Z.Grid,'enable'),'off')
                 zgr = [];
             end
             d3d_qp refreshaxprop
@@ -3363,14 +3706,93 @@ switch cmd
             end
         end
         
+    case 'axesaspect'
+        ax = qpsa;
+        PM = UD.PlotMngr;
+        if strcmp(get(PM.Y.AspectTxt,'enable'),'off')
+            yaspect = '';
+        elseif get(PM.Y.AspectAuto,'value')
+            yaspect = 'auto';
+        else
+            yaspect = str2double(get(PM.Y.AspectValue,'string'));
+            if yaspect>0
+                % ok
+            else
+                yaspect = get(PM.Y.AspectValue,'userdata');
+            end
+        end
+        if strcmp(get(PM.Z.AspectTxt,'enable'),'off')
+            zaspect = '';
+        elseif get(PM.Z.AspectAuto,'value')
+            zaspect = 'auto';
+        else
+            zaspect = str2double(get(PM.Z.AspectValue,'string'));
+            if zaspect>0
+                % ok
+            else
+                zaspect = get(PM.Z.AspectValue,'userdata');
+            end
+            if isempty(zaspect)
+                zaspect = 1;
+            end
+        end
+        if ~isempty(cmdargs)
+            if getappdata(ax,'haspectenforced')
+                % ok
+            else
+                y = cmdargs{1};
+                if strcmpi(y,'auto')
+                    yaspect = 'auto';
+                elseif isscalar(y) && isnumeric(y) && y>0
+                    yaspect = y;
+                end
+            end
+            if length(cmdargs)>1
+                z = cmdargs{2};
+                if strcmpi(z,'auto')
+                    zaspect = 'auto';
+                elseif isscalar(z) && isnumeric(z) && z>0
+                    zaspect = z;
+                end
+            end
+        end
+        if getappdata(ax,'axes2d')
+            zaspect = [];
+        end
+        if strcmp(yaspect,'auto')
+            set(ax,'dataAspectratioMode','auto');
+            if ~getappdata(ax,'axes2d')
+                zaspect = 'auto';
+            end
+        else
+            y = yaspect;
+            if getappdata(ax,'axes2d')
+                z = 1;
+            elseif strcmp(zaspect,'auto')
+                zaspect = 1;
+                z = 1;
+            else
+                z = zaspect;
+            end
+            set(ax,'dataaspectratio',[1 1/y 1/z]);
+        end
+        d3d_qp refreshaxprop
+        if logfile
+            if isempty(zaspect)
+                writelog(logfile,logtype,cmd,yaspect);
+            else
+                writelog(logfile,logtype,cmd,yaspect,zaspect);
+            end
+        end
+        
     case 'axesloc'
         ax = qpsa;
         PM = UD.PlotMngr;
-        xlcs = get(PM.XLoc,'string');
-        ylcs = get(PM.YLoc,'string');
+        xlcs = get(PM.X.Loc,'string');
+        ylcs = get(PM.Y.Loc,'string');
         if isempty(cmdargs)
-            xlc = xlcs{get(PM.XLoc,'value')};
-            ylc = ylcs{get(PM.YLoc,'value')};
+            xlc = xlcs{get(PM.X.Loc,'value')};
+            ylc = ylcs{get(PM.Y.Loc,'value')};
         else
             xlc = cmdargs{1};
             ylc = cmdargs{2};
@@ -3385,24 +3807,57 @@ switch cmd
             end
         end
         
+    case 'axesdir'
+        ax = qpsa;
+        PM = UD.PlotMngr;
+        xdirs = get(PM.X.Dir,'string');
+        ydirs = get(PM.Y.Dir,'string');
+        zdirs = get(PM.Z.Dir,'string');
+        if isempty(cmdargs)
+            xdr = xdirs{get(PM.X.Dir,'value')};
+            ydr = ydirs{get(PM.Y.Dir,'value')};
+            zdr = ydirs{get(PM.Z.Dir,'value')};
+        else
+            xdr = cmdargs{1};
+            ydr = cmdargs{2};
+            zdr = cmdargs{3};
+        end
+        ixdr = ustrcmpi(xdr,xdirs);
+        iydr = ustrcmpi(ydr,ydirs);
+        izdr = ustrcmpi(zdr,zdirs);
+        if ixdr>0 && iydr>0 && izdr>0
+            set(ax,'xdir',xdr,'ydir',ydr,'zdir',zdr);
+            d3d_qp refreshaxprop
+            if logfile
+                writelog(logfile,logtype,cmd,xdr,ydr,zdr);
+            end
+        end
+        
     case 'axesscale'
         ax = qpsa;
         PM = UD.PlotMngr;
-        scales = get(PM.XScale,'string');
+        scales = get(PM.X.Scale,'string');
         if isempty(cmdargs)
-            xsc = scales{get(PM.XScale,'value')};
-            ysc = scales{get(PM.YScale,'value')};
+            xsc = scales{get(PM.X.Scale,'value')};
+            ysc = scales{get(PM.Y.Scale,'value')};
+            zsc = scales{get(PM.Z.Scale,'value')};
         else
             xsc = cmdargs{1};
             ysc = cmdargs{2};
+            if length(cmdargs)>2
+                zsc = cmdargs{3};
+            else
+                zsc = scales{get(PM.Z.Scale,'value')};
+            end
         end
         ixsc = ustrcmpi(xsc,scales);
         iysc = ustrcmpi(ysc,scales);
-        if ixsc>0 && iysc>0
-            set(ax,'xscale',xsc,'yscale',ysc);
+        izsc = ustrcmpi(zsc,scales);
+        if ixsc>0 && iysc>0 && izsc>0
+            set(ax,'xscale',xsc,'yscale',ysc,'zscale',zsc);
             d3d_qp refreshaxprop
             if logfile
-                writelog(logfile,logtype,cmd,xsc,ysc);
+                writelog(logfile,logtype,cmd,xsc,ysc,zsc);
             end
         end
         
@@ -3422,7 +3877,7 @@ switch cmd
                 writelog(logfile,logtype,cmd,lbox);
             end
         end
-
+        
     case 'axeslinewidth'
         ax = qpsa;
         if isempty(cmdargs)
@@ -3438,7 +3893,7 @@ switch cmd
                 writelog(logfile,logtype,cmd,lw);
             end
         end
-
+        
     case 'axesposition'
         ax = qpsa;
         PM = UD.PlotMngr;
@@ -3506,8 +3961,8 @@ switch cmd
         else
             x        = cmd(1);
             X        = upper(x);
-            XLblAuto = PM.([X 'LabelAuto']);
-            XLbl     = PM.([X 'Label']);
+            XLblAuto = PM.(X).LabelAuto;
+            XLbl     = PM.(X).Label;
             xlbl     = [x 'label'];
         end
         %
@@ -3519,6 +3974,15 @@ switch cmd
         else
             lbl = varargin{1};
             auto = strcmp(lbl,'<automatic>');
+        end
+        %
+        set(XLblAuto,'value',auto)
+        if auto
+            if isappdata(ax,xlbl)
+                rmappdata(ax,xlbl)
+            end
+        else
+            setappdata(ax,xlbl,lbl)
         end
         %
         if auto
@@ -3546,21 +4010,13 @@ switch cmd
         %
         switch x
             case 'title'
-                title(ax,expanded_lbl)
+                qp_title('update',ax)
             case 'x'
                 xlabel(ax,expanded_lbl)
             case 'y'
                 ylabel(ax,expanded_lbl)
             case 'z'
                 zlabel(ax,expanded_lbl)
-        end
-        set(XLblAuto,'value',auto)
-        if auto
-            if isappdata(ax,xlbl)
-                rmappdata(ax,xlbl)
-            end
-        else
-            setappdata(ax,xlbl,lbl)
         end
         if strcmp(cmd,'title')
             d3d_qp refreshaxes
@@ -3574,7 +4030,7 @@ switch cmd
         
     case 'zoomdown'
         zoom(gcbf,'down');
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'zoomin'
         %  putdowntext('zoomin',gcbo)
@@ -3631,7 +4087,7 @@ switch cmd
             h = zoom(gcbf);
             if strcmpi(get(gcbo,'State'),'on')
                 set(h,'Direction','in')
-                set(h,'ActionPostCallback',@updateaxes);
+                set(h,'ActionPostCallback',@qp_updateaxes);
                 set(h,'Enable','on');
             else
                 set(h,'Enable','off');
@@ -3687,7 +4143,7 @@ switch cmd
             h = zoom(gcbf);
             if strcmpi(get(gcbo,'State'),'on')
                 set(h,'Direction','out')
-                set(h,'ActionPostCallback',@updateaxes);
+                set(h,'ActionPostCallback',@qp_updateaxes);
                 set(h,'Enable','on');
             else
                 set(h,'Enable','off');
@@ -3746,7 +4202,7 @@ switch cmd
         else
             h = pan(gcbf);
             if strcmpi(get(gcbo,'State'),'on')
-                set(h,'ActionPostCallback',@updateaxes);
+                set(h,'ActionPostCallback',@qp_updateaxes);
                 set(h,'Enable','on');
             else
                 set(h,'Enable','off');
@@ -3792,7 +4248,7 @@ switch cmd
             end
         end
         %
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'zoomoutdown'
         WBDZOF = getappdata(gcbf,'WrappedButtonDownZoomOutFcn');
@@ -3831,7 +4287,7 @@ switch cmd
             end
         end
         %
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'zoominup'
         WBUPF = getappdata(gcbf,'WrappedButtonUpZoomInFcn');
@@ -3842,17 +4298,17 @@ switch cmd
             WBUPF = getappdata(gcbf,'WrappedButtonUpZoomInFcn0');
             WBUPF{1}(gcbf,[],WBUPF{2:end})
         end
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'zoomoutup'
         WBUPF = getappdata(gcbf,'WrappedButtonUpZoomOutFcn');
         WBUPF{1}(gcbf,[],WBUPF{2:end})
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'zoominout'
         WBUPF = getappdata(gcbf,'WrappedZoomInOutFcn');
         WBUPF{1}(gcbo,[],WBUPF{2})
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'pandown'
         WBDPF = getappdata(gcbf,'WrappedButtonDownPanFcn');
@@ -3869,12 +4325,12 @@ switch cmd
     case 'panup'
         WBUPF = getappdata(gcbf,'WrappedButtonUpPanFcn');
         WBUPF{1}(gcbf,[],WBUPF{2:end})
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'viewreset'
         WRF = getappdata(gcbf,'WrappedResetFcn');
         WRF{1}(gcbo,[],WRF{2})
-        updateaxes(gcbf,[])
+        qp_updateaxes(gcbf,[])
         
     case 'rotate3d'
         %  putdowntext('rotate3d',gcbo)
@@ -3892,9 +4348,13 @@ switch cmd
             Fig=gcbf;
         elseif isempty(gcbf) || isequal(get(gcbf,'handlevisibility'),'off')
             FigIDs=get(UD.PlotMngr.FigList,'userdata');
-            FigVal=get(UD.PlotMngr.FigList,'value');
-            if FigVal<=length(FigIDs)
-                Fig=FigIDs(FigVal);
+            if get(UD.PlotMngr.FigAll,'value') % all figures
+                Fig=FigIDs;
+            else
+                FigVal=get(UD.PlotMngr.FigList,'value');
+                if FigVal<=length(FigIDs)
+                    Fig=FigIDs(FigVal);
+                end
             end
         else
             Fig=gcbf;
@@ -4025,7 +4485,9 @@ switch cmd
                                     I.PageLabels=qp_settings('print_pagelabels');
                                     I.SelectFrom=get_nondialogs;
                                     [I,FigNew]=md_print('getsettings',Fig,I);
-                                    if ~isequal(Fig,FigNew)
+                                    if isempty(I)
+                                        return
+                                    elseif ~isequal(Fig,FigNew)
                                         set(sld,'vis','on')
                                         set(psh,'vis','on')
                                         Fig=FigNew;
@@ -4062,14 +4524,14 @@ switch cmd
             end
         end
         
-    case 'run'
+    case {'run','rerun'}
         PAR.X=[];
         PAR = rmfield(PAR,'X');
         blockcomment=0;
         if isempty(cmdargs)
             [fn,pn]=uigetfile('*.qplog;*.m');
             if ischar(fn)
-                runfil=fopen([pn fn],'r');
+                runfil=fopen([pn fn],'r','n','UTF-8');
             else
                 runfil=-1;
             end
@@ -4090,7 +4552,7 @@ switch cmd
                     break
                 end
             end
-            runfil=fopen(cmdargs{1},'r');
+            runfil=fopen(cmdargs{1},'r','n','UTF-8');
         end
         cmdargs={};
         if runfil<0
@@ -4140,6 +4602,9 @@ switch cmd
                 set(c(LogId),'label',sprintf('&1 %s',abbrevfn(filename)),'position',1);
             end
             set(OtherLog,'visible','on')
+            %
+            rerun=findobj(mfig,'tag','rerun');
+            set(rerun,'enable','on','ClickedCallback',LogCallBack,'TooltipString',sprintf('Run ''%s'' again.',filename))
         end
         %
         stop   = 0;
@@ -4198,15 +4663,7 @@ switch cmd
         end
         
     case 'closeallfig'
-        h=allchild(0);
-        for i=1:length(h)
-            hUD=get(h(i),'userdata');
-            if isstruct(hUD) && isfield(hUD,'ProgID')
-                if strcmp(hUD.ProgID,'QuickPlot')
-                    delete(h(i));
-                end
-            end
-        end
+        delete(get_nondialogs)
         d3d_qp refreshfigs
         
     case {'hselectiontype','vselectiontype','hselectiontype*'}
@@ -4238,7 +4695,7 @@ switch cmd
         news = getvalstr(MWSelType);
         switch news
             case 'M range and N range'
-                set([MW.MN MW.EditMN MW.MN2XY MW.MN2M],'visible','off')
+                set([MW.MN MW.EditMN MW.MNrev MW.MN2XY MW.MN2M],'visible','off')
                 set([MW.XY MW.EditXY MW.LoadXY MW.SaveXY],'visible','off')
                 set([MW.M MW.AllM MW.EditM MW.MaxM],'visible','on')
                 set([MW.N MW.AllN MW.EditN MW.MaxN],'visible','on')
@@ -4246,12 +4703,12 @@ switch cmd
                 set([MW.M MW.AllM MW.EditM],'visible','off')
                 set([MW.N MW.AllN MW.EditN],'visible','off')
                 set([MW.XY MW.EditXY MW.LoadXY MW.SaveXY],'visible','off')
-                set([MW.MN MW.EditMN MW.MN2XY],'visible','on')
+                set([MW.MN MW.EditMN MW.MNrev MW.MN2XY],'enable','on','visible','on')
                 %
                 Props=get(MW.Field,'userdata');
                 fld=get(MW.Field,'value');
                 if ~isempty(Props) && isfield(Props,'DimFlag') && Props(fld).DimFlag(M_) && ~Props(fld).DimFlag(N_)
-                    set(MW.MN2M,'visible','on')
+                    set(MW.MN2M,'enable','on','visible','on')
                 else
                     set(MW.MN2M,'visible','off')
                 end
@@ -4259,8 +4716,8 @@ switch cmd
             case '(X,Y) point/path'
                 set([MW.M MW.AllM MW.EditM MW.MaxM],'visible','off')
                 set([MW.N MW.AllN MW.EditN MW.MaxN],'visible','off')
-                set([MW.MN MW.EditMN MW.MN2XY MW.MN2M],'visible','off')
-                set([MW.XY MW.EditXY MW.LoadXY MW.SaveXY],'visible','on')
+                set([MW.MN MW.EditMN MW.MNrev MW.MN2XY MW.MN2M],'visible','off')
+                set([MW.XY MW.EditXY MW.LoadXY MW.SaveXY],'enable','on','visible','on')
             case 'K range'
                 set([MW.Z MW.EditZ],'visible','off')
                 set([MW.K MW.AllK MW.EditK MW.MaxK],'visible','on')
@@ -4268,6 +4725,10 @@ switch cmd
                 set([MW.K MW.AllK MW.EditK MW.MaxK],'visible','off')
                 set([MW.Z MW.EditZ],'visible','on')
                 set(MW.Z,'string',strtok(news))
+            case {'depth percentage'}
+                set([MW.K MW.AllK MW.EditK MW.MaxK],'visible','off')
+                set([MW.Z MW.EditZ],'visible','on')
+                set(MW.Z,'string','%')
         end
         
         d3d_qp updateoptions
@@ -4321,7 +4782,7 @@ switch cmd
         set(MW.StList,'enable','off','value',1,'string',' ','backgroundcolor',Inactive,'UserData',[],'visible','on')
         set(MW.Stat,'visible','off')
         set(MW.HSelType,'String',{'M range and N range','(M,N) point/path','(X,Y) point/path'},'value',1)
-        set(MW.VSelType,'String',{'K range','Z slice','dZ below surface','dZ above bed'},'value',1)
+        set(MW.VSelType,'String',{'K range','Z slice','dZ below surface','dZ above bed','depth percentage'},'value',1)
         set([MW.MN MW.MN2XY],'visible','off')
         set(MW.EditMN,'string','','Userdata',[],'visible','off')
         set([MW.XY MW.LoadXY MW.SaveXY],'visible','off')
@@ -4345,63 +4806,176 @@ switch cmd
         set(MW.QuickV,'enable','off')
         set(MW.Add2Plot,'enable','off')
         set(UOH,'enable','off','visible','off','backgroundcolor',Inactive)
+        %
+        % ------ axes type ...
+        %
         set(findobj(UOH,'tag','axestype=?'),'value',1,'string',{''})
-        set(findobj(UOH,'tag','dataunits=?'),'value',1)
+        %
+        % ------ time axis - time zone ...
+        %
+        set(findobj(UOH,'tag','axestimezone=?'),'value',1)
+        %
+        % ------ plot coordinate ...
+        %
         set(findobj(UOH,'tag','plotcoordinate=?'),'value',1,'string',{' '})
+        %
+        % ------ component ...
+        %
         set(findobj(UOH,'tag','component=?'),'value',1,'string',{' '})
-        set(findobj(UOH,'tag','numformat=?'),'string','%.2f')
-        set(findobj(UOH,'tag','fontsize=?'),'userdata',6,'string','6')
-        set(findobj(UOH,'tag','horizontalalignment=?'),'value',2)
-        set(findobj(UOH,'tag','verticalalignment=?'),'value',3)
-        set(findobj(UOH,'tag','textbox=?'),'value',0)
-        set(findobj(UOH,'tag','textboxfacecolour=?'),'backgroundcolor',State.textboxfacecolour,'userdata',State.textboxfacecolour)
-        set(findobj(UOH,'tag','vecscalem=?'),'value',1)
-        set(findobj(UOH,'tag','vectorstyle=?'),'value',1)
-        set(findobj(UOH,'tag','1vecunit=?'),'userdata',1,'string','1')
-        set(findobj(UOH,'tag','fillpolygons'),'value',0)
-        
-        set(findobj(UOH,'tag','linewidth=?'),'userdata',0.5,'string','0.5')
-        set(findobj(UOH,'tag','vertscalem=?'),'value',1)
-        set(findobj(UOH,'tag','vscale=?'),'userdata',1,'string','1')
+        %
+        % ------ presenttype ...
+        %
         set(findobj(UOH,'tag','presenttype=?'),'value',1,'string',{' '})
         set(findobj(UOH,'tag','extend2edge'),'value',0)
-        set(findobj(UOH,'tag','thinfld=?'),'value',1)
-        set(findobj(UOH,'tag','thinfact=?'),'userdata',1,'string','1')
-        set(findobj(UOH,'tag','thindist=?'),'userdata',50,'string','50')
-        set(findobj(UOH,'tag','colourvectors'),'value',0)
-        set(findobj(UOH,'tag','colourdams'),'value',0)
-        set(findobj(UOH,'tag','operator'),'value',1)
+        %
+        % ------ colour tracks ...
+        %
+        set(findobj(UOH,'tag','trackcolour=?'),'value',1,'string',{' '})
+        %
+        % ------ colour vectors ...
+        %
         set(findobj(UOH,'tag','vectorcolour=?'),'value',1,'string',{' '})
-        set(findobj(UOH,'tag','colclassify'),'value',0)
-        set(findobj(UOH,'tag','thresholds=?'),'string','','userdata',[])
-        set(findobj(UOH,'tag','threshdistr=?'),'value',1)
-        set(findobj(UOH,'tag','climmode=?'),'value',1)
-        set(findobj(UOH,'tag','climmax=?'),'userdata',1,'string','1')
-        set(findobj(UOH,'tag','climmax=?'),'userdata',0,'string','0')
+        set(findobj(UOH,'tag','colourvectors'),'value',0)
+        %
+        % ------ data units ...
+        %
+        set(findobj(UOH,'tag','dataunits=?'),'value',1)
+        %
+        % ------ angle convention ...
+        %
+        set(findobj(UOH,'tag','angleconvention=?'),'value',1)
+        %
+        % ------ vector style ...
+        %
+        set(findobj(UOH,'tag','vectorstyle=?'),'value',1)
+        %
+        % ------ vector scaling ...
+        %
+        set(findobj(UOH,'tag','vecscalem=?'),'value',1)
+        set(findobj(UOH,'tag','1vecunit=?'),'userdata',1,'string','1')
+        %
+        % ------ vertical scaling ...
+        %
+        set(findobj(UOH,'tag','vertscalem=?'),'value',1)
+        set(findobj(UOH,'tag','vscale=?'),'userdata',1,'string','1')
+        %
+        % ------ format string
+        %
+        set(findobj(UOH,'tag','numformat=?'),'string','%.2f')
+        %
+        % ------ font characteristics
+        %
+        set(findobj(UOH,'tag','fontsize=?'),'userdata',6,'string','6')
+        %
+        % ------ label alignment
+        %
+        set(findobj(UOH,'tag','horizontalalignment=?'),'value',2)
+        set(findobj(UOH,'tag','verticalalignment=?'),'value',3)
+        %
+        % ------ colour dams ...
+        %
+        set(findobj(UOH,'tag','colourdams'),'value',0)
+        %
+        % ------ value operator ...
+        %
+        set(findobj(UOH,'tag','operator'),'value',1)
+        %
+        % ------ uniform colours ...
+        %
+        set(findobj(UOH,'tag','unicolour'),'value',0)
+        %
+        % ------ colour ...
+        %
         set(findobj(UOH,'tag','colour=?'),'backgroundcolor',State.colour,'userdata',State.colour)
+        %
+        % ------ face colour ...
+        %
         set(findobj(UOH,'tag','fillpolygons'),'value',0)
         set(findobj(UOH,'tag','facecolour=?'),'backgroundcolor',State.facecolour,'userdata',State.facecolour)
-        L=set(mfig,'defaultlinelinestyle');
-        Li=strmatch('-',L,'exact');
-        if isempty(Li)
-            Li=1;
-        end
-        set(findobj(UOH,'tag','linestyle=?'),'value',Li)
+        %
+        % ------ text box colour ...
+        %
+        set(findobj(UOH,'tag','textbox=?'),'value',0)
+        set(findobj(UOH,'tag','textboxfacecolour=?'),'backgroundcolor',State.textboxfacecolour,'userdata',State.textboxfacecolour)
+        %
+        % ------ marker ...
+        %
         L=set(mfig,'defaultlinemarker');
         Li=strmatch('none',L,'exact');
         if isempty(Li)
             Li=1;
         end
         set(findobj(UOH,'tag','marker=?'),'value',Li)
+        %
+        % ------ linestyle ...
+        %
+        L=set(mfig,'defaultlinelinestyle');
+        Li=strmatch('-',L,'exact');
+        if isempty(Li)
+            Li=1;
+        end
+        set(findobj(UOH,'tag','linestyle=?'),'value',Li)
+        set(findobj(UOH,'tag','linewidth=?'),'userdata',0.5,'string','0.5')
+        %
+        % ------ markersize ...
+        %
         set(findobj(UOH,'tag','markersize=?'),'userdata',6,'string','6')
+        %
+        % ------ marker colour ...
+        %
         set(findobj(UOH,'tag','usemarkercolour'),'value',0)
         set(findobj(UOH,'tag','markercolour=?'),'backgroundcolor',State.markercolour,'userdata',State.markercolour)
+        %
+        % ------ marker fill colour ...
+        %
         set(findobj(UOH,'tag','usemarkerfillcolour'),'value',0)
         set(findobj(UOH,'tag','markerfillcolour=?'),'backgroundcolor',State.markerfillcolour,'userdata',State.markerfillcolour)
+        %
+        % ------ classify colours ...
+        %
+        set(findobj(UOH,'tag','colclassify'),'value',0)
+        %
+        % ------ thresholds ...
+        %
+        set(findobj(UOH,'tag','thresholds=?'),'string','','userdata',[])
+        set(findobj(UOH,'tag','threshdistr=?'),'value',1)
+        %
+        % ------ colour limits ...
+        %
+        set(findobj(UOH,'tag','climmode=?'),'value',1)
+        set(findobj(UOH,'tag','climmax=?'),'userdata',1,'string','1')
+        set(findobj(UOH,'tag','climmax=?'),'userdata',0,'string','0')
+        %
+        % ------ colour map ...
+        %
         d3d_qp('colourmap*','jet')
+        %
+        % ------ colourbar ...
+        %
         set(findobj(UOH,'tag','colourbar'),'value',1)
         set(findobj(UOH,'tag','colbarhorz'),'value',0)
+        %
+        % ------ thin vector/value field ...
+        %
+        set(findobj(UOH,'tag','thinfld=?'),'value',1)
+        set(findobj(UOH,'tag','thinfact=?'),'userdata',1,'string','1')
+        set(findobj(UOH,'tag','thindist=?'),'userdata',50,'string','50')
+        %
+        % ------ data clipping values ...
+        %
         set(findobj(UOH,'tag','clippingvals=?'),'userdata',-999,'string','-999')
+        %
+        % ------ clip NaNs ...
+        %
+        set(findobj(UOH,'tag','clipnans'),'value',1)
+        %
+        % ------ x/y clipping values ...
+        %
+        set(findobj(UOH,'tag','xclipping'),'string','')
+        set(findobj(UOH,'tag','yclipping'),'string','')
+        %
+        % ------ export data ...
+        %
         set(findobj(UOH,'tag','exporttype=?'),'value',1,'string',{' '})
         set(findobj(UOH,'tag','expformat=?'),'string','%16.7e')
         
@@ -4424,9 +4998,10 @@ switch cmd
             'defaultaxescolor','boundingbox','v6zoombehavior', ...
             'organizationname','filefilterselection','colorbar_ratio', ...
             'showinactiveopt', 'defaultfigurepos','timezonehandling', ...
-            'enforcedtimezone', 'netcdf_use_fillvalue','export_max_ntimes'}
+            'enforcedtimezone', 'netcdf_use_fillvalue','export_max_ntimes', ...
+            'update_showversion', 'defaultrenderer','defaultsmoothing'}
         qp_prefs(UD,mfig,cmd,cmdargs);
-
+        
     case {'deltaresweb','deltaresweboss'}
         ops={};
         if matlabversionnumber>5
@@ -4453,6 +5028,31 @@ switch cmd
         hpause = findobj(findobj(allchild(0),'tag','DelftProgressBar'),'tag','pause');
         set(hpause,'value',1)
         waitfor(hpause,'value',0)
+        
+    case 'move_onscreen'
+        if ~isempty(cmdargs)
+            movegui(cmdargs{1})
+        else
+            movegui(UD.MainWin.Fig)
+            if ~isempty(UD.Options.Fig)
+                movegui(UD.Options.Fig)
+            end
+            movegui(UD.PlotMngr.Fig)
+            movegui(UD.PlotMngr.Fig)
+            movegui(UD.FilOpt.Fig)
+            movegui(UD.GridView.Fig)
+            movegui(UD.ComLine.Fig)
+            %
+            figs = get(UD.PlotMngr.Fig,'userdata');
+            for i = 1:length(figs)
+                movegui(figs(i))
+            end
+            %
+            umsg = findall(0,'tag','UI_MESSAGE window');
+            if ~isempty(umsg)
+                movegui(umsg)
+            end
+        end
         
     otherwise
         if (strncmpi(cmd,'all',3) || strncmpi(cmd,'edit',4)) && ~isempty(cmdargs)
@@ -4492,6 +5092,8 @@ switch cmd
             switch lower(e)
                 case {'.qplog','.m'}
                     d3d_qp('run',cmd,cmdargs{:})
+                case {'.fig','.qpses'}
+                    d3d_qp('openfigure',cmd,cmdargs{:})
                 otherwise
                     d3d_qp('openfile',cmd,cmdargs{:})
             end
@@ -4531,44 +5133,6 @@ if ~isempty(names)
     beep
 end
 
-function updateaxes(obj,evd)
-ax=get(obj,'currentaxes');
-setappdata(ax,'xlimmode','manual')
-setappdata(ax,'ylimmode','manual')
-if ~isempty(ax)
-    basicaxestype=getappdata(ax,'BasicAxesType');
-    if ischar(basicaxestype)
-        switch basicaxestype
-            case {'LimitingFactorsAxes','LimitingFactorsAxes2'}
-                if isequal(basicaxestype,'LimitingFactorsAxes2')
-                    ax2=ax;
-                    ax=getappdata(ax2,'LimitingFactorsAxes');
-                    set(ax,'xlim',get(ax2,'xlim'))
-                else
-                    ax2 = getappdata(ax,'LimitingFactorsAxes');
-                end
-                set(ax,'xticklabelmode','auto','xtickmode','auto');
-                tick(ax,'x','autodate');
-                set(ax2,'xlim',get(ax,'xlim'), ...
-                    'ylim',getappdata(ax2,'YLim'), ...
-                    'xtick',get(ax,'xtick'), ...
-                    'xticklabel',get(ax,'xticklabel'))
-                set(ax,'xticklabel','')
-            otherwise
-                setaxesprops(ax)
-        end
-    end
-end
-lat = getappdata(ax,'linkedaxestype');
-if strcmp(lat,'SecondY')
-    ax2 = getappdata(ax,'linkedaxes');
-    set(ax2,'xlim',get(ax,'xlim'))
-    setaxesprops(ax2)
-end
-mfig=findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
-UD=getappdata(mfig,'QPHandles');
-qp_plotmanager('refreshaxprop',UD)
-
 function clr = str2color(str)
 switch str
     case 'r'
@@ -4589,4 +5153,68 @@ switch str
         clr=[1 1 1];
     otherwise
         clr=str2vec(str,'%f');
+end
+
+function OK = qp_checkversion(qpversionbase,gitrepo,githash,qpcreationdate)
+% Until MATLAB 7.10 (R2010a) it was possible to mix
+% c/c++ files in with the MATLAB executable. This was
+% used to include the @(#) identification string in the
+% executable that could be located using the WHAT tool.
+% Unfortunately, this option is no longer supported by
+% later MATLAB versions. For later versions we'll need
+% to use a separate text file which is easy to mess up
+% and therefore we only start QuickPlot if that file is
+% consistent with the actual executable.
+OK = true;
+whatfile = fullfile(qp_basedir('exe'),'d3d_qp.version');
+if isequal(qpversionbase(1),'v')
+    qpversion = qpversionbase(2:end);
+else
+    qpversion = qpversionbase;
+end
+Str = ['@(#)Deltares, Delft3D-QUICKPLOT, Version ' qpversion ', ' qpcreationdate ];
+RepoLine = ['Repository : ', gitrepo];
+HashLine = ['Source hash: ', githash];
+fid = fopen(whatfile,'r','n','UTF-8');
+if fid>0
+    % file exists, read its contents
+    Str2 = fgetl(fid);
+    if ~ischar(Str2)
+        Str2 = '';
+    end
+    fclose(fid);
+    if ~isequal(Str,Str2)
+        % if contents does not match, do as if file
+        % does not exist (which will try to write it)
+        fid = -1;
+    end
+end
+if fid<0
+    % file does not exist, try to write it
+    fid = fopen(whatfile,'w','n','UTF-8');
+    if fid>0
+        % file can be opened for writing, write string
+        try
+            fprintf(fid,'%s\n',Str,RepoLine,HashLine);
+            fclose(fid);
+            % reopen the file to check whether string was written correctly
+            fid = fopen(whatfile,'r','n','UTF-8');
+            Str2 = fgetl(fid);
+            if ~ischar(Str2)
+                Str2 = '';
+            end
+            fclose(fid);
+        catch
+            fid = -1;
+        end
+    end
+end
+if fid>0
+    if ~isequal(Str,Str2)
+        ui_message('error',{['First line in ' whatfile],Str2,'doesn''t match the string',Str,'Please correct.'})
+        OK = false;
+    end
+else
+    ui_message('error',{'Copy the following line:',Str,['to ' whatfile ' to start QuickPlot.']})
+    OK = false;
 end

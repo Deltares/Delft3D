@@ -1,0 +1,194 @@
+# Readme
+# This is an example template of how to define a library component in the source code. 
+# It is assumed that this CMakeLists file is located in the following folder structure:
+#
+# src/
+# |---- Group + license_type
+#       |---- component
+#             |---- packages
+#                   |---- subcomponent
+#                         |---- src (location of source files)
+#                         |---- THIS CMakeLists.txt
+#
+# To register a component to a configuration, these additional steps should be taken:
+# 1) Register the directory of this CMakeLists in the corresponding cmake file in src/cmake
+# 2) Include the module in one of the configurations contained in src/configurations
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #0: Retrieve the include directories exposed by components
+
+# The public include path exposed by a component is retrieved by the get_module_include_path. 
+# In order to let this function, the component needs to define a property named public_include_path.
+#
+# This can be done by the command: set(public_include_path ${path_to_expose_from_the_component})
+get_module_include_path(${checkout_src_root}/${path_to_module_to_retrieve_include_directory_from} 
+                        ${current_component_name}
+                        public_include_path)
+
+message(STATUS "Configuring '${current_component_name}' with the following <name of module> include path: '${public_include_path}'")
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Set the directory of where the source code is located. This can be removed if create_library() is used to define the library artifact.
+set(src_path src) 
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #1: Generate files that are necessary for the configuration
+
+# Set version file variables
+# These variables are necessary when the version files need to be generated and be present for configuring the project file.
+# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to the location of where this CMakeLists file is defined in.
+set(ini_version_file "${CMAKE_CURRENT_SOURCE_DIR}/include/version_number.ini")
+set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/src/library_version.F90")
+
+# Generate the F90 version file
+generate_version_files(${fortran_version_file} ${checkout_src_root} ${ini_version_file}) # This is the command as defined in the functions.cmake file, see the file for documentation.
+set(svn_version_file ${fortran_version_file}.svn)
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #2: Gather the source files
+
+# Note that this step is not necessary if:
+# - All the source files that need to be included in the library are included in the src folder
+# - AND the command create_library(${library_name} ${visual_studio_source_group_name}) is used to define the library
+# Source files can be retrieved by a file(GLOB <filetypes>) operation. The file filter is case-insensitive.
+file(GLOB globbed_source    ${src_path}/*.f90
+                            ${src_path}/*.f)
+
+# If some files need to be excluded from the automated GLOB action, this can be done by the absolute file location of the file to be removed: 
+# ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/fileToBe.Removed
+list(REMOVE_ITEM globbed_source <Path of the file to be removed 1>
+                                <Path of the file to be removed 2>)
+
+# Files can also be explicitly retrieved by setting them to a variable
+set(explicit_set_source ${src_path}/justAFile1.f90
+                        ${src_path}/justAFile2.f)
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #3: Define the library or executable
+
+set(${library_name} MyLibraryName) # The name of the library (or executable). It is advisable to to use a parameter in case dependencies need to be added to the component.
+                                   # In case step 0 is required, set this name at the beginning of the file.
+
+# Define a library. A library can be defined by the command:
+add_library(${library_name} ${globbed_source} 
+                            ${explicit_set_source} 
+                            ${fortran_version_file}
+                            ${ini_version_file}
+                            ${svn_version_file}) # Include all the source files that are part of the library
+
+# Or by the generic function in functions.cmake: 
+# This function can only be used when:
+# - All the files in src need to be included as part of the library (also keep in mind that there is no need to define the source path location as that is contained within the function)
+# - No version files need to be included in the library. (Additional files cannot be added to the library afterwards) 
+create_library(${library_name} ${visual_studio_source_group_name}) # The visual_studio_source_group_name is the name of the folder where the source files are grouped in Visual Studio.
+
+# The following command defines an executable and all the source files that are required
+add_executable(${library_name} ${globbed_source} 
+                                ${explicit_set_source}) # Include all the source files that are part of the executable
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #4: Set additional events or compiler flags to files or artifacts
+
+# To set source files properties, such as additional compiler flags
+set_source_files_properties(fileToSetPropertiesFor1.f90
+                            fileToSetPropertiesFor2.f
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+
+# To define prebuild events
+# This command adds a prebuild event to generate the version number. Check the functions.cmake for documentation.
+prebuild_version_number(${library_name} ${fortran_version_file} 
+                                        ${checkout_src_root} 
+                                        ${ini_version_file})
+
+# Other explicit prebuild events can be set as follows:
+add_custom_command(TARGET ${library_name}
+                   PRE_BUILD
+                   COMMAND <Define your command here>)
+
+# Define preprocessor definitions 
+# Valid values for KEYWORD are:
+# PUBLIC : This sets the preprocessor definitions for the defined component AND for every consumer of this component.
+# PRIVATE: This only sets the preprocessor for the defined component. Consumers will not include this directory for compilation.
+target_compile_definitions(${library_name} <KEYWORD>> <Define your preprocessor definitions>)
+
+# Definitions can also be set specific for compilation configurations (e.g. Debug or Release). This can be 
+# done by using generator expressions. (See: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html)
+# The following example illustrates how to set preprocessor definitions for a DEBUG configuration.
+# Valid values for KEYWORD are:
+# PUBLIC : This sets the preprocessor definitions for the defined component AND for every consumer of this component.
+# PRIVATE: This only sets the preprocessor for the defined component. Consumers will not include this directory for compilation.
+target_compile_definitions(${library_name} <KEYWORD> $<$<CONFIG:DEBUG>:<Define your preprocessor definitions>>)
+
+# To set specific flags for a platform, the following conditional can be used: 
+if (UNIX)
+    message(STATUS "This is an example status message to be generated when setting UNIX flags")
+elseif(WIN32)
+    message(STATUS "This is an example status message to be generated when setting WINDOWS flags")
+endif()
+
+# Set specific file properties
+# This statement sets the preprocessor flag for the fortran_version_file. Failing to do so will result in compilation error.
+set_source_files_properties(${fortran_version_file}
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #5: Set the dependencies of the artifacts
+
+# Dependencies can be added in two ways. If there's a dependency towards an OSS component, the following command should be used: 
+# Do note that recursive dependencies are not handled automatically by CMake.
+set(oss_dependencies    <OSS Dependency One>
+                        <OSS Dependency Two>) # Make a list of dependencies 
+oss_include_libraries(${library_name} oss_dependencies)
+
+# If there's a dependency to a directory, this dependency can be added by:
+include_directories(<Directory to include for compilation>)
+
+# Alternatively if a transitive directory needs to be defined, the directory can also be defined by the following command.
+# Valid values for KEYWORD are:
+# PUBLIC : This sets the include directory for the defined component AND for every consumer of this component.
+# PRIVATE: This only sets  the include directory for the defined component. Consumers will not include this directory for compilation.
+target_include_directories(${library_name} <KEYWORD> <Directory to include for compilation>)
+
+if(UNIX)
+    target_link_libraries(${library_name} ${oss_dependencies})
+    target_compile_options(${library_name}  PRIVATE ${c_compiler_flags})
+endif()
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #6: Define how the files should be structured in IDEs
+
+# This example only focuses on the structures within Visual Studio. The folder structure can be created by the following examples.
+# One explicit prerequisite is that the files contained in the source_group MUST be included as part of the library or executable by the:
+# - create_library
+# - add_library
+# - add_executable
+# commands. Files that are not included in an artifact will NOT be visible within the IDE. 
+source_group(${visual_studio_source_group_name} FILES ${explicit_set_source} 
+                                                      ${globbed_source})
+source_group("${visual_studio_source_group_name}\\Subdirectory" FILES ${fortran_version_file}) # This is an example how to group files in a subfolder in Visual Studio
+source_group("Version Files" ${ini_version_file}) 
+
+# This is an example to generate the folder structure automatically in Visual Studio
+# Keep in mind that the the files ${source_files} has to have the ${CMAKE_CURRENT_SOURCE_DIR} in their file path
+# or this command will not work. In this situation, the source group has to be added manually by one of the 
+# commands illustrated above.
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files}) 
+
+# Set the solution folder to put the component into.
+set_target_properties (${library_name} PROPERTIES FOLDER A_SolutionFolder/MyComponent)
+
+#---------------------------------------------------------------------------------------------------------------------------
+# Step #7: Set a post build setp
+
+# Set the post build step that calls the oss-post_build.cmd (Windows)
+set(install_dir ${CMAKE_BINARY_DIR})
+set(build_dir ${CMAKE_BINARY_DIR})
+
+post_build_target (${library_name}
+                   ${install_dir} 
+                   ${build_dir} 
+                   ${checkout_src_root} 
+                   ${library_name})
+
+# Or alternatively call the install script for Linux
+install(TARGETS ${library_name} RUNTIME  DESTINATION bin)

@@ -12,4 +12,4 @@ type TESTRewind2.his >> TESTRewindTot.his
 fc TESTRewindTot.his ..\resultsApproved\w32\TESTRewindTot.his
 fc TESTRewind-res.txt ..\..\..\resultsApproved\w32\TESTRewind-res.txt
 
-exit 0
+exit /B 0

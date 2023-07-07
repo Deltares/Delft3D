@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhagkm
+      use m_evaluate_waq_attribute
+
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DHAGKM ( NOSEG , NODIM2, NOGRID, IKNMRK, GRDNOS,
      +                    GRDSEG)
@@ -30,7 +38,7 @@
 !
 !     Function            : Aggregates kenmerk array
 !
-!     Subroutines called  : DHKMRK, evaluate kenmerk
+!     Subroutines called  : evaluate_waq_attribute, evaluate kenmerk
 !
 !     Arguments           :
 !
@@ -78,8 +86,8 @@
 !
 !           Kenmerk 1 , 0 = inactive , 1 = active , 2 = GEM bottom
 !
-            CALL DHKMRK(1,IKNMRK(ISEG,1,1)     ,K1_G1)
-            CALL DHKMRK(1,IKNMRK(ISEG2,1,IGRID),K1_G2)
+            CALL evaluate_waq_attribute(1,IKNMRK(ISEG,1,1)     ,K1_G1)
+            CALL evaluate_waq_attribute(1,IKNMRK(ISEG2,1,IGRID),K1_G2)
             IF ( K1_G1 .GT. 0 ) THEN
                K1_G2 = K1_G1
             ENDIF
@@ -89,8 +97,8 @@
 !                       2 = middle segment
 !                       3 = bottom
 !
-            CALL DHKMRK(2,IKNMRK(ISEG,1,1)     ,K2_G1)
-            CALL DHKMRK(2,IKNMRK(ISEG2,1,IGRID),K2_G2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG,1,1)     ,K2_G1)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG2,1,IGRID),K2_G2)
             IF ( K2_G1 .EQ. 0 ) THEN
                K2_G2 = 0
             ELSEIF ( K2_G1 .EQ. 1 ) THEN
@@ -114,3 +122,4 @@
 !
       RETURN
       END
+      end module m_dhagkm

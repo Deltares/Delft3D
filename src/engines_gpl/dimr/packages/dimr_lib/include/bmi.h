@@ -1,9 +1,20 @@
 /* -*- c-file-style: "stroustrup" -*- */
 /* Please use the stroustrup coding standard: */
 
+#pragma once
 
 #ifndef BMI_API_H
 #define BMI_API_H
+
+typedef enum {
+	ALL,
+	DEBUG,
+	INFO,
+	WARNING,
+	ERRORS,
+	FATAL,
+	NONE
+} Level;
 
 #define BMI_API_VERSION_MAJOR 1
 #define BMI_API_VERSION_MINOR 0
@@ -11,25 +22,15 @@
 #if defined _WIN32
 #define BMI_API __declspec(dllexport)
 /* Calling convention, stdcall in windows, cdecl in the rest of the world */
-#define CALLCONV __stdcall
+#define BMI_CALLCONV __stdcall
 #else
 #define BMI_API
-#define CALLCONV
+#define BMI_CALLCONV
 #endif
 
 
 #define MAXSTRINGLEN 1024
 #define MAXDIMS 6
-#include <stddef.h>
-
-typedef enum {
-    ALL,
-    DEBUG,
-    INFO,
-    WARNINGS,
-    ERRORS,
-    FATAL
-} Level;
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,14 +73,12 @@ extern "C" {
     BMI_API void set_var_slice(const char *name, const int *start, const int *count, const void *ptr);
 
     /* logger to be set from outside so we can log messages */
-    typedef void (CALLCONV *Logger)(Level level, const char *msg);
+    typedef void (BMI_CALLCONV *BMILogger)(Level level, const char *msg);
 
     /* set logger by setting a pointer to the log function */
-    BMI_API void set_logger(Logger logger);
-
+    BMI_API void set_logger(BMILogger logger);
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

@@ -1,0 +1,3561 @@
+  <testCases>
+    <!-- TEST CASES FOR SOURCE SINK -->
+
+    <testCase name="e02_f029_c010_sourcesink_2D" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.poi</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c011_sourcesink_3D_s" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.poi</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c012_sourcesink_3D_z" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.poi</argument>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <!-- TEST CASES FOR 1D models -->
+
+    <testCase name="e02_f029_c500_simple_1D_model" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c500_simple_1D_model</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c501_junction-advection-acceleration-equidistant</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c501_junction-advection-acceleration-equidistant</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B4_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Bnd_B4_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T7_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T7_Bnd_B4_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T7_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T7_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c502_junction-advection-deceleration-equidistant</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c502_junction-advection-deceleration-equidistant</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B4_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c503_junction-advection-acceleration-non-equidistant" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c503_junction-advection-acceleration-non-equidistant</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c504_junction-advection-deceleration-non-equidistant" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c504_junction-advection-deceleration-non-equidistant</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_Q-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_h-Bnd_B3_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_h-Bnd_B2_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_h-Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_h-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_h-Bnd_B2_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Q-Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_h-Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_h-Bnd_B3_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_h-Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_h-Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_h-Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Q-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_Q-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Q-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Q-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c506_junction-advection-flood-wave-divergence-equidistant-neg-flow-upstream" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c506_junction-advection-flood-wave-divergence-equidistant-neg-flow-upstream</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_h-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_h-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Q-Bnd_B3_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Q-Bnd_B2_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_Q-Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Q-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Q-Bnd_B2_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_h-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_h-Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Q-Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_Q-Bnd_B3_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_h-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_Q-Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_h-Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Q-Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_Q-Bnd_B3_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c508_junction-advection-flood-wave-confluence-equidistant-neg-flow-upstream" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c508_junction-advection-flood-wave-confluence-equidistant-neg-flow-upstream</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c510_1D-boundaries_steady-state-flow" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c510_1D-boundaries_steady-state-flow</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Boundary/Boundary.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Boundary/Boundary-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Boundary/Boundary_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Boundary/Boundary-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Boundary/Boundary_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Boundary/Boundary.poi</argument>
+            <argument>DFM_DELWAQ_Boundary/Boundary.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Boundary/Boundary-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Boundary/Boundary.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Boundary/Boundary.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Boundary/Boundary.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Boundary/Boundary.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Boundary/Boundary-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Boundary/Boundary-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c516_curved-channel-junction-advection-reference" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c516_curved-channel-junction-advection-reference</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c516_curved-channel-junction-advection-reference_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c516_curved-channel-junction-advection-reference</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_Bnd_B1_x25000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B1_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_Bnd_B2_x10000m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c517_initial-conditions-water-level" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c517_initial-conditions-water-level</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.poi</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c518_initial-conditions-water-depth" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c518_initial-conditions-water-depth</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.poi</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c519_1Dnetwork-length-noOpenBC" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c519_1Dnetwork-length-noOpenBC</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.poi</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c520_1Dnetwork-length-OpenBC" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c520_1Dnetwork-length-OpenBC</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.poi</argument>
+            <argument>DFM_DELWAQ_dflow1d/dflow1d.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_dflow1d/dflow1d-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+<!--
+! MDK 10-10-2022 Test case disabled since it contains odd results on the D-FlowFM side.
+    <testCase name="e02_f029_c521_1Dnetwork_pipes_urban" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c521_1Dnetwork_pipes_urban</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.hyd</argument>
+          </arguments>
+        </program>
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.poi</argument>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.hyd" type="ASCII">
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+-->
+
+    <!-- TEST CASES FOR 1D2D models -->
+
+    <testCase name="e02_f029_c600_Equal1D_Equal2D_Rural_Lateral_Links" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c600_Equal1D_Equal2D_Rural_Lateral_Links</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_1D2D/1D2D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_1D2D/1D2D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_1D2D/1D2D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_1D2D/1D2D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_1D2D/1D2D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_1D2D/1D2D.poi</argument>
+            <argument>DFM_DELWAQ_1D2D/1D2D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_1D2D/1D2D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_1D2D/1D2D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_1D2D/1D2D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_1D2D/1D2D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_1D2D/1D2D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_1D2D/1D2D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_1D2D/1D2D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <!-- TEST CASES FOR structures-->
+
+    <testCase name="e02_f029_c601_Weir" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c601_Weir</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c601_Weir_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c601_Weir</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_B1_WE_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_B1_WE_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_EW_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_EW_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c602_Orifice" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c602_Orifice</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c602_Orifice_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c602_Orifice</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_B1_WE_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_B1_WE_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_EW_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_EW_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_B1_WE_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_B1_WE_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_B1_WE_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_B1_WE_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_B1_WE_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_B1_WE_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c603_Culvert" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c603_Culvert</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c604_Pump" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c604_Pump</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c604_Pump_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c604_Pump</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T7_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T8_B1_East_h-bnd_x=0" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T3_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T4_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T5_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T6_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T7_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T8_B1_West_h-bnd_x=2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c605_Bridge" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c605_Bridge</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_flowFM/flowFM.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_flowFM/flowFM.poi</argument>
+            <argument>DFM_DELWAQ_flowFM/flowFM.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_flowFM/flowFM.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_flowFM/flowFM.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_flowFM/flowFM.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_flowFM/flowFM.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_flowFM/flowFM-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_flowFM/flowFM-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c606_Universal_Weir" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c606_Universal_Weir</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c606_Universal_Weir_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c606_Universal_Weir</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_T1_B1_WE_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T1_B1_WE_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_EW_x0m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_T2_B1_EW_x110m" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c607_Compound" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c607_Compound</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_compound/compound.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_compound/compound.poi</argument>
+            <argument>DFM_DELWAQ_compound/compound.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_compound/compound.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_compound/compound.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_compound/compound.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_compound/compound.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_compound/compound-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_compound/compound-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c608_Pump_without_stages" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c608_Pump_without_stages</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c609_Inverted_siphon" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c609_Inverted_siphon</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c614_Pump_with_bc_timeseries" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c614_Pump_with_bc_timeseries</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.poi</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c620_sewer_overflow_urban" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c620_sewer_overflow_urban</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.poi</argument>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c621_orifice_urban" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c621_orifice_urban</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.poi</argument>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c622_pump_urban" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c622_pump_urban</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.poi</argument>
+            <argument>DFM_DELWAQ_FlowFM/FlowFM.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_FlowFM/FlowFM-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c622_pump_urban_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c622_pump_urban</path>
+        <programs>
+          <program ref="dimr_waq" seq="1">
+          </program>
+        </programs>
+        <checks>
+          <file name="DFM_DELWAQ_Water_Quality/deltashell_map.nc" type="netCDF">
+            <parameters name="DELWAQ_RESULTS">
+              <parameter name="mesh1d_bnd_7" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_9" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_11" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_13" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_15" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_17" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_19" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_41" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_42" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_43" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_44" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_45" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_46" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+              <parameter name="mesh1d_bnd_47" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+            </parameters>
+          </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e02_f029_c623_AllowedFlowDir" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c623_AllowedFlowDir</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model/model.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model/model.poi</argument>
+            <argument>DFM_DELWAQ_model/model.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model/model.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model/model.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model/model.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model/model.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model/model-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model/model-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+   
+
+    <testCase name="e02_f029_c702_1d-precipitation" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c702_1d-precipitation</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model1/model1.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model1/model1.poi</argument>
+            <argument>DFM_DELWAQ_model1/model1.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model1/model1.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model1/model1.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model1/model1.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model1/model1.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model1/model1-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model1/model1-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <testCase name="e02_f029_c702a_1d-precipitation" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c702a_1d-precipitation</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model2/model2.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model2/model2.poi</argument>
+            <argument>DFM_DELWAQ_model2/model2.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model2/model2.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model2/model2.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model2/model2.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model2/model2.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model2/model2-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model2/model2-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <testCase name="e02_f029_c702b_1d-precipitation" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c702b_1d-precipitation</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model3/model3.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model3/model3.poi</argument>
+            <argument>DFM_DELWAQ_model3/model3.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model3/model3.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model3/model3.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model3/model3.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model3/model3.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model3/model3-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model3/model3-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <testCase name="e02_f029_c702c_1d-precipitation" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c702c_1d-precipitation</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model4/model4.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model4/model4.poi</argument>
+            <argument>DFM_DELWAQ_model4/model4.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model4/model4.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model4/model4.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model4/model4.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model4/model4.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model4/model4-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model4/model4-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <testCase name="e02_f029_c702d_1d-precipitation" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c702d_1d-precipitation</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model5/model5.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model5/model5.poi</argument>
+            <argument>DFM_DELWAQ_model5/model5.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model5/model5.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model5/model5.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model5/model5.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model5/model5.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model5/model5-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.002"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model5/model5-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.002"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+
+    <testCase name="e02_f029_c702e_1d-precipitation" ref="dflowfm_default">
+      <path>e02_dflowfm/f029_hyd_file/c702e_1d-precipitation</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_model6/model6.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_Flow1D/Flow1D_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_model6/model6.poi</argument>
+            <argument>DFM_DELWAQ_model6/model6.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_Flow1D/Flow1D-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_model6/model6.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model6/model6.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model6/model6.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_model6/model6.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model6/model6-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_model6/model6-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <!-- END OF LIST OF TEST CASES -->
+  </testCases>

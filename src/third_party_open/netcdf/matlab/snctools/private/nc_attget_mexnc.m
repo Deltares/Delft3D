@@ -3,18 +3,18 @@ function values = nc_attget_mexnc(ncfile, varname, attribute_name )
 [ncid, status] =mexnc('open', ncfile, nc_nowrite_mode );
 if ( status ~= 0 )
     ncerror = mexnc ( 'strerror', status );
-    error ( 'SNCTOOLS:NC_ATTGET:MEXNC:OPEN', ncerror );
+    error ( 'snctools:attget:mexnc:open', ncerror );
 end
 
 switch class(varname)
-    case { 'double' }
+    case 'double'
         varid = varname;
         
     case 'char'
         varid = figure_out_varid ( ncid, varname );
         
     otherwise
-        error ( 'SNCTOOLS:NC_ATTGET:badType', 'Must specify either a variable name or NC_GLOBAL' );    
+        error ( 'snctools:attget:badType', 'Must specify either a variable name or NC_GLOBAL' );    
 end
 
 funcstr = determine_funcstr(ncid,varid,attribute_name);
@@ -23,14 +23,14 @@ funcstr = determine_funcstr(ncid,varid,attribute_name);
 [values, status]=mexnc(funcstr,ncid,varid,attribute_name);
 if ( status ~= 0 )
     ncerror = mexnc ( 'strerror', status );
-    err_id = ['SNCTOOLS:NC_ATTGET:MEXNC:' funcstr ];
+    err_id = ['snctools:attget:mexnc:' funcstr ];
     error ( err_id, ncerror );
 end
 
 status = mexnc('close',ncid);
 if ( status ~= 0 )
     ncerror = mexnc ( 'strerror', status );
-    error ( 'SNCTOOLS:NC_ATTGET:MEXNC:CLOSE', ncerror );
+    error ( 'snctools:attget:mexnc:close', ncerror );
 end
 
 
@@ -52,7 +52,7 @@ function funcstr = determine_funcstr(ncid,varid,attribute_name)
 if ( status ~= 0 )
     mexnc('close',ncid);
     ncerror = mexnc ( 'strerror', status );
-    error ( 'SNCTOOLS:NC_ATTGET:MEXNC:INQ_ATTTYPE', ncerror );
+    error ( 'snctools:attget:mexnc:inqAttType', ncerror );
 end
 
 switch ( dt )
@@ -70,7 +70,7 @@ switch ( dt )
         funcstr = 'GET_ATT_TEXT';
     otherwise
         mexnc('close',ncid);
-        error ( 'SNCTOOLS:NC_ATTGET:badDatatype', 'Unhandled datatype ID %d', dt );
+        error ( 'snctools:attget:badDatatype', 'Unhandled datatype ID %d', dt );
 end
 
 return
@@ -80,7 +80,7 @@ return
 
 
 %--------------------------------------------------------------------------
-function varid = figure_out_varid ( ncid, varname )
+function varid = figure_out_varid(ncid,varname)
 % Did the user do something really stupid like say 'global' when they meant
 % NC_GLOBAL?
 if isempty(varname)
@@ -92,16 +92,16 @@ if ( strcmpi(varname,'global') )
     [varid, status] = mexnc ( 'inq_varid', ncid, varname ); %#ok<ASGLU>
     if status
         % Ok, the user meant NC_GLOBAL
-        warning ( 'SNCTOOLS:nc_attget:doNotUseGlobalString', ...
-            'Please consider using the m-file NC_GLOBAL.M instead of the string ''%s''.', varname );
+        warning ( 'snctools:attget:doNotUseGlobalString', ...
+            'Please consider using NC_GLOBAL or -1 instead of the string ''%s''.', varname );
         varid = nc_global;
         return;
     end
 end
 
-[varid, status] = mexnc ( 'inq_varid', ncid, varname );
+[varid, status] = mexnc('inq_varid',ncid,varname);
 if ( status ~= 0 )
     mexnc('close',ncid);
-    ncerror = mexnc ( 'strerror', status );
-    error ( 'SNCTOOLS:NC_ATTGET:MEXNC:INQ_VARID', ncerror );
+    ncerror = mexnc('strerror',status);
+    error('snctools:attget:mexnc:inqVarID',ncerror);
 end

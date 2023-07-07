@@ -66,7 +66,7 @@ function [X,Y,V] = face2surf(x,y,v,thu,thv,option)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -181,7 +181,7 @@ elseif nargin==5 || nargin==6
 else
     error('Invalid number of input arguments.')
 end
-if single_v & ~isempty(V)
+if single_v && ~isempty(V)
     V = V{1};
 end
 
@@ -199,107 +199,89 @@ function [x2,y2,v2] = double_resolution(x,y,v)
 %capture the edges of the domain if there are no thin dams that cause
 %discontinuities in the values.
 
-i2 = size(x,1)~=size(v{1},1);
-if i2
-    i = double_indices(size(x,1));
-    i2_odd1 = 1:2:length(i)-2;
-    i2_odd3 = 3:2:length(i);
-    i2_even = 2:2:length(i)-1;
-else
-    i = 1:size(x,1);
-end
+nrows = [size(x,1), size(y,1), size(v{1},1)];
+ncols = [size(x,2), size(y,2), size(v{1},2)];
 
-j2 = size(x,2)~=size(v{1},2);
-if j2
-    j = double_indices(size(x,2));
-    j2_odd1 = 1:2:length(j)-2;
-    j2_odd3 = 3:2:length(j);
-    j2_even = 2:2:length(j)-1;
-else
-    j = 1:size(x,2);
-end
+max_nrows = max(nrows);
+max_ncols = max(ncols);
 
-x2 = x(i,j);
-if i2
-    x2(i2_even,:) = (x2(i2_odd1,:)+x2(i2_odd3,:))/2;
-end
-if j2
-    x2(:,j2_even) = (x2(:,j2_odd1)+x2(:,j2_odd3))/2;
-end
+double_rows = min(nrows) ~= max_nrows;
+double_cols = min(ncols) ~= max_ncols;
 
-if isequal(size(x),size(y))
-    y2 = y(i,j);
-    if i2
-        y2(i2_even,:) = (y2(i2_odd1,:)+y2(i2_odd3,:))/2;
-    end
-    if j2
-        y2(:,j2_even) = (y2(:,j2_odd1)+y2(:,j2_odd3))/2;
-    end
-elseif isequal(size(x,1),size(y,1)+1) && isequal(size(x,2),size(y,2))
-    y2 = y(floor([1 1:0.5:end end]),double_indices(end));
-    y2l = y2(3:2:end-2,:);
-    y2r = y2(4:2:end-1,:);
-    m = ~isnan(y2l)+~isnan(y2r);
-    m(m==0) = NaN;
-    y2l(isnan(y2l)) = 0;
-    y2r(isnan(y2r)) = 0;
-    y2(3:2:end-2,:) = (y2l+y2r)./m;
-    y2(:,2:2:end-1) = (y2(:,1:2:end-2)+y2(:,3:2:end))/2;
-end
+x2 = expand_one_array(x, double_rows, size(x,1)==max_nrows, double_cols, size(x,2)==max_ncols);
+y2 = expand_one_array(y, double_rows, size(y,1)==max_nrows, double_cols, size(y,2)==max_ncols);
 
 if iscell(v)
     v2 = cell(size(v));
     for i=1:length(v)
-        v2{i} = double_one(v{i},i2,j2);
+        v2{i} = expand_one_array(v{i}, double_rows, size(v{i},1)==max_nrows, double_cols, size(v{i},2)==max_ncols);
     end
 else
-    v2 = double_one(v,i2,j2);
+    v2 = expand_one_array(v, double_rows, size(v,1)==max_nrows, double_cols, size(v,2)==max_ncols);
 end
 
 
-function v2 = double_one(v,i2,j2)
-mask = ~isnan(v);
-v(~mask) = 0;
-sz_v2 = size(v);
-if i2
-    sz_v2(1) = 2*size(v,1)+1;
-    irange = -1:1;
-else
-    irange = 0;
-end
-if j2
-    sz_v2(2) = 2*size(v,2)+1;
-    jrange = -1:1;
-else
-    jrange = 0;
-end
-v2 = zeros(sz_v2);
-m2 = zeros(sz_v2);
-for i = irange
-    if i2
-        isel = 2+i:2:sz_v2(1)-1+i;
-    else
-        isel = 1:sz_v2(1);
+function v2 = expand_one_array(v, double_rows, odd_rows_given, double_cols, odd_cols_given)
+szv2 = size(v);
+if double_rows
+    if odd_rows_given % poles given
+        szv2(1) = szv2(1)*2 - 1;
+        i = 1:2:szv2(1);
+    else % fences given
+        szv2(1) = szv2(1)*2 + 1;
+        i = 2:2:szv2(1);
     end
-    for j = jrange
-        if j2
-            jsel = 2+j:2:sz_v2(2)-1+j;
-        else
-            jsel = 1:sz_v2(2);
-        end
-        v2(isel,jsel) = v2(isel,jsel)+v;
-        m2(isel,jsel) = m2(isel,jsel)+mask;
+else
+    i = ':';
+end
+if double_cols
+    if odd_cols_given % poles given
+        szv2(2) = szv2(2)*2 - 1;
+        j = 1:2:szv2(2);
+    else % fences given
+        szv2(2) = szv2(2)*2 + 1;
+        j = 2:2:szv2(2);
+    end
+else
+    j = ':';
+end
+
+v2 = NaN(szv2);
+v2(i,j) = v;
+
+if double_rows
+    if odd_rows_given % poles given
+        v2(2:2:end,j) = (v(1:end-1,:)+v(2:end,:))/2;
+    else % fences given
+        v2(1,j) = v2(2,j); % first pole
+        v2(end,j) = v2(end-1,j); % last pole
+        % intermediate poles: average if both fences have value, left/right
+        % value if only one fence has value, NaN if neither has value
+        m = isnan(v);
+        v(m) = 0;
+        v0 = v(1:end-1,:) + v(2:end,:);
+        m0 = ~m(1:end-1,:) + ~m(2:end,:);
+        m0(m0==0) = NaN;
+        v2(3:2:end-2,j) = v0./m0;
     end
 end
-m2(m2==0) = NaN;
-v2 = v2./m2;
-
-
-function i = double_indices(imax)
-%Construct an index vector with all indices double except 1, that is
-% [1 2 2 3 3 4 4 ... IMAX-1 IMAX-1 IMAX IMAX]
-
-i = round([1 1.75:0.5:imax-0.25 imax]);
+if double_cols
+    if odd_cols_given % poles given
+        v2(:,2:2:end) = (v2(:,1:2:end-2)+v2(:,3:2:end))/2;
+    else % fences given
+        v2(:,1) = v2(:,2); % first pole
+        v2(:,end) = v2(:,end-1); % last pole
+        % intermediate poles: average if both fences have value, left/right
+        % value if only one fence has value, NaN if neither has value
+        v2c = v2(:,2:2:end-1);
+        m = isnan(v2c);
+        v2c(m) = 0;
+        v0 = v2c(:,1:end-1) + v2c(:,2:end);
+        m0 = ~m(:,1:end-1) + ~m(:,2:end);
+        m0(m0==0) = NaN;
+        v2(:,3:2:end-2) = v0./m0;
+    end
+end
 
 
 function [x3,y3,v3] = tripple_resolution(x,y,thu,thv,v)
@@ -525,7 +507,7 @@ tri_offset = idx_tri(end);
 blocked = thv(:)==1;
 notblocked = ~blocked;
 nel = numel(thv);
-NaNcol = repmat(NaN,size(thv,1),1);
+NaNcol = NaN(size(thv,1),1);
 v1 = reshape([NaNcol vi],nel,1);
 v2 = reshape([vi NaNcol],nel,1);
 v12= reshape(vvi,nel,2);
@@ -588,10 +570,10 @@ iy = szv(1);
 % allocate arrays for grid points and indices
 %
 xyz = zeros(ntotal,3);
-vci = repmat(NaN,[numel(x) 4]);
-vi  = repmat(NaN,size(v));
-vui = repmat(NaN,[size(thu) 2]);
-vvi = repmat(NaN,[size(thv) 2]);
+vci = NaN([numel(x) 4]);
+vi  = NaN(size(v));
+vui = NaN([size(thu) 2]);
+vvi = NaN([size(thv) 2]);
 %
 % cell centers
 %

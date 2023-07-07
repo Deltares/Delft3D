@@ -1,0 +1,64 @@
+[General]
+FileVersion = 1.00
+FileType    = ExtForceFileNew
+
+[boundary]
+quantity    = dischargebnd
+nodeId      = T1_west
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = waterlevelbnd
+nodeId      = T1_east
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = waterlevelbnd
+nodeId      = T2_east
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = dischargebnd
+nodeId      = T2_west
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = dischargebnd
+nodeId      = T3_west
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = waterlevelbnd
+nodeId      = T3_east
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = waterlevelbnd
+nodeId      = T4_east
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = dischargebnd
+nodeId      = T4_west
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = dischargebnd
+nodeId      = T5_west
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = waterlevelbnd
+nodeId      = T5_east
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = waterlevelbnd
+nodeId      = T6_east
+forcingfile = BoundaryConditions.bc
+
+[boundary]
+quantity    = dischargebnd
+nodeId      = T6_west
+forcingfile = BoundaryConditions.bc
+

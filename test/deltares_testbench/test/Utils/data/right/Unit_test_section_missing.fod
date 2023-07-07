@@ -1,0 +1,153 @@
+D-Foundations DUMP FILE
+==============================================================================
+COMPANY    :    
+
+DATE       : 7-3-2019
+TIME       : 12:22:57
+FILENAME   : D:\DFoundations 19.1\release\Projects\Benchmarks\bm1-1a.fod
+CREATED BY : D-Foundations version 19.1.1.23780
+==========================    BEGINNING OF DATA     ==========================
+[DUMPFILE]
+[DUMPFILE OUTPUT]
+[RESULTS AT CPT TEST LEVEL]
+     1320.94  = Max Delta Fr;max;i
+     4325.71  = Average Fr;max;i
+     0.15644  = VariatieCoef Fr;max;i
+0 = Can Table 10 (ksi3/ksi4) be used in a valid way?
+   -1  = PileGroupIndex With Largest Variatie Coef (-1 means not relevant)
+[END OF RESULTS AT CPT TEST LEVEL]
+[VERIFICATION RESULTS]
+[GLOBAL NEN RESULTS]
+0.063203 = wd1B
+0.009173 = Betad1B
+0.024783 = w2d
+0.003441 = Betad2
+[END OF GLOBAL NEN RESULTS]
+[DEMANDS NEN-EN]
+0.066 = wreq1b
+0.022 = wreq2
+0 = Stiffness
+0.010000 = Betadreq1B
+1 = GT = 1B
+0.003333 = Betadreq2
+[END OF DEMANDS NEN-EN]
+[NEN PILE RESULTS]
+1  pile count
+3  cpt count
+40  total number of piles in foundation plan
+[CPTS]
+[TABLE]
+[COLUMN INDICATION]
+index
+PPN
+HNK
+HPK
+XCoordinate
+YCoordinate
+CptName
+[END OF COLUMN INDICATION]
+[DATA]
+     1    -24.00     -6.50    -17.00      2.50     15.00 'FUGBEN1'
+     2    -24.00     -6.50    -16.00     16.00      2.00 'FUGBEN2'
+     3    -24.00     -6.50    -16.00     32.50     15.00 'FUGBEN3'
+[END OF DATA]
+[END OF TABLE]
+[END OF CPTS]
+ 1.00 = Pile point shape factor beta
+ 1.00 = Factor influence crosssection of pile point s
+  1800.000 = Max load on foundation Fs_rep
+  2105.015 = Max bearing capacity foundation Fr;fund;max;d
+6 = Critical pile nr for settlement in GT1B
+3 = Critical CPT nr for settlement in GT1B
+6 = Critical pile nr for settlement in GT2
+3 = Critical CPT nr for settlement in GT2
+4 = First pile nr for critical rotation in GT1B
+7 = Second pile nr for critical rotation in GT1B
+4 = First pile nr for critical rotation in GT2
+7 = Second pile nr for critical rotation in GT2
+  1800.00000 = Fs_tot_d_1B
+  1385.90051 = Fr_max_punt_d_1B
+   719.11439 = Fr_max_schacht_d_1B
+  1080.90160 = FR_punt_d_1B
+  0.045820 = spunt_d_1B
+     0.00868 = sel_d1B
+     0.00871 = s2_d1B
+     0.00000 = sneg1B
+  1400.00000 = Fs_tot_d_2
+  1663.08061 = Fr_max_punt_d_2
+   862.93727 = Fr_max_schacht_d_2
+   677.32738 = FR_punt_d_2
+     0.01140 = spunt_d_2
+     0.00661 = sel_d2
+     0.00677 = s2_d2
+     0.00000 = sneg2
+[MAX SHAFT AND POINT]
+[TABLE]
+[COLUMN INDICATION]
+CptIndex
+Grenstoestand
+MaxShaft
+MaxPoint
+[END OF COLUMN INDICATION]
+[DATA]
+     1 GT1B   697.777  2253.992
+     2 GT1B   719.921  1644.805
+     3 GT1B   719.114  1385.901
+     1 GT2    837.332  2704.790
+     2 GT2    863.905  1973.766
+     3 GT2    862.937  1663.081
+[END OF DATA]
+[END OF TABLE]
+[END OF MAX SHAFT AND POINT]
+    7.576 = Sigma_max_schacht_1B
+    5.893 = Sigma_max_schacht_2
+    0.000 = Min value Fs;nk;d
+    0.000 = Max value Fs;nk;d
+[NEN AVERAGE PILE FACTORS]
+[TABLE]
+[COLUMN INDICATION]
+CptIndex
+AlphaSGemSg
+AlphaSGemClp
+AlphaPGem
+CptName
+[END OF COLUMN INDICATION]
+[DATA]
+  1  0.0060  0.0000  0.8000 'FUGBEN1'
+  2  0.0060  0.0200  0.8000 'FUGBEN2'
+  3  0.0060  0.0000  0.8000 'FUGBEN3'
+[END OF DATA]
+[END OF TABLE]
+[END OF NEN AVERAGE PILE FACTORS]
+
+[CALCULATION PARAMETERS BEARING PILES EC 7]
+Ksi3Used = 1.3000
+Ksi4Used = 1.3000
+GammaBUsed = 1.2000
+GammaSUsed = 1.2000
+IsKsi3Used = 0
+[END OF CALCULATION PARAMETERS BEARING PILES EC 7]
+
+[END OF NEN PILE RESULTS]
+[END OF VERIFICATION RESULTS]
+[FOOTNOTE WARNINGS]
+[PILE TYPE]
+PileTypeNumber = 1
+WarningFootNoteDTable7c = 0
+[END OF PILE TYPE]
+[END OF FOOTNOTE WARNINGS]
+[END OF DUMPFILE OUTPUT]
+[CALCULATION WARNINGS]
+0 = IsWarningF1Given (1=true, 0=false)
+0 = F1GreaterThan1Found (1=true, 0=false)
+0 = IsWarningNENDepthGiven (1=true, 0=false)
+0 = IsWarningSFFundWidthGiven (1=true, 0=false)
+0 = IsWarningSFFundLengthGiven (1=true, 0=false)
+0 = IsWarningSFCudGiven (1=true, 0=false)
+0 = IsWarningSFDeltaPhiGiven (1=true, 0=false)
+ 12 = IsWarningNENSpacingGiven (> 0 warning, 0= no warning)
+0 = IsWarningSFSlopeNotRelevantGiven (1=true, 0=false)
+0 = IsWarningNENSFPlacementDepthTooDeep (1=true, 0=false)
+0 = IsWarningNENSFPlacementDepthTooShallow (1=true, 0=false)
+[END OF CALCULATION WARNINGS]
+[END OF DUMPFILE]

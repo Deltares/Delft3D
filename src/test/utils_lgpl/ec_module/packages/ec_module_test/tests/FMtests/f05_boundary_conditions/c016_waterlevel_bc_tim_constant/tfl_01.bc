@@ -1,0 +1,21 @@
+[forcing]
+Name 				= tfl_01_0001
+Function			= timeseries
+Time-interpolation  = linear
+Quantity            = time 
+Unit                = minutes since 1992-09-01
+Quantity            = waterlevelbnd			
+Unit                = m 
+  0.000000    0.0100000
+120.000000    0.0100000
+
+[forcing]
+Name 				= tfl_01_0002
+Function			= timeseries
+Time-interpolation  = linear
+Quantity            = time 
+Unit                = minutes since 1992-09-01
+Quantity            = waterlevelbnd			
+Unit                = m 
+  0.000000    0.0100000
+120.000000    0.0100000

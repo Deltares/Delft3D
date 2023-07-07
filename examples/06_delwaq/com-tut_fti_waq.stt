@@ -50,12 +50,12 @@ output-operation 'STADPT'
 end-output-operation
 
 output-operation 'STADSC'
-   substance 'ExtUv'
+   substance 'ExtVl'
    suffix    ''
 end-output-operation
 
 output-operation 'STADPT'
-   substance 'ExtUv'
+   substance 'ExtVl'
    suffix    ''
 end-output-operation
 

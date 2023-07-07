@@ -1,0 +1,5 @@
+install(SCRIPT "${checkout_src_root}/cmake/install_d_hydro/install_and_bundle.cmake")
+if(NOT DEFINED COMMIT_VERSION)
+  set(COMMIT_VERSION "0")
+endif()
+configure_package_installer("Deltares Integrated Model Runner (d_hydro) Open" "${checkout_src_root}/cmake/install_d_hydro/ReadMe.txt" "1" "0" "${COMMIT_VERSION}" "STGZ;TGZ")

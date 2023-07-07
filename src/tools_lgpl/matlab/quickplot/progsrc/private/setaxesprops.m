@@ -3,7 +3,7 @@ function setaxesprops(hAx,FullAxesType,dimension,unit)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -51,7 +51,6 @@ if  ischar(currentFullAxesType) && ~isequal(currentFullAxesType,FullAxesType)
 end
 %
 Axes  = splitcellstr(AxesType,'-');
-nAxes = length(Axes);
 %
 if nargin<3
     dimension = {};
@@ -60,87 +59,23 @@ if nargin<4
     unit = {};
 end
 %
-if strcmp(AxesType,'legend')
-    legendbox('init',hAx)
-elseif strcmp(AxesType,'Text')
-    set(hAx,'visible','off', ...
-        'xlim',[0 1], ...
-        'ylim',[0 1])
-else
-    X = 'xyz';
-    if nAxes==2
-        setappdata(hAx,'axes2d',true)
+switch AxesType
+    case 'legend'
         set_2d_axes_behavior(hAx)
-    end
-    if nAxes>=2
-        if isequal(Axes(1:2),{'Lon','Lat'})
-            setappdata(hAx,'LonLat',1)
-            sethscale_lonlat(hAx)
-        elseif isequal(Axes(1:2),{'X','Y'})
-            sethscale(hAx,1)
-        end
-    end
-    if length(dimension)<nAxes
-        dimension{nAxes}=[];
-    end
-    if length(unit)<nAxes
-        unit{nAxes} = [];
-    end
-    for i = 1:nAxes
-        if isempty(getappdata(hAx,[X(i) 'limmode']))
-            setappdata(hAx,[X(i) 'limmode'],'auto')
-        end
-        switch Axes{i}
-            case 'Time'
-                % Time axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'autodate')
-                end
-                setlabel(hAx,X(i),'time',unit{i})
-            case 'Lon'
-                % Longitude axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'longitude')
-                end
-                setlabel(hAx,X(i),'longitude','deg')
-            case 'Lat'
-                % Latitude axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'latitude')
-                end
-                setlabel(hAx,X(i),'latitude','deg')
-            case 'Z'
-                % Elevation axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'auto')
-                end
-                setlabel(hAx,X(i),dimension{i},unit{i})
-            case {'X','Y'}
-                % Horizontal coordinate axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'auto')
-                end
-                if isempty(dimension{i})
-                    dimension{i} = sprintf('%s coordinate',lower(Axes{i}));
-                end
-                setlabel(hAx,X(i),dimension{i},unit{i})
-            case {'Distance'}
-                % Distance axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'auto')
-                end
-                if isempty(dimension{i})
-                    dimension{i} = 'distance';
-                end
-                setlabel(hAx,X(i),dimension{i},unit{i})
-            otherwise
-                % Variable axis
-                if isempty(getappdata(hAx,[X(i) 'tickmode']))
-                    setappdata(hAx,[X(i) 'tickmode'],'auto')
-                end
-                setlabel(hAx,X(i),dimension{i},unit{i})
-        end
-    end
+        sethscale(hAx,1)
+        legendbox('init',hAx)
+    case {'analog clock','digital clock','calendar page'}
+        set_2d_axes_behavior(hAx)
+        sethscale(hAx,1)
+        md_clock(hAx,AxesType,floor(now))
+        set(hAx,'tag',AxesType)
+    case 'text'
+        set_2d_axes_behavior(hAx)
+        set(hAx,'visible','off', ...
+            'xlim',[0 1], ...
+            'ylim',[0 1])
+    otherwise
+        generaltype(hAx, Axes, dimension, unit)
 end
 %
 if ~isequal(FullAxesType,AxesType)
@@ -148,6 +83,83 @@ if ~isequal(FullAxesType,AxesType)
 end
 setappdata(hAx,'BasicAxesType',AxesType)
 update_axesprops(hAx)
+
+
+function generaltype(hAx, Axes, dimension, unit)
+nAxes = length(Axes);
+X = 'xyz';
+if nAxes==2
+    set_2d_axes_behavior(hAx)
+end
+if nAxes>=2
+    if isequal(Axes(1:2),{'Lon','Lat'})
+        setappdata(hAx,'LonLat',1)
+        sethscale_lonlat(hAx)
+    elseif isequal(Axes(1:2),{'X','Y'}) && numel(unit)>=2 && isequal(unit{1},unit{2})
+        sethscale(hAx,1)
+    end
+end
+if length(dimension)<nAxes
+    dimension{nAxes}=[];
+end
+if length(unit)<nAxes
+    unit{nAxes} = [];
+end
+for i = 1:nAxes
+    if isempty(getappdata(hAx,[X(i) 'limmode']))
+        setappdata(hAx,[X(i) 'limmode'],'auto')
+    end
+    switch Axes{i}
+        case 'Time'
+            % Time axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'autodate')
+            end
+            setlabel(hAx,X(i),'time',unit{i},'time')
+        case 'Lon'
+            % Longitude axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'longitude')
+            end
+            setlabel(hAx,X(i),'longitude','deg','longitude')
+        case 'Lat'
+            % Latitude axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'latitude')
+            end
+            setlabel(hAx,X(i),'latitude','deg','latitude')
+        case 'Z'
+            % Elevation axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'auto')
+            end
+            setlabel(hAx,X(i),dimension{i},unit{i},'elevation')
+        case {'X','Y'}
+            % Horizontal coordinate axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'auto')
+            end
+            if isempty(dimension{i})
+                dimension{i} = sprintf('%s coordinate',lower(Axes{i}));
+            end
+            setlabel(hAx,X(i),dimension{i},unit{i},[lower(Axes{i}) ' coordinate'])
+        case {'Distance'}
+            % Distance axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'auto')
+            end
+            if isempty(dimension{i})
+                dimension{i} = 'distance';
+            end
+            setlabel(hAx,X(i),dimension{i},unit{i},'distance')
+        otherwise
+            % Variable axis
+            if isempty(getappdata(hAx,[X(i) 'tickmode']))
+                setappdata(hAx,[X(i) 'tickmode'],'auto')
+            end
+            setlabel(hAx,X(i),dimension{i},unit{i},'variable')
+    end
+end
 
 
 function sethscale_lonlat(hAx)
@@ -172,6 +184,7 @@ set(hAx,'ylim',ylimv,'xlim',xlim)
 
 
 function sethscale(hAx,ratio)
+setappdata(hAx,'haspectenforced',true)
 if strcmp(get(hAx,'dataaspectratiomode'),'auto')
     set(hAx,'dataaspectratio',[1 ratio 1/30])
 else
@@ -192,9 +205,6 @@ end
 
 
 function update_axesprops(hAx)
-for d = 'xyz'
-    update_axticks(hAx,d)
-end
 if isequal(getappdata(hAx,'LonLat'),1)
     sethscale_lonlat(hAx)
 end
@@ -204,30 +214,29 @@ end
 % else
 %     alldims = 'xyz';
 % end
+% dar = get(hAx,'dataaspectratio');
+% dar = dar/dar(1);
+% buf = 1000;
 % for d = alldims
 %     dlimmode = getappdata(hAx,[d 'limmode']);
-%     if isempty(dlimmode) || strcmp(dlimmode,'auto')
-%         set(hAx,[d 'limmode'],'auto')
+%     if strcmp(dlimmode,'auto')
+%        lim = limits(hAx,d);
+%        set(hAx,[d 'lim'],lim + [-buf buf]*dar(d-'w'))
 %     end
 % end
-% for d = alldims
-%     update_axticks(hAx,d)
-% end
-% if isequal(getappdata(hAx,'LonLat'),1)
-%     sethscale_lonlat(hAx)
-% end
-% if axes2d
-%     set_2d_axes_behavior(hAx)
-% end
+for d = 'xyz'
+    update_axticks(hAx,d)
+end
 
 
-function setlabel(ax,dir,quantity,unit)
+function setlabel(ax,dir,quantity,unit,type)
 if ~ischar(quantity)
     quantity = '';
 end
 if ~ischar(unit)
     unit = '';
 end
+setappdata(ax,[dir 'type'],type)
 setappdata(ax,[dir 'quantity'],quantity)
 setappdata(ax,[dir 'unit'],unit)
 update_label(ax,dir)
@@ -260,25 +269,31 @@ set(axlabel,'string',dimstr)
 
 
 function update_axticks(hAx,dir)
-quantity = getappdata(hAx,[dir 'quantity']);
+type = getappdata(hAx,[dir 'type']);
 unit = getappdata(hAx,[dir 'unit']);
 units = {'mm' 'm' 'km'};
-if ~isempty(quantity)
-    switch quantity
-        case {'longitude','latitude'}
-            tick(hAx,dir,'autoticks',quantity);
-        case {'time'}
-            tick(hAx,dir,'autoticks','autodate');
-        case {'distance','x coordinate','y coordinate'}
-            if ismember(unit,units)
-                distanceticks(hAx,dir)
-            end
-        otherwise
-            if strncmp(quantity,'distance along',14) && ...
-                    ismember(unit,units)
-                distanceticks(hAx,dir)
-            end
+oldcase = isempty(type);
+if oldcase
+    type = getappdata(hAx,[dir 'quantity']);
+    if isempty(type)
+        return
     end
+end
+switch type
+    case {'longitude','latitude'}
+        tick(hAx,dir,'autoticks',type);
+    case {'time'}
+        tick(hAx,dir,'autoticks','autodate');
+    case {'distance','x coordinate','y coordinate'}
+        if ismember(unit,units)
+            distanceticks(hAx,dir)
+        end
+    otherwise
+        if oldcase && ...
+                strncmp(type,'distance along',14) && ...
+                ismember(unit,units)
+            distanceticks(hAx,dir)
+        end
 end
 
 function distanceticks(ax,dir)
@@ -299,6 +314,7 @@ if ~isequal(unit,getappdata(ax,[dir 'unit']))
 end
 
 function set_2d_axes_behavior(ax)
+setappdata(ax,'axes2d',true)
 try
     set(ax, 'View',[0 90])
     for i = 1:length(ax)

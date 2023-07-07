@@ -25,7 +25,7 @@ function Out = surfer(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -78,7 +78,7 @@ if (nargin==0) || strcmp(filename,'?')
 end
 [fp,fn,fe] = fileparts(filename);
 %
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Unable to open file "%s"',filename)
 end
@@ -312,7 +312,7 @@ end
 if ~strcmp(Structure.FileType,'SURFER')
     error('Specified file is not a SURFER grid file.')
 end
-fid = fopen(Structure.FileName);
+fid = fopen(Structure.FileName,'r','n','US-ASCII');
 fseek(fid,Structure.DataStart,-1);
 sz = [Structure.NCols Structure.NRows];
 switch Structure.Format
@@ -331,7 +331,7 @@ fclose(fid);
 function Local_write_file(varargin)
 filename = varargin{1};
 Structure = varargin{2};
-fid = fopen(filename,'w');
+fid = fopen(filename,'w','n','US-ASCII');
 Exception = [];
 try
     switch Structure.FileType

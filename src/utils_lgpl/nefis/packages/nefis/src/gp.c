@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,10 @@
 /*
  *   Comment:
  */
+#if defined(linux)
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -65,13 +69,15 @@
 #  define FILE_READ  _read
 #  define FILE_SEEK  _lseeki64
 #  define FILE_WRITE _write
-#elif defined(GNU_PC) || defined(HAVE_CONFIG_H) || defined(salford32)
+#elif defined(linux)
 #  define FILE_READ  read
-#  define FILE_SEEK  lseek64
-#  define FILE_WRITE write
-#elif defined(USE_SUN)
-#  define FILE_READ  read
-#  define FILE_SEEK  lseek64
+#  if defined(HAVE_LSEEK64)
+#    define FILE_SEEK lseek64
+#  elif defined(HAVE_LSEEK)
+#    define FILE_SEEK lseek
+#  else
+#    define FILE_SEEK FILE_SEEK_not_defined
+#  endif
 #  define FILE_WRITE write
 #else
 #  define FILE_READ  FILE_READ_not_defined

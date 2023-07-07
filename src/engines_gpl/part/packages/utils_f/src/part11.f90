@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,7 +25,7 @@
                          mpart  , xpart  , ypart  , xa     , ya     ,        &
                          nopart , npwndw , lgrid2 , kpart  , zpart  ,        &
                          za     , locdep , dps    , nolay  , mmax   ,        &
-                         tcktot )
+                         tcktot)
 
 !       Deltares Software Centre
 
@@ -50,7 +50,9 @@
 !     Functions   called    : none
 
       use precision_part               ! single/double precision
+      use partmem, only: zmodel, laytop , laybot , zlbot 
       use timers
+      use, intrinsic :: ieee_arithmetic, only : ieee_value, ieee_quiet_nan 
 
       implicit none               ! force explicit typing
 
@@ -70,6 +72,12 @@
       real     ( rp), intent(in   ) :: locdep(nmax*mmax,nolay) !< local depth of a gridcell
       real     ( rp), intent(in   ) :: tcktot(nolay )          !< relative thickness of a layer
       real     ( rp), intent(in   ) :: dps   (nmax*mmax)       !< depth of the reference plain
+      
+!      integer  ( ip), intent(in   ) :: laytop(nmax,mmax)       !< highest active layer in z-layer model
+!      integer  ( ip), intent(in   ) :: laybot(nmax,mmax)       !< deepest active layer in z-layer model
+!      real     ( rp), intent(in   ) :: zlbot (nolay)           !< z-layer layer bottom level
+!      real     ( rp), intent(in   ) :: zltop (nolay)           !< z-layer layer top level
+
       integer  ( ip), intent(in   ) :: npart (nopart)          !< first grid cell index particles
       integer  ( ip), intent(in   ) :: mpart (nopart)          !< second grid cell index particles
       integer  ( ip), intent(in   ) :: kpart (nopart)          !< third grid cell index particles
@@ -133,19 +141,37 @@
                        xt * yt * (yp(n0) - yp(n1) - yp(n2) + yp(n3))
 
 !              vertical coordinate (z)
-
-               totdep   = locdep(n0,nolay)
-               ilay     = kpart(ipart)
-               dlay     = tcktot(ilay)*totdep
-               dist     = locdep(n0,ilay) - (1.0-zpart(ipart))*dlay
-               za(ipart)= totdep - dps(n0) - dist
+               if (zmodel) then
+                  ilay     = kpart(ipart)
+                  if (ilay == laytop(n, m)) then
+                     dlay = locdep(n0,ilay)
+                     za(ipart)= zlbot(ilay) + (1.0-zpart(ipart))*dlay
+                  else if (ilay .le. laybot(n, m)) then
+                     dlay = locdep(n0,ilay) - locdep(n0,ilay-1)
+                     za(ipart)= zlbot(ilay-1) - zpart(ipart)*dlay
+                  else
+                     ilay = laybot(n, m)
+                     dlay = locdep(n0,ilay) - locdep(n0,ilay-1)
+                     za(ipart)= zlbot(ilay-1) - dlay
+                  endif
+               else
+                  totdep   = locdep(n0,nolay)
+                  ilay     = kpart(ipart)
+                  if ( ilay .le. nolay ) then
+                     dlay     = tcktot(ilay)*totdep
+                     dist     = locdep(n0,ilay) - (1.0-zpart(ipart))*dlay
+                     za(ipart)= totdep - dps(n0) - dist
+                  else
+                     za(ipart)= -dps(n0)
+                  endif
+               endif
             else
 
 !              particles outside model area
 
-               xa(ipart) = 999.999
-               ya(ipart) = 999.999
-               za(ipart) = 999.999
+               xa(ipart) = -999
+               ya(ipart) = -999
+               za(ipart) = -999
             endif
          endif
   100 continue

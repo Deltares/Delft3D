@@ -21,14 +21,16 @@ backend = snc_read_backend(ncfile);
 switch(backend)
 	case 'tmw'
 		values = nc_attget_tmw(ncfile,varname,attribute_name);
-    case 'tmw_hdf4'
-        values = nc_attget_hdf4(ncfile,varname,attribute_name);
 	case 'java'
 		values = nc_attget_java(ncfile,varname,attribute_name);
 	case 'mexnc'
 		values = nc_attget_mexnc(ncfile,varname,attribute_name);
+    case 'tmw_hdf4'
+        values = nc_attget_hdf4(ncfile,varname,attribute_name);
+    case 'tmw_hdf4_2011a'
+        values = nc_attget_hdf4_2011a(ncfile,varname,attribute_name);
 	otherwise
-		error('SNCTOOLS:NC_ATTGET:unhandledBackend', ...
+		error('snctools:attget:unhandledBackend', ...
 		      '%s is not a recognized backend for SNCTOOLS.', ...
 			  backend);
 end

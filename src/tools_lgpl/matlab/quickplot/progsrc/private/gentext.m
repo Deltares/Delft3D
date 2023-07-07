@@ -3,7 +3,7 @@ function hNew=gentext(hOld,Ops,Parent,Str)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -31,13 +31,20 @@ function hNew=gentext(hOld,Ops,Parent,Str)
 %   $HeadURL$
 %   $Id$
 
+Str = protected(Str);
+
 if ~isempty(hOld) & ishandle(hOld)
     hNew=hOld;
     set(hNew,'string',Str);
 else
     hNew=text(0.5,0.5,Str, ...
-        'color',Ops.colour, ...
+        Ops.FontParams{:}, ...
         'horizontalalignment','center', ...
         'parent',Parent);
     setaxesprops(Parent,'Text')
 end
+
+function S = protected(S)
+S = strrep(S,'\','\\');
+S = strrep(S,'_','\_');
+S = strrep(S,'^','\^');

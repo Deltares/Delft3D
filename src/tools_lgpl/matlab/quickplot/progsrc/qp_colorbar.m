@@ -17,8 +17,6 @@ function handle=qp_colorbar(varargin)
 
 %   $Id$
 
-changeNextPlot = 1;
-
 rloc=[];
 loc = 'vert';
 h = [];
@@ -48,24 +46,24 @@ end
 if ischar(loc), loc=lower(loc); end
 
 % Catch colorbar('delete') special case -- must be called by the deleteFcn.
-if nargin==1 & strcmp(loc,'delete'),
+if nargin==1 && strcmp(loc,'delete')
    ax = gcbo;
    if isequal(get(ax,'type'),'text')
       delete(get(gcbo,'userdata'))
       return
    end
-   if strcmp(get(ax,'tag'),'TMW_COLORBAR'),
+   if strcmp(get(ax,'tag'),'TMW_COLORBAR')
       ax=get(ax,'parent');
    end
    ud = get(ax,'userdata');
-   if isfield(ud,'PlotHandle') & ishandle(ud.PlotHandle) & ...
-         isfield(ud,'origPos') & ~isempty(ud.origPos)
+   if isfield(ud,'PlotHandle') && ishandle(ud.PlotHandle) && ...
+         isfield(ud,'origPos') && ~isempty(ud.origPos)
       units = get(ud.PlotHandle,'units');
       set(ud.PlotHandle,'units','normalized');
       set(ud.PlotHandle,'position',ud.origPos);
       set(ud.PlotHandle,'units',units);
    end
-   if isfield(ud,'DeleteProxy') & ishandle(ud.DeleteProxy)
+   if isfield(ud,'DeleteProxy') && ishandle(ud.DeleteProxy)
       delete(ud.DeleteProxy)
    end
    if ~isempty(legend)
@@ -83,7 +81,6 @@ if ishandle(loc)
    units = get(ax,'units'); set(ax,'units','pixels');
    rect = get(ax,'position'); set(ax,'units',units)
    if rect(3) > rect(4), loc = 'horiz'; else loc = 'vert'; end
-   changeNextPlot = 0;
 end
 
 % Determine color limits by context.  If any axes child is an image
@@ -91,58 +88,63 @@ end
 
 if isempty(h)
    GCF=get(0,'currentfigure');
-   if isempty(GCF), return; end
+   if isempty(GCF)
+       return
+   end
    h = gcda(GCF);
 end
 
-if isempty(h) | ~ishandle(h) | ~isequal(get(h,'type'),'axes')
-   return;
+if isempty(h) || ~ishandle(h) || ~isequal(get(h,'type'),'axes')
+   return
 else
    GCF=get(h,'Parent');
 end
 
 lengthcmap=size(get(GCF,'colormap'),1);
 
-t = get(h,'clim');
-d = (t(2) - t(1))/lengthcmap;
-t = [t(1)+d/2  t(2)-d/2];
+t0 = get(h,'clim');
+df0 = (t0(2) - t0(1))/lengthcmap;
+tm = mean(t0);
+df = max(df0, tm * 1e-11);
+t = mean(t0) + [-1 1]*(lengthcmap-1)*df/2;
+cblim = t;%[0 100];
+manualTicks = df>df0;
 
 %
-% Use allways existing colorbar
+% Use always existing colorbar
 %
 % Search for existing colorbar
 ch = get(findobj(GCF,'type','image','tag','TMW_COLORBAR'),{'parent'});
 for i=1:length(ch),
    ud = get(ch{i},'userdata');
    d = ud.PlotHandle;
-   if prod(size(d))==1 & isequal(d,h),
+   if numel(d)==1 && isequal(d,h)
       eax = ch{i};
       units = get(eax,'units'); set(eax,'units','pixels');
       rect = get(eax,'position'); set(eax,'units',units)
       if rect(3)<rect(4), eloc = 'vert'; else eloc = 'horiz'; end
-      if ischar(rloc) & ~isequal(eloc,rloc),
-         delete(eax);
+      if ischar(rloc) && ~isequal(eloc,rloc)
+         delete(eax)
       else
          loc=eloc;
          ax=eax;
-         changeNextPlot = 0;
          % Make sure image deletefcn doesn't trigger a colorbar('delete')
          % for colorbar update
          set(get(ax,'children'),'deletefcn','')
       end
-      break;
+      break
    end
 end
 
 origCurAxes = get(GCF,'CurrentAxes');
 origNextPlot = get(GCF,'NextPlot');
-if strcmp(origNextPlot,'replacechildren') | strcmp(origNextPlot,'replace'),
+if strcmp(origNextPlot,'replacechildren') || strcmp(origNextPlot,'replace'),
    set(GCF,'NextPlot','add')
 end
 
-if loc(1)=='v', % Append vertical scale to right of current plot
+if loc(1)=='v' % Append vertical scale to right of current plot
 
-   if isempty(ax),
+   if isempty(ax)
       units = get(h,'units'); set(h,'units','normalized')
       pos = get(h,'Position');
       azel=get(h,'view'); az=azel(1); el=azel(2);
@@ -171,17 +173,24 @@ if loc(1)=='v', % Append vertical scale to right of current plot
 
    % Create color stripe
    n = size(get(GCF,'colormap'),1);
-   image([0 1],t,(1:n)','Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
-   set(ax,'Ydir','normal')
-   set(ax,'YAxisLocation','right')
-   set(ax,'xtick',[])
+   I = findobj(ax,'type','image');
+   if ~isempty(I)
+       set(I,'YData',cblim)
+       set(ax,'YLim',cblim)
+   else
+       image([0 1],cblim,(1:n)','Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
+       set(ax,'Ydir','normal')
+       set(ax,'YAxisLocation','right')
+       set(ax,'xtick',[])
+   end
+   X = 'Y';
 
    % set up axes deletefcn
    set(ax,'tag','Colorbar','deletefcn','qp_colorbar delete')
 
-elseif loc(1)=='h', % Append horizontal scale to top of current plot
+elseif loc(1)=='h' % Append horizontal scale to top of current plot
 
-   if isempty(ax),
+   if isempty(ax)
       units = get(h,'units'); set(h,'units','normalized')
       pos = get(h,'Position');
       stripe = 0.075; space = 0.1;
@@ -209,9 +218,16 @@ elseif loc(1)=='h', % Append horizontal scale to top of current plot
 
    % Create color stripe
    n = size(get(GCF,'colormap'),1);
-   image(t,[0 1],(1:n),'Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
-   set(ax,'Ydir','normal')
-   set(ax,'ytick',[])
+   I = findobj(ax,'type','image');
+   if ~isempty(I)
+       set(I,'XData',cblim)
+       set(ax,'XLim',cblim)
+   else
+       image(cblim,[0 1],(1:n),'Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
+       set(ax,'Ydir','normal')
+       set(ax,'ytick',[])
+   end
+   X = 'X';
 
    % set up axes deletefcn
    set(ax,'tag','Colorbar','deletefcn','qp_colorbar delete')
@@ -223,16 +239,36 @@ else
    error('COLORBAR expects a handle, ''vert'', or ''horiz'' as input.')
 end
 
+if manualTicks
+    for ndigits = 1:20
+        format = sprintf('%%.%ig',ndigits);
+        tstr = {sprintf(format,t0(1)), sprintf(format,t0(2))};
+        if ~isequal(tstr{:})
+            break
+        end
+    end
+    set(ax,[X 'tick'],t,[X 'ticklabel'],tstr)
+else
+    set(ax,[X 'tickmode'],'auto',[X 'ticklabelmode'],'auto')
+end
+
 if ~isfield(ud,'DeleteProxy'), ud.DeleteProxy = []; end
 if ~isfield(ud,'origPos'), ud.origPos = []; end
 ud.PlotHandle = h;
 set(ax,'userdata',ud)
 set(GCF,'currentaxes',origCurAxes)
 set(GCF,'NextPlot',origNextPlot)
-if ~isempty(legend)
+try
+    hasLegend = ~isempty(ax.Legend);
+catch
+   hasLegend = ~isempty(legend);
+end
+if hasLegend
    legend % Update legend
 end
-if nargout>0, handle = ax; end
+if nargout>0
+    handle = ax;
+end
 
 %--------------------------------
 function h = gcda(Fig)
@@ -240,7 +276,7 @@ function h = gcda(Fig)
 
 h = datachildren(Fig);
 GCA=get(Fig,'currentaxes');
-if isempty(h) | any(h == GCA)
+if isempty(h) || any(h == GCA)
    h = GCA;
 else
    h = h(1);

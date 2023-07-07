@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,10 +21,14 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
+      module random_generator
+          implicit none
+      contains
+
       real function rnd(rseed)
 !
 !
-!                   Deltares (former: Deltares)
+!                   Deltares
 !
 !                        d e l p a r    v1.30
 !
@@ -56,15 +60,14 @@
 !     help    double      1       local   help variable
 !     s       double      1       local   help variable for rseed
 !
-!      
+!
 !  module declarations
 !
 !
 !  data definition module(s)
 !
-use precision_part    ! single and double precision
+      use precision_part    ! single and double precision
 !
-      implicit none
 !
 !     save values between invocations
 !
@@ -83,4 +86,5 @@ use precision_part    ! single and double precision
 !
       return
       end function
+      end module random_generator
 

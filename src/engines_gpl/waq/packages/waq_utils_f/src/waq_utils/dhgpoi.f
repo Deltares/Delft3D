@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,23 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhgpoi
+      use m_srstop
+      use m_monsys
+
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DHGPOI( IVAR  , IARRAY, IKIND , IVINDX, IDIM1 ,
      +                   IDIM2 , IP_AR , IGRID , ISYS  , NOTOT ,
      +                   IP_VAR)
 !
+      INTEGER IVAR, IKIND, ISYS, IGRID, IDIM1, IDIM2
+      INTEGER NOTOT, IP_AR, IARRAY, LUREP, IP_VAR, IVINDX
+      
       IF ( IKIND .EQ. 2 ) THEN
          ISYS   = IVINDX
          NOTOT  = IDIM1
@@ -47,3 +59,4 @@
      +        /'        array number             ',I8,
      +        /'        variable number          ',I8 )
       END
+      end module m_dhgpoi

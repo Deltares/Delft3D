@@ -18,7 +18,7 @@ function varargout=tekalfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -93,6 +93,9 @@ switch cmd
         return
     case 'subfields'
         varargout={getsubfields(FI,Props,varargin{:})};
+        return
+    case 'plotoptions'
+        varargout = {[]};
         return
     case 'plot'
         Parent=varargin{1};
@@ -217,7 +220,28 @@ switch FI.FileType
             end
             Data = cat(1,Data{:});
         elseif isfield(FI,'combinelines') && FI.combinelines % LDB
-            Data=tekal('read',FI,0);
+            switch Props.Name
+                case 'lines'
+                    Data=tekal('read',FI,idx{M_});
+                    already_selected = 1;
+                case 'labels'
+                    Data=tekal('read',FI,idx{M_});
+                    if iscell(Data)
+                        for i = 1:numel(Data)
+                            d = Data{i};
+                            j = find(d(:,1)~=999.999 | d(:,2)~=999.999);
+                            Data{i} = d(j(1),:);
+                        end
+                        Data=cat(1,Data{:});
+                    else
+                        j = find(Data(:,1)~=999.999 | Data(:,2)~=999.999);
+                        Data = Data(j(1),:);
+                    end
+                    val1 = {FI.Field(idx{M_}).Name};
+                    already_selected = 1;
+                otherwise
+                    Data=tekal('read',FI,0);
+            end
             if iscell(Data) % if there is more than one block
                 for i=1:length(Data)-1
                     Data{i}(end+1,:)=NaN;
@@ -238,41 +262,64 @@ switch FI.FileType
             end
         end
         if strcmp(Props.Geom,'POLYL')
-            Data(Data(:,1)==999.999 & Data(:,2)==999.999,:)=NaN;
+            if iscell(Data)
+                for i = 1:numel(Data)
+                    d = Data{i};
+                    d(d(:,1)==999.999 & d(:,2)==999.999,:) = NaN;
+                    Data{i} = d;
+                end
+            else
+                Data(Data(:,1)==999.999 & Data(:,2)==999.999,:)=NaN;
+            end
         end
+    case 'GeoJSON'
+        already_selected = 1;
+        geotypes = FI.features.data(1,:);
+        switch Props.Name
+            case 'line'
+                geoset = {'MultiLineString'};
+            case 'point'
+                geoset = {'Point'};
+        end
+        ifeature = find(ismember(geotypes,geoset));
+        Data = FI.features.data(2,ifeature(idx{M_}));
     case 'AutoCAD DXF'
-        Data=FI.Lines(1:2,:)';
+        if strcmp(Props.Coords,'xyz')
+            Data=FI.Lines(1:3,:)';
+        else
+            Data=FI.Lines(1:2,:)';
+        end
     case 'BNA File'
         already_selected = 1;
-        Data=bna('readc',FI,idx{M_});
+        Data = bna('readc',FI,idx{M_});
     case 'ArcInfoUngenerate'
         already_selected = 1;
-        Data=ai_ungen('readc',FI,idx{M_});
+        Data = ai_ungen('readc',FI,idx{M_});
     case 'ESRI-Shape'
         already_selected = 1;
         if strcmp(Props.Geom,'PNT')
-            [Data,Obj]=shape('read',FI,idx{M_},'points');
+            Data = shape('read',FI,idx{M_},'points');
         else
-            [Data,Obj]=shape('read',FI,idx{M_},'lines');
+            Data = shape('read',FI,idx{M_},'lines');
         end
         if Props.NVal>0
-            val1=dbase('read',FI.dBase,idx{M_},Props.Select);
-            val1=val1{1};
+            val1 = dbase('read',FI.dBase,idx{M_},Props.Select);
+            val1 = val1{1};
             % miss=isnan(Obj);
             % expand val1 array to match size of Obj/Data.
-            [lia,idxM] = ismember(Obj,idx{M_});
-            miss = ~lia;
-            idxM(miss) = 1;
-            val1 = val1(idxM);
-            if iscell(val1)
-                % cell array of strings
-                val1(miss)={''};
-            elseif ischar(val1)
-                % array of characters
-                val1(miss)=' ';
-            else
-                val1(miss)=NaN;
-            end
+%             [lia,idxM] = ismember(Obj,idx{M_});
+%             miss = ~lia;
+%             idxM(miss) = 1;
+%             val1 = val1(idxM);
+%             if iscell(val1)
+%                 % cell array of strings
+%                 val1(miss)={''};
+%             elseif ischar(val1)
+%                 % array of characters
+%                 val1(miss)=' ';
+%             else
+%                 val1(miss)=NaN;
+%             end
         end
     case {'DelwaqTimFile','LexYacc_TimeTable'}
         Data=repmat(NaN,sz(T_),sz(ST_)+1);
@@ -370,6 +417,9 @@ if XYRead
             x=Data(idx{M_},1);
             if strcmp(Props.Coords,'xy')
                 y=Data(idx{M_},2);
+            elseif strcmp(Props.Coords,'xyz')
+                y=Data(idx{M_},2);
+                z=Data(idx{M_},3);
             elseif isempty(Props.Coords)
                 xname=FI.Field(blck).ColLabels{1};
             end
@@ -576,17 +626,21 @@ switch FI.FileType
         elseif isfield(FI,'combinelines') && FI.combinelines
             if FI.Field(1).Size(2)==3 % pliz-file
                 DataProps={'line'              'POLYL' 'xy'    [0 0 1 0 0]   0           0       0       0       1          []      {}
+                           'lines'             'POLYL' 'xy'    [0 0 1 0 0]   0           0       0       0       1          []      {}
+                           'labels'            'PNT'   'xy'    [0 0 1 0 0]   0           4       0       0       1          []      {}
                            'column 3'          'POLYL' 'xy'    [0 0 1 0 0]   0           1       0       0       0          []      {}  };
                 if ~isempty(FI.Field(1).ColLabels{3})
-                    DataProps{2,1} = FI.Field(1).ColLabels{3};
+                    DataProps{4,1} = FI.Field(1).ColLabels{3};
                 else
                     [p,f,e]=fileparts(FI.FileName);
                     if strcmpi(e,'.pliz')
-                        DataProps{2,1} = 'elevation';
+                        DataProps{4,1} = 'elevation';
                     end
                 end
             else
-                DataProps={'line'              'POLYL' 'xy'    [0 0 1 0 0]   0           0       0       0       1          []      {}  };
+                DataProps={'line'              'POLYL' 'xy'    [0 0 1 0 0]   0           0       0       0       1          []      {}
+                           'lines'             'POLYL' 'xy'    [0 0 1 0 0]   0           0       0       0       1          []      {}
+                           'labels'            'PNT'   'xy'    [0 0 1 0 0]   0           4       0       0       1          []      {}  };
             end
         else
             [p,f,e]=fileparts(FI.FileName);
@@ -596,6 +650,7 @@ switch FI.FileType
                         switch length(FI.Field(i).Size)
                             case 2 % 1D
                                 Col1 = lower(FI.Field(i).ColLabels{1});
+                                Col2 = '';
                                 if length(FI.Field(i).ColLabels)>=2
                                     Col2 = lower(FI.Field(i).ColLabels{2});
                                     if isequal(Col1,'date') && isequal(Col2,'time')
@@ -604,6 +659,12 @@ switch FI.FileType
                                         Col1='date and time';
                                     elseif isequal(Col1,'yyyymmdd') && isequal(Col2,'hhmmss')
                                         Col1='date and time';
+                                    end
+                                end
+                                if strncmpi(Col1,'x coord',7) || strncmpi(Col1,'x-coord',7)
+                                    Col1 = 'x-coordinate';
+                                    if strncmpi(Col2,'y coord',7) || strncmpi(Col2,'y-coord',7)
+                                        Col1 = 'x- and y-coordinate';
                                     end
                                 end
                                 if strncmpi(Col1,'z coord',7) || strncmpi(Col1,'z-coord',7)
@@ -630,6 +691,10 @@ switch FI.FileType
                                         DataProps(end+1,:)=DP;
                                     case {'z-coordinate'}
                                         DP={'field X'    'PNT+' 'z'  [0 5 0 0 1]  0          1       i       0       0          []      {}  };
+                                        DP{1}=sprintf('%s',FI.Field(i).Name);
+                                        DataProps(end+1,:)=DP;
+                                    case {'x- and y-coordinate'}
+                                        DP={'field X'    'PNT' 'xy'  [0 5 1 0 0]  0          1       i       0       0          []      {}  };
                                         DP{1}=sprintf('%s',FI.Field(i).Name);
                                         DataProps(end+1,:)=DP;
                                     otherwise
@@ -793,8 +858,29 @@ switch FI.FileType
                 end
             end
         end
+    case 'GeoJSON'
+        DataProps={'line'                      'POLYL' 'xy'  [0 0 1 0 0]  0          0       0       0       1          []      {}
+                   'point'                     'PNT'   'xy'  [0 0 1 0 0]  0          0       0       0       1          []      {}  };
+        geotypes = unique(FI.features.data(1,:));
+        if ~ismember('MultiLineString',geotypes)
+            DataProps(strcmp('line',DataProps(:,1)),:) = [];
+        end
+        if ~ismember('Point',geotypes)
+            DataProps(strcmp('point',DataProps(:,1)),:) = [];
+        end
     case {'BNA File','ArcInfoUngenerate','AutoCAD DXF'}
-        DataProps={'line'                      'POLYL' 'xy' [0 0 1 0 0]  0          0       0       0       1          []      {}  };
+        if isfield(FI,'SubType') && ismember(FI.SubType,{'line','polygon'})
+            ncoords = size(FI.Seg(1).Coord,2);
+        elseif isfield(FI,'Lines')
+            ncoords = size(FI.Lines,1);
+        else
+            ncoords = 2;
+        end
+        if ncoords == 3
+            DataProps={'line'                      'POLYL' 'xyz' [0 0 1 0 0]  0          0       0       0       1          []      {}  };
+        else
+            DataProps={'line'                      'POLYL' 'xy'  [0 0 1 0 0]  0          0       0       0       1          []      {}  };
+        end
     case 'ESRI-Shape'
         DataProps={'line'                      'POLYL' 'xy' [0 0 6 0 0]  0          0       0       0       1          []      {}  };
         switch FI.ShapeTpName
@@ -809,7 +895,7 @@ switch FI.FileType
                 DataProps(i+1,:)=DataProps(1,:);
                 DataProps{i+1,1}=[DataProps{i+1,1} ':' dBaseFlds{i}];
                 switch FI.dBase.Fld(i).Type
-                    case {'2','4','8','N','F'}
+                    case {'2','4','8','D','N','F'}
                         DataProps{i+1,6}=1;
                     otherwise
                         DataProps{i+1,6}=4;
@@ -911,8 +997,13 @@ switch FI.FileType
         if isfield(FI,'plotonpoly')
             sz(M_)=FI.Field.Size(1);
         elseif isfield(FI,'combinelines') && FI.combinelines
-            szi=cat(1,FI.Field.Size);
-            sz(M_)=sum(szi(:,1))+length(FI.Field)-1;
+            switch Props.Name
+                case {'lines','labels'}
+                    sz(M_) = length(FI.Field);
+                otherwise
+                    szi=cat(1,FI.Field.Size);
+                    sz(M_)=sum(szi(:,1))+length(FI.Field)-1;
+            end
         elseif strcmp(FI.Field(blck).DataTp,'annotation')
             if Props.DimFlag(ST_)
                 sz(ST_)=FI.Field(blck).Size(1);
@@ -948,6 +1039,15 @@ switch FI.FileType
                 sz(ST_)=FI.Field(blck).Size(2)-sum(Props.DimFlag([M_ N_ K_])~=0);
             end
         end
+    case 'GeoJSON'
+        geotypes = FI.features.data(1,:);
+        switch Props.Name
+            case 'line'
+                geoset = {'MultiLineString'};
+            case 'point'
+                geoset = {'Point'};
+        end
+        sz(M_) = sum(ismember(geotypes,geoset));
     case {'BNA File','ArcInfoUngenerate'}
         sz(M_)=length(FI.Seg);
     case {'AutoCAD DXF'}

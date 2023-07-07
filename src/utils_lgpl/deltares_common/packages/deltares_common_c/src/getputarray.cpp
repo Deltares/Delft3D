@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,7 @@
 
 #include "getputarray.h"
 
-#if HAVE_CONFIG_H
+#if defined(linux)
 #define Sleep usleep
 #define SEC 1000000.0
 #else

@@ -3,7 +3,7 @@ subroutine out2d( kcs , xcor, ycor, mmax, nmax, &
                   wght, ref                   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine out2d( kcs , xcor, ycor, mmax, nmax, &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -63,17 +63,18 @@ subroutine out2d( kcs , xcor, ycor, mmax, nmax, &
     integer               :: n
     integer, dimension(4) :: nn
     integer               :: ns
+    integer               :: lunfil
 !
 !! executable statements -------------------------------------------------------
 !
     iswn = 0
     !
-    open (33,file='ref_in2.dat')
+    open (newunit=lunfil,file='ref_in2.dat')
     !
     do mn = 1, mmaxs*nmaxs
        n = int((mn-1)/mmax) + 1
        m = mn - (n - 1) * mmax
-       write (33,'(6i5)') m,n, ref(1,mn),ref(2,mn), ref(3,mn), ref (4,mn)
+       write (lunfil,'(6i5)') m,n, ref(1,mn),ref(2,mn), ref(3,mn), ref (4,mn)
     enddo
     !
     do ns = 1, nmaxs
@@ -85,14 +86,14 @@ subroutine out2d( kcs , xcor, ycor, mmax, nmax, &
                 mm(i)  = ref(i,iswn) - (nn(i) - 1) * mmax
                 !
                 if (mm(i) > 0 .and. nn(i) > 0) then
-                   write (33,'(4i5,2f12.3,i5)') ms,ns,mm(i),nn(i),&
-                                              & xcor(mm(i),nn(i)),&
-                                              & ycor(mm(i),nn(i)),&
-                                              & kcs(mm(i),nn(i))
+                   write (lunfil,'(4i5,2f12.3,i5)') ms,ns,mm(i),nn(i),&
+                                                  & xcor(mm(i),nn(i)),&
+                                                  & ycor(mm(i),nn(i)),&
+                                                  & kcs(mm(i),nn(i))
                 endif
              endif
           enddo
        enddo
     enddo
-    close(33)
+    close(lunfil)
 end subroutine out2d

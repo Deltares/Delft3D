@@ -11,7 +11,7 @@ function Grid = read_ecom_corners(file)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -40,7 +40,7 @@ function Grid = read_ecom_corners(file)
 %   $Id$
 
 if ischar(file)
-   fid = fopen(file,'r');
+   fid = fopen(file,'r','n','US-ASCII');
    if fid<0
       error('Unable to open data file.')
    end

@@ -1,22 +1,30 @@
-function [xo,yo,po,mo,to,lo,dxt,dyt,out]=int_lntri(xi,yi,TRI,X,Y)
+function [xo,yo,po,mo,to,lo,dxt,dyt,out]  =int_lntri(xi,yi,TRI,X,Y)
 %INT_LNTRI Intersection of line and triangular mesh.
-%   [XCROSS,YCROSS] = INT_LNTRI(XLINE,YLINE,TRI,X,Y)
-%   Computes the points where the line (XLINE,YLINE)
-%   crosses edges of a triangular mesh (TRI,X,Y).
+%   [XCROSS,YCROSS,IND,WGHT,INDTRI] = INT_LNTRI(XLINE,YLINE,TRI,X,Y)
+%   Determines the points (XCROSS,YCROSS) at which the line (XLINE,YLINE)
+%   crosses the edges of a triangular mesh defined by a matrix TRI of which
+%   each row contains the indexes into the X and Y vertex vectors. The
+%   output argumtents IND and WGHT contain the indices and weights to
+%   compute values at those points using linear interpolation of values V
+%   defined at X,Y via
+%      VCROSS = SUM(V(IND).*WGHT,2)
+%   INDTRI contains indexes of the triangles in which each line segment
+%   between crossings is located. INDTRI will be NaN for all line segments
+%   that lie outside all triangles.
 %
-%   [XCROSS,YCROSS,IND,WGHT] = ...
-%   Returns also indices IND and weights WGHT to compute values at the
-%   points XCROSS and YCROSS using linear interpolation of values V at X,Y
-%   using VCROSS = SUM(V(IND).*WGHT,2).
-%
-%   [XCROSS,YCROSS,IND,WGHT,INDTRI] = ...
-%   Returns also the numbers INDTRI of the triangles in which each line
-%   segment between crossings is located. INDTRI will be NaN for all line
-%   segments that lie outside all triangles.
+%   [XCROSS,YCROSS,IND,WGHT,INDFAC] = INT_LNTRI(XLINE,YLINE,FNC,X,Y)
+%   If the third input argument is not a simple M-by-3 matrix, but a more
+%   general m-by-N face-node connectivity matrix FNC in which N equals the
+%   maximum number of vertices spanning a face, and for each face with less
+%   than N vertices the row of FNC contains the indexes of the vertices
+%   followed by NaN for all unused columns, then it's assumed that all
+%   faces are convex. The faces are subsequently split into triangles, the
+%   analysis is performed. INDFAC returns the indexes of the faces
+%   consistent with the rows of the FNC matrix.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -49,6 +57,11 @@ if ~isa(TRI,'double')
 end
 connect = size(TRI,2)>3;
 if connect
+    %
+    % if this is a more general case of face node connectivity, let's
+    % assume that the faces are convex and subdivide the faces into
+    % triangles.
+    %
     FACE = TRI;
     ntri = sum(~isnan(TRI(:,3:end)));
     TRI = zeros(sum(ntri),3);
@@ -90,9 +103,9 @@ dxt=cN;
 dyt=cN;
 out=cN;
 
-T=NaN;
-First=1;
-for i=1:N
+T = NaN;
+First = 1;
+for i = 1:N
     if isnan(T)
         PO = [1 1 1];
         MO = [NaN NaN NaN];
@@ -100,13 +113,13 @@ for i=1:N
         PO = TRI(T,:);
         MO = trival(X(PO),Y(PO),xi(i),yi(i));
     end
-    if i==N
+    if i == N
         break
     end
 
-    dxi=xi(i)-xi(i+1);
-    dyi=yi(i)-yi(i+1);
-    dti=sqrt(dxi^2+dyi^2);
+    dxi = xi(i)-xi(i+1);
+    dyi = yi(i)-yi(i+1);
+    dti = sqrt(dxi^2+dyi^2);
 
     %
     % Determine the mu and lambda coefficients for which the vector equality
@@ -122,7 +135,7 @@ for i=1:N
     % Determine crossing line segments. This can be done using a symmetric
     % one-liner
     %
-    % ln1=(lambda>=0) & (lambda<1) & (mu>=0) & (mu<=1);
+    % ln1 = (lambda>=0) & (lambda<1) & (mu>=0) & (mu<=1);
     %
     % or the following two line approach which seems to be almost a factor 2
     % faster if the xi,yi line segment are much longer than the edges of the
@@ -131,36 +144,36 @@ for i=1:N
     ln1 = mu>=0;
     ln1(ln1) = mu(ln1)<=1;
     ln1(ln1) = (lambda(ln1)>=0) & (lambda(ln1)<1);
-    ncross=sum(ln1);
-    if ncross==0
-        l=0;
-        mo{i}=MO;
-        po{i}=PO;
-        triangles=T;
-        xo{i}=xi(i);
-        yo{i}=yi(i);
+    ncross = sum(ln1);
+    if ncross == 0
+        l = 0;
+        mo{i} = MO;
+        po{i} = PO;
+        triangles = T;
+        xo{i} = xi(i);
+        yo{i} = yi(i);
     else
-        l=cat(1,0,lambda(ln1));
-        mo{i}=cat(1,MO,[1-mu(ln1) mu(ln1) zeros(ncross,1)]);
-        po{i}=cat(1,PO,edge(ln1,[1 2 2]));
-        triangles=cat(1,T,tri(ln1));
-        xo{i}=cat(1,xi(i),X1(ln1)+mu(ln1).*dX1(ln1));
-        yo{i}=cat(1,yi(i),Y1(ln1)+mu(ln1).*dY1(ln1));
+        l = cat(1,0,lambda(ln1));
+        mo{i} = cat(1,MO,[1-mu(ln1) mu(ln1) zeros(ncross,1)]);
+        po{i} = cat(1,PO,edge(ln1,[1 2 2]));
+        triangles = cat(1,T,tri(ln1));
+        xo{i} = cat(1,xi(i),X1(ln1)+mu(ln1).*dX1(ln1));
+        yo{i} = cat(1,yi(i),Y1(ln1)+mu(ln1).*dY1(ln1));
     end
 
-    [l,ind,rev]=unique(l); % includes sort !
-    ncross=length(ind);
-    to{i}=zeros(ncross,1);
-    to{i}(1)=T;
-    mo{i}=mo{i}(ind,:);
-    po{i}=po{i}(ind,:);
-    xo{i}=xo{i}(ind);
-    yo{i}=yo{i}(ind);
-    lo{i}=i+l;
-    dxt{i}=repmat(-dxi/dti,size(l));
-    dyt{i}=repmat(-dyi/dti,size(l));
+    [l,ind,rev] = unique(l); % includes sort !
+    ncross = length(ind);
+    to{i} = zeros(ncross,1);
+    to{i}(1) = T;
+    mo{i} = mo{i}(ind,:);
+    po{i} = po{i}(ind,:);
+    xo{i} = xo{i}(ind);
+    yo{i} = yo{i}(ind);
+    lo{i} = i+l;
+    dxt{i} = repmat(-dxi/dti,size(l));
+    dyt{i} = repmat(-dyi/dti,size(l));
 
-    for j=2:ncross
+    for j = 2:ncross
         edges = rev==j;
         neighbors = triangles(edges);
         if First
@@ -208,7 +221,7 @@ for i=1:N
             warnstate = warning('query','MATLAB:tsearch:DeprecatedFunction');
             warning('off','MATLAB:tsearch:DeprecatedFunction')
             %
-            if matlabversionnumber>=7.14
+            if matlabversionnumber >= 7.14
                 Ti = tsearchn([Xvec Yvec],TRI(T2,:),[xx yy]);
             else
                 Ti = tsearch(Xvec,Yvec,TRI(T2,:),xx,yy);
@@ -255,13 +268,13 @@ end
 
 po{N} = PO;
 mo{N} = MO;
-to{N}=[];
-xo{N}=xi(N);
-yo{N}=yi(N);
-lo{N}=N;
-dxt{N}=[];
-dyt{N}=[];
-out{N}=logical([]);
+to{N} = [];
+xo{N} = xi(N);
+yo{N} = yi(N);
+lo{N} = N;
+dxt{N} = [];
+dyt{N} = [];
+out{N} = logical([]);
 if First
     %
     % Rare exception: no crossing at all. So, all points are inside one
@@ -276,15 +289,15 @@ if First
     % triangles. Since we have to look for just one point for a rare case,
     % it is not worth to investigate other methods of searching.
     %
-    if matlabversionnumber>=7.14
+    if matlabversionnumber >= 7.14
         Ti = tsearchn([Xvec Yvec],TRI,[xx yy]);
     else
         Ti = tsearch(Xvec,Yvec,TRI,xx,yy);
     end
     if ~isnan(T)
         PO = TRI(T,:);
-        for ii=N:-1:1
-            if ii<N
+        for ii = N:-1:1
+            if ii < N
                 to{ii}(1) = T;
             end
             po{ii}(1,:) = PO;
@@ -293,22 +306,22 @@ if First
     end
 end
 
-xo=cat(1,xo{:});
-yo=cat(1,yo{:});
-po=cat(1,po{:});
-mo=cat(1,mo{:});
-to=cat(1,to{:});
-lo=cat(1,lo{:});
-dxt=cat(1,dxt{:});
-dyt=cat(1,dyt{:});
-out=cat(1,out{:});
+xo = cat(1,xo{:});
+yo = cat(1,yo{:});
+po = cat(1,po{:});
+mo = cat(1,mo{:});
+to = cat(1,to{:});
+lo = cat(1,lo{:});
+dxt = cat(1,dxt{:});
+dyt = cat(1,dyt{:});
+out = cat(1,out{:});
 %
 % Coordinates could also have been determined at the end of this routine
 % using the two statements given below. However, then we would loose corner
 % points that are not part of any triangle!
 %
-% xo=sum(mo.*X(po),2);
-% yo=sum(mo.*Y(po),2);
+% xo = sum(mo.*X(po),2);
+% yo = sum(mo.*Y(po),2);
 %
 if connect
     to = iFACE(to);

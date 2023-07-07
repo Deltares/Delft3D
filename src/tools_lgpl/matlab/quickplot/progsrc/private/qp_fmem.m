@@ -4,7 +4,7 @@ function [FI,FileName,Tp,Otherargs]=qp_fmem(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -174,12 +174,14 @@ switch cmd
                     try_next='asciiwind';
                 case {'.inc','.crs','.bin'}
                     try_next='fls';
-                case {'.grib','.grib1','.grib2'}
+                case {'.grb','.grib','.grib1','.grib2'}
                     try_next='grib';
-                case {'.tek','.ann','.ldb','.pol','.spl','.tka','.tkp','.tkf'}
+                case {'.tek','.ann','.ldb','.pol','.spl','.tka','.tkp','.tkf','.pli','.pliz'}
                     try_next='tekal';
                 case {'.dxf'}
                     try_next='AutoCAD DXF';
+                case {'.geojson'}
+                    try_next='GeoJSON';
                 case {'.xyz'}
                     try_next='samples';
                 case {'.seq'}
@@ -192,6 +194,8 @@ switch cmd
                     try_next='JSPost';
                 case {'.jpg','.jpeg','.bmp','.tif','.tiff','.png','.pcx','.xwd'}
                     try_next='bitmap';
+                case {'.avi','.mp4'}
+                    try_next='video';
                 case {'.slf','.out','.res'}
                     try_next='telemac';
                 case '.bna'
@@ -200,7 +204,7 @@ switch cmd
                     try_next='ArcInfoUngenerate';
                 case '.nc'
                     try_next='NetCDF';
-                case {'.hdf','.hdf5'}
+                case {'.hdf','.hdf5','.xmdf'}
                     try_next='HDF5';
                 case {'.fun','.daf'}
                     try_next='unibest';
@@ -239,7 +243,11 @@ switch cmd
                     types_to_check{i} = types_to_check{i}(2:end);
                 end
             end
-            types_to_check = setdiff(types_to_check,try_next);
+            % previously setdiff was used here, it's simpler but sorts the
+            % types_to_check array. Unfortunately, grib files should be
+            % checked before the NetCDF file, but capital N is sorted
+            % before lowercase g.
+            types_to_check(ismember(types_to_check,try_next))=[];
         else
             types_to_check = {};
         end
@@ -248,9 +256,10 @@ switch cmd
         userasked=0;
         usertrytp='';
         if DoDS
-            ASCII = false;
+            isASCII = false;
+            REASON  = 'a URL was provided.';
         else
-            ASCII = verifyascii(FileName);
+            [isASCII,REASON] = verifyascii(FileName);
         end
         while isempty(FI)
             %ui_message('','Trying %s ...\n',trytp);
@@ -258,7 +267,7 @@ switch cmd
             try
                 switch try_next
                     case 'md*-file'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=mdf('read',FileName);
                         Tp=FI.FileType;
                         switch Tp
@@ -281,9 +290,11 @@ switch cmd
                                     f = strrep(f,'-','_');
                                     FI.(f) = delwaq('open',fullfile(po,d(i).name));
                                 end
+                            case 'Delft3D D-Flow2D3D'
+                                FI.Options=1;
                         end
                     case 'qpsession'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         PAR.X=[];
                         PAR = rmfield(PAR,'X');
                         qp_session('rebuild',FileName,PAR);
@@ -352,7 +363,7 @@ switch cmd
                         
                         if isfield(FI,'SubType')
                             switch lower(FI.SubType)
-                                case {'delft3d-trim','delft3d-com','delft3d-trih','delft3d-waq-map','delft3d-waq-his','delft3d-par-map'}
+                                case {'delft3d-trim','delft3d-com','delft3d-trih','delft3d-waq-map','delft3d-waq-his','delft3d-waq-history','delft3d-par-map'}
                                     FI.Options=1;
                             end
                         end
@@ -375,7 +386,7 @@ switch cmd
                             FI=[];
                         end
                     case 'WaterML2'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=waterml2('open',FileName);
                         Tp=FI.FileType;
                     case 'ecomsed-binary'
@@ -419,14 +430,58 @@ switch cmd
                         end
                     case 'NetCDF'
                         Opt = get_matching_names(FileName,'_',-2);
+                        if ~isempty(Opt)
+                            if Opt{4}~=0 || Opt{3}~=4
+                                Opt = {};
+                            end
+                        end
+                        init_netcdf_settings
                         FI = nc_interpret(FileName,Opt{:});
                         %nc_dump(FileName)
+                        %
+                        if ~isempty(FI.Attribute)
+                            ihistory = ustrcmpi('history',{FI.Attribute.Name});
+                            if ihistory > 0
+                                if ~isempty(strfind(FI.Attribute(ihistory).Value, 'PHAROS'))
+                                    try_next = 'NetCDF-PHAROS';
+                                    nDir = ustrcmpi('nDir',{FI.Dimension.Name});
+                                    if FI.Dimension(nDir).Length > 1
+                                        % directional spreading or spectral
+                                        if ustrcmpi('SPEC_PHI_R',{FI.Dataset.Name}) > 0
+                                            FI.simtype = 'spectral';
+                                        else
+                                            FI.simtype = 'dir_spread';
+                                        end
+                                    else
+                                        % long crested or seiching
+                                        if ustrcmpi('SEICHDEF_IRL', {FI.Dataset.Name}) > 0
+                                            FI.simtype = 'seiching';
+                                        else
+                                            FI.simtype = 'long_crest';
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        FI.Options=1;
                         FI.FileName = FI.Filename;
                         Tp = try_next;
                     case 'HDF5'
                         FI = hdf5info(FileName);
-                        FI.FileName = FI.Filename;
+                        FI.FileName = FI.GroupHierarchy.Filename;
                         Tp = try_next;
+                        if isstruct(FI.GroupHierarchy.Datasets)
+                            datasets = {FI.GroupHierarchy.Datasets.Name};
+                            if ismember('/File Type',datasets)
+                                record = hdf5read(FI.FileName,'//File Type');
+                                if strcmpi(record.Data,'XMDF')
+                                    Tp = 'XMDF';
+                                end
+                                record = hdf5read(FI.FileName,'//File Version');
+                                FI.FileVersion = record.Data;
+                            end
+                        end
+                        FI.FileType = Tp;
                     case 'sobek1d'
                         FI=sobek('open',FileName);
                         if ~isempty(FI)
@@ -437,26 +492,28 @@ switch cmd
                             else
                                 Tp=FI.FileType;
                             end
-                            FI.Data={};
-                            p=fileparts(FileName);
-                            files=dir(p);
-                            fl={'flowmap.his','minmax.his','gsedmap.his','kafhmap.his', ...
-                                'kafpmap.his','kafrmap.his','kaphmap.his','kappmap.his', ...
-                                'saltmap.his','sedtmap.his','morpmap.his','sobekwq.map', ...
-                                'calcpnt.his','reachseg.his','reachvol.his'};
-                            %'calcdim.his','delwaq.his','delwaq.map','flowanal.his', ...
-                            %'nodesvol.his','nodes_cr.his','qlat.his','qwb.his', ...
-                            %'reachdim.his','reachflw.his','reachvol.his','reach_cr.his', ...
-                            %'struc.his','strucdim.his','wqbou20.his'};
-                            for i=1:length(files)
-                                if ~isempty(strmatch(lower(files(i).name),fl,'exact'))
-                                    try
-                                        FIH=delwaq('open',fullfile(p,files(i).name));
-                                    catch
-                                        FIH=[];
-                                    end
-                                    if ~isempty(FIH)
-                                        FI.Data{end+1}=FIH;
+                            if ~isempty(FI)
+                                FI.Data={};
+                                p=fileparts(FileName);
+                                files=dir(p);
+                                fl={'flowmap.his','minmax.his','gsedmap.his','kafhmap.his', ...
+                                    'kafpmap.his','kafrmap.his','kaphmap.his','kappmap.his', ...
+                                    'saltmap.his','sedtmap.his','morpmap.his','sobekwq.map', ...
+                                    'calcpnt.his','reachseg.his','reachvol.his','delwaq.map'};
+                                %'calcdim.his','delwaq.his','flowanal.his', ...
+                                %'nodesvol.his','nodes_cr.his','qlat.his','qwb.his', ...
+                                %'reachdim.his','reachflw.his','reachvol.his','reach_cr.his', ...
+                                %'struc.his','strucdim.his','wqbou20.his'};
+                                for i=1:length(files)
+                                    if ~isempty(strmatch(lower(files(i).name),fl,'exact'))
+                                        try
+                                            FIH=delwaq('open',fullfile(p,files(i).name));
+                                        catch
+                                            FIH=[];
+                                        end
+                                        if ~isempty(FIH)
+                                            FI.Data{end+1}=FIH;
+                                        end
                                     end
                                 end
                             end
@@ -548,7 +605,7 @@ switch cmd
                             end
                         end
                     case 'arcgrid'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=arcgrid('open',FileName);
                         if ~isempty(FI)
                             if ~isfield(FI,'Check')
@@ -564,38 +621,40 @@ switch cmd
                         FI=surfer('open',FileName);
                         Tp=FI.FileType;
                     case 'asciiwind'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=asciiwind('open',FileName);
                         if ~isfield(FI,'Check')
                             FI=[];
                         elseif strcmp(FI.Check,'NotOK')
                             FI=[];
                         else
-                            if strcmp(FI.Header.filetype,'meteo_on_computational_grid')
-                                if FileFromCall
-                                    if nargin>2
-                                        gridspec=absfullfile(varargin{2});
+                            switch FI.Header.filetype
+                                case {'meteo_on_computational_grid','field_on_computational_grid'}
+                                    if FileFromCall
+                                        if nargin>2
+                                            gridspec=absfullfile(varargin{2});
+                                        else
+                                            gridspec='';
+                                        end
                                     else
-                                        gridspec='';
+                                        mpn=fileparts(FI.FileName);
+                                        [gfn,gpn]=uigetfile([mpn filesep '*.grd'],'Select matching grid file ...');
+                                        gridspec = [gpn gfn];
                                     end
-                                else
-                                    mpn=fileparts(FI.FileName);
-                                    [gfn,gpn]=uigetfile([mpn filesep '*.grd'],'Select matching grid file ...');
-                                    gridspec = [gpn gfn];
-                                end
-                                if ~ischar(gridspec) || isempty(gridspec)
-                                    error('ASCIIWIND of type ''meteo_on_flow_grid'' requires grid specification.')
-                                end
-                                FI.Header.grid_file=wlgrid('open',gridspec);
-                                if prod(size(FI.Header.grid_file.X)+1)~=FI.NVal
-                                    error('Number of data values in grid file does not match number of grid points.')
-                                end
-                                Otherargs{1}=gridspec;
+                                    if ~ischar(gridspec) || isempty(gridspec)
+                                        error('ASCIIWIND of type ''field_on_computational_grid'' requires grid specification.')
+                                    end
+                                    FI.Header.grid_file=wlgrid('open',gridspec);
+                                    if prod(size(FI.Header.grid_file.X)+1)~=FI.NVal
+                                        error('Number of data values in grid file does not match number of grid points.')
+                                    end
+                                    Otherargs{1}=gridspec;
                             end
                             Tp=FI.FileType;
                         end
                         if FI.Header.n_quantity==1 && ...
-                                strcmp(FI.Header.quantity{1}(2:end),'_wind')
+                                strcmp(FI.Header.quantity{1}(2:end),'_wind') && ...
+                                ~isfield(FI,'Vector')
                             if FileFromCall
                                 if nargin>2
                                     veccomp2=absfullfile(varargin{2});
@@ -645,6 +704,17 @@ switch cmd
                                 Tp=FI.FileType;
                             end
                         end
+                    case 'boxfile'
+                        DataFI=boxfile('read',FileName);
+                        FI = wlgrid('create',DataFI);
+                        FI.FileName = FileName;
+                        %
+                        FI.FileType = 'wlgrid';
+                        FI.Options = 0;
+                        FI.QP_Options = [];
+                        %
+                        FI = gridfil(FI,[],'options',[],'openfile',FileName);
+                        Tp = FI.FileType;
                     case 'mike0'
                         FI=mike('open',FileName);
                         if ~isempty(FI)
@@ -684,21 +754,28 @@ switch cmd
                             Tp=FI.FileType;
                         end
                     case 'adcircmesh'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=adcircmesh('open',FileName);
                         if ~isempty(FI)
                             FI.Options=0;
                             Tp=FI.FileType;
                         end
+                    case 'smsmesh'
+                        asciicheck(isASCII,REASON)
+                        FI=smsmesh('open',FileName);
+                        if ~isempty(FI)
+                            FI.Options=0;
+                            Tp=FI.FileType;
+                        end
                     case 'mikemesh'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=mikemesh('open',FileName);
                         if ~isempty(FI)
                             FI.Options=0;
                             Tp=FI.FileType;
                         end
                     case 'SHYFEM mesh'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=shyfemmesh('open',FileName);
                         if ~isempty(FI)
                             FI.Options=0;
@@ -718,7 +795,7 @@ switch cmd
                             Tp=FI.FileType;
                         end
                     case 'tekal'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=tekal('open',FileName);
                         if ~isempty(FI)
                             if ~isfield(FI,'Check')
@@ -826,13 +903,19 @@ switch cmd
                             FI.Patch  = Data(tp==3);
                             Tp=try_next;
                         end
+                    case 'GeoJSON'
+                        asciicheck(isASCII,REASON)
+                        FI=geojson('open',FileName);
+                        if ~isempty(FI)
+                            Tp=try_next;
+                        end
                     case 'shape'
                         FI=shape('open',FileName);
                         if ~isempty(FI)
                             Tp=FI.FileType;
                         end
                     case 'SWAN spectral'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=readswan(FileName);
                         if ~isempty(FI)
                             if ~isfield(FI,'Check')
@@ -844,13 +927,13 @@ switch cmd
                             end
                         end
                     case 'DelwaqTimFile'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=delwaqtimfile(FileName);
                         if ~isempty(FI)
                             Tp=FI.FileType;
                         end
                     case 'morf'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=morf('read',FileName);
                         if ~isempty(FI)
                             Tp='MorfTree';
@@ -861,7 +944,7 @@ switch cmd
                             Tp='AukePC';
                         end
                     case 'bct'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=bct_io('read',FileName);
                         if ~isempty(FI)
                             if ~isfield(FI,'Check') || strcmp(FI.Check,'NotOK')
@@ -964,7 +1047,7 @@ switch cmd
                                         ImE = [ImE 'W'];
                                     end
                             end
-                            fid = fopen(fullfile(ImP,[ImF ImE]),'r');
+                            fid = fopen(fullfile(ImP,[ImF ImE]),'r','n','US-ASCII');
                             if fid>0
                                 Coords = fscanf(fid,'%f',6);
                                 fclose(fid);
@@ -977,6 +1060,13 @@ switch cmd
                             end
                             Tp=try_next;
                         end
+                    case 'video'
+                        FI.vidObj = VideoReader(FileName);
+                        FI.FileType=try_next;
+                        FI.FileName=FileName;
+                        FI.Options=1;
+                        FI.Loc=[0 0 FI.vidObj.Width FI.vidObj.Height];
+                        Tp=try_next;
                     case 'telemac'
                         FI=telemac('open',FileName);
                         if ~isempty(FI)
@@ -989,7 +1079,7 @@ switch cmd
                             end
                         end
                     case 'samples'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         XYZ=samples('read',FileName,'struct');
                         if isempty(XYZ)
                             FI=[];
@@ -1000,7 +1090,7 @@ switch cmd
                             FI=[];
                         end
                     case 'BNA File'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=bna('open',FileName);
                         if ~isempty(FI)
                             if ~isfield(FI,'Check')
@@ -1012,7 +1102,7 @@ switch cmd
                             end
                         end
                     case 'ArcInfoUngenerate'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=ai_ungen('open',FileName);
                         if ~isempty(FI)
                             if ~isfield(FI,'Check')
@@ -1035,7 +1125,7 @@ switch cmd
                             end
                         end
                     case 'NOOS time series'
-                        asciicheck(ASCII,try_next)
+                        asciicheck(isASCII,REASON)
                         FI=noosfile('open',FileName);
                         Tp=try_next;
                     case 'shipma'
@@ -1080,7 +1170,7 @@ switch cmd
                             if DoDS
                                 Message=sprintf('Error while opening\n%s\nUnable to make connection.',FileName);
                             else
-                                Message=sprintf('Error while opening\n%s\nFile format not supported.',FileName);
+                                Message=sprintf('Error while opening\n%s\nUnable to identify file format.',FileName);
                             end
                             ui_message('error',Message)
                             break
@@ -1114,26 +1204,28 @@ end
 qp_settings('LastFileType',lasttp)
 
 
-function ASCII = verifyascii(arg)
-if ischar(arg)
-    fid = fopen(arg,'r');
-    pos = -1;
+function [isASCII,REASON] = verifyascii(arg)
+fid = fopen(arg,'r');
+S = fread(fid,[1 100],'uint8');
+fclose(fid);
+if isempty(S)
+    isASCII = false;
+    REASON  = 'the file is empty';
 else
-    fid = arg;
-    pos = ftell(fid);
-end
-S = fread(fid,[1 100],'char');
-ASCII = ~any(S~=9 & S~=10 & S~=13 & S<32); % TAB,LF,CR allowed
-if pos>=0
-    fseek(fid,pos,-1);
-else
-    fclose(fid);
+    invalid_chars = S(S~=9 & S~=10 & S~=13 & S<32); % TAB,LF,CR allowed
+    if ~isempty(invalid_chars)
+        isASCII = false;
+        REASON  = sprintf('the file contains character %i.',invalid_chars(1));
+    else
+        isASCII = true;
+        REASON  = '';
+    end
 end
 
 
-function asciicheck(ASCII,filetype)
+function asciicheck(ASCII,REASON)
 if ~ASCII
-    error('%s should be an ASCII file. Reading unexpected characters.',filetype)
+    error('This should be an ASCII file, however %s',REASON)
 end
 
 
@@ -1152,6 +1244,9 @@ else
 end
 if nDigits>0 && all(ismember(n(iOffset+(1:nDigits)),'0123456789'))
     iPOffset  = length(p)+1+iOffset;
+    if length(p)>=1 && p(end)==filesep
+        iPOffset = iPOffset-1;
+    end
     FileName1 = FileName(1:iPOffset);
     FileName2 = FileName(iPOffset+nDigits+1:end);
     %

@@ -1,4 +1,4 @@
-//  Copyright (C)  Stichting Deltares, 2012-2017.
+//  Copyright (C)  Stichting Deltares, 2012-2023.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 3,
@@ -32,8 +32,7 @@
 
 #if defined(WIN32) || defined(SALF)
 #  include <windows.h>
-#elif HAVE_CONFIG_H
-#  define LINUX
+#elif defined(linux)
 #  include <dlfcn.h>
 #endif
 
@@ -49,7 +48,7 @@
 #  define PERFORM_FUNCTION perf_function_
 #  define LOAD____FUNCTION load_function_
 #  define STDCALL
-#elif defined(LINUX)
+#elif defined(linux)
 #  define OPEN_SHARED_LIBRARY  open_shared_library_
 #  define CLOSE_SHARED_LIBRARY close_shared_library_
 #  define PERFORM_FUNCTION perf_function_
@@ -64,8 +63,8 @@
  */
 
 #if defined(WIN32) || defined (SALF)
-    typedef HMODULE DllHandle;
-#elif defined(LINUX)
+    typedef HINSTANCE DllHandle;
+#elif defined(linux)
     typedef void * DllHandle;
 #endif
 
@@ -107,10 +106,9 @@ extern "C" {
 /*
  * OPEN_SHARED_LIBRARY and CLOSE_SHARED_LIBRARY are used from utils_lgpl\deltares_common\packages\deltares_common_c\src\shared_library_fortran_api.c
  */
-#if defined(XWIN32)
-long STDCALL PERFORM_FUNCTION(long  * sharedDLLHandle  ,
+#if defined(WIN32)
+long STDCALL PERFORM_FUNCTION(DllHandle * sharedDLLHandle  ,
                               char  * function,
-                              long    length_function,
                               float * pmsa    ,
                               float * fl      ,
                               long  * ipoint  ,
@@ -122,8 +120,10 @@ long STDCALL PERFORM_FUNCTION(long  * sharedDLLHandle  ,
                               long  * noq1    ,
                               long  * noq2    ,
                               long  * noq3    ,
-                              long  * noq4    )
-#elif defined(LINUX) || defined(SALF) || defined(WIN32)
+                              long  * noq4    ,
+                              long    length_function)
+#elif defined(linux) || defined(SALF)
+/* TODO: This requires thinking about! */
 long STDCALL PERFORM_FUNCTION(long  * sharedDLLHandle ,
                               char  * function,
                               float * pmsa    ,
@@ -156,7 +156,7 @@ long STDCALL PERFORM_FUNCTION(long  * sharedDLLHandle ,
 
 #if defined(WIN32) || defined (SALF)
   proc = (MyProc) GetProcAddress( sharedDLL->dllHandle, fun_name);
-#elif defined(LINUX)
+#elif defined(linux)
   proc = (MyProc) dlsym( sharedDLL->dllHandle, fun_name);
 #endif
 

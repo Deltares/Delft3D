@@ -7,7 +7,7 @@ if ischar(arg1) && ischar(arg2)
 elseif isnumeric(arg1) && isnumeric(arg2)
 	dinfo = handle_numeric_nc_getdiminfo(arg1,arg2);
 else
-	error('SNCTOOLS:NC_GETDIMINFO_MEX:badInputDatatypes', ...
+	error('snctools:getdiminfo_MEX:badInputDatatypes', ...
 	      'Must supply either two character or two numeric arguments.');
 end
 
@@ -20,7 +20,7 @@ function dinfo = handle_char_nc_getdiminfo(ncfile,dimname)
 [ncid,status ]=mexnc('open', ncfile, nc_nowrite_mode );
 if status ~= 0
 	ncerror = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_GETDIMINFO:mexnc:openFailed', ncerror );
+	error ( 'snctools:getdiminfo:mexnc:openFailed', ncerror );
 end
 
 
@@ -28,7 +28,7 @@ end
 if ( status ~= 0 )
 	mexnc('close',ncid);
 	ncerror = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_GETDIMINFO:mexnc:inq_dimidFailed', ncerror );
+	error ( 'snctools:getdiminfo:mexnc:inq_dimidFailed', ncerror );
 end
 
 
@@ -48,14 +48,14 @@ function dinfo = handle_numeric_nc_getdiminfo(ncid,dimid)
 if status ~= 0
 	mexnc('close',ncid);
 	ncerror = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_GETDIMINFO:MEXNC:inq_ulimdimFailed', ncerror );
+	error ( 'snctools:getdiminfo:MEXNC:inq_ulimdimFailed', ncerror );
 end
 
 [dimname, dimlength, status] = mexnc('INQ_DIM', ncid, dimid);
 if status ~= 0
 	mexnc('close',ncid);
 	ncerror = mexnc ( 'strerror', status );
-	error ( 'SNCTOOLS:NC_GETDIMINFO:MEXNC:inq_dimFailed', ncerror );
+	error ( 'snctools:getdiminfo:MEXNC:inq_dimFailed', ncerror );
 end
 
 dinfo.Name = dimname;

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhhasp
+
+      implicit none
+
+      contains
+
 
 !
 !     HASP-3 and MemoHASP interface for Sobek
@@ -28,6 +34,8 @@
 !
       subroutine dhhasp
 !
+      integer nr, imlun
+      
 !     A list of the Hasp services.
       integer    ISHASP,
      &           KETCOD,
@@ -118,3 +126,4 @@
 !
       call srstop(1)
       end
+      end module m_dhhasp

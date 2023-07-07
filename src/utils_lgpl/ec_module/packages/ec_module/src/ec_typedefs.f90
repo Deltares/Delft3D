@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -23,12 +23,11 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of  
 !  Stichting Deltares. All rights reserved.                                     
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module contains all the user defined datatypes.
 !! @author edwin.spee@deltares.nl
-!! @author edwin.bos@deltares.nl
 module m_ec_typedefs
    use precision
    use m_ec_parameters
@@ -61,6 +60,8 @@ module m_ec_typedefs
       integer                                         :: nItems                      !< Number of tEcItemPtrs <= size(ecItemsPtr)
       type(tEcQuantityPtr),     dimension(:), pointer :: ecQuantitiesPtr   => null()
       integer                                         :: nQuantities                 !< Number of tEcQuantityPtrs <= size(ecQuantitiesPtr)
+      type(tEcBCFilePtr),       dimension(:), pointer :: ecBCFilesPtr      => null()
+      integer                                         :: nBCFiles                    !< Number of tEcBCFilePtrs <= size(ecBCFilesPtr)
       integer                                         :: idCounter                   !< helper variable for assigning unique ids to the Instance's stored objects
       integer                                         :: coordsystem = -1            !< Coordinate system of 
    end type tEcInstance
@@ -73,11 +74,12 @@ module m_ec_typedefs
         integer                 ::  qtype       !< Type number    
         logical, allocatable    ::  jacolumn(:) !< If(jacolumn(i) then i-th column contains the requested quantity (possibly more than one column)
         integer, allocatable    ::  col2elm(:)  !< Map column to vector element number to column in a t3D-block
-        character(len=25)       ::  name        !< User-specified name 
+        character(len=25)       ::  name = ''   !< User-specified name 
         integer                 ::  column      !< Unique column number in the data for this quantity 
         character(len=25)       ::  unit        !< unit specification 
         real(hp)                ::  offset = 0.d0  !< to be added to all data for this quantity
         real(hp)                ::  factor = 1.d0  !< to be multiplied with all data for this quantity
+        real(hp)                ::  missing = ec_undef_hp !< Missing value or fillValue
 !       integer, allocatable    ::  vertndx(:)  !< vertical position nr (indices into the global vertical position array)
         integer                 ::  vertndx     !< vertical position nr (indices into the global vertical position array)
         integer                 ::  vectormax   = 1   !< number of vector elements, default scalar 
@@ -100,26 +102,29 @@ module m_ec_typedefs
         integer                                    ::  func                
         integer                                    ::  timecolumn          !< Number of the column holding the time strings, compul
         character(len=50)                          ::  timeunit            !< netcdf-convention time unit definition 
+        logical                                    ::  periodic = .False.  !< should a timeseries be rewinded beyond the last entry ? 
         integer                                    ::  timeint             !< Type of time interpolation 
         integer                                    ::  vptyp               !< Type of specification of vertical position
         real(hp), pointer                          ::  vp(:) => null()     !< vertical positions  
         integer                                    ::  numlay = 1          !< number of vertical layers 
         integer                                    ::  zInterpolationType  !< Type of vertical interpolation 
-        real(hp)                                   ::  missing             !< Missing value 
         character(len=maxFileNameLen)              ::  bcname  = ''        !< Name (identifier) for this BC block (assumed to be uniq)
         character(len=maxFileNameLen)              ::  qname   = ''        !< Quantity name with which all found quantities must identify 
         character(len=maxFileNameLen)              ::  fname   = ''        !< Filename the data originates from 
-        integer(kind=8)                            ::  fhandle= -1         !< (C) filehandle to open file 
+!       integer(kind=8)                            ::  fhandle= -1         !< (C) filehandle to open file 
+        integer(kind=8)                            ::  fposition = -1      !< position of reading for fseek
         logical                                    ::  isLateral = .false. !< Lateral discharge? (otherwise: boundary condition)
         integer                                    ::  ftype  = -1         !< ASCII, NetCDF, ....
         type (tEcBCQuantity), pointer              ::  quantity => null()  !< Quantity object 
         type (tEcBCQuantity), allocatable          ::  quantities(:)       !< Array of quantity objects for each quantity with the same name  
         type (tEcNetCDF), pointer                  ::  ncptr => null()     !< pointer to a NetCDF instance, responsible for a connected NetCDF file 
+        type (tEcBCFile), pointer                  ::  bcFilePtr => null() !< pointer to a BCFile instance, responsible for a connected BC file 
         integer                                    ::  ncvarndx = -1       !< varid in the associated netcdf for the requested quantity 
         integer                                    ::  nclocndx = -1       !< index in the timeseries_id dimension for the requested location 
         integer                                    ::  nctimndx =  1       !< record number to be read 
         integer, dimension(:), allocatable         ::  ncdimvector         !< List of dimensions in NetCDF describing the chosen variable
         integer, allocatable, dimension(:)         ::  dimvector           !< dimension ID's indexing the variable of interest
+        logical                                    ::  feof = .False.      !< End-Of-File signal
         !
         integer                 ::  astro_component_column = -1  !< number of the column, containing astronomic components
         integer                 ::  astro_amplitude_column = -1  !< number of the column, containing astronomic amplitudes
@@ -134,14 +139,48 @@ module m_ec_typedefs
    end type tEcBCBlockPtr
 
    !===========================================================================
+   
+   ! linked list of which each element describes a blocks (or header) in a BC-file, together with the position of their data in the file.
+   ! this is the Table of Contents for a BC-file
+   ! the keyvaluestr, nfld and nq can be passed to processhdr to initialize a filereader for a particular block in the BC-file
+   type tEcBlocklist
+      character(len=:), allocatable :: keyvaluestr      !< contains information key-value pairs from the header
+      integer(kind=8)               :: position         !< position of data in the file
+      integer                       :: blocktype        !< type of the block (BT_GENERAL, BT_FORCING, ....) 
+      integer                       :: nfld             !< number of fields (i.e. key-value pairs)
+      integer                       :: nq               !< number of quantities detected among these fields
+      type (tEcBlocklist), pointer  :: next             !< pointer to the next block
+   end type tEcBlocklist
+      
+   ! description of a BC-file of which the most important point is the blocklist
+   type :: tEcBCFile
+      integer                       :: id                  !< unique NCBlock number, set by ecInstanceCreateNCBlock
+      character(len=:), allocatable :: bcfilename          !< file name of the BC-file 
+      type (tEcBlocklist), pointer  :: blocklist => null() !< list of blocks (table of contents for this BC-file)
+      integer(kind=8)               :: fhandle = -1        !< file handle
+      integer                       :: last_blocktype      !< type of the block (BT_GENERAL, BT_FORCING, ....) 
+      integer(kind=8)               :: last_position = 0   !< last position in the scan-process
+      character(len=15)             :: FileVersion         !< File version stamp read from [General]::FileVersion in the bc-file
+      character(len=15)             :: FileType            !< File type read from [General]::FileType in the bc-file
+   end type tEcBCFile
+
+   type tEcBCFilePtr
+      type(tEcBCFile), pointer      :: ptr => null()
+   end type tEcBCFilePtr
+
+   !===========================================================================
 
    type :: tEcNetCDF
         integer                                      ::  id              !< unique NCBlock number, set by ecInstanceCreateNCBlock
         integer                                      ::  ncid            !< unique NetCDF ncid 
-        character(len=maxFileNameLen)                ::  ncname          !< netCDF filename
+        character(len=maxFileNameLen)                ::  ncfilename      !< netCDF filename
         integer, allocatable, dimension(:)           ::  dimlen          !< lengths of dimensions 
         character(len=maxFileNameLen), allocatable, dimension(:)  ::  standard_names   !< list of standard names
+        character(len=maxFileNameLen), allocatable, dimension(:)  ::  long_names       !< list of long names
         character(len=maxFileNameLen), allocatable, dimension(:)  ::  variable_names   !< list of variable names
+        real(hp), allocatable, dimension(:)  ::  fillvalues              !< missing/fillvalue for each variable
+        real(hp), allocatable, dimension(:)  ::  scales                  !< multiplication scale factor for each variable
+        real(hp), allocatable, dimension(:)  ::  offsets                 !< list of variable names
         integer                                      ::  nDims = 0       !< Number of dimensions 
         integer                                      ::  nTims = 0       !< Number of timeseries 
         integer                                      ::  nLayer = -1     !< Number of vertical layers, default single layer
@@ -191,15 +230,31 @@ module m_ec_typedefs
       integer, allocatable          :: msk(:)                !< Array of mask values (TODO: should this be 2d?) 
    end type tEcMask
    
+   !===========================================================================
+   
+   !> Datatype containing a timeseries obtained from a uniform item and stored in here, supporting 'rewinding' of the timeries
+   type tEcTimeseries
+      integer                                 :: id
+      integer                                 :: ntimes = 0
+      logical                                 :: finalized = .False.!< no further updates for this timeseries; start from beginning
+      real(hp)                                :: tmin, tmax         !< time span of this series  
+      real(hp), dimension(:),     allocatable :: times              !< 1-dim times array 
+      real(hp), dimension(:,:),   allocatable :: values             !< 1-dim values array 
+   end type tEcTimeseries
+
+   !===========================================================================
+
    !> 
    type tEcConverter
       integer                       :: id                    !< unique Converter number, set by ecInstanceCreateConverter
       integer                       :: ofType                !< Converter type, using the convType enumeration
       integer                       :: operandType           !< operand type, using operand enumeration; What to do to the target Item Field.
       integer                       :: interpolationType     !< interpolation type, using the interpolateType enumeration
-      integer                       :: targetIndex           !< Write to the target Item's Field's array element number targetIndex (vectormax (here called n_data) should already be accounted for, that offset is *not* recomputed in the converter).
+      integer                       :: targetIndex = ec_undef_int    !< Write to the target Item's Field's array element number targetIndex (vectormax (here called n_data) should already be accounted for, that offset is *not* recomputed in the converter).
       type(tEcIndexWeight), pointer :: indexWeight => null() !< 
       type(tEcMask)                 :: srcmask               !< Array with mask info on selection of gridpoints
+      logical                       :: extrapolated = .false.!< indexWeight is updated as a result of extrapolation
+      real(hp), pointer             :: inputptr              !< pointer to an optional input argument (e.g.for qh lookup tables)
    end type tEcConverter
    
    type tEcConverterPtr
@@ -257,14 +312,20 @@ module m_ec_typedefs
    type tEcField
       integer                                 :: id                 !< unique Field number, set by ecInstanceCreateField
       real(hp)                                :: timesteps          !< Numer of seconds since tEcTimeFrame%k_refdate.
-      integer                                 :: timesndx = -1      !< index into file: used im general for random access fles (nc) to keep track of position
+      integer                                 :: timesndx = -1      !< index into file: used in general for random access files (nc) to keep track of position
       real(hp)                                :: missingValue       !< value to use for missing data in the data arrays
-      real(hp), dimension(:),     pointer     :: arr1dPtr => null() !< points to a 1-dim array field, stored in arr1d OR in a kernel
+      real(hp),                   pointer     :: scalarPtr=> null() !< points to a single scalar stored in arr1d OR in a kernel
+      real(hp), dimension(:),     pointer     :: arr1dPtr => null() !< points to an array field, stored in arr1d OR in a kernel
       real(hp), dimension(:),     allocatable :: arr1d              !< 1-dim array field
       real(hp)                                :: x_spw_eye          !< x-coordinate of spiderweb eye
       real(hp)                                :: y_spw_eye          !< y-coordinate of spiderweb eye
       character(len=8), allocatable           :: astro_components(:)!< astronomical components labels
       integer, allocatable                    :: astro_kbnumber(:)  !< astronomical components KompBes numbers
+      integer, dimension(4)                   :: bbox = 1           !< bounding box of column- and row indices used from the complete source grid (only used when reading structured grid meteo fields from netCDF)
+      
+      integer                                 :: issparse=0         !< data in CRS format (1), or not (0)
+      integer, dimension(:),      pointer     :: ia                 !< CRS sparsity pattern, startpointers, dim(numrows+1)
+      integer, dimension(:),      pointer     :: ja                 !< CRS sparsity pattern, column numbers, dim(ia(numrows+1)-1)
    end type tEcField
    
    type tEcFieldPtr
@@ -287,13 +348,16 @@ module m_ec_typedefs
       integer                                             :: vectormax = 1           !< number of vector elements (from the demand side) 
                                                                                      !  This field is used to pass the dimensionality from the 
                                                                                      !            highest to the lowest level upon creation
-      logical                                             :: end_of_data             !< End of data reached?
-      character(len=100), dimension(:), allocatable :: standard_names                ! Standard names by varid in a netcdf-file 
-      character(len=100), dimension(:), allocatable :: variable_names                ! Variable names by varid in a netcdf file 
-!     integer, dimension(:), allocatable            :: dim_varids                    ! For each dimension in NetCDF: id of the associated variable                               
-!     integer, dimension(:), allocatable            :: dim_length                    ! For each dimension in NetCDF: length
-      integer, dimension(:), pointer                :: dim_varids => null()          ! For each dimension in NetCDF: id of the associated variable                               
-      integer, dimension(:), pointer                :: dim_length => null()          ! For each dimension in NetCDF: length
+      logical                                       :: end_of_data                   !< End of data reached?      
+      character(len=100), dimension(:), allocatable :: standard_names                !<Standard names by varid in a netcdf-file 
+      character(len=100), dimension(:), allocatable :: variable_names                !<Variable names by varid in a netcdf file 
+!     integer, dimension(:), allocatable            :: dim_varids                    !<For each dimension in NetCDF: id of the associated variable                               
+!     integer, dimension(:), allocatable            :: dim_length                    !<For each dimension in NetCDF: length
+      integer                                       :: relndx = 0                    !<Index of realization in an ensemble, for the reader
+                                                                                     ! ignored if below zero or file is not an ensemble
+      integer, dimension(:), pointer                :: dim_varids => null()          !<For each dimension in NetCDF: id of the associated variable                               
+      integer, dimension(:), pointer                :: dim_length => null()          !<For each dimension in NetCDF: length
+      logical                                       :: one_time_field = .false.      !< TRUE: input file contains single time field
    end type tEcFileReader
 
    type tEcFileReaderPtr
@@ -313,8 +377,12 @@ module m_ec_typedefs
       type(tEcField),                       pointer :: sourceT0FieldPtr   => null() !< Field containing source data of second to last read data block.
       type(tEcField),                       pointer :: sourceT1FieldPtr   => null() !< Field containing source data of last read data block.
       type(tEcField),                       pointer :: targetFieldPtr     => null() !< Field containing target data at current time.
+      type(tEcTimeseries),              allocatable :: timeseries                   !< Information supporting rewinding of a read timeseries 
       type(tEcConnectionPtr), dimension(:), pointer :: connectionsPtr     => null() !< Connections in which this Item is a target Item
+      type(tEcTimeFrame),                   pointer :: tframe => null()             !< TimeFrame at which data is available
       integer                                       :: nConnections                 !< Number of Connections <= size(connectionsPtr)
+      
+      
    end type tEcItem
    
    type tEcItemPtr
@@ -331,9 +399,10 @@ module m_ec_typedefs
       integer                   :: vectorMax = 1            !< number of dimensions (vector data) or 1 in case of scalar
       integer                   :: zInterpolationType       !< Vertical interpolation type ! TODO: Add initialization in the constructor. (4748)
       integer                   :: timeint = timeint_lin    !< Temporal interpolation type, default is linear
-      logical                   :: periodic = .false.       !< Use timeseries periodically
+      logical                   :: periodic = .false.       !< Use timeseries periodically if True
+      logical                   :: constant = .false.       !< Provide constant value if True
                                                             !< Intended for quantities from NetCDF:
-      real(hp)                  :: fillvalue = 0.d0         !<    default if NaN, missing value
+      real(hp)                  :: fillvalue = ec_undef_hp  !<    default if NaN, missing value
       real(hp)                  :: factor = 1.d0            !<    multiplication (scale) factor
       real(hp)                  :: offset = 0.d0            !<    offset (new = raw*factor + offset)
       integer                   :: ncid = -1                !<    NetCDF variable ID, only used in case of NetCDF format
@@ -346,13 +415,21 @@ module m_ec_typedefs
    !===========================================================================
    ! Support data types.
    !===========================================================================
-   
+
+   type tFlexibleIndexWeightFactor
+      integer,       pointer :: indices(:,:)
+      real(kind=hp), pointer :: weights(:)
+   end type tFlexibleIndexWeightFactor
    !> 
    type tEcIndexWeight
       ! FM: tdataprovider indxn
       integer , dimension(:,:),   pointer :: indices       => null() !< indices: ([row,column]:nCoordinates)
       ! FM: tdataprovider wfn
       real(hp), dimension(:,:),   pointer :: weightFactors => null() !< weightfactors: ([1,2,3,4]:nCoordinates)
+      integer, dimension(:),      pointer :: substndx      => null() !< substitutes target value j by target value [substndx(j)]
+      ! for extrapolation with e.g. 4 nearest neighbours
+      type(tFlexibleIndexWeightFactor), pointer :: flexIndexWeights(:) => null()
+      integer                                   :: curSizeFlex = 0
    end type tEcIndexWeight
    
    ! ==========================================================================
@@ -365,8 +442,14 @@ module m_ec_typedefs
       real(hp)                            :: ec_refdate       !< EC file's reference date formatted as Modified Julian Date
       integer                             :: ec_timestep_unit !< Time unit of a timestep in the input data file.
       real(hp)                            :: ec_timezone = 0  !< Timezone of the EC file
-      real(hp)                            :: nr_timesteps     !< Total number of available timesteps [ec_timestep_unit].
+      integer                             :: nr_timesteps     !< Total number of available timesteps [ec_timestep_unit].
       real(hp), dimension(:), allocatable :: times            !< The timesteps [ec_timestep_unit] at which data is available.
       real(hp)                            :: dtnodal          !< Nodal factors update interval
    end type tEcTimeFrame
+
+   !> needed to make an array of allocatable strings
+   type VLSType
+      character (len=:), allocatable :: s
+   end type VLSType
+
 end module m_ec_typedefs

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@
 
 /* FTN_CAPITAL is assumed to be the default value */
 
-#if HAVE_CONFIG_H
+#if defined(linux)
 #   include "config.h"
 #   define STDCALL  /* nothing */
 #   define CUTIL_GETMP  FC_FUNC(cutil_getmp,CUTIL_GETMP)
@@ -74,6 +74,7 @@
 #   define CUTIL_MF_REWIND  FC_FUNC(cutil_mf_rewind,CUTIL_MF_REWIND)
 #   define CUTIL_MF_BACKSPACE  FC_FUNC(cutil_mf_backspace,CUTIL_MF_BACKSPACE)
 #   define CUTIL_MF_READ  FC_FUNC(cutil_mf_read,CUTIL_MF_READ)
+#   define CUTIL_MF_GETPOS  FC_FUNC(cutil_mf_getpos,CUTIL_MF_GETPOS)
 #   define CUTIL_MF_EOF  FC_FUNC(cutil_mf_eof,CUTIL_MF_EOF)
 #   define CUTIL_CMP_DOUBLE  FC_FUNC(cutil_cmp_double,CUTIL_CMP_DOUBLE)
 #   define CUTIL_CMP_SINGLE  FC_FUNC(cutil_cmp_float,CUTIL_CMP_SINGLE)
@@ -93,6 +94,7 @@
 #   define CUTIL_MF_REWIND  CUTIL_MF_REWIND
 #   define CUTIL_MF_BACKSPACE  CUTIL_MF_BACKSPACE
 #   define CUTIL_MF_READ  CUTIL_MF_READ
+#   define CUTIL_MF_GETPOS CUTIL_MF_GETPOS
 #   define CUTIL_MF_EOF  CUTIL_MF_EOF
 #   define CUTIL_CMP_DOUBLE  CUTIL_CMP_DOUBLE
 #   define CUTIL_CMP_SINGLE  CUTIL_CMP_SINGLE

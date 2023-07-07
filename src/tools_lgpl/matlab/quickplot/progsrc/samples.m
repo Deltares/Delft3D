@@ -1,28 +1,45 @@
 function [x,y,z]=samples(cmd,varargin)
 %SAMPLES Read/write sample data from file.
-%     XYZ = SAMPLES('read',FILENAME) read the specified file and return the
-%     data contained in it. In the classic case of a simple plain Delft3D
-%     samples file contain three data columns, the function returns an Nx3
-%     array with the data. Due to the algorithm used, the file may contain
-%     any number of comments in MATLAB style, i.e. starting with %. As a
-%     generalization beyond the classic samples file, the number of columns
-%     may differ from 3.
+%   XYZ = SAMPLES('read',FILENAME) read the specified file and return the
+%   data contained in it. In the classic case of a simple plain Delft3D
+%   samples file contain three data columns, the function returns an Nx3
+%   array with the data. Due to the algorithm used, the file may contain
+%   any number of comments in MATLAB style, i.e. starting with %. As a
+%   generalization beyond the classic samples file, the number of columns
+%   may differ from 3.
 %
-%     [X,Y,Z] = SAMPLES('read',FILENAME) read the specified file and return
-%     the samples in three separate Nx1 arrays.
+%   [X,Y,Z] = SAMPLES('read',FILENAME) read the specified file and return
+%   the samples in three separate Nx1 arrays.
 %
-%     SAMPLES('write',FILENAME,XYZ) write samples given in a Nx3 (or 3xN)
-%     array to a samples file. Because of the automatic transpose option,
-%     this function does not support any other number of data columns.
+%   SAMPLES('write',FILENAME,XYZ) write samples given in a Nx3 (or 3xN)
+%   array to a samples file. Because of the automatic transpose option,
+%   this syntax does not support any other number of data columns. Use
+%   'writeraw' to write an M x N matrix as a file with M data columns
+%   and N rows.
 %
-%     SAMPLES('write',FILENAME,X,Y,Z) write samples given in three Nx1 (or
-%     1xN) arrays to a samples file. Because of the automatic transpose
-%     option, this function does not support any other number of data
-%     columns.
+%   SAMPLES('write',FILENAME,X,Y,Z) 
+%   SAMPLES('write',FILENAME,X1,X2,...,XM) write samples given in M arrays
+%   of size Nx1 (or 1xN) to a samples file. Because of the automatic
+%   transpose option, this syntax does not support any other number of
+%   data columns.
+%
+%   SAMPLES('writeraw',FILENAME,MATRIX) write an M x N matrix as a file
+%   with M data columns and N rows.
+%
+%   SAMPLES('writeraw',FILENAME,'format',FORMAT, MATRIX)
+%   SAMPLES('write',FILENAME,'format',FORMAT, XYZ)
+%   SAMPLES('write',FILENAME,'format',FORMAT, X,Y,Z)
+%   SAMPLES('write',FILENAME,'format',FORMAT, X1,X2,...,XM) write the data
+%   using the specified number format. The default number format used is
+%   a fixed point %f. Here FORMAT should contain a single valid format
+%   specification like '%15.7f', '%16.7e' or '%g' in which case the format
+%   is used for all data columns, or the FORMAT should contain the same
+%   format specifiers as there are data columns to be written; use this
+%   option to vary the format used for the columns.
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -60,12 +77,52 @@ switch lower(cmd)
         else
             x=xyz;
         end
-    case 'write'
-        if ~ischar(varargin{1})
-            Local_write_samples('?',varargin{:});
+    case {'write','writeraw'}
+        if ~ischar(varargin{1}) || strcmpi(varargin{1},'format')
+            filename = '?';
+            i = 0;
         else
-            Local_write_samples(varargin{:});
+            filename = varargin{1};
+            i = 1;
         end
+        if nargin > i && strcmpi(varargin{i+1},'format')
+            format = varargin{i+2};
+            i = i+2;
+        else
+            format = '%f';
+        end
+        xyz = varargin(i+1:end);
+        if length(xyz) == 1 % single matrix XYZ
+            xyz = xyz{1};
+            if strcmpi(cmd,'write')
+                % backward compatible: consider flipping
+                szd = size(xyz);
+                if length(szd)>2
+                    error('Invalid data argument; data must be provided as one matrix, or multiple vectors')
+                end
+                if szd(2) == 3
+                    xyz = transpose(xyz);
+                end
+            end
+        else % a number of vectors
+            for d = 1:length(xyz)
+                szd = size(xyz{d});
+                if length(szd)>2 || all(szd ~= 1) || ~any(szd == 1)
+                    error('Invalid data argument %i; data must be provided as a single matrix, or multiple vectors',d)
+                else % row or column vector, make sure all data is in row vector form
+                    if d == 1
+                        N = length(xyz{d});
+                    elseif length(xyz{d}) ~= N
+                        error('Invalid data argument %i; all vectors should have equal length (%i)', N)
+                    end
+                    if szd(1) ~= 1
+                        xyz{d} = transpose(xyz{d});
+                    end
+                end
+            end
+            xyz = cat(1,xyz{:});
+        end
+        Local_write_samples(filename,format,xyz);
     otherwise
         error('Unknown command: %s',var2str(cmd)) 
 end
@@ -96,6 +153,9 @@ if exist(filename)~=2
 end
 try
     xyz0 = load(filename);
+    if isempty(xyz0)
+        error('Empty samples set returned: is this a valid sample file?');
+    end
     simplexyz = 1;
 catch
     try
@@ -107,12 +167,23 @@ catch
 end
 
 if simplexyz
+    %
+    % relatively simple sample file without header, data alrady read by the
+    % load or asciiload call above. We may have to add a bit of metadata.
+    %
     switch readtype
         case {'simple','default'}
             xyz = xyz0;
         otherwise
             xyz.XYZ = xyz0;
-            npar = size(xyz0,2);            
+            if iscell(xyz0)
+                npar = 0;
+                for c = 1:length(xyz0)
+                    npar = npar+size(xyz0{c},2);
+                end
+            else
+                npar = size(xyz0,2);
+            end
             xyz.Params = cell(1,npar);
             for i=1:npar
                 xyz.Params{i}=sprintf('Parameter %i',i);
@@ -120,7 +191,7 @@ if simplexyz
             xyz.FileType = 'samples';
             xyz.FileName = filename;
             %
-            fid=fopen(filename,'r');
+            fid=fopen(filename,'r','n','US-ASCII');
             Line=fgetl(fid);
             xyz.Header = {};
             while ~isempty(Line) && Line(1)=='%'
@@ -156,9 +227,19 @@ if simplexyz
                 end
             end
     end
-else % readtype always forced to 'struct'
-    fid=fopen(filename,'r');
+else
+    %
+    % So far unable to read the file. It probably contains some comments,
+    % header or labels. Let's analyze the content in more detail; the
+    % readtype is always forced to 'struct'
+    %
+    fid=fopen(filename,'r','n','US-ASCII');
+    csv = false;
     try
+        %
+        % All non-empty lines starting with * or # are considered to be
+        % header lines.
+        %
         skiplines=0;
         Line=fgetl(fid);
         xyz.Header={};
@@ -168,35 +249,101 @@ else % readtype always forced to 'struct'
             Line=fgetl(fid);
         end
         if ~ischar(Line)
+            %
+            % End of file read while skipping the header lines ...
+            % ... fail because we didn't find any data.
+            %
             fclose(fid);
             error('%s does not contain samples.',filename);
         end
         %
+        % First non-header line ... check for column labels ...
+        %
         Params = {};
-        firstitem = strtok(Line);
-        while firstitem(1)=='"'
-            try
-                X = textscan(Line,' "%[^"]"','returnonerror',0);
-                Params = [Params X{1}'];
-            catch
-                error('Reading line: %s\nAll parameter names should be enclosed by double quotes.',Line);
-            end
-            skiplines=skiplines+1;
-            Line=fgetl(fid);
+        first_token = strtok(Line);
+        if first_token(1) == '"'
+            %
+            % Column labels on one or more lines surrounded by double
+            % quotes separated by spaces.
+            %
             firstitem = strtok(Line);
+            while firstitem(1)=='"'
+                X = strsplit(Line,'"');
+                for i = 1:2:length(X)
+                    sep = strtrim(X{i});
+                    if isequal(sep,',')
+                        if i == 3
+                            csv = true;
+                        elseif csv
+                            % OK, comma when expecting comma
+                        else
+                            error('Reading line: %s\nInconsistent separation cf column labels: initial column lables were separated by space or new line, but now comma encountered.',Line);
+                        end
+                    elseif isempty(sep)
+                        if csv && i ~= length(X)
+                            error('Reading line: %s\nInconsistent separation cf column labels:initial column labels were separated by comma, but now there is no comma.',Line);
+                        else
+                            % OK, no comma when expecting no comma
+                        end
+                    else
+                        % separator not empty and not comma
+                        error('Reading line: %s\nInvalid separator "%s" encountered.',Line,sep);
+                    end
+                end
+                Params = [Params X(2:2:end)];
+                skiplines=skiplines+1;
+                Line=fgetl(fid);
+                firstitem = strtok(Line);
+            end
+        else
+            %
+            % Column labels may occur on one line separated by commas.
+            %
+            try
+                X = textscan(Line,' %[^,],','returnonerror',0);
+                if length(X{1}) < 2
+                    error('Too few columns for a sample file.')
+                else
+                    csv = true;
+                    Params = X{1}';
+                    skiplines=skiplines+1;
+                    Line=fgetl(fid);
+                end
+            catch
+            end
         end
         %
-        X = textscan(Line,' %[^ \t]','returnonerror',0);
+        % First data line ... may contain more data columns than the number
+        % of column labels read (e.g. in case of a file without column
+        % labels), or fewer (should we really support this?)
+        %
+        if csv
+            X = textscan(Line,' %[^,],','returnonerror',0);
+        else
+            X = textscan(Line,' %[^ \t]','returnonerror',0);
+        end
         n = length(X{1});
         if n<3
             error('Not enough values for sample data (X,Y,Value1,...)')
         end
+        %
+        % Second data line ... should contain the same number of data
+        % columns.
+        %
         Line=fgetl(fid);
-        X  = textscan(Line,' %[^ \t]','returnonerror',0);
+        if csv
+            X = textscan(Line,' %[^,],','returnonerror',0);
+        else
+            X  = textscan(Line,' %[^ \t]','returnonerror',0);
+        end
         n2 = length(X{1});
         if n2~=n && ~feof(fid)
-            error('Number of values per line should be consistent.')
+            error('Number of values per data line should be consistent.')
         end
+        %
+        % Correct any mismatch between the number of data columns and the
+        % number of column labels on the label side ...
+        %
         if length(Params)<n
             for i=n:-1:(length(Params)+1)
                 Params{i}=sprintf('Parameter %i',i);
@@ -226,7 +373,7 @@ if isstruct(xyz)
     xyz.Time = [];
     for i = 1:length(xyz.Params)
         switch lower(xyz.Params{i})
-            case {'longitude','lon','x','xp','x-coordinate','x coordinate','x_coordinate','x_gpp','distance'}
+            case {'longitude','lon','x','xp','x-coordinate','x coordinate','x_coordinate','x_gpp','distance','chainage'}
                 xyz.X = i;
             case {'latitude' ,'lat','y','yp','y-coordinate','y coordinate','y_coordinate','y_gpp'}
                 xyz.Y = i;
@@ -248,7 +395,11 @@ if isstruct(xyz)
     end
     %
     if isempty(xyz.Time)
-        xyz.nLoc  = size(xyz.XYZ,1);
+        if iscell(xyz.XYZ)
+            xyz.nLoc  = size(xyz.XYZ{1},1);
+        else
+            xyz.nLoc  = size(xyz.XYZ,1);
+        end
         xyz.Times = gettimestamp(xyz.Header);
     else
         crds = [xyz.X xyz.Y];
@@ -285,7 +436,20 @@ if isstruct(xyz)
 end
 
 
-function Local_write_samples(filename,x,y,z)
+function Local_write_samples(filename,format,xyz)
+nrows = size(xyz,1);
+nfields = sum(format == '%');
+if nfields == 1
+    format = repmat([format ' '],1,nrows); % add space between values
+    format = [format(1:end-1) '\n']; % remove last space, add line feed
+elseif nfields == nrows
+    if ~isequal(format(end-1:end),'\n')
+        format = [format '\n']; % add line feed if missing
+    end
+else
+    error('Invalid format specification; it contains %i fields, but 1 or %i expected.',nfields,nrows)
+end
+
 if strcmp(filename,'?')
     [fn,fp]=uiputfile('*.xyz');
     if ~ischar(fn)
@@ -293,24 +457,11 @@ if strcmp(filename,'?')
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'wt');
+fid=fopen(filename,'wt','n','US-ASCII');
 if fid<0
     error(['Could not create or open: ',filename])
 end
-
-if nargin==4
-    if size(x,2)==1 % column vectors
-        xyz=transpose([x y z]);
-    else % row vectors
-        xyz=[x;y;z];
-    end
-    fprintf(fid,'%f %f %f\n',xyz);
-else
-    if size(x,2)==3 % column vector (3x)
-        x=transpose(x);
-    end
-    fprintf(fid,'%f %f %f\n',x);
-end
+fprintf(fid,format,xyz);
 fclose(fid);
 
 

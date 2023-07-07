@@ -1,0 +1,9 @@
+.
+EC MODULE ITEMS:
+Target Item 00013 (name=airpressure, vectormax=1)
+Element Set 00011
+   Connection 00015
+      Source Item 00006 (name=air_pressure, vectormax=1)
+         File Reader 00001(filename=wind_deltares_matroos_hirlam72_20150418.nc)
+            Quantity = air_pressure
+.

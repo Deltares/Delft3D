@@ -52,7 +52,7 @@ function [Out,Out2]=arcgrid(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -134,7 +134,7 @@ if (nargin==0) || strcmp(filename,'?')
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 Structure.FileName=filename;
 if fid<0
     return
@@ -334,7 +334,7 @@ if vector
             Times=getfiletimes(Structure.FileBase(1:end-1),am2,Structure.Extension,time_in_file);
         end
     else
-        fid=fopen([Structure.FileBase '.' am2],'r');
+        fid=fopen([Structure.FileBase '.' am2],'r','n','US-ASCII');
         if fid>0
             Times=Structure.Times;
             fclose(fid);
@@ -368,7 +368,7 @@ elseif time_in_file
     for i=1:ntimes
         FileNr{i}=Files(i).name(last_char+1:end-len_ext);
         %
-        fl=fopen(fullfile(FilePath,Files(i).name),'r');
+        fl=fopen(fullfile(FilePath,Files(i).name),'r','n','US-ASCII');
         if fl>0
             Line=fgetl(fl);
             n = strfind(Line,'time=');
@@ -451,7 +451,7 @@ for comp = 1:ncomp
         subnr=nr;
         fil=[Structure.FileBase FileBaseExtension '.' Extension];
     end
-    fid=fopen(fil,'r');
+    fid=fopen(fil,'r','n','US-ASCII');
     fseek(fid,Structure.DataStart(subnr),-1);
 
     Structure.Check='NotOK';
@@ -594,7 +594,7 @@ if nargin==1
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'wt');
+fid=fopen(filename,'wt','n','US-ASCII');
 if fid<0
     error('Could not create or open: %s',filename)
 end

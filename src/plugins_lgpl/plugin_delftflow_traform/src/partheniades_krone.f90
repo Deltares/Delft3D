@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,13 +24,13 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 subroutine parkro(dll_integers, max_integers, &
                   dll_reals   , max_reals   , &
                   dll_strings , max_strings , &
                   sink        , source      , &
-                  error_message   )
+                  error_message_c   )
 !DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'PARKRO' :: PARKRO
 !!--description-----------------------------------------------------------------
 !
@@ -40,6 +40,7 @@ subroutine parkro(dll_integers, max_integers, &
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+use iso_c_binding, only: c_char
 implicit none
 !
 ! Local constants
@@ -58,12 +59,28 @@ character(len=256), dimension(max_strings) , intent(in)  :: dll_strings
 !
 ! Subroutine arguments: output
 !
-real(hp)          , intent(out) :: source        ! source term [kg/m2/s]
-real(hp)          , intent(out) :: sink          ! sink term [-] (to be multiplied with concentration and settling velocity)
-character(len=256), intent(out) :: error_message ! not empty: echo and stop run
+real(hp)          , intent(out) :: source                 ! source term [kg/m2/s]
+real(hp)          , intent(out) :: sink                   ! sink term [-] (to be multiplied with concentration and settling velocity)
+character(kind=c_char), intent(out) :: error_message_c(*) ! not empty: echo and stop run
+!
+! Local variables for error message
+!
+character(len=256) :: error_message
+!
+call core_function() ! Core function call 
+!
+call message2c(error_message, error_message_c)
+
+contains
+    
+!
+! Core function definition 
+!
+subroutine core_function()
 !
 ! Local variables for input parameters
 !
+integer            :: i
 integer            :: l
 integer            :: m
 integer            :: n, nm
@@ -82,6 +99,8 @@ real(hp)           :: ws
 real(hp)           :: zumod
 character(len=256) :: runid
 character(len=256) :: filenm
+character(len=256) :: error_message
+
 !
 ! Local variables
 !
@@ -181,4 +200,7 @@ if (tcrdep > 0.0_hp) then
 else
    sink   = 0.0_hp
 endif
+!
+end subroutine core_function 
+
 end subroutine parkro

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -74,7 +74,7 @@
 !                          fmread   - read of a breakpoint series of matrices
 !                          dmatrix  - merge of 2 matrices
 !                          rwfunc   - read of a block of harmonics or Fourier series
-!                          dhopnf   - open a file
+!                          open_waq_files   - open a file
 
 !     Functions called   : gettok   - tokenized input data file reading
 
@@ -83,8 +83,11 @@
 !                          lun( 4) = unit binary intermediate file for pointers
 !                          lun(is) = unit binary intermediate file for function
 
+      use m_open_waq_files
       use timers       !   performance timers
       use rd_token
+      use m_sysn          ! System characteristics
+
 
       implicit none
 
@@ -92,7 +95,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun   (*)         !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
       character( *), intent(in   ) :: lchar (*)         !< array with file names of the files
       integer  ( 4), intent(in   ) :: is                !< entry in lun for this call
       integer  ( 4), intent(in   ) :: nitem             !< number of required items
@@ -107,16 +110,7 @@
       integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
       integer  ( 4), intent(inout) :: ierr              !< error count / switch
 
-      include 'sysn.inc'     ! in cludes  COMMON  / SYSN / System characteristics
-!     in the common block :
-!     name    kind     length      funct.  description
-!     ---------------------------------------------------------
-!     nharms  integer  1           in/out  total space  of harmonics
-!     niharm  integer  1           in/out  total number of harmonics
-!     nlines  integer  1           in/out  total number var.values space
-!     npoins  integer  1           in/out  total number pointer space
-!     newrsp  integer  1           in/out  integer space new time funs
-!     newisp  integer  1           in/out  real    space new time funs
+
 
 !     local decalations
 
@@ -183,7 +177,7 @@
 !        write nr of items and nr of substances
 !        write default values ( IORDER = 1 , NPNT = 0 )
       lunuit  = lun( 3)
-      if ( .not. funcs ) call dhopnf ( lun(is) , lchar(is) , is    , 1     , ierr2 )
+      if ( .not. funcs ) call open_waq_files ( lun(is) , lchar(is) , is    , 1     , ierr2 )
       if ( bound ) then
          write ( lun(is) ) ' 4.900BOUND '
          write ( lun(is) ) nitem, nval1

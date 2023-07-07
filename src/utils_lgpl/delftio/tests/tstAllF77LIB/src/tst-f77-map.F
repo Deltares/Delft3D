@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
       subroutine write_map_long
 
       implicit none
@@ -181,8 +181,7 @@ C     ! Data for Selection testing
 
 C     Open file for storing results
       call diofinit()
-      resLun = 11
-      open(resLun,file='TESTF77Map-res.txt')
+      open(newunit=resLun,file='TESTF77Map-res.txt')
 
 C     Get MAP IN data set
 

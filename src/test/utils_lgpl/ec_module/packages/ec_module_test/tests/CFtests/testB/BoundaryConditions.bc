@@ -1,0 +1,70 @@
+# Generated on 12/11/2016 07:45:43
+
+[General]
+    majorVersion          = 1
+    minorVersion          = 0
+    fileType              = boundConds
+
+[Boundary]
+    name                  = bound_1
+    function              = timeseries
+    time-interpolation    = linear-extrapolate
+    quantity              = time
+    unit                  = minutes since 2016-12-05 00:00:00
+    quantity              = water_level
+    unit                  = m
+    0 0.37
+    60 0.34
+    120 0.32
+    180 0.28
+    240 0.25
+    300 0.25
+    360 0.32
+    420 0.48
+    480 0.56
+    540 0.57
+    600 0.50
+    660 0.42
+    720 0.37
+    780 0.34
+    840 0.31
+    900 0.26
+    960 0.22
+    1020 0.20
+    1080 0.26
+    1140 0.46
+    1200 0.56
+    1260 0.61
+    1320 0.57
+    1380 0.50
+    1440 0.44
+
+[LateralDischarge]
+    name                  = bound_2
+    function              = timeseries
+    time-interpolation    = linear-extrapolate
+    periodic              = true
+    quantity              = time
+    unit                  = minutes since 2016-03-25 12:00:00
+    quantity              = water_discharge
+    unit                  = m3/s
+    0.0 200.0
+    720.0 300.0
+    960.0 200.0
+
+[LateralDischarge]
+    name                  = lat_1
+    function              = constant
+    time-interpolation    = linear-extrapolate
+    quantity              = water_discharge
+    unit                  = m3/s
+    27.0
+
+[LateralDischarge]
+    name                  = lat_2
+    function              = constant
+    time-interpolation    = linear-extrapolate
+    quantity              = water_discharge
+    unit                  = m3/s
+    -12.0
+

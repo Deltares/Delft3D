@@ -3,7 +3,7 @@ function qp_figurebars(fig)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -65,27 +65,35 @@ set(f,'cdata',qp_icon('savefigure','nan'),'clickedcallback','d3d_qp savefigure')
 %sm1=uimenu(m1,'label','St&art','callback','d3d_qp startanim','Accelerator','A');
 %sm2=uimenu(m1,'label','&Stop','callback','d3d_qp stopanim','Accelerator','H');
 
-%--------------------------------------------------------------------------
-fMZO=findall(m1,'tag','figToolRotate3D');
-if isempty(fMZO) % MATLAB 7
-    fMZO=findall(m1,'tag','Exploration.Rotate');
+if matlabversionnumber >= 9
+    % placing ActionPostCallback on zoom and pan doesn't work when zooming and panning without first activating the zoom option.
+    % h = zoom(fig);
+    % h.ActionPostCallback = @(o,e)fprintf('check!\n');
+    % h = pan(fig);   
+    % h.ActionPostCallback = @(o,e)fprintf('check too!\n');
+else
+    %----------------------------------------------------------------------
+    fMZO=findall(m1,'tag','figToolRotate3D');
+    if isempty(fMZO) % MATLAB 7
+        fMZO=findall(m1,'tag','Exploration.Rotate');
+    end
+    set(fMZO,'clickedcallback','d3d_qp rotate3d');
+    %----------------------------------------------------------------------
+    fMZO=findall(m1,'tag','figToolZoomIn');
+    if isempty(fMZO) % MATLAB 7
+        fMZO=findall(m1,'tag','Exploration.ZoomIn');
+    end
+    set(fMZO,'clickedcallback','d3d_qp zoomin');
+    %----------------------------------------------------------------------
+    fMZO=findall(m1,'tag','figToolZoomOut');
+    if isempty(fMZO) % MATLAB 7
+        fMZO=findall(m1,'tag','Exploration.ZoomOut');
+    end
+    set(fMZO,'clickedcallback','d3d_qp zoomout');
+    %----------------------------------------------------------------------
+    fMZO=findall(m1,'tag','Exploration.Pan');
+    set(fMZO,'clickedcallback','d3d_qp pan');
 end
-set(fMZO,'clickedcallback','d3d_qp rotate3d');
-%--------------------------------------------------------------------------
-fMZO=findall(m1,'tag','figToolZoomIn');
-if isempty(fMZO) % MATLAB 7
-    fMZO=findall(m1,'tag','Exploration.ZoomIn');
-end
-set(fMZO,'clickedcallback','d3d_qp zoomin');
-%--------------------------------------------------------------------------
-fMZO=findall(m1,'tag','figToolZoomOut');
-if isempty(fMZO) % MATLAB 7
-    fMZO=findall(m1,'tag','Exploration.ZoomOut');
-end
-set(fMZO,'clickedcallback','d3d_qp zoomout');
-%--------------------------------------------------------------------------
-fMZO=findall(m1,'tag','Exploration.Pan');
-set(fMZO,'clickedcallback','d3d_qp pan');
 %--------------------------------------------------------------------------
 fMZO=findall(m1,'clickedcallback','figure');
 if isempty(fMZO) % MATLAB 7

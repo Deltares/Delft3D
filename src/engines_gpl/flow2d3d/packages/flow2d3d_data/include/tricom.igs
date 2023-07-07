@@ -1,0 +1,252 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type sv_tricom
+!
+       real(fp) :: betac     !  Global data
+                             !  Coupling coefficient between
+                             !  intensity and impuls equations
+                             !  for secondary flows
+       real(fp) :: dml       !  Global data
+                             !  Not used
+       real(fp) :: grdang    !  Global data
+                             !  - Orientation of the model (Y-axis as
+                             !    reference. GRDANG> 0 coincides with
+                             !    clockwise rotation)
+                             !  - In spherical coordinates this para-
+                             !    meter equals the angle of longitude
+                             !    for the origin (water level point)
+                             !    after INIPHY grdang = 0.
+                             !  - Orientation of the model (Y-axis as
+                             !    reference. GRDANG> 0 coincides with
+                             !    clockwise rotation)
+                             !  - In spherical coordinates this para-
+                             !    meter equals the angle of longitude
+                             !    for the origin (water level point)
+                             !  Orientation of the model (Y-axis as
+                             !  reference. GRDANG > 0 coincides with
+                             !  clockwise rotation)
+       real(fp) :: saleqs    !  Global data
+                             !  Initial condition for salinity,
+                             !  which will be applied uniformly
+                             !  over the vertical.
+                             !  Salinity value used in eq. of state
+                             !  which will be applied uniformly
+                             !  over the vertical.
+                             !  Salinity value used in eq. of state
+       real(fp) :: temeqs    !  Global data
+                             !  Initial condition for temperature.
+                             !  It will applied uniformly over the
+                             !  vertical.
+                             !  Temperature value used in the eq. of
+                             !  state which will applied uniformly
+                             !  over the vertical.
+                             !  Temperature value used in the eq. of
+                             !  state
+       integer :: diphif
+       integer :: diphil
+       integer :: dipmap(mxprt)
+       integer :: ditcof
+       integer :: ditcol
+       integer :: ditmaf
+       integer :: ditmal
+       integer :: keva       !  0: No rain/evaporation file (FilEva).
+                             !     Evaporation (massflux and heatflux) will be calculated in case ktemp = 1, 2, 4 or 5.
+                             !     Massflux is only used in mass equation when maseva is switched to 1
+                             !  1: Rain and rain temperature specified in a time serie file (uniform in space).
+                             !     Evaporation is not given as input (-999.0 in input file)
+                             !     Evaporation (massflux and heatflux) will be calculated in case ktemp = 1, 2, 4 or 5.
+                             !     Massflux is used in mass equation (maseva is forced to be 1).
+                             !  2: Rain, evaporation (massflux) and rain temperature specified in a time serie file (uniform in space).
+                             !     Evaporative heatflux is based on the prescribed evaporative massflux
+                             !     See usage of keyword "QEva"
+                             !     Used in mass equation (maseva is forced to be 1).
+                             !  3: Rain, evaporation (massflux) and rain temperature specified in a time serie file (uniform in space).
+                             !     Evaporative heatflux will be calculated in case ktemp = 1, 2, 4 or 5, independent of the prescribed evaporative massflux.
+                             !     See usage of keyword "QEva"
+                             !     Used in mass equation (maseva is forced to be 1).
+       integer :: ktemp      !  Global data
+                             !  Option flag for temperature module
+                             !  =1: T-abs. model, radiation from eq.
+                             !  =2: T-abs. model, radiation prescribed by time series
+                             !  =3: Excess temperature model
+                             !  =4: Murakami Heat model for KAJIMA
+                             !  =5: Heat flux through surface (Proctor's model)
+       integer :: lturi      !  Global data
+                             !  LTURI=0    : no initialization
+                             !       =LTUR : turbulence arrays
+                             !               initialized for K/EPS
+                             !       =-LTUR: turbulence arrays
+                             !               initialized using old K
+       integer :: nfltyp     !  Description and declaration in esm_alloc_int.f90
+       integer :: icreep     !  Global data
+                             !  Identification for special approach
+                             !  horizontal gradients (0=no, 1=yes)
+                             !  0 = no anti creep
+                             !  1 = yes anti creep
+                             !  Identification for special approach
+                             !  horizontal gradients
+                             !  0 = no anti creep
+                             !  1 = yes anti creep
+       logical :: tstprt     !  Global data
+                             !  Logical flag for test print output
+       logical :: sferic     !  Global data
+                             !  .
+                             !  Flag = TRUE when circular distance
+                             !  has to be calculated
+                             !  Flag for spheric coordinates
+                             !  Flag for spherical coordinates
+                             !  (TRUE or FALSE)
+       character*1 :: temint !  Global data
+                             !  Interpolation option for the tem-
+                             !  perature
+                             !  Interpolation option for the tempe-
+                             !  rature
+                             !  Interpolation option for the wind
+       character*1 :: evaint !  Global data
+                             !  Interpolation option for the eva-
+                             !  perature
+                             !  Interpolation option for the perci-
+                             !  pition / evaporation module
+       character*1 :: forfuv !  Global data
+                             !  Forester filter option for UV
+       character*1 :: forfww !  Global data
+                             !  Forester filter option for W
+       character*4 :: rouflo !  Description and declaration in esm_alloc_char.f90
+       character*4 :: rouwav !  Global data
+                             !  Bed stress formulation for waves:
+                             !   FR84 - Fredsoe 1984 (Default)
+                             !   MS90 - Myrhaug and Slaattelid 1990
+                             !   HT91 - Huynh-Thanh and Temperville
+                             !          1991
+                             !   GM79 - Grant and Madsen 1979
+                             !   DS88 - Davies et al. 1988
+                             !   BK67 - Bijker 1967
+                             !   CJ85 - Christoffersen and Jonsson  1985
+                             !   OY88 - O Connor and Yoo 1988
+                             !  Selection flag for the computation of
+                             !  bottom stress term due to waves:
+                             !  [BIJK, NIEL]
+                             !  Selection flag for the computation of
+                             !  bottom stress term due to waves:
+                             !  [FR84, MS90, HT91, GM79, DS88, BK67,
+                             !  CJ85, OY88]
+       character*8 :: method !  Global data
+                             !  Numerical integration method
+                             !  (ADI or AOI)
+       character*8 :: dischy !  Global data
+                             !  Time discretisation for hydro-
+                             !  dynamical part
+                             !  CN = Crank Nicolson
+                             !  BE = Backward Euler
+                             !  Time discretisation for hydro-
+                             !  dynamical part: CN = Crank Nicolson
+                             !                  BE = Backward Euler
+       character*8 :: solver !  Global data
+                             !  Numerical solver: JAC = Point Jacobi
+                             !                    GS  = Gauss Seidel
+                             !  Numerical solver: JAC = Point Jacobi
+                             !                    GS  = Gauss Seidel
+       character*8 :: disctr !  Global data
+                             !  Time discretisation for transport
+                             !  solver: EXPL = explicit
+                             !          IMPL = implicit
+       character*12 :: tkemod
+                             !  Help var. to determine the specified
+                             !  turbulence closure model (only used
+                             !  if KMAX > 1)
+       character*13 :: trasol
+                             !  Transport scheme option
+       character*19 :: prsmap
+                             !  Print flags containing Y or N for
+                             !  various output quantities selection
+                             !  for map data printed
+       character*21 :: selmap
+                             !  Output flags containing Y or N for
+                             !  various output quantities selection
+                             !  for map files
+                             !  Output flags containing Y or N for
+                             !  various output quantities selection
+                             !  for map file
+                             !  Output flags containing Y or N for
+                             !  various output quantities selection
+                             !  for map files
+       character*23 :: prshis
+                             !  Print flags containing Y or N for
+                             !  various output quantities selection
+                             !  for history data printed
+       character*23 :: selhis
+                             !  Output flags containing Y or N for
+                             !  various output quantities selection
+                             !  for his file
+       character*36 :: tgfcmp
+                             !  Character containing names of tidal
+                             !  constant names to be included in the
+                             !  Tide generating forces. If blank then
+                             !  No forces will be included.
+!
+!  NEWLY ADDED because of splitting trisim,tricom (VT):
+!
+       integer                            :: it01            ! Description and declaration in esm_alloc_int.f90
+       integer                            :: it02            ! Description and declaration in esm_alloc_int.f90
+       integer                            :: itima           ! Time to start simulation (N * tscale) according to DELFT3D conventions
+       integer                            :: itlen           ! Description and declaration in esm_alloc_int.f90
+       integer                            :: iphisc          ! Current time counter for printing history data 
+       integer                            :: itcomc          ! Current time counter for the com- munication file 
+       integer                            :: itcur           ! Current time counter for the com- munication file, where starting point depend on CYCLIC 
+       integer                            :: itdroc          ! Current time counter for the dro- gue data file 
+       integer                            :: ithisc          ! Current time counter for the his- tory file 
+       integer                            :: itimc           ! Current time step counter for 2D system 
+       integer                            :: itiwec          ! Current time counter for the cali- bration of internal wave energy 
+       integer                            :: itlent          ! Lenght of the tide cycle in steps of ITP 
+       integer                            :: itmapc          ! Current time counter for the map file 
+       integer                            :: itp             ! Timestep for computation 2D system 
+       integer                            :: itrstc          ! Current time counter for the re- start file. Start writing after first interval is passed. Last time will always be written to file for ITRSTI > 0 
+       integer                            :: itwav           ! Current time counter for executation of a wave computation (online coupling with wave)
+       integer                            :: itrw            ! Time to read the wave information in case of online wave coupling
+       integer                            :: maxmn           ! Maximum of MMAX and NMAX
+       integer                            :: npmap           ! Current array counter for printing map data
+       integer                            :: ntcur           ! Total number of timesteps on comm. file (to write to)
+       integer                            :: ntwav           ! Total number of timesteps on comm. file (to read from) for waves
+       integer                            :: sleepduringwave ! <=0 (default for sequential     ): FLOW partitions wait at dfreduce_gdp     ,         consuming CPU time
+                                                             ! >=1 (default is 100 for parallel): FLOW partitions wait in a "do-sleep"-loop, without consuming CPU time
+       logical                            :: cyclic          ! Flag = TRUE if cyclic system assumed 
+       logical                            :: fout            ! Flag=TRUE if an error is encountered 
+       logical                            :: lrdok           ! Logical to check if reading phase has been passed. 
+       logical                            :: waverd          ! Flag = TRUE if wave process and communication file exist 
+       real(fp)                           :: anglat          ! Angle of latitude of the model centre (used to determine the coeff. for the coriolis force) 
+       real(fp)                           :: anglon          ! Angle of longitude of the model centre (used to determine solar radiation) 
+       real(fp)                           :: dtsec           ! DT in seconds 
+       real(fp)                           :: tscale          ! Description and declaration in esm_alloc_real.f90
+       character(256)                     :: comfil          ! Communication file name
+       character(256)                     :: filmd           ! File name for MD FLOW file 
+       character(256)                     :: trifil          ! File name for TRISULA NEFIS output files (tri"h/m"-"casl""labl".dat/def)
+       character(5)                       :: versio          ! Version nr. of the current package
+       integer , dimension(:)  , pointer  :: timwav          ! Array with time steps on comm. file for wave results 
+    end type sv_tricom

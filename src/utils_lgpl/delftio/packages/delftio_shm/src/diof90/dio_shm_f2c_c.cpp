@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -122,7 +122,7 @@ void STDCALL DIO_SHM_F2C_DS_DEFINE_C(
     int *headerSize,
     int *dataSize,
     int *memType,
-    long int *cHandle,
+    long long int *cHandle,
     char * name,
     int nameLen
     )
@@ -135,9 +135,9 @@ void STDCALL DIO_SHM_F2C_DS_DEFINE_C(
     nameToLower(locName);
     mType = (DioShmMemType) *memType;
 
-    *cHandle = (long) new DioShmDs(*headerSize, *dataSize, mType, locName);
+    *cHandle = (long long int) new DioShmDs(*headerSize, *dataSize, mType, locName);
 
-    if (*cHandle != (long int) NULL)
+    if (*cHandle != (long long int) NULL)
     {
         if (( (DioShmDs *) *cHandle )->InfoIsValid() )
         {
@@ -153,7 +153,7 @@ void STDCALL DIO_SHM_F2C_DS_DEFINE_C(
 void STDCALL DIO_SHM_F2C_DS_GETINFO_C(
     int *retVal,
     int *memType,
-    long int *cHandle,
+    long long int *cHandle,
     char * name,
     int nameLen
     )
@@ -166,9 +166,9 @@ void STDCALL DIO_SHM_F2C_DS_GETINFO_C(
     nameToLower(locName);
     mType = (DioShmMemType) *memType;
 
-    *cHandle = (long) new DioShmDs(mType, locName);
+    *cHandle = (long long int) new DioShmDs(mType, locName);
 
-    if (*cHandle != (long int) NULL)
+    if (*cHandle != (long long int) NULL)
     {
         if (( (DioShmDs *) *cHandle )->InfoIsValid() )
         {
@@ -182,7 +182,7 @@ void STDCALL DIO_SHM_F2C_DS_GETINFO_C(
 // Destroy a shared memory data set (called by Putter and Getter)
 //
 void STDCALL DIO_SHM_F2C_DS_DESTROY_C(
-    long int *cHandle
+    long long int *cHandle
     )
 {
     delete ( (DioShmDs *) *cHandle );
@@ -195,7 +195,7 @@ void STDCALL DIO_SHM_F2C_DS_DESTROY_C(
 //
 void STDCALL DIO_SHM_F2C_DS_SETSIZE_C(
     int *retVal,
-    long int *cHandle,
+    long long int *cHandle,
     int *hSize,
     int *dSize
     )
@@ -209,7 +209,7 @@ void STDCALL DIO_SHM_F2C_DS_SETSIZE_C(
 //
 void STDCALL DIO_SHM_F2C_DS_SETSIZEPART_C(
     int *retVal,
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int * size
     )
@@ -222,7 +222,7 @@ void STDCALL DIO_SHM_F2C_DS_SETSIZEPART_C(
 // Synchronization functions (TODO: Rewind)
 //
 void STDCALL DIO_SHM_F2C_START_WRITE_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int * retVal
     )
@@ -231,7 +231,7 @@ void STDCALL DIO_SHM_F2C_START_WRITE_C(
 }
 
 void STDCALL DIO_SHM_F2C_END_WRITE_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart
     )
 {
@@ -239,7 +239,7 @@ void STDCALL DIO_SHM_F2C_END_WRITE_C(
 }
 
 void STDCALL DIO_SHM_F2C_START_READ_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int * retVal
     )
@@ -248,7 +248,7 @@ void STDCALL DIO_SHM_F2C_START_READ_C(
 }
 
 void STDCALL DIO_SHM_F2C_END_READ_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart
     )
 {
@@ -260,7 +260,7 @@ void STDCALL DIO_SHM_F2C_END_READ_C(
 // Write functions for various (arrays of) data primitives
 //
 void STDCALL DIO_SHM_F2C_DS_WRITE_REALS_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nReals,
     float *reals
@@ -270,7 +270,7 @@ void STDCALL DIO_SHM_F2C_DS_WRITE_REALS_C(
 }
 
 void STDCALL DIO_SHM_F2C_DS_WRITE_DOUBLES_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nDoubles,
     double *doubles
@@ -280,7 +280,7 @@ void STDCALL DIO_SHM_F2C_DS_WRITE_DOUBLES_C(
 }
 
 void STDCALL DIO_SHM_F2C_DS_WRITE_INTS_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nInts,
     int *ints
@@ -290,7 +290,7 @@ void STDCALL DIO_SHM_F2C_DS_WRITE_INTS_C(
 }
 
 void STDCALL DIO_SHM_F2C_DS_WRITE_INT_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *integer
     )
@@ -299,7 +299,7 @@ void STDCALL DIO_SHM_F2C_DS_WRITE_INT_C(
 }
 
 void STDCALL DIO_SHM_F2C_DS_WRITE_CHARS_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nChars,
     char *chars,
@@ -314,7 +314,7 @@ void STDCALL DIO_SHM_F2C_DS_WRITE_CHARS_C(
 // Read functions for various (arrays of) data primitives
 //
 int STDCALL DIO_SHM_F2C_DS_READ_REALS_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nReals,
     float *reals
@@ -324,7 +324,7 @@ int STDCALL DIO_SHM_F2C_DS_READ_REALS_C(
 }
 
 int STDCALL DIO_SHM_F2C_DS_READ_DOUBLES_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nDoubles,
     double *doubles
@@ -334,7 +334,7 @@ int STDCALL DIO_SHM_F2C_DS_READ_DOUBLES_C(
 }
 
 int STDCALL DIO_SHM_F2C_DS_READ_INTS_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nInts,
     int *ints
@@ -344,7 +344,7 @@ int STDCALL DIO_SHM_F2C_DS_READ_INTS_C(
 }
 
 int STDCALL DIO_SHM_F2C_DS_READ_INT_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *integer
     )
@@ -353,7 +353,7 @@ int STDCALL DIO_SHM_F2C_DS_READ_INT_C(
 }
 
 int STDCALL DIO_SHM_F2C_DS_READ_CHARS_C(
-    long int *cHandle,
+    long long int *cHandle,
     int *dataPart,
     int *nChars,
     char *chars,

@@ -10,10 +10,10 @@ Tcl is open source and can be downloaded from http://www.activestate.com
 
 Running the mormerge testcase
 =============================
-- Build the Delft3D open source code (release version) in directory ".../src".
-  When this is finished, binaries will be installed in directory ".../bin".
+- Build the Delft3D open source code (release version) by running (at the top level) the build.bat (windows) or build.sh (linux) script with build configuration "all".
+  When this is finished, binaries will be installed in directory ".../build_all/x64" (windows) or ".../build_all/lnx64" (linux).
 - Go to subdirectory ".../examples/05_mormerge/merge" and
-  execute script "run_flow2d3d_wave_mormerge" with extension ".sh" (Linux) or ".bat" (Windows).
+  execute script "run" with extension ".sh" (Linux) or ".bat" (Windows).
   Several processes are started in the background. They will disappear when the calculation is finished.
   If the calculation does not finish normally, the user must check whether all started processes are killed.
 
@@ -26,7 +26,7 @@ Output
   ".../examples/05_mormerge\0deg"
   ".../examples/05_mormerge\45deg"
   etcetera
-  Each of these directories contain a file named "deltares_hydro.scr" and optionally "wave.scr", containing the screen output.
+  Each of these directories contain a file named "d_hydro.scr" and optionally "wave.scr", containing the screen output.
   All conditions will have identical bedlevels.
 - A file named ".../examples/05_mormerge/merge/mormerge_<runid>.scr" will be created for each mormerge process, containing:
   - information about the progress during the initialisation phase
@@ -107,4 +107,3 @@ Each FLOW process communicates with all mormerge instances by using C++ streams 
 
 
 Adri Mourits
-7 Dec 2012

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhkmst
+
+      implicit none
+
+      contains
+
 
       subroutine dhkmst ( iknmrk , kenmrk , knmrki )
 
@@ -28,10 +34,10 @@
 !>\file utility that sets a feature in the feature integer
 !>
 !>    The feature is an integer with at most 9 10-base features.
-!>    This routine sets a feature. Routine dhkmrk is the mirror
+!>    This routine sets a feature. Routine evaluate_waq_attribute is the mirror
 !>    routine that reads the feature.
 
-!     Created : June     1994 by Jan van Beek as dhkmrk
+!     Created : June     1994 by Jan van Beek as evaluate_waq_attribute
 
 !     Modified: February 2011 by Leo Postma
 
@@ -72,3 +78,4 @@
 
       return
       end
+      end module m_dhkmst

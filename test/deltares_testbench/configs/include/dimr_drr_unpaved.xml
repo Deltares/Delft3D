@@ -1,0 +1,373 @@
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e108(drr)_f01(unpaved)_c01_400_Ernst" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c01_400_Ernst</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <!--
+                <file name="dimr_screen.log" type="NUMBERTEXT">
+                    <skipline>Dimr</skipline>
+                </file>
+                -->
+                <file name="rr/3b_bal.out" type="NUMBERTEXT">
+                </file>
+                <file name="rr/3b_gener.out" type="NUMBERTEXT">
+                    <skipline>Run datum</skipline>
+                </file>
+                <file name="rr/bound3b.out" type="NUMBERTEXT">
+                    <skipline>Run datum</skipline>
+                </file>
+                <file name="rr/rr-ready" type="NUMBERTEXT">
+                </file>
+                <file name="rr/runoff.out" type="NUMBERTEXT">
+                </file>
+                <file name="rr/sobek_3b.dbg" type="NUMBERTEXT">
+                </file>
+                <file name="rr/sobek_3b.rtn" type="NUMBERTEXT">
+                </file>
+                <file name="rr/unpaved.out" type="NUMBERTEXT">
+                    <skipline>Run datum</skipline>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c02_401_Ernst" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c02_401_Ernst</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Surf. Runoff" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Actual Evap." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Pot. Evapor." location="2" toleranceAbsolute="0.0003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Storage Land depth" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Storage Land volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+
+	<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen  
+	
+        <testCase name="e108(drr)_f01(unpaved)_c03_402_Ernst" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c03_402_Ernst</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Surf. Runoff" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Storage Land depth" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Storage Land volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="1" toleranceAbsolute="0.00001" />
+                        <parameter name="Boundary Level" location="1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+	-->
+
+        <testCase name="e108(drr)_f01(unpaved)_c04_403_Seepage" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c04_403_Seepage</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Net Seepage" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c05_404_Seepage" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c05_404_Seepage</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Net Seepage" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c06_405_Seepage" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c06_405_Seepage</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Net Seepage" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c07_406_Evaporation" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c07_406_Evaporation</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Actual Evap." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Pot. Evapor." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c08_407_Evaporation" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c08_407_Evaporation</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Actual Evap." location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Pot. Evapor." location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.004" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c09_416_DeZeeuwHellinga" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c09_416_DeZeeuwHellinga</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c10_417_DeZeeuwHellinga" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c10_417_DeZeeuwHellinga</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Surf. Runoff" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual Evap." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot. Evapor." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Storage Land depth" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Storage Land volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
+
+        <testCase name="e108(drr)_f01(unpaved)_c11_418_DeZeeuwHellinga" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c11_418_DeZeeuwHellinga</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Surf. Runoff" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Storage Land depth" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Storage Land volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="1" toleranceAbsolute="0.00001" />
+                        <parameter name="Boundary Level" location="1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+		
+-->		
+		
+		
+        <testCase name="e108(drr)_f01(unpaved)_c12_419_KvdLeur" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c12_419_KvdLeur</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
+
+        <testCase name="e108(drr)_f01(unpaved)_c13_420_KvdLeur" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c13_420_KvdLeur</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+                <file name="rr/bndflodt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Flow" location="1" toleranceAbsolute="0.00001" />
+                        <parameter name="Boundary Level" location="1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+		
+-->
+		
+        <testCase name="e108(drr)_f01(unpaved)_c14_421_StorageOnLand" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c14_421_StorageOnLand</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Surf. Runoff" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Actual Evap." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Pot. Evapor." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage Land depth" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Storage Land volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="e108(drr)_f01(unpaved)_c15_422_MaxInfiltration" ref="drr_default">
+            <path>e108_drr/f01_unpaved/c15_422_MaxInfiltration</path>
+            <checks>
+                <file name="rr/upflowdt.his" type="HIS">
+                    <parameters>
+                        <parameter name="Surf. Runoff" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.outfl." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Rainfall" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Infiltration" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Actual Evap." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Pot. Evapor." location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Percolation" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.00003" />
+                        <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage Land depth" location="2" toleranceAbsolute="0.001" />
+                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Storage Land volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+    </testCases>

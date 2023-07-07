@@ -1,0 +1,11 @@
+netCDF4
+lxml
+python-dateutil
+pandas
+matplotlib
+numpy
+numexpr
+paramiko
+pathlib
+tk
+

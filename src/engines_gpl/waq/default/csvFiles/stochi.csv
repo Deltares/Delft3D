@@ -1,0 +1,3865 @@
+stocfl,stocsu,stocsc
+"dDumphcarb","ALKA      ",   0.00000
+"dDumphcarb","TIC       ",   0.00000
+"dDumEmersi","Continuity",   0.00000
+"dTempHtfl ","NatTemp   ",   1.00000
+"dTempHtfl2","NatTemp   ",   0.00000
+"dModTemp  ","ModTemp   ",   1.00000
+"dDumVarSal","FrCon     ",   0.00000
+"dDumVarSal","FrFlow    ",   0.00000
+"dDumVarSal","SalBnd    ",   0.00000
+"dDumRestim","Continuity",   0.00000
+"dDumVerDis","OXY       ",   0.00000
+"dDumHorDis","OXY       ",   0.00000
+"dDumHorDiV","Continuity",   0.00000
+"dDumHorDiV","OXY       ",   0.00000
+"dDumHorDiV","Salinity  ",   0.00000
+"dDumHorDiV","FrCon     ",   0.00000
+"dDumHorDiV","FrFlow    ",   0.00000
+"dDumHorDiV","SalBnd    ",   0.00000
+"dDumHorDiA","Continuity",   0.00000
+"dDumHorDiA","OXY       ",   0.00000
+"dDumHorDiA","Salinity  ",   0.00000
+"dDumHorDiA","FrCon     ",   0.00000
+"dDumHorDiA","FrFlow    ",   0.00000
+"dDumHorDiA","SalBnd    ",   0.00000
+"dDecTR1   ","dTR1      ",  -1.00000
+"dDecTR2   ","dTR2      ",  -1.00000
+"dDecTR3   ","dTR3      ",  -1.00000
+"dDecTR4   ","dTR4      ",  -1.00000
+"dDecTR5   ","dTR5      ",  -1.00000
+"dDumSM01  ","SM01      ",   0.00000
+"dDumSM02  ","SM02      ",   0.00000
+"dDumSM03  ","SM03      ",   0.00000
+"dDumSm04  ","SM04      ",   0.00000
+"dDumSM05  ","SM05      ",   0.00000
+"dDumphsimp","ALKA      ",   0.00000
+"dDumphsimp","TIC       ",   0.00000
+"dDumspcarb","TIC       ",   0.00000
+"dEffTAlg  ","EffTFDIAT ",   1.00000
+"dEffTAlg  ","EffTFFLAE ",   1.00000
+"dEffTAlg  ","EffTGREEN ",   1.00000
+"dEffTAlg  ","EffTAPHAN ",   1.00000
+"dEffTAlg  ","EffTAPHNF ",   1.00000
+"dEffTAlg  ","EffTMICRO ",   1.00000
+"dEffTAlg  ","EffTOSCIL ",   1.00000
+"dEffTAlg  ","EffTBLUEG ",   1.00000
+"dEffTAlg  ","EffTMDIAT ",   1.00000
+"dEffTAlg  ","EffTMFLAE ",   1.00000
+"dEffTAlg  ","EffTDINOF ",   1.00000
+"dEffTAlg  ","EffTDINOM ",   1.00000
+"dEffTAlg  ","EffTPHAEO ",   1.00000
+"dEffTAlg  ","EffTULVAS ",   1.00000
+"dEffTAlg  ","EffTULVAF ",   1.00000
+"dEffTAlg  ","EffTNODUL ",   1.00000
+"dEffTAlg  ","EffTANABA ",   1.00000
+"dEffTALG01","EffTALG01 ",   1.00000
+"dEffTALG02","EffTALG02 ",   1.00000
+"dEffTALG03","EffTALG03 ",   1.00000
+"dEffTALG04","EffTALG04 ",   1.00000
+"dEffTALG05","EffTALG05 ",   1.00000
+"dEffTALG06","EffTALG06 ",   1.00000
+"dEffTALG07","EffTALG07 ",   1.00000
+"dEffTALG08","EffTALG08 ",   1.00000
+"dEffTALG09","EffTALG09 ",   1.00000
+"dEffTALG10","EffTALG10 ",   1.00000
+"dEffTALG11","EffTALG11 ",   1.00000
+"dEffTALG12","EffTALG12 ",   1.00000
+"dEffTALG13","EffTALG13 ",   1.00000
+"dEffTALG14","EffTALG14 ",   1.00000
+"dEffTALG15","EffTALG15 ",   1.00000
+"dEffTALG16","EffTALG16 ",   1.00000
+"dEffTALG17","EffTALG17 ",   1.00000
+"dEffTALG18","EffTALG18 ",   1.00000
+"dEffTALG19","EffTALG19 ",   1.00000
+"dEffTALG20","EffTALG20 ",   1.00000
+"dEffTALG21","EffTALG21 ",   1.00000
+"dEffTALG22","EffTALG22 ",   1.00000
+"dEffTALG23","EffTALG23 ",   1.00000
+"dEffTALG24","EffTALG24 ",   1.00000
+"dEffTALG25","EffTALG25 ",   1.00000
+"dEffTALG26","EffTALG26 ",   1.00000
+"dEffTALG27","EffTALG27 ",   1.00000
+"dEffTALG28","EffTALG28 ",   1.00000
+"dEffTALG29","EffTALG29 ",   1.00000
+"dEffTALG30","EffTALG30 ",   1.00000
+"dCaut     ","OXY       ",  -2.67000
+"dCaut     ","TIC       ",   1.00000
+"dCaut     ","H2O       ",   1.50000
+"dCaut     ","SUD       ",   0.01750
+"dNaut     ","NH4       ",   1.00000
+"dNaut     ","H+        ",  -0.07100
+"dNaut     ","ALKA      ",   4.35700
+"dPaut     ","PO4       ",   1.00000
+"dPaut     ","H+        ",   0.03200
+"dPaut     ","ALKA      ",  -1.96800
+"dSIaut    ","SI        ",   1.00000
+"dDetCMort ","POC1      ",   1.00000
+"dDetCMort ","POS1      ",   0.01750
+"dDetNMort ","PON1      ",   1.00000
+"dDetPMort ","POP1      ",   1.00000
+"dDetSiMort","Opal      ",   1.00000
+"dOOCMort  ","POC2      ",   1.00000
+"dOOCMort  ","POS2      ",   0.01750
+"dOONMort  ","PON2      ",   1.00000
+"dOOPMort  ","POP2      ",   1.00000
+"dOOSiMort ","Opal      ",   1.00000
+"dCUpt     ","TIC       ",  -1.00000
+"dCUpt     ","H2O       ",  -1.50000
+"dCUpt     ","SO4       ",  -0.01750
+"dNH4Upt   ","NH4       ",  -1.00000
+"dNH4Upt   ","H+        ",   0.07100
+"dNH4Upt   ","ALKA      ",  -4.35700
+"dNO3Upt   ","NO3       ",  -1.00000
+"dNO3Upt   ","OXY       ",   4.57100
+"dNO3Upt   ","H+        ",  -0.07100
+"dNO3Upt   ","ALKA      ",   4.35700
+"dNO3Upt   ","H2O       ",  -1.28600
+"dPO4Upt   ","PO4       ",  -1.00000
+"dPO4Upt   ","H+        ",  -0.03200
+"dPO4Upt   ","ALKA      ",   1.96800
+"dSIUpt    ","SI        ",  -1.00000
+"dDetNUpt  ","PON1      ",  -1.00000
+"dDetPUpt  ","POP1      ",  -1.00000
+"dDetCUpt  ","POC1      ",  -1.00000
+"dPrProdOxy","OXY       ",   2.67000
+"dProdAlg  ","APHANFIX  ",   1.00000
+"dProdAlg  ","APHANIZO  ",   1.00000
+"dProdAlg  ","BLUEGRN   ",   1.00000
+"dProdAlg  ","DINOFLAG  ",   1.00000
+"dProdAlg  ","DINOMIX   ",   1.00000
+"dProdAlg  ","FDIATOMS  ",   1.00000
+"dProdAlg  ","FFLAGELA  ",   1.00000
+"dProdAlg  ","GREENS    ",   1.00000
+"dProdAlg  ","MDIATOMS  ",   1.00000
+"dProdAlg  ","MFLAGELA  ",   1.00000
+"dProdAlg  ","MICROCYS  ",   1.00000
+"dProdAlg  ","OSCILAT   ",   1.00000
+"dProdAlg  ","PHAEOCYS  ",   1.00000
+"dProdAlg  ","UlvaF     ",   1.00000
+"dProdAlg  ","UlvaS     ",   1.00000
+"dProdAlg  ","NODULA    ",   1.00000
+"dProdAlg  ","ANABAENA  ",   1.00000
+"dProdAlg  ","CYLINFIX  ",   1.00000
+"dProdAlg  ","ARTHROSP  ",   1.00000
+"dProdAlg  ","PLANKTOL  ",   1.00000
+"dProdAlg  ","PSEUDOAN  ",   1.00000
+"dProdAlg01","BLOOMALG01",   1.00000
+"dProdAlg02","BLOOMALG02",   1.00000
+"dProdAlg03","BLOOMALG03",   1.00000
+"dProdAlg04","BLOOMALG04",   1.00000
+"dProdAlg05","BLOOMALG05",   1.00000
+"dProdAlg06","BLOOMALG06",   1.00000
+"dProdAlg07","BLOOMALG07",   1.00000
+"dProdAlg08","BLOOMALG08",   1.00000
+"dProdAlg09","BLOOMALG09",   1.00000
+"dProdAlg10","BLOOMALG10",   1.00000
+"dProdAlg11","BLOOMALG11",   1.00000
+"dProdAlg12","BLOOMALG12",   1.00000
+"dProdAlg13","BLOOMALG13",   1.00000
+"dProdAlg14","BLOOMALG14",   1.00000
+"dProdAlg15","BLOOMALG15",   1.00000
+"dProdAlg16","BLOOMALG16",   1.00000
+"dProdAlg17","BLOOMALG17",   1.00000
+"dProdAlg18","BLOOMALG18",   1.00000
+"dProdAlg19","BLOOMALG19",   1.00000
+"dProdAlg20","BLOOMALG20",   1.00000
+"dProdAlg21","BLOOMALG21",   1.00000
+"dProdAlg22","BLOOMALG22",   1.00000
+"dProdAlg23","BLOOMALG23",   1.00000
+"dProdAlg24","BLOOMALG24",   1.00000
+"dProdAlg25","BLOOMALG25",   1.00000
+"dProdAlg26","BLOOMALG26",   1.00000
+"dProdAlg27","BLOOMALG27",   1.00000
+"dProdAlg28","BLOOMALG28",   1.00000
+"dProdAlg29","BLOOMALG29",   1.00000
+"dProdAlg30","BLOOMALG30",   1.00000
+"dMortAlg01","BLOOMALG01",  -1.00000
+"dMortAlg02","BLOOMALG02",  -1.00000
+"dMortAlg03","BLOOMALG03",  -1.00000
+"dMortAlg04","BLOOMALG04",  -1.00000
+"dMortAlg05","BLOOMALG05",  -1.00000
+"dMortAlg06","BLOOMALG06",  -1.00000
+"dMortAlg07","BLOOMALG07",  -1.00000
+"dMortAlg08","BLOOMALG08",  -1.00000
+"dMortAlg09","BLOOMALG09",  -1.00000
+"dMortAlg10","BLOOMALG10",  -1.00000
+"dMortAlg11","BLOOMALG11",  -1.00000
+"dMortAlg12","BLOOMALG12",  -1.00000
+"dMortAlg13","BLOOMALG13",  -1.00000
+"dMortAlg14","BLOOMALG14",  -1.00000
+"dMortAlg15","BLOOMALG15",  -1.00000
+"dMortAlg16","BLOOMALG16",  -1.00000
+"dMortAlg17","BLOOMALG17",  -1.00000
+"dMortAlg18","BLOOMALG18",  -1.00000
+"dMortAlg19","BLOOMALG19",  -1.00000
+"dMortAlg20","BLOOMALG20",  -1.00000
+"dMortAlg21","BLOOMALG21",  -1.00000
+"dMortAlg22","BLOOMALG22",  -1.00000
+"dMortAlg23","BLOOMALG23",  -1.00000
+"dMortAlg24","BLOOMALG24",  -1.00000
+"dMortAlg25","BLOOMALG25",  -1.00000
+"dMortAlg26","BLOOMALG26",  -1.00000
+"dMortAlg27","BLOOMALG27",  -1.00000
+"dMortAlg28","BLOOMALG28",  -1.00000
+"dMortAlg29","BLOOMALG29",  -1.00000
+"dMortAlg30","BLOOMALG30",  -1.00000
+"dDumphyblo","APHANFIX  ",   1.00000
+"dDumphyblo","APHANIZO  ",   1.00000
+"dDumphyblo","BLUEGRN   ",   1.00000
+"dDumphyblo","DINOFLAG  ",   1.00000
+"dDumphyblo","DINOMIX   ",   1.00000
+"dDumphyblo","FDIATOMS  ",   1.00000
+"dDumphyblo","FFLAGELA  ",   1.00000
+"dDumphyblo","GREENS    ",   1.00000
+"dDumphyblo","MDIATOMS  ",   1.00000
+"dDumphyblo","MFLAGELA  ",   1.00000
+"dDumphyblo","MICROCYS  ",   1.00000
+"dDumphyblo","OSCILAT   ",   1.00000
+"dDumphyblo","PHAEOCYS  ",   1.00000
+"dDumphyblo","UlvaF     ",   1.00000
+"dDumphyblo","UlvaS     ",   1.00000
+"dDumphyblo","NODULA    ",   1.00000
+"dDumphyblo","ANABAENA  ",   1.00000
+"dDumphyblo","CYLINFIX  ",   1.00000
+"dDumphyblo","ARTHROSP  ",   1.00000
+"dDumphyblo","PLANKTOL  ",   1.00000
+"dDumphyblo","PSEUDOAN  ",   1.00000
+"dDumMak   ","IM1       ",   0.00000
+"dDumMak   ","IM2       ",   0.00000
+"dDumMak   ","IM3       ",   0.00000
+"dDumS1Mak ","IM1S1     ",   0.00000
+"dDumS1Mak ","IM2S1     ",   0.00000
+"dDumS1Mak ","IM3S1     ",   0.00000
+"dDumS2Mak ","IM1S2     ",   0.00000
+"dDumS2Mak ","IM2S2     ",   0.00000
+"dDumS2Mak ","IM3S2     ",   0.00000
+"dDumS1Comp","IM1S1     ",   0.00000
+"dDumS1Comp","IM2S1     ",   0.00000
+"dDumS1Comp","IM3S1     ",   0.00000
+"dDumS1Comp","DetCS1    ",   0.00000
+"dDumS1Comp","OOCS1     ",   0.00000
+"dDumS1Comp","DiatS1    ",   0.00000
+"dDumS1Comp","GreenS1   ",   0.00000
+"dDumS1Comp","AAPS1     ",   0.00000
+"dDumS1Comp","DetNS1    ",   0.00000
+"dDumS1Comp","DetPS1    ",   0.00000
+"dDumS1Comp","DetSiS1   ",   0.00000
+"dDumS1Comp","OONS1     ",   0.00000
+"dDumS1Comp","OOSiS1    ",   0.00000
+"dDumS2Comp","IM1S2     ",   0.00000
+"dDumS2Comp","IM2S2     ",   0.00000
+"dDumS2Comp","IM3S2     ",   0.00000
+"dDumS2Comp","DetCS2    ",   0.00000
+"dDumS2Comp","OOCS2     ",   0.00000
+"dDumS2Comp","DiatS2    ",   0.00000
+"dDumS2Comp","GreenS2   ",   0.00000
+"dDumS2Comp","AAPS2     ",   0.00000
+"dDumS2Comp","DetNS2    ",   0.00000
+"dDumS2Comp","DetPS2    ",   0.00000
+"dDumS2Comp","DetSiS2   ",   0.00000
+"dDumS2Comp","OONS2     ",   0.00000
+"dDumS2Comp","OOSiS2    ",   0.00000
+"dDumCompos","NO3       ",   0.00000
+"dDumCompos","NH4       ",   0.00000
+"dDumCompos","PO4       ",   0.00000
+"dDumCompos","Si        ",   0.00000
+"dDumCompos","IM1       ",   0.00000
+"dDumCompos","IM2       ",   0.00000
+"dDumCompos","IM3       ",   0.00000
+"dDumCompos","Phyt      ",   0.00000
+"dDumCompos","AlgN      ",   0.00000
+"dDumCompos","AlgP      ",   0.00000
+"dDumCompos","AlgSi     ",   0.00000
+"dDumCompos","AlgDM     ",   0.00000
+"dDumCompos","POC1      ",   0.00000
+"dDumCompos","POC2      ",   0.00000
+"dDumCompos","POC3      ",   0.00000
+"dDumCompos","POC4      ",   0.00000
+"dDumCompos","PON1      ",   0.00000
+"dDumCompos","DOC       ",   0.00000
+"dDumCompos","DON       ",   0.00000
+"dDumCompos","DOP       ",   0.00000
+"dDumCompos","DOS       ",   0.00000
+"dDumCompos","AAP       ",   0.00000
+"dDumCompos","VIVP      ",   0.00000
+"dDumCompos","APATP     ",   0.00000
+"dDumCompos","PON2      ",   0.00000
+"dDumCompos","PON3      ",   0.00000
+"dDumCompos","PON4      ",   0.00000
+"dDumCompos","POP1      ",   0.00000
+"dDumCompos","POP2      ",   0.00000
+"dDumCompos","POP3      ",   0.00000
+"dDumCompos","POP4      ",   0.00000
+"dDumCompos","POS1      ",   0.00000
+"dDumCompos","POS2      ",   0.00000
+"dDumCompos","POS3      ",   0.00000
+"dDumCompos","POS4      ",   0.00000
+"dDumCompos","Opal      ",   0.00000
+"dMrtEColi ","EColi     ",  -1.00000
+"dMrtFColi ","FColi     ",  -1.00000
+"dMrtTColi ","TColi     ",  -1.00000
+"dMrtEnCoc ","EnCoc     ",  -1.00000
+"dREARCO2  ","TIC       ",   0.27300
+"dAdsPO4AAP","PO4       ",  -1.00000
+"dAdsPO4AAP","AAP       ",   1.00000
+"dDenitSed ","NO3       ",  -1.00000
+"dDenitWat ","NO3       ",  -1.00000
+"dDenitWat ","H+        ",  -0.07100
+"dDenitWat ","H2O       ",   0.64300
+"dDenitWat ","OXY       ",   2.85700
+"dDenitWat ","ALKA      ",   4.35700
+"dNITRIF   ","NH4       ",  -1.00000
+"dNITRIF   ","NO3       ",   1.00000
+"dNITRIF   ","OXY       ",  -4.57100
+"dNITRIF   ","H+        ",   0.14300
+"dNITRIF   ","H2O       ",   1.28600
+"dNITRIF   ","ALKA      ",  -8.71400
+"dREAROXY  ","OXY       ",   1.00000
+"dCUptVar  ","OXY       ",   2.67000
+"dMinDetCS1","DetCS1    ",  -1.00000
+"dMinDetCS1","OXY       ",  -2.67000
+"dMinDetCS1","TIC       ",   1.00000
+"dMinDetCS1","H2O       ",   1.50000
+"dSWMinDCS1","DetCS1    ",  -1.00000
+"dSWMinDCS1","TIC       ",   1.00000
+"dSWMinDCS1","H2O       ",   1.50000
+"dMinDetCS2","DetCS2    ",  -1.00000
+"dMinDetCS2","OXY       ",  -2.67000
+"dMinDetCS2","TIC       ",   1.00000
+"dMinDetCS2","H2O       ",   1.50000
+"dSWMinDCS2","DetCS2    ",  -1.00000
+"dSWMinDCS2","TIC       ",   1.00000
+"dSWMinDCS2","H2O       ",   1.50000
+"dMinDetNS1","DetNS1    ",  -1.00000
+"dMinDetNS1","NH4       ",   1.00000
+"dMinDetNS1","H+        ",  -0.07100
+"dMinDetNS1","ALKA      ",   4.35700
+"dSWMinDNS1","DetNS1    ",  -1.00000
+"dSWMinDNS1","H+        ",  -0.07100
+"dSWMinDNS1","ALKA      ",   4.35700
+"dMinDetNS2","DetNS2    ",  -1.00000
+"dMinDetNS2","NH4       ",   1.00000
+"dMinDetNS2","H+        ",  -0.07100
+"dMinDetNS2","ALKA      ",   4.35700
+"dSWMinDNS2","DetNS2    ",  -1.00000
+"dSWMinDNS2","H+        ",  -0.07100
+"dSWMinDNS2","ALKA      ",   4.35700
+"dMinDetPS1","DetPS1    ",  -1.00000
+"dMinDetPS1","PO4       ",   1.00000
+"dMinDetPS1","H+        ",   0.03200
+"dMinDetPS1","ALKA      ",  -1.96800
+"dSWMinDPS1","DetPS1    ",  -1.00000
+"dSWMinDPS1","H+        ",   0.03200
+"dSWMinDPS1","ALKA      ",  -1.96800
+"dMinDetPS2","DetPS2    ",  -1.00000
+"dMinDetPS2","PO4       ",   1.00000
+"dMinDetPS2","H+        ",   0.03200
+"dMinDetPS2","ALKA      ",  -1.96800
+"dSWMinDPS2","DetPS2    ",  -1.00000
+"dSWMinDPS2","H+        ",   0.03200
+"dSWMinDPS2","ALKA      ",  -1.96800
+"dMinDetSiS","DetSiS1   ",  -1.00000
+"dMinDetSiS","Si        ",   1.00000
+"dSWMinDSS1","DetSiS1   ",  -1.00000
+"dMinDetSS2","DetSiS2   ",  -1.00000
+"dMinDetSS2","Si        ",   1.00000
+"dSWMinDSS2","DetSiS2   ",  -1.00000
+"dMinOOCS1 ","OOCS1     ",  -1.00000
+"dMinOOCS1 ","OXY       ",  -2.67000
+"dMinOOCS1 ","TIC       ",   1.00000
+"dMinOOCS1 ","H2O       ",   1.50000
+"dSWMnOOCS1","OOCS1     ",  -1.00000
+"dSWMnOOCS1","TIC       ",   1.00000
+"dSWMnOOCS1","H2O       ",   1.50000
+"dMinOOCS2 ","OOCS2     ",  -1.00000
+"dMinOOCS2 ","OXY       ",  -2.67000
+"dMinOOCS2 ","TIC       ",   1.00000
+"dMinOOCS2 ","H2O       ",   1.50000
+"dSWMnOOCS2","OOCS2     ",  -1.00000
+"dSWMnOOCS2","TIC       ",   1.00000
+"dSWMnOOCS2","H2O       ",   1.50000
+"dMinOONS1 ","OONS1     ",  -1.00000
+"dMinOONS1 ","NH4       ",   1.00000
+"dMinOONS1 ","H+        ",  -0.07100
+"dMinOONS1 ","ALKA      ",   4.35700
+"dSWMnOONS1","OONS1     ",  -1.00000
+"dSWMnOONS1","H+        ",  -0.07100
+"dSWMnOONS1","ALKA      ",   4.35700
+"dMinOONS2 ","OONS2     ",  -1.00000
+"dMinOONS2 ","NH4       ",   1.00000
+"dMinOONS2 ","H+        ",  -0.07100
+"dMinOONS2 ","ALKA      ",   4.35700
+"dSWMnOONS2","OONS2     ",  -1.00000
+"dSWMnOONS2","H+        ",  -0.07100
+"dSWMnOONS2","ALKA      ",   4.35700
+"dMinOOPS1 ","OOPS1     ",  -1.00000
+"dMinOOPS1 ","PO4       ",   1.00000
+"dMinOOPS1 ","H+        ",   0.03200
+"dMinOOPS1 ","ALKA      ",  -1.96800
+"dSWMnOOPS1","OOPS1     ",  -1.00000
+"dSWMnOOPS1","H+        ",   0.03200
+"dSWMnOOPS1","ALKA      ",  -1.96800
+"dMinOOPS2 ","OOPS2     ",  -1.00000
+"dMinOOPS2 ","PO4       ",   1.00000
+"dMinOOPS2 ","H+        ",   0.03200
+"dMinOOPS2 ","ALKA      ",  -1.96800
+"dSWMnOOPS2","OOPS2     ",  -1.00000
+"dSWMnOOPS2","H+        ",   0.03200
+"dSWMnOOPS2","ALKA      ",  -1.96800
+"dMinOOSiS1","OOSiS1    ",  -1.00000
+"dMinOOSiS1","Si        ",   1.00000
+"dSWMnOOSS1","OOSiS1    ",  -1.00000
+"dMinOOSiS2","OOSiS2    ",  -1.00000
+"dMinOOSiS2","Si        ",   1.00000
+"dSWMnOOSS2","OOSiS2    ",  -1.00000
+"dDesoAAPS1","AAPS1     ",  -1.00000
+"dDesoAAPS1","PO4       ",   1.00000
+"dSWDeAAPS1","AAPS1     ",  -1.00000
+"dSWDeAAPS1","PO4       ",   1.00000
+"dDesoAAPS2","AAPS2     ",  -1.00000
+"dDesoAAPS2","PO4       ",   1.00000
+"dSWDeAAPS2","AAPS2     ",  -1.00000
+"dSWDeAAPS2","PO4       ",   1.00000
+"dCBOD5    ","CBOD5     ",  -1.00000
+"dCBOD5_2  ","CBOD5_2   ",  -1.00000
+"dCBODu    ","CBODu     ",  -1.00000
+"dCBODu_2  ","CBODu_2   ",  -1.00000
+"dNBOD5    ","NBOD5     ",  -1.00000
+"dNBODu    ","NBODu     ",  -1.00000
+"dCOD_Cr   ","COD_Cr    ",  -1.00000
+"dCOD_Mn   ","COD_Mn    ",  -1.00000
+"dOxyBODCOD","OXY       ",  -1.00000
+"dCBOD5T   ","CBOD5     ",  -1.00000
+"dCBOD5_2T ","CBOD5_2   ",  -1.00000
+"dCBOD5_3T ","CBOD5_3   ",  -1.00000
+"dCBODOXYT ","OXY       ",  -1.00000
+"dCnvPPOC1 ","POC1      ",  -1.00000
+"dCnvPPOC1 ","POC2      ",   1.00000
+"dCnvPPON1 ","PON1      ",  -1.00000
+"dCnvPPON1 ","PON2      ",   1.00000
+"dCnvPPOP1 ","POP1      ",  -1.00000
+"dCnvPPOP1 ","POP2      ",   1.00000
+"dCnvPPOS1 ","POS1      ",  -1.00000
+"dCnvPPOS1 ","POS2      ",   1.00000
+"dCnvDPOC1 ","POC1      ",  -1.00000
+"dCnvDPOC1 ","DOC       ",   1.00000
+"dCnvDPON1 ","PON1      ",  -1.00000
+"dCnvDPON1 ","DON       ",   1.00000
+"dCnvDPOP1 ","POP1      ",  -1.00000
+"dCnvDPOP1 ","DOP       ",   1.00000
+"dCnvDPOS1 ","POS1      ",  -1.00000
+"dCnvDPOS1 ","DOS       ",   1.00000
+"dMinPOC1G ","POC1      ",  -1.00000
+"dMinPON1  ","PON1      ",  -1.00000
+"dMinPON1  ","NH4       ",   1.00000
+"dMinPON1  ","ALKA      ",   4.35700
+"dMinPOP1  ","POP1      ",  -1.00000
+"dMinPOP1  ","PO4       ",   1.00000
+"dMinPOP1  ","ALKA      ",  -1.96800
+"dMinPOS1  ","POS1      ",  -1.00000
+"dMinPOS1  ","SUD       ",   1.00000
+"dCnvPPOC2 ","POC2      ",  -1.00000
+"dCnvPPOC2 ","POC3      ",   1.00000
+"dCnvPPON2 ","PON2      ",  -1.00000
+"dCnvPPON2 ","PON3      ",   1.00000
+"dCnvPPOP2 ","POP2      ",  -1.00000
+"dCnvPPOP2 ","POP3      ",   1.00000
+"dCnvPPOS2 ","POS2      ",  -1.00000
+"dCnvPPOS2 ","POS3      ",   1.00000
+"dCnvDPOC2 ","POC2      ",  -1.00000
+"dCnvDPOC2 ","DOC       ",   1.00000
+"dCnvDPON2 ","PON2      ",  -1.00000
+"dCnvDPON2 ","DON       ",   1.00000
+"dCnvDPOP2 ","POP2      ",  -1.00000
+"dCnvDPOP2 ","DOP       ",   1.00000
+"dCnvDPOS2 ","POS2      ",  -1.00000
+"dCnvDPOS2 ","DOS       ",   1.00000
+"dMinPOC2G ","POC2      ",  -1.00000
+"dMinPON2  ","PON2      ",  -1.00000
+"dMinPON2  ","NH4       ",   1.00000
+"dMinPON2  ","ALKA      ",   4.35700
+"dMinPOP2  ","POP2      ",  -1.00000
+"dMinPOP2  ","PO4       ",   1.00000
+"dMinPOP2  ","ALKA      ",  -1.96800
+"dMinPOS2  ","POS2      ",  -1.00000
+"dMinPOS2  ","SUD       ",   1.00000
+"dCnvPPOC3 ","POC3      ",  -1.00000
+"dCnvPPOC3 ","POC4      ",   1.00000
+"dCnvPPON3 ","PON3      ",  -1.00000
+"dCnvPPON3 ","PON4      ",   1.00000
+"dCnvPPOP3 ","POP3      ",  -1.00000
+"dCnvPPOP3 ","POP4      ",   1.00000
+"dCnvPPOS3 ","POS3      ",  -1.00000
+"dCnvPPOS3 ","POS4      ",   1.00000
+"dCnvDPOC3 ","POC3      ",  -1.00000
+"dCnvDPOC3 ","DOC       ",   1.00000
+"dCnvDPON3 ","PON3      ",  -1.00000
+"dCnvDPON3 ","DON       ",   1.00000
+"dCnvDPOP3 ","POP3      ",  -1.00000
+"dCnvDPOP3 ","DOP       ",   1.00000
+"dCnvDPOS3 ","POS3      ",  -1.00000
+"dCnvDPOS3 ","DOS       ",   1.00000
+"dMinPOC3G ","POC3      ",  -1.00000
+"dMinPON3  ","PON3      ",  -1.00000
+"dMinPON3  ","NH4       ",   1.00000
+"dMinPON3  ","ALKA      ",   4.35700
+"dMinPOP3  ","POP3      ",  -1.00000
+"dMinPOP3  ","PO4       ",   1.00000
+"dMinPOP3  ","ALKA      ",  -1.96800
+"dMinPOS3  ","POS3      ",  -1.00000
+"dMinPOS3  ","SUD       ",   1.00000
+"dMinPOC4G ","POC4      ",  -1.00000
+"dMinPON4  ","PON4      ",  -1.00000
+"dMinPON4  ","NH4       ",   1.00000
+"dMinPON4  ","ALKA      ",   4.35700
+"dMinPOP4  ","POP4      ",  -1.00000
+"dMinPOP4  ","PO4       ",   1.00000
+"dMinPOP4  ","ALKA      ",  -1.96800
+"dMinPOS4  ","POS4      ",  -1.00000
+"dMinPOS4  ","SUD       ",   1.00000
+"dMinDOCG  ","DOC       ",  -1.00000
+"dMinDON   ","DON       ",  -1.00000
+"dMinDON   ","NH4       ",   1.00000
+"dMinDON   ","ALKA      ",   4.35700
+"dMinDOP   ","DOP       ",  -1.00000
+"dMinDOP   ","PO4       ",   1.00000
+"dMinDOP   ","ALKA      ",  -1.96800
+"dMinDOS   ","DOS       ",  -1.00000
+"dMinDOS   ","SUD       ",   1.00000
+"dCnvPPOC5 ","POC5      ",  -1.00000
+"dCnvPPOC5 ","POC4      ",   1.00000
+"dCnvPPON5 ","PON5      ",  -1.00000
+"dCnvPPON5 ","PON4      ",   1.00000
+"dCnvPPOP5 ","POP5      ",  -1.00000
+"dCnvPPOP5 ","POP4      ",   1.00000
+"dCnvPPOS5 ","POS5      ",  -1.00000
+"dCnvPPOS5 ","POS4      ",   1.00000
+"dCnvDPOC5 ","POC5      ",  -1.00000
+"dCnvDPOC5 ","DOC       ",   1.00000
+"dCnvDPON5 ","PON5      ",  -1.00000
+"dCnvDPON5 ","DON       ",   1.00000
+"dCnvDPOP5 ","POP5      ",  -1.00000
+"dCnvDPOP5 ","DOP       ",   1.00000
+"dCnvDPOS5 ","POS5      ",  -1.00000
+"dCnvDPOS5 ","DOS       ",   1.00000
+"dMinPOC5G ","POC5      ",  -1.00000
+"dMinPON5  ","PON5      ",  -1.00000
+"dMinPON5  ","NH4       ",   1.00000
+"dMinPON5  ","ALKA      ",   4.35700
+"dMinPOP5  ","POP5      ",  -1.00000
+"dMinPOP5  ","PO4       ",   1.00000
+"dMinPOP5  ","ALKA      ",  -1.96800
+"dMinPOS5  ","POS5      ",  -1.00000
+"dMinPOS5  ","SUD       ",   1.00000
+"dMinPOC5E ","POC5      ",  -1.00000
+"dMinPOC5E ","OXY       ",  -2.67000
+"dMinPOC5E ","TIC       ",   1.00000
+"dMinPOC5E ","H2O       ",   1.50000
+"dMinPOC5A ","OXY       ",   2.67000
+"dMinPOC5A ","TIC       ",  -1.00000
+"dPrecipPO4","PO4       ",  -1.00000
+"dPrecipPO4","VIVP      ",   1.00000
+"dDissolPO4","PO4       ",   1.00000
+"dDissolPO4","VIVP      ",  -1.00000
+"dDissolSi ","Si        ",   1.00000
+"dDissolSi ","Opal      ",  -1.00000
+"dSOD      ","SOD       ",  -1.00000
+"dOxSOD    ","OXY       ",  -1.00000
+"dPPGreen  ","OXY       ",   2.67000
+"dPPGreen  ","TIC       ",  -1.00000
+"dPPGreen  ","H2O       ",  -1.50000
+"dPPGreen  ","Green     ",   1.00000
+"dMrtGreen ","Green     ",  -1.00000
+"dPPDiat   ","OXY       ",   2.67000
+"dPPDiat   ","TIC       ",  -1.00000
+"dPPDiat   ","H2O       ",  -1.50000
+"dPPDiat   ","Diat      ",   1.00000
+"dMrtDiat  ","Diat      ",  -1.00000
+"dPPDiatS1 ","OXY       ",   2.67000
+"dPPDiatS1 ","TIC       ",  -1.00000
+"dPPDiatS1 ","H2O       ",  -1.50000
+"dPPDiatS1 ","DiatS1    ",   1.00000
+"dMrtDiatS1","DiatS1    ",  -1.00000
+"dNH4UptS1 ","NH4       ",  -1.00000
+"dNH4UptS1 ","H+        ",   0.07100
+"dNH4UptS1 ","ALKA      ",  -4.35700
+"dNO3UptS1 ","NO3       ",  -1.00000
+"dNO3UptS1 ","OXY       ",   4.57100
+"dNO3UptS1 ","H+        ",  -0.07100
+"dNO3UptS1 ","ALKA      ",   4.35700
+"dNO3UptS1 ","H2O       ",  -1.28600
+"dPO4UptS1 ","PO4       ",  -1.00000
+"dPO4UptS1 ","H+        ",  -0.03200
+"dPO4UptS1 ","ALKA      ",   1.96800
+"dSiUptS1  ","Si        ",  -1.00000
+"dNH4US1D  ","NH4       ",  -1.00000
+"dNH4US1D  ","H+        ",   0.07100
+"dNH4US1D  ","ALKA      ",  -4.35700
+"dPO4US1D  ","PO4       ",  -1.00000
+"dPO4US1D  ","H+        ",  -0.03200
+"dPO4US1D  ","ALKA      ",   1.96800
+"dSiUS1D   ","Si        ",  -1.00000
+"dcPPGreen ","OXY       ",   2.67000
+"dcPPGreen ","TIC       ",  -1.00000
+"dcPPGreen ","H2O       ",  -1.50000
+"dcPPGreen ","Green     ",   1.00000
+"dcPPDiat  ","OXY       ",   2.67000
+"dcPPDiat  ","TIC       ",  -1.00000
+"dcPPDiat  ","H2O       ",  -1.50000
+"dcPPDiat  ","Diat      ",   1.00000
+"dMortDetC ","POC1      ",   1.00000
+"dMortOOC  ","POC2      ",   1.00000
+"dNH4Aut   ","NH4       ",   1.00000
+"dNH4Aut   ","H+        ",  -0.07100
+"dNH4Aut   ","ALKA      ",   4.35700
+"dMortDetN ","PON1      ",   1.00000
+"dMortOON  ","PON2      ",   1.00000
+"dPO4Aut   ","PO4       ",   1.00000
+"dPO4Aut   ","H+        ",   0.03200
+"dPO4Aut   ","ALKA      ",  -1.96800
+"dMortDetP ","POP1      ",   1.00000
+"dMortOOP  ","POP2      ",   1.00000
+"dMortDetSi","Opal      ",   1.00000
+"dMortOOSi ","Opal      ",   1.00000
+"dMrtDetCS1","DetCS1    ",   1.00000
+"dMrtOOCS1 ","OOCS1     ",   1.00000
+"dNH4AUTS1 ","NH4       ",   1.00000
+"dNH4AUTS1 ","H+        ",  -0.07100
+"dNH4AUTS1 ","ALKA      ",   4.35700
+"dMrtDetNS1","DetNS1    ",   1.00000
+"dMrtOONS1 ","OONS1     ",   1.00000
+"dPO4AUTS1 ","PO4       ",   1.00000
+"dPO4AUTS1 ","H+        ",   0.03200
+"dPO4AUTS1 ","ALKA      ",  -1.96800
+"dMrtDetPS1","DetPS1    ",   1.00000
+"dMrtOOPS1 ","OOPS1     ",   1.00000
+"dSiAUTS1  ","Si        ",   1.00000
+"dMrtDetSS1","DetSiS1   ",   1.00000
+"dMrtOOSS1 ","OOSiS1    ",   1.00000
+"dDumOXYMin","OXY       ",   0.00000
+"dDumOXYMin","GREEN     ",   0.00000
+"dDumOXYMin","DIAT      ",   0.00000
+"dOxCon    ","OXY       ",  -2.66700
+"dOxCon    ","TIC       ",   1.00000
+"dOxCon    ","H2O       ",   1.50000
+"dOxCon    ","POC1      ",   0.00000
+"dOxCon    ","POC2      ",   0.00000
+"dOxCon    ","POC3      ",   0.00000
+"dOxCon    ","POC4      ",   0.00000
+"dNiDen    ","NO3       ",  -0.93300
+"dNiDen    ","TIC       ",   1.00000
+"dNiDen    ","H2O       ",   2.10000
+"dNiDen    ","H+        ",  -0.06700
+"dNiDen    ","Alka      ",   4.06667
+"dFeRed    ","FeIIIpa   ", -18.60000
+"dFeRed    ","FeIId     ",  18.60000
+"dFeRed    ","TIC       ",   1.00000
+"dFeRed    ","Alka      ",  40.66670
+"dSuRed    ","SO4       ",  -1.33300
+"dSuRed    ","SUD       ",   1.33300
+"dSuRed    ","TIC       ",   1.00000
+"dSuRed    ","H2O       ",   1.50000
+"dMetGenCH4","CH4       ",   1.00000
+"dMetGenCO2","TIC       ",   1.00000
+"dMetEbul  ","CH4       ",  -1.00000
+"dVolCH4   ","CH4       ",   1.00000
+"dSUDox    ","SUD       ",  -1.00000
+"dSUDox    ","OXY       ",  -2.00000
+"dSUDox    ","SO4       ",   1.00000
+"dSUDprec  ","SUD       ",  -1.00000
+"dSUDprec  ","SUP       ",   1.00000
+"dSUDdis   ","SUD       ",   1.00000
+"dSUDdis   ","SUP       ",  -1.00000
+"dMethoxDO ","CH4       ",  -1.00000
+"dMethoxDO ","OXY       ",  -5.33000
+"dMethoxDO ","TIC       ",   1.00000
+"dMethoxDO ","H2O       ",   3.00000
+"dMethoxSu ","CH4       ",  -1.00000
+"dMethoxSu ","SO4       ",  -2.67000
+"dMethoxSu ","TIC       ",   1.00000
+"dMethoxSu ","SUD       ",   2.67000
+"dMethoxSu ","H2O       ",   3.00000
+"dMethoxSu ","H+        ",   0.33300
+"dioo      ","FeIId     ",  -1.00000
+"dioo      ","OXY       ",  -0.14300
+"dioo      ","FeIIId    ",   1.00000
+"dion      ","FeIId     ",  -1.00000
+"dion      ","NO3       ",  -0.05000
+"dion      ","FeIIId    ",   1.00000
+"dFeSox    ","FeS       ",  -1.00000
+"dFeSox    ","OXY       ",  -1.14300
+"dFeSox    ","FeIId     ",   1.00000
+"dFeSox    ","SO4       ",   0.57100
+"dFeS2ox   ","FeS2      ",  -1.00000
+"dFeS2ox   ","OXY       ",  -2.00000
+"dFeS2ox   ","FeIId     ",   1.00000
+"dFeS2ox   ","SO4       ",   1.14300
+"dFeS2ox   ","Alka      ",  -2.39200
+"dire1     ","FeIIIpa   ",  -1.00000
+"dire1     ","SUD       ",  -0.07140
+"dire1     ","FeIId     ",   1.00000
+"dire1     ","SO4       ",   0.07140
+"dire1     ","Alka      ",   2.09300
+"dire2     ","FeIIIpc   ",  -1.00000
+"dire2     ","SUD       ",  -0.07140
+"dire2     ","FeIId     ",   1.00000
+"dire2     ","SO4       ",   0.07140
+"dire2     ","Alka      ",   2.09300
+"dire3     ","FeIIIpa   ",  -1.00000
+"dire3     ","Fes       ",  -0.12500
+"dire3     ","FeIId     ",   1.12500
+"dire3     ","SO4       ",   0.07140
+"dire3     ","Alka      ",   2.12600
+"dire4     ","FeIIIpc   ",  -1.00000
+"dire4     ","Fes       ",  -0.12500
+"dire4     ","FeIId     ",   1.12500
+"dire4     ","SO4       ",   0.07140
+"dire4     ","Alka      ",   2.12600
+"dpfe3     ","FeIIId    ",  -1.00000
+"dpfe3     ","FeIIIpa   ",   1.00000
+"dpfe3     ","Alka      ",  -3.58800
+"ddfe3     ","FeIIId    ",   1.00000
+"ddfe3     ","FeIIIpa   ",  -1.00000
+"ddfe3     ","Alka      ",   3.58800
+"dafe3     ","FeIIIpa   ",  -1.00000
+"dafe3     ","FeIIIpc   ",   1.00000
+"dpfes     ","FeIId     ",  -1.00000
+"dpfes     ","FeS       ",   1.00000
+"dpfes     ","SUD       ",  -0.57100
+"ddfes     ","FeIId     ",   1.00000
+"ddfes     ","FeS       ",  -1.00000
+"ddfes     ","SUD       ",   0.57100
+"dpfeco3   ","FeIId     ",  -1.00000
+"dpfeco3   ","FeCO3     ",   1.00000
+"dpfeco3   ","TIC       ",  -0.21486
+"dpfeco3   ","Alka      ",  -2.39200
+"ddfeco3   ","FeIId     ",   1.00000
+"ddfeco3   ","FeCO3     ",  -1.00000
+"ddfeco3   ","TIC       ",   0.21486
+"ddfeco3   ","Alka      ",   2.39200
+"dpyr      ","FeS       ",  -1.00000
+"dpyr      ","FeS2      ",   1.00000
+"dpyr      ","SUD       ",  -0.57400
+"dRIM1S2Pup","IM1       ",   1.00000
+"dRIM1S2Pup","IM1S2     ",  -1.00000
+"dRIM2S2Pup","IM2       ",   1.00000
+"dRIM2S2Pup","IM2S2     ",  -1.00000
+"dRIM3S2Pup","IM3       ",   1.00000
+"dRIM3S2Pup","IM3S2     ",  -1.00000
+"dResS1IM1 ","IM1       ",   1.00000
+"dResS1IM1 ","IM1S1     ",  -1.00000
+"dResS1IM2 ","IM2       ",   1.00000
+"dResS1IM2 ","IM2S1     ",  -1.00000
+"dResS1IM3 ","IM3       ",   1.00000
+"dResS1IM3 ","IM3S1     ",  -1.00000
+"dSedIM1   ","IM1       ",  -1.00000
+"dSedIM1   ","IM1S1     ",   1.00000
+"dSedIM1S2 ","IM1       ",  -1.00000
+"dSedIM1S2 ","IM1S2     ",   1.00000
+"dSedIM2   ","IM2       ",  -1.00000
+"dSedIM2   ","IM2S1     ",   1.00000
+"dSedIM2S2 ","IM2       ",  -1.00000
+"dSedIM2S2 ","IM2S2     ",   1.00000
+"dSedIM3   ","IM3       ",  -1.00000
+"dSedIM3   ","IM3S1     ",   1.00000
+"dSedIM3S2 ","IM3       ",  -1.00000
+"dSedIM3S2 ","IM3S2     ",   1.00000
+"dSedDiat  ","Diat      ",  -1.00000
+"dSedGreen ","Green     ",  -1.00000
+"dSedAlg   ","APHANFIX  ",  -1.00000
+"dSedAlg   ","APHANIZO  ",  -1.00000
+"dSedAlg   ","BLUEGRN   ",  -1.00000
+"dSedAlg   ","DINOFLAG  ",  -1.00000
+"dSedAlg   ","DINOMIX   ",  -1.00000
+"dSedAlg   ","FDIATOMS  ",  -1.00000
+"dSedAlg   ","FFLAGELA  ",  -1.00000
+"dSedAlg   ","GREENS    ",  -1.00000
+"dSedAlg   ","MDIATOMS  ",  -1.00000
+"dSedAlg   ","MFLAGELA  ",  -1.00000
+"dSedAlg   ","MICROCYS  ",  -1.00000
+"dSedAlg   ","OSCILAT   ",  -1.00000
+"dSedAlg   ","PHAEOCYS  ",  -1.00000
+"dSedAlg   ","UlvaF     ",  -1.00000
+"dSedAlg   ","UlvaS     ",  -1.00000
+"dSedAlg   ","NODULA    ",  -1.00000
+"dSedAlg   ","ANABAENA  ",  -1.00000
+"dSedAlg   ","CYLINFIX  ",  -1.00000
+"dSedAlg   ","ARTHROSP  ",  -1.00000
+"dSedAlg   ","PLANKTOL  ",  -1.00000
+"dSedAlg   ","PSEUDOAN  ",  -1.00000
+"dSedAlg01 ","BLOOMALG01",  -1.00000
+"dSedAlg02 ","BLOOMALG02",  -1.00000
+"dSedAlg03 ","BLOOMALG03",  -1.00000
+"dSedAlg04 ","BLOOMALG04",  -1.00000
+"dSedAlg05 ","BLOOMALG05",  -1.00000
+"dSedAlg06 ","BLOOMALG06",  -1.00000
+"dSedAlg07 ","BLOOMALG07",  -1.00000
+"dSedAlg08 ","BLOOMALG08",  -1.00000
+"dSedAlg09 ","BLOOMALG09",  -1.00000
+"dSedAlg10 ","BLOOMALG10",  -1.00000
+"dSedAlg11 ","BLOOMALG11",  -1.00000
+"dSedAlg12 ","BLOOMALG12",  -1.00000
+"dSedAlg13 ","BLOOMALG13",  -1.00000
+"dSedAlg14 ","BLOOMALG14",  -1.00000
+"dSedAlg15 ","BLOOMALG15",  -1.00000
+"dSedAlg16 ","BLOOMALG16",  -1.00000
+"dSedAlg17 ","BLOOMALG17",  -1.00000
+"dSedAlg18 ","BLOOMALG18",  -1.00000
+"dSedAlg19 ","BLOOMALG19",  -1.00000
+"dSedAlg20 ","BLOOMALG20",  -1.00000
+"dSedAlg21 ","BLOOMALG21",  -1.00000
+"dSedAlg22 ","BLOOMALG22",  -1.00000
+"dSedAlg23 ","BLOOMALG23",  -1.00000
+"dSedAlg24 ","BLOOMALG24",  -1.00000
+"dSedAlg25 ","BLOOMALG25",  -1.00000
+"dSedAlg26 ","BLOOMALG26",  -1.00000
+"dSedAlg27 ","BLOOMALG27",  -1.00000
+"dSedAlg28 ","BLOOMALG28",  -1.00000
+"dSedAlg29 ","BLOOMALG29",  -1.00000
+"dSedAlg30 ","BLOOMALG30",  -1.00000
+"dSedBOD5  ","CBOD5     ",  -1.00000
+"dSedBOD5_2","CBOD5_2   ",  -1.00000
+"dSedBOD5_3","CBOD5_3   ",  -1.00000
+"dSedBODu  ","CBODu     ",  -1.00000
+"dSedBODu_2","CBODu_2   ",  -1.00000
+"dSedCODCr ","COD_Cr    ",  -1.00000
+"dSedCODMn ","COD_Mn    ",  -1.00000
+"dSedNBOD5 ","NBOD5     ",  -1.00000
+"dSedNBODu ","NBODu     ",  -1.00000
+"dSedSOD   ","SOD       ",   1.00000
+"dSedPHYT  ","DetCS1    ",   1.00000
+"dSedAlgN  ","DetNS1    ",   1.00000
+"dSedAlgP  ","DetPS1    ",   1.00000
+"dSedAlgSi ","DetSiS1   ",   1.00000
+"dSedMPB1  ","MPB1peli  ",  -1.00000
+"dSedMPB1  ","MPB1peliS1",   1.00000
+"dSedMPB2  ","MPB2psam  ",  -1.00000
+"dSedMPB2  ","MPB2psamS1",   1.00000
+"dSedOpal  ","Opal      ",  -1.00000
+"dSedOpal  ","DetSiS1   ",   1.00000
+"dSedOpalS2","Opal      ",  -1.00000
+"dSedOpalS2","DetSiS2   ",   1.00000
+"dSedPOC1  ","POC1      ",  -1.00000
+"dSedPOC1  ","DetCS1    ",   1.00000
+"dSedPOC1S2","POC1      ",  -1.00000
+"dSedPOC1S2","DetCS2    ",   1.00000
+"dSedPOC2  ","POC2      ",  -1.00000
+"dSedPOC2  ","OOCS1     ",   1.00000
+"dSedPOC2S2","POC2      ",  -1.00000
+"dSedPOC2S2","OOCS2     ",   1.00000
+"dSedPOC3  ","POC3      ",  -1.00000
+"dSedPOC3  ","OOCS1     ",   1.00000
+"dSedPOC3S2","POC3      ",  -1.00000
+"dSedPOC3S2","OOCS2     ",   1.00000
+"dSedPOC4  ","POC4      ",  -1.00000
+"dSedPOC4  ","OOCS1     ",   1.00000
+"dSedPOC4S2","POC2      ",  -1.00000
+"dSedPOC4S2","OOCS2     ",   1.00000
+"dSedPOC5  ","POC5      ",  -1.00000
+"dSedPOC5  ","OOCS1     ",   1.00000
+"dSedPOC5S2","POC2      ",  -1.00000
+"dSedPOC5S2","OOCS2     ",   1.00000
+"dSedVIVP  ","S1_VIVP   ",   1.00000
+"dSedAPATP ","S1_APATP  ",   1.00000
+"dSedPON1  ","PON1      ",  -1.00000
+"dSedPON1  ","DetNS1    ",   1.00000
+"dSedPOP1  ","POP1      ",  -1.00000
+"dSedPOP1  ","DetPS1    ",   1.00000
+"dSedPOS1  ","POS1      ",  -1.00000
+"dSedPON1S2","PON1      ",  -1.00000
+"dSedPON1S2","DetNS2    ",   1.00000
+"dSedPOP1S2","POP1      ",  -1.00000
+"dSedPOP1S2","DetPS2    ",   1.00000
+"dSedPOS1S2","POS1      ",  -1.00000
+"dSedPON2  ","PON2      ",  -1.00000
+"dSedPON2  ","OONS1     ",   1.00000
+"dSedPOP2  ","POP2      ",  -1.00000
+"dSedPOP2  ","OOPS1     ",   1.00000
+"dSedPOS2  ","POS2      ",  -1.00000
+"dSedPON2S2","PON2      ",  -1.00000
+"dSedPON2S2","OONS2     ",   1.00000
+"dSedPOP2S2","POP2      ",  -1.00000
+"dSedPOP2S2","OOPS2     ",   1.00000
+"dSedPOS2S2","POS2      ",  -1.00000
+"dSedPON3  ","PON3      ",  -1.00000
+"dSedPON3  ","OONS1     ",   1.00000
+"dSedPOP3  ","POP3      ",  -1.00000
+"dSedPOP3  ","OOPS1     ",   1.00000
+"dSedPOS3  ","POS3      ",  -1.00000
+"dSedPON3S2","PON3      ",  -1.00000
+"dSedPON3S2","OONS3     ",   1.00000
+"dSedPOP3S2","POP3      ",  -1.00000
+"dSedPOP3S2","OOPS3     ",   1.00000
+"dSedPOS3S2","POS3      ",  -1.00000
+"dSedPON4  ","PON4      ",  -1.00000
+"dSedPON4  ","OONS1     ",   1.00000
+"dSedPOP4  ","POP4      ",  -1.00000
+"dSedPOP4  ","OOPS1     ",   1.00000
+"dSedPOS4  ","POS4      ",  -1.00000
+"dSedPON4S2","PON4      ",  -1.00000
+"dSedPON4S2","OONS2     ",   1.00000
+"dSedPOP4S2","POP4      ",  -1.00000
+"dSedPOP4S2","OOPS2     ",   1.00000
+"dSedPOS4S2","POS4      ",  -1.00000
+"dSedPON5  ","PON5      ",  -1.00000
+"dSedPON5  ","OONS1     ",   1.00000
+"dSedPOP5  ","POP5      ",  -1.00000
+"dSedPOP5  ","OOPS1     ",   1.00000
+"dSedPOS5  ","POS5      ",  -1.00000
+"dSedPON5S2","PON5      ",  -1.00000
+"dSedPON5S2","OONS2     ",   1.00000
+"dSedPOP5S2","POP5      ",  -1.00000
+"dSedPOP5S2","OOPS2     ",   1.00000
+"dSedPOS5S2","POS5      ",  -1.00000
+"dSedAAP   ","AAP       ",  -1.00000
+"dSedAAP   ","AAPS1     ",   1.00000
+"dSedAAPS2 ","AAP       ",  -1.00000
+"dSedAAPS2 ","AAPS2     ",   1.00000
+"dSedCAAP  ","AAP       ",  -1.00000
+"dSedCAAP  ","AAPS1     ",   1.00000
+"dSedCAAP  ","S1_AAP    ",   1.00000
+"dResS1DetC","POC1      ",   1.00000
+"dResS1DetC","DetCS1    ",  -1.00000
+"dResS2DetC","DetCS2    ",  -1.00000
+"dResS2DetC","POC1      ",   1.00000
+"dBurS1DetC","DetCS1    ",  -1.00000
+"dBurS1DetC","DetCS2    ",   1.00000
+"dSWBuS1DtC","DetCS1    ",  -1.00000
+"dBurS2DetC","DetCS2    ",  -1.00000
+"dDigS1DetC","DetCS1    ",   1.00000
+"dDigS1DetC","DetCS2    ",  -1.00000
+"dDigS2DetC","DetCS2    ",   1.00000
+"dResS1DetN","PON1      ",   1.00000
+"dResS1DetN","DetNS1    ",  -1.00000
+"dResS2DetN","DetNS2    ",  -1.00000
+"dResS2DetN","PON1      ",   1.00000
+"dBurS1DetN","DetNS1    ",  -1.00000
+"dBurS1DetN","DetNS2    ",   1.00000
+"dSWBuS1DtN","DetNS1    ",  -1.00000
+"dBurS2DetN","DetNS2    ",  -1.00000
+"dDigS1DetN","DetNS1    ",   1.00000
+"dDigS1DetN","DetNS2    ",  -1.00000
+"dDigS2DetN","DetNS2    ",   1.00000
+"dResS1DetP","POP1      ",   1.00000
+"dResS1DetP","DetPS1    ",  -1.00000
+"dResS2DetP","DetPS2    ",  -1.00000
+"dResS2DetP","POP1      ",   1.00000
+"dBurS1DetP","DetPS1    ",  -1.00000
+"dBurS1DetP","DetPS2    ",   1.00000
+"dSWBuS1DtP","DetPS1    ",  -1.00000
+"dBurS2DetP","DetPS2    ",  -1.00000
+"dDigS1DetP","DetPS1    ",   1.00000
+"dDigS1DetP","DetPS2    ",  -1.00000
+"dDigS2DetP","DetPS2    ",   1.00000
+"dResS1DetS","Opal      ",   1.00000
+"dResS1DetS","DetSiS1   ",  -1.00000
+"dResS2DetS","DetSiS2   ",  -1.00000
+"dResS2DetS","Opal      ",   1.00000
+"dBurS1DetS","DetSiS1   ",  -1.00000
+"dBurS1DetS","DetSiS2   ",   1.00000
+"dSWBuS1DtS","DetSiS1   ",  -1.00000
+"dBurS2DetS","DetSiS2   ",  -1.00000
+"dDigS1DetS","DetSiS1   ",   1.00000
+"dDigS1DetS","DetSiS2   ",  -1.00000
+"dDigS2DetS","DetSiS2   ",   1.00000
+"dResS1OOC ","POC2      ",   1.00000
+"dResS1OOC ","OOCS1     ",  -1.00000
+"dResS2OOC ","OOCS2     ",  -1.00000
+"dResS2OOC ","POC2      ",   1.00000
+"dBurS1OOC ","OOCS1     ",  -1.00000
+"dBurS1OOC ","OOCS2     ",   1.00000
+"dSWBuS1OOC","OOCS1     ",  -1.00000
+"dBurS2OOC ","OOCS2     ",  -1.00000
+"dDigS1OOC ","OOCS1     ",   1.00000
+"dDigS1OOC ","OOCS2     ",  -1.00000
+"dDigS2OOC ","OOCS2     ",   1.00000
+"dResS1OON ","PON2      ",   1.00000
+"dResS1OON ","OONS1     ",  -1.00000
+"dResS2OON ","OONS2     ",  -1.00000
+"dResS2OON ","PON2      ",   1.00000
+"dBurS1OON ","OONS1     ",  -1.00000
+"dBurS1OON ","OONS2     ",   1.00000
+"dSWBuS1OON","OONS1     ",  -1.00000
+"dBurS2OON ","OONS2     ",  -1.00000
+"dDigS1OON ","OONS1     ",   1.00000
+"dDigS1OON ","OONS2     ",  -1.00000
+"dDigS2OON ","OONS2     ",   1.00000
+"dResS1OOP ","POP2      ",   1.00000
+"dResS1OOP ","OOPS1     ",  -1.00000
+"dResS2OOP ","OOPS2     ",  -1.00000
+"dResS2OOP ","POP2      ",   1.00000
+"dBurS1OOP ","OOPS1     ",  -1.00000
+"dBurS1OOP ","OOPS2     ",   1.00000
+"dSWBuS1OOP","OOPS1     ",  -1.00000
+"dBurS2OOP ","OOPS2     ",  -1.00000
+"dDigS1OOP ","OOPS1     ",   1.00000
+"dDigS1OOP ","OOPS2     ",  -1.00000
+"dDigS2OOP ","OOPS2     ",   1.00000
+"dResS1OOSi","Opal      ",   1.00000
+"dResS1OOSi","OOSiS1    ",  -1.00000
+"dResS2OOSi","OOSiS2    ",  -1.00000
+"dResS2OOSi","Opal      ",   1.00000
+"dBurS1OOS ","OOSiS1    ",  -1.00000
+"dBurS1OOS ","OOSiS2    ",   1.00000
+"dSWBuS1OOS","OOSiS1    ",  -1.00000
+"dBurS2OOS ","OOSiS2    ",  -1.00000
+"dDigS1OOS ","OOSiS1    ",   1.00000
+"dDigS1OOS ","OOSiS2    ",  -1.00000
+"dDigS2OOS ","OOSiS2    ",   1.00000
+"dResS1Diat","POC1      ",   1.00000
+"dResS1Diat","DiatS1    ",  -1.00000
+"dResS2Diat","DiatS2    ",  -1.00000
+"dResS2Diat","POC1      ",   1.00000
+"dBurS1Diat","DiatS1    ",  -1.00000
+"dBurS1Diat","DiatS2    ",   1.00000
+"dSWBuS1Dia","DiatS1    ",  -1.00000
+"dBurS2Diat","DiatS2    ",  -1.00000
+"dDigS1Diat","DiatS1    ",   1.00000
+"dDigS1Diat","DiatS2    ",  -1.00000
+"dDigS2Diat","DiatS2    ",   1.00000
+"dResS1DiDN","PON1      ",   1.00000
+"dResS1DiDP","POP1      ",   1.00000
+"dResS1DiDS","OPAL      ",   1.00000
+"dResS2DiDN","PON1      ",   1.00000
+"dResS2DiDP","POP1      ",   1.00000
+"dResS2DiDS","OPAL      ",   1.00000
+"dResS1MPB1","MPB1peli  ",   1.00000
+"dResS1MPB1","MPB1peliS1",  -1.00000
+"dResS2MPB1","MPB1peliS2",  -1.00000
+"dResS2MPB1","MPB1peli  ",   1.00000
+"dBurS1MPB1","MPB1peliS1",  -1.00000
+"dBurS1MPB1","MPB1peliS2",   1.00000
+"dBurS2MPB1","MPB1peliS2",  -1.00000
+"dDigS1MPB1","MPB1peliS1",   1.00000
+"dDigS1MPB1","MPB1peliS2",  -1.00000
+"dDigS2MPB1","MPB1peliS2",   1.00000
+"dResS1MPB2","MPB2psam  ",   1.00000
+"dResS1MPB2","MPB2psamS1",  -1.00000
+"dResS2MPB2","MPB2psamS2",  -1.00000
+"dResS2MPB2","MPB2psam  ",   1.00000
+"dBurS1MPB2","MPB2psamS1",  -1.00000
+"dBurS1MPB2","MPB2psamS2",   1.00000
+"dBurS2MPB2","MPB2psamS2",  -1.00000
+"dDigS1MPB2","MPB2psamS1",   1.00000
+"dDigS1MPB2","MPB2psamS2",  -1.00000
+"dDigS2MPB2","MPB2psamS2",   1.00000
+"dResS2IM1 ","IM1S2     ",  -1.00000
+"dResS2IM1 ","IM1       ",   1.00000
+"dBurS1IM1 ","IM1S1     ",  -1.00000
+"dBurS1IM1 ","IM1S2     ",   1.00000
+"dBurS2IM1 ","IM1S2     ",  -1.00000
+"dDigS1IM1 ","IM1S1     ",   1.00000
+"dDigS1IM1 ","IM1S2     ",  -1.00000
+"dDigS2IM1 ","IM1S2     ",   1.00000
+"dResS2IM2 ","IM2S2     ",  -1.00000
+"dResS2IM2 ","IM2       ",   1.00000
+"dBurS1IM2 ","IM2S1     ",  -1.00000
+"dBurS1IM2 ","IM2S2     ",   1.00000
+"dBurS2IM2 ","IM2S2     ",  -1.00000
+"dDigS1IM2 ","IM2S1     ",   1.00000
+"dDigS1IM2 ","IM2S2     ",  -1.00000
+"dDigS2IM2 ","IM2S2     ",   1.00000
+"dResS2IM3 ","IM3S2     ",  -1.00000
+"dResS2IM3 ","IM3       ",   1.00000
+"dBurS1IM3 ","IM3S1     ",  -1.00000
+"dBurS1IM3 ","IM3S2     ",   1.00000
+"dBurS2IM3 ","IM3S2     ",  -1.00000
+"dDigS1IM3 ","IM3S1     ",   1.00000
+"dDigS1IM3 ","IM3S2     ",  -1.00000
+"dDigS2IM3 ","IM3S2     ",   1.00000
+"dResS1AAP ","AAP       ",   1.00000
+"dResS1AAP ","AAPS1     ",  -1.00000
+"dResS2AAP ","AAPS2     ",  -1.00000
+"dResS2AAP ","AAP       ",   1.00000
+"dBurS1AAP ","AAPS1     ",  -1.00000
+"dBurS1AAP ","AAPS2     ",   1.00000
+"dBurS2AAP ","AAPS2     ",  -1.00000
+"dDigS1AAP ","AAPS1     ",   1.00000
+"dDigS1AAP ","AAPS2     ",  -1.00000
+"dDigS2AAP ","AAPS2     ",   1.00000
+"dSorpCd   ","Cd-dis    ",  -1.00000
+"dSorpCd   ","Cd-par    ",   1.00000
+"dSorpCr   ","Cr-dis    ",  -1.00000
+"dSorpCr   ","Cr-par    ",   1.00000
+"dSorpCu   ","Cu-dis    ",  -1.00000
+"dSorpCu   ","Cu-par    ",   1.00000
+"dSorpHg   ","Hg-dis    ",  -1.00000
+"dSorpHg   ","Hg-par    ",   1.00000
+"dSorpNi   ","Ni-dis    ",  -1.00000
+"dSorpNi   ","Ni-par    ",   1.00000
+"dSorpPb   ","Pb-dis    ",  -1.00000
+"dSorpPb   ","Pb-par    ",   1.00000
+"dSorpAs   ","As-dis    ",  -1.00000
+"dSorpAs   ","As-par    ",   1.00000
+"dSorpVa   ","Va-dis    ",  -1.00000
+"dSorpVa   ","Va-par    ",   1.00000
+"dSorpZn   ","Zn-dis    ",  -1.00000
+"dSorpZn   ","Zn-par    ",   1.00000
+"dSorpCdS1 ","CdS1-dis  ",  -1.00000
+"dSorpCdS1 ","CdS1-par  ",   1.00000
+"dSorpCrS1 ","CrS1-dis  ",  -1.00000
+"dSorpCrS1 ","CrS1-par  ",   1.00000
+"dSorpCuS1 ","CuS1-dis  ",  -1.00000
+"dSorpCuS1 ","CuS1-par  ",   1.00000
+"dSorpHgS1 ","HgS1-dis  ",  -1.00000
+"dSorpHgS1 ","HgS1-par  ",   1.00000
+"dSorpNiS1 ","NiS1-dis  ",  -1.00000
+"dSorpNiS1 ","NiS1-par  ",   1.00000
+"dSorpPbS1 ","PbS1-dis  ",  -1.00000
+"dSorpPbS1 ","PbS1-par  ",   1.00000
+"dSorpAsS1 ","AsS1-dis  ",  -1.00000
+"dSorpAsS1 ","AsS1-par  ",   1.00000
+"dSorpVaS1 ","VaS1-dis  ",  -1.00000
+"dSorpVaS1 ","VaS1-par  ",   1.00000
+"dSorpZnS1 ","ZnS1-dis  ",  -1.00000
+"dSorpZnS1 ","ZnS1-par  ",   1.00000
+"dSorpCdS2 ","CdS2-dis  ",  -1.00000
+"dSorpCdS2 ","CdS2-par  ",   1.00000
+"dSorpCrS2 ","CrS2-dis  ",  -1.00000
+"dSorpCrS2 ","CrS2-par  ",   1.00000
+"dSorpCuS2 ","CuS2-dis  ",  -1.00000
+"dSorpCuS2 ","CuS2-par  ",   1.00000
+"dSorpHgS2 ","HgS2-dis  ",  -1.00000
+"dSorpHgS2 ","HgS2-par  ",   1.00000
+"dSorpNiS2 ","NiS2-dis  ",  -1.00000
+"dSorpNiS2 ","NiS2-par  ",   1.00000
+"dSorpPbS2 ","PbS2-dis  ",  -1.00000
+"dSorpPbS2 ","PbS2-par  ",   1.00000
+"dSorpAsS2 ","AsS2-dis  ",  -1.00000
+"dSorpAsS2 ","AsS2-par  ",   1.00000
+"dSorpVaS2 ","VaS2-dis  ",  -1.00000
+"dSorpVaS2 ","VaS2-par  ",   1.00000
+"dSorpZnS2 ","ZnS2-dis  ",  -1.00000
+"dSorpZnS2 ","ZnS2-par  ",   1.00000
+"dSorp153S1","153S1-Dis ",  -1.00000
+"dSorp153S1","153S1-Par ",   1.00000
+"dSorpAtrS1","AtrS1-Dis ",  -1.00000
+"dSorpAtrS1","AtrS1-Par ",   1.00000
+"dSorpBaPS1","BaPS1-Dis ",  -1.00000
+"dSorpBaPS1","BaPS1-Par ",   1.00000
+"dSorpDiuS1","DiuS1-Dis ",  -1.00000
+"dSorpDiuS1","DiuS1-Par ",   1.00000
+"dSorpFluS1","FluS1-Dis ",  -1.00000
+"dSorpFluS1","FluS1-Par ",   1.00000
+"dSorpHCBS1","HCBS1-Dis ",  -1.00000
+"dSorpHCBS1","HCBS1-Par ",   1.00000
+"dSorpHCHS1","HCHS1-Dis ",  -1.00000
+"dSorpHCHS1","HCHS1-Par ",   1.00000
+"dSorpMefS1","MefS1-Dis ",  -1.00000
+"dSorpMefS1","MefS1-Par ",   1.00000
+"dSorp153S2","153S2-Dis ",  -1.00000
+"dSorp153S2","153S2-Par ",   1.00000
+"dSorpAtrS2","AtrS2-Dis ",  -1.00000
+"dSorpAtrS2","AtrS2-Par ",   1.00000
+"dSorpBaPS2","BaPS2-Dis ",  -1.00000
+"dSorpBaPS2","BaPS2-Par ",   1.00000
+"dSorpDiuS2","DiuS2-Dis ",  -1.00000
+"dSorpDiuS2","DiuS2-Par ",   1.00000
+"dSorpFluS2","FluS2-Dis ",  -1.00000
+"dSorpFluS2","FluS2-Par ",   1.00000
+"dSorpHCBS2","HCBS2-Dis ",  -1.00000
+"dSorpHCBS2","HCBS2-Par ",   1.00000
+"dSorpHCHS2","HCHS2-Dis ",  -1.00000
+"dSorpHCHS2","HCHS2-Par ",   1.00000
+"dSorpMefS2","MefS2-Dis ",  -1.00000
+"dSorpMefS2","MefS2-Par ",   1.00000
+"dSorp153  ","153-dis   ",  -1.00000
+"dSorp153  ","153-par   ",   1.00000
+"dSorpAtr  ","Atr-dis   ",  -1.00000
+"dSorpAtr  ","Atr-par   ",   1.00000
+"dSorpBaP  ","BaP-dis   ",  -1.00000
+"dSorpBaP  ","BaP-par   ",   1.00000
+"dSorpDiu  ","Diu-dis   ",  -1.00000
+"dSorpDiu  ","Diu-par   ",   1.00000
+"dSorpFlu  ","Flu-dis   ",  -1.00000
+"dSorpFlu  ","Flu-par   ",   1.00000
+"dSorpHCB  ","HCB-dis   ",  -1.00000
+"dSorpHCB  ","HCB-par   ",   1.00000
+"dSorpHCH  ","HCH-dis   ",  -1.00000
+"dSorpHCH  ","HCH-par   ",   1.00000
+"dSorpMef  ","Mef-dis   ",  -1.00000
+"dSorpMef  ","Mef-par   ",   1.00000
+"dSedResALG","UlvaF     ",   1.00000
+"dSedResALG","UlvaS     ",   1.00000
+"dSedRes01 ","BLOOMALG01",   1.00000
+"dSedRes02 ","BLOOMALG02",   1.00000
+"dSedRes03 ","BLOOMALG03",   1.00000
+"dSedRes04 ","BLOOMALG04",   1.00000
+"dSedRes05 ","BLOOMALG05",   1.00000
+"dSedRes06 ","BLOOMALG06",   1.00000
+"dSedRes07 ","BLOOMALG07",   1.00000
+"dSedRes08 ","BLOOMALG08",   1.00000
+"dSedRes09 ","BLOOMALG09",   1.00000
+"dSedRes10 ","BLOOMALG10",   1.00000
+"dSedRes11 ","BLOOMALG11",   1.00000
+"dSedRes12 ","BLOOMALG12",   1.00000
+"dSedRes13 ","BLOOMALG13",   1.00000
+"dSedRes14 ","BLOOMALG14",   1.00000
+"dSedRes15 ","BLOOMALG15",   1.00000
+"dSedRes16 ","BLOOMALG16",   1.00000
+"dSedRes17 ","BLOOMALG17",   1.00000
+"dSedRes18 ","BLOOMALG18",   1.00000
+"dSedRes19 ","BLOOMALG19",   1.00000
+"dSedRes20 ","BLOOMALG20",   1.00000
+"dSedRes21 ","BLOOMALG21",   1.00000
+"dSedRes22 ","BLOOMALG22",   1.00000
+"dSedRes23 ","BLOOMALG23",   1.00000
+"dSedRes24 ","BLOOMALG24",   1.00000
+"dSedRes25 ","BLOOMALG25",   1.00000
+"dSedRes26 ","BLOOMALG26",   1.00000
+"dSedRes27 ","BLOOMALG27",   1.00000
+"dSedRes28 ","BLOOMALG28",   1.00000
+"dSedRes29 ","BLOOMALG29",   1.00000
+"dSedRes30 ","BLOOMALG30",   1.00000
+"dGrzDisC  ","OXY       ",  -2.67000
+"dGrzDisC  ","TIC       ",   1.00000
+"dGrzDisN  ","NH4       ",   1.00000
+"dGrzDisN  ","H+        ",  -0.07100
+"dGrzDisN  ","ALKA      ",   4.35700
+"dGrzDisP  ","PO4       ",   1.00000
+"dGrzDisP  ","H+        ",   0.09700
+"dGrzDisP  ","ALKA      ",  -5.65600
+"dGrzDisSi ","Si        ",   1.00000
+"dGrzPOC1  ","POC1      ",   1.00000
+"dGrzPON1  ","PON1      ",   1.00000
+"dGrzPOP1  ","POP1      ",   1.00000
+"dGrzPOSi1 ","Opal      ",   1.00000
+"dGrzDetCS1","DetCS1    ",   1.00000
+"dGrzDetNS1","DetNS1    ",   1.00000
+"dGrzDetPS1","DetPS1    ",   1.00000
+"dGrzDetSS1","DetSiS1   ",   1.00000
+"dGrzGreen ","Green     ",  -1.00000
+"dGrzDiat  ","Diat      ",  -1.00000
+"dGrzPeli  ","MPB1peli  ",  -1.00000
+"dGrzPsam  ","MPB2psam  ",  -1.00000
+"dGrzALG01 ","BLOOMALG01",  -1.00000
+"dGrzALG02 ","BLOOMALG02",  -1.00000
+"dGrzALG03 ","BLOOMALG03",  -1.00000
+"dGrzALG04 ","BLOOMALG04",  -1.00000
+"dGrzALG05 ","BLOOMALG05",  -1.00000
+"dGrzALG06 ","BLOOMALG06",  -1.00000
+"dGrzALG07 ","BLOOMALG07",  -1.00000
+"dGrzALG08 ","BLOOMALG08",  -1.00000
+"dGrzALG09 ","BLOOMALG09",  -1.00000
+"dGrzALG10 ","BLOOMALG10",  -1.00000
+"dGrzALG11 ","BLOOMALG11",  -1.00000
+"dGrzALG12 ","BLOOMALG12",  -1.00000
+"dGrzALG13 ","BLOOMALG13",  -1.00000
+"dGrzALG14 ","BLOOMALG14",  -1.00000
+"dGrzALG15 ","BLOOMALG15",  -1.00000
+"dGrzALG16 ","BLOOMALG16",  -1.00000
+"dGrzALG17 ","BLOOMALG17",  -1.00000
+"dGrzALG18 ","BLOOMALG18",  -1.00000
+"dGrzALG19 ","BLOOMALG19",  -1.00000
+"dGrzALG20 ","BLOOMALG20",  -1.00000
+"dGrzALG21 ","BLOOMALG21",  -1.00000
+"dGrzALG22 ","BLOOMALG22",  -1.00000
+"dGrzALG23 ","BLOOMALG23",  -1.00000
+"dGrzALG24 ","BLOOMALG24",  -1.00000
+"dGrzALG25 ","BLOOMALG25",  -1.00000
+"dGrzALG26 ","BLOOMALG26",  -1.00000
+"dGrzALG27 ","BLOOMALG27",  -1.00000
+"dGrzALG28 ","BLOOMALG28",  -1.00000
+"dGrzALG29 ","BLOOMALG29",  -1.00000
+"dGrzALG30 ","BLOOMALG30",  -1.00000
+"dVolat153 ","153       ",  -1.00000
+"dVolat153 ","153-dis   ",  -1.00000
+"dVolatHCB ","HCB       ",  -1.00000
+"dVolatHCB ","HCB-dis   ",  -1.00000
+"dVolatHCH ","HCH       ",  -1.00000
+"dVolatHCH ","HCH-dis   ",  -1.00000
+"dVolatFlu ","Flu       ",  -1.00000
+"dVolatFlu ","Flu-dis   ",  -1.00000
+"dVolatBaP ","BaP       ",  -1.00000
+"dVolatBaP ","BaP-dis   ",  -1.00000
+"dVolatAtr ","Atr       ",  -1.00000
+"dVolatAtr ","Atr-dis   ",  -1.00000
+"dVolatMef ","Mef       ",  -1.00000
+"dVolatMef ","Mef-dis   ",  -1.00000
+"dVolatDiu ","Diu       ",  -1.00000
+"dVolatDiu ","Diu-dis   ",  -1.00000
+"dLoss153  ","153       ",  -1.00000
+"dLossHCB  ","HCB       ",  -1.00000
+"dLossHCH  ","HCH       ",  -1.00000
+"dLossFlu  ","Flu       ",  -1.00000
+"dLossBaP  ","BaP       ",  -1.00000
+"dLossAtr  ","Atr       ",  -1.00000
+"dLossMef  ","Mef       ",  -1.00000
+"dLossDiu  ","Diu       ",  -1.00000
+"dLoss153S1","153S1     ",  -1.00000
+"dLossHCBS1","HCBS1     ",  -1.00000
+"dLossHCHS1","HCHS1     ",  -1.00000
+"dLossFluS1","FluS1     ",  -1.00000
+"dLossBaPS1","BaPS1     ",  -1.00000
+"dLossAtrS1","AtrS1     ",  -1.00000
+"dLossMefS1","MefS1     ",  -1.00000
+"dLossDiuS1","DiuS1     ",  -1.00000
+"dLoss153S2","153S2     ",  -1.00000
+"dLossHCBS2","HCBS2     ",  -1.00000
+"dLossHCHS2","HCHS2     ",  -1.00000
+"dLossFluS2","FluS2     ",  -1.00000
+"dLossBaPS2","BaPS2     ",  -1.00000
+"dLossAtrS2","AtrS2     ",  -1.00000
+"dLossMefS2","MefS2     ",  -1.00000
+"dLossDiuS2","DiuS2     ",  -1.00000
+"dSedCd    ","Cd        ",  -1.00000
+"dSedCd    ","Cd-par    ",  -1.00000
+"dSedCd    ","CdS1      ",   1.00000
+"dSedCd    ","CdS1-par  ",   1.00000
+"dSedCdS2  ","Cd        ",  -1.00000
+"dSedCdS2  ","Cd-par    ",  -1.00000
+"dSedCdS2  ","CdS2      ",   1.00000
+"dSedCdS2  ","CdS2-par  ",   1.00000
+"dSedCu    ","Cu        ",  -1.00000
+"dSedCu    ","Cu-par    ",  -1.00000
+"dSedCu    ","CuS1      ",   1.00000
+"dSedCu    ","CuS1-par  ",   1.00000
+"dSedCuS2  ","Cu        ",  -1.00000
+"dSedCuS2  ","Cu-par    ",  -1.00000
+"dSedCuS2  ","CuS2      ",   1.00000
+"dSedCuS2  ","CuS2-par  ",   1.00000
+"dSedZn    ","Zn        ",  -1.00000
+"dSedZn    ","Zn-par    ",  -1.00000
+"dSedZn    ","ZnS1      ",   1.00000
+"dSedZn    ","ZnS1-par  ",   1.00000
+"dSedZnS2  ","Zn        ",  -1.00000
+"dSedZnS2  ","Zn-par    ",  -1.00000
+"dSedZnS2  ","ZnS2      ",   1.00000
+"dSedZnS2  ","ZnS2-par  ",   1.00000
+"dSedHg    ","Hg        ",  -1.00000
+"dSedHg    ","Hg-par    ",  -1.00000
+"dSedHg    ","HgS1      ",   1.00000
+"dSedHg    ","HgS1-par  ",   1.00000
+"dSedHgS2  ","Hg        ",  -1.00000
+"dSedHgS2  ","Hg-par    ",  -1.00000
+"dSedHgS2  ","HgS2      ",   1.00000
+"dSedHgS2  ","HgS2-par  ",   1.00000
+"dSedNi    ","Ni        ",  -1.00000
+"dSedNi    ","Ni-par    ",  -1.00000
+"dSedNi    ","NiS1      ",   1.00000
+"dSedNi    ","NiS1-par  ",   1.00000
+"dSedNiS2  ","Ni        ",  -1.00000
+"dSedNiS2  ","Ni-par    ",  -1.00000
+"dSedNiS2  ","NiS2      ",   1.00000
+"dSedNiS2  ","NiS2-par  ",   1.00000
+"dSedPb    ","Pb        ",  -1.00000
+"dSedPb    ","Pb-par    ",  -1.00000
+"dSedPb    ","PbS1      ",   1.00000
+"dSedPb    ","PbS1-par  ",   1.00000
+"dSedPbS2  ","Pb        ",  -1.00000
+"dSedPbS2  ","Pb-par    ",  -1.00000
+"dSedPbS2  ","PbS2      ",   1.00000
+"dSedPbS2  ","PbS2-par  ",   1.00000
+"dSedCr    ","Cr        ",  -1.00000
+"dSedCr    ","Cr-par    ",  -1.00000
+"dSedCr    ","CrS1      ",   1.00000
+"dSedCr    ","CrS1-par  ",   1.00000
+"dSedCrS2  ","Cr        ",  -1.00000
+"dSedCrS2  ","Cr-par    ",  -1.00000
+"dSedCrS2  ","CrS2      ",   1.00000
+"dSedCrS2  ","CrS2-par  ",   1.00000
+"dSedAs    ","As        ",  -1.00000
+"dSedAs    ","As-par    ",  -1.00000
+"dSedAs    ","AsS1      ",   1.00000
+"dSedAs    ","AsS1-par  ",   1.00000
+"dSedAsS2  ","As        ",  -1.00000
+"dSedAsS2  ","As-par    ",  -1.00000
+"dSedAsS2  ","AsS2      ",   1.00000
+"dSedAsS2  ","AsS2-par  ",   1.00000
+"dSedVa    ","Va        ",  -1.00000
+"dSedVa    ","Va-par    ",  -1.00000
+"dSedVa    ","VaS1      ",   1.00000
+"dSedVa    ","VaS1-par  ",   1.00000
+"dSedVaS2  ","Va        ",  -1.00000
+"dSedVaS2  ","Va-par    ",  -1.00000
+"dSedVaS2  ","VaS2      ",   1.00000
+"dSedVaS2  ","VaS2-par  ",   1.00000
+"dSed153   ","153       ",  -1.00000
+"dSed153   ","153-par   ",  -1.00000
+"dSed153   ","153S1     ",   1.00000
+"dSed153   ","153S1-par ",   1.00000
+"dSedHCB   ","HCB       ",  -1.00000
+"dSedHCB   ","HCB-par   ",  -1.00000
+"dSedHCB   ","HCBS1     ",   1.00000
+"dSedHCB   ","HCBS1-par ",   1.00000
+"dSedHCH   ","HCH       ",  -1.00000
+"dSedHCH   ","HCH-par   ",  -1.00000
+"dSedHCH   ","HCHS1     ",   1.00000
+"dSedHCH   ","HCHS1-par ",   1.00000
+"dSedFlu   ","Flu       ",  -1.00000
+"dSedFlu   ","Flu-par   ",  -1.00000
+"dSedFlu   ","FluS1     ",   1.00000
+"dSedFlu   ","FluS1-par ",   1.00000
+"dSedBap   ","Bap       ",  -1.00000
+"dSedBap   ","Bap-par   ",  -1.00000
+"dSedBap   ","BapS1     ",   1.00000
+"dSedBap   ","BapS1-par ",   1.00000
+"dSedAtr   ","Atr       ",  -1.00000
+"dSedAtr   ","Atr-par   ",  -1.00000
+"dSedAtr   ","AtrS1     ",   1.00000
+"dSedAtr   ","AtrS1-par ",   1.00000
+"dSedMef   ","Mef       ",  -1.00000
+"dSedMef   ","Mef-par   ",  -1.00000
+"dSedMef   ","MefS1     ",   1.00000
+"dSedMef   ","MefS1-par ",   1.00000
+"dSedDiu   ","Diu       ",  -1.00000
+"dSedDiu   ","Diu-par   ",  -1.00000
+"dSedDiu   ","DiuS1     ",   1.00000
+"dSedDiu   ","DiuS1-par ",   1.00000
+"dResS1As  ","As        ",   1.00000
+"dResS1As  ","AsS1      ",  -1.00000
+"dResS2As  ","As        ",   1.00000
+"dResS2As  ","AsS2      ",  -1.00000
+"dBurS1As  ","AsS1      ",  -1.00000
+"dBurS1As  ","AsS2      ",   1.00000
+"dBurS2As  ","AsS2      ",  -1.00000
+"dDigS1As  ","AsS1      ",   1.00000
+"dDigS1As  ","AsS2      ",  -1.00000
+"dDigS2As  ","AsS2      ",   1.00000
+"dResS1Cd  ","Cd        ",   1.00000
+"dResS1Cd  ","CdS1      ",  -1.00000
+"dResS2Cd  ","Cd        ",   1.00000
+"dResS2Cd  ","CdS2      ",  -1.00000
+"dBurS1Cd  ","CdS1      ",  -1.00000
+"dBurS1Cd  ","CdS2      ",   1.00000
+"dBurS2Cd  ","CdS2      ",  -1.00000
+"dDigS1Cd  ","CdS1      ",   1.00000
+"dDigS1Cd  ","CdS2      ",  -1.00000
+"dDigS2Cd  ","CdS2      ",   1.00000
+"dResS1Cr  ","Cr        ",   1.00000
+"dResS1Cr  ","CrS1      ",  -1.00000
+"dResS2Cr  ","Cr        ",   1.00000
+"dResS2Cr  ","CrS2      ",  -1.00000
+"dBurS1Cr  ","CrS1      ",  -1.00000
+"dBurS1Cr  ","CrS2      ",   1.00000
+"dBurS2Cr  ","CrS2      ",  -1.00000
+"dDigS1Cr  ","CrS1      ",   1.00000
+"dDigS1Cr  ","CrS2      ",  -1.00000
+"dDigS2Cr  ","CrS2      ",   1.00000
+"dResS1Cu  ","Cu        ",   1.00000
+"dResS1Cu  ","CuS1      ",  -1.00000
+"dResS2Cu  ","Cu        ",   1.00000
+"dResS2Cu  ","CuS2      ",  -1.00000
+"dBurS1Cu  ","CuS1      ",  -1.00000
+"dBurS1Cu  ","CuS2      ",   1.00000
+"dBurS2Cu  ","CuS2      ",  -1.00000
+"dDigS1Cu  ","CuS1      ",   1.00000
+"dDigS1Cu  ","CuS2      ",  -1.00000
+"dDigS2Cu  ","CuS2      ",   1.00000
+"dResS1Hg  ","Hg        ",   1.00000
+"dResS1Hg  ","HgS1      ",  -1.00000
+"dResS2Hg  ","Hg        ",   1.00000
+"dResS2Hg  ","HgS2      ",  -1.00000
+"dBurS1Hg  ","HgS1      ",  -1.00000
+"dBurS1Hg  ","HgS2      ",   1.00000
+"dBurS2Hg  ","HgS2      ",  -1.00000
+"dDigS1Hg  ","HgS1      ",   1.00000
+"dDigS1Hg  ","HgS2      ",  -1.00000
+"dDigS2Hg  ","HgS2      ",   1.00000
+"dResS1Ni  ","Ni        ",   1.00000
+"dResS1Ni  ","NiS1      ",  -1.00000
+"dResS2Ni  ","Ni        ",   1.00000
+"dResS2Ni  ","NiS2      ",  -1.00000
+"dBurS1Ni  ","NiS1      ",  -1.00000
+"dBurS1Ni  ","NiS2      ",   1.00000
+"dBurS2Ni  ","NiS2      ",  -1.00000
+"dDigS1Ni  ","NiS1      ",   1.00000
+"dDigS1Ni  ","NiS2      ",  -1.00000
+"dDigS2Ni  ","NiS2      ",   1.00000
+"dResS1Pb  ","Pb        ",   1.00000
+"dResS1Pb  ","PbS1      ",  -1.00000
+"dResS2Pb  ","Pb        ",   1.00000
+"dResS2Pb  ","PbS2      ",  -1.00000
+"dBurS1Pb  ","PbS1      ",  -1.00000
+"dBurS1Pb  ","PbS2      ",   1.00000
+"dBurS2Pb  ","PbS2      ",  -1.00000
+"dDigS1Pb  ","PbS1      ",   1.00000
+"dDigS1Pb  ","PbS2      ",  -1.00000
+"dDigS2Pb  ","PbS2      ",   1.00000
+"dResS1Va  ","Va        ",   1.00000
+"dResS1Va  ","VaS1      ",  -1.00000
+"dResS2Va  ","Va        ",   1.00000
+"dResS2Va  ","VaS2      ",  -1.00000
+"dBurS1Va  ","VaS1      ",  -1.00000
+"dBurS1Va  ","VaS2      ",   1.00000
+"dBurS2Va  ","VaS2      ",  -1.00000
+"dDigS1Va  ","VaS1      ",   1.00000
+"dDigS1Va  ","VaS2      ",  -1.00000
+"dDigS2Va  ","VaS2      ",   1.00000
+"dResS1Zn  ","Zn        ",   1.00000
+"dResS1Zn  ","ZnS1      ",  -1.00000
+"dResS2Zn  ","Zn        ",   1.00000
+"dResS2Zn  ","ZnS2      ",  -1.00000
+"dBurS1Zn  ","ZnS1      ",  -1.00000
+"dBurS1Zn  ","ZnS2      ",   1.00000
+"dBurS2Zn  ","ZnS2      ",  -1.00000
+"dDigS1Zn  ","ZnS1      ",   1.00000
+"dDigS1Zn  ","ZnS2      ",  -1.00000
+"dDigS2Zn  ","ZnS2      ",   1.00000
+"dResS1153 ","153       ",   1.00000
+"dResS1153 ","153S1     ",  -1.00000
+"dResS2153 ","153       ",   1.00000
+"dResS2153 ","153S2     ",  -1.00000
+"dBurS1153 ","153S1     ",  -1.00000
+"dBurS1153 ","153S2     ",   1.00000
+"dBurS2153 ","153S2     ",  -1.00000
+"dDigS1153 ","153S1     ",   1.00000
+"dDigS1153 ","153S2     ",  -1.00000
+"dDigS2153 ","153S2     ",   1.00000
+"dResS1Atr ","Atr       ",   1.00000
+"dResS1Atr ","AtrS1     ",  -1.00000
+"dResS2Atr ","Atr       ",   1.00000
+"dResS2Atr ","AtrS2     ",  -1.00000
+"dBurS1Atr ","AtrS1     ",  -1.00000
+"dBurS1Atr ","AtrS2     ",   1.00000
+"dBurS2Atr ","AtrS2     ",  -1.00000
+"dDigS1Atr ","AtrS1     ",   1.00000
+"dDigS1Atr ","AtrS2     ",  -1.00000
+"dDigS2Atr ","AtrS2     ",   1.00000
+"dResS1Mef ","Mef       ",   1.00000
+"dResS1Mef ","MefS1     ",  -1.00000
+"dResS2Mef ","Mef       ",   1.00000
+"dResS2Mef ","MefS2     ",  -1.00000
+"dBurS1Mef ","MefS1     ",  -1.00000
+"dBurS1Mef ","MefS2     ",   1.00000
+"dBurS2Mef ","MefS2     ",  -1.00000
+"dDigS1Mef ","MefS1     ",   1.00000
+"dDigS1Mef ","MefS2     ",  -1.00000
+"dDigS2Mef ","MefS2     ",   1.00000
+"dResS1Diu ","Diu       ",   1.00000
+"dResS1Diu ","DiuS1     ",  -1.00000
+"dResS2Diu ","Diu       ",   1.00000
+"dResS2Diu ","DiuS2     ",  -1.00000
+"dBurS1Diu ","DiuS1     ",  -1.00000
+"dBurS1Diu ","DiuS2     ",   1.00000
+"dBurS2Diu ","DiuS2     ",  -1.00000
+"dDigS1Diu ","DiuS1     ",   1.00000
+"dDigS1Diu ","DiuS2     ",  -1.00000
+"dDigS2Diu ","DiuS2     ",   1.00000
+"dResS1BaP ","BaP       ",   1.00000
+"dResS1BaP ","BaPS1     ",  -1.00000
+"dResS2BaP ","BaP       ",   1.00000
+"dResS2BaP ","BaPS2     ",  -1.00000
+"dBurS1BaP ","BaPS1     ",  -1.00000
+"dBurS1BaP ","BaPS2     ",   1.00000
+"dBurS2BaP ","BaPS2     ",  -1.00000
+"dDigS1BaP ","BaPS1     ",   1.00000
+"dDigS1BaP ","BaPS2     ",  -1.00000
+"dDigS2BaP ","BaPS2     ",   1.00000
+"dResS1OMP ","OMP       ",   1.00000
+"dResS1OMP ","OMPS1     ",  -1.00000
+"dResS2OMP ","OMP       ",   1.00000
+"dResS2OMP ","OMPS2     ",  -1.00000
+"dBurS1OMP ","OMPS1     ",  -1.00000
+"dBurS1OMP ","OMPS2     ",   1.00000
+"dBurS2OMP ","OMPS2     ",  -1.00000
+"dDigS1OMP ","OMPS1     ",   1.00000
+"dDigS1OMP ","OMPS2     ",  -1.00000
+"dDigS2OMP ","OMPS2     ",   1.00000
+"dResS1Flu ","Flu       ",   1.00000
+"dResS1Flu ","FluS1     ",  -1.00000
+"dResS2Flu ","Flu       ",   1.00000
+"dResS2Flu ","FluS2     ",  -1.00000
+"dBurS1Flu ","FluS1     ",  -1.00000
+"dBurS1Flu ","FluS2     ",   1.00000
+"dBurS2Flu ","FluS2     ",  -1.00000
+"dDigS1Flu ","FluS1     ",   1.00000
+"dDigS1Flu ","FluS2     ",  -1.00000
+"dDigS2Flu ","FluS2     ",   1.00000
+"dResS1HCB ","HCB       ",   1.00000
+"dResS1HCB ","HCBS1     ",  -1.00000
+"dResS2HCB ","HCB       ",   1.00000
+"dResS2HCB ","HCBS2     ",  -1.00000
+"dBurS1HCB ","HCBS1     ",  -1.00000
+"dBurS1HCB ","HCBS2     ",   1.00000
+"dBurS2HCB ","HCBS2     ",  -1.00000
+"dDigS1HCB ","HCBS1     ",   1.00000
+"dDigS1HCB ","HCBS2     ",  -1.00000
+"dDigS2HCB ","HCBS2     ",   1.00000
+"dResS1HCH ","HCH       ",   1.00000
+"dResS1HCH ","HCHS1     ",  -1.00000
+"dResS2HCH ","HCH       ",   1.00000
+"dResS2HCH ","HCHS2     ",  -1.00000
+"dBurS1HCH ","HCHS1     ",  -1.00000
+"dBurS1HCH ","HCHS2     ",   1.00000
+"dBurS2HCH ","HCHS2     ",  -1.00000
+"dDigS1HCH ","HCHS1     ",   1.00000
+"dDigS1HCH ","HCHS2     ",  -1.00000
+"dDigS2HCH ","HCHS2     ",   1.00000
+"dEvapConti","Continuity",   1.00000
+"dEvapConti","Prec      ",   1.00000
+"dAtmDepIM1","IM1       ",   1.00000
+"dAtmDepIM2","IM2       ",   1.00000
+"dAtmDepIM3","IM3       ",   1.00000
+"dDfwastIM1","IM1       ",   1.00000
+"dDfwastIM2","IM2       ",   1.00000
+"dDfwastIM3","IM3       ",   1.00000
+"dAtmDepNH4","NH4       ",   1.00000
+"dAtmDepNH4","ALKA      ",   4.35700
+"dAtmDepNO3","NO3       ",   1.00000
+"dAtmDepNO3","H+        ",   0.07140
+"dAtmDepNO3","ALKA      ",  -4.35700
+"dAtmDepPO4","PO4       ",   1.00000
+"dAtmDepSO4","SO4       ",   1.00000
+"dAtmDepSO4","H+        ",   0.14300
+"dAtmDepSO4","ALKA      ",  -8.71400
+"dAtmDep153","153       ",   1.00000
+"dAtmDep153","153-Par   ",   1.00000
+"dAtmDepHCB","HCB       ",   1.00000
+"dAtmDepHCB","HCB-Par   ",   1.00000
+"dAtmDepHCH","HCH       ",   1.00000
+"dAtmDepHCH","HCH-Par   ",   1.00000
+"dAtmDepFlu","Flu       ",   1.00000
+"dAtmDepFlu","Flu-Par   ",   1.00000
+"dAtmDepBap","Bap       ",   1.00000
+"dAtmDepBap","Bap-Par   ",   1.00000
+"dAtmDepAtr","Atr       ",   1.00000
+"dAtmDepAtr","Atr-Par   ",   1.00000
+"dAtmDepMef","Mef       ",   1.00000
+"dAtmDepMef","Mef-Par   ",   1.00000
+"dAtmDepDiu","Diu       ",   1.00000
+"dAtmDepDiu","Diu-Par   ",   1.00000
+"dAtmDepCd ","Cd        ",   1.00000
+"dAtmDepCd ","Cd-Par    ",   1.00000
+"dAtmDepCu ","Cu        ",   1.00000
+"dAtmDepCu ","Cu-Par    ",   1.00000
+"dAtmDepZn ","Zn        ",   1.00000
+"dAtmDepZn ","Zn-Par    ",   1.00000
+"dAtmDepHg ","Hg        ",   1.00000
+"dAtmDepHg ","Hg-Par    ",   1.00000
+"dAtmDepNi ","Ni        ",   1.00000
+"dAtmDepNi ","Ni-Par    ",   1.00000
+"dAtmDepPb ","Pb        ",   1.00000
+"dAtmDepPb ","Pb-Par    ",   1.00000
+"dAtmDepCr ","Cr        ",   1.00000
+"dAtmDepCr ","Cr-Par    ",   1.00000
+"dAtmDepAs ","As        ",   1.00000
+"dAtmDepAs ","As-Par    ",   1.00000
+"dAtmDepVa ","Va        ",   1.00000
+"dAtmDepVa ","Va-Par    ",   1.00000
+"dDfwastNO3","NO3       ",   1.00000
+"dDfwastNH4","NH4       ",   1.00000
+"dDfwastPO4","PO4       ",   1.00000
+"dDfwastSi ","Si        ",   1.00000
+"dDfwastSO4","SO4       ",   1.00000
+"dDfwast153","153       ",   1.00000
+"dDfwast153","153-Par   ",   1.00000
+"dDfwastHCB","HCB       ",   1.00000
+"dDfwastHCB","HCB-Par   ",   1.00000
+"dDfwastHCH","HCH       ",   1.00000
+"dDfwastHCH","HCH-Par   ",   1.00000
+"dDfwastFlu","Flu       ",   1.00000
+"dDfwastFlu","Flu-Par   ",   1.00000
+"dDfwastBap","Bap       ",   1.00000
+"dDfwastBap","Bap-Par   ",   1.00000
+"dDfwastAtr","Atr       ",   1.00000
+"dDfwastAtr","Atr-Par   ",   1.00000
+"dDfwastMef","Mef       ",   1.00000
+"dDfwastMef","Mef-Par   ",   1.00000
+"dDfwastDiu","Diu       ",   1.00000
+"dDfwastDiu","Diu-Par   ",   1.00000
+"dDfwastCd ","Cd        ",   1.00000
+"dDfwastCd ","Cd-Par    ",   1.00000
+"dDfwastCu ","Cu        ",   1.00000
+"dDfwastCu ","Cu-Par    ",   1.00000
+"dDfwastZn ","Zn        ",   1.00000
+"dDfwastZn ","Zn-Par    ",   1.00000
+"dDfwastHg ","Hg        ",   1.00000
+"dDfwastHg ","Hg-Par    ",   1.00000
+"dDfwastNi ","Ni        ",   1.00000
+"dDfwastNi ","Ni-Par    ",   1.00000
+"dDfwastPb ","Pb        ",   1.00000
+"dDfwastPb ","Pb-Par    ",   1.00000
+"dDfwastCr ","Cr        ",   1.00000
+"dDfwastCr ","Cr-Par    ",   1.00000
+"dDfwastAs ","As        ",   1.00000
+"dDfwastAs ","As-Par    ",   1.00000
+"dDfwastVa ","Va        ",   1.00000
+"dDfwastVa ","Va-Par    ",   1.00000
+"dDumNH3fre","NH4       ",   0.00000
+"dDumPosOXY","OXY       ",   0.00000
+"dDumSecchi","IM1       ",   0.00000
+"dDumSecchi","POC1      ",   0.00000
+"dTEWORBOD ","CBOD5     ",   1.00000
+"dTEWORBOD2","CBOD5_2   ",   1.00000
+"dTEWORBOD3","CBOD5_3   ",   1.00000
+"dTEWORCOD ","COD_Cr    ",   1.00000
+"dTEWOROXY ","OXY       ",   1.00000
+"dTEWOROrgN","PON1      ",   1.00000
+"dTEWORNH4 ","NH4       ",   1.00000
+"dTEWORNO3 ","NO3       ",   1.00000
+"dTEWOROON ","PON2      ",   1.00000
+"dTEWORECol","EColi     ",   1.00000
+"dSorpOMPS1","OMPS1-Dis ",  -1.00000
+"dSorpOMPS1","OMPS1-Par ",   1.00000
+"dSorpOMPS2","OMPS2-Dis ",  -1.00000
+"dSorpOMPS2","OMPS2-Par ",   1.00000
+"dSorpOMP  ","OMP-dis   ",  -1.00000
+"dSorpOMP  ","OMP-par   ",   1.00000
+"dVolatOMP ","OMP       ",  -1.00000
+"dVolatOMP ","OMP-dis   ",  -1.00000
+"dLossOMP  ","OMP       ",  -1.00000
+"dLossOMPS1","OMPS1     ",  -1.00000
+"dLossOMPS2","OMPS2     ",  -1.00000
+"dSedOMP   ","OMP       ",  -1.00000
+"dSedOMP   ","OMP-par   ",  -1.00000
+"dSedOMP   ","OMPS1     ",   1.00000
+"dSedOMP   ","OMPS1-par ",   1.00000
+"dAtmDepOMP","OMP       ",   1.00000
+"dAtmDepOMP","OMP-Par   ",   1.00000
+"dDfwastOMP","OMP       ",   1.00000
+"dDfwastOMP","OMP-Par   ",   1.00000
+"dDamrear  ","OXY       ",   1.00000
+"dTRSOXY   ","OXY       ",   1.00000
+"dPrecAPPO4","PO4       ",  -1.00000
+"dPrecAPPO4","APATP     ",   1.00000
+"dDissAPPO4","PO4       ",   1.00000
+"dDissAPPO4","APATP     ",  -1.00000
+"dDumHZoop ","Zoopl_V   ",   0.00000
+"dDumHMuss ","Mussel_V  ",   0.00000
+"dDumHGra3 ","Grazer3_V ",   0.00000
+"dDumHGra4 ","Grazer4_V ",   0.00000
+"dDumHGra5 ","Grazer5_V ",   0.00000
+"dVB01     ","VB01      ",   1.00000
+"dMrtC1VB01","VB01      ",  -1.00000
+"dMrtC3VB01","VB01      ",  -1.00000
+"dMrtC4VB01","VB01      ",  -1.00000
+"dMrtC2VB01","VB01      ",  -1.00000
+"dMrtC5VB01","VB01      ",  -1.00000
+"dMC2VB01P1","POC1      ",   1.00000
+"dMC2VB01P2","POC2      ",   1.00000
+"dMC2VB01P3","POC3      ",   1.00000
+"dMN2VB01P1","PON1      ",   1.00000
+"dMN2VB01P2","PON2      ",   1.00000
+"dMN2VB01P3","PON3      ",   1.00000
+"dMP2VB01P1","POP1      ",   1.00000
+"dMP2VB01P2","POP2      ",   1.00000
+"dMP2VB01P3","POP3      ",   1.00000
+"dMS2VB01P1","POS1      ",   1.00000
+"dMS2VB01P2","POS2      ",   1.00000
+"dMS2VB01P3","POS3      ",   1.00000
+"dMC1VB01P5","POC5      ",   1.00000
+"dMC3VB01P5","POC5      ",   1.00000
+"dMN1VB01P5","PON5      ",   1.00000
+"dMN3VB01P5","PON5      ",   1.00000
+"dMP1VB01P5","POP5      ",   1.00000
+"dMP3VB01P5","POP5      ",   1.00000
+"dMS1VB01P5","POS5      ",   1.00000
+"dMS3VB01P5","POS5      ",   1.00000
+"dMC5VB01P1","POC1      ",   1.00000
+"dMC5VB01P2","POC2      ",   1.00000
+"dMC5VB01P3","POC3      ",   1.00000
+"dMN5VB01P1","PON1      ",   1.00000
+"dMN5VB01P2","PON2      ",   1.00000
+"dMN5VB01P3","PON3      ",   1.00000
+"dMP5VB01P1","POP1      ",   1.00000
+"dMP5VB01P2","POP2      ",   1.00000
+"dMP5VB01P3","POP3      ",   1.00000
+"dMS5VB01P1","POS1      ",   1.00000
+"dMS5VB01P2","POS2      ",   1.00000
+"dMS5VB01P3","POS3      ",   1.00000
+"dMC4VB01P5","POC5      ",   1.00000
+"dMN4VB01P5","PON5      ",   1.00000
+"dMP4VB01P5","POP5      ",   1.00000
+"dMS4VB01P5","POS5      ",   1.00000
+"dN1VB01upy","NH4       ",  -1.00000
+"dN2VB01upy","NO3       ",  -1.00000
+"dP1VB01upy","AAP       ",  -1.00000
+"dP2VB01upy","PO4       ",  -1.00000
+"dS1VB01upy","SO4       ",  -1.00000
+"dS2VB01upy","SUD       ",  -1.00000
+"dVB02     ","VB02      ",   1.00000
+"dMrtC1VB02","VB02      ",  -1.00000
+"dMrtC3VB02","VB02      ",  -1.00000
+"dMrtC4VB02","VB02      ",  -1.00000
+"dMrtC2VB02","VB02      ",  -1.00000
+"dMrtC5VB02","VB02      ",  -1.00000
+"dMC2VB02P1","POC1      ",   1.00000
+"dMC2VB02P2","POC2      ",   1.00000
+"dMC2VB02P3","POC3      ",   1.00000
+"dMN2VB02P1","PON1      ",   1.00000
+"dMN2VB02P2","PON2      ",   1.00000
+"dMN2VB02P3","PON3      ",   1.00000
+"dMP2VB02P1","POP1      ",   1.00000
+"dMP2VB02P2","POP2      ",   1.00000
+"dMP2VB02P3","POP3      ",   1.00000
+"dMS2VB02P1","POS1      ",   1.00000
+"dMS2VB02P2","POS2      ",   1.00000
+"dMS2VB02P3","POS3      ",   1.00000
+"dMC1VB02P5","POC5      ",   1.00000
+"dMC3VB02P5","POC5      ",   1.00000
+"dMN1VB02P5","PON5      ",   1.00000
+"dMN3VB02P5","PON5      ",   1.00000
+"dMP1VB02P5","POP5      ",   1.00000
+"dMP3VB02P5","POP5      ",   1.00000
+"dMS1VB02P5","POS5      ",   1.00000
+"dMS3VB02P5","POS5      ",   1.00000
+"dMC5VB02P1","POC1      ",   1.00000
+"dMC5VB02P2","POC2      ",   1.00000
+"dMC5VB02P3","POC3      ",   1.00000
+"dMN5VB02P1","PON1      ",   1.00000
+"dMN5VB02P2","PON2      ",   1.00000
+"dMN5VB02P3","PON3      ",   1.00000
+"dMP5VB02P1","POP1      ",   1.00000
+"dMP5VB02P2","POP2      ",   1.00000
+"dMP5VB02P3","POP3      ",   1.00000
+"dMS5VB02P1","POS1      ",   1.00000
+"dMS5VB02P2","POS2      ",   1.00000
+"dMS5VB02P3","POS3      ",   1.00000
+"dMC4VB02P5","POC5      ",   1.00000
+"dMN4VB02P5","PON5      ",   1.00000
+"dMP4VB02P5","POP5      ",   1.00000
+"dMS4VB02P5","POS5      ",   1.00000
+"dN1VB02upy","NH4       ",  -1.00000
+"dN2VB02upy","NO3       ",  -1.00000
+"dP1VB02upy","AAP       ",  -1.00000
+"dP2VB02upy","PO4       ",  -1.00000
+"dS1VB02upy","SO4       ",  -1.00000
+"dS2VB02upy","SUD       ",  -1.00000
+"dVB03     ","VB03      ",   1.00000
+"dMrtC1VB03","VB03      ",  -1.00000
+"dMrtC3VB03","VB03      ",  -1.00000
+"dMrtC4VB03","VB03      ",  -1.00000
+"dMrtC2VB03","VB03      ",  -1.00000
+"dMrtC5VB03","VB03      ",  -1.00000
+"dMC2VB03P1","POC1      ",   1.00000
+"dMC2VB03P2","POC2      ",   1.00000
+"dMC2VB03P3","POC3      ",   1.00000
+"dMN2VB03P1","PON1      ",   1.00000
+"dMN2VB03P2","PON2      ",   1.00000
+"dMN2VB03P3","PON3      ",   1.00000
+"dMP2VB03P1","POP1      ",   1.00000
+"dMP2VB03P2","POP2      ",   1.00000
+"dMP2VB03P3","POP3      ",   1.00000
+"dMS2VB03P1","POS1      ",   1.00000
+"dMS2VB03P2","POS2      ",   1.00000
+"dMS2VB03P3","POS3      ",   1.00000
+"dMC1VB03P5","POC5      ",   1.00000
+"dMC3VB03P5","POC5      ",   1.00000
+"dMN1VB03P5","PON5      ",   1.00000
+"dMN3VB03P5","PON5      ",   1.00000
+"dMP1VB03P5","POP5      ",   1.00000
+"dMP3VB03P5","POP5      ",   1.00000
+"dMS1VB03P5","POS5      ",   1.00000
+"dMS3VB03P5","POS5      ",   1.00000
+"dMC5VB03P1","POC1      ",   1.00000
+"dMC5VB03P2","POC2      ",   1.00000
+"dMC5VB03P3","POC3      ",   1.00000
+"dMN5VB03P1","PON1      ",   1.00000
+"dMN5VB03P2","PON2      ",   1.00000
+"dMN5VB03P3","PON3      ",   1.00000
+"dMP5VB03P1","POP1      ",   1.00000
+"dMP5VB03P2","POP2      ",   1.00000
+"dMP5VB03P3","POP3      ",   1.00000
+"dMS5VB03P1","POS1      ",   1.00000
+"dMS5VB03P2","POS2      ",   1.00000
+"dMS5VB03P3","POS3      ",   1.00000
+"dMC4VB03P5","POC5      ",   1.00000
+"dMN4VB03P5","PON5      ",   1.00000
+"dMP4VB03P5","POP5      ",   1.00000
+"dMS4VB03P5","POS5      ",   1.00000
+"dN1VB03upy","NH4       ",  -1.00000
+"dN2VB03upy","NO3       ",  -1.00000
+"dP1VB03upy","AAP       ",  -1.00000
+"dP2VB03upy","PO4       ",  -1.00000
+"dS1VB03upy","SO4       ",  -1.00000
+"dS2VB03upy","SUD       ",  -1.00000
+"dVB04     ","VB04      ",   1.00000
+"dMrtC1VB04","VB04      ",  -1.00000
+"dMrtC3VB04","VB04      ",  -1.00000
+"dMrtC4VB04","VB04      ",  -1.00000
+"dMrtC2VB04","VB04      ",  -1.00000
+"dMrtC5VB04","VB04      ",  -1.00000
+"dMC2VB04P1","POC1      ",   1.00000
+"dMC2VB04P2","POC2      ",   1.00000
+"dMC2VB04P3","POC3      ",   1.00000
+"dMN2VB04P1","PON1      ",   1.00000
+"dMN2VB04P2","PON2      ",   1.00000
+"dMN2VB04P3","PON3      ",   1.00000
+"dMP2VB04P1","POP1      ",   1.00000
+"dMP2VB04P2","POP2      ",   1.00000
+"dMP2VB04P3","POP3      ",   1.00000
+"dMS2VB04P1","POS1      ",   1.00000
+"dMS2VB04P2","POS2      ",   1.00000
+"dMS2VB04P3","POS3      ",   1.00000
+"dMC1VB04P5","POC5      ",   1.00000
+"dMC3VB04P5","POC5      ",   1.00000
+"dMN1VB04P5","PON5      ",   1.00000
+"dMN3VB04P5","PON5      ",   1.00000
+"dMP1VB04P5","POP5      ",   1.00000
+"dMP3VB04P5","POP5      ",   1.00000
+"dMS1VB04P5","POS5      ",   1.00000
+"dMS3VB04P5","POS5      ",   1.00000
+"dMC5VB04P1","POC1      ",   1.00000
+"dMC5VB04P2","POC2      ",   1.00000
+"dMC5VB04P3","POC3      ",   1.00000
+"dMN5VB04P1","PON1      ",   1.00000
+"dMN5VB04P2","PON2      ",   1.00000
+"dMN5VB04P3","PON3      ",   1.00000
+"dMP5VB04P1","POP1      ",   1.00000
+"dMP5VB04P2","POP2      ",   1.00000
+"dMP5VB04P3","POP3      ",   1.00000
+"dMS5VB04P1","POS1      ",   1.00000
+"dMS5VB04P2","POS2      ",   1.00000
+"dMS5VB04P3","POS3      ",   1.00000
+"dMC4VB04P5","POC5      ",   1.00000
+"dMN4VB04P5","PON5      ",   1.00000
+"dMP4VB04P5","POP5      ",   1.00000
+"dMS4VB04P5","POS5      ",   1.00000
+"dN1VB04upy","NH4       ",  -1.00000
+"dN2VB04upy","NO3       ",  -1.00000
+"dP1VB04upy","AAP       ",  -1.00000
+"dP2VB04upy","PO4       ",  -1.00000
+"dS1VB04upy","SO4       ",  -1.00000
+"dS2VB04upy","SUD       ",  -1.00000
+"dVB05     ","VB05      ",   1.00000
+"dMrtC1VB05","VB05      ",  -1.00000
+"dMrtC3VB05","VB05      ",  -1.00000
+"dMrtC4VB05","VB05      ",  -1.00000
+"dMrtC2VB05","VB05      ",  -1.00000
+"dMrtC5VB05","VB05      ",  -1.00000
+"dMC2VB05P1","POC1      ",   1.00000
+"dMC2VB05P2","POC2      ",   1.00000
+"dMC2VB05P3","POC3      ",   1.00000
+"dMN2VB05P1","PON1      ",   1.00000
+"dMN2VB05P2","PON2      ",   1.00000
+"dMN2VB05P3","PON3      ",   1.00000
+"dMP2VB05P1","POP1      ",   1.00000
+"dMP2VB05P2","POP2      ",   1.00000
+"dMP2VB05P3","POP3      ",   1.00000
+"dMS2VB05P1","POS1      ",   1.00000
+"dMS2VB05P2","POS2      ",   1.00000
+"dMS2VB05P3","POS3      ",   1.00000
+"dMC1VB05P5","POC5      ",   1.00000
+"dMC3VB05P5","POC5      ",   1.00000
+"dMN1VB05P5","PON5      ",   1.00000
+"dMN3VB05P5","PON5      ",   1.00000
+"dMP1VB05P5","POP5      ",   1.00000
+"dMP3VB05P5","POP5      ",   1.00000
+"dMS1VB05P5","POS5      ",   1.00000
+"dMS3VB05P5","POS5      ",   1.00000
+"dMC5VB05P1","POC1      ",   1.00000
+"dMC5VB05P2","POC2      ",   1.00000
+"dMC5VB05P3","POC3      ",   1.00000
+"dMN5VB05P1","PON1      ",   1.00000
+"dMN5VB05P2","PON2      ",   1.00000
+"dMN5VB05P3","PON3      ",   1.00000
+"dMP5VB05P1","POP1      ",   1.00000
+"dMP5VB05P2","POP2      ",   1.00000
+"dMP5VB05P3","POP3      ",   1.00000
+"dMS5VB05P1","POS1      ",   1.00000
+"dMS5VB05P2","POS2      ",   1.00000
+"dMS5VB05P3","POS3      ",   1.00000
+"dMC4VB05P5","POC5      ",   1.00000
+"dMN4VB05P5","PON5      ",   1.00000
+"dMP4VB05P5","POP5      ",   1.00000
+"dMS4VB05P5","POS5      ",   1.00000
+"dN1VB05upy","NH4       ",  -1.00000
+"dN2VB05upy","NO3       ",  -1.00000
+"dP1VB05upy","AAP       ",  -1.00000
+"dP2VB05upy","PO4       ",  -1.00000
+"dS1VB05upy","SO4       ",  -1.00000
+"dS2VB05upy","SUD       ",  -1.00000
+"dVB06     ","VB06      ",   1.00000
+"dMrtC1VB06","VB06      ",  -1.00000
+"dMrtC3VB06","VB06      ",  -1.00000
+"dMrtC4VB06","VB06      ",  -1.00000
+"dMrtC2VB06","VB06      ",  -1.00000
+"dMrtC5VB06","VB06      ",  -1.00000
+"dMC2VB06P1","POC1      ",   1.00000
+"dMC2VB06P2","POC2      ",   1.00000
+"dMC2VB06P3","POC3      ",   1.00000
+"dMN2VB06P1","PON1      ",   1.00000
+"dMN2VB06P2","PON2      ",   1.00000
+"dMN2VB06P3","PON3      ",   1.00000
+"dMP2VB06P1","POP1      ",   1.00000
+"dMP2VB06P2","POP2      ",   1.00000
+"dMP2VB06P3","POP3      ",   1.00000
+"dMS2VB06P1","POS1      ",   1.00000
+"dMS2VB06P2","POS2      ",   1.00000
+"dMS2VB06P3","POS3      ",   1.00000
+"dMC1VB06P5","POC5      ",   1.00000
+"dMC3VB06P5","POC5      ",   1.00000
+"dMN1VB06P5","PON5      ",   1.00000
+"dMN3VB06P5","PON5      ",   1.00000
+"dMP1VB06P5","POP5      ",   1.00000
+"dMP3VB06P5","POP5      ",   1.00000
+"dMS1VB06P5","POS5      ",   1.00000
+"dMS3VB06P5","POS5      ",   1.00000
+"dMC5VB06P1","POC1      ",   1.00000
+"dMC5VB06P2","POC2      ",   1.00000
+"dMC5VB06P3","POC3      ",   1.00000
+"dMN5VB06P1","PON1      ",   1.00000
+"dMN5VB06P2","PON2      ",   1.00000
+"dMN5VB06P3","PON3      ",   1.00000
+"dMP5VB06P1","POP1      ",   1.00000
+"dMP5VB06P2","POP2      ",   1.00000
+"dMP5VB06P3","POP3      ",   1.00000
+"dMS5VB06P1","POS1      ",   1.00000
+"dMS5VB06P2","POS2      ",   1.00000
+"dMS5VB06P3","POS3      ",   1.00000
+"dMC4VB06P5","POC5      ",   1.00000
+"dMN4VB06P5","PON5      ",   1.00000
+"dMP4VB06P5","POP5      ",   1.00000
+"dMS4VB06P5","POS5      ",   1.00000
+"dN1VB06upy","NH4       ",  -1.00000
+"dN2VB06upy","NO3       ",  -1.00000
+"dP1VB06upy","AAP       ",  -1.00000
+"dP2VB06upy","PO4       ",  -1.00000
+"dS1VB06upy","SO4       ",  -1.00000
+"dS2VB06upy","SUD       ",  -1.00000
+"dVB07     ","VB07      ",   1.00000
+"dMrtC1VB07","VB07      ",  -1.00000
+"dMrtC3VB07","VB07      ",  -1.00000
+"dMrtC4VB07","VB07      ",  -1.00000
+"dMrtC2VB07","VB07      ",  -1.00000
+"dMrtC5VB07","VB07      ",  -1.00000
+"dMC2VB07P1","POC1      ",   1.00000
+"dMC2VB07P2","POC2      ",   1.00000
+"dMC2VB07P3","POC3      ",   1.00000
+"dMN2VB07P1","PON1      ",   1.00000
+"dMN2VB07P2","PON2      ",   1.00000
+"dMN2VB07P3","PON3      ",   1.00000
+"dMP2VB07P1","POP1      ",   1.00000
+"dMP2VB07P2","POP2      ",   1.00000
+"dMP2VB07P3","POP3      ",   1.00000
+"dMS2VB07P1","POS1      ",   1.00000
+"dMS2VB07P2","POS2      ",   1.00000
+"dMS2VB07P3","POS3      ",   1.00000
+"dMC1VB07P5","POC5      ",   1.00000
+"dMC3VB07P5","POC5      ",   1.00000
+"dMN1VB07P5","PON5      ",   1.00000
+"dMN3VB07P5","PON5      ",   1.00000
+"dMP1VB07P5","POP5      ",   1.00000
+"dMP3VB07P5","POP5      ",   1.00000
+"dMS1VB07P5","POS5      ",   1.00000
+"dMS3VB07P5","POS5      ",   1.00000
+"dMC5VB07P1","POC1      ",   1.00000
+"dMC5VB07P2","POC2      ",   1.00000
+"dMC5VB07P3","POC3      ",   1.00000
+"dMN5VB07P1","PON1      ",   1.00000
+"dMN5VB07P2","PON2      ",   1.00000
+"dMN5VB07P3","PON3      ",   1.00000
+"dMP5VB07P1","POP1      ",   1.00000
+"dMP5VB07P2","POP2      ",   1.00000
+"dMP5VB07P3","POP3      ",   1.00000
+"dMS5VB07P1","POS1      ",   1.00000
+"dMS5VB07P2","POS2      ",   1.00000
+"dMS5VB07P3","POS3      ",   1.00000
+"dMC4VB07P5","POC5      ",   1.00000
+"dMN4VB07P5","PON5      ",   1.00000
+"dMP4VB07P5","POP5      ",   1.00000
+"dMS4VB07P5","POS5      ",   1.00000
+"dN1VB07upy","NH4       ",  -1.00000
+"dN2VB07upy","NO3       ",  -1.00000
+"dP1VB07upy","AAP       ",  -1.00000
+"dP2VB07upy","PO4       ",  -1.00000
+"dS1VB07upy","SO4       ",  -1.00000
+"dS2VB07upy","SUD       ",  -1.00000
+"dVB08     ","VB08      ",   1.00000
+"dMrtC1VB08","VB08      ",  -1.00000
+"dMrtC3VB08","VB08      ",  -1.00000
+"dMrtC4VB08","VB08      ",  -1.00000
+"dMrtC2VB08","VB08      ",  -1.00000
+"dMrtC5VB08","VB08      ",  -1.00000
+"dMC2VB08P1","POC1      ",   1.00000
+"dMC2VB08P2","POC2      ",   1.00000
+"dMC2VB08P3","POC3      ",   1.00000
+"dMN2VB08P1","PON1      ",   1.00000
+"dMN2VB08P2","PON2      ",   1.00000
+"dMN2VB08P3","PON3      ",   1.00000
+"dMP2VB08P1","POP1      ",   1.00000
+"dMP2VB08P2","POP2      ",   1.00000
+"dMP2VB08P3","POP3      ",   1.00000
+"dMS2VB08P1","POS1      ",   1.00000
+"dMS2VB08P2","POS2      ",   1.00000
+"dMS2VB08P3","POS3      ",   1.00000
+"dMC1VB08P5","POC5      ",   1.00000
+"dMC3VB08P5","POC5      ",   1.00000
+"dMN1VB08P5","PON5      ",   1.00000
+"dMN3VB08P5","PON5      ",   1.00000
+"dMP1VB08P5","POP5      ",   1.00000
+"dMP3VB08P5","POP5      ",   1.00000
+"dMS1VB08P5","POS5      ",   1.00000
+"dMS3VB08P5","POS5      ",   1.00000
+"dMC5VB08P1","POC1      ",   1.00000
+"dMC5VB08P2","POC2      ",   1.00000
+"dMC5VB08P3","POC3      ",   1.00000
+"dMN5VB08P1","PON1      ",   1.00000
+"dMN5VB08P2","PON2      ",   1.00000
+"dMN5VB08P3","PON3      ",   1.00000
+"dMP5VB08P1","POP1      ",   1.00000
+"dMP5VB08P2","POP2      ",   1.00000
+"dMP5VB08P3","POP3      ",   1.00000
+"dMS5VB08P1","POS1      ",   1.00000
+"dMS5VB08P2","POS2      ",   1.00000
+"dMS5VB08P3","POS3      ",   1.00000
+"dMC4VB08P5","POC5      ",   1.00000
+"dMN4VB08P5","PON5      ",   1.00000
+"dMP4VB08P5","POP5      ",   1.00000
+"dMS4VB08P5","POS5      ",   1.00000
+"dN1VB08upy","NH4       ",  -1.00000
+"dN2VB08upy","NO3       ",  -1.00000
+"dP1VB08upy","AAP       ",  -1.00000
+"dP2VB08upy","PO4       ",  -1.00000
+"dS1VB08upy","SO4       ",  -1.00000
+"dS2VB08upy","SUD       ",  -1.00000
+"dVB09     ","VB09      ",   1.00000
+"dMrtC1VB09","VB09      ",  -1.00000
+"dMrtC3VB09","VB09      ",  -1.00000
+"dMrtC4VB09","VB09      ",  -1.00000
+"dMrtC2VB09","VB09      ",  -1.00000
+"dMrtC5VB09","VB09      ",  -1.00000
+"dMC2VB09P1","POC1      ",   1.00000
+"dMC2VB09P2","POC2      ",   1.00000
+"dMC2VB09P3","POC3      ",   1.00000
+"dMN2VB09P1","PON1      ",   1.00000
+"dMN2VB09P2","PON2      ",   1.00000
+"dMN2VB09P3","PON3      ",   1.00000
+"dMP2VB09P1","POP1      ",   1.00000
+"dMP2VB09P2","POP2      ",   1.00000
+"dMP2VB09P3","POP3      ",   1.00000
+"dMS2VB09P1","POS1      ",   1.00000
+"dMS2VB09P2","POS2      ",   1.00000
+"dMS2VB09P3","POS3      ",   1.00000
+"dMC1VB09P5","POC5      ",   1.00000
+"dMC3VB09P5","POC5      ",   1.00000
+"dMN1VB09P5","PON5      ",   1.00000
+"dMN3VB09P5","PON5      ",   1.00000
+"dMP1VB09P5","POP5      ",   1.00000
+"dMP3VB09P5","POP5      ",   1.00000
+"dMS1VB09P5","POS5      ",   1.00000
+"dMS3VB09P5","POS5      ",   1.00000
+"dMC5VB09P1","POC1      ",   1.00000
+"dMC5VB09P2","POC2      ",   1.00000
+"dMC5VB09P3","POC3      ",   1.00000
+"dMN5VB09P1","PON1      ",   1.00000
+"dMN5VB09P2","PON2      ",   1.00000
+"dMN5VB09P3","PON3      ",   1.00000
+"dMP5VB09P1","POP1      ",   1.00000
+"dMP5VB09P2","POP2      ",   1.00000
+"dMP5VB09P3","POP3      ",   1.00000
+"dMS5VB09P1","POS1      ",   1.00000
+"dMS5VB09P2","POS2      ",   1.00000
+"dMS5VB09P3","POS3      ",   1.00000
+"dMC4VB09P5","POC5      ",   1.00000
+"dMN4VB09P5","PON5      ",   1.00000
+"dMP4VB09P5","POP5      ",   1.00000
+"dMS4VB09P5","POS5      ",   1.00000
+"dN1VB09upy","NH4       ",  -1.00000
+"dN2VB09upy","NO3       ",  -1.00000
+"dP1VB09upy","AAP       ",  -1.00000
+"dP2VB09upy","PO4       ",  -1.00000
+"dS1VB09upy","SO4       ",  -1.00000
+"dS2VB09upy","SUD       ",  -1.00000
+"dGrowEM01 ","EM01      ",   1.00000
+"dGrowSM01 ","SM01      ",   1.00000
+"dDecayEM01","EM01      ",  -1.00000
+"dDecaySM01","SM01      ",  -1.00000
+"dCtEMtRH01","RH01      ",   1.00000
+"dCtSMtRH01","RH01      ",   1.00000
+"dCtRHtEM01","RH01      ",  -1.00000
+"dCtRHtSM01","RH01      ",  -1.00000
+"dNtEMtRH01","NRH01     ",   1.00000
+"dNtSMtRH01","NRH01     ",   1.00000
+"dNtRHtEM01","NRH01     ",  -1.00000
+"dNtRHtSM01","NRH01     ",  -1.00000
+"dPtEMtRH01","PRH01     ",   1.00000
+"dPtSMtRH01","PRH01     ",   1.00000
+"dPtRHtEM01","PRH01     ",  -1.00000
+"dPtRHtSM01","PRH01     ",  -1.00000
+"dNH4upEM01","NH4       ",  -1.00000
+"dNO3upEM01","NO3       ",  -1.00000
+"dPO4upEM01","PO4       ",  -1.00000
+"dPrPOC1M01","POC1      ",   1.00000
+"dPrPOC2M01","POC2      ",   1.00000
+"dPrPOC3M01","POC3      ",   1.00000
+"dPrPON1M01","PON1      ",   1.00000
+"dPrPON2M01","PON2      ",   1.00000
+"dPrPON3M01","PON3      ",   1.00000
+"dPrPOP1M01","POP1      ",   1.00000
+"dPrPOP2M01","POP2      ",   1.00000
+"dPrPOP3M01","POP3      ",   1.00000
+"dNH4upSM01","NH4       ",  -1.00000
+"dNO3upSM01","NO3       ",  -1.00000
+"dPO4upSM01","PO4       ",  -1.00000
+"dCO2upSM01","TIC       ",  -1.00000
+"dCO2upSM01","CO2       ",  -3.67000
+"dOXYprSM01","OXY       ",   2.67000
+"dGrowEM02 ","EM02      ",   1.00000
+"dGrowSM02 ","SM02      ",   1.00000
+"dDecayEM02","EM02      ",  -1.00000
+"dDecaySM02","SM02      ",  -1.00000
+"dCtEMtRH02","RH02      ",   1.00000
+"dCtSMtRH02","RH02      ",   1.00000
+"dCtRHtEM02","RH02      ",  -1.00000
+"dCtRHtSM02","RH02      ",  -1.00000
+"dNtEMtRH02","NRH02     ",   1.00000
+"dNtSMtRH02","NRH02     ",   1.00000
+"dNtRHtEM02","NRH02     ",  -1.00000
+"dNtRHtSM02","NRH02     ",  -1.00000
+"dPtEMtRH02","PRH02     ",   1.00000
+"dPtSMtRH02","PRH02     ",   1.00000
+"dPtRHtEM02","PRH02     ",  -1.00000
+"dPtRHtSM02","PRH02     ",  -1.00000
+"dNH4upEM02","NH4       ",  -1.00000
+"dNO3upEM02","NO3       ",  -1.00000
+"dPO4upEM02","PO4       ",  -1.00000
+"dPrPOC1M02","POC1      ",   1.00000
+"dPrPOC2M02","POC2      ",   1.00000
+"dPrPOC3M02","POC3      ",   1.00000
+"dPrPON1M02","PON1      ",   1.00000
+"dPrPON2M02","PON2      ",   1.00000
+"dPrPON3M02","PON3      ",   1.00000
+"dPrPOP1M02","POP1      ",   1.00000
+"dPrPOP2M02","POP2      ",   1.00000
+"dPrPOP3M02","POP3      ",   1.00000
+"dNH4upSM02","NH4       ",  -1.00000
+"dNO3upSM02","NO3       ",  -1.00000
+"dPO4upSM02","PO4       ",  -1.00000
+"dCO2upSM02","TIC       ",  -1.00000
+"dCO2upSM02","CO2       ",  -3.67000
+"dOXYprSM02","OXY       ",   2.67000
+"dGrowEM03 ","EM03      ",   1.00000
+"dGrowSM03 ","SM03      ",   1.00000
+"dDecayEM03","EM03      ",  -1.00000
+"dDecaySM03","SM03      ",  -1.00000
+"dCtEMtRH03","RH03      ",   1.00000
+"dCtSMtRH03","RH03      ",   1.00000
+"dCtRHtEM03","RH03      ",  -1.00000
+"dCtRHtSM03","RH03      ",  -1.00000
+"dNtEMtRH03","NRH03     ",   1.00000
+"dNtSMtRH03","NRH03     ",   1.00000
+"dNtRHtEM03","NRH03     ",  -1.00000
+"dNtRHtSM03","NRH03     ",  -1.00000
+"dPtEMtRH03","PRH03     ",   1.00000
+"dPtSMtRH03","PRH03     ",   1.00000
+"dPtRHtEM03","PRH03     ",  -1.00000
+"dPtRHtSM03","PRH03     ",  -1.00000
+"dNH4upEM03","NH4       ",  -1.00000
+"dNO3upEM03","NO3       ",  -1.00000
+"dPO4upEM03","PO4       ",  -1.00000
+"dPrPOC1M03","POC1      ",   1.00000
+"dPrPOC2M03","POC2      ",   1.00000
+"dPrPOC3M03","POC3      ",   1.00000
+"dPrPON1M03","PON1      ",   1.00000
+"dPrPON2M03","PON2      ",   1.00000
+"dPrPON3M03","PON3      ",   1.00000
+"dPrPOP1M03","POP1      ",   1.00000
+"dPrPOP2M03","POP2      ",   1.00000
+"dPrPOP3M03","POP3      ",   1.00000
+"dNH4upSM03","NH4       ",  -1.00000
+"dNO3upSM03","NO3       ",  -1.00000
+"dPO4upSM03","PO4       ",  -1.00000
+"dCO2upSM03","TIC       ",  -1.00000
+"dCO2upSM03","CO2       ",  -3.67000
+"dOXYprSM03","OXY       ",   2.67000
+"dGrowEM04 ","EM04      ",   1.00000
+"dGrowSM04 ","SM04      ",   1.00000
+"dDecayEM04","EM04      ",  -1.00000
+"dDecaySM04","SM04      ",  -1.00000
+"dCtEMtRH04","RH04      ",   1.00000
+"dCtSMtRH04","RH04      ",   1.00000
+"dCtRHtEM04","RH04      ",  -1.00000
+"dCtRHtSM04","RH04      ",  -1.00000
+"dNtEMtRH04","NRH04     ",   1.00000
+"dNtSMtRH04","NRH04     ",   1.00000
+"dNtRHtEM04","NRH04     ",  -1.00000
+"dNtRHtSM04","NRH04     ",  -1.00000
+"dPtEMtRH04","PRH04     ",   1.00000
+"dPtSMtRH04","PRH04     ",   1.00000
+"dPtRHtEM04","PRH04     ",  -1.00000
+"dPtRHtSM04","PRH04     ",  -1.00000
+"dNH4upEM04","NH4       ",  -1.00000
+"dNO3upEM04","NO3       ",  -1.00000
+"dPO4upEM04","PO4       ",  -1.00000
+"dPrPOC1M04","POC1      ",   1.00000
+"dPrPOC2M04","POC2      ",   1.00000
+"dPrPOC3M04","POC3      ",   1.00000
+"dPrPON1M04","PON1      ",   1.00000
+"dPrPON2M04","PON2      ",   1.00000
+"dPrPON3M04","PON3      ",   1.00000
+"dPrPOP1M04","POP1      ",   1.00000
+"dPrPOP2M04","POP2      ",   1.00000
+"dPrPOP3M04","POP3      ",   1.00000
+"dNH4upSM04","NH4       ",  -1.00000
+"dNO3upSM04","NO3       ",  -1.00000
+"dPO4upSM04","PO4       ",  -1.00000
+"dCO2upSM04","TIC       ",  -1.00000
+"dCO2upSM04","CO2       ",  -3.67000
+"dOXYprSM04","OXY       ",   2.67000
+"dGrowEM05 ","EM05      ",   1.00000
+"dGrowSM05 ","SM05      ",   1.00000
+"dDecayEM05","EM05      ",  -1.00000
+"dDecaySM05","SM05      ",  -1.00000
+"dCtEMtRH05","RH05      ",   1.00000
+"dCtSMtRH05","RH05      ",   1.00000
+"dCtRHtEM05","RH05      ",  -1.00000
+"dCtRHtSM05","RH05      ",  -1.00000
+"dNtEMtRH05","NRH05     ",   1.00000
+"dNtSMtRH05","NRH05     ",   1.00000
+"dNtRHtEM05","NRH05     ",  -1.00000
+"dNtRHtSM05","NRH05     ",  -1.00000
+"dPtEMtRH05","PRH05     ",   1.00000
+"dPtSMtRH05","PRH05     ",   1.00000
+"dPtRHtEM05","PRH05     ",  -1.00000
+"dPtRHtSM05","PRH05     ",  -1.00000
+"dNH4upEM05","NH4       ",  -1.00000
+"dNO3upEM05","NO3       ",  -1.00000
+"dPO4upEM05","PO4       ",  -1.00000
+"dPrPOC1M05","POC1      ",   1.00000
+"dPrPOC2M05","POC2      ",   1.00000
+"dPrPOC3M05","POC3      ",   1.00000
+"dPrPON1M05","PON1      ",   1.00000
+"dPrPON2M05","PON2      ",   1.00000
+"dPrPON3M05","PON3      ",   1.00000
+"dPrPOP1M05","POP1      ",   1.00000
+"dPrPOP2M05","POP2      ",   1.00000
+"dPrPOP3M05","POP3      ",   1.00000
+"dNH4upSM05","NH4       ",  -1.00000
+"dNO3upSM05","NO3       ",  -1.00000
+"dPO4upSM05","PO4       ",  -1.00000
+"dCO2upSM05","TIC       ",  -1.00000
+"dCO2upSM05","CO2       ",  -3.67000
+"dOXYprSM05","OXY       ",   2.67000
+"dGrazeEM01","EM01      ",  -1.00000
+"dGrazeSM01","SM01      ",  -1.00000
+"dGrazeRH01","RH01      ",  -1.00000
+"dGrzNRH01 ","NRH01     ",  -1.00000
+"dGrzPRH01 ","PRH01     ",  -1.00000
+"dGrazeEM02","EM02      ",  -1.00000
+"dGrazeSM02","SM02      ",  -1.00000
+"dGrazeRH02","RH02      ",  -1.00000
+"dGrzNRH02 ","NRH02     ",  -1.00000
+"dGrzPRH02 ","PRH02     ",  -1.00000
+"dGrazeEM03","EM03      ",  -1.00000
+"dGrazeSM03","SM03      ",  -1.00000
+"dGrazeRH03","RH03      ",  -1.00000
+"dGrzNRH03 ","NRH03     ",  -1.00000
+"dGrzPRH03 ","PRH03     ",  -1.00000
+"dGrazeEM04","EM04      ",  -1.00000
+"dGrazeSM04","SM04      ",  -1.00000
+"dGrazeRH04","RH04      ",  -1.00000
+"dGrzNRH04 ","NRH04     ",  -1.00000
+"dGrzPRH04 ","PRH04     ",  -1.00000
+"dGrazeEM05","EM05      ",  -1.00000
+"dGrazeSM05","SM05      ",  -1.00000
+"dGrazeRH05","RH05      ",  -1.00000
+"dGrzNRH05 ","NRH05     ",  -1.00000
+"dGrzPRH05 ","PRH05     ",  -1.00000
+"dHrvEM01  ","EM01      ",  -1.00000
+"dHrvSM01  ","SM01      ",  -1.00000
+"dHrvRH01  ","RH01      ",  -1.00000
+"dHrvNRH01 ","NRH01     ",  -1.00000
+"dHrvPRH01 ","PRH01     ",  -1.00000
+"dHrvEM02  ","EM02      ",  -1.00000
+"dHrvSM02  ","SM02      ",  -1.00000
+"dHrvRH02  ","RH02      ",  -1.00000
+"dHrvNRH02 ","NRH02     ",  -1.00000
+"dHrvPRH02 ","PRH02     ",  -1.00000
+"dHrvEM03  ","EM03      ",  -1.00000
+"dHrvSM03  ","SM03      ",  -1.00000
+"dHrvRH03  ","RH03      ",  -1.00000
+"dHrvNRH03 ","NRH03     ",  -1.00000
+"dHrvPRH03 ","PRH03     ",  -1.00000
+"dHrvEM04  ","EM04      ",  -1.00000
+"dHrvSM04  ","SM04      ",  -1.00000
+"dHrvRH04  ","RH04      ",  -1.00000
+"dHrvNRH04 ","NRH04     ",  -1.00000
+"dHrvPRH04 ","PRH04     ",  -1.00000
+"dHrvEM05  ","EM05      ",  -1.00000
+"dHrvSM05  ","SM05      ",  -1.00000
+"dHrvRH05  ","RH05      ",  -1.00000
+"dHrvNRH05 ","NRH05     ",  -1.00000
+"dHrvPRH05 ","PRH05     ",  -1.00000
+"dM_MortS1 ","DetCS1    ",   1.00000
+"dM_NMrtS1 ","DetNS1    ",   1.00000
+"dM_PMrtS1 ","DetPS1    ",   1.00000
+"dM_Mor    ","POC1      ",   1.00000
+"dM_NMrt   ","PON1      ",   1.00000
+"dM_PMrt   ","POP1      ",   1.00000
+"dM_Resp   ","OXY       ",  -2.67000
+"dM_Resp   ","TIC       ",   1.00000
+"dM_NRes   ","NH4       ",   1.00000
+"dM_NRes   ","H+        ",  -0.07100
+"dM_NRes   ","ALKA      ",   4.35700
+"dM_PRes   ","PO4       ",   1.00000
+"dM_PRes   ","H+        ",   0.09700
+"dM_PRes   ","ALKA      ",  -1.96800
+"dM_Def    ","POC1      ",   1.00000
+"dM_NDef   ","PON1      ",   1.00000
+"dM_PDef   ","POP1      ",   1.00000
+"dM_SiDef  ","Opal      ",   1.00000
+"dM_SpwDet ","POC1      ",   1.00000
+"dM_SpwDet ","Mussel_R  ",  -1.00000
+"dM_NSpDet ","PON1      ",   1.00000
+"dM_PSpDet ","POP1      ",   1.00000
+"dM_Vgr    ","Mussel_V  ",   1.00000
+"dM_Vmor   ","Mussel_V  ",  -1.00000
+"dM_Ea     ","Mussel_E  ",   1.00000
+"dM_Ec     ","Mussel_E  ",  -1.00000
+"dM_Emor   ","Mussel_E  ",  -1.00000
+"dM_Rgr    ","Mussel_R  ",   1.00000
+"dM_Rmor   ","Mussel_R  ",  -1.00000
+"dM_Nind   ","Mussel_N  ",   1.00000
+"dM_Mort   ","Mussel_N  ",  -1.00000
+"dM_POC1   ","POC1      ",  -1.00000
+"dM_DetC   ","DetC      ",  -1.00000
+"dM_DCS1   ","DetCS1    ",  -1.00000
+"dM_PON1   ","PON1      ",  -1.00000
+"dM_DetN   ","DetN      ",  -1.00000
+"dM_DNS1   ","DetNS1    ",  -1.00000
+"dM_POP    ","POP1      ",  -1.00000
+"dM_DetP   ","DetP      ",  -1.00000
+"dM_DPS1   ","DetPS1    ",  -1.00000
+"dM_POSi   ","Opal      ",  -1.00000
+"dM_DSi    ","DetSi     ",  -1.00000
+"dM_DSiS   ","DetSiS1   ",  -1.00000
+"dM_Grn    ","GREEN     ",  -1.00000
+"dM_Diat   ","DIAT      ",  -1.00000
+"dM_ALG01  ","BLOOMALG01",  -1.00000
+"dM_ALG02  ","BLOOMALG02",  -1.00000
+"dM_ALG03  ","BLOOMALG03",  -1.00000
+"dM_ALG04  ","BLOOMALG04",  -1.00000
+"dM_ALG05  ","BLOOMALG05",  -1.00000
+"dM_ALG06  ","BLOOMALG06",  -1.00000
+"dM_ALG07  ","BLOOMALG07",  -1.00000
+"dM_ALG08  ","BLOOMALG08",  -1.00000
+"dM_ALG09  ","BLOOMALG09",  -1.00000
+"dM_ALG10  ","BLOOMALG10",  -1.00000
+"dM_ALG11  ","BLOOMALG11",  -1.00000
+"dM_ALG12  ","BLOOMALG12",  -1.00000
+"dM_ALG13  ","BLOOMALG13",  -1.00000
+"dM_ALG14  ","BLOOMALG14",  -1.00000
+"dM_ALG15  ","BLOOMALG15",  -1.00000
+"dM_ALG16  ","BLOOMALG16",  -1.00000
+"dM_ALG17  ","BLOOMALG17",  -1.00000
+"dM_ALG18  ","BLOOMALG18",  -1.00000
+"dM_ALG19  ","BLOOMALG19",  -1.00000
+"dM_ALG20  ","BLOOMALG20",  -1.00000
+"dM_ALG21  ","BLOOMALG21",  -1.00000
+"dM_ALG22  ","BLOOMALG22",  -1.00000
+"dM_ALG23  ","BLOOMALG23",  -1.00000
+"dM_ALG24  ","BLOOMALG24",  -1.00000
+"dM_ALG25  ","BLOOMALG25",  -1.00000
+"dM_ALG26  ","BLOOMALG26",  -1.00000
+"dM_ALG27  ","BLOOMALG27",  -1.00000
+"dM_ALG28  ","BLOOMALG28",  -1.00000
+"dM_ALG29  ","BLOOMALG29",  -1.00000
+"dM_ALG30  ","BLOOMALG30",  -1.00000
+"dM_MPB1   ","MPB1peli  ",  -1.00000
+"dM_MPB2   ","MPB2psam  ",  -1.00000
+"dM_F3     ","F3        ",  -1.00000
+"dM_F4     ","F4        ",  -1.00000
+"dM_F5     ","F5        ",  -1.00000
+"dM_F6     ","F6        ",  -1.00000
+"dM_F7     ","F7        ",  -1.00000
+"dM_F8     ","F8        ",  -1.00000
+"dZ_MortS1 ","DetCS1    ",   1.00000
+"dZ_NMrtS1 ","DetNS1    ",   1.00000
+"dZ_PMrtS1 ","DetPS1    ",   1.00000
+"dZ_Mor    ","POC1      ",   1.00000
+"dZ_NMrt   ","PON1      ",   1.00000
+"dZ_PMrt   ","POP1      ",   1.00000
+"dZ_Resp   ","OXY       ",  -2.67000
+"dZ_Resp   ","TIC       ",   1.00000
+"dZ_NRes   ","NH4       ",   1.00000
+"dZ_NRes   ","H+        ",  -0.07100
+"dZ_NRes   ","ALKA      ",   4.35700
+"dZ_PRes   ","PO4       ",   1.00000
+"dZ_PRes   ","H+        ",   0.09700
+"dZ_PRes   ","ALKA      ",  -1.96800
+"dZ_Def    ","POC1      ",   1.00000
+"dZ_NDef   ","PON1      ",   1.00000
+"dZ_PDef   ","POP1      ",   1.00000
+"dZ_SiDef  ","Opal      ",   1.00000
+"dZ_SpwDet ","POC1      ",   1.00000
+"dZ_SpwDet ","Zoopl_R   ",  -1.00000
+"dZ_NSpDet ","PON1      ",   1.00000
+"dZ_PSpDet ","POP1      ",   1.00000
+"dZ_Vgr    ","Zoopl_V   ",   1.00000
+"dZ_Vmor   ","Zoopl_V   ",  -1.00000
+"dZ_Ea     ","Zoopl_E   ",   1.00000
+"dZ_Ec     ","Zoopl_E   ",  -1.00000
+"dZ_Emor   ","Zoopl_E   ",  -1.00000
+"dZ_Rgr    ","Zoopl_R   ",   1.00000
+"dZ_Rmor   ","Zoopl_R   ",  -1.00000
+"dZ_Nind   ","Zoopl_N   ",   1.00000
+"dZ_Mort   ","Zoopl_N   ",  -1.00000
+"dZ_POC1   ","POC1      ",  -1.00000
+"dZ_DetC   ","DetC      ",  -1.00000
+"dZ_DCS1   ","DetCS1    ",  -1.00000
+"dZ_PON1   ","PON1      ",  -1.00000
+"dZ_DetN   ","DetN      ",  -1.00000
+"dZ_DNS1   ","DetNS1    ",  -1.00000
+"dZ_POP    ","POP1      ",  -1.00000
+"dZ_DetP   ","DetP      ",  -1.00000
+"dZ_DPS1   ","DetPS1    ",  -1.00000
+"dZ_POSi   ","Opal      ",  -1.00000
+"dZ_DSi    ","DetSi     ",  -1.00000
+"dZ_DSiS   ","DetSiS1   ",  -1.00000
+"dZ_Grn    ","GREEN     ",  -1.00000
+"dZ_Diat   ","DIAT      ",  -1.00000
+"dZ_ALG01  ","BLOOMALG01",  -1.00000
+"dZ_ALG02  ","BLOOMALG02",  -1.00000
+"dZ_ALG03  ","BLOOMALG03",  -1.00000
+"dZ_ALG04  ","BLOOMALG04",  -1.00000
+"dZ_ALG05  ","BLOOMALG05",  -1.00000
+"dZ_ALG06  ","BLOOMALG06",  -1.00000
+"dZ_ALG07  ","BLOOMALG07",  -1.00000
+"dZ_ALG08  ","BLOOMALG08",  -1.00000
+"dZ_ALG09  ","BLOOMALG09",  -1.00000
+"dZ_ALG10  ","BLOOMALG10",  -1.00000
+"dZ_ALG11  ","BLOOMALG11",  -1.00000
+"dZ_ALG12  ","BLOOMALG12",  -1.00000
+"dZ_ALG13  ","BLOOMALG13",  -1.00000
+"dZ_ALG14  ","BLOOMALG14",  -1.00000
+"dZ_ALG15  ","BLOOMALG15",  -1.00000
+"dZ_ALG16  ","BLOOMALG16",  -1.00000
+"dZ_ALG17  ","BLOOMALG17",  -1.00000
+"dZ_ALG18  ","BLOOMALG18",  -1.00000
+"dZ_ALG19  ","BLOOMALG19",  -1.00000
+"dZ_ALG20  ","BLOOMALG20",  -1.00000
+"dZ_ALG21  ","BLOOMALG21",  -1.00000
+"dZ_ALG22  ","BLOOMALG22",  -1.00000
+"dZ_ALG23  ","BLOOMALG23",  -1.00000
+"dZ_ALG24  ","BLOOMALG24",  -1.00000
+"dZ_ALG25  ","BLOOMALG25",  -1.00000
+"dZ_ALG26  ","BLOOMALG26",  -1.00000
+"dZ_ALG27  ","BLOOMALG27",  -1.00000
+"dZ_ALG28  ","BLOOMALG28",  -1.00000
+"dZ_ALG29  ","BLOOMALG29",  -1.00000
+"dZ_ALG30  ","BLOOMALG30",  -1.00000
+"dZ_MPB1   ","MPB1peli  ",  -1.00000
+"dZ_MPB2   ","MPB2psam  ",  -1.00000
+"dZ_F3     ","F3        ",  -1.00000
+"dZ_F4     ","F4        ",  -1.00000
+"dZ_F5     ","F5        ",  -1.00000
+"dZ_F6     ","F6        ",  -1.00000
+"dZ_F7     ","F7        ",  -1.00000
+"dZ_F8     ","F8        ",  -1.00000
+"dG3_MortS1","DetCS1    ",   1.00000
+"dG3_NMrtS1","DetNS1    ",   1.00000
+"dG3_PMrtS1","DetPS1    ",   1.00000
+"dG3_Mor   ","POC1      ",   1.00000
+"dG3_NMrt  ","PON1      ",   1.00000
+"dG3_PMrt  ","POP1      ",   1.00000
+"dG3_Resp  ","OXY       ",  -2.67000
+"dG3_Resp  ","TIC       ",   1.00000
+"dG3_NRes  ","NH4       ",   1.00000
+"dG3_NRes  ","H+        ",  -0.07100
+"dG3_NRes  ","ALKA      ",   4.35700
+"dG3_PRes  ","PO4       ",   1.00000
+"dG3_PRes  ","H+        ",   0.09700
+"dG3_PRes  ","ALKA      ",  -1.96800
+"dG3_Def   ","POC1      ",   1.00000
+"dG3_NDef  ","PON1      ",   1.00000
+"dG3_PDef  ","POP1      ",   1.00000
+"dG3_SiDef ","Opal      ",   1.00000
+"dG3_SpwDet","POC1      ",   1.00000
+"dG3_SpwDet","Grazer3_R ",  -1.00000
+"dG3_NSpDet","PON1      ",   1.00000
+"dG3_PSpDet","POP1      ",   1.00000
+"dG3_Vgr   ","Grazer3_V ",   1.00000
+"dG3_Vmor  ","Grazer3_V ",  -1.00000
+"dG3_Ea    ","Grazer3_E ",   1.00000
+"dG3_Ec    ","Grazer3_E ",  -1.00000
+"dG3_Emor  ","Grazer3_E ",  -1.00000
+"dG3_Rgr   ","Grazer3_R ",   1.00000
+"dG3_Rmor  ","Grazer3_R ",  -1.00000
+"dG3_Nind  ","Grazer3_N ",   1.00000
+"dG3_Mort  ","Grazer3_N ",  -1.00000
+"dG3_POC1  ","POC1      ",  -1.00000
+"dG3_DetC  ","DetC      ",  -1.00000
+"dG3_DCS1  ","DetCS1    ",  -1.00000
+"dG3_PON1  ","PON1      ",  -1.00000
+"dG3_DetN  ","DetN      ",  -1.00000
+"dG3_DNS1  ","DetNS1    ",  -1.00000
+"dG3_POP   ","POP1      ",  -1.00000
+"dG3_DetP  ","DetP      ",  -1.00000
+"dG3_DPS1  ","DetPS1    ",  -1.00000
+"dG3_POSi  ","Opal      ",  -1.00000
+"dG3_DSi   ","DetSi     ",  -1.00000
+"dG3_DSiS  ","DetSiS1   ",  -1.00000
+"dG3_Grn   ","GREEN     ",  -1.00000
+"dG3_Diat  ","DIAT      ",  -1.00000
+"dG3_ALG01 ","BLOOMALG01",  -1.00000
+"dG3_ALG02 ","BLOOMALG02",  -1.00000
+"dG3_ALG03 ","BLOOMALG03",  -1.00000
+"dG3_ALG04 ","BLOOMALG04",  -1.00000
+"dG3_ALG05 ","BLOOMALG05",  -1.00000
+"dG3_ALG06 ","BLOOMALG06",  -1.00000
+"dG3_ALG07 ","BLOOMALG07",  -1.00000
+"dG3_ALG08 ","BLOOMALG08",  -1.00000
+"dG3_ALG09 ","BLOOMALG09",  -1.00000
+"dG3_ALG10 ","BLOOMALG10",  -1.00000
+"dG3_ALG11 ","BLOOMALG11",  -1.00000
+"dG3_ALG12 ","BLOOMALG12",  -1.00000
+"dG3_ALG13 ","BLOOMALG13",  -1.00000
+"dG3_ALG14 ","BLOOMALG14",  -1.00000
+"dG3_ALG15 ","BLOOMALG15",  -1.00000
+"dG3_ALG16 ","BLOOMALG16",  -1.00000
+"dG3_ALG17 ","BLOOMALG17",  -1.00000
+"dG3_ALG18 ","BLOOMALG18",  -1.00000
+"dG3_ALG19 ","BLOOMALG19",  -1.00000
+"dG3_ALG20 ","BLOOMALG20",  -1.00000
+"dG3_ALG21 ","BLOOMALG21",  -1.00000
+"dG3_ALG22 ","BLOOMALG22",  -1.00000
+"dG3_ALG23 ","BLOOMALG23",  -1.00000
+"dG3_ALG24 ","BLOOMALG24",  -1.00000
+"dG3_ALG25 ","BLOOMALG25",  -1.00000
+"dG3_ALG26 ","BLOOMALG26",  -1.00000
+"dG3_ALG27 ","BLOOMALG27",  -1.00000
+"dG3_ALG28 ","BLOOMALG28",  -1.00000
+"dG3_ALG29 ","BLOOMALG29",  -1.00000
+"dG3_ALG30 ","BLOOMALG30",  -1.00000
+"dG3_MPB1  ","MPB1peli  ",  -1.00000
+"dG3_MPB2  ","MPB2psam  ",  -1.00000
+"dG3_F3    ","F3        ",  -1.00000
+"dG3_F4    ","F4        ",  -1.00000
+"dG3_F5    ","F5        ",  -1.00000
+"dG3_F6    ","F6        ",  -1.00000
+"dG3_F7    ","F7        ",  -1.00000
+"dG3_F8    ","F8        ",  -1.00000
+"dG4_MortS1","DetCS1    ",   1.00000
+"dG4_NMrtS1","DetNS1    ",   1.00000
+"dG4_PMrtS1","DetPS1    ",   1.00000
+"dG4_Mor   ","POC1      ",   1.00000
+"dG4_NMrt  ","PON1      ",   1.00000
+"dG4_PMrt  ","POP1      ",   1.00000
+"dG4_Resp  ","OXY       ",  -2.67000
+"dG4_Resp  ","TIC       ",   1.00000
+"dG4_NRes  ","NH4       ",   1.00000
+"dG4_NRes  ","H+        ",  -0.07100
+"dG4_NRes  ","ALKA      ",   4.35700
+"dG4_PRes  ","PO4       ",   1.00000
+"dG4_PRes  ","H+        ",   0.09700
+"dG4_PRes  ","ALKA      ",  -1.96800
+"dG4_Def   ","POC1      ",   1.00000
+"dG4_NDef  ","PON1      ",   1.00000
+"dG4_PDef  ","POP1      ",   1.00000
+"dG4_SiDef ","Opal      ",   1.00000
+"dG4_SpwDet","POC1      ",   1.00000
+"dG4_SpwDet","Grazer4_R ",  -1.00000
+"dG4_NSpDet","PON1      ",   1.00000
+"dG4_PSpDet","POP1      ",   1.00000
+"dG4_Vgr   ","Grazer4_V ",   1.00000
+"dG4_Vmor  ","Grazer4_V ",  -1.00000
+"dG4_Ea    ","Grazer4_E ",   1.00000
+"dG4_Ec    ","Grazer4_E ",  -1.00000
+"dG4_Emor  ","Grazer4_E ",  -1.00000
+"dG4_Rgr   ","Grazer4_R ",   1.00000
+"dG4_Rmor  ","Grazer4_R ",  -1.00000
+"dG4_Nind  ","Grazer4_N ",   1.00000
+"dG4_Mort  ","Grazer4_N ",  -1.00000
+"dG4_POC1  ","POC1      ",  -1.00000
+"dG4_DetC  ","DetC      ",  -1.00000
+"dG4_DCS1  ","DetCS1    ",  -1.00000
+"dG4_PON1  ","PON1      ",  -1.00000
+"dG4_DetN  ","DetN      ",  -1.00000
+"dG4_DNS1  ","DetNS1    ",  -1.00000
+"dG4_POP   ","POP1      ",  -1.00000
+"dG4_DetP  ","DetP      ",  -1.00000
+"dG4_DPS1  ","DetPS1    ",  -1.00000
+"dG4_POSi  ","Opal      ",  -1.00000
+"dG4_DSi   ","DetSi     ",  -1.00000
+"dG4_DSiS  ","DetSiS1   ",  -1.00000
+"dG4_Grn   ","GREEN     ",  -1.00000
+"dG4_Diat  ","DIAT      ",  -1.00000
+"dG4_ALG01 ","BLOOMALG01",  -1.00000
+"dG4_ALG02 ","BLOOMALG02",  -1.00000
+"dG4_ALG03 ","BLOOMALG03",  -1.00000
+"dG4_ALG04 ","BLOOMALG04",  -1.00000
+"dG4_ALG05 ","BLOOMALG05",  -1.00000
+"dG4_ALG06 ","BLOOMALG06",  -1.00000
+"dG4_ALG07 ","BLOOMALG07",  -1.00000
+"dG4_ALG08 ","BLOOMALG08",  -1.00000
+"dG4_ALG09 ","BLOOMALG09",  -1.00000
+"dG4_ALG10 ","BLOOMALG10",  -1.00000
+"dG4_ALG11 ","BLOOMALG11",  -1.00000
+"dG4_ALG12 ","BLOOMALG12",  -1.00000
+"dG4_ALG13 ","BLOOMALG13",  -1.00000
+"dG4_ALG14 ","BLOOMALG14",  -1.00000
+"dG4_ALG15 ","BLOOMALG15",  -1.00000
+"dG4_ALG16 ","BLOOMALG16",  -1.00000
+"dG4_ALG17 ","BLOOMALG17",  -1.00000
+"dG4_ALG18 ","BLOOMALG18",  -1.00000
+"dG4_ALG19 ","BLOOMALG19",  -1.00000
+"dG4_ALG20 ","BLOOMALG20",  -1.00000
+"dG4_ALG21 ","BLOOMALG21",  -1.00000
+"dG4_ALG22 ","BLOOMALG22",  -1.00000
+"dG4_ALG23 ","BLOOMALG23",  -1.00000
+"dG4_ALG24 ","BLOOMALG24",  -1.00000
+"dG4_ALG25 ","BLOOMALG25",  -1.00000
+"dG4_ALG26 ","BLOOMALG26",  -1.00000
+"dG4_ALG27 ","BLOOMALG27",  -1.00000
+"dG4_ALG28 ","BLOOMALG28",  -1.00000
+"dG4_ALG29 ","BLOOMALG29",  -1.00000
+"dG4_ALG30 ","BLOOMALG30",  -1.00000
+"dG4_MPB1  ","MPB1peli  ",  -1.00000
+"dG4_MPB2  ","MPB2psam  ",  -1.00000
+"dG4_F3    ","F3        ",  -1.00000
+"dG4_F4    ","F4        ",  -1.00000
+"dG4_F5    ","F5        ",  -1.00000
+"dG4_F6    ","F6        ",  -1.00000
+"dG4_F7    ","F7        ",  -1.00000
+"dG4_F8    ","F8        ",  -1.00000
+"dG5_MortS1","DetCS1    ",   1.00000
+"dG5_NMrtS1","DetNS1    ",   1.00000
+"dG5_PMrtS1","DetPS1    ",   1.00000
+"dG5_Mor   ","POC1      ",   1.00000
+"dG5_NMrt  ","PON1      ",   1.00000
+"dG5_PMrt  ","POP1      ",   1.00000
+"dG5_Resp  ","OXY       ",  -2.67000
+"dG5_Resp  ","TIC       ",   1.00000
+"dG5_NRes  ","NH4       ",   1.00000
+"dG5_NRes  ","H+        ",  -0.07100
+"dG5_NRes  ","ALKA      ",   4.35700
+"dG5_PRes  ","PO4       ",   1.00000
+"dG5_PRes  ","H+        ",   0.09700
+"dG5_PRes  ","ALKA      ",  -1.96800
+"dG5_Def   ","POC1      ",   1.00000
+"dG5_NDef  ","PON1      ",   1.00000
+"dG5_PDef  ","POP1      ",   1.00000
+"dG5_SiDef ","Opal      ",   1.00000
+"dG5_SpwDet","POC1      ",   1.00000
+"dG5_SpwDet","Grazer5_R ",  -1.00000
+"dG5_NSpDet","PON1      ",   1.00000
+"dG5_PSpDet","POP1      ",   1.00000
+"dG5_Vgr   ","Grazer5_V ",   1.00000
+"dG5_Vmor  ","Grazer5_V ",  -1.00000
+"dG5_Ea    ","Grazer5_E ",   1.00000
+"dG5_Ec    ","Grazer5_E ",  -1.00000
+"dG5_Emor  ","Grazer5_E ",  -1.00000
+"dG5_Rgr   ","Grazer5_R ",   1.00000
+"dG5_Rmor  ","Grazer5_R ",  -1.00000
+"dG5_Nind  ","Grazer5_N ",   1.00000
+"dG5_Mort  ","Grazer5_N ",  -1.00000
+"dG5_POC1  ","POC1      ",  -1.00000
+"dG5_DetC  ","DetC      ",  -1.00000
+"dG5_DCS1  ","DetCS1    ",  -1.00000
+"dG5_PON1  ","PON1      ",  -1.00000
+"dG5_DetN  ","DetN      ",  -1.00000
+"dG5_DNS1  ","DetNS1    ",  -1.00000
+"dG5_POP   ","POP1      ",  -1.00000
+"dG5_DetP  ","DetP      ",  -1.00000
+"dG5_DPS1  ","DetPS1    ",  -1.00000
+"dG5_POSi  ","Opal      ",  -1.00000
+"dG5_DSi   ","DetSi     ",  -1.00000
+"dG5_DSiS  ","DetSiS1   ",  -1.00000
+"dG5_Grn   ","GREEN     ",  -1.00000
+"dG5_Diat  ","DIAT      ",  -1.00000
+"dG5_ALG01 ","BLOOMALG01",  -1.00000
+"dG5_ALG02 ","BLOOMALG02",  -1.00000
+"dG5_ALG03 ","BLOOMALG03",  -1.00000
+"dG5_ALG04 ","BLOOMALG04",  -1.00000
+"dG5_ALG05 ","BLOOMALG05",  -1.00000
+"dG5_ALG06 ","BLOOMALG06",  -1.00000
+"dG5_ALG07 ","BLOOMALG07",  -1.00000
+"dG5_ALG08 ","BLOOMALG08",  -1.00000
+"dG5_ALG09 ","BLOOMALG09",  -1.00000
+"dG5_ALG10 ","BLOOMALG10",  -1.00000
+"dG5_ALG11 ","BLOOMALG11",  -1.00000
+"dG5_ALG12 ","BLOOMALG12",  -1.00000
+"dG5_ALG13 ","BLOOMALG13",  -1.00000
+"dG5_ALG14 ","BLOOMALG14",  -1.00000
+"dG5_ALG15 ","BLOOMALG15",  -1.00000
+"dG5_ALG16 ","BLOOMALG16",  -1.00000
+"dG5_ALG17 ","BLOOMALG17",  -1.00000
+"dG5_ALG18 ","BLOOMALG18",  -1.00000
+"dG5_ALG19 ","BLOOMALG19",  -1.00000
+"dG5_ALG20 ","BLOOMALG20",  -1.00000
+"dG5_ALG21 ","BLOOMALG21",  -1.00000
+"dG5_ALG22 ","BLOOMALG22",  -1.00000
+"dG5_ALG23 ","BLOOMALG23",  -1.00000
+"dG5_ALG24 ","BLOOMALG24",  -1.00000
+"dG5_ALG25 ","BLOOMALG25",  -1.00000
+"dG5_ALG26 ","BLOOMALG26",  -1.00000
+"dG5_ALG27 ","BLOOMALG27",  -1.00000
+"dG5_ALG28 ","BLOOMALG28",  -1.00000
+"dG5_ALG29 ","BLOOMALG29",  -1.00000
+"dG5_ALG30 ","BLOOMALG30",  -1.00000
+"dG5_MPB1  ","MPB1peli  ",  -1.00000
+"dG5_MPB2  ","MPB2psam  ",  -1.00000
+"dG5_F3    ","F3        ",  -1.00000
+"dG5_F4    ","F4        ",  -1.00000
+"dG5_F5    ","F5        ",  -1.00000
+"dG5_F6    ","F6        ",  -1.00000
+"dG5_F7    ","F7        ",  -1.00000
+"dG5_F8    ","F8        ",  -1.00000
+"drdg*IM1S1","IM1S1     ",  -1.00000
+"drdg*IM2S1","IM2S1     ",  -1.00000
+"drdg*IM3S1","IM3S1     ",  -1.00000
+"drdg*IM1S2","IM1S2     ",  -1.00000
+"drdg*IM2S2","IM2S2     ",  -1.00000
+"drdg*IM3S2","IM3S2     ",  -1.00000
+"dump*IM1  ","IM1       ",   1.00000
+"dump*IM2  ","IM2       ",   1.00000
+"dump*IM3  ","IM3       ",   1.00000
+"dFlocIM1  ","IM1       ",   1.00000
+"dFlocIM2  ","IM2       ",   1.00000
+"dFlocIM3  ","IM3       ",   1.00000
+"dAtmDepSal","Salinity  ",   1.00000
+"dAtmDepEcl","Ecoli     ",   1.00000
+"dDecayC1  ","Cascade1  ",  -1.00000
+"dDecayC2  ","Cascade2  ",  -1.00000
+"dDecayC3  ","Cascade3  ",  -1.00000
+"dDecayC4  ","Cascade4  ",  -1.00000
+"dDecayC5  ","Cascade5  ",  -1.00000
+"dTransC1C2","Cascade1  ",  -1.00000
+"dTransC1C2","Cascade2  ",   1.00000
+"dTransC1C3","Cascade1  ",  -1.00000
+"dTransC1C3","Cascade3  ",   1.00000
+"dTransC1C4","Cascade1  ",  -1.00000
+"dTransC1C4","Cascade4  ",   1.00000
+"dTransC1C5","Cascade1  ",  -1.00000
+"dTransC1C5","Cascade5  ",   1.00000
+"dTransC2C3","Cascade2  ",  -1.00000
+"dTransC2C3","Cascade3  ",   1.00000
+"dTransC2C4","Cascade2  ",  -1.00000
+"dTransC2C4","Cascade4  ",   1.00000
+"dTransC2C5","Cascade2  ",  -1.00000
+"dTransC2C5","Cascade5  ",   1.00000
+"dTransC3C4","Cascade3  ",  -1.00000
+"dTransC3C4","Cascade4  ",   1.00000
+"dTransC3C5","Cascade3  ",  -1.00000
+"dTransC3C5","Cascade5  ",   1.00000
+"dTransC4C5","Cascade4  ",  -1.00000
+"dTransC4C5","Cascade5  ",   1.00000
+"dDecaydTR1","dTR1      ",  -1.00000
+"dDecaydTR2","dTR2      ",  -1.00000
+"dDecaydTR3","dTR3      ",  -1.00000
+"dDecaydTR4","dTR4      ",  -1.00000
+"dDecaydTR5","dTR5      ",  -1.00000
+"dMrtVir1  ","Virus1    ",  -1.00000
+"dMrtVir2  ","Virus2    ",  -1.00000
+"dMrtVir3  ","Virus3    ",  -1.00000
+"dMrtVi1S1 ","Virus1S1  ",  -1.00000
+"dMrtVi2S1 ","Virus2S1  ",  -1.00000
+"dMrtVi3S1 ","Virus3S1  ",  -1.00000
+"dSorpVir1 ","Virus1-dis",  -1.00000
+"dSorpVir1 ","Virus1-par",   1.00000
+"dSorpVir2 ","Virus2-dis",  -1.00000
+"dSorpVir2 ","Virus2-par",   1.00000
+"dSorpVir3 ","Virus3-dis",  -1.00000
+"dSorpVir3 ","Virus3-par",   1.00000
+"dSorpVi1S1","Vir1S1-Dis",  -1.00000
+"dSorpVi1S1","Vir1S1-Par",   1.00000
+"dSorpVi2S1","Vir2S1-Dis",  -1.00000
+"dSorpVi2S1","Vir2S1-Par",   1.00000
+"dSorpVi3S1","Vir3S1-Dis",  -1.00000
+"dSorpVi3S1","Vir3S1-Par",   1.00000
+"dSedVir1  ","Virus1    ",  -1.00000
+"dSedVir1  ","Virus1-par",  -1.00000
+"dSedVir1  ","Virus1S1  ",   1.00000
+"dSedVir1  ","Vir1S1-par",   1.00000
+"dSedVir1S2","Virus1    ",  -1.00000
+"dSedVir1S2","Virus1-par",  -1.00000
+"dSedVir1S2","Vir1S2    ",   1.00000
+"dSedVir1S2","Vir1S2-par",   1.00000
+"dSedVir2  ","Virus2    ",  -1.00000
+"dSedVir2  ","Virus2-par",  -1.00000
+"dSedVir2  ","Virus2S1  ",   1.00000
+"dSedVir2  ","Vir2S2-par",   1.00000
+"dSedVir2S2","Virus2    ",  -1.00000
+"dSedVir2S2","Virus2-par",  -1.00000
+"dSedVir2S2","Vir2S2    ",   1.00000
+"dSedVir2S2","Vir2S2-par",   1.00000
+"dSedVir3  ","Virus3    ",  -1.00000
+"dSedVir3  ","Virus3-par",  -1.00000
+"dSedVir3  ","Virus3S1  ",   1.00000
+"dSedVir3  ","Vir3S2-par",   1.00000
+"dSedVir3S2","Virus3    ",  -1.00000
+"dSedVir3S2","Virus3-par",  -1.00000
+"dSedVir3S2","Vir3S2    ",   1.00000
+"dSedVir3S2","Vir2S2-par",   1.00000
+"dDifCH4   ","CH4       ",   1.00000
+"dDifCH4   ","S1_CH4    ",  -1.00000
+"dDifDOC   ","DOC       ",   1.00000
+"dDifDOC   ","S1_DOC    ",  -1.00000
+"dDifDON   ","DON       ",   1.00000
+"dDifDON   ","S1_DON    ",  -1.00000
+"dDifDOP   ","DOP       ",   1.00000
+"dDifDOP   ","S1_DOP    ",  -1.00000
+"dDifDOS   ","DOS       ",   1.00000
+"dDifDOS   ","S1_DOS    ",  -1.00000
+"dDifNH4   ","NH4       ",   1.00000
+"dDifNH4   ","S1_NH4    ",  -1.00000
+"dDifNO3   ","NO3       ",   1.00000
+"dDifNO3   ","S1_NO3    ",  -1.00000
+"dDifOXY   ","OXY       ",   1.00000
+"dDifOXY   ","S1_OXY    ",  -1.00000
+"dDifPO4   ","PO4       ",   1.00000
+"dDifPO4   ","S1_PO4    ",  -1.00000
+"dDifSi    ","Si        ",   1.00000
+"dDifSi    ","S1_Si     ",  -1.00000
+"dDifSO4   ","SO4       ",   1.00000
+"dDifSO4   ","S1_SO4    ",  -1.00000
+"dDifSUD   ","SUD       ",   1.00000
+"dDifSUD   ","S1_SUD    ",  -1.00000
+"SF_dAdsPO4","S1_PO4    ",  -1.00000
+"SF_dAdsPO4","S1_AAP    ",   1.00000
+"SF_dNitrif","S1_NH4    ",  -1.00000
+"SF_dNitrif","S1_NO3    ",   1.00000
+"SF_dNitrif","S1_OXY    ",  -4.57100
+"SF_dCPPOC1","S1_PC1    ",  -1.00000
+"SF_dCPPOC1","S1_PC2    ",   1.00000
+"SF_dCPPON1","S1_PN1    ",  -1.00000
+"SF_dCPPON1","S1_PN2    ",   1.00000
+"SF_dCPPOP1","S1_PP1    ",  -1.00000
+"SF_dCPPOP1","S1_PP2    ",   1.00000
+"SF_dCPPOS1","S1_PS1    ",  -1.00000
+"SF_dCPPOS1","S1_PS2    ",   1.00000
+"SF_dCDPOC1","S1_PC1    ",  -1.00000
+"SF_dCDPOC1","S1_DOC    ",   1.00000
+"SF_dCDPON1","S1_PN1    ",  -1.00000
+"SF_dCDPON1","S1_DON    ",   1.00000
+"SF_dCDPOP1","S1_PP1    ",  -1.00000
+"SF_dCDPOP1","S1_DOP    ",   1.00000
+"SF_dCDPOS1","S1_PS1    ",  -1.00000
+"SF_dCDPOS1","S1_DOS    ",   1.00000
+"SF_dMPOC1 ","S1_PC1    ",  -1.00000
+"SF_dMPON1 ","S1_PN1    ",  -1.00000
+"SF_dMPON1 ","S1_NH4    ",   1.00000
+"SF_dMPOP1 ","S1_PP1    ",  -1.00000
+"SF_dMPOP1 ","S1_PO4    ",   1.00000
+"SF_dMPOS1 ","S1_PS1    ",  -1.00000
+"SF_dMPOS1 ","S1_SUD    ",   1.00000
+"SF_dCPPOC2","S1_PC2    ",  -1.00000
+"SF_dCPPOC2","S1_PC3    ",   1.00000
+"SF_dCPPON2","S1_PN2    ",  -1.00000
+"SF_dCPPON2","S1_PN3    ",   1.00000
+"SF_dCPPOP2","S1_PP2    ",  -1.00000
+"SF_dCPPOP2","S1_PP3    ",   1.00000
+"SF_dCPPOS2","S1_PS2    ",  -1.00000
+"SF_dCPPOS2","S1_PS3    ",   1.00000
+"SF_dCDPOC2","S1_PC2    ",  -1.00000
+"SF_dCDPOC2","S1_DOC    ",   1.00000
+"SF_dCDPON2","S1_PN2    ",  -1.00000
+"SF_dCDPON2","S1_DON    ",   1.00000
+"SF_dCDPOP2","S1_PP2    ",  -1.00000
+"SF_dCDPOP2","S1_DOP    ",   1.00000
+"SF_dCDPOS2","S1_PS2    ",  -1.00000
+"SF_dCDPOS2","S1_DOS    ",   1.00000
+"SF_dMPOC2 ","S1_PC2    ",  -1.00000
+"SF_dMPON2 ","S1_PN2    ",  -1.00000
+"SF_dMPON2 ","S1_NH4    ",   1.00000
+"SF_dMPOP2 ","S1_PP2    ",  -1.00000
+"SF_dMPOP2 ","S1_PO4    ",   1.00000
+"SF_dMPOS2 ","S1_PS2    ",  -1.00000
+"SF_dMPOS2 ","S1_SUD    ",   1.00000
+"SF_dCPPOC3","S1_PC3    ",  -1.00000
+"SF_dCPPOC3","S1_PC4    ",   1.00000
+"SF_dCPPON3","S1_PN3    ",  -1.00000
+"SF_dCPPON3","S1_PN4    ",   1.00000
+"SF_dCPPOP3","S1_PP3    ",  -1.00000
+"SF_dCPPOP3","S1_PP4    ",   1.00000
+"SF_dCPPOS3","S1_PS3    ",  -1.00000
+"SF_dCPPOS3","S1_PS4    ",   1.00000
+"SF_dCDPOC3","S1_PC3    ",  -1.00000
+"SF_dCDPOC3","S1_DOC    ",   1.00000
+"SF_dCDPON3","S1_PN3    ",  -1.00000
+"SF_dCDPON3","S1_DON    ",   1.00000
+"SF_dCDPOP3","S1_PP3    ",  -1.00000
+"SF_dCDPOP3","S1_DOP    ",   1.00000
+"SF_dCDPOS3","S1_PS3    ",  -1.00000
+"SF_dCDPOS3","S1_DOS    ",   1.00000
+"SF_dMPOC3 ","S1_PC3    ",  -1.00000
+"SF_dMPON3 ","S1_PN3    ",  -1.00000
+"SF_dMPON3 ","S1_NH4    ",   1.00000
+"SF_dMPOP3 ","S1_PP3    ",  -1.00000
+"SF_dMPOP3 ","S1_PO4    ",   1.00000
+"SF_dMPOS3 ","S1_PS3    ",  -1.00000
+"SF_dMPOS3 ","S1_SUD    ",   1.00000
+"SF_dMPOC4 ","S1_PC4    ",  -1.00000
+"SF_dMPON4 ","S1_PN4    ",  -1.00000
+"SF_dMPON4 ","S1_NH4    ",   1.00000
+"SF_dMPOP4 ","S1_PP4    ",  -1.00000
+"SF_dMPOP4 ","S1_PO4    ",   1.00000
+"SF_dMPOS4 ","S1_PS4    ",  -1.00000
+"SF_dMPOS4 ","S1_SUD    ",   1.00000
+"SF_dMDOC  ","S1_DOC    ",  -1.00000
+"SF_dMDON  ","S1_DON    ",  -1.00000
+"SF_dMDON  ","S1_NH4    ",   1.00000
+"SF_dMDOP  ","S1_DOP    ",  -1.00000
+"SF_dMDOP  ","S1_PO4    ",   1.00000
+"SF_dMDOS  ","S1_DOS    ",  -1.00000
+"SF_dMDOS  ","S1_SUD    ",   1.00000
+"SF_dPrcPO4","S1_PO4    ",  -1.00000
+"SF_dPrcPO4","S1_VIVP   ",   1.00000
+"SF_dDisPO4","S1_PO4    ",   1.00000
+"SF_dDisPO4","S1_VIVP   ",  -1.00000
+"SF_dDisSi ","S1_Si     ",   1.00000
+"SF_dDisSi ","S1_Opal   ",  -1.00000
+"SF_dOxCon ","S1_OXY    ",  -2.66700
+"SF_dNiDen ","S1_NO3    ",  -0.93300
+"SF_dFeRed ","S1_FeIIIpa", -18.60000
+"SF_dFeRed ","S1_FeIId  ",  18.60000
+"SF_dSuRed ","S1_SO4    ",  -1.33300
+"SF_dSuRed ","S1_SUD    ",   1.33300
+"SF_dMetCH4","S1_CH4    ",   1.00000
+"SF_dMetEbl","S1_CH4    ",  -1.00000
+"SF_dSUDox ","S1_SUD    ",  -1.00000
+"SF_dSUDox ","S1_OXY    ",  -2.00000
+"SF_dSUDox ","S1_SO4    ",   1.00000
+"SF_dSUDprc","S1_SUD    ",  -1.00000
+"SF_dSUDprc","S1_SUP    ",   1.00000
+"SF_dSUDdis","S1_SUD    ",   1.00000
+"SF_dSUDdis","S1_SUP    ",  -1.00000
+"SF_dMetoxD","S1_CH4    ",  -1.00000
+"SF_dMetoxD","S1_OXY    ",  -5.33000
+"SF_dMetoxS","S1_CH4    ",  -1.00000
+"SF_dMetoxS","S1_SO4    ",  -2.67000
+"SF_dMetoxS","S1_SUD    ",   2.67000
+"SF_dPrcAPP","S1_PO4    ",  -1.00000
+"SF_dPrcAPP","S1_APATP  ",   1.00000
+"SF_dDisAPP","S1_PO4    ",   1.00000
+"SF_dDisAPP","S1_APATP  ",  -1.00000
+"SF_dN1VBup","S1_NH4    ",  -1.00000
+"SF_dN2VBup","S1_NO3    ",  -1.00000
+"SF_dP1VBup","S1_AAP    ",  -1.00000
+"SF_dP2VBup","S1_PO4    ",  -1.00000
+"SF_dS1VBup","S1_SO4    ",  -1.00000
+"SF_dS2VBup","S1_SUD    ",  -1.00000
+"SF_dC1VBre","S1_PC1    ",   1.00000
+"SF_dC2VBre","S1_PC2    ",   1.00000
+"SF_dC3VBre","S1_PC3    ",   1.00000
+"SF_dC4VBre","S1_PC4    ",   1.00000
+"SF_dN1VBre","S1_PN1    ",   1.00000
+"SF_dN2VBre","S1_PN2    ",   1.00000
+"SF_dN3VBre","S1_PN3    ",   1.00000
+"SF_dN4VBre","S1_PN4    ",   1.00000
+"SF_dP1VBre","S1_PP1    ",   1.00000
+"SF_dP2VBre","S1_PP2    ",   1.00000
+"SF_dP3VBre","S1_PP3    ",   1.00000
+"SF_dP4VBre","S1_PP4    ",   1.00000
+"SF_dS1VBre","S1_PS1    ",   1.00000
+"SF_dS2VBre","S1_PS2    ",   1.00000
+"SF_dS3VBre","S1_PS3    ",   1.00000
+"SF_dS4VBre","S1_PS4    ",   1.00000
+"INIS1_CH4 ","S1_CH4    ",   1.00000
+"INIS1_DOC ","S1_DOC    ",   1.00000
+"INIS1_DON ","S1_DON    ",   1.00000
+"INIS1_DOP ","S1_DOP    ",   1.00000
+"INIS1_DOS ","S1_DOS    ",   1.00000
+"INIS1_NH4 ","S1_NH4    ",   1.00000
+"INIS1_NO3 ","S1_NO3    ",   1.00000
+"INIS1_OXY ","S1_OXY    ",   1.00000
+"INIS1_PO4 ","S1_PO4    ",   1.00000
+"INIS1_Si  ","S1_Si     ",   1.00000
+"INIS1_SO4 ","S1_SO4    ",   1.00000
+"INIS1_SUD ","S1_SUD    ",   1.00000
+"INIS1_AAP ","S1_AAP    ",   1.00000
+"INIS1_APAT","S1_APATP  ",   1.00000
+"INIS1_Fe3p","S1_FeIIIpa",   1.00000
+"INIS1_Opal","S1_Opal   ",   1.00000
+"INIS1_POC1","S1_PC1    ",   1.00000
+"INIS1_POC2","S1_PC2    ",   1.00000
+"INIS1_POC3","S1_PC3    ",   1.00000
+"INIS1_POC4","S1_PC4    ",   1.00000
+"INIS1_PON1","S1_PN1    ",   1.00000
+"INIS1_PON2","S1_PN2    ",   1.00000
+"INIS1_PON3","S1_PN3    ",   1.00000
+"INIS1_PON4","S1_PN4    ",   1.00000
+"INIS1_POP1","S1_PP1    ",   1.00000
+"INIS1_POP2","S1_PP2    ",   1.00000
+"INIS1_POP3","S1_PP3    ",   1.00000
+"INIS1_POP4","S1_PP4    ",   1.00000
+"INIS1_POS1","S1_PS1    ",   1.00000
+"INIS1_POS2","S1_PS2    ",   1.00000
+"INIS1_POS3","S1_PS3    ",   1.00000
+"INIS1_POS4","S1_PS4    ",   1.00000
+"INIS1_SUP ","S1_SUP    ",   1.00000
+"INIS1_VIVP","S1_VIVP   ",   1.00000
+"dMPB1Fgp  ","MPB1peli  ",   1.00000
+"dMPB2Fgp  ","MPB2psam  ",   1.00000
+"dMPB1Res  ","MPB1peli  ",  -1.00000
+"dMPB2Res  ","MPB2psam  ",  -1.00000
+"dMPB1Mor  ","MPB1peli  ",  -1.00000
+"dMPB2Mor  ","MPB2psam  ",  -1.00000
+"dMPBOxy   ","Oxy       ",   2.67000
+"dMPBCO2up ","TIC       ",  -1.00000
+"dMPBCO2up ","CO2       ",  -3.67000
+"dMPBNO3up ","NO3       ",  -1.00000
+"dMPBNH4up ","NH4       ",  -1.00000
+"dMPBPO4up ","PO4       ",  -1.00000
+"dMPBSiup  ","Si        ",  -1.00000
+"dMPBPOC1  ","POC1      ",   1.00000
+"dMPBPON1  ","PON1      ",   1.00000
+"dMPBPOP1  ","POP1      ",   1.00000
+"dMPBOpal  ","Opal      ",   1.00000
+"dMPB1FgpS1","MPB1peliS1",   1.00000
+"dMPB2FgpS1","MPB2psamS1",   1.00000
+"dMPB1ResS1","MPB1peliS1",  -1.00000
+"dMPB2ResS1","MPB2psamS1",  -1.00000
+"dMPB1MorS1","MPB1peliS1",  -1.00000
+"dMPB2MorS1","MPB2psamS1",  -1.00000
+"dMPBDetCS ","DetCS1    ",   1.00000
+"dMPBDetNS ","DetNS1    ",   1.00000
+"dMPBDetPS ","DetPS1    ",   1.00000
+"dMPBDetSS ","DetSiS1   ",   1.00000
+"dN1VB01upw","NH4       ",  -1.00000
+"dN2VB01upw","NO3       ",  -1.00000
+"dP1VB01upw","AAP       ",  -1.00000
+"dP2VB01upw","PO4       ",  -1.00000
+"dS1VB01upw","SO4       ",  -1.00000
+"dS2VB01upw","SUD       ",  -1.00000
+"dN1VB02upw","NH4       ",  -1.00000
+"dN2VB02upw","NO3       ",  -1.00000
+"dP1VB02upw","AAP       ",  -1.00000
+"dP2VB02upw","PO4       ",  -1.00000
+"dS1VB02upw","SO4       ",  -1.00000
+"dS2VB02upw","SUD       ",  -1.00000
+"dN1VB03upw","NH4       ",  -1.00000
+"dN2VB03upw","NO3       ",  -1.00000
+"dP1VB03upw","AAP       ",  -1.00000
+"dP2VB03upw","PO4       ",  -1.00000
+"dS1VB03upw","SO4       ",  -1.00000
+"dS2VB03upw","SUD       ",  -1.00000
+"dN1VB04upw","NH4       ",  -1.00000
+"dN2VB04upw","NO3       ",  -1.00000
+"dP1VB04upw","AAP       ",  -1.00000
+"dP2VB04upw","PO4       ",  -1.00000
+"dS1VB04upw","SO4       ",  -1.00000
+"dS2VB04upw","SUD       ",  -1.00000
+"dN1VB05upw","NH4       ",  -1.00000
+"dN2VB05upw","NO3       ",  -1.00000
+"dP1VB05upw","AAP       ",  -1.00000
+"dP2VB05upw","PO4       ",  -1.00000
+"dS1VB05upw","SO4       ",  -1.00000
+"dS2VB05upw","SUD       ",  -1.00000
+"dN1VB06upw","NH4       ",  -1.00000
+"dN2VB06upw","NO3       ",  -1.00000
+"dP1VB06upw","AAP       ",  -1.00000
+"dP2VB06upw","PO4       ",  -1.00000
+"dS1VB06upw","SO4       ",  -1.00000
+"dS2VB06upw","SUD       ",  -1.00000
+"dN1VB07upw","NH4       ",  -1.00000
+"dN2VB07upw","NO3       ",  -1.00000
+"dP1VB07upw","AAP       ",  -1.00000
+"dP2VB07upw","PO4       ",  -1.00000
+"dS1VB07upw","SO4       ",  -1.00000
+"dS2VB07upw","SUD       ",  -1.00000
+"dN1VB08upw","NH4       ",  -1.00000
+"dN2VB08upw","NO3       ",  -1.00000
+"dP1VB08upw","AAP       ",  -1.00000
+"dP2VB08upw","PO4       ",  -1.00000
+"dS1VB08upw","SO4       ",  -1.00000
+"dS2VB08upw","SUD       ",  -1.00000
+"dN1VB09upw","NH4       ",  -1.00000
+"dN2VB09upw","NO3       ",  -1.00000
+"dP1VB09upw","AAP       ",  -1.00000
+"dP2VB09upw","PO4       ",  -1.00000
+"dS1VB09upw","SO4       ",  -1.00000
+"dS2VB09upw","SUD       ",  -1.00000
+"dDumVBSum ","VB01      ",   0.00000
+"dTyreAgg11","Tyre1     ",  -1.00000
+"dTyreAgg11","TyreAgg11 ",   1.00000
+"dTyreAgg12","Tyre1     ",  -1.00000
+"dTyreAgg12","TyreAgg12 ",   1.00000
+"dTyreAgg13","Tyre1     ",  -1.00000
+"dTyreAgg13","TyreAgg13 ",   1.00000
+"dTyreAgg21","Tyre2     ",  -1.00000
+"dTyreAgg21","TyreAgg21 ",   1.00000
+"dTyreAgg22","Tyre2     ",  -1.00000
+"dTyreAgg22","TyreAgg22 ",   1.00000
+"dTyreAgg23","Tyre2     ",  -1.00000
+"dTyreAgg23","TyreAgg23 ",   1.00000
+"dTyreAgg31","Tyre3     ",  -1.00000
+"dTyreAgg31","TyreAgg31 ",   1.00000
+"dTyreAgg32","Tyre3     ",  -1.00000
+"dTyreAgg32","TyreAgg32 ",   1.00000
+"dTyreAgg33","Tyre3     ",  -1.00000
+"dTyreAgg33","TyreAgg33 ",   1.00000
+"dTyreAgg41","Tyre4     ",  -1.00000
+"dTyreAgg41","TyreAgg41 ",   1.00000
+"dTyreAgg42","Tyre4     ",  -1.00000
+"dTyreAgg42","TyreAgg42 ",   1.00000
+"dTyreAgg43","Tyre4     ",  -1.00000
+"dTyreAgg43","TyreAgg43 ",   1.00000
+"dSedTyre11","Tyre1     ",  -1.00000
+"dSedTyre11","TAggSed11 ",   1.00000
+"dSedTyre12","Tyre1     ",  -1.00000
+"dSedTyre12","TAggSed12 ",   1.00000
+"dSedTyre13","Tyre1     ",  -1.00000
+"dSedTyre13","TAggSed13 ",   1.00000
+"dSedTyre21","Tyre2     ",  -1.00000
+"dSedTyre21","TAggSed21 ",   1.00000
+"dSedTyre22","Tyre2     ",  -1.00000
+"dSedTyre22","TAggSed22 ",   1.00000
+"dSedTyre23","Tyre2     ",  -1.00000
+"dSedTyre23","TAggSed23 ",   1.00000
+"dSedTyre31","Tyre3     ",  -1.00000
+"dSedTyre31","TAggSed31 ",   1.00000
+"dSedTyre32","Tyre3     ",  -1.00000
+"dSedTyre32","TAggSed32 ",   1.00000
+"dSedTyre33","Tyre3     ",  -1.00000
+"dSedTyre33","TAggSed33 ",   1.00000
+"dSedTyre41","Tyre4     ",  -1.00000
+"dSedTyre41","TAggSed41 ",   1.00000
+"dSedTyre42","Tyre4     ",  -1.00000
+"dSedTyre42","TAggSed42 ",   1.00000
+"dSedTyre43","Tyre4     ",  -1.00000
+"dSedTyre43","TAggSed43 ",   1.00000
+"dSedTAgg11","TyreAgg11 ",  -1.00000
+"dSedTAgg11","TAggSed11 ",   1.00000
+"dSedTAgg12","TyreAgg12 ",  -1.00000
+"dSedTAgg12","TAggSed12 ",   1.00000
+"dSedTAgg13","TyreAgg13 ",  -1.00000
+"dSedTAgg13","TAggSed13 ",   1.00000
+"dSedTAgg21","TyreAgg21 ",  -1.00000
+"dSedTAgg21","TAggSed21 ",   1.00000
+"dSedTAgg22","TyreAgg22 ",  -1.00000
+"dSedTAgg22","TAggSed22 ",   1.00000
+"dSedTAgg23","TyreAgg23 ",  -1.00000
+"dSedTAgg23","TAggSed23 ",   1.00000
+"dSedTAgg31","TyreAgg31 ",  -1.00000
+"dSedTAgg31","TAggSed31 ",   1.00000
+"dSedTAgg32","TyreAgg32 ",  -1.00000
+"dSedTAgg32","TAggSed32 ",   1.00000
+"dSedTAgg33","TyreAgg33 ",  -1.00000
+"dSedTAgg33","TAggSed33 ",   1.00000
+"dSedTAgg41","TyreAgg41 ",  -1.00000
+"dSedTAgg41","TAggSed41 ",   1.00000
+"dSedTAgg42","TyreAgg42 ",  -1.00000
+"dSedTAgg42","TAggSed42 ",   1.00000
+"dSedTAgg43","TyreAgg43 ",  -1.00000
+"dSedTAgg43","TAggSed43 ",   1.00000
+"dNH4up_D1 ","NH4       ",  -1.00000
+"dNH4up_D1 ","diatN_1   ",   1.00000
+"dNH4up_D1 ","ALKA      ",  -4.35700
+"dNO3up_D1 ","NO3       ",  -1.00000
+"dNO3up_D1 ","diatN_1   ",   1.00000
+"dNO3up_D1 ","ALKA      ",   4.35700
+"dNO3up_D1 ","OXY       ",   4.57100
+"dPup_D1   ","PO4       ",  -1.00000
+"dPup_D1   ","diatP_1   ",   1.00000
+"dPup_D1   ","ALKA      ",   1.96800
+"dSiup_D1  ","Si        ",  -1.00000
+"dSiup_D1  ","diatSi_1  ",   1.00000
+"dCfix_D1  ","diatC_1   ",   1.00000
+"dCfix_D1  ","OXY       ",   2.67000
+"dChlsyn_D1","diatChl_1 ",   1.00000
+"dChldeg_D1","diatChl_1 ",  -1.00000
+"dCresp_D1 ","diatC_1   ",  -1.00000
+"dCresp_D1 ","OXY       ",  -2.67000
+"dCleak_D1 ","DOClab    ",   1.00000
+"dCleak_D1 ","diatC_1   ",  -1.00000
+"dCvoid_D1 ","DOClab    ",   1.00000
+"dCvoid_D1 ","diatC_1   ",  -1.00000
+"dNH4out_D1","NH4       ",   1.00000
+"dNH4out_D1","diatN_1   ",  -1.00000
+"dPout_D1  ","PO4       ",   1.00000
+"dPout_D1  ","diatP_1   ",  -1.00000
+"dAutC_D1  ","diatC_1   ",  -1.00000
+"dAutC_D1  ","OXY       ",  -2.67000
+"dDetC_D1  ","POC1      ",   1.00000
+"dDetC_D1  ","POS1      ",   0.01700
+"dDetC_D1  ","diatC_1   ",  -1.00000
+"dAutN_D1  ","NH4       ",   1.00000
+"dAutN_D1  ","diatN_1   ",  -1.00000
+"dAutN_D1  ","ALKA      ",   4.35700
+"dDetN_D1  ","PON1      ",   1.00000
+"dDetN_D1  ","diatN_1   ",  -1.00000
+"dAutP_D1  ","PO4       ",   1.00000
+"dAutP_D1  ","diatP_1   ",  -1.00000
+"dAutP_D1  ","ALKA      ",  -1.96800
+"dDetP_D1  ","POP1      ",   1.00000
+"dDetP_D1  ","diatP_1   ",  -1.00000
+"dAutSi_D1 ","Si        ",   1.00000
+"dAutSi_D1 ","diatSi_1  ",  -1.00000
+"dDetSi_D1 ","Opal      ",   1.00000
+"dDetSi_D1 ","diatSi_1  ",  -1.00000
+"dAutChl_D1","diatChl_1 ",  -1.00000
+"dDetChl_D1","diatChl_1 ",  -1.00000
+"dNH4up_D2 ","NH4       ",  -1.00000
+"dNH4up_D2 ","diatN_2   ",   1.00000
+"dNH4up_D2 ","ALKA      ",  -4.35700
+"dNO3up_D2 ","NO3       ",  -1.00000
+"dNO3up_D2 ","diatN_2   ",   1.00000
+"dNO3up_D2 ","ALKA      ",   4.35700
+"dNO3up_D2 ","OXY       ",   4.57100
+"dPup_D2   ","PO4       ",  -1.00000
+"dPup_D2   ","diatP_2   ",   1.00000
+"dPup_D2   ","ALKA      ",   1.96800
+"dSiup_D2  ","Si        ",  -1.00000
+"dSiup_D2  ","diatSi_2  ",   1.00000
+"dCfix_D2  ","diatC_2   ",   1.00000
+"dCfix_D2  ","OXY       ",   2.67000
+"dChlsyn_D2","diatChl_2 ",   1.00000
+"dChldeg_D2","diatChl_2 ",  -1.00000
+"dCresp_D2 ","diatC_2   ",  -1.00000
+"dCresp_D2 ","OXY       ",  -2.67000
+"dCleak_D2 ","DOClab    ",   1.00000
+"dCleak_D2 ","diatC_2   ",  -1.00000
+"dCvoid_D2 ","DOClab    ",   1.00000
+"dCvoid_D2 ","diatC_2   ",  -1.00000
+"dNH4out_D2","NH4       ",   1.00000
+"dNH4out_D2","diatN_2   ",  -1.00000
+"dPout_D2  ","PO4       ",   1.00000
+"dPout_D2  ","diatP_2   ",  -1.00000
+"dAutC_D2  ","diatC_2   ",  -1.00000
+"dAutC_D2  ","OXY       ",  -2.67000
+"dDetC_D2  ","POC1      ",   1.00000
+"dDetC_D2  ","POS1      ",   0.01700
+"dDetC_D2  ","diatC_2   ",  -1.00000
+"dAutN_D2  ","NH4       ",   1.00000
+"dAutN_D2  ","diatN_2   ",  -1.00000
+"dAutN_D2  ","ALKA      ",   4.35700
+"dDetN_D2  ","PON1      ",   1.00000
+"dDetN_D2  ","diatN_2   ",  -1.00000
+"dAutP_D2  ","PO4       ",   1.00000
+"dAutP_D2  ","diatP_2   ",  -1.00000
+"dAutP_D2  ","ALKA      ",  -1.96800
+"dDetP_D2  ","POP1      ",   1.00000
+"dDetP_D2  ","diatP_2   ",  -1.00000
+"dAutSi_D2 ","Si        ",   1.00000
+"dAutSi_D2 ","diatSi_2  ",  -1.00000
+"dDetSi_D2 ","Opal      ",   1.00000
+"dDetSi_D2 ","diatSi_2  ",  -1.00000
+"dAutChl_D2","diatChl_2 ",  -1.00000
+"dDetChl_D2","diatChl_2 ",  -1.00000
+"dSedC_1   ","diatC_1   ",  -1.00000
+"dSedChl_1 ","diatChl_1 ",  -1.00000
+"dSedN_1   ","diatN_1   ",  -1.00000
+"dSedP_1   ","diatP_1   ",  -1.00000
+"dSedSi_1  ","diatSi_1  ",  -1.00000
+"dSedC_2   ","diatC_2   ",  -1.00000
+"dSedChl_2 ","diatChl_2 ",  -1.00000
+"dSedN_2   ","diatN_2   ",  -1.00000
+"dSedP_2   ","diatP_2   ",  -1.00000
+"dSedSi_2  ","diatSi_2  ",  -1.00000
+"dNH4up_G1 ","NH4       ",  -1.00000
+"dNH4up_G1 ","greenN_1  ",   1.00000
+"dNH4up_G1 ","ALKA      ",  -4.35700
+"dNO3up_G1 ","NO3       ",  -1.00000
+"dNO3up_G1 ","greenN_1  ",   1.00000
+"dNO3up_G1 ","ALKA      ",   4.35700
+"dNO3up_G1 ","OXY       ",   4.57100
+"dPup_G1   ","PO4       ",  -1.00000
+"dPup_G1   ","greenP_1  ",   1.00000
+"dPup_G1   ","ALKA      ",   1.96800
+"dCfix_G1  ","greenC_1  ",   1.00000
+"dCfix_G1  ","OXY       ",   2.67000
+"dChlsyn_G1","greenChl_1",   1.00000
+"dChldeg_G1","greenChl_1",  -1.00000
+"dCresp_G1 ","greenC_1  ",  -1.00000
+"dCresp_G1 ","OXY       ",  -2.67000
+"dCleak_G1 ","DOClab    ",   1.00000
+"dCleak_G1 ","greenC_1  ",  -1.00000
+"dCvoid_G1 ","DOClab    ",   1.00000
+"dCvoid_G1 ","greenC_1  ",  -1.00000
+"dNH4out_G1","NH4       ",   1.00000
+"dNH4out_G1","greenN_1  ",  -1.00000
+"dPout_G1  ","PO4       ",   1.00000
+"dPout_G1  ","greenP_1  ",  -1.00000
+"dAutC_G1  ","greenC_1  ",  -1.00000
+"dAutC_G1  ","OXY       ",  -2.67000
+"dDetC_G1  ","POC1      ",   1.00000
+"dDetC_G1  ","POS1      ",   0.01700
+"dDetC_G1  ","greenC_1  ",  -1.00000
+"dAutN_G1  ","NH4       ",   1.00000
+"dAutN_G1  ","greenN_1  ",  -1.00000
+"dAutN_G1  ","ALKA      ",   4.35700
+"dDetN_G1  ","PON1      ",   1.00000
+"dDetN_G1  ","greenN_1  ",  -1.00000
+"dAutP_G1  ","PO4       ",   1.00000
+"dAutP_G1  ","greenP_1  ",  -1.00000
+"dAutP_G1  ","ALKA      ",  -1.96800
+"dDetP_G1  ","POP1      ",   1.00000
+"dDetP_G1  ","greenP_1  ",  -1.00000
+"dAutChl_G1","greenChl_1",  -1.00000
+"dDetChl_G1","greenChl_1",  -1.00000
+"dNH4up_G2 ","NH4       ",  -1.00000
+"dNH4up_G2 ","greenN_2  ",   1.00000
+"dNH4up_G2 ","ALKA      ",  -4.35700
+"dNO3up_G2 ","NO3       ",  -1.00000
+"dNO3up_G2 ","greenN_2  ",   1.00000
+"dNO3up_G2 ","ALKA      ",   4.35700
+"dNO3up_G2 ","OXY       ",   4.57100
+"dPup_G2   ","PO4       ",  -1.00000
+"dPup_G2   ","greenP_2  ",   1.00000
+"dPup_G2   ","ALKA      ",   1.96800
+"dCfix_G2  ","greenC_2  ",   1.00000
+"dCfix_G2  ","OXY       ",   2.67000
+"dChlsyn_G2","greenChl_2",   1.00000
+"dChldeg_G2","greenChl_2",  -1.00000
+"dCresp_G2 ","greenC_2  ",  -1.00000
+"dCresp_G2 ","OXY       ",  -2.67000
+"dCleak_G2 ","DOClab    ",   1.00000
+"dCleak_G2 ","greenC_2  ",  -1.00000
+"dCvoid_G2 ","DOClab    ",   1.00000
+"dCvoid_G2 ","greenC_2  ",  -1.00000
+"dNH4out_G2","NH4       ",   1.00000
+"dNH4out_G2","greenN_2  ",  -1.00000
+"dPout_G2  ","PO4       ",   1.00000
+"dPout_G2  ","greenP_2  ",  -1.00000
+"dAutC_G2  ","greenC_2  ",  -1.00000
+"dAutC_G2  ","OXY       ",  -2.67000
+"dDetC_G2  ","POC1      ",   1.00000
+"dDetC_G2  ","POS1      ",   0.01700
+"dDetC_G2  ","greenC_2  ",  -1.00000
+"dAutN_G2  ","NH4       ",   1.00000
+"dAutN_G2  ","greenN_2  ",  -1.00000
+"dAutN_G2  ","ALKA      ",   4.35700
+"dDetN_G2  ","PON1      ",   1.00000
+"dDetN_G2  ","greenN_2  ",  -1.00000
+"dAutP_G2  ","PO4       ",   1.00000
+"dAutP_G2  ","greenP_2  ",  -1.00000
+"dAutP_G2  ","ALKA      ",  -1.96800
+"dDetP_G2  ","POP1      ",   1.00000
+"dDetP_G2  ","greenP_2  ",  -1.00000
+"dAutChl_G2","greenChl_2",  -1.00000
+"dDetChl_G2","greenChl_2",  -1.00000
+"dNH4up_C1 ","NH4       ",  -1.00000
+"dNH4up_C1 ","cmN_1     ",   1.00000
+"dNH4up_C1 ","ALKA      ",  -4.35700
+"dNO3up_C1 ","NO3       ",  -1.00000
+"dNO3up_C1 ","cmN_1     ",   1.00000
+"dNO3up_C1 ","ALKA      ",   4.35700
+"dNO3up_C1 ","OXY       ",   4.57100
+"dPup_C1   ","PO4       ",  -1.00000
+"dPup_C1   ","cmP_1     ",   1.00000
+"dPup_C1   ","ALKA      ",   1.96800
+"dCfix_C1  ","cmC_1     ",   1.00000
+"dCfix_C1  ","OXY       ",   2.67000
+"dChlsyn_C1","cmChl_1   ",   1.00000
+"dChldeg_C1","cmChl_1   ",  -1.00000
+"dCresp_C1 ","cmC_1     ",  -1.00000
+"dCresp_C1 ","OXY       ",  -2.67000
+"dCleak_C1 ","DOClab    ",   1.00000
+"dCleak_C1 ","cmC_1     ",  -1.00000
+"dCvoid_C1 ","DOClab    ",   1.00000
+"dCvoid_C1 ","cmC_1     ",  -1.00000
+"dNH4out_C1","NH4       ",   1.00000
+"dNH4out_C1","cmN_1     ",  -1.00000
+"dPout_C1  ","PO4       ",   1.00000
+"dPout_C1  ","cmP_1     ",  -1.00000
+"dCeat_C1  ","cmC_1     ",   1.00000
+"dNeat_C1  ","cmN_1     ",   1.00000
+"dPeat_C1  ","cmP_1     ",   1.00000
+"dPOCout_C1","POC1      ",   1.00000
+"dPONout_C1","PON1      ",   1.00000
+"dPOPout_C1","POP1      ",   1.00000
+"dAutC_C1  ","cmC_1     ",  -1.00000
+"dAutC_C1  ","OXY       ",  -2.67000
+"dDetC_C1  ","POC1      ",   1.00000
+"dDetC_C1  ","POS1      ",   0.01700
+"dDetC_C1  ","cmC_1     ",  -1.00000
+"dAutN_C1  ","NH4       ",   1.00000
+"dAutN_C1  ","cmN_1     ",  -1.00000
+"dAutN_C1  ","ALKA      ",   4.35700
+"dDetN_C1  ","PON1      ",   1.00000
+"dDetN_C1  ","cmN_1     ",  -1.00000
+"dAutP_C1  ","PO4       ",   1.00000
+"dAutP_C1  ","cmP_1     ",  -1.00000
+"dAutP_C1  ","ALKA      ",  -1.96800
+"dDetP_C1  ","POP1      ",   1.00000
+"dDetP_C1  ","cmP_1     ",  -1.00000
+"dAutChl_C1","cmChl_1   ",  -1.00000
+"dDetChl_C1","cmChl_1   ",  -1.00000
+"dD1C_C1   ","diatC_1   ",  -1.00000
+"dD1Chl_C1 ","diatChl_1 ",  -1.00000
+"dD1N_C1   ","diatN_1   ",  -1.00000
+"dD1P_C1   ","diatP_1   ",  -1.00000
+"dD1Si_C1  ","diatSi_1  ",  -1.00000
+"dD1Si_C1  ","Opal      ",   1.00000
+"dD2C_C1   ","diatC_2   ",  -1.00000
+"dD2Chl_C1 ","diatChl_2 ",  -1.00000
+"dD2N_C1   ","diatN_2   ",  -1.00000
+"dD2P_C1   ","diatP_2   ",  -1.00000
+"dD2Si_C1  ","diatSi_2  ",  -1.00000
+"dD2Si_C1  ","Opal      ",   1.00000
+"dG1C_C1   ","greenC_1  ",  -1.00000
+"dG1Chl_C1 ","greenChl_1",  -1.00000
+"dG1N_C1   ","greenN_1  ",  -1.00000
+"dG1P_C1   ","greenP_1  ",  -1.00000
+"dG1Si_C1  ","greenSi_1 ",  -1.00000
+"dG1Si_C1  ","Opal      ",   1.00000
+"dG2C_C1   ","greenC_2  ",  -1.00000
+"dG2Chl_C1 ","greenChl_2",  -1.00000
+"dG2N_C1   ","greenN_2  ",  -1.00000
+"dG2P_C1   ","greenP_2  ",  -1.00000
+"dG2Si_C1  ","greenSi_2 ",  -1.00000
+"dG2Si_C1  ","Opal      ",   1.00000
+"dNH4up_C2 ","NH4       ",  -1.00000
+"dNH4up_C2 ","cmN_2     ",   1.00000
+"dNH4up_C2 ","ALKA      ",  -4.35700
+"dNO3up_C2 ","NO3       ",  -1.00000
+"dNO3up_C2 ","cmN_2     ",   1.00000
+"dNO3up_C2 ","ALKA      ",   4.35700
+"dNO3up_C2 ","OXY       ",   4.57100
+"dPup_C2   ","PO4       ",  -1.00000
+"dPup_C2   ","cmP_2     ",   1.00000
+"dPup_C2   ","ALKA      ",   1.96800
+"dCfix_C2  ","cmC_2     ",   1.00000
+"dCfix_C2  ","OXY       ",   2.67000
+"dChlsyn_C2","cmChl_2   ",   1.00000
+"dChldeg_C2","cmChl_2   ",  -1.00000
+"dCresp_C2 ","cmC_2     ",  -1.00000
+"dCresp_C2 ","OXY       ",  -2.67000
+"dCleak_C2 ","DOClab    ",   1.00000
+"dCleak_C2 ","cmC_2     ",  -1.00000
+"dCvoid_C2 ","DOClab    ",   1.00000
+"dCvoid_C2 ","cmC_2     ",  -1.00000
+"dNH4out_C2","NH4       ",   1.00000
+"dNH4out_C2","cmN_2     ",  -1.00000
+"dPout_C2  ","PO4       ",   1.00000
+"dPout_C2  ","cmP_2     ",  -1.00000
+"dCeat_C2  ","cmC_2     ",   1.00000
+"dNeat_C2  ","cmN_2     ",   1.00000
+"dPeat_C2  ","cmP_2     ",   1.00000
+"dPOCout_C2","POC1      ",   1.00000
+"dPONout_C2","PON1      ",   1.00000
+"dPOPout_C2","POP1      ",   1.00000
+"dAutC_C2  ","cmC_2     ",  -1.00000
+"dAutC_C2  ","OXY       ",  -2.67000
+"dDetC_C2  ","POC1      ",   1.00000
+"dDetC_C2  ","POS1      ",   0.01700
+"dDetC_C2  ","cmC_2     ",  -1.00000
+"dAutN_C2  ","NH4       ",   1.00000
+"dAutN_C2  ","cmN_2     ",  -1.00000
+"dAutN_C2  ","ALKA      ",   4.35700
+"dDetN_C2  ","PON1      ",   1.00000
+"dDetN_C2  ","cmN_2     ",  -1.00000
+"dAutP_C2  ","PO4       ",   1.00000
+"dAutP_C2  ","cmP_2     ",  -1.00000
+"dAutP_C2  ","ALKA      ",  -1.96800
+"dDetP_C2  ","POP1      ",   1.00000
+"dDetP_C2  ","cmP_2     ",  -1.00000
+"dAutChl_C2","cmChl_2   ",  -1.00000
+"dDetChl_C2","cmChl_2   ",  -1.00000
+"dD1C_C2   ","diatC_1   ",  -1.00000
+"dD1Chl_C2 ","diatChl_1 ",  -1.00000
+"dD1N_C2   ","diatN_1   ",  -1.00000
+"dD1P_C2   ","diatP_1   ",  -1.00000
+"dD1Si_C2  ","diatSi_1  ",  -1.00000
+"dD1Si_C2  ","Opal      ",   1.00000
+"dD2C_C2   ","diatC_2   ",  -1.00000
+"dD2Chl_C2 ","diatChl_2 ",  -1.00000
+"dD2N_C2   ","diatN_2   ",  -1.00000
+"dD2P_C2   ","diatP_2   ",  -1.00000
+"dD2Si_C2  ","diatSi_2  ",  -1.00000
+"dD2Si_C2  ","Opal      ",   1.00000
+"dG1C_C2   ","greenC_1  ",  -1.00000
+"dG1Chl_C2 ","greenChl_1",  -1.00000
+"dG1N_C2   ","greenN_1  ",  -1.00000
+"dG1P_C2   ","greenP_1  ",  -1.00000
+"dG1Si_C2  ","greenSi_1 ",  -1.00000
+"dG1Si_C2  ","Opal      ",   1.00000
+"dG2C_C2   ","greenC_2  ",  -1.00000
+"dG2Chl_C2 ","greenChl_2",  -1.00000
+"dG2N_C2   ","greenN_2  ",  -1.00000
+"dG2P_C2   ","greenP_2  ",  -1.00000
+"dG2Si_C2  ","greenSi_2 ",  -1.00000
+"dG2Si_C2  ","Opal      ",   1.00000
+"dCeat_N1  ","ncmC_1    ",   1.00000
+"dNeat_N1  ","ncmN_1    ",   1.00000
+"dPeat_N1  ","ncmP_1    ",   1.00000
+"dCfix_N1  ","ncmC_1    ",   1.00000
+"dCfix_N1  ","OXY       ",   2.67000
+"dChldeg_N1","ncmChl_1  ",  -1.00000
+"dChlout_N1","ncmChl_1  ",  -1.00000
+"dCresp_N1 ","ncmC_1    ",  -1.00000
+"dCresp_N1 ","OXY       ",  -2.67000
+"dCleak_N1 ","DOClab    ",   1.00000
+"dCleak_N1 ","ncmC_1    ",  -1.00000
+"dCvoid_N1 ","DOClab    ",   1.00000
+"dCvoid_N1 ","ncmC_1    ",  -1.00000
+"dPOCout_N1","POC1      ",   1.00000
+"dPONout_N1","PON1      ",   1.00000
+"dPOPout_N1","POP1      ",   1.00000
+"dNH4out_N1","ncmN_1    ",  -1.00000
+"dNH4out_N1","NH4       ",   1.00000
+"dPout_N1  ","ncmP_1    ",  -1.00000
+"dPout_N1  ","PO4       ",   1.00000
+"dAutC_N1  ","ncmC_1    ",  -1.00000
+"dAutC_N1  ","OXY       ",  -2.67000
+"dDetC_N1  ","POC1      ",   1.00000
+"dDetC_N1  ","POS1      ",   0.01700
+"dDetC_N1  ","ncmC_1    ",  -1.00000
+"dAutN_N1  ","NH4       ",   1.00000
+"dAutN_N1  ","ncmN_1    ",  -1.00000
+"dAutN_N1  ","ALKA      ",   4.35700
+"dDetN_N1  ","PON1      ",   1.00000
+"dDetN_N1  ","ncmN_1    ",  -1.00000
+"dAutP_N1  ","PO4       ",   1.00000
+"dAutP_N1  ","ncmP_1    ",  -1.00000
+"dAutP_N1  ","ALKA      ",  -1.96800
+"dDetP_N1  ","POP1      ",   1.00000
+"dDetP_N1  ","ncmP_1    ",  -1.00000
+"dAutChl_N1","ncmChl_1  ",  -1.00000
+"dDetChl_N1","ncmChl_1  ",  -1.00000
+"dChlup_N1 ","ncmChl_1  ",   1.00000
+"dD1C_N1   ","diatC_1   ",  -1.00000
+"dD1Chl_N1 ","diatChl_1 ",  -1.00000
+"dD1N_N1   ","diatN_1   ",  -1.00000
+"dD1P_N1   ","diatP_1   ",  -1.00000
+"dD1Si_N1  ","diatSi_1  ",  -1.00000
+"dD1Si_N1  ","Opal      ",   1.00000
+"dD2C_N1   ","diatC_2   ",  -1.00000
+"dD2Chl_N1 ","diatChl_2 ",  -1.00000
+"dD2N_N1   ","diatN_2   ",  -1.00000
+"dD2P_N1   ","diatP_2   ",  -1.00000
+"dD2Si_N1  ","diatSi_2  ",  -1.00000
+"dD2Si_N1  ","Opal      ",   1.00000
+"dG1C_N1   ","greenC_1  ",  -1.00000
+"dG1Chl_N1 ","greenChl_1",  -1.00000
+"dG1N_N1   ","greenN_1  ",  -1.00000
+"dG1P_N1   ","greenP_1  ",  -1.00000
+"dG1Si_N1  ","greenSi_1 ",  -1.00000
+"dG1Si_N1  ","Opal      ",   1.00000
+"dG2C_N1   ","greenC_2  ",  -1.00000
+"dG2Chl_N1 ","greenChl_2",  -1.00000
+"dG2N_N1   ","greenN_2  ",  -1.00000
+"dG2P_N1   ","greenP_2  ",  -1.00000
+"dG2Si_N1  ","greenSi_2 ",  -1.00000
+"dG2Si_N1  ","Opal      ",   1.00000
+"dC1C_N1   ","cmC_1     ",  -1.00000
+"dC1Chl_N1 ","cmChl_1   ",  -1.00000
+"dC1N_N1   ","cmN_1     ",  -1.00000
+"dC1P_N1   ","cmP_1     ",  -1.00000
+"dC1Si_N1  ","cmSi_1    ",  -1.00000
+"dC1Si_N1  ","Opal      ",   1.00000
+"dC2C_N1   ","cmC_2     ",  -1.00000
+"dC2Chl_N1 ","cmChl_2   ",  -1.00000
+"dC2N_N1   ","cmN_2     ",  -1.00000
+"dC2P_N1   ","cmP_2     ",  -1.00000
+"dC2Si_N1  ","cmSi_2    ",  -1.00000
+"dC2Si_N1  ","Opal      ",   1.00000
+"dCeat_N2  ","ncmC_2    ",   1.00000
+"dNeat_N2  ","ncmN_2    ",   1.00000
+"dPeat_N2  ","ncmP_2    ",   1.00000
+"dCfix_N2  ","ncmC_2    ",   1.00000
+"dCfix_N2  ","OXY       ",   2.67000
+"dChldeg_N2","ncmChl_2  ",  -1.00000
+"dChlout_N2","ncmChl_2  ",  -1.00000
+"dCresp_N2 ","ncmC_2    ",  -1.00000
+"dCresp_N2 ","OXY       ",  -2.67000
+"dCleak_N2 ","DOClab    ",   1.00000
+"dCleak_N2 ","ncmC_2    ",  -1.00000
+"dCvoid_N2 ","DOClab    ",   1.00000
+"dCvoid_N2 ","ncmC_2    ",  -1.00000
+"dPOCout_N2","POC1      ",   1.00000
+"dPONout_N2","PON1      ",   1.00000
+"dPOPout_N2","POP1      ",   1.00000
+"dNH4out_N2","ncmN_2    ",  -1.00000
+"dNH4out_N2","NH4       ",   1.00000
+"dPout_N2  ","ncmP_2    ",  -1.00000
+"dPout_N2  ","PO4       ",   1.00000
+"dAutC_N2  ","ncmC_2    ",  -1.00000
+"dAutC_N2  ","OXY       ",  -2.67000
+"dDetC_N2  ","POC1      ",   1.00000
+"dDetC_N2  ","POS1      ",   0.01700
+"dDetC_N2  ","ncmC_2    ",  -1.00000
+"dAutN_N2  ","NH4       ",   1.00000
+"dAutN_N2  ","ncmN_2    ",  -1.00000
+"dAutN_N2  ","ALKA      ",   4.35700
+"dDetN_N2  ","PON1      ",   1.00000
+"dDetN_N2  ","ncmN_2    ",  -1.00000
+"dAutP_N2  ","PO4       ",   1.00000
+"dAutP_N2  ","ncmP_2    ",  -1.00000
+"dAutP_N2  ","ALKA      ",  -1.96800
+"dDetP_N2  ","POP1      ",   1.00000
+"dDetP_N2  ","ncmP_2    ",  -1.00000
+"dAutChl_N2","ncmChl_2  ",  -1.00000
+"dDetChl_N2","ncmChl_2  ",  -1.00000
+"dChlup_N2 ","ncmChl_2  ",   1.00000
+"dD1C_N2   ","diatC_1   ",  -1.00000
+"dD1Chl_N2 ","diatChl_1 ",  -1.00000
+"dD1N_N2   ","diatN_1   ",  -1.00000
+"dD1P_N2   ","diatP_1   ",  -1.00000
+"dD1Si_N2  ","diatSi_1  ",  -1.00000
+"dD1Si_N2  ","Opal      ",   1.00000
+"dD2C_N2   ","diatC_2   ",  -1.00000
+"dD2Chl_N2 ","diatChl_2 ",  -1.00000
+"dD2N_N2   ","diatN_2   ",  -1.00000
+"dD2P_N2   ","diatP_2   ",  -1.00000
+"dD2Si_N2  ","diatSi_2  ",  -1.00000
+"dD2Si_N2  ","Opal      ",   1.00000
+"dG1C_N2   ","greenC_1  ",  -1.00000
+"dG1Chl_N2 ","greenChl_1",  -1.00000
+"dG1N_N2   ","greenN_1  ",  -1.00000
+"dG1P_N2   ","greenP_1  ",  -1.00000
+"dG1Si_N2  ","greenSi_1 ",  -1.00000
+"dG1Si_N2  ","Opal      ",   1.00000
+"dG2C_N2   ","greenC_2  ",  -1.00000
+"dG2Chl_N2 ","greenChl_2",  -1.00000
+"dG2N_N2   ","greenN_2  ",  -1.00000
+"dG2P_N2   ","greenP_2  ",  -1.00000
+"dG2Si_N2  ","greenSi_2 ",  -1.00000
+"dG2Si_N2  ","Opal      ",   1.00000
+"dC1C_N2   ","cmC_1     ",  -1.00000
+"dC1Chl_N2 ","cmChl_1   ",  -1.00000
+"dC1N_N2   ","cmN_1     ",  -1.00000
+"dC1P_N2   ","cmP_1     ",  -1.00000
+"dC1Si_N2  ","cmSi_1    ",  -1.00000
+"dC1Si_N2  ","Opal      ",   1.00000
+"dC2C_N2   ","cmC_2     ",  -1.00000
+"dC2Chl_N2 ","cmChl_2   ",  -1.00000
+"dC2N_N2   ","cmN_2     ",  -1.00000
+"dC2P_N2   ","cmP_2     ",  -1.00000
+"dC2Si_N2  ","cmSi_2    ",  -1.00000
+"dC2Si_N2  ","Opal      ",   1.00000
+"dCeat_Z1  ","zooC_1    ",   1.00000
+"dNeat_Z1  ","zooN_1    ",   1.00000
+"dPeat_Z1  ","zooP_1    ",   1.00000
+"dCresp_Z1 ","zooC_1    ",  -1.00000
+"dCresp_Z1 ","OXY       ",  -2.67000
+"dPOCout_Z1","POC1      ",   1.00000
+"dPONout_Z1","PON1      ",   1.00000
+"dPOPout_Z1","POP1      ",   1.00000
+"dNH4out_Z1","zooN_1    ",  -1.00000
+"dNH4out_Z1","NH4       ",   1.00000
+"dPout_Z1  ","zooP_1    ",  -1.00000
+"dPout_Z1  ","PO4       ",   1.00000
+"dAutC_Z1  ","zooC_1    ",  -1.00000
+"dAutC_Z1  ","OXY       ",  -2.67000
+"dDetC_Z1  ","POC1      ",   1.00000
+"dDetC_Z1  ","POS1      ",   0.01700
+"dDetC_Z1  ","zooC_1    ",  -1.00000
+"dAutN_Z1  ","NH4       ",   1.00000
+"dAutN_Z1  ","zooN_1    ",  -1.00000
+"dAutN_Z1  ","ALKA      ",   4.35700
+"dDetN_Z1  ","PON1      ",   1.00000
+"dDetN_Z1  ","zooN_1    ",  -1.00000
+"dAutP_Z1  ","PO4       ",   1.00000
+"dAutP_Z1  ","zooP_1    ",  -1.00000
+"dAutP_Z1  ","ALKA      ",  -1.96800
+"dDetP_Z1  ","POP1      ",   1.00000
+"dDetP_Z1  ","zooP_1    ",  -1.00000
+"dD1C_Z1   ","diatC_1   ",  -1.00000
+"dD1Chl_Z1 ","diatChl_1 ",  -1.00000
+"dD1N_Z1   ","diatN_1   ",  -1.00000
+"dD1P_Z1   ","diatP_1   ",  -1.00000
+"dD1Si_Z1  ","diatSi_1  ",  -1.00000
+"dD1Si_Z1  ","Opal      ",   1.00000
+"dD2C_Z1   ","diatC_2   ",  -1.00000
+"dD2Chl_Z1 ","diatChl_2 ",  -1.00000
+"dD2N_Z1   ","diatN_2   ",  -1.00000
+"dD2P_Z1   ","diatP_2   ",  -1.00000
+"dD2Si_Z1  ","diatSi_2  ",  -1.00000
+"dD2Si_Z1  ","Opal      ",   1.00000
+"dG1C_Z1   ","greenC_1  ",  -1.00000
+"dG1Chl_Z1 ","greenChl_1",  -1.00000
+"dG1N_Z1   ","greenN_1  ",  -1.00000
+"dG1P_Z1   ","greenP_1  ",  -1.00000
+"dG1Si_Z1  ","greenSi_1 ",  -1.00000
+"dG1Si_Z1  ","Opal      ",   1.00000
+"dG2C_Z1   ","greenC_2  ",  -1.00000
+"dG2Chl_Z1 ","greenChl_2",  -1.00000
+"dG2N_Z1   ","greenN_2  ",  -1.00000
+"dG2P_Z1   ","greenP_2  ",  -1.00000
+"dG2Si_Z1  ","greenSi_2 ",  -1.00000
+"dG2Si_Z1  ","Opal      ",   1.00000
+"dC1C_Z1   ","cmC_1     ",  -1.00000
+"dC1Chl_Z1 ","cmChl_1   ",  -1.00000
+"dC1N_Z1   ","cmN_1     ",  -1.00000
+"dC1P_Z1   ","cmP_1     ",  -1.00000
+"dC1Si_Z1  ","cmSi_1    ",  -1.00000
+"dC1Si_Z1  ","Opal      ",   1.00000
+"dC2C_Z1   ","cmC_2     ",  -1.00000
+"dC2Chl_Z1 ","cmChl_2   ",  -1.00000
+"dC2N_Z1   ","cmN_2     ",  -1.00000
+"dC2P_Z1   ","cmP_2     ",  -1.00000
+"dC2Si_Z1  ","cmSi_2    ",  -1.00000
+"dC2Si_Z1  ","Opal      ",   1.00000
+"dN1C_Z1   ","ncmC_1    ",  -1.00000
+"dN1Chl_Z1 ","ncmChl_1  ",  -1.00000
+"dN1N_Z1   ","ncmN_1    ",  -1.00000
+"dN1P_Z1   ","ncmP_1    ",  -1.00000
+"dN1Si_Z1  ","ncmSi_1   ",  -1.00000
+"dN1Si_Z1  ","Opal      ",   1.00000
+"dN2C_Z1   ","ncmC_2    ",  -1.00000
+"dN2Chl_Z1 ","ncmChl_2  ",  -1.00000
+"dN2N_Z1   ","ncmN_2    ",  -1.00000
+"dN2P_Z1   ","ncmP_2    ",  -1.00000
+"dN2Si_Z1  ","ncmSi_2   ",  -1.00000
+"dN2Si_Z1  ","Opal      ",   1.00000
+"dCeat_Z2  ","zooC_2    ",   1.00000
+"dNeat_Z2  ","zooN_2    ",   1.00000
+"dPeat_Z2  ","zooP_2    ",   1.00000
+"dCresp_Z2 ","zooC_2    ",  -1.00000
+"dCresp_Z2 ","OXY       ",  -2.67000
+"dPOCout_Z2","POC1      ",   1.00000
+"dPONout_Z2","PON1      ",   1.00000
+"dPOPout_Z2","POP1      ",   1.00000
+"dNH4out_Z2","zooN_2    ",  -1.00000
+"dNH4out_Z2","NH4       ",   1.00000
+"dPout_Z2  ","zooP_2    ",  -1.00000
+"dPout_Z2  ","PO4       ",   1.00000
+"dAutC_Z2  ","zooC_2    ",  -1.00000
+"dAutC_Z2  ","OXY       ",  -2.67000
+"dDetC_Z2  ","POC1      ",   1.00000
+"dDetC_Z2  ","POS1      ",   0.01700
+"dDetC_Z2  ","zooC_2    ",  -1.00000
+"dAutN_Z2  ","NH4       ",   1.00000
+"dAutN_Z2  ","zooN_2    ",  -1.00000
+"dAutN_Z2  ","ALKA      ",   4.35700
+"dDetN_Z2  ","PON1      ",   1.00000
+"dDetN_Z2  ","zooN_2    ",  -1.00000
+"dAutP_Z2  ","PO4       ",   1.00000
+"dAutP_Z2  ","zooP_2    ",  -1.00000
+"dAutP_Z2  ","ALKA      ",  -1.96800
+"dDetP_Z2  ","POP1      ",   1.00000
+"dDetP_Z2  ","zooP_2    ",  -1.00000
+"dD1C_Z2   ","diatC_1   ",  -1.00000
+"dD1Chl_Z2 ","diatChl_1 ",  -1.00000
+"dD1N_Z2   ","diatN_1   ",  -1.00000
+"dD1P_Z2   ","diatP_1   ",  -1.00000
+"dD1Si_Z2  ","diatSi_1  ",  -1.00000
+"dD1Si_Z2  ","Opal      ",   1.00000
+"dD2C_Z2   ","diatC_2   ",  -1.00000
+"dD2Chl_Z2 ","diatChl_2 ",  -1.00000
+"dD2N_Z2   ","diatN_2   ",  -1.00000
+"dD2P_Z2   ","diatP_2   ",  -1.00000
+"dD2Si_Z2  ","diatSi_2  ",  -1.00000
+"dD2Si_Z2  ","Opal      ",   1.00000
+"dG1C_Z2   ","greenC_1  ",  -1.00000
+"dG1Chl_Z2 ","greenChl_1",  -1.00000
+"dG1N_Z2   ","greenN_1  ",  -1.00000
+"dG1P_Z2   ","greenP_1  ",  -1.00000
+"dG1Si_Z2  ","greenSi_1 ",  -1.00000
+"dG1Si_Z2  ","Opal      ",   1.00000
+"dG2C_Z2   ","greenC_2  ",  -1.00000
+"dG2Chl_Z2 ","greenChl_2",  -1.00000
+"dG2N_Z2   ","greenN_2  ",  -1.00000
+"dG2P_Z2   ","greenP_2  ",  -1.00000
+"dG2Si_Z2  ","greenSi_2 ",  -1.00000
+"dG2Si_Z2  ","Opal      ",   1.00000
+"dC1C_Z2   ","cmC_1     ",  -1.00000
+"dC1Chl_Z2 ","cmChl_1   ",  -1.00000
+"dC1N_Z2   ","cmN_1     ",  -1.00000
+"dC1P_Z2   ","cmP_1     ",  -1.00000
+"dC1Si_Z2  ","cmSi_1    ",  -1.00000
+"dC1Si_Z2  ","Opal      ",   1.00000
+"dC2C_Z2   ","cmC_2     ",  -1.00000
+"dC2Chl_Z2 ","cmChl_2   ",  -1.00000
+"dC2N_Z2   ","cmN_2     ",  -1.00000
+"dC2P_Z2   ","cmP_2     ",  -1.00000
+"dC2Si_Z2  ","cmSi_2    ",  -1.00000
+"dC2Si_Z2  ","Opal      ",   1.00000
+"dN1C_Z2   ","ncmC_1    ",  -1.00000
+"dN1Chl_Z2 ","ncmChl_1  ",  -1.00000
+"dN1N_Z2   ","ncmN_1    ",  -1.00000
+"dN1P_Z2   ","ncmP_1    ",  -1.00000
+"dN1Si_Z2  ","ncmSi_1   ",  -1.00000
+"dN1Si_Z2  ","Opal      ",   1.00000
+"dN2C_Z2   ","ncmC_2    ",  -1.00000
+"dN2Chl_Z2 ","ncmChl_2  ",  -1.00000
+"dN2N_Z2   ","ncmN_2    ",  -1.00000
+"dN2P_Z2   ","ncmP_2    ",  -1.00000
+"dN2Si_Z2  ","ncmSi_2   ",  -1.00000
+"dN2Si_Z2  ","Opal      ",   1.00000
+"dDumPhyPr ","diatC_1   ",   0.00000
+"dDumPhyPr ","greenC_1  ",   0.00000
+"dDumPhyPr ","cmC_1     ",   0.00000
+"dDumPhyPr ","ncmC_1    ",   0.00000
+"dDumPhyPr ","zooC_1    ",   0.00000
+"dRadioU   ","Uranium   ",  -1.00000
+"dRadioCs  ","Caesium137",  -1.00000
+"dRadioR1  ","Radio1    ",  -1.00000
+"dRadioR2  ","Radio2    ",  -1.00000
+"dRadioR3  ","Radio3    ",  -1.00000
+"dAgeProd  ","WaterAge  ",   1.00000

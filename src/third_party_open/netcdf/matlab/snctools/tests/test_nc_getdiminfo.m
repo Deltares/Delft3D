@@ -35,6 +35,7 @@ function test_local (empty_ncfile, full_ncfile )
 
 test_unlimited ( full_ncfile );
 test_limited ( full_ncfile );
+test_fields ( full_ncfile );
 
 test_neg_noArgs                                  ;
 test_neg_onlyOneArg              ( empty_ncfile );
@@ -144,7 +145,6 @@ return
 
 
 
-
 %--------------------------------------------------------------------------
 function test_limited ( ncfile )
 
@@ -161,20 +161,16 @@ end
 return
 
 
+%--------------------------------------------------------------------------
+function test_fields ( ncfile )
+% Use the 3 argument case.
 
+diminfo = nc_getdiminfo(ncfile,'s','Length');
+if ~isequal(diminfo,1)
+    error('failed');
+end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+diminfo = nc_getdiminfo(ncfile,'s','Unlimited');
+if ~isequal(diminfo,0)
+    error('failed');
+end

@@ -42,4 +42,4 @@ fc TESTHisSelection-res.txt ..\resultsApproved\w32\TESTHisSelection-res.txt
 
 pause
 
-exit 0
+exit /B 0

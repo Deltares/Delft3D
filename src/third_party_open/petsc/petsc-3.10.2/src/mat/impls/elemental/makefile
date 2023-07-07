@@ -1,0 +1,16 @@
+#requirespackage 'PETSC_HAVE_ELEMENTAL'
+
+ALL: lib
+
+FFLAGS   =
+SOURCECXX= matelem.cxx
+SOURCEF  =
+SOURCEH  = matelemimpl.h
+LIBBASE  = libpetscmat
+DIRS     =
+MANSEC   = Mat
+LOCDIR   = src/mat/impls/elemental/
+
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/test

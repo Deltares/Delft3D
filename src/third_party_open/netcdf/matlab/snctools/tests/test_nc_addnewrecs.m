@@ -39,7 +39,6 @@ return
 %--------------------------------------------------------------------------
 function run_all_tests(ncfile,mode)
 
-test_no_inputs;
 
 create_ncfile(ncfile,mode);
 
@@ -61,6 +60,7 @@ test_012(ncfile,mode);
 test_013(ncfile,mode)
 test_014(ncfile,mode);
 
+run_negative_tests(ncfile,mode);
 
 return
 
@@ -71,6 +71,19 @@ return
 
 
 
+%-------------------------------------------------------------------------------
+function run_negative_tests(ncfile,mode)
+
+v = version('-release');
+switch(v)
+    case {'14','2006a','2006b','2007a','2007b'}
+        fprintf('\tNo negative tests on %s.  ' , v);
+        return
+    otherwise
+        test_nc_addnewrecs_neg(ncfile,mode);
+end
+
+        
 %-------------------------------------------------------------------------------
 function create_ncfile ( ncfile, mode )
 
@@ -141,22 +154,6 @@ return
 
 
 
-%---------------------------------------------------------------------------
-function test_no_inputs (  )
-
-%
-% Try no inputs
-try
-    nc_addnewrecs;
-catch %#ok<CTCH>
-	return
-end
-error('test failure');
-
-
-
-
-
 
 
 %---------------------------------------------------------------------------
@@ -185,9 +182,13 @@ error('test failure');
 %---------------------------------------------------------------------------
 function test_003 ( ncfile )
 
-%
 % Try with 2nd input that isn't a structure.
-nc_addnewrecs ( ncfile, [] );
+try
+    nc_addnewrecs ( ncfile, [] );
+catch
+    return
+end
+error('test failure');
 
 
 
@@ -203,9 +204,14 @@ nc_addnewrecs ( ncfile, [] );
 %---------------------------------------------------------------------------
 function test_004 ( ncfile )
 
-%
+
 % Try with 2nd input that is an empty structure.
-nc_addnewrecs ( ncfile, struct([]) );
+try
+    nc_addnewrecs ( ncfile, struct([]) );
+catch
+    return
+end
+error('test failure');
 
 
 
@@ -499,10 +505,7 @@ b.t1 = x;
 b.t2 = 1./(1+x);
 b.t3 = x.^2;
 nc_addnewrecs ( ncfile, b, 'ocean_time' );
-nb = nc_addnewrecs ( ncfile, b, 'ocean_time' );
-if ( ~isempty(nb) )
-    error ( 'nc_addnewrecs failed on %s.\n', ncfile );
-end
+nc_addnewrecs ( ncfile, b, 'ocean_time' );
 v = nc_getvarinfo ( ncfile, 't1' );
 if ( v.Size ~= 10 )
     error ( '%s:  expected var length was not 10.\n', mfilename );

@@ -1,0 +1,134 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type flwoutputtype
+    integer :: iteroutputsteps     ! number of steps since calculation start during whick iteration info is printed to diag-file
+    integer :: cntcflmsg           ! Counter of number of warnings concerning high advective Courant numbers
+    integer :: maxcflmsg           ! Maximum number of warnings concerning high advective Courant numbers
+    logical :: air                 ! Flag for writing meteo quantities to map and history file
+    logical :: addtim              ! Flag for additional timings output
+    logical :: cflmsg              ! Flag for always writing warnings concerning high advective Courant numbers
+    logical :: chezy               ! Flag for writing Chezy values to map file
+    logical :: cumdifuflux         ! Flag for writing cumulative horizontal advection-diffusion fluxes to map file
+    logical :: difuflux            ! Flag for writing instaneous horizontal advection-diffusion fluxes to map file
+    logical :: dredge_map          ! Flag for writing dredge and dump area information to map file
+    logical :: halfdt              ! Flag for writing map and history file output at half time steps
+    logical :: hisbar              ! Flag for writing barrier height data to history file
+    logical :: hisdis              ! Flag for writing discharge (culvert and bubble screen) data to history file
+    logical :: kf_minmax           ! Flag for writing Z-layer KF[S/U/V][MIN/MAX] arrays to map file
+    logical :: layering            ! Flag for writing 3D array of layer interfaces to map file
+    logical :: momentum            ! Flag for writing momentum terms to map file
+    logical :: roughness           ! Flag for writing specified roughness parameter to map file
+    logical :: temperature         ! Flag for writing heat fluxes to map file
+    logical :: veuler              ! Flag for writing Eulerian velocities instead of GLM velocities to map file
+    logical :: vortic              ! Flag for writing vorticity and enstrophy calculation and writing to output
+    logical :: waveqnt             ! Flag for writing wave quantities to map file
+    logical :: z0cur               ! Flag for writing currents-only bed roughness to map file
+    logical :: z0rou               ! Flag for writing wave enhanced bed roughness to map file
+end type flwoutputtype
+
+!
+! boundary conditions at one open boundary
+! 
+type fbcrbndtype
+    integer, dimension(4) :: ibct  ! boundary conditions  table
+                                   !  (1) table index in bc file
+                                   !  (2) first index of boundary parameter
+                                   !  (3) number of entries
+                                   !  (4) latest used record in table
+    character(1)          :: btype ! flow boundary condition
+                                   !   Z: water level
+                                   !   C: current
+                                   !   Q: flux/discharge
+                                   !   R: riemann
+                                   !   T: total discharge
+                                   !   N: neumann
+end type fbcrbndtype
+ 
+type gd_flwpar
+    !
+    ! doubles
+    !
+    !
+    ! reals
+    !
+    real(fp)                                    :: mom_accum           ! number solver steps during which terms have been accumulated
+    !
+    !
+    ! integers
+    !
+    !
+    ! pointers
+    !
+    real(fp), dimension(:,:)          , pointer :: mom_m_velchange     ! momentum du/dt term
+    real(fp), dimension(:,:)          , pointer :: mom_m_densforce     ! density force term in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_flowresist    ! vegetation and porous plates in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_corioforce    ! coriolis term in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_visco         ! viscosity term in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_pressure      ! pressure term in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_tidegforce    ! tide generating forces in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_windforce     ! wind shear in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_bedforce      ! bed shear in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_waveforce     ! wave forces in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_convec        ! convection u*du/dx term
+    real(fp), dimension(:,:)          , pointer :: mom_m_xadvec        ! cross-advection v*du/dy term
+    !
+    real(fp), dimension(:,:)          , pointer :: mom_n_velchange     ! momentum dv/dt term
+    real(fp), dimension(:,:)          , pointer :: mom_n_densforce     ! density force term in v dir
+    real(fp), dimension(:,:)          , pointer :: mom_n_flowresist    ! vegetation and porous plates in v dir
+    real(fp), dimension(:,:)          , pointer :: mom_n_corioforce    ! coriolis term in v dir
+    real(fp), dimension(:,:)          , pointer :: mom_n_visco         ! viscosity term in v dir
+    real(fp), dimension(:)            , pointer :: mom_n_pressure      ! pressure term in v dir
+    real(fp), dimension(:)            , pointer :: mom_n_tidegforce    ! tide generating forces in v dir
+    real(fp), dimension(:)            , pointer :: mom_n_windforce     ! wind shear in v dir
+    real(fp), dimension(:)            , pointer :: mom_n_bedforce      ! bed shear in v dir
+    real(fp), dimension(:,:)          , pointer :: mom_n_waveforce     ! wave forces in v dir
+    real(fp), dimension(:,:)          , pointer :: mom_n_convec        ! convection v*dv/dy term
+    real(fp), dimension(:,:)          , pointer :: mom_n_xadvec        ! cross-advection u*dv/dx term
+    !
+    real(fp), dimension(:,:,:)        , pointer :: fluxu     ! constituent flux xi direction
+    real(fp), dimension(:,:,:)        , pointer :: fluxuc    ! cumulative constituent flux xi direction
+    real(fp), dimension(:,:,:)        , pointer :: fluxv     ! constituent flux eta direction
+    real(fp), dimension(:,:,:)        , pointer :: fluxvc    ! cumulative constituent flux eta direction
+    real(fp), dimension(:,:,:)        , pointer :: fluxw     ! constituent flux z direction
+    real(fp), dimension(:,:,:)        , pointer :: fluxwc    ! cumulative constituent flux z direction
+    !
+    type (flwoutputtype)              , pointer :: flwoutput ! structure containing hydrodynamics output options
+    type (handletype)                 , pointer :: fbcrfile  ! tables containing corrective flow boundary conditions
+    type (fbcrbndtype)  , dimension(:), pointer :: fcrbnd    ! corrective flow boundary parameters 
+    ! 
+    ! logicals
+    !
+    logical        :: fbccorrection ! true when using corrective flow boundary conditions
+    !
+    ! characters
+    !
+    character(256) :: fbcrfilnam    ! name of input file for corrective flow boundary conditions 
+    !
+end type gd_flwpar

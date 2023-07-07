@@ -27,7 +27,7 @@ function H=tricontour(tri,x,y,z,v,levels,color)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -117,40 +117,96 @@ end
 v=transpose(v(:));
 
 Patches=1:size(tri,1);
-nlevels = length(levels);
+nLevels = length(levels);
 if getdata
-    H=cell(1,nlevels);
+    H=cell(1,nLevels);
 else
-    H=zeros(1,nlevels);
+    H=zeros(1,nLevels);
 end
-NonEmptyLevel=zeros(1,nlevels);
-for LevelNr=1:nlevels
-    level=levels(LevelNr);
-    Nlarger=sum(v(tri)>level,2);
-    Nsmaller=sum(v(tri)<level,2);
-    NaN_tri=any(isnan(v(tri)),2);
-    Nsmaller(NaN_tri)=3;
-    Nlarger(NaN_tri)=0;
-    CLIndex=1+4*Nlarger+Nsmaller;
-    Cutslevel=[0 3 2 0 3 3 3 0 2 3 0 0 0 0 0];
+NonEmptyLevel=zeros(1,nLevels);
+levelTri = v(tri);
+for LevelNr = 1:nLevels
+    thisLevel = levels(LevelNr);
+    nLarger = sum(levelTri>thisLevel,2);
+    nSmaller = sum(levelTri<thisLevel,2);
+    
+    % if there is a NaN, consider all values smaller
+    NaN_tri = any(isnan(levelTri),2);
+    nSmaller(NaN_tri) = 3;
+    nLarger(NaN_tri) = 0;
+    
+    % CLIndex:
+    %
+    %      nSmaller nLarger nEqual
+    %  1 =                    3     -> no line
+    %  2 =    1               2     -> line along edge
+    %  3 =    2               1     -> single point (skip)
+    %  4 =    3                     -> whole patch
+    %  5 =             1      2     -> line along edge
+    %  6 =    1        1      1     -> slice through node
+    %  7 =    2        1            -> slice
+    %  8 =   --- not possible ---
+    %  9 =             2      1     -> single point (skip)
+    % 10 =    1        2            -> slice
+    % 11 =   --- not possible ---
+    % 12 =   --- not possible ---
+    % 13 =             3            -> no line
+    
+    
+    CLIndex = 1 + nSmaller + 4*nLarger;
+    
+    % include single points
+    %Cutslevel=[0 3 2 0 3 3 3 0 2 3 0 0 0 0 0];
+    % skip single points
+    Cutslevel=[0 3 0 0 3 3 3 0 0 3 0 0 0 0 0];
+    
     NLevel=sum(Cutslevel(CLIndex));
-    XLevel=repmat(NaN,[NLevel 1]);
+    XLevel=NaN(NLevel,1);
     YLevel=XLevel;
     if zdef
         ZLevel=XLevel;
     end
     LvlOffset=0;
+        
+%% single point (skip)
     
-    % patches with three equal
-    % Patch=Patches(CLIndex==1);
-    
-    % patches with two equal
+    % patches with one equal and two larger or two smaller generate only a
+    % single point for the contour lines. In most cases this point is not
+    % relevant because neighboring patches will contribute line segments
+    % that run until that point. However, in exceptional cases this point
+    % may the only point on the "contour", namely if a (local) minimum or
+    % maximum matches a contour level. We exclude such points for the time
+    % being.
+%     Patch=Patches((CLIndex==3) | (CLIndex==9));
+%     if ~isempty(Patch)
+%         LvlIndex=LvlOffset+(1:2:(2*length(Patch)));
+%         Index=tri(Patch,:);
+%         [Dummy,Permutation]=sort(v(Index)==level,2);
+%         Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
+%         % third element has elevation equal to level
+%         Index=Index(:,3);
+%         XPoint=x(Index);
+%         XLevel(LvlIndex(:))=XPoint(:);
+%         YPoint=y(Index);
+%         YLevel(LvlIndex(:))=YPoint(:);
+%         if zdef
+%             ZPoint=z(Index);
+%             ZLevel(LvlIndex(:))=ZPoint(:);
+%         end
+%         LvlOffset=LvlOffset+2*length(Patch);
+%     end
+
+%% line along edge
+    % patches with two equal: the contour follows exactly an edge.
+    % WARNING: this contour segment may be generated twice, which may
+    % result in a problem when trying to stitch the polygons together.
+    % Let's take a chance since this set will be empty in most cases.
     Patch=Patches((CLIndex==2) | (CLIndex==5));
     if ~isempty(Patch)
         LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
         LvlIndex=[LvlIndex;LvlIndex+1];
         Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)==level,2);
+        [Dummy,Permutation]=sort(v(Index)==thisLevel,2);
         Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
         % first element has elevation different from level
         Index=Index(:,[2 3]);
@@ -164,7 +220,8 @@ for LevelNr=1:nlevels
         end
         LvlOffset=LvlOffset+3*length(Patch);
     end
-    
+
+%% slice through node
     % patches with one equal, one larger and one smaller
     Patch=Patches(CLIndex==6);
     if ~isempty(Patch)
@@ -173,9 +230,11 @@ for LevelNr=1:nlevels
         Index=tri(Patch,:);
         [Dummy,Permutation]=sort(v(Index),2);
         Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % second element has elevation equal to level
+        % first index points to smallest elevation
+        % second index points to elevation equal to level
+        % third index points to higher elevation
         VTemp=v(Index);
-        Lambda=min(1,(level-VTemp(:,1))./(VTemp(:,3)-VTemp(:,1)));
+        Lambda=min(1,(thisLevel-VTemp(:,1))./(VTemp(:,3)-VTemp(:,1))); % large - small
         XPoint=transpose([transpose(x(Index(:,1)))+Lambda.*transpose(x(Index(:,3))-x(Index(:,1))) transpose(x(Index(:,2)))]);
         XLevel(LvlIndex(:))=XPoint(:);
         YPoint=transpose([transpose(y(Index(:,1)))+Lambda.*transpose(y(Index(:,3))-y(Index(:,1))) transpose(y(Index(:,2)))]);
@@ -186,18 +245,20 @@ for LevelNr=1:nlevels
         end
         LvlOffset=LvlOffset+3*length(Patch);
     end
-    
+
+%% slice
     % patches with two larger and one smaller
     Patch=Patches(CLIndex==10);
     if ~isempty(Patch)
         LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
         LvlIndex=[LvlIndex;LvlIndex+1];
         Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)<level,2);
+        [Dummy,Permutation]=sort(v(Index)<thisLevel,2);
         Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % last element has elevation less than level
+        % first two indices point to levels larger than level
+        % last index points to elevation smaller than level
         VTemp=v(Index);
-        Lambda=min(1,(level-VTemp(:,3)*ones(1,2))./(VTemp(:,[1 2])-VTemp(:,3)*ones(1,2)));
+        Lambda=min(1,(thisLevel-VTemp(:,3)*ones(1,2))./(VTemp(:,[1 2])-VTemp(:,3)*ones(1,2))); % large - small
         XPoint=transpose(transpose(x(Index(:,3)))*ones(1,2)+Lambda.*(x(Index(:,[1 2]))-transpose(x(Index(:,3)))*ones(1,2)));
         XLevel(LvlIndex(:))=XPoint(:);
         YPoint=transpose(transpose(y(Index(:,3)))*ones(1,2)+Lambda.*(y(Index(:,[1 2]))-transpose(y(Index(:,3)))*ones(1,2)));
@@ -208,18 +269,20 @@ for LevelNr=1:nlevels
         end
         LvlOffset=LvlOffset+3*length(Patch);
     end
-    
+
+%% slice
     % patches with two smaller and one larger
     Patch=Patches(CLIndex==7);
     if ~isempty(Patch)
         LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
         LvlIndex=[LvlIndex;LvlIndex+1];
         Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)>level,2);
+        [Dummy,Permutation]=sort(v(Index)>thisLevel,2);
         Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % last element has elevation larger than level
+        % first two indices point to levels smaller than level
+        % last index points to elevation larger than level
         VTemp=v(Index);
-        Lambda=min(1,(level-VTemp(:,[1 2]))./(VTemp(:,3)*ones(1,2)-VTemp(:,[1 2])));
+        Lambda=min(1,(thisLevel-VTemp(:,[1 2]))./(VTemp(:,3)*ones(1,2)-VTemp(:,[1 2]))); % large - small
         XPoint=transpose(x(Index(:,[1 2]))+Lambda.*(transpose(x(Index(:,3)))*ones(1,2)-x(Index(:,[1 2]))));
         XLevel(LvlIndex(:))=XPoint(:);
         YPoint=transpose(y(Index(:,[1 2]))+Lambda.*(transpose(y(Index(:,3)))*ones(1,2)-y(Index(:,[1 2]))));
@@ -230,30 +293,16 @@ for LevelNr=1:nlevels
         end
         LvlOffset=LvlOffset+3*length(Patch);
     end
-    
-    % patches with one equal and two larger or two smaller
-    Patch=Patches((CLIndex==3) | (CLIndex==9));
-    if ~isempty(Patch)
-        LvlIndex=LvlOffset+(1:2:(2*length(Patch)));
-        Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)==level,2);
-        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % third element has elevation equal to level
-        Index=Index(:,3);
-        XPoint=x(Index);
-        XLevel(LvlIndex(:))=XPoint(:);
-        YPoint=y(Index);
-        YLevel(LvlIndex(:))=YPoint(:);
-        if zdef
-            ZPoint=z(Index);
-            ZLevel(LvlIndex(:))=ZPoint(:);
-        end
-        LvlOffset=LvlOffset+2*length(Patch);
-    end
-    
-    VLevel=level*ones(size(XLevel));
-    
+
+%% whole patch
+    % patches with three equal
+    % Patch=Patches(CLIndex==1);
+
+%% continue
     NonEmptyLevel(LevelNr)=1;
+    
+    VLevel=thisLevel*ones(size(XLevel));
+    
     if getdata
         if zdef
             H{LevelNr}={XLevel YLevel ZLevel LevelNr};
@@ -264,13 +313,13 @@ for LevelNr=1:nlevels
         if ~zdef
             ZLevel=VLevel;
         end
-        NewH = patch('XData',transpose([XLevel;XLevel]), ...
-            'YData',transpose([YLevel;YLevel]), ...
-            'ZData',transpose([ZLevel;ZLevel]), ...
-            'CData',transpose([VLevel;VLevel]), ...
+        NewH = patch('XData',transpose(XLevel), ...
+            'YData',transpose(YLevel), ...
+            'ZData',transpose(ZLevel), ...
+            'CData',transpose(VLevel), ...
             'facecolor','none', ...
             'edgecolor','flat',...
-            'userdata',level, ...
+            'userdata',thisLevel, ...
             'parent',ax);
         H(LevelNr)=NewH;
     else
@@ -280,7 +329,7 @@ for LevelNr=1:nlevels
         NewH = line('XData',XLevel, ...
             'YData',YLevel, ...
             'ZData',ZLevel, ...
-            'userdata',level, ...
+            'userdata',thisLevel, ...
             'parent',ax);
         H(LevelNr)=NewH;
     end
@@ -304,3 +353,5 @@ else
         set(H,'color',col);
     end
 end
+
+

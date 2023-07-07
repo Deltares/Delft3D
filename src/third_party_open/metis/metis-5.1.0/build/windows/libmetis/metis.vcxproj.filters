@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\b64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\blas.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\csr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\error.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\evaluate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\fkvkselect.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\fs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\getopt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\gkregex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\graph.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\htable.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\io.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\itemsets.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\mcore.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\omp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\pdb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\pqueue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\random.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\rw.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\seq.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\sort.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\string.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\timers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\tokenizer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\GKlib\util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\auxapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\balance.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\bucketsort.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\checkgraph.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\coarsen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\compress.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\contig.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\debug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\fm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\fortran.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\frename.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\gklib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\graph.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\initpart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\kmetis.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\kwayfm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\kwayrefine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\mcutil.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\mesh.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\meshpart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\minconn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\mincover.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\mmd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\ometis.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\options.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\parmetis.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\pmetis.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\refine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\separator.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\sfm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\srefine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\stat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\timing.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SVBASE\fl-mesh\third_party_open\metis\metis-5.1.0\libmetis\wspace.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D263B5F9-92CB-38A8-9842-E709558B9980}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

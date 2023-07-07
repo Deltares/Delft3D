@@ -1,7 +1,7 @@
 module m_rdmorlyr
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module m_rdmorlyr
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 use m_depfil_stm
 contains
@@ -50,18 +50,18 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
-    integer                                         , intent(in)  :: lsedtot  !  Description and declaration in esm_alloc_int.f90
-    integer                                                       :: lundia   !  Description and declaration in inout.igs
+    integer                                         , intent(in)  :: lsedtot  !< Description and declaration in esm_alloc_int.f90
+    integer                                                       :: lundia   !< Description and declaration in inout.igs
     integer                                         , intent(in)  :: nmaxus
     integer                                         , intent(in)  :: nto
     integer                                         , intent(in)  :: version
     logical                                         , intent(in)  :: lfbedfrm    
     logical                                         , intent(out) :: error
     character(*)                                                  :: filmor
-    character(20)             , dimension(nto)                    :: nambnd   !  Description and declaration in esm_alloc_char.f90
-    character(20)             , dimension(lsedtot)                :: namsed   !  Names of all sediment fractions 
+    character(20)             , dimension(nto)                    :: nambnd   !< Description and declaration in esm_alloc_char.f90
+    character(20)             , dimension(lsedtot)                :: namsed   !< Names of all sediment fractions 
     type(morpar_type)                               , pointer     :: morpar
     type(sedpar_type)                               , pointer     :: sedpar
     type(bedcomp_data)                              , pointer     :: morlyr
@@ -75,13 +75,14 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     real(fp)                 :: thunlyr
     integer                  :: i
     integer                  :: ic
+    integer                  :: it
     integer                  :: istat
     integer                  :: j
     integer                  :: l
     integer                  :: mxnulyr
     integer                  :: nm
     integer                  :: nval
-    character(11)            :: fmttmp       ! Format file ('formatted  ') 
+    character(11)            :: fmttmp       !< Format file ('formatted  ') 
     character(20)            :: parname
     character(20)            :: txtput2
     character(40)            :: txtput1
@@ -169,8 +170,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     error      = .false.
     rmissval   = -999.0_fp
     fmttmp     = 'formatted'
+    
     !
-    ! allocate memory for boundary conditions
+    ! allocate memory for boundary conditions. This needs to be done always. 
     !
     istat = 0
     allocate (morpar%cmpbnd(nto), stat = istat)
@@ -181,14 +183,14 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        call write_error(errmsg, unit=lundia)
        error = .true.
        return
-    endif
-    !
-    cmpbnd              => morpar%cmpbnd
-    !
+    endif  
+    
+    cmpbnd     => morpar%cmpbnd
     do j = 1, nto
        cmpbnd(j)%icond = 1
        cmpbnd(j)%ibcmt = 0
     enddo
+
     !
     ! return if input file is too old, otherwise get
     ! the data tree read from the input file
@@ -200,8 +202,10 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
           error = .true.
           return
        endif
-       goto 777
+       call set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
+       return
     endif
+
     write (lundia, '(a)') '*** Start  of underlayer input'
     !
     ! underlayer bookkeeping mechanism
@@ -479,8 +483,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
              write(lundia,'(3a)') txtput1, ':', ttlfil
              !
              call depfil_stm(lundia    ,error     ,ttlfil    ,fmttmp    , &
-                           & thtrlyr   ,1         ,1         ,griddim   )
+                           & thtrlyr   ,1         ,1         ,griddim   ,errmsg)
              if (error) then
+                call write_error(errmsg, unit=lundia)
                 errmsg = 'Unable to read transport layer thickness from ' // trim(ttlfil)
                 call write_error(errmsg, unit=lundia)
                 return
@@ -494,7 +499,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
                 error = .true.
                 return
              endif
-             thtrlyr(:) = thtrlyr(1)
+             do it = nmlb, nmub
+                thtrlyr(it) = thtrlyr(1)
+             enddo
              !
              write(lundia,'(2a,e20.4)') txtput1, ':', thtrlyr(1)
           endif
@@ -559,8 +566,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
                 ! read data from file
                 !
                 call depfil_stm(lundia    ,error     ,telfil    ,fmttmp    , &
-                              & thexlyr   ,1         ,1         ,griddim   )
+                              & thexlyr   ,1         ,1         ,griddim   , errmsg)
                 if (error) then
+                   call write_error(errmsg, unit=lundia)
                    errmsg = 'Unable to read exchange layer thickness from ' // trim(telfil)
                    call write_error(errmsg, unit=lundia)
                    return
@@ -574,7 +582,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
                    error = .true.
                    return
                 endif
-                thexlyr(:) = thexlyr(1)
+                do it = nmlb, nmub
+                   thexlyr(it) = thexlyr(1)
+                enddo   
                 !
                 write(lundia,'(2a,e20.4)') txtput1, ':', thexlyr(1)
              endif
@@ -787,15 +797,29 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        txtput2 = 'from sediment file'
        write(lundia,'(2a,a20)') txtput1, ':', trim(txtput2)
     else
-       write(lundia,'(2a,a20)') txtput1, ':', trim(flcomp)
+       txtput2 = 'from IniComp file -'
+       write(lundia,'(3a)') txtput1, ':', trim(flcomp)
     endif
     !
     write (lundia, '(a)') '*** End    of underlayer input'
     write (lundia, *)
     !
-    ! Set sediment properties for the morphological layers
+    call set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
     !
-777 continue
+    deallocate(parnames, stat = istat)
+    !
+end subroutine rdmorlyr
+
+
+subroutine set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
+    use bedcomposition_module, only : bedcomp_data, setbedfracprop
+    use morphology_data_module, only : sedpar_type
+    implicit none
+
+    integer                                 , pointer, intent(in)      :: iporosity
+    type(bedcomp_data)                      , pointer, intent(inout)   :: morlyr
+    type(sedpar_type)                       , pointer, intent(inout)   :: sedpar
+                  
     if (iporosity==0) then
        !
        ! porosity is fraction dependent and included in cdryb densities
@@ -810,10 +834,8 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
              & sedpar%logsedsig, sedpar%rhosol)
        ! sedpar%cdryb = sedpar%rhosol
     endif
-    deallocate(parnames, stat = istat)
-    !
-end subroutine rdmorlyr
-
+    
+end subroutine set_sediment_properties_for_the_morphological_layers
 
 subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
                    & zdiff     ,griddim   ,error     )
@@ -832,11 +854,11 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
 ! Global variables
 !
     type(griddimtype)                        , target   , intent(in)  :: griddim
-    integer                                             , intent(in)  :: lundia  !  Description and declaration in inout.igs
-    integer                                             , intent(in)  :: ndiff   !  Description and declaration in bedcomposition module
-    real(fp), dimension(ndiff)                          , intent(out) :: zdiff   !  Description and declaration in bedcomposition module
-    real(fp), dimension(ndiff,griddim%nmlb:griddim%nmub), intent(out) :: kdiff   !  Description and declaration in bedcomposition module
-    character(*)                                                      :: fildiff
+    integer                                             , intent(in)  :: lundia  !< Description and declaration in inout.igs
+    integer                                             , intent(in)  :: ndiff   !< Description and declaration in bedcomposition module
+    real(fp), dimension(ndiff)                          , intent(out) :: zdiff   !< Description and declaration in bedcomposition module
+    real(fp), dimension(ndiff,griddim%nmlb:griddim%nmub), intent(out) :: kdiff   !< Description and declaration in bedcomposition module
+    character(*)                                        , intent(out) :: fildiff
     logical                                             , intent(out) :: error
 !
 ! Local variables
@@ -935,8 +957,9 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
                 ! Spatially varying diffusion coefficient
                 !
                 call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
-                              & kdiff(ilyr,griddim%nmlb),1         ,1         ,griddim   )
+                              & kdiff(ilyr,griddim%nmlb),1         ,1         ,griddim   , message)
                 if (error) then
+                   call write_error(message, unit=lundia)
                    message = 'Unable to read diffusion coefficients from ' // trim(filename)
                    call write_error(message, unit=lundia)
                    return
@@ -996,8 +1019,8 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
     use properties
     use string_module, only: remove_leading_spaces
     use grid_dimens_module, only: griddimtype
-    use message_module, only: write_error, write_warning, FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
-    use sediment_basics_module, only: SEDTYP_COHESIVE
+    use message_module, only: FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
+    use MessageHandling, only: mess, LEVEL_ERROR
     use morphology_data_module, only: sedpar_type, morpar_type
     use m_depfil_stm
     !
@@ -1045,8 +1068,9 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
     real(fp)                              :: vfracsum
     logical                               :: anyfrac
     logical                               :: anysedbed
-    logical                               :: err
+    logical                               :: err2
     logical                               :: ex
+    logical                               :: success
     character(10)                         :: lstr
     character(10)                         :: versionstring
     character(11)                         :: fmttmp   ! Format file ('formatted  ') 
@@ -1105,13 +1129,16 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
        mfluff = 0.0_fp
        !
        do ised = 1, lsed
-           if (sedpar%sedtyp(ised) /= SEDTYP_COHESIVE) cycle
+           if (sedpar%sedtyp(ised) > sedpar%max_mud_sedtyp) cycle ! check for IFORM == -3 instead?
            inquire (file = mflfil(ised), exist = ex)
            if (ex) then
                call depfil_stm(lundia    ,error     ,mflfil(ised)         , &
                              & fmttmp    ,mfluff    ,lsed      ,ised      , &
-                             & dims      )
-               if (error) return
+                             & dims      ,message)
+               if (error) then 
+                   call mess(LEVEL_ERROR, message)  
+                   return
+               endif
            else
                mfluff(ised,:) = mfluni(ised)
            endif
@@ -1131,7 +1158,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
           if (istat==0) istat = bedcomp_getpointer_realfp (morlyr, 'svfrac'   , svfrac)
        endif
        if (istat/=0) then
-          call write_error('Memory problem in RDINIMORLYR', unit=lundia)
+          call mess(LEVEL_ERROR, 'Memory problem in RDINIMORLYR')           
           error = .true.
           return          
        endif
@@ -1158,8 +1185,8 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                                      & fmttmp    ,bodsed    ,lsedtot      , &
                                      & ised      ,dims      ,message      )
                 if (error) then
-                   message = 'ERROR: RDMORLYR '//message
-                   call write_error(message, unit=lundia)
+                   message = 'RDMORLYR '//message
+                   call mess(LEVEL_ERROR, message)           
                    return
                 endif 
               endif
@@ -1180,7 +1207,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
           else
              do ised = 2, lsedtot
                 if (inisedunit(ised) /= inisedunit(1)) then
-                   call write_error('All sediment fields in the same layer should have unit.', unit=lundia)
+                   call mess(LEVEL_ERROR, 'All sediment fields in the same layer should have unit.')           
                    error = .true.
                    return
                 endif
@@ -1228,10 +1255,10 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                 !
                 do ised = 1, lsedtot
                    if (bodsed(ised, nm) < 0.0) then
-                      write (message,'(a,i2,a,f15.2,a,a,a,i0)')  &
+                      write (message,'(a,i2,a,f15.2,a,a,a,i0,a,f15.2,f15.2,a)')  &
                           & 'Negative sediment thickness for fraction ',ised, ': ',bodsed(ised, nm),' in file ', &
-                          & trim(flsdbd(ised)),' at nm=',nm
-                      call write_error(trim(message), unit=lundia)
+                          & trim(flsdbd(ised)),' at nm=',nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                      call mess(LEVEL_ERROR, trim(message))           
                       error = .true.
                       return
                    endif
@@ -1255,11 +1282,11 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                 ! the data will be overwritten with data coming from the
                 ! neighbouring internal point.
                 !
-                err = .false.
+                err2 = .false.
                 do ised = 1, lsedtot
-                   if (bodsed(ised, nm)<0.0) err=.true.
+                   if (bodsed(ised, nm)<0.0) err2=.true.
                 enddo
-                if (err) then
+                if (err2) then
                    !
                    ! set dummy flag
                    !
@@ -1304,11 +1331,11 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
           if (istat /= 0) then
              select case (istat)
              case(1)
-                call write_error(FILE_NOT_FOUND//trim(flcomp), unit=lundia)
+                call mess(LEVEL_ERROR, FILE_NOT_FOUND//trim(flcomp))  
              case(3)
-                call write_error(PREMATURE_EOF//trim(flcomp), unit=lundia)
+                call mess(LEVEL_ERROR, PREMATURE_EOF//trim(flcomp))  
              case default
-                call write_error(FILE_READ_ERROR//trim(flcomp), unit=lundia)
+                call mess(LEVEL_ERROR, FILE_READ_ERROR//trim(flcomp))  
              endselect
              error = .true.
              return
@@ -1331,7 +1358,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
              allocate(rtemp(nmlb:nmub,lsedtot), stat = istat)
              if (istat == 0) allocate(thtemp(nmlb:nmub), stat = istat)
              if (istat /= 0) then
-                call write_error( 'RdIniMorLyr: memory alloc error', unit=lundia)
+                call mess(LEVEL_ERROR, 'RdIniMorLyr: memory alloc error')  
                 error = .true.
                 return
              endif
@@ -1365,7 +1392,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                    !
                    write (message,'(a,i2,2a)') 'No type specified for layer ', ilyr, &
                                              & ' in file ', trim(flcomp)
-                   call write_error(message, unit=lundia)
+                   call mess(LEVEL_ERROR, message)  
                    error = .true.
                    return
                 elseif (layertype == 'mass fraction' .or. &
@@ -1386,12 +1413,17 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                       ! Constant thickness
                       !
                       sedbed = rmissval
-                      call prop_get(layer_ptr, '*', parname, sedbed)
-                      if (comparereal(sedbed,rmissval) == 0) then
-                         write (message,'(a,i2,2a)')  &
-                             & 'Missing Thick keyword for layer ', ilyr, &
-                             & ' in file ', trim(flcomp)
-                         call write_error(message, unit=lundia)
+                      success = .true.
+                      call prop_get(layer_ptr, '*', parname, sedbed, success, valuesfirst=.true.)
+                      if (.not.success) then
+                         if (filename == 'dummyname') then ! string was empty or key not found
+                            write (message,'(a,i2,2a)')  &
+                               & 'No value assigned to Thick for layer ', ilyr,' in file ', trim(flcomp)
+                         else
+                            write (message,'(3a,i2,2a)')  &
+                               & 'Invalid file or value "',trim(filename),'" assigned to Thick for layer ', ilyr,' in file ', trim(flcomp)
+                         endif
+                         call mess(LEVEL_ERROR, message)
                          error = .true.
                          return
                       endif
@@ -1403,12 +1435,13 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                       ! Spatially varying thickness
                       !
                       call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
-                                    & thtemp    ,1         ,1         ,dims)
+                                    & thtemp    ,1         ,1         ,dims,   message)
                       if (error) then
+                         call mess(LEVEL_ERROR, message)  
                          write (message,'(3a,i2,2a)')  &
                              & 'Error reading thickness from ', trim(filename), &
                              & ' for layer ', ilyr, ' in file ', trim(flcomp)
-                         call write_error(message, unit=lundia)
+                         call mess(LEVEL_ERROR, message)  
                          return          
                       endif
                    endif
@@ -1434,7 +1467,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                                 & 'Use Fraction' ,trim(lstr), ' instead of SedBed', &
                                 & trim(lstr), ' for ', trim(layertype), ' layer ', &
                                 & ilyr, ' in file ', trim(flcomp)
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             error = .true.
                             return
                          endif
@@ -1455,18 +1488,18 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          ! Constant fraction
                          !
                          fraction = rmissval
-                         call prop_get(layer_ptr, '*', parname, fraction)
-                         if (comparereal(fraction,rmissval) == 0) then
-                            fraction = 0.0_fp
-                         elseif (fraction<0.0_fp .or. fraction>1.0_fp) then
-                            write (message,'(a,e12.4,5a,i2,3a)')  &
-                                & 'Invalid value ',fraction,' for ', trim(parname), &
-                                & ' of ', trim(layertype), ' layer ', &
-                                & ilyr, ' in file ', trim(flcomp), &
-                                & ' Value between 0 and 1 required.'
-                            call write_error(message, unit=lundia)
-                            error = .true.
-                            return
+                         success = .true.
+                         call prop_get(layer_ptr, '*', parname, fraction, success, valuesfirst=.true.)
+                         if (.not.success) then
+                            if (filename == 'dummyname') then ! string was empty or key not found
+                               fraction = 0.0_fp
+                            else
+                               write (message,'(7a,i2,2a)')  &
+                                  & 'Invalid file or value "',trim(filename),'" assigned to ',trim(parname),' of ', trim(layertype), ' layer ', ilyr,' in file ', trim(flcomp)
+                               call mess(LEVEL_ERROR, message)
+                               error = .true.
+                               return
+                            endif
                          else
                             anyfrac = .true.
                          endif
@@ -1479,13 +1512,14 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          !
                          anyfrac = .true.
                          call depfil_stm(lundia    ,error     ,filename  , fmttmp    , &
-                                       & rtemp(nmlb,ised)        ,1   ,1    ,dims)
+                                       & rtemp(nmlb,ised)        ,1   ,1    ,dims, message)
                          if (error) then
+                            call mess(LEVEL_ERROR, message)  
                             write (message,'(a,i2,3a,i2,2a)')  &
                                 & 'Error reading fraction ', ised, 'from ', &
                                 & trim(filename), ' for layer ', ilyr, ' in file ', &
                                 & trim(flcomp)
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             return
                          endif
                       endif
@@ -1497,7 +1531,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                       write (message,'(a,i2,2a)')  &
                           & 'No data found for any sediment fraction in the data block of layer ' ,ilyr, &
                           & ' in file ', trim(flcomp)
-                      call write_error(message, unit=lundia)
+                      call mess(LEVEL_ERROR, message)  
                       error = .true.
                       return
                    endif
@@ -1514,7 +1548,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                             write (message,'(a,i2,3a,i0)')  &
                                 & 'Negative sediment thickness specified for layer ', &
                                 & ilyr, ' in file ', trim(flcomp), ' at nm=', nm
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             error = .true.
                             return
                          endif
@@ -1524,14 +1558,14 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                                write (message,'(2a,i2,a,i2,3a,i0)')  &
                                    & 'Negative ', trim(layertype), ised, ' in layer ', &
                                    & ilyr, ' in file ', trim(flcomp), ' at nm=', nm
-                               call write_error(message, unit=lundia)
+                               call mess(LEVEL_ERROR, message)  
                                error = .true.
                                return
                             elseif (rtemp(nm, ised) > 1.0_fp) then
                                write (message,'(a,i2,a,i2,3a,i0)')  &
                                    & trim(layertype), ised, ' bigger than 1 in layer ', &
                                    & ilyr, ' in file ', trim(flcomp), ' at nm=', nm
-                               call write_error(message, unit=lundia)
+                               call mess(LEVEL_ERROR, message)  
                                error = .true.
                                return
                             endif
@@ -1541,7 +1575,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                             write (message,'(3a,i2,3a,i0)')  &
                                 & 'Sum of ', trim(layertype), ' not equal to 1 in layer ', &
                                 & ilyr, ' in file ', trim(flcomp), ' at nm=', nm
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             error = .true.
                             return
                          else
@@ -1582,14 +1616,14 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          ! internal point.
                          !
                          totfrac = 0.0_fp
-                         err     = .false.
+                         err2     = .false.
                          do ised = 1, lsedtot
-                            if (rtemp(nm, ised) < 0.0_fp .or. rtemp(nm, ised) > 1.0_fp) err=.true.
+                            if (rtemp(nm, ised) < 0.0_fp .or. rtemp(nm, ised) > 1.0_fp) err2=.true.
                             totfrac = totfrac + rtemp(nm,ised)
                          enddo
-                         if (comparereal(totfrac,1.0_fp) /= 0) err=.true.
-                         if (thtemp(nm)<0.0_fp) err=.true.
-                         if (err) then
+                         if (comparereal(totfrac,1.0_fp) /= 0) err2=.true.
+                         if (thtemp(nm)<0.0_fp) err2=.true.
+                         if (err2) then
                             !
                             ! dummy
                             !
@@ -1718,7 +1752,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                                 & 'Use SedBed', trim(lstr), ' instead of Fraction', &
                                 & trim(lstr), ' for ', trim(layertype), ' layer ', &
                                 & ilyr, ' in file ', trim(flcomp)
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             error = .true.
                             return
                          endif
@@ -1748,7 +1782,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                                 & ' of ', trim(layertype), ' layer ', &
                                 & ilyr, ' in file ', trim(flcomp), &
                                 & ' Positive value required.'
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             error = .true.
                             return
                          else
@@ -1763,12 +1797,13 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          !
                          anysedbed = .true.
                          call depfil_stm(lundia    ,error     ,filename  , fmttmp    , &
-                                       & rtemp(nmlb,ised)     ,1   ,1    ,dims)
+                                       & rtemp(nmlb,ised)     ,1   ,1    ,dims, message)
                          if (error) then
+                            call mess(LEVEL_ERROR, message)  
                             write (message,'(5a,i2,2a)')  &
                                 & 'Error reading ', layertype, '  from ', trim(filename), &
                                 & ' for layer ', ilyr, ' in file ', trim(flcomp)
-                            call write_error(message, unit=lundia)
+                            call mess(LEVEL_ERROR, message)  
                             return
                          endif
                       endif
@@ -1780,7 +1815,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                       write (message,'(a,i2,2a)')  &
                           & 'No data found for any sediment fraction in the data block of layer ' ,ilyr, &
                           & ' in file ' ,trim(flcomp)
-                      call write_error(message, unit=lundia)
+                      call mess(LEVEL_ERROR, message)  
                       error = .true.
                       return
                    endif
@@ -1798,7 +1833,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                                write (message,'(2a,i2,a,i2,3a,i0)')  &
                                    & 'Negative ', trim(layertype), ised, ' in layer ', &
                                    & ilyr, ' in file ', trim(flcomp), ' at nm=', nm
-                               call write_error(message, unit=lundia)
+                               call mess(LEVEL_ERROR, message)  
                                error = .true.
                                return
                             endif
@@ -1822,11 +1857,11 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          ! the data will be overwritten with data coming from the neighbouring
                          ! internal point.
                          !
-                         err = .false.
+                         err2 = .false.
                          do ised = 1, lsedtot
-                            if (rtemp(nm, ised) < 0.0_fp) err=.true.
+                            if (rtemp(nm, ised) < 0.0_fp) err2=.true.
                          enddo
-                         if (err) then
+                         if (err2) then
                             !
                             ! dummy
                             !
@@ -1931,19 +1966,30 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                    write (message,'(3a,i2,2a)') 'Unknown layer type ''', &
                     & trim(layertype), ''' specified for layer ', ilyr, &
                     & ' in file ', trim(flcomp)
-                   call write_error(message, unit=lundia)
+                   call mess(LEVEL_ERROR, message)  
                    error = .true.
                    return
                 endif
                 !
+                ! Copy data to open boundary points
+                ! 
+                do ibnd = 1, size(dims%nmbnd,1)
+                   nm  = dims%nmbnd(ibnd,1)
+                   nm2 = dims%nmbnd(ibnd,2)
+                   svfrac(ilyr, nm) = svfrac(ilyr, nm2)
+                   thlyr(ilyr, nm) = thlyr(ilyr, nm2)
+                   do ised = 1, lsedtot
+                      msed(ised, ilyr, nm) = msed(ised, ilyr, nm2)
+                   enddo
+                enddo             
              enddo
              !
              deallocate(rtemp , stat = istat)
              deallocate(thtemp, stat = istat)
              !
           else
-             write (message,'(2a)') 'Invalid file version of ', trim(flcomp)
-             call write_error(message, unit=lundia)
+             write (message,'(3a)') 'Invalid file version of ', trim(flcomp), '. Expecting [BedCompositionFileInformation] FileVersion = 01.00 or 02.00'
+             call mess(LEVEL_ERROR, message)  
              error = .true.
              return          
           endif

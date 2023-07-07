@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,23 +34,26 @@ module partmem
 !     Created             : July    2011 by Leo Postma
 
       use precision_part       ! single/double precision
+      use hydmod
       use typos           ! the derived types
 
       integer(ip)  , parameter          :: nfilesp =  100
       integer(ip)                       :: lunitp(nfilesp) = 0    ! logical unit numbers for in-/output files
       character(len=256)                :: fnamep(nfilesp) = ' '  ! file names for in-/output files
-      character(len=20) , dimension(2)  :: ftypep          = ' '  ! file types, i.e. unformatted or binary
       logical                           :: alone                  ! if .false. coupled with Delwaq
       integer(ip)   :: itrakc  , itraki  , npwndn  , npwndw  , nstep  , nstept
       real   (sp)   :: defang  , hmin    , ptlay   , accrjv
       logical       :: oil     , oil2dh  , oil3d   , ltrack  , acomp  , fout
 
+      type(t_hyd)              :: hyd           ! description of the hydrodynamics
       integer  ( ip)           :: bufsize       ! size of rbuffr
       integer  ( ip)           :: nosub_max     ! maximum number of substances
       integer  ( ip)           :: nmaxp         ! horizontal dimension 1 of flow file
       integer  ( ip)           :: mmaxp         ! horizontal dimension 2 of flow file
       integer  ( ip)           :: mnmax2        ! nmax*mmax
       integer  ( ip)           :: layt          ! number of layers hydrodynamic model
+      logical                  :: fmmodel       ! grid type
+      logical                  :: zmodel        ! layer type
       integer  ( ip)           :: mnmaxk        ! mnmax2*layt
       integer  ( ip)           :: nflow         ! 2*mnmaxk + (layt-1)*mnmax2
       integer  ( ip)           :: noseglp       ! either mnmax2 or number of active volumes
@@ -64,8 +67,6 @@ module partmem
       integer  ( ip)           :: nolayp        ! number of layers   <== pas op
       integer  ( ip)           :: noslay        ! number of layers inclusive of optional bed layer
       integer  ( ip)           :: idelt         ! simulation time step inputfile
-      integer  ( ip)           :: ipc           ! choice numerical scheme
-      logical  ( ip)           :: lcorr         ! switch for predcorrector scheme
       integer  ( ip)           :: ioptdv        ! vertical diffusion option
       real     ( rp)           :: alpha         ! scale factor for vertical diffusivity
       real     ( rp)           :: cdisp         ! vertical diffusivity constant
@@ -133,7 +134,14 @@ module partmem
       integer  ( ip), pointer  :: lgrid (:,:)   ! active grid matrix, with 1-1 numbering
       integer  ( ip), pointer  :: lgrid2(:,:)   ! total grid matrix
       integer  ( ip), pointer  :: lgrid3(:,:)   ! active grid matrix with noseg numbering
+      integer  ( ip), pointer  :: laytop(:,:)   ! highest active layer in z-layer model
+      integer  ( ip), pointer  :: laytopp(:,:)  ! highest active layer in z-layer model on previous time step
+      integer  ( ip), pointer  :: laybot(:,:)   ! deepest active layer in z-layer model
+      integer  ( ip), pointer  :: pagrid(:,:,:) ! potentially active z-layer segments grid matrix
+      integer  ( ip), pointer  :: aagrid(:,:,:) ! actually active z-layer segments grid matrix
       real     ( rp), pointer  :: tcktot (:)    ! relative layer thickness
+      real     ( rp), pointer  :: zlbot (:)     ! z-layer layer bottom level
+      real     ( rp), pointer  :: zltop (:)     ! z-layer layer top level
       integer  ( ip), pointer  :: cellpntp(:)   ! pointer from noseg to mnmaxk
       integer  ( ip), pointer  :: flowpntp(:,:) ! pointer from noq to nflow
       real     ( rp), pointer  :: angle  (:)    !
@@ -143,7 +151,9 @@ module partmem
       real     ( rp), pointer  :: dx     (:)    !
       real     ( rp), pointer  :: dy     (:)    !
       real     ( rp), pointer  :: flow   (:)    !
+      real     ( rp), pointer  :: flow2m (:)    !
       real     ( rp), pointer  :: flow1  (:)    !
+      real     ( rp), pointer  :: flow2  (:)    !
       integer  ( ip), pointer  :: ipntp  (:)    !
       integer  ( ip), pointer  :: nplay  (:)    !
       real     ( rp), pointer  :: vdiff  (:)    ! vertical diffusion
@@ -156,6 +166,8 @@ module partmem
 
       real     ( rp), pointer  :: temper (:)    ! temperature
       real     ( rp), pointer  :: temper1(:)    ! temperature from file
+      real     ( rp), pointer  :: vel1   (:)    ! velocity at begin (first layer only)
+      real     ( rp), pointer  :: vel2   (:)    ! velocity at end (first layer only)
       real     ( rp), pointer  :: velo   (:)    !
       real     ( rp), pointer  :: vol1   (:)    !
       real     ( rp), pointer  :: vol2   (:)    !
@@ -163,6 +175,7 @@ module partmem
       real     ( rp), pointer  :: xb     (:)    !
       real     ( rp), pointer  :: yb     (:)    !
       real     ( rp), pointer  :: zlevel (:)    !
+      real     ( rp), pointer  :: locdepp(:,:)   !
       real     ( rp), pointer  :: locdep(:,:)   !
       character( 20), pointer  :: substi (:)    ! substances' names input file
       integer  ( ip), pointer  :: mapsub (:)    ! gives substances a number for output
@@ -172,8 +185,8 @@ module partmem
       character( 20), pointer  :: subst2 (:)    ! substances' names output file
       real     ( rp), pointer  :: wveloa (:)    ! wind velocity  m/s
       real     ( rp), pointer  :: wdira  (:)    ! wind direction degree from north
-      real     ( dp), pointer  :: wvelo  (:)    ! space varying wind velocity  m/s
-      real     ( dp), pointer  :: wdir   (:)    ! space varying wind direction degree from north
+      real     ( hp), pointer  :: wvelo  (:)    ! space varying wind velocity  m/s
+      real     ( hp), pointer  :: wdir   (:)    ! space varying wind direction degree from north
       integer  ( ip), pointer  :: iwndtm (:)    ! breakpoints wind time series
       real     ( rp), pointer  :: const  (:)    ! constant factors
       character( 20), pointer  :: nmstat (:)    ! names of the monitoring stations
@@ -201,6 +214,11 @@ module partmem
       integer  ( ip), pointer  :: kwaste (:)    ! layer nr of waste point
       integer  ( ip), pointer  :: ioptrad(:)    ! radius option of dye release
       real     ( rp), pointer  :: radius (:)    ! radius parameter of waste point
+      character( 256),pointer  :: fidye(:)      ! temporary array with names of dye polygon files
+      character( 256),pointer  :: fiwaste(:)    ! names of waste polygon files
+      real     ( sp), pointer  :: xpolwaste(:,:)! x-coordinates of waste polygon
+      real     ( sp), pointer  :: ypolwaste(:,:)! y-coordinates of waste polygon
+      integer  ( ip), pointer  :: nrowswaste(:) ! length of waste polygon
       real     ( rp), pointer  :: wparm  (:)    ! percentage of particles taken
       integer  ( ip), pointer  :: ndprt  (:)    ! number of particles per waste point
       real     ( rp), pointer  :: amassd(:,:)   ! mass of dye per substance
@@ -223,7 +241,7 @@ module partmem
       real     ( rp), pointer  :: decay (:,:)   ! matrix of decays per substance per time point
       real     ( rp), pointer  :: decays (:)    ! the actual decay values per substance at this time
       integer  ( ip), pointer  :: ivtime (:)    ! array with time points for settling velocities
-      real     ( rp), pointer  :: wpart (:,:)   ! weight of the substances in each particle
+      real     ( sp), pointer  :: wpart (:,:)   ! weight of the substances in each particle
       real     ( rp), pointer  :: wpartini (:,:)   ! weight of the substances in each particle
       real     ( sp), pointer  :: spart (:,:)   ! size of the particles
       real     ( rp), pointer  :: rhopart (:,:) ! density of the substances in each particle
@@ -249,29 +267,26 @@ module partmem
       real     ( rp), pointer  :: aconc (:,:)   !
       character     (len=20   ) ,  pointer, dimension(:       ) :: cbuff
       character     (len=20   ) ,  pointer, dimension(:       ) :: subsud
-      integer       (sp       ) ,  pointer, dimension(:       ) :: floil
-      integer       (sp       ) ,  pointer, dimension(:       ) :: ihplot
-      integer       (sp       ) ,  pointer, dimension(:       ) :: iptime
-      integer       (sp       ) ,  pointer, dimension(:       ) :: isfile
-      integer       (sp       ) ,  pointer, dimension(:       ) :: kpart
-      integer       (sp       ) ,  pointer, dimension(:       ) :: mpart
-      integer       (sp       ) ,  pointer, dimension(:       ) :: mpart0
-      integer       (sp       ) ,  pointer, dimension(:       ) :: mplsta
-      integer       (sp       ) ,  pointer, dimension(:       ) :: mstat
-      integer       (sp       ) ,  pointer, dimension(:       ) :: mwaste
-      integer       (sp       ) ,  pointer, dimension(:       ) :: npart
-      integer       (sp       ) ,  pointer, dimension(:       ) :: npart0
-      integer       (sp       ) ,  pointer, dimension(:       ) :: nplsta
-      integer       (sp       ) ,  pointer, dimension(:       ) :: nstat
-      integer       (sp       ) ,  pointer, dimension(:       ) :: nwaste
-      integer       (sp       ) ,  pointer, dimension(:,:     ) :: imap
-      integer       (sp       ) ,  pointer, dimension(:,:     ) :: imask
-      integer       (sp       ) ,  pointer, dimension(:,:     ) :: ibuff
-      integer       (sp       ) ,  pointer, dimension(:       ) :: isub
-      integer       (sp       ) ,  pointer, dimension(:,:     ) :: mcell
-      integer       (sp       ) ,  pointer, dimension(:,:     ) :: ncell
-      integer       (sp       ) ,  pointer, dimension(:,:,:   ) :: nbin
-      integer       (sp       ) ,  pointer, dimension(:       ) :: nosyss
+      integer       (ip       ) ,  pointer, dimension(:       ) :: floil
+      integer       (ip       ) ,  pointer, dimension(:       ) :: ihplot
+      integer       (ip       ) ,  pointer, dimension(:       ) :: iptime
+      integer       (ip       ) ,  pointer, dimension(:       ) :: isfile
+      integer       (ip       ) ,  pointer, dimension(:       ) :: mpart
+      integer       (ip       ) ,  pointer, dimension(:       ) :: mpart0
+      integer       (ip       ) ,  pointer, dimension(:       ) :: mplsta
+      integer       (ip       ) ,  pointer, dimension(:       ) :: mstat
+      integer       (ip       ) ,  pointer, dimension(:       ) :: mwaste
+      integer       (ip       ) ,  pointer, dimension(:       ) :: npart0
+      integer       (ip       ) ,  pointer, dimension(:       ) :: nplsta
+      integer       (ip       ) ,  pointer, dimension(:       ) :: nstat
+      integer       (ip       ) ,  pointer, dimension(:       ) :: nwaste
+      integer       (ip       ) ,  pointer, dimension(:,:     ) :: imap
+      integer       (ip       ) ,  pointer, dimension(:,:     ) :: imask
+      integer       (ip       ) ,  pointer, dimension(:,:     ) :: ibuff
+      integer       (ip       ) ,  pointer, dimension(:,:     ) :: mcell
+      integer       (ip       ) ,  pointer, dimension(:,:     ) :: ncell
+      integer       (ip       ) ,  pointer, dimension(:,:,:   ) :: nbin
+      integer       (ip       ) ,  pointer, dimension(:       ) :: nosyss
       real          (sp       ) ,  pointer, dimension(:       ) :: abuoy
       real          (sp       ) ,  pointer, dimension(:       ) :: dfact
       real          (sp       ) ,  pointer, dimension(:       ) :: fstick
@@ -279,15 +294,12 @@ module partmem
       real          (sp       ) ,  pointer, dimension(:       ) :: tmass
       real          (sp       ) ,  pointer, dimension(:       ) :: xa
       real          (sp       ) ,  pointer, dimension(:       ) :: xa0
-      real          (sp       ) ,  pointer, dimension(:       ) :: xpart
       real          (sp       ) ,  pointer, dimension(:       ) :: xpart0
       real          (sp       ) ,  pointer, dimension(:       ) :: ya
       real          (sp       ) ,  pointer, dimension(:,:     ) :: tmasud
       real          (sp       ) ,  pointer, dimension(:       ) :: ya0
-      real          (sp       ) ,  pointer, dimension(:       ) :: ypart
       real          (sp       ) ,  pointer, dimension(:       ) :: ypart0
       real          (sp       ) ,  pointer, dimension(:       ) :: za
-      real          (sp       ) ,  pointer, dimension(:       ) :: zpart
       real          (sp       ) ,  pointer, dimension(:,:     ) :: aconud
       real          (sp       ) ,  pointer, dimension(:,:     ) :: adepth
       real          (sp       ) ,  pointer, dimension(:,:     ) :: apeak
@@ -307,13 +319,26 @@ module partmem
       real          (sp       ) ,  pointer, dimension(:       ) :: conc2
       character     (len=16   ) ,  pointer, dimension(:       ) :: elt_names
       character     (len=16   ) ,  pointer, dimension(:       ) :: elt_types
-      integer       (sp       ) ,  pointer, dimension(:       ) :: elt_bytes
-      integer       (sp       ) ,  pointer, dimension(:,:     ) :: elt_dims
+      integer       (ip       ) ,  pointer, dimension(:       ) :: elt_bytes
+      integer       (ip       ) ,  pointer, dimension(:,:     ) :: elt_dims
       real          (sp       ) ,  pointer, dimension(:       ) :: rbuffr
       real          (sp       ) ,  pointer, dimension(:,:     ) :: concp
       real          (sp       ) ,  pointer, dimension(:,:     ) :: flres
 
+      real     ( rp), pointer  :: v_swim(:)    ! horizontal swim velocity (m/s)
+      real     ( rp), pointer  :: d_swim(:)    ! horizontal swim direction (degree)
 end module partmem
+
+module m_part_regular
+      use precision_part       ! single/double precision
+      integer       (ip       ) ,  pointer, dimension(:       ) :: npart
+      real          (sp       ) ,  pointer, dimension(:       ) :: xpart
+      real          (sp       ) ,  pointer, dimension(:       ) :: ypart
+      real          (sp       ) ,  pointer, dimension(:       ) :: zpart
+      integer       (ip       ) ,  pointer, dimension(:       ) :: kpart
+      integer       (ip       ) ,  pointer, dimension(:       ) :: isub
+
+end module m_part_regular
 
 module spec_feat_par
 
@@ -324,12 +349,16 @@ module spec_feat_par
 !     vertical bounce
       logical                                                   :: vertical_bounce
 
+!     wind drag for all particles
+      logical                                                   :: apply_wind_drag
+      real      (sp)                                            :: max_wind_drag_depth
+
 !     restart files
       logical                                                   :: write_restart_file
       integer  (ip)                                             :: max_restart_age
 
 !     plastics parameters
-      integer   (sp)            ,  pointer, dimension(:       ) :: plparset
+      integer   (ip)            ,  pointer, dimension(:       ) :: plparset
       real      (sp)            ,  pointer, dimension(:       ) :: pldensity
       real      (sp)            ,  pointer, dimension(:       ) :: plshapefactor
       real      (sp)            ,  pointer, dimension(:       ) :: plmeansize
@@ -338,5 +367,22 @@ module spec_feat_par
       real      (sp)            ,  pointer, dimension(:       ) :: plsigmasize
       real      (sp)            ,  pointer, dimension(:       ) :: plfragrate
       logical                                                   :: pldebug
-      
+
+!     screens
+      logical                  :: screens          ! are sceens active
+      real     ( sp)           :: permealeft       ! leftside permeability of screeens
+      real     ( sp)           :: permearight      ! rightside permeability of screeens
+      character( 256)          :: fiscreens        ! names of screens polygon files
+      integer  ( ip)           :: nrowsscreens     ! length of screen polygon
+      real     ( sp), pointer  :: xpolscreens(:)   ! x-coordinates of screen polygon
+      real     ( sp), pointer  :: ypolscreens(:)   ! y-coordinates of screen polygon
+
+!     ABM      
+      logical                  :: abmmodel          ! is ABM keyword active
+      logical                  :: chronrev          ! is chronology reversed
+      character( 256)          :: abmmodelname      ! name of ABM model used
+      character( 256)          :: abmstagedev       ! name of ABM model stage developement used
+      integer  ( sp)           :: abmmt             ! nr of ABM model used
+      integer  ( sp)           :: abmsd             ! nr of ABM model stage developement used
+      real     ( sp)           :: selstage          ! nr of ABM model stage for chronology reversed model
 end module spec_feat_par

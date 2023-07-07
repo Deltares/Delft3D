@@ -7,7 +7,7 @@ function make_quickplot(basedir,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,7 @@ function make_quickplot(basedir,varargin)
 %   $HeadURL$
 %   $Id$
 
-curdir=pwd;
+curdir = pwd;
 addpath(curdir)
 if matlabversionnumber<7.09
     error('Invalid MATLAB version. Use MATLAB R2009b (7.9) or higher for compiling Delft3D-QUICKPLOT!')
@@ -46,75 +46,94 @@ end
 if nargin>0
     cd(basedir);
 end
+err = [];
 try
-    err=localmake(varargin{:});
-catch
-    err=lasterr;
+    localmake(varargin{:});
+catch err
 end
 if nargin>0
     cd(curdir);
 end
 rmpath(curdir)
 if ~isempty(err)
-    error(err)
+    rethrow(err)
 end
 
 
-function err=localmake(qpversion,T)
-err='';
+function localmake(qpversion,repo_url,hash,T)
 if ~exist('progsrc','dir')
-    err='Cannot locate source'; return
+    error('Cannot locate source folder "progsrc".')
 end
 sourcedir=[pwd,filesep,'progsrc'];
-disp('Copying files ...')
+
 if strncmp(fliplr(computer),'46',2)
-    qpdir = 'quickplot64';
+    tdir = 'quickplot64';
 else
-    qpdir = 'quickplot32';
+    tdir = 'quickplot32';
 end
-if ~exist([pwd,filesep,qpdir])
-    [success,message] = mkdir(qpdir);
-    if ~success,
-        err=message;
-        return
-    end
+targetname = 'Delft3D-QUICKPLOT';
+targetdir = [pwd,filesep,tdir];
+
+if ~exist(targetdir, 'dir')
+    fprintf('Creating %s directory ...\n', tdir);
+    mkdir(tdir);
 end
-cd(qpdir);
+cd(tdir)
 diary make_quickplot_diary
+
+fprintf('Copying files ...\n');
 if isunix
     unix('cp -rf ../progsrc/* .');
     unix('mv compileonly/* .');
 else
-    [s,msg]=dos('xcopy "..\progsrc\*.*" "." /E /Y');
-    if s==0
-        [s,msg]=dos('move compileonly\*.*  .');
+    [s, msg] = dos('xcopy "..\progsrc\*.*" "." /E /Y');
+    if s == 0
+        [s, msg] = dos('move compileonly\*.*  .');
     end
-    if s~=0
+    if s ~= 0
         error(msg)
     end
 end
-%
+
+fprintf('Including netCDF files ...\n');
 copyfile('../../../../third_party_open/netcdf/matlab/netcdfAll-4.1.jar','.')
 addpath ../../../../third_party_open/netcdf/matlab/mexnc
 addpath ../../../../third_party_open/netcdf/matlab/snctools
-%
-if nargin<2
-    qpversion=read_identification(sourcedir,'d3d_qp.m');
-    T=now;
+
+if nargin<4
+    [qpversion,hash,repo_url] = read_identification(sourcedir, 'd3d_qp.m');
+    T = now;
 end
-fprintf('\nBuilding Delft3D-QUICKPLOT version %s\n\n',qpversion);
+
 TStr = datestr(T);
-fstrrep('d3d_qp.m','<VERSION>',qpversion)
-fstrrep('d3d_qp.m','<CREATIONDATE>',TStr)
-fstrrep('wl_identification.c','<VERSION>',qpversion)
-fstrrep('wl_identification.c','<CREATIONDATE>',TStr)
+fprintf('\nBuilding %s version %s\n\n', targetname, qpversion);
+fprintf('Current date and time           : %s\n', TStr);
+
+fprintf('Modifying files ...\n');
+fstrrep([targetdir,filesep,'d3d_qp.m'], '<VERSION>', qpversion)
+fstrrep([targetdir,filesep,'d3d_qp.m'], '<CREATIONDATE>', TStr)
+fstrrep([targetdir,filesep,'d3d_qp.m'], '<GITHASH>', hash)
+fstrrep([targetdir,filesep,'d3d_qp.m'], '<GITREPO>', repo_url)
+fstrrep([targetdir,filesep,'wl_identification.c'], '<VERSION>', qpversion)
+fstrrep([targetdir,filesep,'wl_identification.c'], '<CREATIONDATE>', TStr)
+if ~d3d_qp('version',qpversion,repo_url,hash,TStr)
+    error('Unable to write correct d3d_qp.version file.')
+end
+
+fprintf('Include GhostScript for printing ...\n');
 g = which('-all','gscript');
-copyfile(g{1},'.')
+if ~isempty(g)
+    copyfile(g{1},'.')
+end
+
+fprintf('Building executable ...\n');
 make_exe
 if ispc
    movefile('d3d_qp.exe','d3d_qp.exec');
 end
-X={'*.asv'
+
+fprintf('Cleaning up directory ...\n');
+X = {'*.asv'
     '*.bak'
     '*.m'
     '*.c'
@@ -130,13 +149,14 @@ X={'*.asv'
     '@qp_data'
     '@qp_data_resource'};
 if isunix
-    X=cat(1,X,{'*.dll'
+    X = cat(1,X,{'*.dll'
         '*.mexw*'});
 else
-    X=cat(1,X,{'*.mexglx'
+    X = cat(1,X,{'*.mexglx'
         '*.mexa64'
         '*.exp'});
 end
 cleanup(X)
 diary off
 cd ..
+fprintf('Finished.\n');

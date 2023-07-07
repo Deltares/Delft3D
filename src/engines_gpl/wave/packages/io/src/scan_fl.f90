@@ -1,7 +1,7 @@
 subroutine scan_fl(checkVersionNumber, versionNumberOK)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! SCANFL scans the file "hiswa.out" for a string "SEVERE" or
@@ -47,7 +47,6 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
     integer           :: k
     integer           :: verLen
     integer           :: uh
-    integer, external :: new_lun
     character(20)     :: versionNumber
     character(*)      :: versionNumberOK
     character(80)     :: line
@@ -55,8 +54,7 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
 !! executable statements -------------------------------------------------------
 !
     verLen = len_trim(versionNumberOK)
-    uh = new_lun()
-    open (uh, file = 'PRINT', form = 'FORMATTED')
+    open (newunit = uh, file = 'PRINT', form = 'FORMATTED')
 100 continue
        read (uh, '(A)', end = 200) line
        call small(line, 80)
@@ -64,13 +62,13 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
        if (k > 0) then
           write (*, '(a)') '*** ERROR: SWAN file PRINT contains SEVERE errors'
           close (uh)
-          stop
+          call wavestop(1, '*** ERROR: SWAN file PRINT contains SEVERE errors')
        endif
        k = index(line, 'error')
        if (k > 0) then
           write (*, '(a)') '*** ERROR: SWAN file PRINT contains ERRORS'
           close (uh)
-          stop
+          call wavestop(1, '*** ERROR: SWAN file PRINT contains ERRORS')
        endif
        if (checkVersionNumber) then
           k = index(line, 'version number')
@@ -79,7 +77,7 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
              if (versionNumber < versionNumberOK) then
                 write (*, '(3a)') '*** ERROR: use SWAN version ',trim(versionNumberOK), ' or newer.'
                 close (uh)
-                stop
+                call wavestop(1, '*** ERROR: use SWAN version '//trim(versionNumberOK)//' or newer.')
              endif
           endif
        endif

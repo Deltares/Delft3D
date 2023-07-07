@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,7 +43,7 @@ contains
                         tstring   ,dt        ,nstep     ,ibuff     ,  &
                         rbuff     ,cbuff     ,track     ,nopmax   )
 !-----------------------------------------------------------------------
-!         Deltares (former: Deltares)
+!         Deltares
 !
 !             module: subroutine writrk
 !           function: writes the initial group 1 ('trk-const') to

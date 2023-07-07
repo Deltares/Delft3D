@@ -1,4 +1,4 @@
-function fileinfo = nc_info_java ( ncfile )
+function fileinfo = nc_info_java(ncfile)
 %NC_INFO_JAVA java backend for nc_info
 %
 % This function returns the same metadata structure using the java 
@@ -20,6 +20,9 @@ elseif isa(ncfile,'ucar.nc2.dods.DODSNetcdfFile')
 	ncfile = char(jncid.getLocation());
 	close_it = false;
 elseif exist(ncfile,'file')
+    fid = fopen(ncfile);
+    ncfile = fopen(fid);
+    fclose(fid);
 	jncid = NetcdfFile.open(ncfile);
 else
 	try 
@@ -28,7 +31,7 @@ else
 		try
             jncid = snc_opendap_open(ncfile);
         catch  %#ok<CTCH>
-			error ( 'SNCTOOLS:nc_varget_java:fileOpenFailure', ...
+			error ( 'snctools:nc_varget_java:fileOpenFailure', ...
                 'Could not open ''%s'' as either a local file, a regular URL, or as a DODS URL.', ...
                 ncfile );
 		end
@@ -37,8 +40,9 @@ end
 
 
 root_group = jncid.getRootGroup();
-fileinfo = get_group_info(root_group);
+fileinfo = nc_group_info_java(root_group);
 fileinfo.Name = '/';
+fileinfo.Datatype = [];
 fileinfo.Filename = ncfile; %[name ext];
 
 if close_it
@@ -47,23 +51,23 @@ end
 
 
 %--------------------------------------------------------------------------
-function info = get_group_info( the_group)
+function info = nc_group_info_java(parent_group)
 
 info_template = struct('Name','','Dimension',[],'Dataset',[],'Attribute',[],'Group',[]);
 
 info = info_template;
-info.Dimension = get_dimensions_j ( the_group );
-info.Dataset = get_variables_j ( the_group );
-info.Name = ['/' char(the_group.getName())];
+info.Dimension = get_diminfo_java(parent_group);
+info.Dataset = get_varinfo_java(parent_group);
+info.Name = ['/' char(parent_group.getName())];
 
 % Get the global attributes and variable attributes
-j_att_list = the_group.getAttributes();
-info.Attribute = snc_java_bundle_atts ( j_att_list );
+j_att_list = parent_group.getAttributes();
+info.Attribute = nc_getattsinfo_java(j_att_list);
 
 
 % Any sub groups?
-childGroups = the_group.getGroups();
-ngroups = childGroups.size();
+child_groups = parent_group.getGroups();
+ngroups = child_groups.size();
 if ngroups == 0
 	return	
 end
@@ -71,7 +75,7 @@ end
 info.Group = repmat(info_template,ngroups,1);
 
 for j = 1:ngroups
-	info.Group(j) = get_group_info ( childGroups.get(j-1));
+	info.Group(j) = nc_group_info_java(child_groups.get(j-1));
 end
 
 
@@ -82,11 +86,11 @@ return
 
 
 %--------------------------------------------------------------------------
-function Dimension = get_dimensions_j ( root_group )
+function Dimension = get_diminfo_java ( parent_group )
 % GET_DIMENSIONS_J:  Get the dimensions using the java backend.
 
 dim_count = 0;
-dims = root_group.getDimensions();
+dims = parent_group.getDimensions();
 
 % Set up an empty list first, in order to pre-allocate.
 Dimension.Name = '';
@@ -128,44 +132,31 @@ end
 
 
 
-
-
-
-
-
-
-
-
 %--------------------------------------------------------------------------
-function Dataset = get_variables_j ( root_group )
+function Dataset = get_varinfo_java(parent_group)
 
-%
 % Get information on the variables themselves.
 var_count = 0;
-j_var_list = root_group.getVariables();
-j_var_iterator = j_var_list.listIterator();
+var_list = parent_group.getVariables();
+var_iterator = var_list.listIterator();
 
-Dataset.Name = '';
-Dataset.Nctype = 0;
-Dataset.Datatype = '';
-Dataset.Unlimited = 0;
-Dataset.Dimension = {};
-Dataset.Size = 0;
-Dataset.Attribute = struct([]);
+Attribute = struct('Name','','Nctype','','Datatype','','Value',NaN);
+Dataset = struct('Name','','Nctype',0,'Datatype','','Unlimited',false,...
+    'Dimension',{''},'Size',[],'Attribute',Attribute,'Chunking',[],...
+    'Shuffle',0,'Deflate',0);
 
-Dataset = repmat ( Dataset, j_var_list.size(), 1 );
+
+Dataset = repmat ( Dataset, var_list.size(), 1 );
 
 while 1
 
     try
 
-        %
         % This throws an exception when we've reached the end of the list.
-        jvarid = j_var_iterator.next();
+        jvarid = var_iterator.next();
 
     catch  %#ok<CTCH>
         
-        %
         % No more variables left to process.
         break;
 
@@ -173,9 +164,7 @@ while 1
 
     var_count = var_count + 1;
 
-
-    %mDataset = nc_getvarinfo ( root_group, jvarid );
-	mDataset = snc_java_varid_info ( jvarid );
+	mDataset = nc_getvaridinfo_java(jvarid);
     
     % adjust the name, strip off the leading group name
     [pp,nn] = fileparts(mDataset.Name);
@@ -188,5 +177,3 @@ end
 if var_count == 0
     Dataset = [];
 end
-
-

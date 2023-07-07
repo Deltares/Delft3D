@@ -1,0 +1,154 @@
+* Example (old-style) external forcings file
+*
+* QUANTITY    : waterlevelbnd, velocitybnd, dischargebnd, tangentialvelocitybnd, normalvelocitybnd  filetype=9         method=2,3
+*             : outflowbnd, neumannbnd, qhbnd, uxuyadvectionvelocitybnd                             filetype=9         method=2,3
+*             : salinitybnd                                                                         filetype=9         method=2,3
+*             : gateloweredgelevel, damlevel, pump                                                  filetype=9         method=2,3
+*             : frictioncoefficient, horizontaleddyviscositycoefficient, advectiontype              filetype=4,7,10    method=4
+*             : bedlevel, ibotlevtype                                                               filetype=4,7,10    method=4..9
+*             : initialwaterlevel                                                                   filetype=4,7,10,12 method=4..9
+*             : initialtemperature                                                                  filetype=4,7,10,12 method=4..9
+*             : initialvelocityx, initialvelocityy                                                  filetype=4,7,10,12 method=4..9
+*             : initialvelocity                                                                     filetype=12        method=4..9
+*             : initialsalinity, initialsalinitytop: use initialsalinity for depth-uniform, or
+*             : as bed level value in combination with initialsalinitytop                           filetype=4,7,10    method=4
+*             : initialverticaltemperatureprofile                                                   filetype=9,10      method=
+*             : initialverticalsalinityprofile                                                      filetype=9,10      method=
+*             : windx, windy, windxy, rainfall, atmosphericpressure                                 filetype=1,2,4,6,7,8 method=1,2,3
+*             : shiptxy, movingstationtxy                                                           filetype=1         method=1
+*             : discharge_salinity_temperature_sorsin                                               filetype=9         method=1
+*             : windstresscoefficient                                                               filetype=4,7,10    method=4
+*             : nudge_salinity_temperature                                                          filetype=11        method=3
+*
+* kx = Vectormax = Nr of variables specified on the same time/space frame. Eg. Wind magnitude,direction: kx = 2
+* FILETYPE=1  : uniform              kx = 1 value               1 dim array      uni
+* FILETYPE=2  : unimagdir            kx = 2 values              1 dim array,     uni mag/dir transf to u,v, in index 1,2
+* FILETYPE=3  : svwp                 kx = 3 fields  u,v,p       3 dim array      nointerpolation
+* FILETYPE=4  : arcinfo              kx = 1 field               2 dim array      bilin/direct
+* FILETYPE=5  : spiderweb            kx = 3 fields              3 dim array      bilin/spw
+* FILETYPE=6  : curvi                kx = ?                                      bilin/findnm
+* FILETYPE=7  : triangulation        kx = 1 field               1 dim array      triangulation
+* FILETYPE=8  : triangulation_magdir kx = 2 fields consisting of Filetype=2      triangulation in (wind) stations
+*
+* FILETYPE=9  : polyline             kx = 1 For polyline points i= 1 through N specify boundary signals, either as
+*                                           timeseries or Fourier components or tidal constituents
+*                                           Timeseries are in files *_000i.tim, two columns: time (min)  values
+*                                           Fourier components and or tidal constituents are in files *_000i.cmp, three columns
+*                                           period (min) or constituent name (e.g. M2), amplitude and phase (deg)
+*                                           If no file is specified for a node, its value will be interpolated from surrounding nodes
+*                                           If only one signal file is specified, the boundary gets a uniform signal
+*                                           For a dischargebnd, only one signal file must be specified
+*
+* FILETYPE=10 : inside_polygon       kx = 1 field                                uniform value inside polygon for INITIAL fields
+* FILETYPE=11 : ncgrid               kx = 1 field                    2 dim array      triangulation (should have proper standard_name in var, e.g., 'precipitation')
+* FILETYPE=12 : ncflow (map file)    kx = 1 or 2 field               1 dim array      triangulation
+* FILETYPE=14 : ncwave (com file)    kx = 1 field                    1 dim array      triangulation
+*
+* METHOD  =0  : provider just updates, another provider that pointers to this one does the actual interpolation
+*         =1  : intp space and time (getval) keep  2 meteofields in memory
+*         =2  : first intp space (update), next intp. time (getval) keep 2 flowfields in memory
+*         =3  : save weightfactors, intp space and time (getval),   keep 2 pointer- and weight sets in memory.
+*         =4  : only spatial, inside polygon
+*         =5  : only spatial, triangulation, (if samples from *.asc file then bilinear)
+*         =6  : only spatial, averaging
+*         =7  : only spatial, index triangulation
+*         =8  : only spatial, smoothing
+*         =9  : only spatial, internal diffusion
+*         =10 : only initial vertical profiles
+*
+* OPERAND =O  : Override at all points
+*         =+  : Add to previously specified value
+*         =*  : Multiply with previously specified value
+*         =A  : Apply only if no value specified previously (For Initial fields, similar to Quickin preserving best data specified first)
+*         =X  : MAX with prev. spec.
+*         =N  : MIN with prev. spec.
+*
+* EXTRAPOLATION_METHOD (ONLY WHEN METHOD=3)
+*         = 0 : No spatial extrapolation.
+*         = 1 : Do spatial extrapolation outside of source data bounding box.
+*
+* MAXSEARCHRADIUS (ONLY WHEN EXTRAPOLATION_METHOD=1)
+*         = search radius (in m) for model grid points that lie outside of the source data bounding box.
+*
+* AVERAGINGTYPE (ONLY WHEN METHOD=6)
+*         =1  : SIMPLE AVERAGING
+*         =2  : NEAREST NEIGHBOUR
+*         =3  : MAX (HIGHEST)
+*         =4  : MIN (LOWEST)
+*         =5  : INVERSE WEIGHTED DISTANCE-AVERAGE
+*         =6  : MINABS
+*         =7  : KDTREE (LIKE 1, BUT FAST AVERAGING)
+*
+* RELATIVESEARCHCELLSIZE : For METHOD=6, the relative search cell size for samples inside cell (default: 1.01)
+*
+* PERCENTILEMINMAX : (ONLY WHEN AVERAGINGTYPE=3 or 4) Changes the min/max operator to an average of the
+*               highest/lowest data points. The value sets the percentage of the total set that is to be included.
+*
+* NUMMIN  =   : For METHOD=6, minimum required number of source data points in each target cell.
+*
+* VALUE   =   : Offset value for this provider
+*
+* FACTOR  =   : Conversion factor for this provider
+*
+**************************************************************************************************************
+
+QUANTITY=waterlevelbnd
+FILENAME=channelwestlev.pli
+FILETYPE=9
+METHOD=3
+OPERAND=O
+
+QUANTITY=dischargebnd
+FILENAME=channeleastdis.pli
+FILETYPE=9
+METHOD=3
+OPERAND=O
+
+QUANTITY=dischargebnd
+FILENAME=tributarynorthdis.pli
+FILETYPE=9
+METHOD=3
+OPERAND=O
+
+QUANTITY=qhbnd
+FILENAME=downstream_qh.pli                 ! Downstream water level boundary related to discharge flow through polyline
+FILETYPE=9
+METHOD=3
+OPERAND=O
+
+QUANTITY=initialwaterlevel
+FILENAME=lake_rst.nc
+FILETYPE=12
+METHOD=5
+OPERAND=O
+
+QUANTITY=initialsalinity
+FILENAME=narrows.pol
+FILETYPE=10
+METHOD=4
+OPERAND=O
+VALUE=2.5
+FACTOR=1.1
+
+QUANTITY=initialsalinity
+FILENAME=narrows_extra.pol
+FILETYPE=10
+METHOD=4
+OPERAND=+
+VALUE=1
+
+QUANTITY=frictioncoefficient
+FILENAME=grasscrete1.pol
+FILETYPE=10
+METHOD=4
+OPERAND=O                                  ! OPERAND 'O' also switches friction type to IFRCTYP for points covered by this provider
+VALUE=.04
+IFRCTYP=2                                  ! coding of IFRCTYP, also see file.mdu, 0=Chezy, 1=Manning, 2=Whitecolebrook
+
+QUANTITY=frictioncoefficient
+FILENAME=frictioncalibrationpoints.xyz     ! typically a few x,y,factor points that multiply with (*) or add to (+) current coefficients
+FILETYPE=7
+METHOD=5
+OPERAND=*
+
+

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 !   Delft3D - Stubs for legacy C routines
 !
@@ -35,14 +35,6 @@
 !
 !-------------------------------------------------------------------------------
 !
-
-subroutine get_versionstring (versionstring)
-    use deltares_common_version_module
-    implicit none
-    character(*) :: versionstring
-    call getfullversionstring_deltares_common(versionstring)
-end subroutine get_versionstring
-
 
 subroutine cgetcp (cpu)
     implicit none

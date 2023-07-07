@@ -1,0 +1,576 @@
+configuration 'WAQS' serial 2008101501
+substance_group 'Eutrophication' 
+    substance 'NH4' 
+    name      'Ammonium (NH4)' 
+    unit      '(gN/m3)' 
+    active     1  
+    selected_processes
+            abbrev  'NutUpt_Alg'  name  'Uptake of nutrients by growth of algae' active  0  
+            abbrev  'Compos'  name  'Composition' active  0  
+            abbrev  'Nitrif_NH4'  name  'Nitrification of ammonium' active  1  
+            abbrev  'BMS1_DetN'  name  'Mineralisation detritus nitrogen in sediment S1' active  0  
+            abbrev  'BMS2_DetN'  name  'Mineralisation detritus nitrogen in sediment S2' active  0  
+            abbrev  'BMS1_OON'  name  'Mineralisation other organic N in sediment S1' active  0  
+            abbrev  'BMS2_OON'  name  'Mineralisation other organic N in sediment S2' active  0  
+            abbrev  'WM_DetN'  name  'Mineralisation detritus nitrogen' active  0  
+            abbrev  'WM_OON'  name  'Mineralisation other organic nitrogen' active  0  
+            abbrev  'NutRel_Alg'  name  'Release (nutrients/detritus) by of mortality algae' active  0  
+            abbrev  'NRAlg_S1'  name  'Nutrient release of algae in S1' active  0  
+            abbrev  'NRAlg_S2'  name  'Nutrient release of algae in S2' active  0  
+            abbrev  'AtmDep_NH4'  name  'Atmospheric deposition NH4' active  0  
+            abbrev  'Dfwast_NH4'  name  'Diffusive waste NH4' active  0  
+            abbrev  'NH3free'  name  'Calculation conc. unionized ammonia' active  0  
+            abbrev  'Prod_TEWOR'  name  'Production fluxes for TEWOR+' active  0  
+            abbrev  'VertDisp'  name  'Vertical dispersion (segment -> exchange)' active  0  
+            abbrev  'HorzDisper'  name  'Horizontal dispersion in a 1D model' active  0  
+    end-selected_processes 
+    end-substance
+end-substance_group
+substance_group 'Oxygen-BOD' 
+    substance 'CBOD5' 
+    name      'carbonaceous BOD (first pool) at 5 days' 
+    unit      '(gO2/m3)' 
+    active     1  
+    selected_processes
+            abbrev  'BODCOD'  name  'Mineralisation BOD and COD' active  1  
+            abbrev  'DBOD_TEWOR'  name  'Oxydation of BOD' active  0  
+            abbrev  'S_CBOD51'  name  'Sedimentation CBOD5 (first pool)' active  0  
+            abbrev  'Prod_TEWOR'  name  'Production fluxes for TEWOR+' active  0  
+            abbrev  'VertDisp'  name  'Vertical dispersion (segment -> exchange)' active  0  
+            abbrev  'HorzDisper'  name  'Horizontal dispersion in a 1D model' active  0  
+    end-selected_processes 
+    end-substance
+    substance 'OXY' 
+    name      'Dissolved Oxygen' 
+    unit      '(g/m3)' 
+    active     1  
+    selected_processes
+            abbrev  'HorzDisper'  name  'Horizontal dispersion in a 1D model' active  0  
+            abbrev  'NutUpt_Alg'  name  'Uptake of nutrients by growth of algae' active  0  
+            abbrev  'DenWat_NO3'  name  'Denitrification in water column' active  0  
+            abbrev  'Nitrif_NH4'  name  'Nitrification of ammonium' active  1  
+            abbrev  'RearOXY'  name  'Reaeration of oxygen' active  1  
+            abbrev  'BMS1_DetC'  name  'Mineralisation detritus carbon in sediment S1' active  0  
+            abbrev  'BMS2_DetC'  name  'Mineralisation detritus carbon in sediment S2' active  0  
+            abbrev  'BMS1_OOC'  name  'Mineralisation other organic C in sediment S1' active  0  
+            abbrev  'BMS2_OOC'  name  'Mineralisation other organic C in sediment S2' active  0  
+            abbrev  'WM_DetC'  name  'Mineralisation detritus carbon' active  0  
+            abbrev  'WM_OOC'  name  'Mineralisation other organic carbon' active  0  
+            abbrev  'BODCOD'  name  'Mineralisation BOD and COD' active  1  
+            abbrev  'DBOD_TEWOR'  name  'Oxydation of BOD' active  0  
+            abbrev  'SedOXYDem'  name  'Sediment oxygen demand' active  1  
+            abbrev  'GroMrt_Gre'  name  'Nett primary production and mortality green algae' active  0  
+            abbrev  'GroMrt_Dia'  name  'Nett primary production and mortality diatoms' active  0  
+            abbrev  'PPrLim'  name  'Limitation (numerical) on primary production' active  0  
+            abbrev  'OXYMin'  name  'Potential mimimum dissolved oxygen concentration' active  0  
+            abbrev  'PosOXY'  name  'Positive oxygen concentration' active  1  
+            abbrev  'Prod_TEWOR'  name  'Production fluxes for TEWOR+' active  0  
+            abbrev  'Damrear'  name  'Reaeration at weirs' active  0  
+            abbrev  'VertDisp'  name  'Vertical dispersion (segment -> exchange)' active  0  
+    end-selected_processes 
+    end-substance
+    substance 'SOD' 
+    name      'Sediment oxygen demand (SOD)' 
+    unit      '(gO2/m3)' 
+    active     0  
+    selected_processes
+            abbrev  'SedOXYDem'  name  'Sediment oxygen demand' active  1  
+            abbrev  'SED_SOD'  name  'Sedimentation of oxygen demand' active  0  
+    end-selected_processes 
+    end-substance
+end-substance_group
+process_parameter 'CBOD5'   
+    name          'carbonaceous BOD (first pool) at 5 days'   
+    unit          '(gO2/m3)'   
+    modelled       1    
+    default        0.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'NH4'   
+    name          'Ammonium (NH4)'   
+    unit          '(gN/m3)'   
+    modelled       1    
+    default        0.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'OXY'   
+    name          'Dissolved Oxygen'   
+    unit          '(g/m3)'   
+    modelled       1    
+    default        1.000e+001
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'SOD'   
+    name          'Sediment oxygen demand (SOD)'   
+    unit          '(gO2/m3)'   
+    modelled       1    
+    default        0.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'Depth'   
+    name          'depth of segment'   
+    unit          '(m)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'DynDepth'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'TotalDepth'   
+    name          'total depth water column'   
+    unit          '(m)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'TotDepth'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'RcNit'   
+    name          'first-order nitrification rate'   
+    unit          '(1/d)'   
+    modelled       0    
+    default        1.000e-001
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'SWRear'   
+    name          'switch for oxygen reaeration formulation (1-12)'   
+    unit          '(-)'   
+    modelled       0    
+    default        1.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'KLRear'   
+    name          'reaeration transfer coefficient'   
+    unit          '(m/d)'   
+    modelled       0    
+    default        1.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'SaturOXY'   
+    name          'saturation concentration'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'SaturOXY'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'RcBOD'   
+    name          'decay rate BOD (first pool) at 20 oC'   
+    unit          '(1/d)'   
+    modelled       0    
+    default        3.000e-001
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'COXBOD'   
+    name          'critical oxygen concentration for BOD decay'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        1.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'OOXBOD'   
+    name          'optimum oxygen concentration for BOD decay'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        5.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'CFLBOD'   
+    name          'oxygen function level for oxygen below COXBOD'   
+    unit          '(-)'   
+    modelled       0    
+    default        3.000e-001
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'fSOD'   
+    name          'zeroth-order sediment oxygen demand flux'   
+    unit          '(gO2/m2/d)'   
+    modelled       0    
+    default        0.000e+000
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'RcSOD'   
+    name          'decay rate SOD at 20 oC'   
+    unit          '(1/d)'   
+    modelled       0    
+    default        1.000e-001
+    internal       0    
+    specification  0    
+    input_process  '  '  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'LocalDepth'   
+    name          'depth from water surface to bottom of segment'   
+    unit          '(m)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'TotDepth'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'O2FuncNIT'   
+    name          'oxygen function for nitrification'   
+    unit          '(-)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'Nitrif_NH4'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'RCREAR'   
+    name          'rate constant for reaeration'   
+    unit          '(1/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'RearOXY'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'SatPercOXY'   
+    name          'Actual saturation percentage O2'   
+    unit          '(%)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'RearOXY'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'O2FuncBOD'   
+    name          'oxygen function for decay of CBOD'   
+    unit          '(-)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  0    
+    input_process  'DBOD_TEWOR'  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'AgeFun'   
+    name          'age function for decay CBOD and NBOD'   
+    unit          '(-)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'BOD5'   
+    name          'BOD5'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  0    
+    input_process  'DBOD_TEWOR'  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'BODu'   
+    name          'calculated carbonaceous BOD at ultimate'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  0    
+    input_process  'DBOD_TEWOR'  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'COD'   
+    name          'Chemical oxygen demand COD'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'BOD5-POC'   
+    name          'contribution of POC to BOD5'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'BODu-POC'   
+    name          'contribution of POC to calculated BODu'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'BOD5-Phyt'   
+    name          'contribution of phytoplankton to BOD5'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'BODu-Phyt'   
+    name          'contribution of Phyt to calculated BODu'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'BODN'   
+    name          'calculated nitrogenous BOD at ultimate'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'DO'   
+    name          'dissolved oxygen concentration'   
+    unit          '(gO2/m3)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'PosOXY'  
+    delft3d_par    0    
+    output_par     1    
+end-process_parameter
+process_parameter 'Temp'   
+    name          'ambient water temperature'   
+    unit          '(oC)'   
+    modelled       0    
+    default        1.500e+001
+    internal       0    
+    specification  0    
+    input_process  'Temperatur'  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'VWind'   
+    name          'wind speed'   
+    unit          '(m/s)'   
+    modelled       0    
+    default        3.000e+000
+    internal       0    
+    specification  0    
+    input_process  'Meteo'  
+    delft3d_par    1    
+    output_par     0    
+end-process_parameter
+process_parameter 'dNitrif'   
+    name          'nitrification flux'   
+    unit          '(gN/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'Nitrif_NH4'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dREAROXY'   
+    name          'reaeration flux of dissolved oxygen'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'RearOXY'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dCBOD5'   
+    name          'decay flux of CBOD5'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dCBOD5_2'   
+    name          'decay flux of CBOD5_2'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dCBODu'   
+    name          'decay flux of CBODu'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dCBODu_2'   
+    name          'decay flux of CBODu_2'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dNBOD5'   
+    name          'decay flux of NBOD5'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dNBODu'   
+    name          'decay flux of NBODu'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dCOD_Cr'   
+    name          'decay flux of COD_Cr'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dCOD_Mn'   
+    name          'decay flux of COD_Mn'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dOxyBODCOD'   
+    name          'oxygen consumption from decay BOD and COD'   
+    unit          '(gO2/m3/d)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'BODCOD'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter
+process_parameter 'dDumPosOXY'   
+    name          'dummy flux to access posoxy'   
+    unit          '(-)'   
+    modelled       0    
+    default        -9.990e+002
+    internal       0    
+    specification  1    
+    input_process  'PosOXY'  
+    delft3d_par    0    
+    output_par     0    
+end-process_parameter

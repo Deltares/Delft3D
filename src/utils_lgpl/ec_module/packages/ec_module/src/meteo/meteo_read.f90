@@ -1,32 +1,32 @@
 module meteo_read
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! see meteo.f90
@@ -40,7 +40,10 @@ module meteo_read
 !!--declarations----------------------------------------------------------------
    use precision
    use meteo_data
+   use time_module
+   use string_module
 
+   implicit none
 
 contains
 
@@ -58,40 +61,41 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
    logical                               :: success
    type(tmeteoitem)                      :: meteoitem
    !
-   integer                  :: ierr
-   integer                  :: il
-   integer                  :: ir
-   integer                  :: i_since
-   integer                  :: i_unit
-   integer                  :: flow_julday
-   integer                  :: meteo_julday
-   integer                  :: day
-   integer                  :: hrs
-   integer                  :: meteo_itdate
-   integer                  :: min
-   integer                  :: month  
-   integer                  :: sec
-   integer                  :: time_zone_hrs
-   integer                  :: time_zone_min
-   integer                  :: year     
-   real(fp)                 :: day_diff
-   real(fp)                 :: min_diff
-   real(fp)                 :: meteo_tzone
-   real(fp)                 :: time_conv
-   real(fp)                 :: tzone_diff
-   character(1)             :: sign_time_zone
-   character(600)           :: rec
-   character(300)           :: time_definition
+   integer                       :: ierr
+   integer                       :: il
+   integer                       :: ir
+   integer                       :: i_since
+   integer                       :: i_unit
+   integer                       :: flow_julday
+   integer                       :: meteo_julday
+   integer                       :: day
+   integer                       :: hrs
+   integer                       :: meteo_itdate
+   integer                       :: min
+   integer                       :: month
+   integer                       :: sec
+   integer                       :: time_zone_hrs
+   integer                       :: time_zone_min
+   integer                       :: year
+   real(fp)                      :: day_diff
+   real(fp)                      :: min_diff
+   real(fp)                      :: meteo_tzone
+   real(fp)                      :: time_conv
+   real(fp)                      :: tzone_diff
+   character(len=1)              :: sign_time_zone
+   character(len=:), allocatable :: rec
+   character(len=:), allocatable :: time_definition
+   character(len=256)            :: iomsg
    !
    if (meteoitem%filetype == uniuvp) then
       success = .true.
       return
    endif
    !
-   rec             = ' '
    time_definition = ' '
    do
-      read (minp,'(a)', iostat=ierr) rec
+      rec = ' '
+      call GetLine(minp, rec, ierr, iomsg)
       if (ierr /= 0) then
          meteomessage = 'Meteo input: Premature end of file; expecting data at additional time'
          success = .false.
@@ -101,7 +105,7 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
       ir = index(rec, '#') - 1
       if (ir == -1) then
          ir = len(rec)
-      endif      
+      endif
       if (il == 1) then
          !
          ! No equal sign found in line
@@ -116,7 +120,7 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
             ! Line contains entry other than a keyword or commentary
             ! NOT ALLOWED: ERROR
             !
-            meteomessage = 'Meteo input: wrong entry in meteofile '//trim(meteoitem%filename)//'; expecting keyword or commentary, but found: '//rec(1:40)
+            meteomessage = 'Meteo input: wrong entry in meteofile '//trim(meteoitem%filename)//'; expecting keyword or commentary, but found: '//trim(rec)
             success = .false.
             return
          endif
@@ -125,10 +129,9 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
       ! Make the keyword case insensitive
       !
       call small(rec,il)
-      !  
+      !
       if ( index(rec(1:il-2), 'time') /= 0 )  then
-         read( rec(il:ir), '(a)', iostat=ierr )    time_definition  
-         time_definition = adjustl(time_definition)
+         time_definition = adjustl(rec(il:ir))
          exit
       else
          cycle
@@ -139,7 +142,7 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
    !
    time_conv = 1.0_fp
    i_since = index(time_definition, 'since') - 1
-   if (i_since < 2) then 
+   if (i_since < 2) then
       write(meteomessage, '(2a)') 'Meteo input: Expecting "since" in time specification, but getting: ', &
           & trim(time_definition)
       success = .false.
@@ -151,7 +154,7 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
       i_unit    = i_since - 9
    elseif ( index(meteoitem%time_unit, ' min '   ) /= 0 ) then
       time_conv = 1.0_fp
-      i_unit    = i_since - 5   
+      i_unit    = i_since - 5
    elseif ( index(meteoitem%time_unit, ' m '     ) /= 0 ) then
       time_conv = 1.0_fp
       i_unit    = i_since - 3
@@ -164,7 +167,7 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
    elseif ( index(meteoitem%time_unit, ' h '     ) /= 0 ) then
       time_conv = 60.0_fp
       i_unit    = i_since - 3
-   else 
+   else
       write(meteomessage, '(2a)') 'Meteo input: Incorrect time unit given, expecting minutes or hours, but getting ', &
           & trim(meteoitem%time_unit)
       success = .false.
@@ -217,18 +220,18 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
    !
    ! Compare reference times of FLOW and METEO
    !
-   call juldat(meteo_itdate, meteo_julday)
-   call juldat(flow_itdate, flow_julday)
+   meteo_julday = ymd2jul(meteo_itdate)
+   flow_julday = ymd2jul(flow_itdate)
    !
    ! Determine difference between time zones of FLOW and METEO
    !
    tzone_diff = flow_tzone - meteo_tzone
    !
    ! Difference in days
-   ! 
+   !
    day_diff = real(flow_julday, fp) - real(meteo_julday, fp)
    !
-   ! Difference in minutes, including hours, minutes and seconds from meteo reference time 
+   ! Difference in minutes, including hours, minutes and seconds from meteo reference time
    ! Include difference in time zone between FLOW and meteo
    !
    min_diff = day_diff*1440.0_fp - real(hrs, fp)*60.0_fp - real(min, fp) - real(sec, fp)/60.0_fp
@@ -288,7 +291,7 @@ function read_equidistant_block(minp, meteoitem, d, mx, nx) result(success)
       do j = 1,meteoitem%numn
          if (d(i,j) == meteoitem%nodata_value) then
             d(i,j) = nodata_default
-         else   
+         else
             !
             ! Conversion of pressure to Pa (N/m2). If already Pa, p_conv = 1.0_hp
             !
@@ -364,7 +367,7 @@ function read_curvilinear_block(minp, d, meteoitem) result(success)
          if (d(i,j) == meteoitem%nodata_value) then
             d(i,j) = nodata_default
          else
-            if (meteoitem%quantities(1) == 'patm') then 
+            if (meteoitem%quantities(1) == 'patm') then
                !
                ! Conversion of pressure to Pa (N/m2). If already Pa, p_conv = 1.0_hp
                !
@@ -397,7 +400,7 @@ end function read_curvilinear_block
 
 function readseries(minp,d,kx,tread) result(success)
    !
-   !  Read uniform time serie 
+   !  Read uniform time serie
    !  number of columns is number of dimensions
    !
    implicit none
@@ -408,8 +411,9 @@ function readseries(minp,d,kx,tread) result(success)
    real(fp)                      :: tread
    logical                       :: success
    !
-   integer                :: k
-   character(132)         :: rec
+   integer                   :: k
+   integer                   :: istat
+   character(:), allocatable :: rec
    !
    if ( size(d,1) .lt. kx ) then
       meteomessage = 'READSERIES: wrong sizes'
@@ -417,7 +421,8 @@ function readseries(minp,d,kx,tread) result(success)
       return
    endif
 10  continue
-   read (minp,'(a)',end = 100) rec
+   call GetLine(minp, rec, istat)
+   if (istat /= 0) goto 100
    if (rec(1:1) .eq. '*') goto 10
    read(rec,*,err = 101) tread, ( d(k), k = 1, kx )
    do k = 1, kx
@@ -464,7 +469,7 @@ function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
       return
    endif
    !
-   ! Loop over the third dimension kx 
+   ! Loop over the third dimension kx
    !
    do k = 1, kx
       do j = 1, mx
@@ -473,7 +478,7 @@ function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
             if (isnan(d(j,i,k))) goto 201
          enddo
       enddo
-   enddo   
+   enddo
    !
    success = .true.
    return
@@ -513,8 +518,9 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    integer                    :: ir
    integer                    :: iread
    integer                    :: j
+   integer                    :: istat
    real(fp)                   :: p_drop_spw_eye
-   character(132)             :: rec
+   character(:), allocatable  :: rec
    !
    if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx ) then
       meteomessage = 'READ_SPIDERWEB_BLOCK: wrong sizes'
@@ -524,13 +530,14 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    !
    p_drop_spw_eye = 0.0_fp
    !
-   do iread = 1,3 
-      read (minp,'(a)',end=100) rec
+   do iread = 1,3
+      call GetLine(minp, rec, istat)
+      if (istat /= 0) goto 100
       il = index(rec, '=') + 1
       ir = index(rec, '#') - 1
       if (ir == -1) then
          ir = len(rec)
-      endif      
+      endif
       if     ( index(rec(1:il-2), 'x_spw_eye'      ) /=0)  then
          read( rec(il:ir), *, err=101 )                 x_spw_eye
       elseif ( index(rec(1:il-2), 'y_spw_eye'      ) /=0)  then
@@ -559,7 +566,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    enddo
    !
    ! Pressure
-   ! 
+   !
    do j = 2, nx
       read(minp,*,end = 100, err=203) ( d(i,j,3), i = 1, mx-1 )
       do i = 1, mx-1
@@ -660,4 +667,3 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
 end function read_spiderweb_block
 
 end module meteo_read
-

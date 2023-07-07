@@ -5,7 +5,7 @@ function varargout = xparse(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -64,6 +64,8 @@ switch cmd
         [varargout{1:nargout}] = getRecursiveNamedChildNS(varargin{:});
     case 'getNamedChildNS'
         [varargout{1:nargout}] = getNamedChildNS(varargin{:});
+    case 'getAttribute'
+        [varargout{1:nargout}] = getAttribute(varargin{:});
     case 'getAttributeNS'
         [varargout{1:nargout}] = getAttributeNS(varargin{:});
     otherwise
@@ -224,6 +226,25 @@ if isempty(Item)
     error('Element <%s> does not include child element <%s>',char(Parent.getNodeName),element)
 elseif length(Item)>1
     error('Element <%s> includes multiple child elements <%s>',char(Parent.getNodeName),element)
+end
+
+function [S,err] = getAttribute(Element,name)
+Attribs = Element.getAttributes;
+nAtt = Attribs.getLength;
+err = false;
+for i = 0:nAtt-1
+    fullAttName = char(Attribs.item(i).getName);
+    ok = isequal(fullAttName,name);
+    if ok
+        S = char(Attribs.item(i).getValue);
+        return
+    end
+end
+if nargout>1
+    S = '';
+    err = true;
+else
+    error('Attribute "%s" not found.',name)
 end
 
 function [S,err] = getAttributeNS(Element,NameSpaces,namespace,name)

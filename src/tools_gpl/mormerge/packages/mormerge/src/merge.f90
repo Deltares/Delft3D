@@ -1,7 +1,7 @@
 subroutine merge (inputfile, workdir, runid)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine merge (inputfile, workdir, runid)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !
@@ -37,6 +37,7 @@ subroutine merge (inputfile, workdir, runid)
     use properties, only: prop_file ! The only is needed to avoid a clash with
                                     ! the local defined cident
     use precision
+    use mormerge_version_module
     !
     implicit none
     !
@@ -71,9 +72,11 @@ subroutine merge (inputfile, workdir, runid)
     integer                                             :: lunout
     integer                                             :: scanmode
     integer, external                                   :: createstream
-    integer, external                                   :: newunit
     integer       , dimension(:)  , allocatable         :: handles         ! data stream handles
+    real(hp)                                            :: dim_real
     real(hp)                                            :: totalweight
+    real(hp)                                            :: timestep
+    real(hp)                                            :: timestep_min
     real(hp)      , dimension(:)  , allocatable         :: weight          ! weight of condition
     real(hp)      , dimension(:,:), allocatable         :: dbdsed          ! sediment mass per fraction
     real(hp)      , dimension(:,:), allocatable         :: dbdsed_merged   ! merged sediment mass per fraction
@@ -88,21 +91,21 @@ subroutine merge (inputfile, workdir, runid)
     character(256)                                      :: filnam
     character(256)                                      :: value
     character(256)                                      :: mmsyncfilnam
-    character(256)                                      :: version_full   ! by calling getfullversionstring_DELFTFLOW, the version number is visible with the what command
+    character(256)                                      :: full_version   ! by calling getfullversionstring_DELFTFLOW, the version number is visible with the what command
     type(tree_data)    , pointer                        :: infile_root
     type(tree_data)    , pointer                        :: infile_ptr
     type(tree_data)    , pointer                        :: node_ptr
 !
 !! executable statements -------------------------------------------------------
 !
-   call getfullversionstring_MORMERGE(version_full)
+   call getfullversionstring_mormerge(full_version)
    !
    call util_getenv('ARCH',value)
    call small(value,1000)
    if (value == 'win32' .or. value == 'w32') then
       arch = 'win32'
       slash = '\'
-   elseif (value == 'win64') then
+   elseif (value == 'win64' .or. value == 'x64') then
       arch = 'win64'
       slash = '\'
    else
@@ -114,7 +117,7 @@ subroutine merge (inputfile, workdir, runid)
    !
    write(filnam,'(3a)') 'mormerge_', trim(runid), '.log'
    open(newunit = lundia, file=trim(filnam), status='replace', action='write')
-   write(lundia,'( a)') trim(version_full(5:))
+   write(lundia,'( a)') trim(full_version(5:))
    write(lundia,'( a)') ' '
    write(lundia,'( a)') 'COMMAND LINE ARGUMENTS'
    write(lundia,'(2a)') '   inputfile : ',trim(inputfile)
@@ -221,7 +224,7 @@ subroutine merge (inputfile, workdir, runid)
       write(*,'(a)') '   Connection established, continuing...'
    enddo
    !
-   ! Get dimensions from Delft3D-FLOW
+   ! Get dimensions for the arrays
    !
    do icond=1,ncond
       call getarray(handles(icond),rn,2)
@@ -261,41 +264,68 @@ subroutine merge (inputfile, workdir, runid)
    write(*,'(a)') 'Infinite loop started ...'
    do while (.not. finished)
       !
-      ! Initialise dps_merged, bodsed_merged
-      !
-      dbdsed_merged = 0.0_hp
-      !
-      ! Get updated bodsed for all conditions
+      ! Get the dimension of the array to process, sent in double precision format
       !
       do icond = 1, ncond
-         call getarray(handles(icond), dbdsed, nmmax*lsed)
-           ! write(lundia,'(a,i0)') 'Getting:',handles(icond)
-           ! do i=1,nmmax
-           !    write(lundia,*) i, dbdsed(i,1)
-           ! enddo
-         dbdsed_merged  = dbdsed_merged +  dbdsed  * weight(icond)
+         call getarray(handles(icond), dim_real, 1)
       enddo
       !
-      ! Put bodsed to Delft3D-FLOW
       !
-      !     write(lundia,'(a)') 'Putting:'
-      !     do i=1,nmmax
-      !        write(lundia,*) i, dbdsed_merged(i,1)
-      !     enddo
-      do icond=1,ncond
-         call putarray(handles(icond), dbdsed_merged, nmmax*lsed)
-      enddo
-      loopcount = loopcount + 1
       !
-      ! Synchronisation
-      !
-      if (mod(loopcount,10) == 0) then
-         open (newunit = lunfil, file=mmsyncfilnam, position='append', action='write', iostat=istat)
-         if (istat /= 0) then
-            write(*,*)' *** WARNING: unable to write in file ',trim(mmsyncfilnam)
-         else
-            write(lunfil,'(i0)') loopcount
-            close(lunfil)
+      if (dim_real < 1.5_hp) then
+         !
+         ! dim=1: Assuming that the size of the new time step is going to be sent
+         ! Use min-operator
+         ! Initialize timestep_min on a huge value
+         !
+         timestep_min = 1.0e10
+         do icond = 1, ncond
+            call getarray(handles(icond), timestep, 1)
+            timestep_min = min(timestep_min, timestep)
+         enddo
+         do icond=1,ncond
+            call putarray(handles(icond), timestep_min, 1)
+         enddo
+      else
+         !
+         ! dim > 1.5: Assuming that the dbdsed is going to be sent
+         ! Use merge operator
+         ! Initialize dps_merged
+         !
+         dbdsed_merged = 0.0_hp
+         !
+         ! Get updated bodsed for all conditions
+         !
+         do icond = 1, ncond
+            call getarray(handles(icond), dbdsed, nmmax*lsed)
+              ! write(lundia,'(a,i0)') 'Getting:',handles(icond)
+              ! do i=1,nmmax
+              !    write(lundia,*) i, dbdsed(i,1)
+              ! enddo
+            dbdsed_merged  = dbdsed_merged +  dbdsed  * weight(icond)
+         enddo
+         !
+         ! Put bodsed to Delft3D-FLOW
+         !
+         !     write(lundia,'(a)') 'Putting:'
+         !     do i=1,nmmax
+         !        write(lundia,*) i, dbdsed_merged(i,1)
+         !     enddo
+         do icond=1,ncond
+            call putarray(handles(icond), dbdsed_merged, nmmax*lsed)
+         enddo
+         loopcount = loopcount + 1
+         !
+         ! Synchronisation
+         !
+         if (mod(loopcount,10) == 0) then
+            open (newunit = lunfil, file=mmsyncfilnam, position='append', action='write', iostat=istat)
+            if (istat /= 0) then
+               write(*,*)' *** WARNING: unable to write in file ',trim(mmsyncfilnam)
+            else
+               write(lunfil,'(i0)') loopcount
+               close(lunfil)
+            endif
          endif
       endif
    enddo

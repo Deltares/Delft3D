@@ -3,7 +3,7 @@ function make_diocore
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -32,13 +32,26 @@ function make_diocore
 %   $Id$
 
 fprintf('Initializing...\n');
-cppfiles0=dir('*.cpp');
+cppfiles0 = dir('*.cpp');
 cppfiles0 = {cppfiles0.name};
-copycppfiles
+
+delftio_folder = '../../../../utils_lgpl/delftio/packages/delftio_shm/src/diof90/';
+fprintf('Copying cpp files from %s ...\n', delftio_folder);
+copycppfiles(delftio_folder)
 
 fprintf('Compiling and linking...\n');
 files = {'dio_core.cpp','dio_shm.cpp','dio_shm_datablock.cpp','dio_shm_f2c_c.cpp','dio_shm_handle.cpp','dio_shm_sync.cpp'};
+%
+% compile the diocore mex file
+% add -v switch for verbose compilation process
+%
 mex('-DWIN32','-I../../../../utils_lgpl/delftio/packages/delftio_shm/include',files{:})
+%
+% Optionally include -R2018a switch to use new MX_HAS_INTERLEAVED_COMPLEX memory management
+%
+%mex('-R2018a','-DWIN32','-I../../../../utils_lgpl/delftio/packages/delftio_shm/include',files{:})
+
+% wait a second ...
 pause(1)
 
 fprintf('Cleaning up ...\n');
@@ -59,11 +72,10 @@ elseif exist('dio_core.mexw64')
     movefile('dio_core.mexw64',installdir)
 end
 
-fprintf('Finished.');
+fprintf('Finished.\n');
 
 
-function copycppfiles
-srcpath = '../../../../utils_lgpl/delftio/packages/delftio_shm/src/diof90/';
+function copycppfiles(srcpath)
 if sscanf(version,'%f',1)<6
     srcpath = strrep(srcpath,'/',filesep);
     d = dir([srcpath '*.cpp']);

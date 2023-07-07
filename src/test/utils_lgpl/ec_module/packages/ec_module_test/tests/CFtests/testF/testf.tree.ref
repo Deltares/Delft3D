@@ -1,0 +1,11 @@
+.
+EC MODULE ITEMS:
+Target Item 00029 (name=WATER_LEVEL_interpolated, vectormax=1)
+Element Set 00010
+   Connection 00033, Converter 00032, targetIndex  0001
+      Source Item 00013 (name=WATER_LEVEL, vectormax=1)
+         File Reader 00002(filename=BoundaryConditions.bc)
+            BCBlock 00001
+            Quantity = WATER_LEVEL
+            Location = BOUND_1
+.

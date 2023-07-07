@@ -1,5 +1,0 @@
-'nwq-ext1.adm'       ; nest segments and weight factors overall model
-'waq-ext1.map'       ; map file overall model
-   1                 ; number of active substances to nest
-'nestwq2.dia'        ; diagnostics NESTWQ2 (view expect this name as filename)
-'nwq-ext2.bcc'       ; boundary conditions for nested model

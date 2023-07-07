@@ -15,7 +15,7 @@ function S = nodelemesh(cmd,FileName)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -76,7 +76,7 @@ S.EleFile = fullfile(p,[f eEle]);
 %
 % read node data
 %
-fid = fopen(S.NodeFile,'r');
+fid = fopen(S.NodeFile,'r','n','US-ASCII');
 try
     % triangle: 5961  2  0  1
     % easymesh: <number of nodes>
@@ -108,7 +108,7 @@ end
 %
 % read ele data
 %
-fid = fopen(S.EleFile,'r');
+fid = fopen(S.EleFile,'r','n','US-ASCII');
 try
     % triangle: 11489  3  0
     % easymesh: <number of elements>

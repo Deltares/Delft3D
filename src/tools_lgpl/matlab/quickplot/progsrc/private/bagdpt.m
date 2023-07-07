@@ -7,7 +7,7 @@ function Out=bagdpt(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -63,7 +63,7 @@ if nargin==0 || strcmp(filename,'?')
 end
 Structure.FileName=filename;
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Cannot open %s.',filename)
 end

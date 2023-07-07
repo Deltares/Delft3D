@@ -40,16 +40,38 @@ function varargout=waquaio(sds,exper,field,varargin)
 %
 %   * subst:<substance name>  : substance field, time
 %
-%   * weirs    : udam,vdam,uhgh,vhgh: locations and heights of weirs
+%   * weirs    : udam,vdam,uhgh,vhgh: weir locations and weir crest heights
+%     weirs2-cresth  : udam,vdam,uhgh,vhgh: weir locations and weir crest heights
+%     weirs2-sill1   : udam,vdam,uhgh,vhgh: weir locations and weir sill heights (low M/N)
+%     weirs2-sill2   : udam,vdam,uhgh,vhgh: weir locations and weir sill heights (high M/N)
+%   * weirs2   : udam,vdam: locations of weirs - new style
+%     weirs2-cresth  : udam,vdam,uhgh,vhgh: weir locations and weir crest heights - new style
+%     weirs2-sill1   : udam,vdam,uhgh,vhgh: weir locations and weir sill heights (low M/N) - new style
+%     weirs2-sill2   : udam,vdam,uhgh,vhgh: weir locations and weir sill heights (high M/N) - new style
+%     weirs2-crestl  : udam,vdam,uhgh,vhgh: weir locations and weir crest lengths - new style
+%     weirs2-talud1  : udam,vdam,uhgh,vhgh: weir locations and weir slopes (low M/N) - new style
+%     weirs2-talud2  : udam,vdam,uhgh,vhgh: weir locations and weir slopes (high M/N) - new style
+%     weirs2-calib1  : udam,vdam,uhgh,vhgh: weir locations and weir calibration factor 1 - new style
+%     weirs2-calib2  : udam,vdam,uhgh,vhgh: weir locations and weir calibration factor 2 - new style
+%     weirs2-vegh    : udam,vdam,uhgh,vhgh: weir locations and vegetation height at weir - new style
+%     weirs2-vegdens : udam,vdam,uhgh,vhgh: weir locations and vegetation density at weir - new style
+%     weirs2-vegdrag : udam,vdam,uhgh,vhgh: weir locations and vegetation drag at weir - new style
+%     weirs2-fc      : udam,vdam,uhgh,vhgh: weir locations and flow conditions - new style
+%     weirs2-q       : udam,vdam,uhgh,vhgh: weir locations and unit discharge at weir - new style
+%     weirs2-h       : udam,vdam,uhgh,vhgh: weir locations and overflow depth at weir - new style
+%     weirs2-u       : udam,vdam,uhgh,vhgh: weir locations and velocity at weir - new style
+%     weirs2-de      : udam,vdam,uhgh,vhgh: weir locations and head loss at weir - new style
 %
 %   * wind     : wind vector, time
 %   * press    : pressure, time
 %
 %   * flowstat-wl : water level station names
 %   * xy-wl       : water level station xy coordinates
+%   * mn-wl       : water level station mn coordinates
 %   * wlstat      : water level at station
 %   * flowstat-uv : current station names
 %   * xy-uv       : current station xy coordinates
+%   * mn-uv       : current station mn coordinates
 %   * uv-stat     : velocity at current station
 %                   (U,V components in X,Y direction)
 %   * uv0-stat    : velocity at current station
@@ -57,6 +79,8 @@ function varargout=waquaio(sds,exper,field,varargin)
 %                    NO_BACKTRANSFORM keyword in SIMINP file)
 %   * flowcrs-u   : u-discharge crosssection names
 %   * flowcrs-v   : v-discharge crosssection names
+%   * mq-stat     : instantaneous discharge
+%   * cq-stat     : cumulative discharge
 %
 %   * substances  : substance names,substance units
 %   * transtat    : concentration station names
@@ -68,7 +92,7 @@ function varargout=waquaio(sds,exper,field,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -125,6 +149,7 @@ end
 %
 if waqua('exists',sds,exper,'MESH_IDIMEN')
     dimen=waqua('readsds',sds,exper,'MESH_IDIMEN');
+    dimen(100)=0;
     %  1: NDIM 1,2,3
     %  2: MMAX
     %  3: NMAX
@@ -143,27 +168,28 @@ if waqua('exists',sds,exper,'MESH_IDIMEN')
     % 16: KURFLG = 0 (Rect), 1 (Curv), 2 (RectOnSphe), 3 (CurvOnSphe)
     % 17: NROU = NumWeirs
     % 18: KMAX
-    % 19: --
+    % 19: ISILOR = 0 (pos.down), 1 (pos.up) 
     % 20: IDEPO = 0 (pos.down), 1 (pos.up)
     % 21: IRLFLG = 0 (no duplic.spher), 1 (duplic.spher)
     % 22: NBARU = NumUBarrierPoints
     % 23: NBARV = NumVBarrierPoints
     % 24: NBARUV = NumBarrierPoints
     % 25: NTOPT = NumOpeningPoints
-    dim.nmax=dimen(3);
     dim.mmax=dimen(2);
+    dim.nmax=dimen(3);
+    dim.npnt=dimen(5);
     dim.num_irogeo_rows=dimen(10);
     dim.nslu=dimen(11);
     dim.nsluv=dimen(12);
-    dim.nbaruv=dimen(24);
     dim.inact=dimen(15);
     curvl=dimen(16);
     dim.spheric=dimen(16)>2;
     dim.sph_dupl=0; %dimen(21); % do not use the second grid, it is just
     % counting grid points (ref: DCSM98a)
     dim.kmax=dimen(18);
+    dim.nbaruv=dimen(24);
+    dim.nweiu=dimen(38);
     dim.sz=[dim.nmax dim.mmax];
-    dim.npnt=dimen(5);
 elseif waqua('exists',sds,exper,'MESH01_GENERAL_DIMENSIONS')
     dimen=waqua('readsds',sds,exper,'MESH01_GENERAL_DIMENSIONS');
     %  1: typgrd
@@ -275,6 +301,7 @@ elseif ismember(field,{'transtat','trancrs-u','trancrs-v', ...
         'wlstat','wl-stat','u-stat','v-stat','uv-stat','w-stat', ...
         'mq-stat','cq-stat','z-stat','z-stati','z-statc', ...
         'z-sbstat','z-sbstati','z-sbstatc','wl-xy','uv-xy', ...
+        'wl-mn'   ,'uv-mn',                                 ...
         'q-barp','wl-lbarp','vel-lbarp','wl-hbarp','vel-hbarp', ...
         'vel-barp','hg-barp','enl-barp','sl-bar','gl-bar','wd-bar', ...
         'barriers','barrierpoints','mn-transtat','mn-trancrs-u', ...
@@ -414,6 +441,7 @@ switch field
             'wl-stat','u-stat','v-stat','uv-stat','w-stat','mq-stat', ...
             'cq-stat','z-stat','z-stati','z-statc','uv0-stat', ...
             'z-sbstat','z-sbstati','z-sbstatc','wl-xy','uv-xy', ...
+            'wl-mn'   ,'uv-mn'    ,                             ...
             'q-barp','wl-lbarp','vel-lbarp','wl-hbarp','vel-hbarp', ...
             'vel-barp','hg-barp','enl-barp','sl-bar','gl-bar','wd-bar', ...
             'barriers','barrierpoints'}
@@ -473,7 +501,7 @@ switch field
                 statmax=dim.nsluv;
             case 'barrierpoints'
                 statmax=nbaruv;
-            case {'wlstat','wl-stat','wl-xy','uv-xy'}
+            case {'wlstat','wl-stat','wl-xy','uv-xy','wl-mn','uv-mn'}
                 stoffset=0;
                 krange=1;
                 statmax=nowl;
@@ -500,6 +528,9 @@ switch field
                 % the instaneous v cross-sections follow after the
                 % cumulative u cross-sections. Add the ntra skip to
                 % the indices for v cross-sections.
+                if isequal(stationi,':')
+                    stationi = 1:ntra+ntrav;
+                end
                 stationi(stationi>ntra) = stationi(stationi>ntra)+ntra;
                 statmax=ntra+ntrav;
             case 'cq-stat'
@@ -513,6 +544,9 @@ switch field
                 % the cumulative v cross-sections follow after the
                 % instaneous v cross-sections. Add the ntrav skip to
                 % the indices for v cross-sections.
+                if isequal(stationi,':')
+                    stationi = 1:ntra+ntrav;
+                end
                 stationi(stationi>ntra) = stationi(stationi>ntra)+ntrav;
                 statmax=ntra+ntrav;
             case barrierfields
@@ -566,7 +600,7 @@ switch field
                 statmax=nopol;
         end
         if ~isequal(stationi_org,':')
-            if stationi_org<1 || stationi_org>statmax || stationi_org~=round(stationi_org)
+            if any(stationi_org<1 | stationi_org>statmax | stationi_org~=round(stationi_org))
                 if statmax<0
                     error('The variable statmax has not been set for ''%s''',field)
                 elseif statmax==0
@@ -602,15 +636,27 @@ switch field
                 [zgx,zgy]=waqua_get_spatial(sds,exper,'zgrid',dim,refdate,{});
                 mn = sub2ind(size(zgx),MN(:,2),MN(:,1));
                 varargout={zgx(mn) zgy(mn)};
+            case {'wl-mn','uv-mn'}
+                switch field
+                    case 'wl-mn'
+                        ARRAY='CHECKPOINTS_FLOW_IWLPT';
+                    case 'uv-mn'
+                        ARRAY='CHECKPOINTS_FLOW_ICURPT';
+                end
+                stationi=local_argin(argin);
+                MN=waqua('readsds',sds,exper,ARRAY);
+                MN=reshape(MN,[length(MN)/2 2]);
+                varargout = {MN}; 
             case {'wlstat','wl-stat','umag-stat','u-stat','v-stat', ...
                     'mq-stat','cq-stat','w-stat','z-stat','z-stati','z-statc', ...
                     'z-sbstat','z-sbstati','z-sbstatc','barrierdata'}
                 data=waqua('readsds',sds,exper,ARRAY,tstep);
                 switch field
                     case {'z-stat','z-statc','z-sbstat','z-sbstatc'}
-                        z = (data.Data(:,stoffset+(stationi-1)+krange(k)) + ...
-                            data.Data(:,stoffset+(stationi-1)+krange(k+1)))/2;
-                        varargout={z refdate+data.SimTime/1440};
+                        z_int = data.Data(:,stoffset+(stationi-1)+krange(:));
+                        z     = (data.Data(:,stoffset+(stationi-1)+krange(1:kmax)) + ...
+                            data.Data(:,stoffset+(stationi-1)+krange(2:kmax+1)))/2;
+                        varargout={z refdate+data.SimTime/1440 z_int};
                     otherwise
                         varargout={factor*data.Data(:,stoffset+(stationi-1)+krange(k)) refdate+data.SimTime/1440};
                 end
@@ -1180,7 +1226,7 @@ if ~waqua('exists',sds,exper,'MESH_IDIMEN')
                 [x,y]=qp_proj_rotatepole(x,y,lonsp,latsp,0);
             end
             varargout = {x y};
-        case {'wind','press'}
+        case {'wind','press','charnock'}
             [tstep,n,m]=local_argin(argin);
             nmfull = reshape(1:dim.mmax*dim.nmax,dim.mmax,dim.nmax)';
             nm = nmfull(n,m);
@@ -1206,6 +1252,11 @@ if ~waqua('exists',sds,exper,'MESH_IDIMEN')
                     varargout = {windu windv time};
                 case 'press'
                     press = waqua('readsds',sds,exper,'SOLUTION_PRESS',tstep,1:nmmax);
+                    time = refdate+press.SimTime/1440;
+                    press = press.Data(nm);
+                    varargout = {press time};
+                case 'charnock'
+                    press = waqua('readsds',sds,exper,'SOLUTION_CHARNOCK',tstep,1:nmmax);
                     time = refdate+press.SimTime/1440;
                     press = press.Data(nm);
                     varargout = {press time};
@@ -1368,28 +1419,30 @@ switch field
         Y=repmat(Y,[1 1 num_k]);
         varargout={X Y Z refdate+data.SimTime/1440};
         
-    case {'depth','height','depth_wl_points'}
+    case {'depth','height','depth_wl_points','height_wl_points'}
         [n,m]=local_argin(argin);
         nm=nm(n,m);
-        if strcmp(field,'depth_wl_points')
-            %DPS_FLOW only for Waqua
-            data=waqua('readsds',sds,exper,'DPS_FLOW');
-            data(inact)=NaN;
-            data(data==-999)=NaN;
-            Dep=data(nm);
-            Dep(~sact)=NaN;
-        else
-            sact = sact(n,m);
-            dact = sact | sact([2:end end],:) | ...
-                sact(:,[2:end end]) | sact([2:end end],[2:end end]);
-            data=waqua('readsds',sds,exper,'MESH_H');
-            data(inact)=NaN;
-            data(data==-999)=NaN;
-            Dep=data(nm);
-            Dep(~dact)=NaN;
+        switch field
+            case {'height_wl_points','depth_wl_points'}
+                sact = sact(n,m);
+                %DPS_FLOW only for Waqua
+                data=waqua('readsds',sds,exper,'DPS_FLOW');
+                data(inact)=NaN;
+                data(data==-999)=NaN;
+                Dep=data(nm);
+                Dep(~sact)=NaN;
+            otherwise
+                sact = sact(n,m);
+                dact = sact | sact([2:end end],:) | ...
+                    sact(:,[2:end end]) | sact([2:end end],[2:end end]);
+                data=waqua('readsds',sds,exper,'MESH_H');
+                data(inact)=NaN;
+                data(data==-999)=NaN;
+                Dep=data(nm);
+                Dep(~dact)=NaN;
         end
         switch field
-            case 'height'
+            case {'height','height_wl_points'}
                 varargout={-Dep};
             otherwise
                 varargout={Dep};
@@ -1666,7 +1719,7 @@ switch field
         end
         varargout={VAR refdate+var.SimTime/1440};
         
-    case {'weirs'}
+    case {'weirs','weirs-cresth','weirs-sill1','weirs-sill2'}
         [n,m]=local_argin(argin);
         nm=nm(n,m);
         sznm=size(nm);
@@ -1692,16 +1745,115 @@ switch field
         if nargout==2
             varargout={udam vdam};
         else
-            wh=waqua('readsds',sds,exper,'COEFF_FLOW_WEIDIM');
-            wh=reshape(wh,[length(wh)/6 6]);
             uhgh=zeros(sznm);
             vhgh=zeros(sznm);
             %
+            wh=waqua('readsds',sds,exper,'COEFF_FLOW_WEIDIM');
+            % crest level u, sill level u, crest level v, sill level v
+            % 1            , 2:3         , 4            , 5:6
+            wh=reshape(wh,[length(wh)/6 6]);
             wh = wh(indomain,:);
             %
-            uhgh(uind)=-wh(uflg,1);
-            vhgh(vind)=-wh(vflg,4);
+            switch field
+                case {'weirs','weirs-cresth'}
+                    uhgh(uind)=-wh(uflg,1);
+                    vhgh(vind)=-wh(vflg,4);
+                case 'weirs-sill1'
+                    uhgh(uind)=wh(uflg,2);
+                    vhgh(vind)=wh(vflg,5);
+                case 'weirs-sill2'
+                    uhgh(uind)=wh(uflg,3);
+                    vhgh(vind)=wh(vflg,6);
+            end
             varargout={udam vdam uhgh vhgh};
+        end
+        
+    case {'weirs2','weirs2-cresth','weirs2-sill1','weirs2-sill2','weirs2-crestl','weirs2-talud1','weirs2-talud2','weirs2-calib1','weirs2-calib2','weirs2-vegh','weirs2-vegdens','weirs2-vegdrag','weirs2-fc','weirs2-q','weirs2-h','weirs2-u','weirs2-de'}
+        switch field
+            case {'weirs2-fc','weirs2-q','weirs2-h','weirs2-u','weirs2-de'}
+                [tstep,n,m]=local_argin(argin);
+            otherwise
+                [n,m]=local_argin(argin);
+        end
+        nm=nm(n,m);
+        sznm=size(nm);
+        %-----
+        wp=waqua('readsds',sds,exper,'MESH_WEIRS');
+        wp=reshape(wp,[length(wp)/3 3]);
+        udam=zeros(sznm);
+        vdam=zeros(sznm);
+        %
+        indomain = ismember(wp(:,1),m) & ismember(wp(:,2),n);
+        wp = wp(indomain,:);
+        %
+        minn = min(n)-1;
+        minm = min(m)-1;
+        uflg=wp(:,3)>0; uflg(dim.nweiu+1:end)=0; uind=sub2ind(sznm,wp(uflg,2)-minn,wp(uflg,1)-minm);
+        vflg=wp(:,3)>0; vflg(1:dim.nweiu)=0;     vind=sub2ind(sznm,wp(vflg,2)-minn,wp(vflg,1)-minm);
+        udam(uind)=1;
+        udam(1,:)=0;
+        udam(nm==1 | nm([1 1:end-1],:)==1)=0;
+        vdam(vind)=1;
+        vdam(:,1)=0;
+        vdam(nm==1 | nm(:,[1 1:end-1])==1)=0;
+        if nargout==2 || strcmp(field,'weirs2')
+            varargout={udam vdam};
+        else
+            uhgh=zeros(sznm);
+            vhgh=zeros(sznm);
+            %
+            flds = {'cresth','sill1','sill2','crestl','talud1','talud2','calib1','calib2','vegh','vegdens','vegdrag'};
+            i = 1;
+            sgn = 1;
+            switch field(8:end)
+                case flds
+                    wh=waqua('readsds',sds,exper,'COEFF_FLOW_WEIRDIM');
+                    % crest level, sill level(1,2), crest length, talud ramp (len/height; 1,2), calib (1,2), veg heigh, veg dens, veg drag
+                    % 1          , 2:3            , 4           , 5:6                         , 7:8        , 9        , 10      , 11
+                    %
+                    wh=reshape(wh,[length(wh)/11 11]);
+                    i = find(strcmp(field(8:end),flds));
+                    switch i
+                        case 1
+                            sgn = -1;
+                        otherwise
+                            sgn = 1;
+                    end
+                    time=[];
+                case 'fc'
+                    wh=waqua('readsds',sds,exper,'SOLUTION_FLOW_KCONDW',tstep);
+                    time=refdate+wh.SimTime/1440;
+                    wh=reshape(wh.Data,[length(indomain) 1]);
+                    % -4 : subcritical flow in negative direction,
+                    % -3 : critical flow in negative direction,
+                    % 0 : no flow across weir,
+                    % 3 : critical flow in positive direction,
+                    % 4 : subcritical flow in positive direction.
+                case 'q'
+                    wh=waqua('readsds',sds,exper,'SOLUTION_FLOW_WEIRQ',tstep);
+                    time=refdate+wh.SimTime/1440;
+                    wh=reshape(wh.Data,[length(indomain) 1]);
+                case 'h'
+                    wh=waqua('readsds',sds,exper,'SOLUTION_FLOW_WEIRH',tstep);
+                    time=refdate+wh.SimTime/1440;
+                    wh=reshape(wh.Data,[length(indomain) 1]);
+                case 'u'
+                    wh=waqua('readsds',sds,exper,'SOLUTION_FLOW_WEIRVL',tstep);
+                    time=refdate+wh.SimTime/1440;
+                    wh=reshape(wh.Data,[length(indomain) 1]);
+                case 'de'
+                    wh=waqua('readsds',sds,exper,'SOLUTION_FLOW_WEIRDE',tstep);
+                    time=refdate+wh.SimTime/1440;
+                    wh=reshape(wh.Data,[length(indomain) 1]);
+            end
+            wh = wh(indomain,:);
+            uhgh(uind)=sgn*wh(uflg,i);
+            vhgh(vind)=sgn*wh(vflg,i);
+            if isempty(time)
+                varargout={udam vdam uhgh vhgh};
+            else
+                varargout={udam vdam uhgh vhgh time};
+            end
         end
         
     case {'dissip','energy','vdiffu','pressure'}

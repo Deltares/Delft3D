@@ -1,0 +1,13 @@
+[forcing]
+Name 			= astr02_0001 
+Function		= astronomic
+Quantity		= astronomic component		
+Unit			= -
+Quantity		= waterlevelbnd amplitude		
+Unit			= m
+Quantity		= waterlevelbnd phase			
+Unit			= rad/deg/minutes
+M2    0.5000000    0.0000000
+S2    1.0000000    11.2047000
+
+

@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+    <config>
+        <localPaths>
+            <testCasesDir>./data/cases</testCasesDir>
+            <enginesDir>./data/engines</enginesDir>
+            <referenceDir>./data/reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="local">
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <programs>
+        <!--
+        The order is important. Start with the following programs:
+            command_prompt
+            svn
+            mpi
+        -->
+        <program name="command_prompt">
+            <path>/bin/bash</path>
+            <arguments>
+                <argument>-c</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>svn</path>
+            <environments>
+                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
+            </environments>
+        </program>
+        <program name="execute_singularity" logOutputToFile="true" programStringRemoveQuotes="true">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+            </location>
+            <path>execute_singularity.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="OMP_NUM_THREADS_SWAN" type="raw">1</environment>
+            </environments>
+        </program>
+    </programs>
+    <!--
+    default testCases
+    -->
+    <defaultTestCases>
+        <testCase name="dimr_trunk">
+            <programs>
+                <program ref="execute_singularity">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr_config.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c00" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
+            <maxRunTime>40.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/te0_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/te0_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c01" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c01-validation_3.1.6/dfm</path>
+            <maxRunTime>40.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/fff_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/fff_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c02" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c02-FriesianInlet_schematic/dfm</path>
+            <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c03" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
+            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/r17_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/r17_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c04" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c04-obstacle/dfm</path>
+            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/obw_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/obw_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c05" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c05-california/dfm</path>
+            <maxRunTime>200.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/cca_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/cca_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c06" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c06-loosdrecht/dfm</path>
+            <maxRunTime>1800.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/loo_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/loo_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e100_f02_c07" ref="dimr_trunk">
+            <path>e100_dflowfm-dwaves/f02_delft3d_cases/c07-unstructuredInterpolation/dfm_0500</path>
+            <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="fm/dflowfmoutput/uns_map.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="s1" toleranceAbsolute="0.0001" />
+                        <parameter name="unorm" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="fm/dflowfmoutput/uns_com.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="hrms" toleranceAbsolute="0.01" />
+                        <parameter name="tp" toleranceAbsolute="1.0" />
+                        <parameter name="dir" toleranceAbsolute="400.0" />
+                        <parameter name="distot" toleranceAbsolute="0.1" />
+                    </parameters>
+                </file>
+            </checks>              
+        </testCase>
+        <!-- ======================================================================== -->
+    </testCases>
+</deltaresTestbench_v3>

@@ -21,7 +21,7 @@ function varargout = incremental(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ function FileInfo=Local_open_incremental(filename,DomainSize)
 FileInfo.Check='NotOK';
 FileInfo.FileType='FLS-inc';
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     return
 end
@@ -302,7 +302,7 @@ for d = 1:length(FileInfo.Domain)
     Data.Domain(d) = Domain;
 end
 %
-fid=fopen(FileInfo.FileName,'r');
+fid=fopen(FileInfo.FileName,'r','n','US-ASCII');
 if fid<0
     return
 end
@@ -538,7 +538,7 @@ if Time<FileInfo.Quant(Field).Time
     FileInfo.Quant(Field).Offset=FileInfo.StartData;
     FileInfo.Quant(Field).Time=-inf;
 end
-fid=fopen(FileInfo.FileName,'r');
+fid=fopen(FileInfo.FileName,'r','n','US-ASCII');
 if fid<0
     if isempty(FI2)
         FI2=FileInfo;

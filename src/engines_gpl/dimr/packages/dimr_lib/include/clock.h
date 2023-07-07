@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,10 +36,10 @@
 #pragma once
 
 #include <stdio.h>
-#if HAVE_CONFIG_H
-#   include <sys/time.h>
-#else
+#ifdef _WIN32
 #   include <windows.h>
+#else
+#   include <sys/time.h>
 #endif
 
 

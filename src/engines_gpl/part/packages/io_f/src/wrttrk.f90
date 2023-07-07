@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,8 @@
 !!  rights reserved.
 
       subroutine wrttrk ( lundia , fout   , filnam , ittrkc , ntrk   ,     &
-                          npmax  , xa     , ya     , za     , xyztrk )
+                          npmax  , xa     , ya     , za     , xyztrk ,     &
+                          nosubs , wpart  , track                    )
 !
 !-----------------------------------------------------------------------
 !          Deltares
@@ -73,6 +74,9 @@
 ! xyztrk  i  r*4 3,ntrk            x(1)y(2)z(3)-coordinate corresponding to
 !                                  track starting point if
 !                                  track is calculated else 999.999
+! nosubs  i   i*4                  Number of substances
+! wpart   i  r*4 nosubs,ntrk       Mass of all substances for the particles
+! track   i  r*4 8,ntrk
 !-----------------------------------------------------------------------
 !    local variables:
 !    ----------------
@@ -132,31 +136,35 @@
       real     ( rp), intent(in   ) :: ya    (npmax)           !< y of the particles
       real     ( rp), intent(in   ) :: za    (npmax)           !< z of the particles
       real     ( rp), intent(  out) :: xyztrk(  3  , npmax)    !< work array to padd the particles in
+      integer       , intent(in   ) :: nosubs                  !< number of particles
+      real     ( rp), intent(in   ) :: wpart(nosubs, npmax)    !< mass for all substances per particle
+      real     ( rp), intent(in   ) :: track(  8   , npmax)    !< information on the initial release of the particles
 
 !  declaration and specifications
 !
-      integer, parameter           :: nelmx  = 2
+      integer, parameter           :: nelmx  = 4
       logical                      :: wrswch
       character (len=6) :: errmsg
-      save          grnam2 ,grnam3 ,elt_names ,elt_types ,elt_bytes ,celidt
+      save          grnam2 ,grnam3 , grnam4, elt_names ,elt_types ,elt_bytes ,celidt
 !
 !-----nefis statics
 !
-      logical                            :: first =  .true.
-      real   (sp)                        :: default = 999.999
-      integer(ip), dimension(6,nelmx )   :: elt_dims
+      logical                                :: first =  .true.
+      real   (sp)                            :: default = -999.999
+      integer(ip), dimension(6,nelmx ), save :: elt_dims
       save          first
 !
 !-----end nefis statics
 !
       character (len=16)                   ::  grnam2 = 'trk-info-series'
       character (len=16)                   ::  grnam3 = 'trk-series'
-      character (len=16), dimension(nelmx) ::  elt_names = (/'ITTRKC','XYZTRK'/)
-      character (len=16), dimension(nelmx) ::  elt_types = (/'INTEGER','REAL   '/)
-      integer   (ip)    , dimension(nelmx) ::  elt_bytes = (/ 4 , 4 /)
+      character (len=16)                   ::  grnam4 = 'trk-initial'
+      character (len=16), dimension(nelmx) ::  elt_names = (/'ITTRKC','XYZTRK','WPART','TRACK'/)
+      character (len=16), dimension(nelmx) ::  elt_types = (/'INTEGER','REAL   ','REAL   ','REAL   '/)
+      integer   (ip)    , dimension(nelmx) ::  elt_bytes = (/ 4 , 4 , 4 , 4 /)
       integer   (ip)                       ::  celidt = 0
 
-      integer   (ip) :: ierr2 , it , nelmx2 , nelmx3
+      integer   (ip) :: ierr2 , it , nelmx2 , nelmx3, nelmx4
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "wrttrk", ithndl )
@@ -165,7 +173,8 @@
 !-----initialisation
 !-----------------------------------------------------------------------
       nelmx2 = 1
-      nelmx3 = nelmx  - 1
+      nelmx3 = 2
+      nelmx4 = 1
       ierr2  = 0
       celidt = celidt + 1
 !
@@ -178,6 +187,8 @@
          first = .false.
          call filldm (elt_dims,1   ,1  ,1     ,0       ,0     ,0     ,0  )
          call filldm (elt_dims,2   ,2  ,3     ,npmax   ,0     ,0     ,0  )
+         call filldm (elt_dims,3   ,2  ,nosubs,npmax   ,0     ,0     ,0  )
+         call filldm (elt_dims,4   ,2  ,8     ,npmax   ,0     ,0     ,0  )
       endif
 !-----------------------------------------------------------------------
 !-----group 2, element 1 'ittrkc'
@@ -192,9 +203,15 @@
 !-----------------------------------------------------------------------
 !
       do it=1,ntrk
-         xyztrk(1,it)=xa(it)
-         xyztrk(2,it)=ya(it)
-         xyztrk(3,it)=za(it)
+         if (xa(it).ne.-999.999) then
+            xyztrk(1,it)=xa(it)
+            xyztrk(2,it)=ya(it)
+            xyztrk(3,it)=za(it)
+         else
+            xyztrk(1,it) = default
+            xyztrk(2,it) = default
+            xyztrk(3,it) = default
+         endif
       enddo
 !
 !     assign defaults to not yet released particles
@@ -207,6 +224,22 @@
       call putget (filnam        ,grnam3       ,nelmx3       ,elt_names( 2:),   &
                    elt_dims(:,2:),elt_types(2:),elt_bytes(2:),elt_names( 2 ),   &
                    celidt        ,wrswch       ,ierr2        ,xyztrk       )
+
+      if (ierr2   /=  0) goto 999
+!-----------------------------------------------------------------------
+!-----group 3, element 2 'wpart'
+!-----------------------------------------------------------------------
+      call putget (filnam        ,grnam3       ,nelmx3       ,elt_names( 2:),  &
+                   elt_dims(:,2:),elt_types(2:),elt_bytes(2:),elt_names( 3 ),  &
+                   celidt        ,wrswch       ,ierr2        ,wpart        )
+
+      if (ierr2   /=  0) goto 999
+!-----------------------------------------------------------------------
+!-----group 4, element 1 'track'
+!-----------------------------------------------------------------------
+      call putget (filnam        ,grnam4        ,nelmx4        ,elt_names( 4:),  &
+                   elt_dims(:,4:),elt_types(4:) ,elt_bytes(4:) ,elt_names( 4 ),  &
+                   1             ,wrswch        ,ierr2         ,track        )
 
       if (ierr2   /=  0) goto 999
 !-----------------------------------------------------------------------

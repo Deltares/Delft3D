@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 program read_map
 
     use Dio_Plt_Rw
@@ -50,8 +50,7 @@ program read_map
 !   Open file for storing results
 
     resFile = 'TESTMap-res.txt'
-    resLun = 11
-    open(resLun,file=resFile)
+    open(newunit=resLun,file=resFile)
 
 !   Get MAP IN data set
 

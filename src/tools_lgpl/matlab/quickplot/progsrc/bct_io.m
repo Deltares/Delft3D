@@ -23,7 +23,7 @@ function Info=bct_io(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -128,15 +128,34 @@ switch Tab.TimeUnit
 end
 T=T0+Tab.Data(t,1)/f;
 
-function Info=Local_read_bct(filename)
+function Info = Local_read_bct(filename)
 
-fid=fopen(filename,'r');
+if exist(filename,'file')~=2
+    error('File does not exist: %s',filename)
+end
+fid=fopen(filename,'r','n','US-ASCII');
 Info.Check='NotOK';
 Info.FileName=filename;
 Info.NTables=0;
 
 floc=ftell(fid);
 Line=fgetl(fid);
+line=lower(Line);
+switch deblank(line)
+    case '[forcing]'
+        Info = Local_read_bc(Info,fid);
+        return
+    case '[general]' %SOBEK-3 header, we cycle until we get to [boundary]; In FM-1D input there is [forcing]
+        while ~strcmp(line,'[boundary]') && ~strcmp(line,'[forcing]')
+            line=lower(fgetl(fid));
+            if feof(fid)
+                error('The file seems to be from SOBEK-3 or Delft3D FM 1D. I could not find the [boundary] or [forcing] block')
+            end
+        end
+        Info = Local_read_bc(Info,fid);
+        return
+end
+%
 while ischar(Line) && ~isempty(Line) && Line(1)=='#'
     floc=ftell(fid);
     Line=fgetl(fid);
@@ -204,6 +223,92 @@ if Info.NTables==0
 end
 Info.Check='OK';
 
+
+function Info = Local_read_bc(Info,fid)
+i    = 1;
+NPar = 0;
+while ~feof(fid)
+    floc = ftell(fid);
+    %
+    Line = fgetl(fid);
+    ieq = strfind(Line,'=');
+    if isempty(ieq)
+        key = deblank(Line);
+        if any(strcmpi(key,{'[boundary]','[lateraldischarge]','[forcing]'}))
+            continue
+        end
+        Data = sscanf(Line,'%f',inf);
+        if length(Data)==NPar
+            % data
+            fseek(fid,floc,-1);
+            Data = fscanf(fid,'%f',[NPar inf]);
+            Info.Table(i).Data = Data';
+            Info.NTables=Info.NTables+1;
+            
+            %display
+            %fprintf('Table for bc read: %s \n',Info.Table(i).Location)
+            
+            %update
+            if isempty(Info.Table(i).Data)
+                warning('Empty data. Probably an error in reading.')
+            end
+            i=i+1;
+            NPar=0;
+        else
+            error('Unable to identify keyword-value pair on line: %s',Line)
+        end
+    else
+        ieq = ieq(1);
+        key = strtrim(Line(1:ieq-1));
+        remainder = strtrim(Line(ieq+1:end));
+    end
+    switch lower(key)
+        case 'name'
+            % Name                            = Downstream
+            Info.Table(i).Name = '';
+            Info.Table(i).Contents = '';
+            Info.Table(i).Location = remainder;
+            Info.Table(i).TimeFunction = '';
+            Info.Table(i).ReferenceTime = '';
+            Info.Table(i).TimeUnit = '';
+            Info.Table(i).Interpolation = '';
+            Info.Table(i).Parameter = [];
+            Info.Table(i).Data = [];
+        case 'function'
+            % Function                        = qhtable
+            Info.Table(i).Contents = remainder;
+        case 'time-interpolation'
+            % Time-interpolation              = linear
+            Info.Table(i).Interpolation = remainder;
+        case 'quantity'
+            % Quantity                        = qhbnd discharge
+            % Quantity                        = qhbnd waterlevel
+            % Quantity                        = time
+            NPar=NPar+1;
+            Info.Table(i).Parameter(NPar).Name=remainder;
+        case 'unit'
+            % Unit                            = m³/s
+            % Unit                            = m
+            % Unit                            = seconds since 2017-02-15 00:00:00
+            Info.Table(i).Parameter(NPar).Unit=remainder;
+            %
+            if strcmp(Info.Table(i).Parameter(NPar).Name,'time')
+                [Info.Table(i).TimeUnit, remainder] = strtok(remainder);
+                Time = sscanf(remainder,' since %d-%d-%d %d:%d:%d');
+                if length(Time) >= 3
+                    Time(7) = 0;
+                    Info.Table(i).ReferenceTime = [[10000 100 1]*Time(1:3) [10000 100 1]*Time(4:6)];
+                else
+                    error(['Unable to determine reference time from ' Info.Table(i).Parameter(NPar).Unit])
+                end
+            end
+    end
+end
+%
+fclose(fid);
+Info.Check='OK';
+
+
 function [Str1,remainder]=strextract(Str,Quote)
 if nargin==1
     Quote='''';
@@ -246,7 +351,7 @@ if ~ischar(filename) && nargin==1
     Info = filename;
     filename = Info.FileName;
 end
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 % When the file is written using a fixed line/record length this is
 % shown in the first line
 %fprintf(fid,'# %i\n',linelength);

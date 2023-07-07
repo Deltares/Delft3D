@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_cnvper
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE CNVPER ( CHULP  , IHULP  , DTFLG1 , DTFLG3 , IERR   )
 !
@@ -58,15 +64,16 @@
 !     OTIME   REAL*8     1         INPUT   Julian offset of the real time
 !
 !
+      USE DLWQ0T_DATA
+
+      IMPLICIT NONE
+
       CHARACTER*(*) CHULP
-      REAL*8        OTIM2  , OTIM3  , JULIAN , AFACT
+      REAL*8        OTIM2  , OTIM3  , AFACT
       LOGICAL       DTFLG1 , DTFLG3
       CHARACTER*20  KEY
-!
-!     COMMON  /  SYSI   /   System timers
-!
-      INCLUDE 'sysi.inc'
-!
+      INTEGER       IERR, IYEAR, IMONTH, IDAY, IHOUR, IMINUT, ISECND, ISEC, IHULP
+
       IERR = 1
       IF ( CHULP( 5: 5) .NE. '/' .OR. CHULP( 8: 8) .NE. '/' .OR.
      *     CHULP(11:11) .NE. '-' .OR. CHULP(14:14) .NE. ':' .OR.
@@ -80,10 +87,10 @@
 !
       ISEC   = IYEAR*31536000 + IMONTH*2592000+IDAY*86400+
      +         IHOUR*3600+IMINUT*60+ISECND
-      IF ( ISFACT .LT. 0 ) THEN
-         IHULP = -ISEC*ISFACT
+      IF ( DLWQ0T_ISFACT .LT. 0 ) THEN
+         IHULP = -ISEC*DLWQ0T_ISFACT
       ELSE
-         IHULP = ISEC/ISFACT
+         IHULP = ISEC/DLWQ0T_ISFACT
       ENDIF
 !
       IF ( DTFLG3 ) THEN
@@ -97,3 +104,4 @@
       IERR = 0
       RETURN
       END
+      end module m_cnvper

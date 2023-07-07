@@ -3,7 +3,7 @@ function hNew=gentextfld(hOld,Ops,Parent,Val,X,Y,Z)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -78,10 +78,11 @@ for i=1:length(Val)
             Str=var2str(Val(i));
         end
     elseif iscell(Val)
-        Str=protectstring(Val{i});
+        Str=Val{i};
     else % char
-        Str=protectstring(Val(i));
+        Str=Val(i);
     end
+    Str = protectstring(Str);
     if zcoord
         hNew(i+1)=text(X(i),Y(i),Z(i),Str,'parent',Parent); % faster to use text(X,Y,Z,Val,...)?
     else

@@ -3,10 +3,11 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
                       & tauwav    ,tauc      ,ltur      ,delw      ,rhowat    , &
                       & uwbih     ,aks       ,caks      ,caks_ss3d ,deltas    , &
                       & aks_ss3d  ,d50       ,salinity  ,ws0       ,psi       , &
-                      & epspar    ,eps       ,vonkar    ,salmax    ,wave      )
+                      & epspar    ,eps       ,vonkar    ,salmax    ,wave      , &
+                      & epsmax    ,epsmxc    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +31,8 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute sediment diffusion coefficient
@@ -46,7 +47,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
     integer                    , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                    , intent(in)  :: ltur   !  Description and declaration in esm_alloc_int.f90
@@ -78,6 +79,8 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     real(fp)                   , intent(in)  :: vonkar
     logical                    , intent(in)  :: epspar
     logical                    , intent(in)  :: wave
+    real(fp)                   , intent(out) :: epsmax
+    real(fp)                   , intent(out) :: epsmxc
 !
 ! Local variables
 !
@@ -90,8 +93,6 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     real(fp)                    :: efloc
     real(fp)                    :: epsbed
     real(fp)                    :: epscur
-    real(fp)                    :: epsmax
-    real(fp)                    :: epsmxc
     real(fp)                    :: epstot
     real(fp)                    :: epswav
     real(fp)                    :: fch2
@@ -153,8 +154,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
        ! concentration in kmax centre by working upward from aks. This new
        ! reference concentration will be used in the source and sink terms
        ! but it will not be used in determining the suspended load correction
-       ! in bott3d; for the latter the original reference height and
-       ! concentration are used.
+       ! in bott3d; for the latter the original reference height is used.
        !
        cmaxs = 0.65_fp
        cmax  = min(max(0.05_fp, (d50/dsand)*cmaxs) , cmaxs)

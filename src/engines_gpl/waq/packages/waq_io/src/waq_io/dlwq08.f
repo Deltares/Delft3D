@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -57,13 +57,15 @@
 !      Subroutines called : opt1    ( which file is it ? )
 !                           opt2    ( read the data from an ASCII file )
 !                           rdtok1  ( tokenized data reading )
-!                           dhopnf  ( to open the binary intermediate file )
+!                           open_waq_files  ( to open the binary intermediate file )
 !                           check   ( to see of the group was read correctly )
 
 !      Logical units      : lun(27) = unit DELWAQ input file
 !                           lun(29) = unit formatted output file
 !                           lun(18) = unit intermediate file (initials)
 
+      use m_srstop
+      use m_open_waq_files
       use grids          ! for the storage of contraction grids
       use dlwq_data      ! for definition and storage of data
       use rd_token
@@ -75,7 +77,7 @@
 
 !     Kind                    Function         Name               Description
 
-      integer           ( 4), intent(in   ) :: lun  (*)      !< array with unit numbers
+      integer           ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
       character         ( *), intent(inout) :: lchar(*)      !< filenames
       integer           ( 4), intent(inout) :: filtype(*)    !< type of binary file
       integer           ( 4), intent(in   ) :: noseg         !< nr of computational volumes
@@ -163,7 +165,8 @@
 !        Get the input file name
 
       call opt1   ( icopt1  , lun     , 18      , lchar   , filtype ,
-     &              ldummy  , ldummy  , 0       , ierr2   , iwar    )
+     &              ldummy  , ldummy  , 0       , ierr2   , iwar    ,
+     &              .false. )
       if ( ierr2  .gt. 0 ) goto 10
       if ( icopt1 .eq. BINARY ) then
          ip = scan ( lchar(18), '.', back = .true. )              ! look for the file type
@@ -171,7 +174,7 @@
          call str_lower(cext)
          if ( cext .eq. '.map' .or. cext .eq. '.rmp' .or.
      &        cext .eq. '.rm2' ) then                             ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
-            call dhopnf  ( lun(18) , lchar(18) , 18    , 2     , ierr2 )
+            call open_waq_files  ( lun(18) , lchar(18) , 18    , 2     , ierr2 )
             read ( lun(18) ) cdummy(1:160)                        ! read title of simulation
             close ( lun(18) )
             if ( cdummy(114:120) .eq. 'mass/m2' .or.
@@ -202,7 +205,7 @@
       else
          lchar(18)(ip:ip+3) = '.map'
       endif
-      call DHOPNF  ( lun(18) , lchar(18) , 18    , 1     , ierr2 )
+      call open_waq_files  ( lun(18) , lchar(18) , 18    , 1     , ierr2 )
       if ( ierr2 .gt. 0 ) goto 10
 
 !        Write the .map header

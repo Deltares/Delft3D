@@ -62,6 +62,11 @@ function test_2_successive_writes(ncfile,mode)
 nc_create_empty(ncfile,mode);
 nc_adddim(ncfile,'x',4);
 nc_adddim(ncfile,'time',0);
+if ~(ischar(mode) && strcmp(mode,'hdf4'))
+	v.Name = 'time';
+	v.Dimension = {'time'};
+	nc_addvar(ncfile,v);
+end
 
 % Add a variable along the time dimension
 varstruct.Name = 'test_var';
@@ -93,9 +98,12 @@ nc_addvar ( ncfile, varstruct );
 
 before = nc_getvarinfo ( ncfile, 'test_var2' );
 clear input_buffer;
+input_buffer.time = [1 2 3];
 input_buffer.test_var = single([3 4 5]');
 input_buffer.test_var2 = [3 4 5]';
 nc_addrecs ( ncfile, input_buffer );
+
+input_buffer.time = [4 5 6];
 nc_addrecs ( ncfile, input_buffer );
 
 after = nc_getvarinfo ( ncfile, 'test_var2' );

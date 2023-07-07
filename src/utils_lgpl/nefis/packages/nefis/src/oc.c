@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2017.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,7 @@
 #if defined(_WIN32) || defined(salford32)
 #  include <io.h>
 #  include <sys\stat.h>
-#elif defined(HAVE_CONFIG_H)
+#elif defined(linux)
 #  include <sys/types.h>
 #  include <sys/stat.h>
 #  include <fcntl.h>
@@ -62,7 +62,7 @@
 #  include <sys/fcntl.h>
 #endif
 
-#if defined(GNU_PC) || defined (HAVE_CONFIG_H)
+#if defined(GNU_PC) || defined (linux)
 #  include <unistd.h>
 #endif
 
@@ -73,7 +73,7 @@
 #  define FILE_READ_ONLY  (_O_RDONLY | _O_BINARY)
 #  define FILE_CREATE     (_O_CREAT  | _O_TRUNC | _O_RDWR     | _O_BINARY)
 #  define FILE_MODE       (_S_IREAD  | _S_IWRITE)
-#elif defined(GNU_PC) || defined(HAVE_CONFIG_H) || defined(salford32)
+#elif defined(GNU_PC) || defined(linux) || defined(salford32)
 #  define FILE_OPEN        open
 #  define FILE_CLOSE       close
 #  define FILE_READ_WRITE  O_RDWR;
@@ -341,6 +341,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
             strcat(dathdr, ", NEFIS Data File; ");
             string = getfileversionstring_nefis();
             strcat(dathdr, string);
+            dathdr[LHDRDT] = '\0';
         }
 
         if (coding == 'N' || coding == 'n') coding = 'L';
@@ -431,6 +432,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
            nefis[set].dat_name);
         return nefis_errno;
       }
+      dathdr[LHDRDT] = '\0'; 
 /*
  *  Is the given file a NEFIS data file, yes or no
  */
@@ -551,6 +553,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
             strcat(defhdr, ", NEFIS Definition File; ");
             string = getfileversionstring_nefis();
             strcat(defhdr, string);
+            defhdr[LHDRDF] = '\0';
         }
 
       if (coding == 'N' || coding == 'n') coding = 'L';
@@ -647,7 +650,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
            nefis[set].def_name);
         return nefis_errno;
       }
-
+      defhdr[LHDRDF] = '\0';
 /*
  *  Is the given file a NEFIS definition file, yes or no
  */

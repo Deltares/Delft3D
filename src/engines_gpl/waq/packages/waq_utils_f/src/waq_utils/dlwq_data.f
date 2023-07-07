@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,10 @@
 !!  rights reserved.
 
       module dlwq_data
+       use m_zoek
+       use m_dhnlun
+       use m_srstop
+
 !
 !          module contains everything for model data input and storage
 !          created March 2004 by Jan van Beek
@@ -80,26 +84,26 @@
          integer                                :: no_param          ! number of paramters in this block of data
          integer                                :: no_loc            ! number of locations
          integer                                :: no_brk            ! number of breakpoints or harmonics
-         integer                                :: functype          ! constant, block, linear, harmonics, foutier
+         integer                                :: functype          ! constant, block, linear, harmonics, fourier
          integer                                :: igrid             ! grid number of input
          logical                                :: extern            ! is data in file or online coupling
-         integer                                :: filetype          ! type of ecternal data source
+         integer                                :: filetype          ! type of external data source
          character(len=FILE_NAME_SIZE)          :: filename          ! name of file or dataset in coupling
          integer                                :: lun               ! unit number external file
          integer                                :: iorder            ! ordering of the data matrix, param-loc or loc-param
-         logical                                :: param_named       ! are the paramters named
+         logical                                :: param_named       ! are the parameters named
          character(len=ITEM_NAME_SIZE), pointer :: param_name(:)     ! parameter names
          logical                                :: loc_named         ! are the locations named
          character(len=ITEM_NAME_SIZE), pointer :: loc_name(:)       ! location names
-         logical                                :: param_pointered   ! are the paramters pointered
+         logical                                :: param_pointered   ! are the parameters pointered
          integer, pointer                       :: param_pointers(:) ! index of the parameters in the waq substance/constants/etc arrays
          logical                                :: loc_defaults      ! data is default for all locations
          logical                                :: loc_pointered     ! are the locations pointered
          integer, pointer                       :: loc_pointers(:)   ! segment number of the locations in the specific grid
          logical                                :: scaled            ! overall scaling applied?
          real                                   :: scale_factor      ! overall scaling factor
-         logical                                :: param_scaled      ! need the parametrs scaling
-         real, pointer                          :: factor_param(:)   ! scale factors for parametrers if any
+         logical                                :: param_scaled      ! need the parameters scaling
+         real, pointer                          :: factor_param(:)   ! scale factors for parameters if any
          logical                                :: loc_scaled        ! need the locations scaling
          real, pointer                          :: factor_loc(:)     ! scale factors for locations if any
          integer, pointer                       :: times(:)          ! time at breakpoints
@@ -141,7 +145,7 @@
       end type t_dlwq_item
 
 !     this is a collection of data_items
-      
+
       type t_dlwq_data_items
          type(t_dlwq_item), pointer       :: dlwq_foritem(:) ! pointer
          character(LEN=NAME_SIZE),pointer :: name(:)         ! names of item
@@ -552,7 +556,7 @@
             enddo
 
          else
-            if ( dlwqdata%igrid .ne. 1 ) then
+            if ( dlwqdata%igrid .gt. 1 ) then
                allocate(tmp_conc(dlwqdata%no_param,dlwqdata%no_loc),iseg_set(dlwqdata%no_loc))
                iseg_set = .false.
             endif
@@ -616,7 +620,7 @@
                   aa = ( it2c*aa + it1c*ab ) / idtc
                   aa = aa*param_factor*loc_factor
 
-                  if ( dlwqdata%igrid .eq. 1 ) then
+                  if ( dlwqdata%igrid .le. 1 ) then
                      if ( dlwqdata%subject .eq. SUBJECT_SEGFUNC ) then
                         conc(iseg,isys) = aa
                      else
@@ -629,7 +633,7 @@
 
                enddo
             enddo
-            if ( dlwqdata%igrid .ne. 1 ) then
+            if ( dlwqdata%igrid .gt. 1 ) then
                do iseg2 = 1 , noseg
                   iseg = GridPs%Pointers(dlwqdata%igrid)%finalpointer(iseg2)
                   if ( iseg .gt. 0 ) then
@@ -736,18 +740,6 @@
          character(LEN=NAME_SIZE)         :: name_ucas
          integer                          :: i
          integer                          :: iaindx
-
-!        name_loc = name
-!        call dhucas(name_loc, name_ucas, NAME_SIZE)
-!
-!        iret = 0
-!        do i = 1 , dlwq_item%no_item
-!           call dhucas(dlwq_item%name(i), name_loc, NAME_SIZE)
-!           if ( name_loc .eq. name_ucas ) then
-!              iret = i
-!              exit
-!           endif
-!        end do
 
          iret = 0
          do i = 1 , dlwq_item%no_item
@@ -901,7 +893,22 @@
          ftype = 2
          if ( mod(dlwqdata%filetype,10) .eq. FILE_UNFORMATTED ) ftype = ftype + 10
          if ( dlwqdata%filetype/10 .eq. 1 ) ftype = ftype + 20       ! I am in for a better solution (lp)
-         call dhopnf( lun, dlwqdata%filename, 3  , ftype , ierror )
+
+         select case (ftype)
+             case ( 2 )
+                 open ( newunit = lun, file = dlwqdata%filename, iostat = ierror, form='unformatted', access='stream'  ,
+     &                  status = 'old' )
+             case ( 12 )
+                 open ( newunit = lun, file = dlwqdata%filename, iostat = ierror, form='unformatted' , status = 'old' )
+             case ( 32 )
+                 open ( newunit = lun, file = dlwqdata%filename, iostat = ierror, form='unformatted' , status = 'old',
+     &                  convert='big_endian' )
+             case default
+                 write(lunrep,'(a,a)')  'Error opening file: ', trim(dlwqdata%filename)
+                 write(lunrep,'(a,i5)') 'Impossible case in dlwq_data - ', ftype
+                 ierror = 1
+         end select
+
          if ( ierror .ne. 0 ) then
             write(lunrep,1000) trim(dlwqdata%filename)
             write(lunrep,1010) ierror

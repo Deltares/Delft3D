@@ -1,7 +1,7 @@
 subroutine get_visc(wavetime, visc, mmax, nmax, filnam)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine get_visc(wavetime, visc, mmax, nmax, filnam)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -150,6 +150,6 @@ subroutine get_visc(wavetime, visc, mmax, nmax, filnam)
   deallocate(rbuff, stat=ierr)
   if (error /= 0) then
      write(*,'(2a)') '*** ERROR: Unable to read viscosity from file ', trim(filnam)
-     stop
+     call wavestop(1, '*** ERROR: Unable to read viscosity from file '//trim(filnam))
   endif
 end subroutine get_visc

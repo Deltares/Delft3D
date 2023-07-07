@@ -3,7 +3,7 @@ function outmap=clrmap(S,m,Swrite)
 %   CLRMAP(COLORS,M) sets the colormap of the current figure to a Mx3
 %   colormap based on the Kx3 array of RGB triplets given by COLORS; the
 %   K colors appear at equal distances in the colormap. If M is dropped,
-%   the same length as the current figure's colormap is use. If no figure
+%   the same length as the current figure's colormap is used. If no figure
 %   exists, MATLAB creates one.
 %
 %   CLRMAP(CMAPOBJ,M) sets the colormap of the current figure to a Mx3
@@ -35,7 +35,7 @@ function outmap=clrmap(S,m,Swrite)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -196,7 +196,7 @@ for i=1:N-1
 end
 
 function S=readclrmap(filename)
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','UTF-8');
 if fid<0
     error('Error opening input file.')
 end
@@ -313,7 +313,7 @@ if isfield(S,'Index')
 end
 
 function writeclrmap(filename,S)
-fid=fopen(filename,'wt');
+fid=fopen(filename,'wt','n','UTF-8');
 if fid<0
     error('Error opening output file.')
 end

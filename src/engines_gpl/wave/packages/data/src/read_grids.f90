@@ -1,7 +1,7 @@
 module read_grids
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module read_grids
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -60,7 +60,7 @@ subroutine get_gri(filnam    ,xz        ,yz        ,guu       ,gvv       , &
     integer, dimension(:,:), pointer              :: covered !  0: target point is not covered by source grid
                                                              !  1: target point is covered by   valid points of source grid
                                                              ! -1: target point is covered by invalid points of source grid
-    real                            , intent(out) :: xymiss
+    real(kind=hp)                   , intent(out) :: xymiss
     real   , dimension(:,:), pointer              :: alfas
     real   , dimension(:,:), pointer              :: guu
     real   , dimension(:,:), pointer              :: gvv
@@ -135,7 +135,7 @@ subroutine get_gri(filnam    ,xz        ,yz        ,guu       ,gvv       , &
     ! missing value is currently not available in the com-file
     ! default is zero
     !
-    xymiss = 0.0
+    xymiss = 0.0_hp
     !
     celidt = 1
     call filldm(elmdms    ,1         ,1         ,1         ,0         , &
@@ -301,13 +301,11 @@ subroutine readgriddims(filnam, mmax, nmax)
 ! Local variables
 !
     integer           :: irgf
-    integer, external :: new_lun
     character(256)    :: rec
 !
 !! executable statements -------------------------------------------------------
 !
-    irgf   = new_lun()
-    open (irgf, file = filnam, form = 'formatted', status = 'old')
+    open (newunit=irgf, file = filnam, form = 'formatted', status = 'old')
     read (irgf, '(a)', end = 7777, err = 8888) rec
 10  continue
        read(irgf,'(a)',end = 7777,err=8888) rec
@@ -320,10 +318,41 @@ subroutine readgriddims(filnam, mmax, nmax)
  8888 continue
     write(*,'(2a)') '*** ERROR: Unable to read dimensions in file ',trim(filnam)
     close(irgf)
-    stop
+    call wavestop(1, 'Unable to read dimensions in file '//trim(filnam))
  9999 continue
     close(irgf)
 end subroutine readgriddims
+!
+!
+!==============================================================================
+subroutine replacecoordinates(filnam, mmax, nmax, xb, yb)
+    implicit none
+!
+! Global variables
+!
+    character(*), intent(in)  :: filnam
+    integer     , intent(in) :: mmax
+    integer     , intent(in) :: nmax
+    real(hp), dimension(mmax,nmax), intent(out) :: xb
+    real(hp), dimension(mmax,nmax), intent(out) :: yb
+!
+! Local variables
+!
+    integer           :: i
+    integer           :: irgf
+    integer           :: j
+    character(256)    :: rec
+!
+!! executable statements -------------------------------------------------------
+!
+    open (newunit=irgf, file = filnam, form = 'formatted', status = 'old')
+    do j=1,nmax
+       do i=1,mmax
+          read(irgf,*) xb(i,j), yb(i,j)
+       enddo
+    enddo
+    close(irgf)
+end subroutine replacecoordinates
 !
 !
 !==============================================================================
@@ -336,7 +365,7 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     character(232)                   , intent(in)  :: filnam
     integer                          , intent(out) :: mmax
     integer                          , intent(out) :: nmax
-    real                             , intent(out) :: xymiss
+    real(hp)                         , intent(out) :: xymiss
     integer , dimension(:,:), pointer              :: codb
     integer , dimension(:,:), pointer              :: covered
     real(hp), dimension(:,:), pointer              :: xb
@@ -357,7 +386,6 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     integer                                :: k
     integer                                :: ksimax
     integer                                :: npareg
-    integer, external                      :: new_lun
     integer                                :: pos
     logical                                :: kw_found
     character(10)                          :: dum
@@ -367,10 +395,9 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
 !
     ! Default value for missing value: zero
     !
-    xymiss = 0.0
+    xymiss = 0.0_hp
     sferic = .false.
-    irgf   = new_lun()
-    open (irgf, file = filnam, form = 'formatted', status = 'old')
+    open (newunit=irgf, file = filnam, form = 'formatted', status = 'old')
     !
     ! Copied from file rdrgf
     !
@@ -514,11 +541,23 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
              ycell(2) = yb(i  ,j-1)
              ycell(3) = yb(i  ,j)
              ycell(4) = yb(i-1,j)
-             if (clockwise(xcell,ycell)) then
-                write (*, '(a)') '*** ERROR: Grid orientation incorrect: Delft3D requires (M,N) to form a counter-clockwise coordinate system.'
-                goto 999
+             if (      xcell(1) == xcell(2) &
+                 .and. xcell(1) == xcell(3) &
+                 .and. xcell(1) == xcell(4) &
+                 .and. ycell(1) == ycell(2) &
+                 .and. ycell(1) == ycell(3) &
+                 .and. ycell(1) == ycell(4) ) then
+                ! subroutine clockwise will not work.
+                ! This might happen if lowest indexed cells are removed (-999)
+                ! Try another point
+             else
+                if (clockwise(xcell,ycell)) then
+                   write (*, '(a)') '*** ERROR: Grid orientation incorrect: Delft3D requires (M,N) to form a counter-clockwise coordinate system.'
+                   goto 999
+                else
+                   goto 1000
+                endif
              endif
-             goto 1000
           endif
        enddo
     enddo
@@ -526,10 +565,627 @@ subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic 
     !
   999 continue
    write(*,'(2a)') '*** ERROR: reading GRD file ', trim(filnam)
-   stop
+   call wavestop(1, 'reading GRD file '//trim(filnam))
  1000 continue
     deallocate (xy, stat=ierr)
 end subroutine read_grd
+!
+!
+!==============================================================================
+subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax, kmax, &
+                         & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
+                         & filename_tmp, flowLinkConnectivity)
+    use netcdf
+    use dwaves_version_module
+    implicit none
+!
+! Parameters
+!
+    integer,parameter :: nh = 1
+!
+! Global variables
+!
+    integer                          , intent(in)  :: i_grid
+    character(*)                     , intent(in)  :: filename
+    integer                          , intent(out) :: mmax
+    integer                          , intent(out) :: nmax
+    integer                          , intent(out) :: kmax
+    integer                          , intent(out) :: numenclpts
+    integer                          , intent(out) :: numenclparts
+    real(hp)                         , intent(out) :: xymiss
+    integer , dimension(:,:), pointer              :: codb
+    integer , dimension(:,:), pointer              :: covered
+    integer , dimension(:),   pointer              :: numenclptsppart
+    real(hp), dimension(:,:), pointer              :: xcc
+    real(hp), dimension(:,:), pointer              :: ycc
+    real(hp), dimension(:),   pointer              :: bndx
+    real(hp), dimension(:),   pointer              :: bndy    
+    logical                                        :: sferic
+    character(*)                                   :: filename_tmp
+    logical                          , intent(in)  :: flowLinkConnectivity
+!
+! Local variables
+!
+    byte    , dimension(:)  , allocatable  :: nelemconn
+    integer                                :: commonnodes
+    integer                                :: etamax
+    integer                                :: i
+    integer                                :: idfile
+    integer                                :: iddim_e
+    integer                                :: iddim_enclsp
+    integer                                :: iddim_numencpts
+    integer                                :: iddim_numencparts
+    integer                                :: iddim_laydim
+    integer                                :: iddim_n
+    integer                                :: iddim_mmax
+    integer                                :: iddim_ndx
+    integer                                :: iddim_nelm
+    integer                                :: iddim_nemax
+    integer                                :: iddim_nflowlink
+    integer                                :: iddim_corners
+    integer                                :: iddim_rank
+    integer                                :: idvar_coords
+    integer                                :: idvar_econn
+    integer                                :: idvar_en
+    integer                                :: idvar_flowlink
+    integer                                :: idvar_griddims
+    integer                                :: idvar_mask
+    integer                                :: idvar_neconn
+    integer                                :: idvar_nx
+    integer                                :: idvar_ny
+    integer                                :: idvar_x
+    integer                                :: idvar_y
+    integer                                :: idvar_encx
+    integer                                :: idvar_ency
+    integer                                :: idvar_encptsppt
+    integer                                :: ierror
+    integer                                :: ik
+    integer                                :: irgf
+    integer                                :: j
+    integer                                :: jatri
+    integer                                :: jk
+    integer                                :: k
+    integer                                :: ksimax
+    integer                                :: maxelem
+    integer                                :: necurnodes
+    integer                                :: nemax
+    integer                                :: nemaxout
+    integer                                :: nelm
+    integer                                :: nflowlink
+    integer                                :: nnodes
+    integer                                :: npareg
+    integer, external                      :: nc_def_var
+    integer                                :: numedge
+    integer                                :: numencl
+    integer                                :: pos
+    integer                                :: elt
+    integer                                :: lc
+    integer                                :: hc
+    integer                                :: eltlink2
+    integer                                :: neighblow
+    integer                                :: neighbhigh
+    integer                                :: neighneigh
+    integer , dimension(:,:), allocatable  :: elemtonode
+    integer , dimension(:,:), allocatable  :: elemconn
+    integer , dimension(:,:), allocatable  :: elemconntmp
+    integer , dimension(:,:), allocatable  :: edgeindx
+    integer , dimension(:,:), allocatable  :: flowlink
+    integer , dimension(:,:), allocatable  :: triedge
+    integer , dimension(:,:), allocatable  :: linkadmin
+    real(hp)                               :: xh(nh)
+    real(hp)                               :: yh(nh)
+    real(hp)                               :: trisize
+    real(hp), dimension(:)  , allocatable  :: xnode
+    real(hp), dimension(:)  , allocatable  :: ynode
+    real(hp), dimension(:)  , allocatable  :: mask_area
+    real(hp), dimension(:)  , allocatable  :: nelmslice
+    real(hp), dimension(:,:), allocatable  :: grid_corner
+    logical                                :: eltlink2found
+    logical                                :: kw_found
+    logical                                :: regulargrid
+    character(10)                          :: dum
+    character(NF90_MAX_NAME)               :: string
+    character(8)                           :: cdate
+    character(10)                          :: ctime
+    character(5)                           :: czone
+    character(256)                         :: full_version
+!
+!! executable statements -------------------------------------------------------
+!
+    ! Default value for missing value: zero
+    !
+    nmax   = 1   ! Unstructured grid: use only mmax to count the elements
+    xymiss = 0.0_hp
+    !
+    ierror = nf90_open(filename, NF90_NOWRITE, idfile); call nc_check_err(ierror, "opening file", filename)
+    if (ierror /= 0) then
+       ! First catch in case the com.nc file does not exist
+       call wavestop(1, 'Com-file does not exist')
+    endif
+    !
+    ierror = nf90_inq_dimid(idfile, 'nNetElem'        , iddim_e        ); call nc_check_err(ierror, "inq_dimid nNetElem", filename)
+    ierror = nf90_inq_dimid(idfile, 'nNetNode'        , iddim_n        ); call nc_check_err(ierror, "inq_dimid nNetNode", filename)
+    ierror = nf90_inq_dimid(idfile, 'nNetElemMaxNode' , iddim_nemax    ); call nc_check_err(ierror, "inq_dimid nNetElemMaxNode", filename)
+    ierror = nf90_inq_dimid(idfile, 'nFlowElemWithBnd', iddim_ndx      ); call nc_check_err(ierror, "inq_dimid nFlowElemWithBnd", filename)
+    if (flowLinkConnectivity) then
+       ierror = nf90_inq_dimid(idfile, 'nFlowLink'       , iddim_nflowlink); call nc_check_err(ierror, "inq_dimid nFlowLink", filename)
+    else
+       ierror = nf90_inq_dimid(idfile, 'nNetLink'        , iddim_nflowlink); call nc_check_err(ierror, "inq_dimid nNetLink", filename)
+    endif
+    ierror = nf90_inq_dimid(idfile, 'laydim'          , iddim_laydim   ) ! no nc_check_err call: error is handled here
+    if (ierror /= nf90_noerr) then
+       kmax = 1
+    else
+       ierror = nf90_inquire_dimension(idfile, iddim_laydim, string, kmax); call nc_check_err(ierror, "inq_dim laydim", filename)
+    endif
+    ierror = nf90_inquire_dimension(idfile, iddim_e        , string, nelm     ); call nc_check_err(ierror, "inq_dim nNetElem", filename)
+    ierror = nf90_inquire_dimension(idfile, iddim_n        , string, nnodes   ); call nc_check_err(ierror, "inq_dim nNetNode", filename)
+    ierror = nf90_inquire_dimension(idfile, iddim_nflowlink, string, nflowlink); call nc_check_err(ierror, "inq_dim nFlowLink", filename)
+    ierror = nf90_inquire_dimension(idfile, iddim_nemax    , string, nemax    ); call nc_check_err(ierror, "inq_dim nNetElemMaxNode", filename)
+    if (nemax/=3 .and. nemax/=4) then
+       write(*,'(a,i0,a)') "ERROR nNetElemMaxNode = ", nemax, ". Expecting 3 or 4."
+       call wavestop(1, 'nNetElemMaxNode should be 3 or 4')
+    endif
+    ierror = nf90_inquire_dimension(idfile, iddim_ndx, string, mmax); call nc_check_err(ierror, "inq_dim ndx", filename)
+    ierror = nf90_inq_varid(idfile, 'NetNode_x'   , idvar_nx      ); call nc_check_err(ierror, "inq_varid nx", filename)
+    ierror = nf90_inq_varid(idfile, 'NetNode_y'   , idvar_ny      ); call nc_check_err(ierror, "inq_varid ny", filename)
+    ierror = nf90_inq_varid(idfile, 'NetElemNode' , idvar_en      ); call nc_check_err(ierror, "inq_varid en", filename)
+    string = ' '
+    ierror = nf90_get_att(idfile, idvar_nx,  'standard_name', string); call nc_check_err(ierror, "get_att NetNode_x standard_name", filename)
+    if (string == 'longitude') then
+       sferic = .true.
+    else
+       sferic = .false.
+    endif
+    ierror = nf90_inq_varid(idfile, 'FlowElem_xcc', idvar_x       ); call nc_check_err(ierror, "inq_varid x", filename)
+    ierror = nf90_inq_varid(idfile, 'FlowElem_ycc', idvar_y       ); call nc_check_err(ierror, "inq_varid y", filename)
+    if (.not.sferic .and. flowLinkConnectivity) then
+          ierror = nf90_inq_varid(idfile, 'FlowLink'   , idvar_flowlink); call nc_check_err(ierror, "inq_varid FlowLink", filename)
+    endif
+    !
+    ierror = nf90_inq_dimid(idfile, 'nmesh2d_EnclosurePoints', iddim_numencpts       ); call nc_check_err(ierror, "inq_dimid nmesh2d_EnclosurePoints", filename)
+    ierror = nf90_inquire_dimension(idfile, iddim_numencpts, string, numenclpts)      ; call nc_check_err(ierror, "inq_dim numencpts", filename)
+    !
+    ierror = nf90_inq_dimid(idfile, 'nmesh2d_EnclosureParts', iddim_numencparts       ); call nc_check_err(ierror, "inq_dimid nmesh2d_EnclosureParts", filename)
+    ierror = nf90_inquire_dimension(idfile, iddim_numencparts, string, numenclparts)   ; call nc_check_err(ierror, "inq_dim numencparts", filename)
+    !
+    ierror = nf90_inq_varid(idfile, 'mesh2d_enc_x', idvar_encx       ); call nc_check_err(ierror, "inq_varid encx", filename)
+    ierror = nf90_inq_varid(idfile, 'mesh2d_enc_y', idvar_ency       ); call nc_check_err(ierror, "inq_varid ency", filename)
+    !
+    ierror = nf90_inq_varid(idfile, 'mesh2d_enc_part_node_count', idvar_encptsppt  ); call nc_check_err(ierror, "inq_varid encptsppt", filename)
+    !
+    ! Allocate arrays
+    ! xcc,ycc: +4 needed by subroutine tricall
+    !
+    allocate (xcc            (mmax+4,nmax)     , STAT=ierror)
+    allocate (ycc            (mmax+4,nmax)     , STAT=ierror)
+    allocate (bndx           (numenclpts)      , STAT=ierror)
+    allocate (bndy           (numenclpts)      , STAT=ierror)
+    allocate (numenclptsppart(numenclparts)    , STAT=ierror)
+    allocate (codb           (mmax,nmax)       , STAT=ierror)
+    allocate (covered        (mmax,nmax)       , STAT=ierror)
+    allocate (xnode          (nnodes)          , STAT=ierror)
+    allocate (ynode          (nnodes)          , STAT=ierror)
+    allocate (elemtonode     (nemax,nelm)      , STAT=ierror)
+    allocate (nelmslice      (nelm)            , STAT=ierror)
+    if (sferic) then
+       allocate (grid_corner(nemax,nelm), STAT=ierror)
+       allocate (mask_area  (nelm)      , STAT=ierror)
+    else
+       ! Always use hexahedra
+       !
+       nemaxout = 4
+       !
+       ! Structured grid: maxelem= mmax is big enough
+       ! Triangular grid: No idea what is a correct value
+       ! Using same value as in DFlowFM
+       !
+       maxelem = mmax*6 +20
+       !
+       ! grid_corner: First  dim: x+y=2
+       !              Second dim: number of xcc,ycc points
+       allocate (grid_corner(2,mmax)          , STAT=ierror)
+       allocate ( elemconn  (nemaxout,maxelem), STAT=ierror)
+       allocate (nelemconn  (maxelem)         , STAT=ierror)
+       allocate (flowlink   (2,nflowlink)     , STAT=ierror)
+       ! Dummy arrays for calling tricall:
+       allocate (edgeindx   (2,1)             , STAT=ierror)
+       allocate (triedge    (3,1)             , STAT=ierror)
+    endif
+    if (ierror /= 0) then
+       write(*,'(a)') "ERROR allocating in read_netcdf_grd"
+       call wavestop(1, "ERROR allocating in read_netcdf_grd")
+    endif
+    codb    = 1
+    covered = 0
+    ierror = nf90_get_var(idfile, idvar_x        , xcc            , start=(/ 1 /)   , count=(/ mmax /)            ); call nc_check_err(ierror, "get_var x", filename)
+    ierror = nf90_get_var(idfile, idvar_y        , ycc            , start=(/ 1 /)   , count=(/ mmax /)            ); call nc_check_err(ierror, "get_var y", filename)
+    ierror = nf90_get_var(idfile, idvar_nx       , xnode          , start=(/ 1 /)   , count=(/ nnodes /)          ); call nc_check_err(ierror, "get_var xnode", filename)
+    ierror = nf90_get_var(idfile, idvar_ny       , ynode          , start=(/ 1 /)   , count=(/ nnodes /)          ); call nc_check_err(ierror, "get_var ynode", filename)
+    ierror = nf90_get_var(idfile, idvar_encx     , bndx           , start=(/ 1 /)   , count=(/ numenclpts /)      ); call nc_check_err(ierror, "get_var bndx", filename)
+    ierror = nf90_get_var(idfile, idvar_ency     , bndy           , start=(/ 1 /)   , count=(/ numenclpts /)      ); call nc_check_err(ierror, "get_var bndy", filename)
+    ierror = nf90_get_var(idfile, idvar_encptsppt, numenclptsppart, start=(/ 1 /)   , count=(/ numenclparts /)    ); call nc_check_err(ierror, "get_var encptsppt", filename)
+    ierror = nf90_get_var(idfile, idvar_en       , elemtonode     , start=(/ 1, 1 /), count=(/ nemax, nelm /)     ); call nc_check_err(ierror, "get_var netelemnode", filename)
+    if (.not.sferic .and. flowLinkConnectivity) then
+       ierror = nf90_get_var(idfile, idvar_flowlink, flowlink  , start=(/ 1, 1 /), count=(/ 2, nflowlink /)); call nc_check_err(ierror, "get_var flowlink", filename)
+    endif
+    ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename)
+    !
+    if (.not. sferic) then
+       ! Is this a regular grid?
+       if (nemax == 4) then
+          regulargrid = .true.
+          do i = 1, nelm
+             if (elemtonode(4,i) <= 0) then
+                regulargrid = .false.
+                exit
+             endif
+          enddo
+       else
+          regulargrid = .false.
+       endif
+       !
+       if (regulargrid) then
+          ! Construct a regular grid with xcc,ycc as corner points and elemconn as connections between the elements
+          ! Use the DFlowFM flowlink administration
+          ! Pseudo code:
+          !     Count the number of links per element
+          !     do while true
+          !         if an element has 1 link: remove from administration
+          !         if an element has 2 links:
+          !             find neighbour elements
+          !             find (other) element being the neighbour of both neighbours
+          !             add to elemconn: elt,neighbourLow, neighneigh, neighbourHigh
+          !             update administration
+          !         if no element with 2 links found: exit
+          !     enddo
+          !
+          maxelem = 0
+          allocate(linkadmin(mmax,5), STAT=ierror)
+          !
+          ! linkadmin(elt, 1): index of first neighbour (zero when no neighbours)
+          ! linkadmin(elt, 2): index of second neighbour (zero when less than 2 neighbours)
+          ! linkadmin(elt, 3): index of third neighbour (zero when less than 3 neighbours)
+          ! linkadmin(elt, 4): index of fourth neighbour (zero when less than 4 neighbours)
+          ! linkadmin(elt, 5): number of neighbours
+          !
+          linkadmin = 0
+          if (flowLinkConnectivity) then
+             !
+             ! Fill linkadmin with info from flowlink
+             ! TODO: boundary links and thindams are NOT INCLUDED in flowlink!
+             !
+             do i=1, nflowlink
+                ! When flowlink contains netlinks, it might refer to cells outside the flow domain
+                !
+                if (flowlink(1,i)>mmax .or. flowlink(2,i) > mmax) cycle
+                elt                             = flowlink(1,i)
+                linkadmin(elt,5)                = linkadmin(elt,5) + 1
+                linkadmin(elt,linkadmin(elt,5)) = flowlink(2,i)
+                elt                             = flowlink(2,i)
+                linkadmin(elt,5)                = linkadmin(elt,5) + 1
+                linkadmin(elt,linkadmin(elt,5)) = flowlink(1,i)
+             enddo
+          else
+             !
+             ! Fill linkadmin with info from elemtonode:
+             ! If elemtonode(:,i) and elemtonode(:,j) have two nodes in common then elem i is connected to elem j
+             ! elemtonode has dimension (4, nelm)
+             ! xcc/ycc have dimension mmax
+             ! Assumption: mmax <= nelm
+             !
+             do i=1, nelm
+                do j=i+1, nelm
+                   commonnodes = 0
+                   do ik=1, 4
+                      do jk=1, 4
+                         if (elemtonode(ik,i) == elemtonode(jk,j)) then
+                            commonnodes = commonnodes + 1
+                            exit
+                         endif
+                      enddo
+                   enddo
+                   if (commonnodes > 2) then
+                      write(*,*) "ERROR: more than 2 nodes in common???"
+                      call wavestop(1, "ERROR: more than 2 nodes in common???")
+                   endif
+                   if (commonnodes == 2) then
+                      linkadmin(i,5)              = linkadmin(i,5) + 1
+                      linkadmin(i,linkadmin(i,5)) = j
+                      linkadmin(j,5)              = linkadmin(j,5) + 1
+                      linkadmin(j,linkadmin(j,5)) = i
+                   endif
+                enddo
+             enddo
+          endif
+          !
+          ! Use linkadmin to fill array elemconn
+          ! If an element is added to elemconn, the related data has to be removed from linkadmin
+          !
+          do while (.true.)
+             ! Search for an elt linked to exactly 2 other elts (and clean the "linked to 1" elts)
+             eltlink2 = 0
+             do elt=1, mmax
+                if (linkadmin(elt,5) == 1) then
+                   neighblow        = linkadmin(elt,1)
+                   ! remove elt from linkadmin
+                   linkadmin(elt,:) = 0
+                   ! also update in linkadmin the element where elt is linked to
+                   eltlink2found = .false.
+                   do i=1,3
+                      if (.not.eltlink2found) then
+                         eltlink2found = linkadmin(neighblow,i) == elt
+                      endif
+                      if (eltlink2found) then
+                         linkadmin(neighblow,i) = linkadmin(neighblow,i+1)
+                      endif
+                   enddo
+                   linkadmin(neighblow,4) = 0
+                   linkadmin(neighblow,5) = linkadmin(neighblow,5) - 1
+                endif
+                if (linkadmin(elt,5) == 2) then
+                   ! element found with exactly 2 links. Exit do loop and handle this point
+                   eltlink2 = elt
+                   exit
+                endif
+             enddo
+             if (eltlink2 == 0) exit ! finished
+             !
+             ! Get the 2 neighbouring point indexes
+             ! The order is important! Addition to elemconn must be in counter clock wise order
+             ! Assumption: The following order is always correct: eltlink2, neighblow, neighneigh, neighbhigh
+             !
+             if (linkadmin(elt,1) < linkadmin(elt,2)) then
+                neighblow = linkadmin(elt,1)
+                neighbhigh = linkadmin(elt,2)
+             else
+                neighblow = linkadmin(elt,2)
+                neighbhigh = linkadmin(elt,1)
+             endif
+             !
+             ! Find element (other than eltlink2) being a neighbour of both neighblow and neighbhigh
+             neighneigh = 0
+             do i=1,4
+                if (linkadmin(neighblow,i) == eltlink2) cycle
+                do j=1,4
+                   if (linkadmin(neighbhigh,j) == eltlink2) cycle
+                   if (linkadmin(neighbhigh,j) == linkadmin(neighblow,i)) then
+                      neighneigh = linkadmin(neighbhigh,j)
+                      exit
+                   endif
+                enddo
+                if (neighneigh /= 0) exit
+             enddo
+             !
+             ! neighneigh == 0: no problem, but no element found to add to elemconn
+             !
+             if (neighneigh /= 0) then
+                maxelem = maxelem + 1
+                elemconn(1,maxelem) = eltlink2
+                elemconn(2,maxelem) = neighblow
+                elemconn(3,maxelem) = neighneigh
+                elemconn(4,maxelem) = neighbhigh
+             endif
+             !
+             ! update administration:
+             !
+             ! element eltlink2:
+             linkadmin(eltlink2,:) = 0
+             !
+             ! element neighblow:
+             eltlink2found = .false.
+             do i=1,3
+                if (.not.eltlink2found) then
+                   eltlink2found = linkadmin(neighblow,i) == eltlink2
+                endif
+                if (eltlink2found) then
+                   linkadmin(neighblow,i) = linkadmin(neighblow,i+1)
+                endif
+             enddo
+             linkadmin(neighblow,4) = 0
+             linkadmin(neighblow,5) = linkadmin(neighblow,5) - 1
+             !
+             ! element neighhigh:
+             eltlink2found = .false.
+             do i=1,3
+                if (.not.eltlink2found) then
+                   eltlink2found = linkadmin(neighbhigh,i) == eltlink2
+                endif
+                if (eltlink2found) then
+                   linkadmin(neighbhigh,i) = linkadmin(neighbhigh,i+1)
+                endif
+             enddo
+             linkadmin(neighbhigh,4) = 0
+             linkadmin(neighbhigh,5) = linkadmin(neighbhigh,5) - 1
+             !
+             ! element neighneigh does not need to be updated
+          enddo
+          deallocate(linkadmin, STAT=ierror)
+       else
+          ! Not a regular grid (containing at least 1 triangle)
+          ! Use Delauney algorithm to cover the area spanned by xcc,ycc with triangles
+          !
+          ! maxelem: is the current allocated size of elemconn, will be changed into the actual size of elemconn
+          !
+          jatri   = 1 ! yes, create triangles, do not create points
+          numedge = 0
+          !
+          ! When passing through "elemconn(:3,:)", this array is copied to the stack
+          ! This will cause a crash on big arrays
+          ! So allocate a temporary array
+          !
+          allocate(elemconntmp(3,maxelem), STAT=ierror)
+          !
+          ! Indices of the triangles are added to elemconn(:3,:)
+          ! Not used: edgeindx, numedge, triedge, xh, yh, nh, trisize
+          !
+          call tricall(jatri, xcc, ycc, nelm, elemconntmp, maxelem, &
+                     & edgeindx, numedge, triedge, xh, yh, nh, trisize)
+          !
+          ! Turn the triangles in elemconn into quadrilaterals (rectangles):
+          ! point4 == point3
+          !
+          do i = 1, maxelem
+             elemconn(1,i) = elemconntmp(1,i)
+             elemconn(2,i) = elemconntmp(2,i)
+             elemconn(3,i) = elemconntmp(3,i)
+             elemconn(4,i) = elemconntmp(3,i)
+          enddo
+          deallocate(elemconntmp, STAT=ierror)
+       endif
+    endif
+    !
+    ! Check that there is at least one element
+    !
+    if (sferic) then
+       if (nelm == 0) then
+          write(*,*) "ERROR: nelm=0: Not able to create 'shifted' elements (using centre points as corner points)"
+          call wavestop(1, "ERROR: nelm=0")
+       endif
+    else
+       if (maxelem == 0) then
+          write(*,*) "ERROR: maxelem=0: Not able to create 'shifted' elements (using centre points as corner points)"
+          call wavestop(1, "ERROR: maxelem=0")
+       endif
+    endif
+    !
+    ! Write the flow grid to a temporary NetCDF file in SCRIP format. Needed by ESMF_RegridWeightGen
+    ! See http://www.earthsystemmodeling.org/esmf_releases/last_built/ESMF_refdoc/node3.html
+    !
+    call getfullversionstring_dwaves(full_version)
+    call date_and_time(cdate, ctime, czone)
+    !
+    ! define name of output file
+    !
+    write(filename_tmp,'(a,i4.4,a)') "TMP_ESMF_RegridWeightGen_flow_source_", i_grid, ".nc"
+    !
+    ! create file
+    !
+    ierror = nf90_create(filename_tmp, 0, idfile); call nc_check_err(ierror, "creating file", filename_tmp)
+    !
+    ! global attributes
+    !
+    ierror = nf90_put_att(idfile, nf90_global,  'institution', trim(company)); call nc_check_err(ierror, "put_att global institution", filename_tmp)
+    ierror = nf90_put_att(idfile, nf90_global,  'references', trim(company_url)); call nc_check_err(ierror, "put_att global references", filename_tmp)
+    ierror = nf90_put_att(idfile, nf90_global,  'source', trim(full_version)); call nc_check_err(ierror, "put_att global source", filename_tmp)
+    ierror = nf90_put_att(idfile, nf90_global,  'history', &
+           'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
+           ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename_tmp)
+    if (.not.sferic) then
+       ierror = nf90_put_att(idfile, nf90_global,  'gridType', 'unstructured'); call nc_check_err(ierror, "put_att global gridType", filename_tmp)
+       ierror = nf90_put_att(idfile, nf90_global,  'version', '0.9'); call nc_check_err(ierror, "put_att global version", filename_tmp)
+    endif
+    !
+    ! dimensions
+    !
+    if (sferic) then
+       ! SCRIP format
+       ierror = nf90_def_dim(idfile, 'grid_size', nelm, iddim_nelm); call nc_check_err(ierror, "def_dim grid_size", filename_tmp)
+       ierror = nf90_def_dim(idfile, 'grid_corners', nemax, iddim_corners); call nc_check_err(ierror, "def_dim grid_corners", filename_tmp)
+       ierror = nf90_def_dim(idfile, 'grid_rank', 1, iddim_rank); call nc_check_err(ierror, "def_dim grid_rank", filename_tmp)
+    else
+       ! ESMFgrid format
+       ierror = nf90_def_dim(idfile, 'elementCount', maxelem, iddim_nelm); call nc_check_err(ierror, "def_dim elementCount", filename_tmp)
+       ierror = nf90_def_dim(idfile, 'nodeCount', mmax, iddim_corners); call nc_check_err(ierror, "def_dim nodeCount", filename_tmp)
+       ierror = nf90_def_dim(idfile, 'maxNodePElement', nemaxout, iddim_nemax); call nc_check_err(ierror, "def_dim maxNodePElement", filename_tmp)
+       ierror = nf90_def_dim(idfile, 'coordDim', 2, iddim_rank); call nc_check_err(ierror, "def_dim coordDim", filename_tmp)
+    endif
+    !
+    ! define vars
+    !
+    if (sferic) then
+       idvar_griddims = nc_def_var(idfile, 'grid_dims'       , nf90_int   , 1, (/iddim_rank/), '', '', '', .false., filename_tmp)
+       idvar_y        = nc_def_var(idfile, 'grid_center_lat' , nf90_double, 1, (/iddim_nelm/), '', '', "degrees", .false., filename_tmp)
+       idvar_x        = nc_def_var(idfile, 'grid_center_lon' , nf90_double, 1, (/iddim_nelm/), '', '', "degrees", .false., filename_tmp)
+       idvar_nx       = nc_def_var(idfile, 'grid_corner_lon' , nf90_double, 2, (/iddim_corners,iddim_nelm/), '', '', "degrees", .false., filename_tmp)
+       ! ierror         = nf90_def_var_fill(idfile, idvar_nx,  0, -9999); call nc_check_err(ierror, "put_att _FillValue", trim(filename_tmp))
+       idvar_ny       = nc_def_var(idfile, 'grid_corner_lat' , nf90_double, 2, (/iddim_corners,iddim_nelm/), '', '', "degrees", .false., filename_tmp)
+       ! ierror         = nf90_def_var_fill(idfile, idvar_ny,  0, -9999); call nc_check_err(ierror, "put_att _FillValue", trim(filename_tmp))
+       idvar_mask     = nc_def_var(idfile, 'grid_imask' , nf90_double, 1, (/iddim_nelm/), '', '', '', .false., filename_tmp)
+       ! ierror         = nf90_def_var_fill(idfile, idvar_mask,  0, -9999); call nc_check_err(ierror, "put_att _FillValue", trim(filename_tmp))
+    else
+       idvar_coords   = nc_def_var(idfile, 'nodeCoords'    , nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename_tmp)
+       idvar_eConn    = nc_def_var(idfile, 'elementConn'   , nf90_int   , 2, (/iddim_nemax,iddim_nelm/)  , '', 'Node Indices that define the element connectivity', '', .false., filename_tmp)
+       ierror         = nf90_put_att(idfile, idvar_eConn,  '_FillValue', -1); call nc_check_err(ierror, "put_att elementConn fillVal", filename_tmp)
+       idvar_neConn   = nc_def_var(idfile, 'numElementConn', nf90_int   , 1, (/iddim_nelm/)              , '', 'Number of nodes per element', '', .false., filename_tmp)
+    endif
+    !
+    ierror = nf90_enddef(idfile); call nc_check_err(ierror, "enddef", filename_tmp)
+    !
+    ! put vars
+    !
+    if (sferic) then
+       !
+       ! ESMF sferic:
+       ! Write xcc,ycc to source.nc
+       !
+       ierror = nf90_put_var(idfile, idvar_griddims, (/nelm/), start=(/1/), count=(/1/))   ; call nc_check_err(ierror, "put_var griddims", filename_tmp)
+       ! An array slice cannot be passed to netcdf C-library (risk of stack overflow), so use placeholder.
+       nelmslice = xcc(:nelm,1)
+       ierror    = nf90_put_var(idfile, idvar_x       , nelmslice, start=(/1/), count=(/nelm/)); call nc_check_err(ierror, "put_var x", filename_tmp)
+       nelmslice = ycc(:nelm,1)
+       ierror    = nf90_put_var(idfile, idvar_y       , nelmslice, start=(/1/), count=(/nelm/)); call nc_check_err(ierror, "put_var y", filename_tmp)
+       do i=1, nemax
+          do j=1, nelm
+             if (i>3 .and. elemtonode(i,j)<0) then
+                ! Cells with different number of corners (e.g triangles and rectangles)
+                ! Add redundant grid points
+                grid_corner(i,j) = grid_corner(i-1,j)
+             else
+                grid_corner(i,j) = xnode(elemtonode(i,j))
+             endif
+          enddo
+       enddo
+       ierror = nf90_put_var(idfile, idvar_nx  , grid_corner  , start=(/1,1/), count=(/nemax,nelm/)); call nc_check_err(ierror, "put_var corner_lon", filename_tmp)
+       do i=1, nemax
+          do j=1, nelm
+             if (i>3 .and. elemtonode(i,j)<0) then
+                ! Cells with different number of corners (e.g triangles and rectangles)
+                ! Add redundant grid points
+                grid_corner(i,j) = grid_corner(i-1,j)
+             else
+                grid_corner(i,j) = ynode(elemtonode(i,j))
+             endif
+          enddo
+       enddo
+       ierror    = nf90_put_var(idfile, idvar_ny  , grid_corner  , start=(/1,1/), count=(/nemax,nelm/)); call nc_check_err(ierror, "put_var corner_lat", filename_tmp)
+       mask_area = 1.0_hp
+       ierror    = nf90_put_var(idfile, idvar_mask, mask_area  , start=(/1/), count=(/nelm/)); call nc_check_err(ierror, "put_var imask", filename_tmp)
+    else
+       !
+       ! ESMF Cartesian:
+       ! Write hexahedron(cube) around xcc,ycc to source.nc
+       !
+       do i=1, mmax
+          grid_corner(1,i     ) = xcc(i,1)
+          grid_corner(2,i     ) = ycc(i,1)
+       enddo
+       ierror = nf90_put_var(idfile, idvar_coords, grid_corner, start=(/1,1/), count=(/2,mmax/));   call nc_check_err(ierror, "put_var nodeCoords", filename_tmp)
+       !       
+       ierror = nf90_put_var(idfile, idvar_eConn , elemconn , start=(/1,1/), count=(/nemaxout,maxelem/)); call nc_check_err(ierror, "put_var elementConn", filename_tmp)
+       !
+       do i=1, maxelem
+          nelemconn(i) = nemaxout
+       enddo
+       ierror = nf90_put_var(idfile, idvar_neConn , nelemconn , start=(/1,1/), count=(/maxelem/)); call nc_check_err(ierror, "put_var numElementConn", filename_tmp)
+    endif
+    ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename_tmp)
+    !
+    deallocate (xnode      , STAT=ierror)
+    deallocate (ynode      , STAT=ierror)
+    deallocate (elemtonode , STAT=ierror)
+    deallocate (grid_corner, STAT=ierror)
+    deallocate (nelmslice  , STAT=ierror)
+    if (sferic) then
+       deallocate (mask_area  , STAT=ierror)
+    else
+       deallocate ( elemconn, STAT=ierror)
+       deallocate (nelemconn, STAT=ierror)
+       deallocate (flowlink, STAT=ierror)
+       deallocate (EDGEINDX , STAT=ierror)
+       deallocate (TRIEDGE  , STAT=ierror)
+    endif
+end subroutine read_netcdf_grd
 !
 !
 !==============================================================================
@@ -557,7 +1213,6 @@ subroutine readregulargrid(filnam, sferic_exp, xorigin, yorigin, alpha, &
     integer                        :: irgf
     integer                        :: j
     integer                        :: k
-    integer, external              :: new_lun
     integer                        :: pos
     real                           :: dxx
     real                           :: dxy
@@ -579,8 +1234,7 @@ subroutine readregulargrid(filnam, sferic_exp, xorigin, yorigin, alpha, &
 !! executable statements -------------------------------------------------------
 !
     sferic_read = .false.
-    irgf   = new_lun()
-    open (irgf, file = filnam, form = 'formatted', status = 'old')
+    open (newunit=irgf, file = filnam, form = 'formatted', status = 'old')
     !
     ! Copied from file rdrgf
     !
@@ -630,13 +1284,13 @@ subroutine readregulargrid(filnam, sferic_exp, xorigin, yorigin, alpha, &
        write (*, '(3a)') '*** ERROR: file ',trim(filnam),' contains Spherical coordinates'
        write (*, '(11x,3a)') 'Expecting Cartesian coordinates'
        close (irgf)
-       stop
+       call wavestop(1, 'Spherical coordinates found while expecting Cartesian coordinates in file'//trim(filnam))
     endif
     if (.not. sferic_read .and.       sferic_exp) then
        write (*, '(3a)') '*** ERROR: file ',trim(filnam),' contains Cartesian coordinates'
        write (*, '(11x,3a)') 'Expecting Spherical coordinates'
        close (irgf)
-       stop
+       call wavestop(1, 'Cartesian coordinates found while expecting Spherical coordinates in file'//trim(filnam))
     endif
     read(rec,*,err=8888)  mmax, nmax
     !
@@ -703,7 +1357,7 @@ subroutine readregulargrid(filnam, sferic_exp, xorigin, yorigin, alpha, &
   999 continue
     write(*,'(2a)') '*** ERROR: reading GRD file ', trim(filnam)
     deallocate (xy, stat=ierr)
-    stop
+    call wavestop(1, '*** ERROR: reading GRD file '//trim(filnam))
  1000 continue
     deallocate (xy, stat=ierr)
 end subroutine readregulargrid
@@ -722,14 +1376,12 @@ subroutine write_swan_grid (x,y,mmax,nmax,inest,fname)
    !
    integer                        :: m
    integer                        :: n
-   integer, external              :: new_lun
    integer                        :: ugrd
    !
    fname       = ' '
    fname(1:13) = 'TMP_grid2swan'
-   ugrd        = new_lun()
    write (fname(14:15),'(I2.2)') inest
-   open  ( unit = ugrd, file = fname(1:15), form ='formatted')
+   open  (newunit = ugrd, file = fname(1:15), form ='formatted')
    write (ugrd,'(A)') 'x-coordinates'
    do n = 1,nmax
       write (ugrd,'(6(E25.17,1X))') (x(m,n),m=1,mmax)
@@ -740,7 +1392,4 @@ subroutine write_swan_grid (x,y,mmax,nmax,inest,fname)
    enddo
    close (ugrd)
 end subroutine write_swan_grid
-
-
-
 end module read_grids

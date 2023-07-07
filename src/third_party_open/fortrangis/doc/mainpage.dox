@@ -1,0 +1,18 @@
+/*! \mainpage FortranGIS.
+
+A collection of Fortran interfaces to the most common Open Source GIS
+libraries, plus some more Fortran-specific tools. Please refer to the
+Github project page https://github.com/dcesari/fortrangis for more
+information.
+
+In order to browse the API documentation, a good starting point is the
+Namespaces (i,e, \a MODULE in Fortran) menu. The documentation pages
+of the modules sometimes include the corresponding *_test.f90 source
+file which can be used as a commented example of use of the library.
+
+Some additional information can be found in the howto pages \ref build, 
+\ref globe and \ref metadata.
+
+Davide Cesari
+
+*/

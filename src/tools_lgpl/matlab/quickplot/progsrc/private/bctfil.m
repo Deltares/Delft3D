@@ -18,7 +18,7 @@ function varargout=bctfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -94,6 +94,32 @@ switch cmd
     case 'subfields'
         varargout={{}};
         return
+    case 'plotoptions'
+        varargout = {[]};
+        return
+    case 'plot'
+        Parent=varargin{1};
+        Ops=varargin{2};
+        hOld=varargin{3};
+        M=varargin{4};
+        %
+        QH = FI.Table(Props.Fld).Data;
+        if M~=0
+            QH = QH(M,:);
+        end
+        hNew=line(QH(:,1),QH(:,2),'color',Ops.colour, ...
+            'linestyle',Ops.linestyle, ...
+            'linewidth',Ops.linewidth, ...
+            'marker',Ops.marker, ...
+            'markersize',Ops.markersize, ...
+            'markeredgecolor',Ops.markercolour, ...
+            'markerfacecolor',Ops.markerfillcolour);
+        setappdata(Parent,'AxesType','<blocking>')
+        set(get(Parent,'title'),'string',FI.Table(Props.Fld).Location,'interpreter','none')
+        set(get(Parent,'xlabel'),'string','discharge (m^3) \rightarrow')
+        set(get(Parent,'ylabel'),'string','elevation (m) \rightarrow')
+        varargout={hNew FI};
+        return
     otherwise
         [XYRead,DataRead,DataInCell]=gridcelldata(cmd);
 end
@@ -138,8 +164,7 @@ varargout={Ans FI};
 
 
 % -----------------------------------------------------------------------------
-function Out=infile(FI,domain);
-
+function Out=infile(FI,domain)
 %======================== SPECIFIC CODE =======================================
 PropNames={'Name'                       'DimFlag' 'DataInCell' 'NVal' 'VecType' 'Loc' 'ReqLoc' 'Loc3D' 'Fld' 'Prm'};
 DataProps={};
@@ -149,8 +174,13 @@ l=0;
 for i=1:length(FI.Table)
     for j=2:size(FI.Table(i).Parameter,2)
         l=l+1;
-        DataProps(l,:)={[FI.Table(i).Location ' - ' FI.Table(i).Parameter(j).Name] ...
-            [1 0 0 0 0]  0          1     ''        ''   ''      ''      i    j };
+        if strcmp(FI.Table(i).Parameter(1).Name,'total discharge (t)')
+            DataProps(l,:)={[FI.Table(i).Location ' - QH Table'] ...
+                [0 0 1 0 0]  0         -1     ''        ''   ''      ''      i    j };
+        else
+            DataProps(l,:)={[FI.Table(i).Location ' - ' FI.Table(i).Parameter(j).Name] ...
+                [1 0 0 0 0]  0          1     ''        ''   ''      ''      i    j };
+        end
     end
 end
 Out=cell2struct(DataProps,PropNames,2);
@@ -163,7 +193,11 @@ T_=1; ST_=2; M_=3; N_=4; K_=5;
 sz=[0 0 0 0 0];
 
 %======================== SPECIFIC CODE =======================================
-sz(T_)=size(FI.Table(Props.Fld).Data,1);
+if Props.DimFlag(T_)
+    sz(T_)=size(FI.Table(Props.Fld).Data,1);
+else
+    sz(M_)=size(FI.Table(Props.Fld).Data,1);
+end
 % -----------------------------------------------------------------------------
 
 

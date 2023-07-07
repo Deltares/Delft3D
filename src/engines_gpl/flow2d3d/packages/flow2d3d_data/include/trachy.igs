@@ -1,0 +1,78 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_trachy
+    !
+    ! doubles
+    !
+    real(fp) :: alf_area_ser !  averaging coefficient serial Chezy for areas
+    real(fp) :: trtminh      !  minimum waterdepth in roughness formulations
+    !
+    ! reals
+    !
+    !
+    ! integers
+    !
+    integer  :: iarea_avg !  indicator which type of averaging is used
+                          !  for the area roughnesses
+                          !  1: averaging based on Nikuradse k
+                          !  2: averaging based on serial and parallel
+                          !     Chezy C
+    integer  :: max_cl    !  maximum recursion limit for nested definitions
+    integer  :: nroupa    !  maximum number of roughness parameters per
+                          !  trachytope definition
+    integer  :: nttaru    !  number of roughness records in M direction
+    integer  :: nttarv    !  number of roughness records in N direction
+    integer  :: ntrt      !  number of trachytope definitions
+    !
+    ! pointers
+    !
+    integer , dimension(:)    , pointer :: itrt_list   !  Roughness definition or roughness definition index
+    integer , dimension(:,:)  , pointer :: ittaru      !  Trachytope areas in M-direction (integer data)
+    integer , dimension(:,:)  , pointer :: ittarv      !  Trachytope areas in N-direction (integer data)
+    integer , dimension(:,:)  , pointer :: ittdef      !  Trachytope definitions (integer data)
+    real(fp), dimension(:)    , pointer :: fraccu_list !  Relative fraction (used for combined definitions)
+    real(fp), dimension(:,:)  , pointer :: rgcalu      !  Calibration matrix for trachytope roughness in M-direction
+    real(fp), dimension(:,:)  , pointer :: rgcalv      !  Calibration matrix for trachytope roughness in N-direction
+    real(fp), dimension(:)    , pointer :: rttaru      !  Trachytope areas in M-direction (real data)
+    real(fp), dimension(:)    , pointer :: rttarv      !  Trachytope areas in N-direction (real data)
+    real(fp), dimension(:,:)  , pointer :: rttdef      !  Trachytope definitions (real data)
+    real(fp), dimension(:,:,:), pointer :: rttfu       !  Trachytope resistance 3D in M-direction
+    real(fp), dimension(:,:,:), pointer :: rttfv       !  Trachytope resistance 3D in N-direction
+    real(fp), dimension(:,:)  , pointer :: vegh2d      !  Vegetation height on 2D grid (coming from WAQ)
+    real(fp), dimension(:,:)  , pointer :: vden2d      !  Vegetation density (nD/m2) on 2D grid (coming from WAQ)
+    ! 
+    ! logicals
+    !
+    logical  :: flsedprop_rqrd    !  flag indicating whether one (or more) of the (alluvial)
+                                  !  trachytope  definitions require sediment properties
+    !
+    ! characters
+    !
+end type gd_trachy

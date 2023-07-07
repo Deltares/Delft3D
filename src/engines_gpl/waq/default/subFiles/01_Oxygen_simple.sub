@@ -1,0 +1,103 @@
+substance 'NH4' active
+   description        'Ammonium (NH4)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'CBOD5' active
+   description        'carbonaceous BOD (first pool) at 5 days'
+   concentration-unit '(gO2/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'OXY' active
+   description        'Dissolved Oxygen'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'SOD' inactive
+   description        'Sediment oxygen demand (SOD)'
+   concentration-unit '(gO2/m3)'
+   waste-load-unit    '-'
+end-substance
+parameter 'RcNit'
+   description   'first-order nitrification rate'
+   unit          '(1/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'RcBOD'
+   description   'decay rate BOD (first pool) at 20 oC'
+   unit          '(1/d)'
+   value          0.3000E+00
+end-parameter
+parameter 'COXBOD'
+   description   'critical oxygen concentration for BOD decay'
+   unit          '(gO2/m3)'
+   value          0.1000E+01
+end-parameter
+parameter 'OOXBOD'
+   description   'optimum oxygen concentration for BOD decay'
+   unit          '(gO2/m3)'
+   value          0.5000E+01
+end-parameter
+parameter 'CFLBOD'
+   description   'oxygen function level for oxygen below COXBOD'
+   unit          '(-)'
+   value          0.3000E+00
+end-parameter
+parameter 'O2FuncBOD'
+   description   'oxygen function for decay of CBOD'
+   unit          '(-)'
+   value          0.0000E+00
+end-parameter
+parameter 'BOD5'
+   description   'BOD5'
+   unit          '(gO2/m3)'
+   value          0.0000E+00
+end-parameter
+parameter 'BODu'
+   description   'calculated carbonaceous BOD at ultimate'
+   unit          '(gO2/m3)'
+   value          0.0000E+00
+end-parameter
+parameter 'SWRear'
+   description   'switch for oxygen reaeration formulation (1-12)'
+   unit          '(-)'
+   value          0.1000E+01
+end-parameter
+parameter 'KLRear'
+   description   'reaeration transfer coefficient'
+   unit          '(m/d)'
+   value          0.1000E+01
+end-parameter
+parameter 'fSOD'
+   description   'zeroth-order sediment oxygen demand flux'
+   unit          '(gO2/m2/d)'
+   value          0.0000E+00
+end-parameter
+parameter 'RcSOD'
+   description   'decay rate SOD at 20 oC'
+   unit          '(1/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'Temp'
+   description   'ambient water temperature'
+   unit          '(oC)'
+   value          0.1500E+02
+end-parameter
+parameter 'VWind'
+   description   'wind speed'
+   unit          '(m/s)'
+   value          0.3000E+01
+end-parameter
+output 'DO'
+   description   'dissolved oxygen concentration'
+end-output
+active-processes
+   name  'Nitrif_NH4' 'Nitrification of ammonium'
+   name  'BODCOD' 'Mineralisation BOD and COD'
+   name  'RearOXY' 'Reaeration of oxygen'
+   name  'SedOXYDem' 'Sediment oxygen demand'
+   name  'PosOXY' 'Positive oxygen concentration'
+   name  'DynDepth' 'dynamic calculation of the depth'
+   name  'SaturOXY' 'Saturation concentration oxygen'
+   name  'TotDepth' 'depth water column'
+end-active-processes

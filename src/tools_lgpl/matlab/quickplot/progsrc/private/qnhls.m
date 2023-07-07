@@ -12,7 +12,7 @@ function varargout=qnhls(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -56,7 +56,7 @@ end
 
 
 function [CMap,Label]=Local_read_hls(filename)
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Unable to open %s',filename)
 end
@@ -75,12 +75,24 @@ while isequal(size(X),[1 3])
     if ~ischar(Line) %feof(fid)
         break
     end
-    X=sscanf(Line,'%f%f%f',[1 3]);
+    X=sscanf(Line,'%i%i%i',[1 3]);
 end
 fclose(fid);
 CMap(i+1:end,:) = [];
 if size(CMap,1)<2
     error('Invalid colour map in %s: need at least two colours.',filename)
+end
+f = find(CMap(:,1)<0 | CMap(:,1)>360);
+if ~isempty(f)
+    error('Invalid hue on line %i of %s: %i while expecting value between 0 and 360',f(1)+1,filename,CMap(f(1),1))
+end
+f = find(CMap(:,2)<0 | CMap(:,2)>100);
+if ~isempty(f)
+    error('Invalid lightness on line %i of %s: %i while expecting value between 0 and 100',f(1)+1,filename,CMap(f(1),2))
+end
+f = find(CMap(:,3)<0 | CMap(:,3)>100);
+if ~isempty(f)
+    error('Invalid saturation on line %i of %s: %i while expecting value between 0 and 100',f(1)+1,filename,CMap(f(1),3))
 end
 CMap(:,1)=CMap(:,1)/360;
 CMap(:,2:3)=CMap(:,2:3)/100;
@@ -94,7 +106,7 @@ if nargin<2
 elseif nargin<3
     Label='';
 end
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
 if fid<0
     return
 end

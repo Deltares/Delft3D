@@ -1,8 +1,9 @@
       subroutine hyd2dh(bndval,typbnd,thick ,nobnd ,notims,kmax  ,
      *                  nolay ,dav                               )
+      implicit none
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +27,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !***********************************************************************
 ! Deltares                         marine and coastal management
 !
@@ -44,11 +45,17 @@
 !                      typbnd set to 'u'
 !***********************************************************************
 
-      real        thick (kmax  )
+      integer nolay, nobnd, notims, kmax
+      
+      double precision thick (kmax  )
 
-      real        bndval(nobnd ,notims,kmax  ,1     ,2     )
+      double precision bndval(nobnd ,notims,kmax  ,1     ,2     )
 
-      logical     dav
+      integer ibnd
+      integer isize
+      integer itim, k
+      
+      logical dav
 
       character*1 typbnd(nobnd )
 

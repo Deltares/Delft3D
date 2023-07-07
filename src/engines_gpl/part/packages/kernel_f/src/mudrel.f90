@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,15 +27,16 @@ module mudrel_mod
 !
 !  data definition module(s)
 !
-use precision_part             ! single/double precision
+      use precision_part             ! single/double precision
       use timers
-use fileinfo              ! file information for all input/output files
+      use fileinfo              ! file information for all input/output files
 !
 !  module procedure(s)
 !
-use openfl_mod            ! explicit interface
+      use openfl_mod            ! explicit interface
+      use random_generator
 !
-implicit none             ! force explicit typing
+      implicit none             ! force explicit typing
 !
 contains
       subroutine mudrel( xpart , ypart, zpart, mpart, npart, kpart,       &
@@ -45,7 +46,7 @@ contains
                          amasud,nopart,sname , isout,iptime, lurep,       &
                          ipnt  ,volume,nosudx, syname)
 !
-!                   Deltares (former: Deltares)
+!                   Deltares
 !
 !
 !   version:     version 3.60
@@ -125,26 +126,21 @@ contains
 !     local scalars
 !
       integer(ip) :: i     , iftime, iopt   , is    , isfil , isout , it    , itime , iu
-      integer(ip) :: i1    , ihulp , ilay   , int   , ipp   , ipc   , isg2  , jseg  , mod
+      integer(ip) :: i1    , ihulp , ilay   , int   , ipp   , isg2  , jseg  , mod
       integer(ip) :: il    , im    , in     , ipos  , ips2  , iseg  , isub  , layt  , mmax
       integer(ip) :: iutime, lurep , nose2  , nosegm, nosy2 , nosyss , nosudx, nact  , nm
       integer(ip) :: nmax  , nosubs, nprest , npseg , ndprt , ndprt2, nopart, noseg2, noumx2
       integer(ip) :: npadd , npmax , nptot
-      real   (sp) :: hulp  , rmass , rnd    , rpseg , rdum  , totmas, uscal
+      real   (sp) :: hulp  , rmass , rpseg , rdum  , totmas, uscal
       real   (sp) :: totma1, totma2, totma3 , wpart1
-!
-!     note:
-!       random function rnd() must be declared external, as it is an
-!       intrinsic function for the lahey fortran95 compiler under linux
-!
-      external rnd
+
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "mudrel", ithndl )
 !
 !.. open files
 !
-      call openfl ( lunin, finam, ftype(2), 0 )
+      call openfl ( lunin, finam, 0 )
 !
 !.. delwaq map file or restart file
 !
@@ -444,23 +440,10 @@ contains
 !
             nm = nmax*mmax
 !
-            ipc = 0
             do 100 ipp = nptot + 1, nptot + nprest
 !
-99             ipc = ipc + 1
-               if(ipc > nact) call error('ipc gt nact in muderel')
-               jseg = ipnt(ipc)
-               i1 = mod(jseg,nm)
-               if(i1==0) i1 = nm
-               in = mod(i1,nmax)
-               if(in==0) in = nmax
-               im = 1 + (i1 - in)/nmax
-               if((im-1)*nmax /= (i1-in)) call error('Error 1 mudrel')
-               il = 1 + (jseg-i1)/nm
-               if((il-1)*nm /= (jseg-i1)) call error('Error 2 mudrel')
-!
 !.. add the remainder from segment with largest remainder
-!.. to segment with less remiander, max 1 part per segment
+!.. to segment with less remainder, max 1 part per segment
 !
 !
                if ( lgrid(in,im)  >  0 ) then
@@ -474,8 +457,6 @@ contains
                   if(volume(jseg) > (0.0)) then
                      totma2 = totma2 + wpart1
                   endif
-               else
-                  goto 99
                endif
 100         continue
 !

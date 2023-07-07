@@ -1,0 +1,31 @@
+package:
+  name: libnefis
+
+source:
+  url: https://git.deltares.nl/oss/delft3d/-/tree/main/src/utils_lgpl/nefis
+
+build:
+  number: 3
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - autoconf
+    - automake
+  host:
+    - bzip2
+    - zlib
+  run:
+    - bzip2
+    - zlib
+
+test:
+  commands:
+    - nefis
+
+about:
+  home: https://oss.deltares.nl
+  license: GPLv3
+  summary: NEFIS file format library

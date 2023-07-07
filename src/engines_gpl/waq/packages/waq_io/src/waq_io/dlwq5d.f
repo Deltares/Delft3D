@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -73,6 +73,7 @@
 !
 !
       use timers       !   performance timers
+      use m_cnvtim
 
       INTEGER       IIMAX  , IRMAX, I
       CHARACTER*(*) LCH(LSTACK) , CHULP
@@ -189,4 +190,3 @@
  1040 FORMAT (/' WARNING ! There are only ',I2,' breakpoints found for this time series' )
 !
       END
-

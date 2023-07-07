@@ -1,0 +1,33 @@
+.
+EC MODULE ITEMS:
+Target Item 00005 (name=polytim_item, vectormax=1)
+Element Set 00003
+   Connection 00013
+      Source Item 00011 (name=uniform_item, vectormax=1)
+         File Reader 00006(filename=tfl_01_0001.tim)
+            Quantity = uniform_item
+            Location = tfl_01_0001.
+   Connection 00021
+      Source Item 00019 (name=uniform_item, vectormax=1)
+         File Reader 00014(filename=tfl_01_0002.tim)
+            Quantity = uniform_item
+            Location = tfl_01_0002.
+Target Item 00028 (name=waterlevelbnd, vectormax=1)
+Element Set 00026
+   Connection 00034
+      Source Item 00005 (name=polytim_item, vectormax=1)
+         File Reader 00001(filename=tfl_01.pli)
+            Quantity = polytim_item
+Target Item 00030 (name=waterlevelbnd, vectormax=1)
+Element Set 00026
+   Connection 00034
+      Source Item 00005 (name=polytim_item, vectormax=1)
+         File Reader 00001(filename=tfl_01.pli)
+            Quantity = polytim_item
+Target Item 00032 (name=waterlevelbnd, vectormax=1)
+Element Set 00026
+   Connection 00034
+      Source Item 00005 (name=polytim_item, vectormax=1)
+         File Reader 00001(filename=tfl_01.pli)
+            Quantity = polytim_item
+.

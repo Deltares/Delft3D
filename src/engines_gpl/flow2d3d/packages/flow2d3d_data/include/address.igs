@@ -1,0 +1,75 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_address
+!
+       integer(pntrsize) :: iwrk1      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: iwrk2      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: iwrk3      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: wrka1      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka2      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka3      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka4      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka5      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka6      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka7      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka8      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka9      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka10     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka11     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka12     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka13     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka14     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka15     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrka16     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb1      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb2      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb3      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb4      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb5      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb6      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb7      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb8      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb9      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb10     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb11     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb12     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb13     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb14     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb15     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb16     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb17     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkb18     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkc1      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkc2      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkc3      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wrkc4      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zwork      !  Description and declaration in esm_alloc_real.f90
+!
+    end type gd_address

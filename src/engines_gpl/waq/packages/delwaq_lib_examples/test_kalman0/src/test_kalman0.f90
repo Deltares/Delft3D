@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -26,6 +26,7 @@
 !
 program test_kalman0
 
+    use m_waq_multi_instance
     use m_openda_quantities
 
     implicit none
@@ -106,8 +107,7 @@ program test_kalman0
 !   output files
     do run = 1, nmodes
         write(fnaam(run),'(A8,I4.4,A4)') 'uitvoer_',run,'.txt'
-        runlun(run) = 300 + run
-        open(runlun(run), file=fnaam(run))
+        open(newunit=runlun(run), file=fnaam(run))
     enddo
 
 !==========================================================
@@ -118,8 +118,6 @@ program test_kalman0
     !runidname = 'arjen-ws'
 
     call getarg(1,runidname)
-
-    ! call system('delwaq1.exe arjen-ws.inp')
 
 
     result = MODELINITIALIZE_BY_ID(runidName)

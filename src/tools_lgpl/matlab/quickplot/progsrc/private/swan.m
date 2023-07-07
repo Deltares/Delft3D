@@ -3,7 +3,7 @@ function varargout=swan(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -61,7 +61,7 @@ end
 
 
 function FI = Local_read_swan(filename,dims)
-fid = fopen(filename,'r');
+fid = fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Error opening file: %s',filename)
 end
@@ -121,7 +121,7 @@ for i=1:nvalperline
 end
 
 function FI = Local_read_swanin(filename)
-fid = fopen(filename,'r');
+fid = fopen(filename,'r','n','US-ASCII');
 if fid<0
     error('Error opening file: %s',filename)
 end

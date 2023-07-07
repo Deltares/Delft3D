@@ -1,0 +1,31 @@
+.
+EC MODULE ITEMS:
+Target Item 00005 (name=polytim_item, vectormax=1)
+Element Set 00003
+   Connection 00023, Converter 00022, targetIndex  0001
+      Source Item 00011 (name=period, vectormax=1)
+         File Reader 00006(filename=astronomic_01_0001.cmp)
+            Quantity = period
+      Source Item 00016 (name=magnitude, vectormax=1)
+         File Reader 00006(filename=astronomic_01_0001.cmp)
+            Quantity = magnitude
+      Source Item 00021 (name=phase, vectormax=1)
+         File Reader 00006(filename=astronomic_01_0001.cmp)
+            Quantity = phase
+   Connection 00041, Converter 00040, targetIndex  0002
+      Source Item 00029 (name=period, vectormax=1)
+         File Reader 00024(filename=astronomic_01_0002.cmp)
+            Quantity = period
+      Source Item 00034 (name=magnitude, vectormax=1)
+         File Reader 00024(filename=astronomic_01_0002.cmp)
+            Quantity = magnitude
+      Source Item 00039 (name=phase, vectormax=1)
+         File Reader 00024(filename=astronomic_01_0002.cmp)
+            Quantity = phase
+Target Item 00048 (name=waterlevelbnd, vectormax=1)
+Element Set 00046
+   Connection 00050, Converter 00049, targetIndex -0987
+      Source Item 00005 (name=polytim_item, vectormax=1)
+         File Reader 00001(filename=astronomic_01.pli)
+            Quantity = polytim_item
+.

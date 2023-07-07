@@ -1,0 +1,28 @@
+# Example (new-style) external forcings file
+# $Id$
+#
+# Consists of ini-file formatted blocks, with the forcing type defined in the
+# non-unique chapter titles, and quantities/files defined in the key-value
+# pairs underneath it.
+# Forcing data may come from a .bc-file in which case the combination of
+# quantity + locationfile should be unique.
+#
+# [..forcing type..]
+# Quantity     = { waterlevelbnd | dischargebnd | ... }
+# LocationFile = .pli-file
+# ForcingFile  = .bc-file (optional, otherwise <plibasename>_000x.tim/.cmp are auto-checked.)
+
+[boundary]
+Quantity     = waterlevelbnd
+LocationFile = my_location.pli
+ForcingFile  = my_forcing.bc
+
+[boundary]
+Quantity     = dischargebnd
+LocationFile = my_location.pli  # may be identical to other blocks
+ForcingFile  = my_forcing.bc    # may be identical to other blocks
+
+[noboundary] # or disable by putting comment chars in front of entire block.
+Quantity     = dischargebnd
+LocationFile = otherlocation.pli  # may be identical to other blocks
+ForcingFile  = separate_forcing.bc    # may be identical to other blocks

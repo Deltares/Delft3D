@@ -1,7 +1,7 @@
 module bedcomposition_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module bedcomposition_module
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--module description----------------------------------------------------------
 !
 ! This module keeps track of the bed composition at one or more locations. The
@@ -36,6 +36,7 @@ module bedcomposition_module
 !
 !!--module declarations---------------------------------------------------------
 use precision
+use sediment_basics_module, only: SEDTYP_SILT
 private
 
 !
@@ -114,31 +115,32 @@ type bedcomp_settings
     !
     ! integers
     !
-    integer :: idiffusion !  switch for diffusion between layers
-                          !  0: no diffusion
-                          !  1: diffusion
-    integer :: iporosity  !  switch for porosity (simulate porosity if iporosity > 0)
-                          !  0: porosity included in densities, set porosity to 0
-                          !  1: ...
-    integer :: iunderlyr  !  switch for underlayer concept
-                          !  1: standard fully mixed concept
-                          !  2: graded sediment concept
-    integer :: keuler     !  index of first Eulerian (i.e. non-moving) layer
-                          !  2   : standard Eulerian, only top layer moves with bed level
-                          !  nlyr: fully Lagrangian (all layers move with bed level)
-    integer :: nfrac      !  number of sediment fractions
-    integer :: neulyr     !  number of Eulerian underlayers
-    integer :: nlalyr     !  number of Lagrangian underlayers
-    integer :: nlyr       !  number of layers (transport + exchange + under layers)
-    integer :: ndiff      !  number of diffusion coefficients in vertical direction
-    integer :: nmlb       !  start index of segments
-    integer :: nmub       !  nm end index
-    integer :: updbaselyr !  switch for computing composition of base layer
-                          !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
-                          !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
-                          !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
-                          !  4: base layer composition and thickness constant (no change whatsoever)
-                          !  5: base lyaer composition is updated, but thickness is kept constant
+    integer :: idiffusion     !  switch for diffusion between layers
+                              !  0: no diffusion
+                              !  1: diffusion
+    integer :: iporosity      !  switch for porosity (simulate porosity if iporosity > 0)
+                              !  0: porosity included in densities, set porosity to 0
+                              !  1: ...
+    integer :: iunderlyr      !  switch for underlayer concept
+                              !  1: standard fully mixed concept
+                              !  2: graded sediment concept
+    integer :: keuler         !  index of first Eulerian (i.e. non-moving) layer
+                              !  2   : standard Eulerian, only top layer moves with bed level
+                              !  nlyr: fully Lagrangian (all layers move with bed level)
+    integer :: max_mud_sedtyp ! highest sediment type number that is considered a mud fraction
+    integer :: nfrac          !  number of sediment fractions
+    integer :: neulyr         !  number of Eulerian underlayers
+    integer :: nlalyr         !  number of Lagrangian underlayers
+    integer :: nlyr           !  number of layers (transport + exchange + under layers)
+    integer :: ndiff          !  number of diffusion coefficients in vertical direction
+    integer :: nmlb           !  start index of segments
+    integer :: nmub           !  nm end index
+    integer :: updbaselyr     !  switch for computing composition of base layer
+                              !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+                              !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+                              !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+                              !  4: base layer composition and thickness constant (no change whatsoever)
+                              !  5: base lyaer composition is updated, but thickness is kept constant
     !
     ! pointers
     !
@@ -192,7 +194,7 @@ subroutine bedcomposition_module_info(messages)
     !
     type(message_stack) :: messages
     !
-    call addmessage(messages,'$Id$')
+    call addmessage(messages,'')
     call addmessage(messages,'$URL$')
 end subroutine bedcomposition_module_info
 !
@@ -209,7 +211,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
     use message_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                                                                           :: this 
     real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in)  :: dbodsd  !  change in sediment composition, units : kg/m2
@@ -229,7 +231,6 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
     real(fp)                                :: thick
     real(fp)                                :: thtrlyrnew
     real(fp), dimension(this%settings%nfrac):: dmi
-    type (bedcomp_work)                     :: work
     !
     character(message_len)                  :: message
     type (morlyrnumericstype)     , pointer :: morlyrnum
@@ -244,6 +245,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
 !
 !! executable statements -------------------------------------------------------
 !
+
     morlyrnum   => this%settings%morlyrnum
     rhofrac     => this%settings%rhofrac
     thtrlyr     => this%settings%thtrlyr
@@ -254,7 +256,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
     sedshort    => this%state%sedshort
     thlyr       => this%state%thlyr  
     !
-    istat = allocwork(this,work)
+    istat = allocwork(this)
     if (istat /= 0) return
     select case(this%settings%iunderlyr)
     case(2)
@@ -324,7 +326,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
                 !
                 ! store surplus of mass in underlayers
                 !
-                call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), work)
+                call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm))
                 !
              elseif ( thdiff < 0.0_fp ) then
                 !
@@ -409,7 +411,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
           dz(nm) = dpsed(nm) - seddep0
        enddo
     endselect
-    istat = deallocwork(this,work)
+    istat = deallocwork(this)
 end function updmorlyr
 !
 !
@@ -447,7 +449,6 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     real(fp)                                :: thick
     real(fp), dimension(this%settings%nfrac):: dmi 
     real(fp)                                :: dz_togo
-    type (bedcomp_work)                     :: work
     !
     character(message_len)                  :: message
     real(prec) , dimension(:,:)   , pointer :: bodsed
@@ -470,7 +471,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     sedshort    => this%state%sedshort
     thlyr       => this%state%thlyr
     !
-    istat = allocwork(this,work)
+    istat = allocwork(this)
     if (istat /= 0) return
     select case(this%settings%iunderlyr)
     case(2)
@@ -547,7 +548,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
                 !
                 ! store surplus of mass in underlayers
                 !
-                call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm), work)
+                call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm))
                 !
              elseif ( dz < 0.0_fp ) then
                 !
@@ -639,7 +640,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
           endif
        enddo
     endselect
-    istat = deallocwork(this,work)
+    istat = deallocwork(this)
 end function gettoplyr
 !
 !
@@ -837,7 +838,7 @@ end subroutine lyrerosion
 !
 !
 !==============================================================================
-subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, work)
+subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
 !!--description-----------------------------------------------------------------
 !
 !    Function:
@@ -857,7 +858,6 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, work)
     real(fp)                                 , intent(in) :: dzini
     real(fp)                                 , intent(in) :: svfracdep
     real(fp), dimension(this%settings%nfrac)              :: dmi
-    type(bedcomp_work)                                    :: work
 !
 ! Local variables
 !
@@ -884,6 +884,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, work)
     real(fp), dimension(:,:,:), pointer         :: msed
     real(fp), dimension(:,:)  , pointer         :: thlyr
     real(fp), dimension(this%settings%nfrac)    :: dmi2
+    type(bedcomp_work)        , pointer         :: work
 !
 !! executable statements -------------------------------------------------------
 !
@@ -894,6 +895,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, work)
     svfrac      => this%state%svfrac
     msed        => this%state%msed
     thlyr       => this%state%thlyr
+    work        => this%work
     !
     kmin = 2
     if (this%settings%exchlyr) kmin = 3
@@ -1394,7 +1396,6 @@ subroutine detthcmud(this, thcmud)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use sediment_basics_module
     !
     implicit none
 !
@@ -1418,7 +1419,7 @@ subroutine detthcmud(this, thcmud)
     do nm = this%settings%nmlb,this%settings%nmub
        thcmud (nm) = 0.0
         do l = 1, this%settings%nfrac
-           if (this%settings%sedtyp(l) == SEDTYP_COHESIVE) then
+           if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
               thcmud(nm) = thcmud(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
            endif
         enddo
@@ -1504,7 +1505,6 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto)
 !
 !!--declarations----------------------------------------------------------------
     use precision 
-    use sediment_basics_module
     !
     implicit none
     !
@@ -1544,7 +1544,7 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto)
        !
        mudfrac = 0.0
        do l = 1, this%settings%nfrac
-          if (this%settings%sedtyp(l) == SEDTYP_COHESIVE) then
+          if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
              do nm = nmfrom, nmto
                 mudfrac(nm) = mudfrac(nm) + frac(nm,l)
              enddo
@@ -1955,21 +1955,22 @@ function initmorlyr(this) result (istat)
        settings%morlyrnum%MaxNumShortWarning = 100
     endif
     !
-    settings%keuler     = 2
-    settings%ndiff      = 0
-    settings%nfrac      = 0
-    settings%nlyr       = 0
-    settings%nmlb       = 0
-    settings%nmub       = 0
-    settings%idiffusion = 0
-    settings%iunderlyr  = 1
-    settings%iporosity  = 0
-    settings%exchlyr    = .false.
-    settings%neulyr     = 0
-    settings%nlalyr     = 0
-    settings%theulyr    = rmissval
-    settings%thlalyr    = rmissval
-    settings%updbaselyr = 1
+    settings%keuler         = 2
+    settings%ndiff          = 0
+    settings%nfrac          = 0
+    settings%nlyr           = 0
+    settings%nmlb           = 0
+    settings%nmub           = 0
+    settings%idiffusion     = 0
+    settings%iunderlyr      = 1
+    settings%iporosity      = 0
+    settings%exchlyr        = .false.
+    settings%max_mud_sedtyp = SEDTYP_SILT
+    settings%neulyr         = 0
+    settings%nlalyr         = 0
+    settings%theulyr        = rmissval
+    settings%thlalyr        = rmissval
+    settings%updbaselyr     = 1
     !
     nullify(settings%kdiff)
     nullify(settings%phi)
@@ -2085,13 +2086,15 @@ function allocmorlyr(this) result (istat)
        if (istat == 0) state%preload = 0.0_fp
     endif
     !
-    if (istat == 0) istat = allocwork(this,this%work)
+    ! WARNING: Do not allocate this%work here
+    ! For some reason it needs to be allocated/deallocated in updmorlyr/gettoplyr
+    !
 end function allocmorlyr
 !
 !
 !
 !==============================================================================
-function allocwork(this, work) result (istat)
+function allocwork(this) result (istat)
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
@@ -2101,7 +2104,6 @@ function allocwork(this, work) result (istat)
     ! Function/routine arguments
     !
     type (bedcomp_data), intent(in)  :: this    
-    type (bedcomp_work), intent(out) :: work
     integer                          :: istat
     !
     ! Local variables
@@ -2117,18 +2119,23 @@ function allocwork(this, work) result (istat)
     nlyr  => this%settings%nlyr
     !
     istat = 0
-    if (istat == 0) allocate (work%msed2(nfrac, nlyr), stat = istat)
-    if (istat == 0) work%msed2 = dmiss
-    if (istat == 0) allocate (work%thlyr2(nlyr)     , stat = istat)
-    if (istat == 0) work%thlyr2 = dmiss
-    if (istat == 0) allocate (work%svfrac2(nlyr)    , stat = istat)
-    if (istat == 0) work%svfrac2 = dmiss
+    !
+    ! Deallocate if it already exists
+    if (associated(this%work%msed2)) deallocate (this%work%msed2  , stat = istat)
+    if (associated(this%work%msed2)) deallocate (this%work%thlyr2 , stat = istat)
+    if (associated(this%work%msed2)) deallocate (this%work%svfrac2, stat = istat)
+    if (istat == 0) allocate (this%work%msed2(nfrac, nlyr), stat = istat)
+    if (istat == 0) allocate (this%work%thlyr2(nlyr)      , stat = istat)
+    if (istat == 0) allocate (this%work%svfrac2(nlyr)     , stat = istat)
+    if (istat == 0) this%work%msed2 = dmiss
+    if (istat == 0) this%work%thlyr2 = dmiss
+    if (istat == 0) this%work%svfrac2 = dmiss
 end function allocwork
 !
 !
 !
 !==============================================================================
-function deallocwork(this, work) result (istat)
+function deallocwork(this) result (istat)
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
@@ -2138,7 +2145,6 @@ function deallocwork(this, work) result (istat)
     ! Function/routine arguments
     !
     type (bedcomp_data), intent(in)  :: this    
-    type (bedcomp_work), intent(out) :: work
     integer                          :: istat
     !
     ! Local variables
@@ -2147,9 +2153,9 @@ function deallocwork(this, work) result (istat)
     !! executable statements -------------------------------------------------------
     !
     istat = 0
-    if (istat == 0) deallocate (work%msed2  , stat = istat)
-    if (istat == 0) deallocate (work%thlyr2 , stat = istat)
-    if (istat == 0) deallocate (work%svfrac2, stat = istat)
+    if (istat == 0) deallocate (this%work%msed2  , stat = istat)
+    if (istat == 0) deallocate (this%work%thlyr2 , stat = istat)
+    if (istat == 0) deallocate (this%work%svfrac2, stat = istat)
 end function deallocwork
 !
 !
@@ -2203,6 +2209,10 @@ function clrmorlyr(this) result (istat)
        deallocate(this%state, STAT = istat)
        nullify(this%state)
     endif
+    if (associated(this%work)) then
+       istat = deallocwork(this)
+       deallocate(this%work, STAT = istat)
+    endif
 end function clrmorlyr
 !
 !
@@ -2217,7 +2227,7 @@ subroutine setbedfracprop(this, sedtyp, sedd50, logsedsig, rhofrac)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                  :: this    
     integer , dimension(:), intent(in)  :: sedtyp
@@ -2245,7 +2255,7 @@ subroutine setbedfracprop(this, sedtyp, sedd50, logsedsig, rhofrac)
        endif
        this%settings%rhofrac(l) = rhofrac(l) ! either rhosol or cdryb
     enddo
-end subroutine
+end subroutine setbedfracprop
 !
 !
 !
@@ -2259,7 +2269,7 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)    , intent(in)  :: this    
     character(*)          , intent(in)  :: variable
@@ -2282,7 +2292,7 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
-end function
+end function bedcomp_getpointer_logical_scalar
 !
 !
 !
@@ -2296,7 +2306,7 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)    , intent(in)  :: this    
     character(*)          , intent(in)  :: variable
@@ -2343,7 +2353,7 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
-end function
+end function bedcomp_getpointer_integer_scalar
 !
 !
 !
@@ -2358,7 +2368,7 @@ function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)    , intent(in)  :: this    
     character(*)          , intent(in)  :: variable
@@ -2385,7 +2395,7 @@ function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
-end function
+end function bedcomp_getpointer_fp_scalar
 !
 !
 !
@@ -2400,7 +2410,7 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)             , intent(in)  :: this    
     character(*)                   , intent(in)  :: variable
@@ -2431,7 +2441,7 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1    
-end function
+end function bedcomp_getpointer_fp_1darray
 !
 !
 !
@@ -2446,7 +2456,7 @@ function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)               , intent(in)  :: this    
     character(*)                     , intent(in)  :: variable
@@ -2473,7 +2483,7 @@ function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
-end function
+end function bedcomp_getpointer_fp_2darray
 !
 !
 !
@@ -2488,7 +2498,7 @@ function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                 , intent(in)  :: this    
     character(*)                       , intent(in)  :: variable
@@ -2511,7 +2521,7 @@ function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
-end function
+end function bedcomp_getpointer_fp_3darray
 !
 !
 !
@@ -2526,7 +2536,7 @@ function bedcomp_getpointer_prec_2darray(this, variable, val) result (istat)
     use string_module
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                 , intent(in)  :: this    
     character(*)                       , intent(in)  :: variable
@@ -2549,7 +2559,7 @@ function bedcomp_getpointer_prec_2darray(this, variable, val) result (istat)
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
-end function
+end function bedcomp_getpointer_prec_2darray
 !
 !
 !
@@ -2563,7 +2573,7 @@ subroutine bedcomp_use_bodsed(this)
     use precision
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                         :: this
     !
@@ -2707,7 +2717,7 @@ subroutine bedcomp_use_bodsed(this)
        ! nothing to do, using bodsed as uniformly mixed sediment
        !
     endselect
-end subroutine
+end subroutine bedcomp_use_bodsed
 !
 !
 !
@@ -2721,7 +2731,7 @@ subroutine copybedcomp(this, nmfrom, nmto)
     use precision
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                   :: this
     integer                , intent(in)  :: nmfrom
@@ -2759,7 +2769,7 @@ subroutine copybedcomp(this, nmfrom, nmto)
        enddo
        dpsed(nmto) = dpsed(nmfrom)
     end select
-end subroutine
+end subroutine copybedcomp
 !
 !
 !
@@ -2773,7 +2783,7 @@ subroutine updateporosity(this, nm, k)
     use precision
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                   :: this
     integer                , intent(in)  :: nm
@@ -2813,7 +2823,7 @@ subroutine updateporosity(this, nm, k)
     case default
        ! option not available for this bed composition model
     end select
-end subroutine
+end subroutine updateporosity
 !
 !
 !
@@ -2827,7 +2837,7 @@ subroutine getporosity(this, mfrac, poros)
     use precision
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                       , intent(in)  :: this
     real(fp) , dimension(this%settings%nfrac), intent(in)  :: mfrac
@@ -2875,8 +2885,11 @@ subroutine getporosity(this, mfrac, poros)
     case default
        poros         = 0.0_fp
     end select
-end subroutine
-
+end subroutine getporosity
+!
+!
+!
+!==============================================================================
 subroutine consolidate(this, nm)
 !!--description-----------------------------------------------------------------
 !
@@ -2886,7 +2899,7 @@ subroutine consolidate(this, nm)
     use precision
     implicit none
     !
-    ! Call variables
+    ! Arguments
     !
     type(bedcomp_data)                   :: this
     integer                , intent(in)  :: nm

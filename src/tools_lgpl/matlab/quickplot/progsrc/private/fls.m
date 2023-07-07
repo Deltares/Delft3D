@@ -43,7 +43,7 @@ function [Out,FI2]=fls(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -143,7 +143,7 @@ function Structure=Local_read_fls(filename)
 Structure.Check='NotOK';
 Structure.FileType='FLS-mdf';
 
-fid=fopen(filename,'rt');
+fid=fopen(filename,'rt','n','US-ASCII');
 
 % Find grid dimensions
 % ARC-INFO header not supported <-------------------------------------------
@@ -478,7 +478,7 @@ while ~feof(fid)
         if ~isempty(FN)
             FileName=sscanf(Line((FN+8):end),'%s',1);
             FileName=[Path FileName];
-            subfid=fopen(FileName,'rt');
+            subfid=fopen(FileName,'rt','n','US-ASCII');
             if subfid>0
                 Array=Local_read_array(subfid,Keyword,Size,Array); % recursive file reading
                 fclose(subfid);
@@ -584,7 +584,7 @@ while ~feof(fid)
                 end
             elseif ~isempty(LFRE) % FREE FORMAT
                 FileName=sscanf(Line((LARC+12):end),'%s',1);
-                Local_fid=fopen(FileName);
+                Local_fid=fopen(FileName,'rt','n','US-ASCII');
                 array=fscanf(Local_fid,'%f',Size); % transpose
                 fclose(Local_fid);
             else
@@ -892,7 +892,7 @@ function FileInfo=Local_open_cross(filename)
 FileInfo.Check='NotOK';
 FileInfo.FileType='FLS-cross';
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     return
 end
@@ -950,7 +950,7 @@ if isfield(FileInfo,'Cross') % fls fileinfo, lower to cross fileinfo
     FileInfo=FileInfo.Cross.FileInfo;
 end
 
-fid=fopen(FileInfo.FileName,'r');
+fid=fopen(FileInfo.FileName,'r','n','US-ASCII');
 if fid<0
     return
 end
@@ -975,7 +975,7 @@ function FileInfo=Local_open_historyhis(filename)
 FileInfo.Check='NotOK';
 FileInfo.FileType='FLS-his';
 
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     return
 end
@@ -1048,7 +1048,7 @@ if isfield(FileInfo,'His') % fls fileinfo, lower to his fileinfo
     FileInfo=FileInfo.His.FileInfo;
 end
 
-fid=fopen(FileInfo.FileName,'r');
+fid=fopen(FileInfo.FileName,'r','n','US-ASCII');
 fseek(fid,FileInfo.Start(Station),-1);
 Data=fscanf(fid,'%f',[6 FileInfo.NTimes(Station)]);
 Data=transpose(Data);

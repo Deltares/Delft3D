@@ -1,125 +1,111 @@
-Delft3D WAVE GUI version 4.90.06
-'40.01'
-* Project name, -number
-'Frisian Inlet'
-''
-* Description
-'nieuw golfgrid'
-''
-''
-* Y/N Use bathmetry, use waterlevel, use current, use wind
-1 1 1 1
-* Number of computational grids
-1
-* Filename comp. grid
-'frg_wave05.grd'
-* Y/N bathymetry is based on comp. grid, filename bath. grid
-1 ''
-* Filename bathymetry data
-'depth_wave05.dep'
-* Directional space: type, number of directions,
-*                    start-direction, end-direction
-*   - type: 1 = circle, 2 = sector
-1 36  0.0000000e+000  0.0000000e+000
-* Frequency space: lowest frequency, highest frequency, number of freq. bins,
-*                  grid to nest in, Y/N write output for this grid
- 5.0000001e-002  1.0000000e+000 24 0 1
-* Number of tidal time points, Reference date
-1 2005-01-01
-* Time, h, u, v
- 0.0000000e+000  0.0000000e+000  0.0000000e+000  0.0000000e+000
-* Water level correction, Extrapolate flow data on the last # grid(s)
- 0.0000000e+000 0
-* Number of boundaries
-3
-* Boundary name, specifications, defined-by, conditions-along-boundary
-*   - specifications: 1 = from-file, 2 = parametric
-*   - defined-by: 1 = orientation,
-*                 2 = grid-coordinates,
-*                 3 = xy-coordinates
-*   - conditions-along-boundary: 1 = constant, 2 = variable
-'Noord' 2 1 1
-* Orientation
-*   1 = N, 2 = NW, 3 = W, 4 = SW, 5 = S, 6 = SE, 7 = E, 8 = NE
-1
-* Shape, period, width-energy, peak enhancement factor, spreading
-*   - shape: 1 = Jonswap, 2 = Pierson-Moskowitz, 3 = Gauss
-*   - period: 1 = Peak, 2 = Mean
-*   - width-energy: 1 = Power, 2 = Degrees
-1 1 1 3.300000 0.010000
-* Significant waveheight, peak period, direction, energy distribution
- 2.0000000e+000  7.0000000e+000  3.4000000e+002  4.0000000e+000
-* Boundary name, specifications, defined-by, conditions-along-boundary
-*   - specifications: 1 = from-file, 2 = parametric
-*   - defined-by: 1 = orientation,
-*                 2 = grid-coordinates,
-*                 3 = xy-coordinates
-*   - conditions-along-boundary: 1 = constant, 2 = variable
-'West' 2 1 1
-* Orientation
-*   1 = N, 2 = NW, 3 = W, 4 = SW, 5 = S, 6 = SE, 7 = E, 8 = NE
-3
-* Shape, period, width-energy, peak enhancement factor, spreading
-*   - shape: 1 = Jonswap, 2 = Pierson-Moskowitz, 3 = Gauss
-*   - period: 1 = Peak, 2 = Mean
-*   - width-energy: 1 = Power, 2 = Degrees
-1 1 1 3.300000 0.010000
-* Significant waveheight, peak period, direction, energy distribution
- 2.0000000e+000  7.0000000e+000  3.4000000e+002  4.0000000e+000
-* Boundary name, specifications, defined-by, conditions-along-boundary
-*   - specifications: 1 = from-file, 2 = parametric
-*   - defined-by: 1 = orientation,
-*                 2 = grid-coordinates,
-*                 3 = xy-coordinates
-*   - conditions-along-boundary: 1 = constant, 2 = variable
-'Oost' 2 1 1
-* Orientation
-*   1 = N, 2 = NW, 3 = W, 4 = SW, 5 = S, 6 = SE, 7 = E, 8 = NE
-7
-* Shape, period, width-energy, peak enhancement factor, spreading
-*   - shape: 1 = Jonswap, 2 = Pierson-Moskowitz, 3 = Gauss
-*   - period: 1 = Peak, 2 = Mean
-*   - width-energy: 1 = Power, 2 = Degrees
-1 1 1 3.300000 0.010000
-* Significant waveheight, peak period, direction, energy distribution
- 2.0000000e+000  7.0000000e+000  3.4000000e+002  4.0000000e+000
-* Number of obstacles
-0
-* Gravity, water density, north, minimum depth
- 9.8100004e+000  1.0250000e+003  9.0000000e+001  5.0000001e-002
-* Convention, setup, forces
-*   - convention: 1 = nautical, 2 = cartesian
-*   - setup: 0 = no setup, 1 = activated
-*   - forces: 1 = radiation stress, 2 = wave energy dissipation rate
-1 0 2
-* Type of formulations
-*   0 = none, 1 = 1-st, 2 = 2-nd, 3 = 3-th generation
-3
-* Depth induced breaking, alpha, gamma
-*   - breaking: 0 = de-activated, 1 = B&J model
-1  1.0000000e+000  7.3000002e-001
-* Bottom friction, friction coefficient
-*   - friction: 0 = de-activated, 1 = Jonswap,
-*               2 = Collins, 3 = Madsen et al.
-1  6.7000002e-002
-* Non-linear triad interactions, alpha, beta
-*   - interactions: 0 = de-activated, 1 = LTA
-0  1.0000000e-001  2.2000000e+000
-* Diffraction, smoothing coefficient, smoothing steps, adaptation of propagation
-*   - interactions: 0 = de-activated, 1 = activated
-0  0.0 0 0
-* Y/N windgrowth, white-capping, quadruplets, refraction, freq. shift
-1 1 1 1 1
-* Directional space, freq. space
- 5.0000000e-001  5.0000000e-001
-* Hs-Tm01, Hs, Tm01, perc. of wed grid points, max. number of iterations
- 2.0000000e-002  2.0000000e-002  2.0000000e-002  9.8000000e+001 15
-* Number of output curves
-0
-* Level of test output, debug level, Y/N compute waves, Y/N activate hotstart file
-* Output time interval, Computational mode: 0 = stationary, 1 = non-stationary
-0 0 1 0 0.0 0
-* Y/N output to Flow grid; filename of Flow grid
-1 'frg_new02.grd'
-* Y/N output to locations
-0
+[WaveFileInformation]
+   FileVersion          = 02.00                        
+[General]
+   ProjectName          = Frisian Inlet                
+   Description          = nieuw golfgrid               
+   OnlyInputVerify      = false                        
+   SimMode              = stationary                   
+   DirConvention        = nautical                     
+   ReferenceDate        = 2005-01-01                   
+   WindSpeed            =  0.0000000e+000              
+   WindDir              =  0.0000000e+000              
+[TimePoint]
+   Time                 =  0.0000000e+000              
+[Constants]
+   WaterLevelCorrection =  0.0000000e+000              
+   Gravity              =  9.8100004e+000              
+   WaterDensity         =  1.0250000e+003              
+   NorthDir             =  9.0000000e+001              
+   MinimumDepth         =  5.0000001e-002              
+[Processes]
+   GenModePhys          = 3                            
+   Breaking             = true                         
+   BreakAlpha           =  1.0000000e+000              
+   BreakGamma           =  7.3000002e-001              
+   Triads               = false                        
+   TriadsAlpha          =  1.0000000e-001              
+   TriadsBeta           =  2.2000000e+000              
+   WaveSetup            = false                        
+   BedFriction          = jonswap                      
+   BedFricCoef          =  6.7000002e-002              
+   Diffraction          = false                        
+   DiffracCoef          =  2.0000000e-001              
+   DiffracSteps         = 5                            
+   DiffracProp          = true                         
+   WindGrowth           = true                         
+   WhiteCapping         = Komen                        
+   Quadruplets          = true                         
+   Refraction           = true                         
+   FreqShift            = true                         
+   WaveForces           = dissipation                  
+[Numerics]
+   DirSpaceCDD          =  5.0000000e-001              
+   FreqSpaceCSS         =  5.0000000e-001              
+   RChHsTm01            =  2.0000000e-002              
+   RChMeanHs            =  2.0000000e-002              
+   RChMeanTm01          =  2.0000000e-002              
+   PercWet              =  9.8000000e+001              
+   MaxIter              = 15                           
+[Output]
+   TestOutputLevel      = 0                            
+   TraceCalls           = false                        
+   UseHotFile           = false                        
+   WriteCOM             = true                        
+[Domain]
+   Grid                 = frg_wave05.grd               
+   BedLevel             = depth_wave05.dep             
+   FlowBedLevel         = 2                            
+   FlowWaterLevel       = 2                            
+   FlowVelocity         = 2                            
+   FlowVelocityType     = surface-layer                
+   FlowWind             = 2                            
+   DirSpace             = circle                       
+   NDir                 = 36                           
+   StartDir             =  0.0000000e+000              
+   EndDir               =  0.0000000e+000              
+   FreqMin              =  5.0000001e-002              
+   FreqMax              =  1.0000000e+000              
+   NFreq                = 24                           
+   Output               = true                         
+[Boundary]
+   Name                 = Noord                        
+   Definition           = orientation                  
+   Orientation          = north                        
+   SpectrumSpec         = parametric                   
+   SpShapeType          = jonswap                      
+   PeriodType           = peak                         
+   DirSpreadType        = power                        
+   PeakEnhanceFac       =  3.3000000e+000              
+   GaussSpread          =  9.9999998e-003              
+   WaveHeight           =  2.0000000e+000              
+   Period               =  7.0000000e+000              
+   Direction            =  3.4000000e+002              
+   DirSpreading         =  4.0000000e+000              
+[Boundary]
+   Name                 = West                         
+   Definition           = orientation                  
+   Orientation          = west                         
+   SpectrumSpec         = parametric                   
+   SpShapeType          = jonswap                      
+   PeriodType           = peak                         
+   DirSpreadType        = power                        
+   PeakEnhanceFac       =  3.3000000e+000              
+   GaussSpread          =  9.9999998e-003              
+   WaveHeight           =  2.0000000e+000              
+   Period               =  7.0000000e+000              
+   Direction            =  3.4000000e+002              
+   DirSpreading         =  4.0000000e+000              
+[Boundary]
+   Name                 = Oost                         
+   Definition           = orientation                  
+   Orientation          = east                         
+   SpectrumSpec         = parametric                   
+   SpShapeType          = jonswap                      
+   PeriodType           = peak                         
+   DirSpreadType        = power                        
+   PeakEnhanceFac       =  3.3000000e+000              
+   GaussSpread          =  9.9999998e-003              
+   WaveHeight           =  2.0000000e+000              
+   Period               =  7.0000000e+000              
+   Direction            =  3.4000000e+002              
+   DirSpreading         =  4.0000000e+000              

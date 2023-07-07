@@ -1,0 +1,48 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type dpm_vegetation
+   integer                         :: nvps     ! number of Vertical Plant Structure descriptions
+   integer , dimension(:), pointer :: nstem    ! nstem (nvps) number of stems   for each vps description
+   real(fp), dimension(:), pointer :: dia      ! dia   (nvps) diameter of stems for each vps description
+   real(fp), dimension(:), pointer :: cdcoef   ! cdcoef(nvps) cilindrical resistance coefficient
+   real(fp), dimension(:), pointer :: rho      ! rho   (nvps) density of this type of vegetation [ kg/m3 ]
+   real(fp), dimension(:), pointer :: z        ! z     (nvps) z-coordinate      for each vps description
+   character(80)                   :: typename ! name of this type of vegetation
+end type dpm_vegetation
+
+type gd_veg3d
+   real(fp)                                     :: clplant   ! Turbulence length scale coefficient between stems
+   integer                                      :: itplant   ! Number of time steps between updates of plant arrays
+   integer                                      :: nveg      ! number of vegetation types
+   integer, dimension(:,:), pointer             :: planttype ! (n,m) vegetation type reference in this cell
+   real(fp), dimension(:,:), pointer            :: nplants   ! (n,m) # plants per m2
+   type (dpm_vegetation), dimension(:), pointer :: vegs      ! vegs (nveg) all vegetation descriptions
+   character(256)                               :: filvg3d   ! 3D vegetation input file as indicated by keyword Filpla in md-file
+end type gd_veg3d

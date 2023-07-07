@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 program his2csv
 
@@ -70,7 +70,7 @@ program his2csv
     retval = 0
 
     ! check / read arguments
-    numArgs = nargs()
+    numArgs = COMMAND_ARGUMENT_COUNT()
     args(:) = ''
     if (numArgs >= 1) call GetArg(1, args(1))
     if ( numArgs == 1 .or. &
@@ -126,13 +126,11 @@ program his2csv
 
     if ( retVal == 0 ) then
 
-        outFileHandle = DioNewLun()
-
         if (numArgs == 2) then  ! all values
 
             rValues => DioPltGetAllReals(plt)
             outFileName = trim(hisFileName(1:len_trim(hisFileName)-4))//'.csv'
-            open(outFileHandle,file=outFileName)
+            open(newunit=outFileHandle,file=outFileName)
 
             ! full his file
             do par = 1, nPar

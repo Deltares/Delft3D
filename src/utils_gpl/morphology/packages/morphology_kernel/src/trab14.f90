@@ -1,8 +1,8 @@
-subroutine trab14(utot      ,d50       ,chezy     ,par       ,hidexp    , &
-                & sbot      ,ssus      )
+subroutine trab14(utot      ,d50       ,chezy     ,npar      ,par       , &
+                & hidexp    ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine trab14(utot      ,d50       ,chezy     ,par       ,hidexp    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
@@ -40,15 +40,17 @@ subroutine trab14(utot      ,d50       ,chezy     ,par       ,hidexp    , &
     !
     implicit none
 !
-! Call variables
+! Arguments
 !
-    real(fp)               , intent(in)  :: chezy  ! chezy value
-    real(fp)               , intent(in)  :: d50    ! Grain size specified as d50
-    real(fp)               , intent(in)  :: hidexp ! hiding & exposure factor
-    real(fp)               , intent(out) :: sbot   ! bed load transport
-    real(fp)               , intent(out) :: ssus   ! suspended sediment transport
-    real(fp)               , intent(in)  :: utot   ! flow velocity
-    real(fp), dimension(30), intent(in)  :: par    ! sediment parameter list
+    integer                  , intent(in)    :: npar
+    real(fp)                 , intent(in)    :: chezy  ! chezy value
+    real(fp)                 , intent(in)    :: d50    ! Grain size specified as d50
+    real(fp)                 , intent(in)    :: hidexp ! hiding & exposure factor
+    real(fp), dimension(npar), intent(in)    :: par    ! sediment parameter list
+    real(fp)                 , intent(in)    :: utot   ! flow velocity
+    !
+    real(fp)                 , intent(out)   :: sbot   ! bed load transport
+    real(fp)                 , intent(out)   :: ssus   ! suspended sediment transport
 !
 ! Local variables
 !

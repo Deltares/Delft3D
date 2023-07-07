@@ -1,7 +1,7 @@
 subroutine timdat(julday    ,timsec    ,idate    ,itime     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine timdat(julday    ,timsec    ,idate    ,itime     )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function:  returns date and time according actual time
@@ -37,14 +37,15 @@ subroutine timdat(julday    ,timsec    ,idate    ,itime     )
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+    use precision_basics
     implicit none
 !
 ! Global variables
 !
-    integer              :: idate !!  Absolute date related to ITDATE and TIMSEC
-    integer, intent(out) :: itime  !!  Absolute time related to ITDATE and TIMSEC
-    integer, intent(in)  :: julday !  Description and declaration in inttim.igs
-    real   , intent(in)  :: timsec !  Description and declaration in inttim.igs
+    integer              :: idate  !!  Absolute date related to ITDATE and TIMSEC
+    integer,  intent(out):: itime  !!  Absolute time related to ITDATE and TIMSEC
+    integer,  intent(in) :: julday !  Description and declaration in inttim.igs
+    real(hp), intent(in) :: timsec !  Description and declaration in inttim.igs
 !
 ! Local variables
 !
@@ -58,19 +59,19 @@ subroutine timdat(julday    ,timsec    ,idate    ,itime     )
     integer :: l
     integer :: localjulday
     integer :: n
-    real    :: localtimsec
+    real(hp):: localtimsec
 !
 !! executable statements -------------------------------------------------------
 !
     if (timsec < 0.0) then
-       iday        = floor(timsec/86400.0)
+       iday        = floor(timsec/86400.0_hp)
        !
        ! iday is negative
        ! decrease julday
        ! make timsec positive
        !
        localjulday = julday + iday
-       localtimsec = timsec - iday * 86400.0
+       localtimsec = timsec - iday * 86400.0_hp
     else
        localjulday = julday
        localtimsec = timsec

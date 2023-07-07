@@ -4,7 +4,7 @@ subroutine wapar(hrm       ,dir       ,deph      ,tp        ,fxhis     , &
                & corht     ,swdis     ,grav      ,wsbodyu   ,wsbodyv   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine wapar(hrm       ,dir       ,deph      ,tp        ,fxhis     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !     Input:

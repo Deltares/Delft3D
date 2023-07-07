@@ -30,6 +30,10 @@ function varargout=wlgrid(cmd,varargin)
 %                         shifted slightly to avoid clipping, hence don't
 %                         use MV to already mark clipped points in the X,Y
 %                         datasets provided.
+%     'Attributes'      : An Nx2 cell array of N keyword-value pairs. The
+%                         values should be either strings or scalar values.
+%                         The special keywords 'Coordinate System' and
+%                         'Missing Value' will be skipped.
 %
 %   Accepted without property name: x-coordinates, y-coordinates and
 %   enclosure array (in this order), file name, file format, coordinate
@@ -55,7 +59,7 @@ function varargout=wlgrid(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -99,6 +103,9 @@ switch lcmd
         else
             varargout={Grid.X Grid.Y Grid.Enclosure Grid.CoordinateSystem Grid.MissingValue};
         end
+    case 'create'
+        Grid=Local_create_grid(varargin{:});
+        varargout{1}=Grid;
     case {'struct','write','newrgf','writeold','oldrgf','writeswan','swangrid'}
         switch lcmd
             case 'write'
@@ -118,6 +125,28 @@ switch lcmd
         error('Unknown command')
 end
 
+function GRID=Local_create_grid(szOrFld)
+if isequal(size(szOrFld),[1 2])
+    sz = szOrFld;
+    Fld = [];
+else
+    Fld = szOrFld;
+    sz = size(Fld);
+end
+GRID.X                = repmat((1:sz(1))',1,sz(2));
+GRID.Y                = repmat(1:sz(2),sz(1),1);
+if ~isempty(Fld)
+    Mask = isnan(Fld);
+    GRID.X(Mask) = NaN;
+    GRID.Y(Mask) = NaN;
+end
+GRID.Enclosure        = enclosure('extract',GRID.X,GRID.Y);
+GRID.FileName         = '';
+GRID.CoordinateSystem = 'Unknown';
+GRID.MissingValue     = 0;
+GRID.Attributes       = {};
+GRID.Type             = 'RGF';
+GRID.Orient           = 'anticlockwise';
 
 function GRID=Local_read_grid(filename)
 GRID.X                = [];
@@ -146,12 +175,13 @@ end
 filename=fullfile(path,[name ext]);
 basename=fullfile(path,name);
 GRID.FileName=filename;
+GRID.Attributes = cell(0,2);
 
 % Grid file
 gridtype='RGF';
-fid=fopen(filename);
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
-    error('Couldn''t open file: %s.',filename)
+    error('Can''t open file: %s.',filename)
 end
 %
 try
@@ -179,11 +209,13 @@ try
             EqualSign = strfind(line,'=');
             if ~isempty(EqualSign)
                 keyword = strtrim(line(1:EqualSign(1)-1));
+                value   = strtrim(line(EqualSign(1)+1:end));
+                GRID.Attributes(end+1,:) = {keyword value};
                 switch keyword
                     case 'Coordinate System'
-                        GRID.CoordinateSystem=strtrim(line(EqualSign(1)+1:end));
+                        GRID.CoordinateSystem = value;
                     case 'Missing Value'
-                        GRID.MissingValue=str2double(line(EqualSign(1)+1:end));
+                        GRID.MissingValue     = str2double(value);
                 end
                 prevlineoffset = ftell(fid);
                 line=fgetl(fid);
@@ -226,9 +258,22 @@ try
                     end
                     %
                     line = fgetl(fid); % read xori,yori,alfori
-                    pars = sscanf(line,'%f');
+                    [pars,cnt,err,next] = sscanf(line,'%f');
                     if length(pars)>3
-                        error('Too many parameters on origin line: %s',line)
+                        error('Too many numbers encountered on origin line: %s',line)
+                    elseif ~isempty(err)
+                        % some other text on the line ... maybe Missing Value
+                        line2 = line(next:end);
+                        EqualSign = strfind(line2,'=');
+                        keyword = strtrim(line2(1:EqualSign(1)-1));
+                        value   = strtrim(line2(EqualSign(1)+1:end));
+                        GRID.Attributes(end+1,:) = {keyword value};
+                        switch keyword
+                            case 'Coordinate System'
+                                GRID.CoordinateSystem = value;
+                            case 'Missing Value'
+                                GRID.MissingValue     = str2double(value);
+                        end
                     end
                     if length(grdsize)>2 % the possible third element contains the number of subgrids
                         if grdsize(3)>1
@@ -265,7 +310,7 @@ try
                     GRID.Y=-999*ones(grdsize);
                     for c=1:grdsize(2)
                         if readETA
-                            fscanf(fid,' %*[Ee]%*[Tt]%*[Aa] = %i',1); % skip line header ETA= and read c
+                            fscanf(fid,' %*[EeKk]%*[TtSs]%*[AaIi] = %i',1); % skip line header ETA= and read c
                         else
                             fscanf(fid,'%11c',1); % this does not include the preceding EOL
                         end
@@ -357,9 +402,9 @@ try
         error('Number of coordinate values in file does not match header')
     end
     fclose(fid);
-catch
+catch err
     fclose(fid);
-    rethrow(lasterror)
+    rethrow(err)
 end
 if isempty(GRID.X)
     error('File does not match Delft3D grid file format.')
@@ -382,7 +427,7 @@ GRID.Type = gridtype;
 GRID.Orient = getorientation(GRID,~notdef);
 
 % Grid enclosure file
-fid=fopen([basename '.enc']);
+fid=fopen([basename '.enc'],'r','n','US-ASCII');
 if fid>0
     Enc = [];
     while 1
@@ -434,10 +479,15 @@ autoenc    = 0;
 i          = 1;
 filename   = '';
 nparset    = 0;
+orient     = 'undefined';
 Grd.CoordinateSystem='Cartesian';
 while i<=nargin
     if ischar(varargin{i})
         switch lower(varargin{i})
+            case {'clockwise','anticlockwise'}
+                orient     = lower(varargin{i});
+            case {'counterclockwise','counter-clockwise','anti-clockwise'}
+                orient     = 'anticlockwise';
             case {'autoenc','autoenclosure'}
                 autoenc    = 1;
             case {'oldrgf','newrgf','swangrid','struct'}
@@ -518,6 +568,19 @@ if ~isequal(sz.x,sz.y)
     end
 end
 
+% if specific orientation has been specified, check whether it's 
+if ~strcmp(orient,'undefined')
+    current_orient = getorientation(Grd);
+    if ~isequal(current_orient,orient)
+        Grd.X = Grd.X';
+        Grd.Y = Grd.Y';
+        if isfield(Grd,'Enclosure')
+            % see gridfil for a potentially better suggestion.
+            Grd = rmfield(Grd,'Enclosure');
+        end
+    end
+end
+
 % enclosure
 if ~isfield(Grd,'Enclosure')
     if autoenc
@@ -582,7 +645,7 @@ filename=fullfile(path,[name ext]);
 basename=fullfile(path,name);
 
 if ~isempty(Grd.Enclosure),
-    fid=fopen([basename '.enc'],'w');
+    fid=fopen([basename '.enc'],'w','n','US-ASCII');
     if fid<0
         error('* Could not open output file.')
     end
@@ -591,7 +654,8 @@ if ~isempty(Grd.Enclosure),
 end
 
 % write
-fid=fopen(filename,'w');
+fid=fopen(filename,'w','n','US-ASCII');
+SpecialKeywords = {'Coordinate System','Missing Value'};
 if strcmp(fileformat,'oldrgf') || strcmp(fileformat,'newrgf')
     if strcmp(fileformat,'oldrgf')
         fprintf(fid,'* MATLAB Version %s file created at %s.\n',version,datestr(now));
@@ -599,6 +663,19 @@ if strcmp(fileformat,'oldrgf') || strcmp(fileformat,'newrgf')
         fprintf(fid,'Coordinate System = %s\n',Grd.CoordinateSystem);
         if isfield(Grd,'MissingValue') && Grd.MissingValue~=0
             fprintf(fid,['Missing Value = ' Format '\n'],Grd.MissingValue);
+        end
+        if isfield(Grd,'Attributes')
+            for i = 1:size(Grd.Attributes,1)
+                keyword = Grd.Attributes{i,1};
+                value   = Grd.Attributes{i,2};
+                if ~ismember(keyword,SpecialKeywords)
+                    if ischar(value)
+                        fprintf(fid,'%s = %s\n',keyword,value);
+                    else
+                        fprintf(fid,'%s = %g\n',keyword,value);
+                    end
+                end
+            end
         end
     end
     fprintf(fid,'%8i%8i\n',size(Grd.X));

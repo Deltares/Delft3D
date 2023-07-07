@@ -1,24 +1,40 @@
-
-   module m_ggeo_missing
-
+   !modules from modules.f90
+   module m_missing
    implicit none
-   double precision                  :: dmiss    = -999d0   !
-   double precision                  :: xymis    = -999d0   !
-   double precision                  :: dxymis   = -999d0
-   integer                           :: intmiss    = -2147483647 ! integer fillvlue
-   integer                           :: LMOD, KMOD ! TBV READDY
-   integer                           :: jins     = 1
+   double precision                  :: dmiss           = -999d0      !
+   double precision                  :: xymis           = -999d0      !
+   double precision                  :: dxymis          = -999d0
+   !double precision                 :: ieee_negative_inf = -1.7976931348623158e+308 ! IEEE standard for the maximum negative value
+   integer                           :: intmiss         = -2147483647 ! integer fillvlue
+   integer                           :: imiss           = -999        ! cf_dll missing value 
+   integer                           :: LMOD, KMOD                    ! TBV READDY, LC gui related variables can go to unstruc_display
+   integer                           :: jins            = 1
    integer                           :: jadelnetlinktyp = 0
-
-   end module m_ggeo_missing
-
-   module m_ggeo_dimens
+   end module m_missing
+   
+   module m_dimens
    implicit none
    integer                       :: MMAX_old = 3, NMAX_old = 3
    integer                       :: KMAX, LMAX, KNX, MXB
-   end module m_ggeo_dimens
 
-   module m_ggeo_landboundary
+   contains
+
+   function m_dimens_destructor() result (ierr)
+
+   integer ierr
+   MMAX_old = 3
+   NMAX_old = 3
+   KMAX = 0
+   LMAX = 0
+   KNX   = 0
+   MXB  = 0
+
+   ierr = 0
+   end function m_dimens_destructor
+
+   end module m_dimens
+
+   module m_landboundary
    implicit none
    double precision, allocatable :: XLAN (:), YLAN(:), ZLAN(:)
    integer, allocatable          :: NCLAN(:)
@@ -40,14 +56,43 @@
    double precision                     :: DCLOSE = 1d0       ! close-to-landboundary tolerance, measured in number of meshwidths
 
    logical                              :: Ladd_land = .true. ! add land boundary between land boundary segments that are close to each other
-   end module m_ggeo_landboundary
 
-   module m_ggeo_sferic
+   contains
+
+   subroutine increaselan(n)
+   USE m_missing
+   !LC TO DO: introduce call back function use unstruc_messages
+   use m_alloc
+   integer :: n
+
+   integer :: ierr
+
+   IF (N < MAXLAN) RETURN
+   MAXLAN = MAX(50000,INT(1.2d0*N))
+
+   call realloc(xlan, MAXLAN, stat=ierr, fill=dxymis)
+   !CALL AERR('xlan(maxlan)', IERR, maxlan)
+   call realloc(ylan, MAXLAN, stat=ierr, fill=dxymis)
+   !CALL AERR('ylan(maxlan)', IERR, maxlan)
+   call realloc(zlan, MAXLAN, stat=ierr, fill=dxymis)
+   !CALL AERR('zlan(maxlan)', IERR, maxlan)
+   call realloc(nclan, MAXLAN, stat=ierr, fill=0)
+   !CALL AERR('nclan(maxlan)', IERR, maxlan/2)
+   end subroutine increaselan
+
+   end module m_landboundary
+
+
+
+
+   module m_sferic
    implicit none
-   integer                           :: jsferic = 0        ! xy pair is in : 0=cart, 1=sferic coordinates
-   integer                           :: jsfertek= 0        ! drawn in 0=cart, 1=stereografisch
+   integer                           :: jsferic = 0       ! xy pair is in : 0=cart, 1=sferic coordinates
+   integer                           :: jsfertek= 0       ! drawn in 0=cart, 1=stereografisch
    integer                           :: jasfer3D = 0      ! 0 = org, 1 = sqrt(dx2+dy2+dz2), 2= greatcircle
    integer                           :: jglobe  = 0       ! if (jsferic==1) do we need extra tests for 360-0 transgression
+   integer                           :: jamidlat = 0      ! if (jsferic==1) use middle latitude in refinement
+   
    double precision                  :: pi                ! pi
    double precision                  :: twopi             ! 2pi
    double precision                  :: dg2rd             ! degrees to radians
@@ -59,312 +104,199 @@
    double precision                  :: anglon = 0d0      ! 26.0     ! dubai 52.5     ! angle of longitude (vertical)
    double precision                  :: dy2dg             ! from dy in m to lat in degrees
    double precision                  :: csphi             ! cosphi of latest requested
+   double precision                  :: xwleft = -180d0   ! leftmost world coordinate degreees
+
 
    double precision, parameter       :: dtol_pole = 1d-4   ! pole tolerance in degrees
-   
+
    contains
-   
-   subroutine sphertocart3D(x1,y1,xx1,yy1,zz1) ! from spherical 2D to Cartesian 3D coordinates
-   implicit none
-   double precision :: x1,y1,xx1,yy1,zz1,rr
 
-   if ( jsferic.eq.1 ) then
-      zz1 = ra*sin(y1*dg2rd)
-      rr  = ra*cos(y1*dg2rd)
-      xx1 = rr*cos(x1*dg2rd)
-      yy1 = rr*sin(x1*dg2rd)
-   else
-      zz1 = 0d0
-      xx1 = x1
-      yy1 = y1
-   end if
-   end subroutine sphertocart3D
-   
-   !    transform 3D Cartesian coordinates to 2D spherical (jsferic=1) or 2D Cartesian (jsferic=0) coordinates
-   !        x1 will be close to xref in spherical coordinates
-   subroutine Cart3Dtospher(xx1,yy1,zz1,x1,y1,xref)
-   use m_ggeo_missing
-   implicit none
+   subroutine default_sferic()
+      jasfer3D = 1
+   end subroutine default_sferic
+   end module m_sferic
 
-   double precision, intent(in)  :: xx1   !< 3D x-coordinate
-   double precision, intent(in)  :: yy1   !< 3D y-coordinate
-   double precision, intent(in)  :: zz1   !< 3D z-coordinate
-   double precision, intent(out) :: x1    !< longitude (spherical) or x-coordinate (2D Cartesian)
-   double precision, intent(out) :: y1    !< lattitude (spherical) or y-coordinate (2D Cartesian)
-   double precision, intent(in)  :: xref  !< reference point longitude
+   module m_polygon
 
-   double precision              :: xx1_, yy1a
-
-   double precision, parameter   :: dtol=1d-16
-
-   if ( jsferic.eq.1 ) then
-      xx1_ = xx1
-      !            yy1a = abs(yy1)
-      !            if ( xx1.gt.-dtol*yy1a .and. xx1.lt.dtol*yy1a ) then
-      !               xx1_ = 0d0
-      !            end if
-      x1 = atan2(yy1,xx1)*rd2dg
-      y1 = atan2(zz1,sqrt(xx1**2+yy1**2))*rd2dg
-
-      if ( x1.ne.DMISS ) then
-         x1 = x1 + nint((xref-x1)/360d0) * 360d0
-      end if
-   else
-      x1 = xx1
-      y1 = yy1
-   end if
-
-   return
-   end subroutine Cart3Dtospher
+      implicit none
       
-   end module m_ggeo_sferic
+      double precision, allocatable  :: XPL (:), YPL (:), ZPL (:), XPH(:), YPH(:), ZPH(:), DZL(:), DZR(:), DCREST(:), DTL(:), DTR(:), DVEG(:)
+      integer, allocatable           :: IWEIRT(:)
+      integer                        :: NPL, NPH, MAXPOL, MP, MPS, jakol45 = 0
+      character(len=64), allocatable :: nampli(:) ! Names of polylines, set in reapol,
+      ! not shifted/updated during editpol.
+      double precision               :: dxuni=40d0  ! uniform spacing
+      integer                        :: MAXPOLY=1000 ! will grow if needed
+      double precision, allocatable  :: xpmin(:), ypmin(:), xpmax(:), ypmax(:), zpmin(:), zpmax(:)
+      integer                        :: Npoly
+      integer,          allocatable  :: iistart(:), iiend(:)
+      integer,          allocatable  :: ipsection(:)
+   
+      contains
+      !> Increase size of global polyline array.
+      !! Specify new size and whether existing points need to be maintained.
+      subroutine increasepol(N, jaKeepExisting)
+         use m_missing
+         use m_alloc
+         implicit none
+         integer :: n              !< Desired new minimum size
+         integer :: jaKeepExisting !< Whether or not (1/0) to keep existing points.
+         logical :: jakeep
+         integer :: maxpolcur
+         integer :: ierr
 
-   module m_ggeo_polygon
-   implicit none
-   double precision, allocatable  :: XPL (:), YPL (:), ZPL (:), XPH(:), YPH(:), ZPH(:), DZL(:), DZR(:), DCREST(:), DTL(:), DTR(:), DVEG(:)
-   integer, allocatable           :: IWEIRT(:)
-   integer                        :: NPL, NPH, MAXPOL, MP, MPS, jakol45 = 0
-   character(len=64), allocatable :: nampli(:) ! Names of polylines, set in reapol,
-   ! not shifted/updated during editpol.
+         maxpolcur = size(xpl)
+         IF (N <= maxpolcur ) THEN
+            RETURN
+         ENDIF
+         MAXPOL = MAX(100000,INT(5d0*N))
 
-   end module m_ggeo_polygon
+         jakeep = jaKeepExisting==1
 
-   MODULE M_GGEO_TRIANGLE
-   implicit none
-   double precision, ALLOCATABLE :: XCENT(:), YCENT(:)
-   INTEGER, ALLOCATABLE :: INDX(:,:)
-   INTEGER, ALLOCATABLE :: EDGEINDX(:,:)
-   INTEGER, ALLOCATABLE :: TRIEDGE(:,:)
-   INTEGER              :: NUMTRI
-   INTEGER              :: NUMTRIINPOLYGON
-   INTEGER              :: NUMEDGE
-   INTEGER, PARAMETER   :: ITYPE = 2 ! 1 = ORIGINAL FORTRAN ROUTINE, 2 = NEW C ROUTINE
+         call realloc(xpl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+         call realloc(ypl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+         call realloc(zpl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
 
-   integer                       :: jagetwf = 0    ! if 1, also assemble weightfactors and indices in:
-   INTEGER, ALLOCATABLE          :: indxx(:,:)     ! to be dimensioned by yourselves 3,*
-   double precision, ALLOCATABLE :: wfxx (:,:)
+         if (jakol45 == 1) then
+            call realloc(dzl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(dzr, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+         else if (jakol45 == 2) then
+            call realloc(dcrest, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(dzl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(dzr, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(dtl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(dtr, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(dveg, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
+            call realloc(iweirt, maxpol, keepExisting=jakeep, stat=ierr)
+         endif
 
-   double precision     :: TRIANGLEMINANGLE =  5d0 ! MINIMUM ANGLE IN CREATED TRIANGLES  IF MINANGLE > MAXANGLE: NO CHECK
-   double precision     :: TRIANGLEMAXANGLE =  150 ! MAXIMUM ANGLE IN CREATED TRIANGLES
-   double precision     :: TRIANGLESIZEFAC  =  1.0 ! TRIANGLE SIZEFACTOR, SIZE INSIDE VS AVERAGE SIZE ON POLYGON BORDER
+         !     make sure nampli is allocated
+         if ( .not.allocated(nampli) ) then
+            allocate(nampli(0))
+         end if
 
-   TYPE T_NODI
-      INTEGER              :: NUMTRIS       ! total number of TRIANGLES ATtached to this node
-      INTEGER, allocatable :: TRINRS(:)     ! numbers of ATTACHED TRIANGLES
-   END TYPE T_NODI
+      end subroutine increasepol
+      
+      !> Copies the global polygon into the backup polygon arrays.
+      subroutine SAVEPOL()
 
-   TYPE (T_NODI), DIMENSION(:), ALLOCATABLE :: NODE          !
+         use m_alloc
+         use m_missing
+         implicit none
 
-   !integer, dimension(:,:), allocatable :: trinods ! triangle nodes, dim(3,numtri)
-   integer, dimension(:,:), allocatable :: LNtri  ! triangles connected to edges, dim(2,numedges)
+         call realloc(xph, maxpol, keepExisting=.false.)
+         call realloc(yph, maxpol, keepExisting=.false.)
+         call realloc(zph, maxpol, keepExisting=.false.)
 
-   integer                              :: IDENT   ! identifier
-   integer, dimension(:),   allocatable :: imask   ! mask array for triangles
+         IF (NPL > 0) THEN
+            XPH(1:NPL) = XPL(1:NPL)
+            YPH(1:NPL) = YPL(1:NPL)
+            ZPH(1:NPL) = ZPL(1:NPL)
+         ENDIF
 
-   END MODULE M_GGEO_TRIANGLE
+         MPS = MP
+         NPH = NPL
 
-   !-----------------------------------------------------!
-   !mflow geom
-   !-----------------------------------------------------!
-   !> in m_ggeo_flowgeom: nd and ln apply to waterlevel nodes and links
-   !! in m_netw    : nod and lin apply to 'grid' or 'net' nodes and links
-   module m_ggeo_flowgeom
-   implicit none
-   ! node (s) related : dim=ndx
-   type tnode                                          !< node administration
-      integer                         :: lnx            !< max nr of links attached to this node
-      integer, allocatable            :: ln (:)         !< linknrs attached to this node, >0: to this flownode, <0: from this flownode
+         return
+      end subroutine savepol
 
-      integer, allocatable            :: nod(:)         !< Mapping to net nodes
-      double precision, allocatable   :: x  (:)         !< for now, this is only for quick/aligned plotting, the corners of a cell
-      double precision, allocatable   :: y  (:)         !< for now, this is only for quick/aligned plotting, the corners of a cell
-   end type tnode
 
-   double precision                  :: bamin          !< minimum 2D cell area
-   double precision                  :: bamin1D        !< minimum cell area 1d nodes
-   double precision                  :: dxmin=1d-3     !< minimum link length 1D (m)
-   double precision                  :: dxmin1D        !< minimum link length 1D (m)
-   double precision                  :: dxmin2D        !< minimum link length 2D (m)
+      !> Puts back a previously saved backup polygon into the global polygon arrays.
+      subroutine RESTOREPOL()
+         use m_alloc
+         use m_missing
+         implicit none
 
-   double precision                  :: wu1DUNI        !< uniform 1D profile width
-   double precision                  :: hh1DUNI        !< uniform 1D profile height
+         maxpol = max(maxpol, nph)
+         call realloc(xpl, maxpol, keepExisting=.false.)
+         call realloc(ypl, maxpol, keepExisting=.false.)
+         call realloc(zpl, maxpol, keepExisting=.false.)
 
-   integer                           :: ja1D2Dinternallinktype = 1
+         IF (NPH > 0) THEN
+            XPL(1:NPH) = XPH(1:NPH)
+            YPL(1:NPH) = YPH(1:NPH)
+            ZPL(1:NPH) = ZPH(1:NPH)
+         ENDIF
 
-   ! Flow node numbering:
-   ! 1:ndx2D, ndx2D+1:ndxi, ndxi+1:ndx1Db, ndx1Db:ndx
-   ! ^ 2D int ^ 1D int      ^ 1D bnd       ^ 2D bnd ^ total
-   integer, target                   :: ndx2d          !< [-] Number of 2D flow cells (= NUMP). {"rank": 0}
-   integer, target                   :: ndxi           !< [-] Number of internal flowcells  (internal = 2D + 1D ). {"rank": 0}
-   integer, target                   :: ndx1db         !< [-] Number of flow nodes incl. 1D bnds (internal 2D+1D + 1D bnd). {"rank": 0}
-   integer, target                   :: ndx            !< [-] Number of flow nodes (internal + boundary). {"rank": 0}
-   type (tnode),     allocatable     :: nd(:)          !< (ndx) flow node administration
-   integer,          allocatable     :: kcs(:)         !< node code permanent
-   integer,          allocatable, target :: kfs(:)     !< [-] node code flooding {"shape": ["ndx"]}
-   integer,          allocatable, target :: kfst0(:)   !< [-] node code flooding {"shape": ["ndx"]}
-   double precision, allocatable, target :: ba (:)     !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable         :: ba0(:)     ! Backup of ba
-   double precision, allocatable     :: bai(:)         !< inv bottom area (m2), if < 0 use table in node type
-   double precision, allocatable, target :: bl(:)      !< [m] bottom level (m) (positive upward) {"location": "face", "shape": ["ndx"]}
+         MP  = MPS
+         NPL = NPH
+
+         return
+      end subroutine restorepol
+      
+      
+      function m_polygon_destructor() result (ierr)
+
+      implicit none
+
+      integer :: ierr
+
+      ierr = 0
+
+      if(allocated(XPL).and.ierr==0) deallocate(XPL, stat = ierr)
+      if(allocated(YPL).and.ierr==0) deallocate(YPL, stat = ierr)
+      if(allocated(ZPL).and.ierr==0) deallocate(ZPL, stat = ierr)
+      if(allocated(XPH).and.ierr==0) deallocate(XPH, stat = ierr)
+
+      if(allocated(YPH).and.ierr==0) deallocate(YPH, stat = ierr)
+      if(allocated(ZPH).and.ierr==0) deallocate(ZPH, stat = ierr)
+      if(allocated(ZPH).and.ierr==0) deallocate(ZPH, stat = ierr)
+
+      if(allocated(DZL).and.ierr==0)    deallocate(DZL, stat = ierr)
+      if(allocated(DZR).and.ierr==0)    deallocate(DZR, stat = ierr)
+      if(allocated(DCREST).and.ierr==0) deallocate(DCREST, stat = ierr)
+      if(allocated(DTL).and.ierr==0)    deallocate(DTL, stat = ierr)
+      if(allocated(DTR).and.ierr==0)    deallocate(DTR, stat = ierr)
+      if(allocated(DVEG).and.ierr==0)   deallocate(DVEG, stat = ierr)
+      if(allocated(IWEIRT).and.ierr==0) deallocate(IWEIRT, stat = ierr)
+      
+      if(allocated(xpmin).and.ierr==0) deallocate(xpmin, stat = ierr)
+      if(allocated(ypmin).and.ierr==0) deallocate(ypmin, stat = ierr)
+      if(allocated(xpmax).and.ierr==0) deallocate(xpmax, stat = ierr)
+      if(allocated(ypmax).and.ierr==0) deallocate(ypmax, stat = ierr)
+      if(allocated(zpmin).and.ierr==0) deallocate(zpmin, stat = ierr)
+      if(allocated(zpmax).and.ierr==0) deallocate(zpmax, stat = ierr)
+      if(allocated(iistart).and.ierr==0)   deallocate(iistart, stat = ierr)
+      if(allocated(iiend).and.ierr==0)     deallocate(iiend, stat = ierr)
+      if(allocated(ipsection).and.ierr==0) deallocate(ipsection, stat = ierr)
+
+      jakol45 = 0
+      dxuni=40d0
+      MAXPOLY=1000
+      NPL = 0
+      NPH = 0
+      MAXPOL = 0
+      MP = 0
+      MPS = 0
+      Npoly = 0
+
+      end function m_polygon_destructor
+            
+   end module m_polygon
+
+   !
+   ! Stores the coordinates of the cells
+   !
+   module m_cell_geometry
+   ! TODO: UNST-1705: LC: I want ndx2d and ndx back into m_flowgeom, as these are flowgeom and not netgeom. Only findcells and update_cell_circumcenters need a change first.
+   integer, target                       :: ndx2d      !< [-] Number of 2D flow cells (= NUMP). {"rank": 0}
+   integer, target                       :: ndx        !< [-] Number of flow nodes (internal + boundary). {"rank": 0}
    double precision, allocatable, target :: xz (:)     !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
    double precision, allocatable         :: xz0(:)     !< backup of xz
    double precision, allocatable, target :: yz (:)     !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
    double precision, allocatable         :: yz0(:)     !< backup of yz
-   double precision, allocatable     :: aif(:)         !< cell based skewness ai factor sqrt(1+(dz/dy)**2) = abed/asurface
-   !< so that cfu=g(Au/conveyance)**2 = g*aif*(Au/convflat)**2
-   !< convflat is flat-bottom conveyance
-   double precision, allocatable     :: aifu(:)        !< bed skewness at u point (Lnx)
-   double precision, allocatable     :: bz(:)          !< averaged bed level at cell center (Ndx)
+   double precision, allocatable, target :: ba (:)     !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable         :: ba0(:)     ! Backup of ba
+   ! TODO: UNST-1705: LC: the above variables used to be automatically available in the dflowfm BMI, via the JSON annotated documentation string, this is now broken, needs fixing.
 
-   ! link (u) related : dim = lnx
-   ! Flow link numbering:
-   ! 1:lnx1d, lnx1d+1:lnxi, lnxi+1:lnx1Db, lnx1Db+1:lnx
-   ! ^ 1D int ^ 2D int      ^ 1D bnd       ^ 2D bnd ^ total
-   integer, target                   :: lnx1D          !< [-] nr of 1D flow links (so first 1D, next 2D, next boundaries). {"rank": 0}
-   integer, target                   :: lnxi           !< [-] nr of flow links (internal, 1D+2D    ). {"rank": 0}
-   integer, target                   :: lnx1Db         !< [-] nr of flow links including 1D bnds (internal, 1D+2D, boundary: only 1D. 2D bnd behind it). {"rank": 0}
-   integer, target                   :: lnx            !< [-] nr of flow links (internal + boundary). First we have 1D links, next 2D links, next boundary links (first 1D, then 2D). {"rank": 0}
-   integer,          allocatable, target   :: ln    (:,:)    !< [-] 1D link (2,*) node   administration, 1=nd1,  2=nd2   linker en rechter celnr {"shape": [2, "lnkx"]}
-   integer,          allocatable, target   :: lncn  (:,:)    !< [-] 2D link (2,*) corner administration, 1=nod1, 2=nod2  linker en rechter netnr {"shape": [2, "lnkx"]}
-   integer,          allocatable     :: kcu   (:)      !< link code, 1=1D link, 2=2D link, -1= bc 1D, -2=bc 2D, 3=2D parall wall, 4=1D2Dlink, 5=Pump
-   integer,          allocatable, target :: iadv(:)    !< [-] type of advection for this link {"location": "edge", "shape": ["lnx"]}
-   double precision, allocatable     :: teta  (:)      !< link teta (m)
-   integer,          allocatable     :: klnup (:,:)    !< link upwind cell pointer if q> 0 use (1:3,L), else (4:6,L)
-   double precision, allocatable, target :: dx    (:)      !< [m] link length (m) {"location": "edge", "shape": ["lnx"]}
-   double precision, allocatable     :: dxi   (:)      !< inverse dx
-   double precision, allocatable, target :: wu(:)      !< [m] link initial width (m), if < 0 pointer to convtab {"location": "edge", "shape": ["lnx"]}
-   double precision, allocatable     :: wui   (:)      !< inverse link initial width (m), if < 0 pointer to convtab
-   real,             allocatable     :: prof1D (:,:)   !< dim = (3,lnx1D) 1= 1D prof width, 2=1D profile height, 3=proftyp, or: if 1,2< 0, pointers to prof 1,2, then 3=alfa1
-   integer,          allocatable     :: jaduiktmp(:)  !< temparr
-   double precision, allocatable, target     :: bob   (:,:)    !< [m] left and right inside lowerside tube (binnenkant onderkant buis) HEIGHT values (m) (positive upward) {"location": "edge", "shape": [2, "lnx"]}
-   integer,          allocatable     :: ibot  (:)      !< local ibedlevtype for setting min or max network depths (temporary, result goes to bobs)
-
-   double precision, allocatable     :: acl   (  :)    !< left dx fraction, alfacl
-   double precision, allocatable     :: acn   (:,:)    !< 2,L left and right wu fraction
-   double precision, allocatable     :: xu    (:)      !< velocity point x (m)
-   double precision, allocatable     :: yu    (:)      !< velocity point y (m)
-   double precision, allocatable     :: blu   (:)      !< velocity point bottom level positive up (m)
-   double precision, allocatable     :: csu   (:)      !< cosine comp of u0, u1
-   double precision, allocatable     :: snu   (:)      !< sine   comp of u0, u1
-   double precision, allocatable     :: wcl   (:,:)    !< link weights (2,lnx) for center scalar , 1,L for k1, 2,L for k2 Ln
-   double precision, allocatable     :: wcLn  (:,:)    !< link weights (2,lnx) for corner scalar , 1,L for k3, 2,L for k4 Lncn
-   double precision, allocatable     :: wcx1(:)        !< link weights (lnx) for corner velocities k3
-   double precision, allocatable     :: wcy1(:)        !< link weights (lnx) for corner velocities k3
-   double precision, allocatable     :: wcx2(:)        !< link weights (lnx) for corner velocities k4
-   double precision, allocatable     :: wcy2(:)        !< link weights (lnx) for corner velocities k4
-   double precision, allocatable     :: wcnx3(:)       !< link weights (lnx) for corner velocities k3
-   double precision, allocatable     :: wcny3(:)       !< link weights (lnx) for corner velocities k3
-   double precision, allocatable     :: wcnx4(:)       !< link weights (lnx) for corner velocities k4
-   double precision, allocatable     :: wcny4(:)       !< link weights (lnx) for corner velocities k4
-
-   double precision, allocatable     :: csb(:,:)       !< cosine orientation from left/right neighboring flownode to flowlink, left/right as ln
-   double precision, allocatable     :: snb(:,:)       !< sine   orientation from left/right neighboring flownode to flowlink, left/right as ln
-
-   double precision, allocatable     :: csbn(:,:)      !< cosine orientation from left/right netnode to flowlink, left/right as lncn
-   double precision, allocatable     :: snbn(:,:)      !< sine   orientation from left/right netnode to flowlink, left/right as lncn
-
-   double precision, allocatable     :: slnup (:,:)    !< link upwind cell weight, if q> 0 use (1:3,L), else (4:6,L)
-   double precision, allocatable     :: csbup (:,:)    !< cosine orientation from upwind cell to flowlink
-   double precision, allocatable     :: snbup (:,:)    !< sine   orientation from upwind cell to flowlink
-
-   double precision, allocatable     :: csbw(:,:)      !< cosine orientation from left/right flowlink to wall (netlink), left/right as in walls(10,:) (left), walls(11,:) (right)
-   double precision, allocatable     :: snbw(:,:)      !< sine   orientation from left/right flowlink to wall (netlink), left/right as in walls(10,:) (left), walls(11,:) (right)
-
-   double precision, allocatable     :: csbwn(:)       !< cosine orientation from flownode to wall (netlink)
-   double precision, allocatable     :: snbwn(:)       !< sine   orientation from flownode to wall (netlink)
-
-   integer,          allocatable     :: ln2lne(:)      !< flowlink to netlink nr dim = lnx
-   integer,          allocatable     :: lne2ln(:)      !< netlink to flowlink nr dim = numL
+   end module m_cell_geometry
 
 
-   ! cell corner related, the links attached to a cell corner
-   type tcorn                                          !< corner administration
-      integer                         :: lnx            !< max nr of links attached to this corner
-      integer, allocatable            :: ln (:)         !< linknrs attached to this corner
-      integer                         :: nwx            !< nr of walls attached
-      integer, allocatable            :: nw(:)          !< wallnrs attached to this corner
-
-   end type tcorn                                      !< corner administration
-
-   type(tcorn)     , allocatable     :: cn  (:)        !< cell cornerpoints, (in counting order of nod)
-   double precision, allocatable     :: ucnx(:)        !< cell corner velocity, global x-dir (m/s)
-   double precision, allocatable     :: ucny(:)        !< cell corner velocity, global y-dir (m/s) (in m_ggeo_flowgeom...)
-   double precision, allocatable, target :: vort(:)        !< [s-1] vorticity at netnodes {"shape": ["ndx"], "comment": "Currently not available, is nowhere allocated nor filled."}
-
-
-   ! fixed wall related, may be expanded to closed internal walls later for now, dim=(7,*)
-   integer                            :: mxwalls            !< max nr of walls
-   double precision, allocatable      :: walls(:,:)     !< 1,* : inside waterlevel point (node)
-   !! 2,* : first  cornerpoint
-   !! 3,* : second cornerpoint
-   !! 4,* : flow link 1 attached to first  cornerpoint
-   !! 5,* : flow link 2 attached to second cornerpoint
-   !! 6,* : stress contribution to link 1
-   !! 7,* : stress contribution to link 1
-   integer                            :: nwcnx          !< max nr of cornerpoints to which walls are attached
-   integer,          allocatable      :: nwalcnw(:,:)   !< pointer to those walls, 1 = left wall, 2 =right wall
-
-   ! closed wall corner (netnode) related
-   integer                            :: nrcnw          !< nr of cn points attached to 2 closed walls
-   integer         , allocatable      ::  kcnw (:)      !< closed corner point nr k, reference to net nodes
-   real            , allocatable      :: cscnw (:)      !< closed corner alignment cos (1:nrcnw)
-   real            , allocatable      :: sncnw (:)      !< closed corner alignment sin (1:nrcnw)
-   real            , allocatable      :: sfcnw (:)      !< closed corner partial slip sf = u*/u  (based on walls average)
-
-   ! branch related :
-   type tbranch                                        !< this is a branch type
-      integer                         :: nx             !< with nx links and nx + 1 nodes in it
-      integer, allocatable            :: ln (:)         !< successive flow linknrs
-   end type tbranch
-
-   integer                           :: mxflowbr       !< max nr of flow branches
-   type(tbranch), allocatable        :: flowbr(:)      !< this is a list of flow branches
-
-
-   integer, allocatable              :: Lbnd1D(:)      !< for prof1D, boundary links refer to regular attached 1D links
-
-   ! 1D endnode related
-   integer                           :: mx1Dend        !< nr of 1D endnodes
-   integer,          allocatable     :: n1Dend(:)      !< node nrs of 1D endnodes
-
-
-   ! netnode/flownode  related, dim = mxban
-   double precision, allocatable     :: banf  (:)     !< horizontal netnode/flownode area (m2)
-   double precision, allocatable     :: ban  (:)      !< horizontal netnode          area (m2)
-   integer         , allocatable     :: nban  (:,:)   !< base area pointers to banf, 1,* = netnode number, 2,* = flow node number
-   integer                           :: mxban         !< max dim of ban
-
-
-   ! useful parameters :
-   double precision                  :: rrtol            !< relative cellsize factor in search tolerance ()
-   double precision, allocatable     :: xyen(:,:)        !< temp boundary opposite point (end of EdgeNormal) (replaces ebtol tolerance)
-   integer                           :: jarenumber       !< renumberFlowNodes
-   integer                           :: jaFlowNetChanged !< To enforce various net(link)-related init routines after renumbering
-
-
-   ! JRE Stuff related to setting up wave directional grid
-   integer                                     :: ntheta          !< Number of wave direction bins
-   double precision                            :: thetamax        !< upper limit wave directional sector
-   double precision                            :: thetamin        !< lower limit wave directional sector
-   double precision                            :: thetanaut       !< nautical convention or not
-   double precision                            :: dtheta          !< directional resolution
-   double precision                            :: theta0          !< mean theta-grid direction
-   double precision, allocatable               :: thetabin(:)           !< bin-means of theta-grid
-
-   ! Villemonte calibration coefficients :
-   double precision                            :: VillemonteCD1 = 1.0d0      !< default for VillemonteCD1 = 1
-   double precision                            :: VillemonteCD2 = 10.0d0     !< default for VillemonteCD2 = 10
-
-   ! Debug parameter
-   integer                                     :: jabatch  = 0       !< dobatch
-   integer                                     :: cmd_icgsolver = 4  !< save commandline icgsolver
-   end module m_ggeo_flowgeom
-
-   module M_ggeo_afmeting
+   module M_afmeting
    implicit none
    double precision :: RLENGTH, RWIDTH, RTHICK, RDIAM, RLMIN
    integer :: JVAST, MC, NC, K0, LFAC
-   end module M_ggeo_afmeting
+   end module M_afmeting
 
    !> Orthogonalisation settings, both for regular grids and unstructured nets.
    module m_ggeo_orthosettings
@@ -386,7 +318,144 @@
 
    end module m_ggeo_orthosettings
 
-module m_ggeo_WEARELT
+   module m_WEARELT
    double precision :: XMIN,YMIN,XMAX,YMAX,X1,Y1,X2,Y2,RCIR,CR,DSIX
-   END module m_ggeo_WEARELT 
+   end module m_WEARELT
+
+   module m_sferzoom
+   double precision :: X0,Y0,dyh,FAC,X1W,Y1W,X2W,Y2W
+   end module m_sferzoom
+
+
+   !> Main sample set
+   module m_samples
+   implicit none
+   double precision, ALLOCATABLE  :: XS(:), YS(:), ZS(:)   !< x-coordinate, y-coordinate and value of sample set
+   INTEGER,          ALLOCATABLE  :: IPSAM(:)              !< permutation array (increasing x-coordinate)
+   integer,          parameter    :: IPSTAT_OK=0           !< permutation array is OK
+   integer,          parameter    :: IPSTAT_NOTOK=1        !< permutation array is out of date
+   integer                        :: IPSTAT=IPSTAT_NOTOK   !< permutation array status
+   INTEGER                        :: NS =0, NSMAX
+   integer                        :: MXSAM=0, MYSAM=0      !< structured block sizes (.gt.0), or not structured (0)
+   double precision               :: xsammin, ysammin, xsammax, ysammax   !< bounding box corner coordinates
+
+   !> Backup of main sample set
+   !! @see savesam()
+   double precision, ALLOCATABLE  :: XS2(:), YS2(:), ZS2(:)
+   integer                        :: NS2, MXSAM2=0, MYSAM2=0
+
+   !> Alternate sample set.
+   !! @see SWAPSAMPLES()
+   double precision, ALLOCATABLE  :: XS3(:), YS3(:), ZS3(:)
+   integer              :: NS3
+
+
+   contains
    
+   subroutine increasesam(N)
+   USE M_MISSING
+   use m_alloc
+   implicit none
+   integer, intent(in) :: n !< New size for sample set #3.
+
+   integer :: ierr
+   IF (N < NSMAX) RETURN
+   NSMAX = MAX(10000,INT(1.2d0*N))
+
+   call realloc(xs, NSMAX, keepExisting=.true., fill = dmiss, stat=ierr)
+   !CALL AERR ('XS(NSMAX)',IERR,NSMAX)
+   call realloc(ys, NSMAX, keepExisting=.true., fill = dmiss, stat=ierr)
+   !CALL AERR ('YS(NSMAX)',IERR,NSMAX)
+   call realloc(zs, NSMAX, keepExisting=.true., fill = dmiss, stat=ierr)
+   !CALL AERR ('ZS(NSMAX)',IERR,NSMAX)
+   call realloc(ipsam, NSMAX, keepExisting=.false., fill=0, stat=ierr)
+   !CALL AERR ('IPSAM',IERR,NSMAX)
+
+   !User is editing samples: mark samples as unstructured
+   MXSAM = 0
+   MYSAM = 0
+   IPSTAT = IPSTAT_NOTOK
+
+   end subroutine increasesam
+
+   subroutine savesam()
+   USE M_MISSING
+   use m_alloc
+   implicit none
+   integer :: ierr
+   NS2 = NS
+   MXSAM2 = MXSAM
+   MYSAM2 = MYSAM
+   IF (NS .EQ. 0) return
+
+   call realloc(xs2, ns, keepExisting=.false., fill=dmiss, stat=ierr)
+   call realloc(ys2, ns, keepExisting=.false., fill=dmiss, stat=ierr)
+   call realloc(zs2, ns, keepExisting=.false., fill=dmiss, stat=ierr)
+
+   XS2(1:NS) = XS(1:NS)
+   YS2(1:NS) = YS(1:NS)
+   ZS2(1:NS) = ZS(1:NS)
+   return
+   end subroutine savesam
+
+   subroutine restoresam()
+
+   implicit none
+   MXSAM = 0   ! unstructured samples by default
+   MYSAM = 0
+   IPSTAT = IPSTAT_NOTOK
+   NS    = NS2
+   MXSAM = MXSAM2
+   MYSAM = MYSAM2
+
+   if (NS2 == 0) return
+
+   XS2(1:NS2) = XS(1:NS2)
+   YS2(1:NS2) = YS(1:NS2)
+   ZS2(1:NS2) = ZS(1:NS2)
+
+   end subroutine restoresam
+   
+   SUBROUTINE SWAPSAMPLES()
+      implicit none
+      integer :: i
+      integer :: nh
+      integer :: nn
+      DOUBLE PRECISION :: XH, YH, ZH
+
+      IF (NSMAX < NS3) THEN
+         CALL increasesam(NS3)
+      ELSE IF (NS3 < NS) THEN
+         CALL increasesam3(NS)
+      ENDIF
+      NN = MAX(NS,NS3)
+      NH = NS ; NS = NS3 ; NS3 = NH
+      DO I = 1, NN
+         XH = XS(I) ; XS(I) = XS3(I) ; XS3(I) = XH
+         YH = YS(I) ; YS(I) = YS3(I) ; YS3(I) = YH
+         ZH = ZS(I) ; ZS(I) = ZS3(I) ; ZS3(I) = ZH
+      ENDDO
+   END SUBROUTINE SWAPSAMPLES
+   
+   
+   SUBROUTINE INCREASESAM3(N)
+      USE M_MISSING
+      use m_alloc
+      implicit none
+      integer, intent(in) :: n !< New size for sample set #3.
+
+      integer :: ierr
+      integer :: nsmaxloc
+
+      nsmaxloc = SIZE(XS3)
+
+      IF (N < nsmaxloc) RETURN
+      nsmaxloc = MAX(10000,INT(1.2d0*N))
+      
+      call realloc(xs3, nsmaxloc, keepExisting=.true., fill = dmiss, stat=ierr)
+      call realloc(ys3, nsmaxloc, keepExisting=.true., fill = dmiss, stat=ierr)
+      call realloc(zs3, nsmaxloc, keepExisting=.true., fill = dmiss, stat=ierr)
+      !CALL AERR ('XS3(NSMAX),YS3(NSMAX),ZS3(NSMAX)',IERR,nsmaxloc)
+   END SUBROUTINE INCREASESAM3
+
+   end module m_samples

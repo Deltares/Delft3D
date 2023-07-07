@@ -10,7 +10,7 @@ function Out=telemac(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -60,16 +60,32 @@ if (nargin==0) || strcmp(filename,'?')
     filename=fullfile(fpath,fname);
 end
 
-Struct.FileName=filename;
-fid=fopen(Struct.FileName,'r','b');
+Struct.FileName   = filename;
+Struct.Endianness = 'b';
+fid=fopen(Struct.FileName,'r','b','US-ASCII');
 if fid<0
     return
+end
+NBytes=fread(fid,[1 1],'int32');
+if NBytes==80
+    fseek(fid,0,-1);
+else
+    fclose(fid);
+    Struct.Endianness = 'l';
+    fid=fopen(Struct.FileName,'r','l','US-ASCII');
 end
 
 % 1 record containing the title of the study (72 characters) and a 8
 % characters string indicating the type of format (SERAFIN or SERAFIND)
 % [NOTE: the SERAFIN/SERAFIND keyword isn't there in general]
 Struct.Title=char(fortranread(fid,[40 2],'uchar')');
+if strcmpi(Struct.Title(2,40),'D')
+    Struct.Precision = 'float64';
+    Struct.PrecBytes = 8;
+else
+    Struct.Precision = 'float32';
+    Struct.PrecBytes = 4;
+end
 
 % 1 record containing the two integers NBV(1) and NBV(2) (number of linear
 % and quadratic variables, NBV(2) with the value of 0 for Telemac, as
@@ -149,30 +165,30 @@ end
 % X co-ordinates.
 % 1 record containing table X (real array of dimension NPOIN containing the
 % abscissae of the points),
-Struct.Discr(1).X=fortranread(fid,[Struct.Discr(1).NPnts 1],'float32');
+Struct.Discr(1).X=fortranread(fid,[Struct.Discr(1).NPnts 1],Struct.Precision);
 if NVar2>0
-    Struct.Discr(2).X=fortranread(fid,[Struct.Discr(2).NPnts 1],'float32');
+    Struct.Discr(2).X=fortranread(fid,[Struct.Discr(2).NPnts 1],Struct.Precision);
 end
 
 %
 % Y co-ordinates.
 % 1 record containing table Y (real array of dimension NPOIN containing the
 % ordinates of the points),
-Struct.Discr(1).Y=fortranread(fid,[Struct.Discr(1).NPnts 1],'float32');
+Struct.Discr(1).Y=fortranread(fid,[Struct.Discr(1).NPnts 1],Struct.Precision);
 if NVar2>0
-    Struct.Discr(2).Y=fortranread(fid,[Struct.Discr(2).NPnts 1],'float32');
+    Struct.Discr(2).Y=fortranread(fid,[Struct.Discr(2).NPnts 1],Struct.Precision);
 end
 
 Struct.Offset=ftell(fid);
-Struct.RecordSize=12+NVar1*(Struct.Discr(1).NPnts+2)*4;
+Struct.RecordSize=Struct.PrecBytes+2*4+NVar1*(Struct.Discr(1).NPnts*Struct.PrecBytes+2*4);
 if NVar2>0
-    Struct.RecordSize=Struct.RecordSize+NVar2*(Struct.Discr(2).NPnts+2)*4;
+    Struct.RecordSize=Struct.RecordSize+NVar2*(Struct.Discr(2).NPnts*Struct.PrecBytes+2*4);
 end
 
 % Struct.IParam(1)==0 one block
 % Struct.IParam(1)==1 multiple blocks
 fread(fid,[1 1],'int32');
-Struct.Times=fread(fid,[1 inf],'float32',Struct.RecordSize-4)/3600/24;
+Struct.Times=fread(fid,[1 inf],Struct.Precision,Struct.RecordSize-Struct.PrecBytes)/3600/24;
 Struct.NTimes=length(Struct.Times);
 
 fseek(fid,0,1);
@@ -187,7 +203,7 @@ Struct.Check='OK';
 
 
 function clidata = telemac_opencli(filename)
-fid=fopen(filename,'r');
+fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
     clidata = [];
     return
@@ -227,7 +243,7 @@ function Data=telemac_read(Struct,time,var,pnts)
 if any(time>Struct.NTimes)
     error('Time step number too large.')
 end
-fid=fopen(Struct.FileName,'r','b');
+fid=fopen(Struct.FileName,'r',Struct.Endianness,'US-ASCII');
 if fid<0
     error('Cannot open data file.')
 end
@@ -240,15 +256,15 @@ for t=1:length(time)
     if Struct.IParam(1)==0
     elseif Struct.IParam(1)==1
         if var<=Struct.NVar(1)
-            Offset = Offset+12+(var-1)*(Struct.Discr(1).NPnts+2)*4;
+            Offset = Offset+Struct.PrecBytes+2*4+(var-1)*(Struct.Discr(1).NPnts*Struct.PrecBytes+2*4);
         elseif var<=Struct.NVar(1)+Struct.NVar(2)
-            Offset = Offset+12+Struct.NVar(1)*(Struct.Discr(1).NPnts+2)*4+(var-Struct.NVar(1)-1)*(Struct.Discr(2).NPnts+2)*4;
+            Offset = Offset+Struct.PrecBytes+2*4+Struct.NVar(1)*(Struct.Discr(1).NPnts*Struct.PrecBytes+2*4)+(var-Struct.NVar(1)-1)*(Struct.Discr(2).NPnts*Struct.PrecBytes+2*4);
         else
             fclose(fid);
             error('Variable number too large.')
         end
         fseek(fid,Offset,-1);
-        DataTmp=fortranread(fid,[1 Struct.Discr(1).NPnts],'float32');
+        DataTmp=fortranread(fid,[1 Struct.Discr(1).NPnts],Struct.Precision);
         Data(t,:)=DataTmp(1,pnts);
     end
 end
@@ -261,6 +277,8 @@ switch type
         NBytesPE=4;
     case 'float32'
         NBytesPE=4;
+    case 'float64'
+        NBytesPE=8;
     case 'uchar'
         NBytesPE=1;
     otherwise

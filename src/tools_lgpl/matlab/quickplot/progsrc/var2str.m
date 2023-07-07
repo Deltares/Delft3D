@@ -1,11 +1,18 @@
-function Str=var2str(X)
+function Str = var2str(X,mode)
 %VAR2STR Generic "display" function with string output.
-%   STRING = VAR2STR(VARIABLE) works similar to DISP(VARIABLE) but returns
-%   the resulting text as string.
+%   STRING = VAR2STR(VARIABLE, MODE) works similar to DISP(VARIABLE) but
+%   returns the resulting text as string or cell string. If MODE equals
+%   'char' then the routine always returns a string. If MODE equals 'cell'
+%   then the routine always returns a cell string. If MODE equals 'any'
+%   (this is the default setting if not specified) then the routine returns
+%   a cell string in case of multi line output and a string in case of
+%   single line output.
+%
+%   See also DISP.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -33,6 +40,19 @@ function Str=var2str(X)
 %   $HeadURL$
 %   $Id$
 
+if nargin<2
+    mode = 'any';
+elseif ischar(mode)
+    mode = lower(mode);
+    switch mode
+        case {'cell','char','any'}
+        otherwise
+            error('Invalid MODE argument "%s" while expecting "cell", "char" or "any"',mode)
+    end
+else
+    error('The second argument (MODE) should be a string and not a %s',class(mode))
+end
+    
 switch class(X)
     case 'struct'
         flds=fieldnames(X);
@@ -48,26 +68,26 @@ switch class(X)
                 YStr = [LocalSize(Y) ' ' class(Y) ' array'];
                 switch class(Y)
                     case 'char'
-                        if ndims(Y)==2 && size(Y,1)==1
+                        if isrow(Y)
                             YStr=['''' Y ''''];
                         end
                     case {'single','double','logical', ...
                             'int8','int16','int32','int64', ...
                             'uint8','uint16','uint32','uint64'}
                         if isempty(Y)
-                            if strcmp(class(Y),'double')
+                            if isa(Y,'double')
                                 YStr='[]';
                             end
                         elseif numel(Y)==1
                             YStr=num2str(Y);
-                            if strcmp(class(Y),'logical')
+                            if islogical(Y)
                                 if Y
                                     YStr = '1 (true)';
                                 else
                                     YStr = '0 (false)';
                                 end
                             end
-                        elseif ndims(Y)==2 && size(Y,1)==1 && size(Y,2)<11
+                        elseif isrow(Y) && size(Y,2)<11
                             YStr = sprintf(' %g',Y);
                             YStr = ['[' YStr(2:end) ']'];
                         end
@@ -149,6 +169,19 @@ switch class(X)
             char(X.getData)};
     otherwise
         Str=[LocalSize(X) ' ' class(X) ' array'];
+end
+switch mode
+    case 'cell'
+        if ischar(Str)
+            Str = {Str};
+        end
+    case 'char'
+        if iscell(Str)
+            Str = Str';
+            [Str{2,1:end-1}] = deal(char(10));
+            Str{2,end} = '';
+            Str = cat(2,Str{:});
+        end
 end
 
 

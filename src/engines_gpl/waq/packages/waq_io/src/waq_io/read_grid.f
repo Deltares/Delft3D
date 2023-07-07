@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,6 +53,8 @@
 !     Functions called   : gridpointercollfind to find the number of the reference grid by name
 !                                              function is contained in the grids module
 
+      use m_srstop
+      use m_open_waq_files
       use grids            !   for the storage of contraction grids
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
@@ -61,7 +63,7 @@
 
 !     declaration of arguments
 
-      integer               , intent(in   ) :: lun(*)        !< unit numbers used
+      integer               , intent(inout) :: lun(*)        !< unit numbers used
       type(GridPointer)     , intent(inout) :: aGrid         !< collection off all grid definitions
       type(GridPointerColl) , intent(in   ) :: GridPs        !< collection off all grid definitions
       logical               , intent(in   ) :: oldproc       !< true if old processing
@@ -136,7 +138,7 @@
 
                case ( 'AGGREGATIONFILE' )                      ! it is the filename keyword
                   if ( gettoken( ctoken, ierr2 ) .gt. 0 ) goto 1000
-                  call dhopnf ( lun(33), ctoken, 33, 1, ierr2 )
+                  call open_waq_files ( lun(33), ctoken, 33, 1, ierr2 )
                   if ( ierr2 .ne. 0 ) goto 1000
                   read  ( lun(33) ,   *  ) nmax,mmax,noseg_fil,idummy,idummy
                   write ( lunut   , 2020 ) ctoken, nmax, mmax, noseg_fil
@@ -151,7 +153,7 @@
 
                case ( 'BOTTOMGRID_FROM_ATTRIBUTES' )       ! it is the filename keyword
                   allocate ( aGrid%iarray(noseg) )
-                  call read_attributes_for_bottomgrid( aGrid%iarray, nosegl_bottom, ierr )
+                  call read_attributes_for_bottomgrid( lunut, aGrid%iarray, nosegl_bottom, ierr )
                   exit
 
                case ( 'REFERENCEGRID' )
@@ -232,15 +234,29 @@
 
       contains
 
-      subroutine read_attributes_for_bottomgrid( iarray, nosegl, ierr )
-      integer :: nosegl, ierr
+      subroutine read_attributes_for_bottomgrid( lunut, iarray, nosegl, ierr )
+      use m_evaluate_waq_attribute
+
+      integer :: lunut, nosegl, ierr
       integer, dimension(:) :: iarray
 
       integer :: i, j, nkopt, ikopt1, ikopt2, ierr2, lunbin, iover, ikdef, idummy
-      integer :: nopt, nover, attrib, active
-      integer, allocatable, dimension(:) :: ikenm
+      integer :: noseg, nopt, nover, attrib, active, iknm1, iknm2, iknmrk, ivalk
+      integer, allocatable, dimension(:) :: iamerge        !  composite attribute array
+      integer, allocatable, dimension(:) :: ikmerge        !  array with indicators whether attributes are already set
+      integer, allocatable, dimension(:) :: ikenm          !  array with attributes of an input block
+      integer, allocatable, dimension(:) :: iread          !  array to read attributes
       character(len=255) :: filename
 
+      noseg = size(iarray)
+      allocate ( iamerge(noseg))
+      allocate ( ikmerge(10) )
+      allocate ( iread(noseg))
+      iarray = 0
+      ikmerge = 0
+      iamerge = 0
+      iread = 0
+      
       if ( gettoken( nkopt, ierr2 ) .gt. 0 ) goto 900
 
       do i = 1 , nkopt                                      !   read those blocks
@@ -256,7 +272,7 @@
             if ( gettoken( filename, ierr2 ) .gt. 0 ) goto 910    !   the name of the binary file
             open( newunit = lunbin, file = filename, status = 'old', access = 'stream', iostat = ierr2 )
             if ( ierr2 == 0 ) then
-               read  ( lunbin, iostat = ierr2 ) ( iarray(j), j=1, noseg )
+               read  ( lunbin, iostat = ierr2 ) ( iread(j), j=1, noseg )
                close ( lunbin )
                if ( ierr2 /= 0 ) then
                   write ( lunut , 2010 ) trim(filename)
@@ -271,14 +287,14 @@
 
                case ( 1 )                                      !   no defaults
                   do j = 1, noseg
-                     if ( gettoken( iarray(j), ierr2 ) .gt. 0 ) goto 900
+                     if ( gettoken( iread(j), ierr2 ) .gt. 0 ) goto 900
                   enddo
 
                case ( 2 )                                      !   default with overridings
                   if ( gettoken( ikdef, ierr2 ) .gt. 0 ) goto 900
                   if ( gettoken( nover, ierr2 ) .gt. 0 ) goto 900
                   do iseg = 1 , noseg
-                     iarray(iseg) = ikdef
+                     iread(iseg) = ikdef
                   enddo
                   if ( nover .gt. 0 ) then
                      do j = 1, nover
@@ -288,7 +304,7 @@
                            write ( lunut , 2030 ) j, iover
                            ierr = ierr + 1
                         else
-                           iarray(iover) = idummy
+                           iread(iover) = idummy
                         endif
                      enddo
                   endif
@@ -299,16 +315,52 @@
 
             end select
          endif
+         
+!        Merge file buffer with attributes array in memory
+
+         do iknm2 = 1 , nopt
+            iknm1 = ikenm(iknm2)
+
+!                 see if merged already
+
+            if ( ikmerge(iknm1) .ne. 0  ) then
+               write ( lunut , 2260 ) iknm2, iknm1
+               ierr  = ierr + 1
+               exit
+            endif
+
+!                 see if valid
+
+            if ( iknm1 .le. 0 .or. iknm1 .gt. 10 ) then
+               if ( iknm1 .eq. 0 ) then
+                  write ( lunut , 2270 ) iknm2
+                  ierr  = ierr + 1
+                  exit
+               else
+                  write ( lunut , 2280 ) iknm1,iknm2
+                  ierr  = ierr + 1
+                  exit
+               endif
+            endif
+
+!              Merge for this attribute
+
+            ikmerge(iknm1) = 1
+            iknmrk = 10**(iknm1-1)
+            do iseg = 1 , noseg
+               call evaluate_waq_attribute( iknm2, iread(iseg), ivalk )
+               iamerge(iseg) = iamerge(iseg) + iknmrk*ivalk
+            enddo
+         enddo
+         deallocate ( ikenm )
       enddo
 
       ! Extract the information we need
       do i = 1,noseg
-          call dhkmrk( 1, iarray(i), active )
-          call dhkmrk( 2, iarray(i), attrib )
+          call evaluate_waq_attribute( 1, iamerge(i), active )
+          call evaluate_waq_attribute( 2, iamerge(i), attrib )
           if ( active == 1 .and. (attrib == 0 .or. attrib == 3) ) then
              iarray(i) = 1 + mod(i-1,nosegl)
-          else
-             iarray(i) = 0
           endif
       enddo
 
@@ -343,8 +395,10 @@
  2020 format(/, ' ERROR. Opening binary attributes file - incorrect name?',/,'File: ', a)
  2030 format(/, ' ERROR. Overriding out of bounds - overriding: ', i0, ' - segment: ', i0)
  2040 format(/, ' ERROR. Unknown option for attributes: ', i0)
- 2050 format(/, ' ERROR. The number of time-dependent attributes should be zero - ',
-     &          'limitation in the implementation')
+ 2050 format(/, ' ERROR. The number of time-dependent attributes should be zero - limitation in the implementation')
+ 2260 format (/ ' ERROR, Pointer of contribution ',I6,' mapped to attribute',I6,' already specified.')
+ 2270 format (/ ' ERROR, Pointer of contribution ',I6,' zero.')
+ 2280 format (/ ' ERROR, Pointer of contribution ',I6,'=',I6,' is out of range(1-10).')
 
       end subroutine read_attributes_for_bottomgrid
 

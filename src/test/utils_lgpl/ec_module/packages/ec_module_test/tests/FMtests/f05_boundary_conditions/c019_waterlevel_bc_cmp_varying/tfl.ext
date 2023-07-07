@@ -1,0 +1,4 @@
+[boundary]
+quantity     = waterlevelbnd
+locationfile = tfl_01.pli
+forcingfile  = tfl.bc

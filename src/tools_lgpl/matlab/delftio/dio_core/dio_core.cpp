@@ -1,10 +1,11 @@
 #include "dio_shm.h"
 #include "mex.h"
 #include "string.h"
+#include "stdint.h"
 
 /*----- LGPL --------------------------------------------------------------------
  *
- *   Copyright (C) 2011-2017 Stichting Deltares.
+ *   Copyright (C) 2011-2023 Stichting Deltares.
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -38,9 +39,9 @@
  ********************************************************************/
 char * chkGetString(const mxArray * mxA, const char * StrName)
 {
-  const int *dimarray;
-  int StrLen = -1;
-  int ndims = mxGetNumberOfDimensions(mxA);
+  const mwSize *dimarray;
+  mwSize StrLen = -1;
+  mwSize ndims = mxGetNumberOfDimensions(mxA);
   if (mxIsChar(mxA) & (ndims == 2)) {
     dimarray = mxGetDimensions(mxA);
     if (dimarray[0]==1)
@@ -48,10 +49,10 @@ char * chkGetString(const mxArray * mxA, const char * StrName)
   }
 
   if (StrLen < 0) {
-    char * temp = (char*)mxCalloc(128,sizeof(char));
-    strcat(temp,"Invalid ");
-    strcat(temp,StrName);
-    strcat(temp,".");
+    char * temp = (char*)mxCalloc(128, sizeof(char));
+    strcat(temp, "Invalid ");
+    strcat(temp, StrName);
+    strcat(temp, ".");
     mexErrMsgTxt(temp);
   }
   char * Name = mxArrayToString(mxA);
@@ -60,8 +61,8 @@ char * chkGetString(const mxArray * mxA, const char * StrName)
   }
 
 /*
-  FILE* fid = fopen("d:\stringlog.txt","a");
-  fprintf(fid,"'%s'='%s'\n",StrName,Name);
+  FILE* fid = fopen("d:\stringlog.txt", "a");
+  fprintf(fid, "'%s'='%s'\n", StrName, Name);
   fclose(fid);
 */
   return Name;
@@ -72,17 +73,17 @@ char * chkGetString(const mxArray * mxA, const char * StrName)
  ********************************************************************/
 mxArray * ReturnString(const char * StrName)
 {
-  int numItems = strlen(StrName);
+  size_t numItems = strlen(StrName);
   void * Data;
-  Data = mxCalloc(numItems,2*sizeof(char));
+  Data = mxCalloc(numItems, 2*sizeof(char));
   char * Name = (char *)Data;
   for (int i=0; i<numItems; i++)
     Name[2*i] = StrName[i];
 
-  int * dims = (int *)mxCalloc(2,2);
+  mwSize * dims = (mwSize *)mxCalloc(2, sizeof(mwSize));
   dims[0] = 1; dims[1] = numItems;
-  mxArray * Export = mxCreateNumericArray(2,dims,mxCHAR_CLASS,mxREAL);
-  mxSetData(Export,Data);
+  mxArray * Export = mxCreateNumericArray(2, dims, mxCHAR_CLASS, mxREAL);
+  mxSetData(Export, Data);
 
   return Export;
 }
@@ -92,9 +93,9 @@ mxArray * ReturnString(const char * StrName)
  ********************************************************************/
 int chkGetPosInt(const mxArray * mxA)
 {
-  const int *dimarray;
+  const mwSize *dimarray;
   int Value = -1;
-  int ndims = mxGetNumberOfDimensions(mxA);
+  mwSize ndims = mxGetNumberOfDimensions(mxA);
   if (mxIsDouble(mxA) & !mxIsComplex(mxA) & (ndims == 2)) {
     dimarray = mxGetDimensions(mxA);
     if ((dimarray[0]==1) & (dimarray[1]==1)) {
@@ -107,13 +108,30 @@ int chkGetPosInt(const mxArray * mxA)
 }
 
 /********************************************************************
+ *      Check and get memory address
+ ********************************************************************/
+mxInt64 chkGetAddress(const mxArray * mxA)
+{
+  const mwSize *dimarray;
+  mxInt64 Value = -1;
+  mwSize ndims = mxGetNumberOfDimensions(mxA);
+  if (mxIsClass(mxA, "int64") & !mxIsComplex(mxA) & (ndims == 2)) {
+    dimarray = mxGetDimensions(mxA);
+    if ((dimarray[0]==1) & (dimarray[1]==1)) {
+      Value = (mxInt64) mxGetScalar(mxA);
+    }
+  }
+  return Value;
+}
+
+/********************************************************************
  *      Check and get DioShmPart
  ********************************************************************/
 DioShmPart GetDioPart(const mxArray * mxA)
 {
-  const int *dimarray;
-  int StrLen = -1;
-  int ndims = mxGetNumberOfDimensions(mxA);
+  const mwSize * dimarray;
+  mwSize StrLen = -1;
+  mwSize ndims = mxGetNumberOfDimensions(mxA);
   if (mxIsChar(mxA) & (ndims == 2)) {
     dimarray = mxGetDimensions(mxA);
     if (dimarray[0]==1)
@@ -126,9 +144,9 @@ DioShmPart GetDioPart(const mxArray * mxA)
   if (Name == NULL)
     mexErrMsgTxt("Memory allocation error.");
 
-  if (strcmp(Name,"header")==0) return DioShmHeaderPart;
+  if (strcmp(Name, "header")==0) return DioShmHeaderPart;
 
-  if (strcmp(Name,"data")==0)   return DioShmDataPart;
+  if (strcmp(Name, "data")==0)   return DioShmDataPart;
 
   mexErrMsgTxt("Invalid DelftIO Shared Memory Part Indentification String");
 }
@@ -138,10 +156,10 @@ DioShmPart GetDioPart(const mxArray * mxA)
  ********************************************************************/
 DioShmDs * GetDs(const mxArray * mxA)
 {
-  int dsh = chkGetPosInt(mxA);
-  if (dsh < 0)
-    mexErrMsgTxt("Invalid data share handle.");
-  return (DioShmDs *) dsh;
+  DioShmDs * dsh = (DioShmDs *)chkGetAddress(mxA);
+//  if (dsh < 0)
+//    mexErrMsgTxt("Invalid data share handle.");
+  return dsh;
 }
 
 /********************************************************************
@@ -161,12 +179,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexErrMsgTxt("Missing DelftIO command.");
   else if ( mxIsChar(prhs[0]) != 1)
     mexErrMsgTxt("Missing DelftIO command.");
-  char * cmdStr = chkGetString(prhs[0],"DelftIO command");
+  char * cmdStr = chkGetString(prhs[0], "DelftIO command");
 
   /******************************************************************
    *    Compare command string with implemented commands
    ******************************************************************/
-  if (strcmp(cmdStr,"newput")==0) {
+  if (strcmp(cmdStr, "newput")==0) {
    /*****************************************************************
     *   NEWPUT
     *****************************************************************/
@@ -175,6 +193,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     else if ((nrhs != 3) & (nrhs != 4))
       mexErrMsgTxt("Invalid number of input arguments.");
     else {
+	  //mexPrintf("In Newput 1\n");
+
       int nBytesHdr = 0;
       int nBytesData = 0;
       int idx = 1;
@@ -206,16 +226,37 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         idx = 2;
       }
 
-      char * DioName = chkGetString(prhs[idx+1],"DelftIO share name");
+	  //mexPrintf("In Newput 2\n");
+
+      char * DioName = chkGetString(prhs[idx+1], "DelftIO share name");
+
+	  //mexPrintf("In Newput 3: %s\n", DioName);
 
       ds = new DioShmDs(nBytesHdr, nBytesData, DioShmSharedMem, DioName);
-      int dsh = (int) ds;
 
-      plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[0])=(double)(dsh);
+	  //mexPrintf("In Newput 4: %llu\n", ds);
+
+#if MX_HAS_INTERLEAVED_COMPLEX
+      mxInt64 * dsh = (mxInt64 *)mxMalloc(sizeof(mxInt64));
+      dsh[0] = (mxInt64)(ds);
+
+	  //mexPrintf("In Newput 5: %llu\n", *dsh);
+
+      plhs[0] = mxCreateNumericMatrix(0, 0, mxINT64_CLASS, mxREAL);
+      int okay = mxSetInt64s(plhs[0], dsh);
+#else
+      int64_t  * dsh = (int64_t *)mxMalloc(sizeof(int64_t));
+      dsh[0] = (mxInt64)ds;
+
+      plhs[0] = mxCreateNumericMatrix(0, 0, mxINT64_CLASS, mxREAL);
+      mxSetPr(plhs[0], (double *)dsh);
+#endif
+
+      mxSetM(plhs[0], 1);
+      mxSetN(plhs[0], 1);
     }
   }
-  else if (strcmp(cmdStr,"newget")==0) {
+  else if (strcmp(cmdStr, "newget")==0) {
    /*****************************************************************
     *   NEWGET
     *****************************************************************/
@@ -224,16 +265,28 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     else if (nrhs != 2)
       mexErrMsgTxt("Invalid number of input arguments.");
     else {
-      char * DioName = chkGetString(prhs[1],"DelftIO share name");
+      char * DioName = chkGetString(prhs[1], "DelftIO share name");
 
       ds = new DioShmDs(DioShmSharedMem, DioName);
-      int dsh = (int) ds;
 
-      plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[0])=(double)(dsh);
+#if MX_HAS_INTERLEAVED_COMPLEX
+      mxInt64 * dsh = (mxInt64 *)mxMalloc(sizeof(mxInt64));
+      dsh[0] = (mxInt64)(ds);
+
+      plhs[0] = mxCreateNumericMatrix(0, 0, mxINT64_CLASS, mxREAL);
+      int okay = mxSetInt64s(plhs[0], dsh);
+#else
+      int64_t  * dsh = (int64_t *)mxMalloc(sizeof(int64_t));
+      dsh[0] = (mxInt64)ds;
+
+      plhs[0] = mxCreateNumericMatrix(0, 0, mxINT64_CLASS, mxREAL);
+      mxSetPr(plhs[0], (double *)dsh);
+#endif
+      mxSetM(plhs[0], 1);
+      mxSetN(plhs[0], 1);
     }
   }
-  else if (strcmp(cmdStr,"getname")==0) {
+  else if (strcmp(cmdStr, "getname")==0) {
    /*****************************************************************
     *   GETNAME
     *****************************************************************/
@@ -250,7 +303,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     }
   }
-  else if (strcmp(cmdStr,"startwrite")==0) {
+  else if (strcmp(cmdStr, "startwrite")==0) {
    /*****************************************************************
     *   STARTWRITE
     *****************************************************************/
@@ -266,11 +319,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
       int okay = ds->StartWrite(diopart);
 
-      plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[0])=(double)(okay);
+      plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
+      *mxGetPr(plhs[0]) = (double)(okay);
     }
   }
-  else if (strcmp(cmdStr,"startread")==0) {
+  else if (strcmp(cmdStr, "startread")==0) {
    /*****************************************************************
     *   STARTREAD
     *****************************************************************/
@@ -286,11 +339,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
       int okay = ds->StartRead(diopart);
 
-      plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[0])=(double)(okay);
+      plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
+      *mxGetPr(plhs[0]) = (double)(okay);
     }
   }
-  else if (strcmp(cmdStr,"getsize")==0) {
+  else if (strcmp(cmdStr, "getsize")==0) {
    /*****************************************************************
     *   GETSIZE
     *****************************************************************/
@@ -306,11 +359,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
       int size = ds->GetSize(diopart);
 
-      plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[0])=(double)(size);
+      plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
+      *mxGetPr(plhs[0]) = (double)(size);
     }
   }
-  else if (strcmp(cmdStr,"getremainingsize")==0) {
+  else if (strcmp(cmdStr, "getremainingsize")==0) {
    /*****************************************************************
     *   GETREMAININGSIZE
     *****************************************************************/
@@ -326,11 +379,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
       int size = ds->GetRemainingSize(diopart);
 
-      plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[0])=(double)(size);
+      plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
+      *mxGetPr(plhs[0]) = (double)(size);
     }
   }
-  else if (strcmp(cmdStr,"write")==0) {
+  else if (strcmp(cmdStr, "write")==0) {
    /*****************************************************************
     *   WRITE
     *****************************************************************/
@@ -373,9 +426,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("Cannot transfer supplied data.");
 
       int numItems = 1;
-      int ndims=mxGetNumberOfDimensions(prhs[2]);
+      mwSize ndims = mxGetNumberOfDimensions(prhs[2]);
 
-      const int *dimarray;
+      const mwSize *dimarray;
       dimarray = mxGetDimensions(prhs[2]);
       int d;
       for (d=0; d<ndims; d++)
@@ -397,7 +450,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       ds->Write(diopart, numWrite, Data);
     }
   }
-  else if (strcmp(cmdStr,"read")==0) {
+  else if (strcmp(cmdStr, "read")==0) {
    /*****************************************************************
     *   READ
     *****************************************************************/
@@ -412,7 +465,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       if (numItems < 0)
         mexErrMsgTxt("Invalid number of items.");
 
-      char * dFormat = chkGetString(prhs[3],"data format argument");
+      char * dFormat = chkGetString(prhs[3], "data format argument");
 
      /*
       * Prepare for Reading Data
@@ -421,51 +474,51 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       int nBytes = 1;
       mxClassID classid = mxUINT8_CLASS;
       void * Data;
-      if (strcmp(dFormat,"char")==0) {
+      if (strcmp(dFormat, "char")==0) {
         nBytes = 2;
         classid=mxCHAR_CLASS;
       }
-      else if (strcmp(dFormat,"logical")==0) {
+      else if (strcmp(dFormat, "logical")==0) {
         nBytes = 1;
         classid=mxLOGICAL_CLASS;
       }
-      else if (strcmp(dFormat,"int8")==0) {
+      else if (strcmp(dFormat, "int8")==0) {
         nBytes = 1;
         classid=mxINT8_CLASS;
       }
-      else if (strcmp(dFormat,"uint8")==0) {
+      else if (strcmp(dFormat, "uint8")==0) {
         nBytes = 1;
         classid=mxUINT8_CLASS;
       }
-      else if (strcmp(dFormat,"int16")==0) {
+      else if (strcmp(dFormat, "int16")==0) {
         nBytes = 2;
         classid=mxINT16_CLASS;
       }
-      else if (strcmp(dFormat,"uint16")==0) {
+      else if (strcmp(dFormat, "uint16")==0) {
         nBytes = 2;
         classid=mxUINT16_CLASS;
       }
-      else if (strcmp(dFormat,"int32")==0) {
+      else if (strcmp(dFormat, "int32")==0) {
         nBytes = 4;
         classid=mxINT32_CLASS;
       }
-      else if (strcmp(dFormat,"uint32")==0) {
+      else if (strcmp(dFormat, "uint32")==0) {
         nBytes = 4;
         classid=mxUINT32_CLASS;
       }
-      else if (strcmp(dFormat,"int64")==0) {
+      else if (strcmp(dFormat, "int64")==0) {
         nBytes = 8;
         classid=mxINT64_CLASS;
       }
-      else if (strcmp(dFormat,"uint64")==0) {
+      else if (strcmp(dFormat, "uint64")==0) {
         nBytes = 8;
         classid=mxUINT64_CLASS;
       }
-      else if ((strcmp(dFormat,"single")==0) | (strcmp(dFormat,"float32")==0)) {
+      else if ((strcmp(dFormat, "single")==0) | (strcmp(dFormat, "float32")==0)) {
         nBytes = 4;
         classid=mxSINGLE_CLASS;
       }
-      else if ((strcmp(dFormat,"double")==0) | (strcmp(dFormat,"float64")==0)) {
+      else if ((strcmp(dFormat, "double")==0) | (strcmp(dFormat, "float64")==0)) {
         nBytes = 8;
         classid=mxDOUBLE_CLASS;
       }
@@ -478,7 +531,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
      /*
       * Read Data
       */
-      Data = mxCalloc(numItems,nBytes);
+      Data = mxCalloc(numItems, nBytes);
       int numRead = numItems*nBytes;
       int remSize = ds->GetRemainingSize(diopart);
       if (numRead > remSize) {
@@ -490,27 +543,27 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
      /*
       * Return Data
       */
-      int * dims = (int *)mxCalloc(2,sizeof(int));
+      mwSize * dims = (mwSize *)mxCalloc(2, sizeof(mwSize));
       dims[0] = 1; dims[1] = numItems;
       if (classid == mxCHAR_CLASS) {
-        plhs[0] = mxCreateCharArray(2,dims);
+        plhs[0] = mxCreateCharArray(2, dims);
 	  }
 	  else if (classid == mxLOGICAL_CLASS) {
-        plhs[0] = mxCreateLogicalArray(2,dims);
+        plhs[0] = mxCreateLogicalArray(2, dims);
 	  }
 	  else {
-        plhs[0] = mxCreateNumericArray(2,dims,classid,mxREAL);
+        plhs[0] = mxCreateNumericArray(2, dims, classid, mxREAL);
       }
-      mxSetData(plhs[0],Data);
+      mxSetData(plhs[0], Data);
 
      /*
       * Return flag of correct reading
       */
-      plhs[1] = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(plhs[1])=(double)(okay);
+      plhs[1] = mxCreateDoubleMatrix(1, 1, mxREAL);
+      *mxGetPr(plhs[1]) = (double)(okay);
     }
   }
-  else if (strcmp(cmdStr,"endwrite")==0) {
+  else if (strcmp(cmdStr, "endwrite")==0) {
    /*****************************************************************
     *   ENDWRITE
     *****************************************************************/
@@ -527,7 +580,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       ds->EndWrite(diopart);
     }
   }
-  else if (strcmp(cmdStr,"endread")==0) {
+  else if (strcmp(cmdStr, "endread")==0) {
    /*****************************************************************
     *   ENDREAD
     *****************************************************************/
@@ -544,7 +597,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       ds->EndRead(diopart);
     }
   }
-  else if (strcmp(cmdStr,"delete")==0) {
+  else if (strcmp(cmdStr, "delete")==0) {
    /*****************************************************************
     *   DELETE
     *****************************************************************/

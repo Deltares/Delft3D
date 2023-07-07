@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,7 @@
 !!  rights reserved.
 
 module normal_mod
+      use random_generator
 
       implicit none
 
@@ -64,7 +65,7 @@ module normal_mod
 
       real function normal ( rseed )
 
-      real(4)  rnd  , s, a, x, y
+      real(4)  s, a, x, y
       real(8)  rseed
       integer  i
 

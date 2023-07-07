@@ -8,7 +8,7 @@ if isa(arg1,'char') && isa(arg2,'char')
 	if exist(arg1,'file')
 		jncid = NetcdfFile.open(arg1);
 	else
-        jncid = snc_opendap_open(ncfile);
+        jncid = snc_opendap_open(arg1);
 	end
 	dim = jncid.findDimension(arg2);
 elseif isa(arg1,'ucar.nc2.NetcdfFile') ...
@@ -20,7 +20,7 @@ elseif isa(arg1,'ucar.nc2.dods.DODSNetcdfFile') ...
 	jncid = arg1;
 	dim = arg2;
 else
-	error ( 'SNCTOOLS:nc_getdiminfo:java:badDatatypes', ...
+	error ( 'snctools:nc_getdiminfo:java:badDatatypes', ...
         ['For a java retrieval, datatypes must be either both char, ' ...
          'or one must be a file ID and the other a dimension ID.' ]);
 end

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -78,8 +78,7 @@ program test_waq_omi_lib
     !===========================================================
     do run = 1, number_of_runs
         write(fnaam(run),'(A8,I4.4,A4)') 'uitvoer_',run,'.txt'
-        runlun(run) = 100 + run
-        open(runlun(run), file=fnaam(run))
+        open(newunit = runlun(run), file=fnaam(run))
     enddo
 
     !===========================================================

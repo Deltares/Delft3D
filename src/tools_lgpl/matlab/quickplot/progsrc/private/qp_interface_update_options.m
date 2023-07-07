@@ -3,7 +3,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2017 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,20 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 %   $Id$
 
 [DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(mfig,UD.MainWin);
-[Ops,PlotType,EnablePlot,EnableLoad] = get_options(Props,selected,vslice,hslice,UD);
+if isnumeric(Props.NVal) && Props.NVal < 0
+    try
+        Handle_SelectFile=findobj(mfig,'tag','selectfile');
+        File=get(Handle_SelectFile,'userdata');
+        NrInList=get(Handle_SelectFile,'value');
+        FI=File(NrInList);
+        [Success,PlotOps] = qp_getdata(FI,DomainNr,Props,'plotoptions',subf{:},selected{:});
+    catch
+        PlotOps = [];
+    end
+else
+    PlotOps = [];
+end
+[Ops,PlotType,EnablePlot,EnableLoad] = get_options(Props,selected,vslice,hslice,UD,PlotOps);
 
 %
 %---- Rename "Quick View" button to "Quick Animate" if appropriate
@@ -117,7 +130,7 @@ else
                 selected{N_}=0;
             end
         case '(X,Y) point/path'
-            vslice=1;
+            vslice=2;
             selected{M_}={'XY' get(MW.EditXY,'userdata')};
             if DimFlag(N_)
                 selected{N_}=0;
@@ -134,8 +147,19 @@ switch getvalstr(MW.VSelType)
                 selected{K_}=get(MW.EditK,'userdata');
             end
         end
-    case {'Z slice','dZ below surface','dZ above bed'}
+    otherwise
         hslice=1;
+        Z=get(MW.EditZ,'userdata');
+        switch getvalstr(MW.VSelType)
+            case {'Z slice'}
+                selected{K_}={'z' Z};
+            case {'dZ below surface'}
+                selected{K_}={'dz_below_max' Z};
+            case {'dZ above bed'}
+                selected{K_}={'dz_above_min' Z};
+            case {'depth percentage'}
+                selected{K_}={'depth_frac' Z/100};
+        end
 end
 
 for m = 6:length(DimFlag)
@@ -149,21 +173,24 @@ for m = 6:length(DimFlag)
     end
 end
 
-function [Ops,PlotType,EnablePlot,EnableLoad] = get_options(Props,selected,vslice,hslice,UD)
+function [Ops,PlotType,EnablePlot,EnableLoad] = get_options(Props,selected,vslice,hslice,UD,PlotOps)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 Ops = [];
 PlotType='View';
 EnablePlot = false;
 EnableLoad = false;
 
+if isempty(Props)
+    return
+end
 [nval,nvalstr]=convertnval(Props.NVal);
 DimFlag = Props.DimFlag;
-if isfield(Props,'Geom') && ~isempty(Props.Geom)
-    geometry=Props.Geom;
-    coordinates=Props.Coords;
-elseif nval<0
+if nval<0
     geometry='SELFPLOT';
     coordinates='';
+elseif isfield(Props,'Geom') && ~isempty(Props.Geom)
+    geometry=Props.Geom;
+    coordinates=Props.Coords;
 else
     if DimFlag(M_) && DimFlag(N_)
         geometry='sQUAD';
@@ -199,7 +226,6 @@ ask_for_angleconvention = 0;
 for i=5:-1:1
     multiple(i) = (length(selected{i})>1) | isequal(selected{i},0);
 end
-animate = multiple(T_);
 
 VectorDef=0;
 VectorReq=0;
@@ -221,7 +247,8 @@ markerflatfill=0;
 edgeflatcolour=0;
 lineproperties=0;
 
-triangles = 0;
+unstructured = 0;
+triangles = 1;
 thindams = nval>0 & nval<1;
 MultipleColors = (nval>=1 & nval<4) | nval==6;
 %--------------------------------------------------------------------------
@@ -231,41 +258,74 @@ MultipleColors = (nval>=1 & nval<4) | nval==6;
 axestype={'noplot'};
 switch geometry
     case 'SELFPLOT'
-        axestype={''};
-    case {'UGRID-NODE','UGRID-EDGE','UGRID-FACE'}
-        if vslice
-            if multiple(T_)
-                axestype={'X-Val','X-Y','X-Time','Time-X'};
-            elseif nval~=0
-                axestype={'X-Val','X-Y'};
+        if isfield(Props,'AxesType')
+            if iscell(Props.AxesType)
+                axestype = Props.AxesType;
             else
-                axestype={'X-Y'};
+                axestype = {Props.AxesType};
             end
-        elseif multiple(M_) && multiple(K_)
-            % noplot
-        elseif multiple(M_)
-            axestype={'X-Y'};
-        elseif multiple(K_)
-            axestype={'Val-Z'};
-        elseif multiple(T_)
-            axestype={'Time-Val','X-Y'};
         else
-            axestype={'Time-Val','X-Y','Text'};
+            axestype={''};
         end
-    case 'UGRID-VOLUME'
+    case {'UGRID1D_NETWORK-NODE','UGRID1D_NETWORK-EDGE','UGRID1D-NODE','UGRID1D-EDGE','UGRID2D-NODE','UGRID2D-EDGE','UGRID2D-FACE'}
+        unstructured = 1;
+        if multiple(K_) && ~hslice
+            if multiple(M_)
+                if vslice
+                    axestype={'X-Z'};
+                else
+                    axestype={'X-Y-Z'};
+                end
+            elseif multiple(T_)
+                axestype={'Val-Z','Time-Z'};
+            else
+                axestype={'Val-Z'};
+            end
+        else
+            if vslice
+                if multiple(T_)
+                    axestype={'X-Val','X-Y','X-Time','Time-X'};
+                else
+                    axestype={'X-Val','X-Y'};
+                end
+            elseif multiple(M_)
+                axestype={'X-Y'};
+            elseif multiple(K_)
+                axestype={'Val-Z'};
+            elseif multiple(T_)
+                axestype={'Time-Val','X-Y'};
+            else
+                switch geometry
+                    case {'UGRID1D_NETWORK-NODE','UGRID1D-NODE','UGRID2D-NODE'}
+                        geometry = 'PNT';
+                end
+                axestype={'Time-Val','X-Y','Text'};
+            end
+        end
+    case 'UGRID3D-VOLUME'
     case 'PNT'
         if multiple(ST_) || multiple(M_)
             if length(coordinates)==1
                 axestype={'X-Val'};
                 lineproperties=1;
             else
-                axestype={'X-Y'};
+                switch coordinates
+                    case 'xyz'
+                        axestype={'X-Y','X-Z','X-Y-Z'};
+                    otherwise
+                        axestype={'X-Y'};
+                end
             end
         elseif multiple(T_)
             if isequal(coordinates,'d')
                 axestype={'Time-Val','Distance-Val'};
-            elseif nval==0
-                axestype={'X-Y'};
+            elseif nval==0 
+                switch coordinates
+                    case 'xyz'
+                        axestype={'X-Y','X-Z','X-Y-Z'};
+                    otherwise
+                        axestype={'X-Y'};
+                end
             elseif isempty(coordinates)
                 axestype={'Time-Val'};
             else
@@ -275,21 +335,24 @@ switch geometry
             if isequal(coordinates,'d')
                 axestype={'Time-Val','Distance-Val','Text'};
             elseif nval==0
-                axestype={'X-Y'};
+                switch coordinates
+                    case 'xyz'
+                        axestype={'X-Y','X-Z','X-Y-Z'};
+                    otherwise
+                        axestype={'X-Y'};
+                end
             elseif ~isempty(strfind(coordinates,'xy'))
                 if nval==4 || nval==6
                     axestype={'X-Y','Text'};
                 else
                     axestype={'X-Y','Time-Val','Text'};
                 end
-            elseif DimFlag(T_)
-                axestype={'Time-Val','Text'};
             else
-                axestype={'Text'};
+                axestype={'Time-Val','Text'};
             end
         end
     case 'PNT+'
-        if multiple(K_)
+        if multiple(K_) && ~hslice
             if ~multiple(M_) && ~multiple(ST_)
                 if multiple(T_)
                     axestype={'Val-Z','Time-Z'};
@@ -318,9 +381,11 @@ switch geometry
                     if isequal(coordinates,'d')
                         axestype={'Distance-Val'};
                     else
-                        axestype={'X-Val'};
+                        axestype={'X-Val','Time-X','X-Time'};
                     end
             end
+        elseif multiple(T_)
+            axestype={'Time-Val'};
         else
             switch nval
                 case {0,2,4,6}
@@ -334,30 +399,30 @@ switch geometry
             end
         end
     case 'sSEG+'
-        if multiple(M_) && multiple(K_)
+        if multiple(M_) && (multiple(K_) && ~hslice)
             axestype={'X-Z'};
         elseif multiple(M_)
             axestype={'X-Val'};
-        elseif multiple(K_)
+        elseif multiple(K_) && ~hslice
             axestype={'Val-Z'};
         else
             axestype={'X-Z'};
         end
     case {'POLYL','POLYG'}
-        if multiple(T_) && ~multiple(M_) && ~multiple(K_)
+        if multiple(T_) && ~multiple(M_) && (~multiple(K_) || ~hslice)
             if nval==0
                 axestype={'X-Y'};
             else
                 axestype={'Time-Val'};
             end
-        elseif ~multiple(T_)
+        else
             axestype={'X-Y'};
             if strcmp(geometry,'POLYG') && ~isfield(Props,'ClosedPoly')
                 Props.ClosedPoly = 2;
             end
         end
     case {'sQUAD','sQUAD+','SGRID-FACE','SGRID-EDGE','SGRID-NODE'}
-        if multiple(K_)
+        if multiple(K_) && ~hslice
             if multiple(M_) && multiple(N_) && ~vslice
                 axestype={'X-Y-Z'};
             elseif multiple(M_) || multiple(N_) || vslice
@@ -368,36 +433,43 @@ switch geometry
                 axestype={'Val-Z'};
             end
         else
-            if nval==0
-                axestype={'X-Y'};
-            elseif nval==4 || nval==6
-                if ~multiple(T_) && ~multiple(M_) && ~multiple(N_)
-                    axestype={'X-Y','Text'};
-                else
+            if vslice || ...
+                    (multiple(M_) && ~multiple(N_)) || ...
+                    (multiple(N_) && ~multiple(M_))
+                % grid line or slice
+                if multiple(T_)
+                    axestype={'X-Val','X-Y','X-Time','Time-X'};
+                elseif nval==4
                     axestype={'X-Y'};
-                end
-            else
-                if multiple(M_) && multiple(N_) && ~vslice
-                    axestype={'X-Y','X-Y-Val'};
-                elseif multiple(M_) || multiple(N_) || vslice
-                    if multiple(T_)
-                        axestype={'X-Val','X-Y','X-Time','Time-X'};
-                    elseif DimFlag(K_)
-                        axestype={'X-Val','X-Y','X-Z'};
-                    else
-                        axestype={'X-Val','X-Y'};
-                    end
-                elseif multiple(T_)
-                    axestype={'Time-Val','X-Y','X-Val'};
                 else
-                    axestype={'X-Y','X-Val','Text'};
+                    axestype={'X-Val','X-Y'};
+                end
+            elseif multiple(M_) && multiple(N_)
+                % 2D domain
+                axestype={'X-Y','X-Y-Val'};
+            else
+                % point
+                if nval==4 || nval==6
+                    % string or discrete
+                    if ~multiple(T_)
+                        axestype={'X-Y','Text'};
+                    else
+                        axestype={'X-Y'};
+                    end
+                else
+                    if multiple(T_)
+                        axestype={'Time-Val','X-Y','X-Val'};
+                    else
+                        axestype={'X-Y','X-Val','Text'};
+                    end
                 end
             end
         end
     case {'TRI','TRI+'}
-        triangles=1;
+        unstructured = 1;
+        triangles = 1;
         if vslice
-            if multiple(M_) && multiple(K_)
+            if multiple(M_) && (multiple(K_) && ~hslice)
                 axestype={'X-Z'};
             elseif multiple(M_)
                 if nval==0
@@ -405,7 +477,7 @@ switch geometry
                 else
                     axestype={'X-Val','X-Y'};
                 end
-            elseif multiple(K_)
+            elseif multiple(K_) && ~hslice
                 axestype={'Val-Z'};
             else
                 if multiple(T_)
@@ -414,11 +486,11 @@ switch geometry
                     axestype={'X-Y'};
                 end
             end
-        elseif multiple(M_) && multiple(K_)
+        elseif multiple(M_) && (multiple(K_) && ~hslice)
             axestype={'X-Y-Z'};
         elseif multiple(M_)
             axestype={'X-Y'};
-        elseif multiple(K_)
+        elseif multiple(K_) && ~hslice
             axestype={'Val-Z'};
         elseif multiple(T_)
             axestype={'Time-Val'};
@@ -441,6 +513,12 @@ switch geometry
 end
 if isequal(axestype,{'noplot'})
     MultipleColors = 0;
+elseif DimFlag(T_) ~= 0 && ~isempty(axestype{end})
+    % if there is a time dimension, add axestype 'Time' for time sliders and clocks
+    axestype{end+1} = 'Time';
+elseif DimFlag(T_) == 0
+    % if there is no time dimension, remove all axestypes that include Time
+    axestype(~cellfun(@isempty, strfind(axestype, 'Time'))) = [];
 end
 
 Inactive=UD.Inactive;
@@ -487,11 +565,30 @@ else
     i=1;
 end
 axestype=axestype{i};
+if strcmp(axestype,'Time')
+    multiple(:) = 0;
+    vslice = 0;
+    hslice = 0;
+    nval = -1;
+    usesmarker = 0;
+    MultipleColors = 0;
+end
 %
 if (multiple(M_) && ~multiple(N_) && DimFlag(N_)) || (~multiple(M_) && DimFlag(M_) && multiple(N_)) || vslice
-    if isempty(strfind(axestype,'Time')) && ~multiple(K_) && isempty(strfind(axestype,'Z'))
+    if isempty(strfind(axestype,'Time')) && (~multiple(K_) || hslice) && isempty(strfind(axestype,'Z'))
         if Props.DataInCell || ~isempty(strfind(geometry,'FACE'))
             geometry = 'SEG-EDGE';
+            lineproperties = 1;
+        elseif ~isempty(strfind(geometry,'EDGE'))
+            % This a slice through data located at EDGEs.
+            % Is the slice along EDGEs or crossing EDGEs?
+            % Assuming that an (M,N) point/path is following EDGEs and
+            % an (X,Y) point/path is crossing EDGEs.
+            if vslice==1
+                geometry = 'SEG-EDGE';
+            elseif vslice==2
+                geometry = 'SEG-NODE';
+            end
             lineproperties = 1;
         else
             geometry = 'SEG-NODE';
@@ -512,17 +609,40 @@ elseif strfind(axestype,'Val')
 elseif strcmp(axestype,'Text') || (strcmp(axestype,'Time-Val') && ~multiple(T_))
     MultipleColors=0;
     ask_for_textprops=1;
-    ask_for_numformat=1;
+    if ~strcmp(nvalstr,'strings')
+        ask_for_numformat=1;
+    end
 end
 if nval==-1 || (nval>=0 && nval<1)
     lineproperties=1;
 end
-if ~isempty(strfind(axestype,'Time'))
+if ~multiple(T_)
+    % if only one time step is selected, there is no animation period.
     animate = 0;
-elseif ~multiple(M_) && ~multiple (N_) && ~multiple(K_) && strcmp(axestype,'X-Y')
+elseif isfield(PlotOps,'animate')
+    animate = PlotOps.animate;
+elseif nval<0
+    % a self-plot that didn't specify any plotoptions, should be able to
+    % handle multiple selected times
+    animate = 0;
+elseif ~isempty(strfind(axestype,'Time'))
+    % if the axestype includes a time dimension, we're going to plot
+    % the time dependent data along that axis rather than animating it
+    animate = 0;
+elseif ~multiple(M_) && ...
+        ~multiple (N_) && ...
+        (~multiple(K_) || hslice) && ...
+        (strcmp(axestype,'X-Y') || strcmp(axestype,'X-Z') || strcmp(axestype,'X-Y-Z'))
+    % if it's a single point in a spatial plot, we'll plot it as a track,
+    % so don't animate
     animate = 0;
 elseif strcmp(axestype,'Distance-Val')
+    % this is probably also a track and we'll plot the value as function of
+    % the distance moved
     animate = 0;
+else
+    % in all other cases, we animate the time dimension
+    animate = 1;
 end
 
 if DimFlag(T_)
@@ -565,11 +685,6 @@ end
 %
 Spatial=SpatialH+SpatialV;
 TimeSpatial=Spatial+TimeDim;
-
-if strcmp(axestype,'X-Y-Z') % cannot plot 3D volumes
-    %won't plot
-    axestype='noplot';
-end
 
 if strfind(axestype,'Y')
     %if isfield(Props,'MName') && ~isempty(Props.MName)
@@ -641,76 +756,60 @@ if nval==2 || nval==3
     vectors=1;
     set(findobj(OH,'tag','component'),'enable','on');
     compon=findobj(OH,'tag','component=?');
-    if DimFlag(M_) && (DimFlag(N_) || triangles)
-        switch VectorDef
-            case 0
-                compList={'vector','vector (split x,y)','patch centred vector','magnitude','angle','x component','y component'};
-            case 1
-                if DimFlag(K_) && DimFlag(M_) && DimFlag(N_)
-                    compList={'vector','vector (split x,y)','vector (split m,n)','patch centred vector','magnitude','magnitude in plane','angle','x component','y component','z component','m component','n component'};
-                    if SpatialH ~=2
-                        ii=strmatch('magnitude in plane',compList,'exact');
-                        compList(ii)=[];
-                    end
-                    if Spatial==2 && SpatialH==1
-                        compList{end+1}='normal component';
-                    end
-                else
-                    compList={'vector','vector (split x,y)','vector (split m,n)','patch centred vector','magnitude','angle','x component','y component','m component','n component'};
-                end
-            case 2
-                compList={'vector','patch centred vector','magnitude','m component','n component'};
-        end
-    elseif DimFlag(M_) && DimFlag(K_)
-        compList={'vector','patch centred vector','magnitude','x component','z component'};
-    else
-        switch nvalstr
-            case 'xy'
-                compList={'vector','magnitude','angle'};
-                if vslice
-                    switch VectorDef
-                        case 2
-                            compList(end+1:end+2)={'m component','n component'};
-                            compList(1)=[]; % can't do vector if I only have m and n components
-                        otherwise
-                            compList(end+1:end+4)={'x component','y component','slice normal component','slice tangential component'};
-                    end
-                else
-                    switch VectorDef
-                        case 0
-                            compList(end+1:end+2)={'x component','y component'};
-                        case 1
-                            compList(end+1:end+4)={'x component','y component','m component','n component'};
-                        case 2
-                            compList(end+1:end+2)={'m component','n component'};
-                            compList(1)=[]; % can't do vector if I only have m and n components
-                        case 4
-                            % magnitude and angle already in compList
-                        case 5
-                            compList(end+1:end+4)={'x component','y component','edge normal component','edge tangential component'};
-                    end
-                end
-            case 'xyz'
-                compList={'vector','magnitude','angle','x component','y component','z component'};
-            case 'xz'
-                compList={'vector','magnitude','x component','z component'};
-        end
+    %
+    compList={'vector','vector (split x,y)','vector (split m,n)','patch centred vector','magnitude','magnitude in plane','normal component','angle','x component','y component','z component','m component','n component','edge normal component','edge tangential component','slice normal component','slice tangential component'};
+    compList(strcmp(compList,'patch centred vector')) = [];
+    if SpatialH ~= 2
+        compList(ismember(compList,{'magnitude in plane'}))=[]; % why??
+        compList(ismember(compList,{'vector (split x,y)','vector (split m,n)'}))=[];
+    end
+    if ~vslice
+        % exclude the slice normal and tangential horizontal components if this is not a vertical slice
+        compList(ismember(compList,{'slice normal component','slice tangential component'}))=[];
+    end
+    if ~(DimFlag(M_) && DimFlag(N_)) || (multiple(M_) && multiple(N_)) || (~multiple(M_) && ~multiple(N_))
+        % for structured model grids only: the normal component is the horizontal component normal to the selected dimension
+        compList(ismember(compList,{'normal component'}))=[];
+    end
+    if nval == 2 && ~strcmp(nvalstr,'xz')
+        % if this is vector has only horizontal components: remove options that require Z
+        compList(ismember(compList,{'z component'}))=[];
+    end
+    if strcmp(nvalstr,'xz') || (DimFlag(M_) && ~DimFlag(N_) && ~unstructured)
+        % without Y component: remove options that require Y or N
+        compList(ismember(compList,{'vector (split x,y)','vector (split m,n)','y component','n component'}))=[];
+    end    
+    switch VectorDef
+        case 0 % only X,Y components available: remove options that require m,n or normal,tangential ...
+            compList(ismember(compList,{'vector (split m,n)','m component','n component'})) = [];
+            compList(ismember(compList,{'edge normal component','edge tangential component'})) = [];
+        case 1 % both X,Y and M,N components available: remove options that require normal,tangential ...
+            compList(ismember(compList,{'edge normal component','edge tangential component'})) = [];
+        case 2 % only M,N components available: remove options that require full vector, x,y or normal,tangential ...
+            compList(ismember(compList,{'vector','angle'})) = [];
+            compList(ismember(compList,{'vector (split x,y)','magnitude in plane','angle','x component','y component'})) = [];
+            compList(ismember(compList,{'edge normal component','edge tangential component'})) = [];
+        case 4 % magnitude and horizontal angle: remove options that require x,y, m,n or normal,tangential ...
+            compList(ismember(compList,{'vector (split m,n)','m component','n component'})) = [];
+            compList(ismember(compList,{'vector (split x,y)','magnitude in plane','angle','x component','y component'})) = [];
+            compList(ismember(compList,{'edge normal component','edge tangential component'})) = [];
+        case 5 % edge normal and tangential components: remove options that require m,n ...
+            % x,y can still be reconstructed ...
+            compList(ismember(compList,{'vector (split m,n)','m component','n component'})) = [];
     end
     
     if SpatialV
-        ii=strmatch('vector (split',compList);
-        compList(ii)=[];
+        % exclude the horizontal split options if the plot includes the vertical direction
+        compList(strncmp(compList,'vector (split',13)) = [];
     end
-    if Spatial==1 && ~strcmp(axestype,'Val-Z')
-        ii=strmatch('vector',compList);
-        compList(ii)=[];
+    if Spatial == 1 && ~strcmp(axestype,'Val-Z')
+        % exclude vectors if the plot includes only 1 spatial direction (and this isn't a special profile plot)
+        compList(strcmp(compList,'vector')) = [];
     end
-    if nval==2 && SpatialV && Spatial>=2 && ~strcmp(nvalstr,'xz') % don't plot vectors without vertical component in 2DV and 3D
-        ii=strmatch('vector',compList);
-        compList(ii)=[];
+    if nval==2 && SpatialV && Spatial>=2 && ~strcmp(nvalstr,'xz')
+        % exclude vectors if the plot includes the vertical direction, but the vector not.
+        compList(strcmp(compList,'vector')) = [];
     end
-    ii=strmatch('patch centred vector',compList,'exact');
-    compList(ii)=[];
     
     set(compon,'enable','on','backgroundcolor',Active)
     comp=get(compon,'value');
@@ -732,7 +831,7 @@ if nval==2 || nval==3
     switch Ops.vectorcomponent
         case {'vector','patch centred vector','vector (split x,y)','vector (split m,n)'}
             Ops.presentationtype=Ops.vectorcomponent;
-            if VectorDef==2 && (multiple(M_) + multiple(N_) == 1) && (multiple(K_) == 1)
+            if VectorDef==2 && (multiple(M_) + multiple(N_) == 1) && (multiple(K_) || hslice)
                 VectorReq=1;
             end
         case {'magnitude','x component','y component','z component'}
@@ -744,7 +843,7 @@ if nval==2 || nval==3
         case {'magnitude in plane','m component','n component','normal component','slice normal component','slice tangential component','edge normal component','edge tangential component'}
             vectors=0;
             VectorReq=1;
-        case 'edge'
+        case 'edges'
             Ops.presentationtype=Ops.vectorcomponent;
             vectors=0;
             nval=0.9;
@@ -756,6 +855,7 @@ if nval==2 || nval==3
 end
 if (nval==2 || nval==3) && ~vectors
     nval=1;
+    [nval,nvalstr]=convertnval(nval);
 end
 if isfield(Ops,'vectorcomponent') && strcmp(Ops.vectorcomponent,'vector')
     %if ~isequal(geometry,'TRI')
@@ -769,13 +869,21 @@ end
 %---- presentation type
 %
 extend2edge = 0;
-if ((nval==1 || nval==6) && TimeSpatial==2) || nval==1.9 || strcmp(nvalstr,'strings') || strcmp(nvalstr,'boolean') || (strcmp(geometry,'POLYG') && nval~=2 && ~TimeDim) % || (nval==0 & ~DimFlag(ST_))
+if strcmp(axestype,'Text')
+    % always text ...
+    Ops.presentationtype = 'labels';
+elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
+        ((nval==1 || nval==6) && TimeSpatial==1 && vslice) || ...
+        nval==1.9 || ...
+        strcmp(nvalstr,'strings') || ...
+        strcmp(nvalstr,'boolean') || ...
+        (strcmp(geometry,'POLYG') && nval~=2 && ~TimeDim)
     switch nvalstr
         case 1.9 % EDGE
             if strcmp(geometry,'SGRID-EDGE')
-                PrsTps={'vector';'edge';'edge M';'edge N'};
+                PrsTps={'vector';'edges';'edges M';'edges N'};
             else
-                PrsTps={'vector';'edge';'values'};
+                PrsTps={'vector';'edges';'values'};
             end
         case 'strings'
             switch geometry
@@ -786,6 +894,8 @@ if ((nval==1 || nval==6) && TimeSpatial==2) || nval==1.9 || strcmp(nvalstr,'stri
                 otherwise
                     if multiple(T_)
                         PrsTps={'tracks'}; % {'labels';'tracks'};
+                    elseif strcmp(geometry,'SEG-EDGE')
+                        PrsTps={'labels';'edges';'markers'};
                     else
                         PrsTps={'labels';'markers'};
                     end
@@ -807,169 +917,252 @@ if ((nval==1 || nval==6) && TimeSpatial==2) || nval==1.9 || strcmp(nvalstr,'stri
             else
                 dic=0;
             end
-            switch dic
-                case 0
-                    switch axestype
-                        case {'X-Time','Time-X','Time-Z'}
-                            PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                        otherwise
-                            switch geometry
-                                case {'TRI','TRI+'}
-                                    if SpatialV
-                                        PrsTps={'continuous shades';'markers';'values'};
-                                    else
-                                        PrsTps={'patches';'patches with lines';'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                                    end
-                                case {'PNT','PNT+'}
-                                    if strcmp(axestype,'Time-Z')
-                                        PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                                    else
-                                        PrsTps={'markers';'values'};
-                                    end
-                                case {'SEG','SEG-NODE'}
-                                    PrsTps={'continuous shades';'markers';'values'};
-                                case {'POLYL'}
-                                    PrsTps={'polylines','values'};
-                                case {'UGRID-EDGE'}
-                                    PrsTps={'markers';'values';'edge'};
-                                case {'UGRID-NODE'}
-                                    PrsTps={'patches';'patches with lines';'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                                otherwise
-                                    PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                            end
+            switch axestype
+                case {'X-Val'}
+                    if strcmp(geometry,'SEG-EDGE')
+                        PrsTps={'linear';'stepwise'};
+                    else
+                        PrsTps={'linear'};
                     end
-                case 1
-                    switch axestype
-                        case {'X-Time','Time-X','Time-Z'}
-                            PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                        otherwise
-                            switch geometry
-                                case {'POLYG'}
-                                    if DimFlag(M_) && DimFlag(N_)
-                                        PrsTps={'polygons';'markers';'values';'continuous shades';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                                    else
-                                        PrsTps={'polygons';'markers';'values'};
-                                    end
-                                case {'SEG','SEG-EDGE'}
-                                    PrsTps={'edge';'markers';'values'};
-                                otherwise
-                                    PrsTps={'patches';'patches with lines';'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
-                            end
-                    end
-                case 2
-                    switch geometry
-                        case {'POLYG'}
-                            PrsTps={'polygons'};
-                        otherwise
-                            PrsTps={'patches';'patches with lines'};
-                    end
-            end
-    end
-    if length(PrsTps)==1
-        p=1;
-    else
-        set(findobj(OH,'tag','presenttype'),'enable','on')
-        pt=findobj(OH,'tag','presenttype=?');
-        pPrsTps=get(pt,'string');
-        if isequal(pPrsTps,PrsTps)
-            set(pt,'enable','on','backgroundcolor',Active)
-            p=get(pt,'value');
-        else
-            % try to find an exact match when switching presentation type strings
-            p=get(pt,'value');
-            if iscellstr(pPrsTps),
-                p=pPrsTps{p};
-            else
-                p=pPrsTps(p,:);
-            end
-            p=strmatch(p,PrsTps,'exact');
-            if isempty(p),
-                p=1;
-            end
-            set(pt,'enable','on','value',1,'string',PrsTps,'value',p,'backgroundcolor',Active)
-        end
-    end
-    Ops.presentationtype=lower(PrsTps{p});
-    switch Ops.presentationtype
-        case 'patches with lines'
-            SingleColor=1;
-        case 'continuous shades'
-            extend2edge = 1;
-        case 'values'
-            MultipleColors=0;
-            SingleColor=1;
-            %
-            ask_for_textprops=1;
-            %
-            ask_for_numformat=1;
-            ask_for_thinningmode=1;
-            if strcmp(geometry,'POLYG') || strcmp(geometry,'POLYL')
-                geometry='PNT';
-            end
-        case {'contour lines','coloured contour lines','contour patches','contour patches with lines'}
-            ask_for_thresholds = 1;
-            switch Ops.presentationtype
-                case 'contour lines'
-                    MultipleColors=0;
-                    SingleColor=1;
-                    lineproperties=1;
-                case 'coloured contour lines'
-                    lineproperties=1;
-                case 'contour patches with lines'
-                    SingleColor=1;
-                    lineproperties=1;
-            end
-            extend2edge = 1;
-        case 'markers'
-            usesmarker=1;
-            forcemarker=1;
-            lineproperties=0;
-            switch nvalstr
-                case {'strings'}
-                    SingleColor=0;
-                    forcemarkercolor=1;
+                case {'X-Time','Time-X','Time-Z'}
+                    PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
                 otherwise
-                    markerflatfill=1;
-                    %
-                    ask_for_thinningmode=1;
+                    switch geometry
+                        case {'TRI','TRI+'}
+                            if SpatialV
+                                PrsTps={'continuous shades';'markers';'values'};
+                            else
+                                PrsTps={'patches';'patches with lines';'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                            end
+                        case {'PNT','PNT+'}
+                            if strcmp(axestype,'Time-Z')
+                                PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                            else
+                                PrsTps={'markers';'values'};
+                            end
+                        case {'SEG','SEG-NODE','SEG-EDGE'}
+                            switch dic
+                                case 0
+                                    PrsTps={'continuous shades';'markers';'values'};
+                                case 1
+                                    PrsTps={'edges';'markers';'values'};
+                                case 2
+                                    PrsTps={'markers';'labels'};
+                            end
+                        case {'POLYG'}
+                            % if dic==2, only: PrsTps={'polygons'}; ?
+                            if DimFlag(M_) && DimFlag(N_)
+                                PrsTps={'polygons';'markers';'values';'continuous shades';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                            else
+                                PrsTps={'polygons';'markers';'values'};
+                            end
+                        case {'POLYL'}
+                            PrsTps={'polylines','values'};
+                        case {'UGRID1D_NETWORK-EDGE','UGRID1D-EDGE','UGRID2D-EDGE'}
+                            if SpatialV
+                                PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                            else
+                                PrsTps={'markers';'values';'edges';'vector edges'};
+                            end
+                        case {'UGRID1D_NETWORK-NODE','UGRID1D-NODE'}
+                            if SpatialV
+                                PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                            else
+                                PrsTps={'continuous shades';'markers';'values'};
+                            end
+                        case {'UGRID2D-NODE'}
+                            PrsTps={'patches';'patches with lines';'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                        otherwise
+                            switch dic
+                                case 0
+                                    PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                                case 1
+                                    PrsTps={'patches';'patches with lines';'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                                case 2
+                                    PrsTps={'patches';'patches with lines'};
+                            end
+                    end
             end
-            if strcmp(geometry,'POLYG') || strcmp(geometry,'POLYL')
-                geometry='PNT';
+    end
+    if isempty(PrsTps)
+        axestype = 'noplot';
+    else
+        if length(PrsTps)==1
+            p=1;
+        else
+            set(findobj(OH,'tag','presenttype'),'enable','on')
+            pt=findobj(OH,'tag','presenttype=?');
+            pPrsTps=get(pt,'string');
+            if isequal(pPrsTps,PrsTps)
+                set(pt,'enable','on','backgroundcolor',Active)
+                p=get(pt,'value');
+            else
+                % try to find an exact match when switching presentation type strings
+                p=get(pt,'value');
+                if iscellstr(pPrsTps),
+                    p=pPrsTps{p};
+                else
+                    p=pPrsTps(p,:);
+                end
+                p=strmatch(p,PrsTps,'exact');
+                if isempty(p),
+                    p=1;
+                end
+                set(pt,'enable','on','value',1,'string',PrsTps,'value',p,'backgroundcolor',Active)
             end
-        case 'patches'
-            if strcmp(nvalstr,'boolean')
+        end
+        Ops.presentationtype=lower(PrsTps{p});
+        switch Ops.presentationtype
+            case 'patches with lines'
+                SingleColor=1;
+            case 'continuous shades'
+                switch geometry
+                    case {'UGRID1D_NETWORK-NODE','UGRID1D-NODE'}
+                        lineproperties = 1;
+                    otherwise
+                        extend2edge = 1;
+                end
+            case 'values'
+                MultipleColors=0;
+                SingleColor=1;
+                %
+                ask_for_textprops=1;
+                %
+                ask_for_numformat=1;
+                ask_for_thinningmode=1;
+                if strcmp(geometry,'POLYG') || strcmp(geometry,'POLYL')
+                    geometry='PNT';
+                end
+            case {'contour lines','coloured contour lines','contour patches','contour patches with lines'}
+                ask_for_thresholds = 1;
+                switch Ops.presentationtype
+                    case 'contour lines'
+                        MultipleColors=0;
+                        SingleColor=1;
+                        lineproperties=1;
+                    case 'coloured contour lines'
+                        lineproperties=1;
+                    case 'contour patches with lines'
+                        SingleColor=1;
+                        lineproperties=1;
+                end
+                extend2edge = 1;
+            case 'markers'
+                usesmarker=1;
+                forcemarker=1;
+                lineproperties=0;
+                switch nvalstr
+                    case {'strings'}
+                        SingleColor=0;
+                        forcemarkercolor=1;
+                    otherwise
+                        markerflatfill=1;
+                        %
+                        ask_for_thinningmode=1;
+                end
+                if strcmp(geometry,'POLYG') || strcmp(geometry,'POLYL')
+                    geometry='PNT';
+                end
+            case 'patches'
+                if strcmp(nvalstr,'boolean')
+                    SingleColor=1;
+                    MultipleColors=0;
+                end
+            case 'labels'
+                ask_for_textprops=1;
                 SingleColor=1;
                 MultipleColors=0;
-            end
-        case 'labels'
-            ask_for_textprops=1;
-            SingleColor=1;
-            if strcmp(geometry,'POLYG') || strcmp(geometry,'POLYL')
-                geometry='PNT';
-            end
-        case 'polygons'
-            lineproperties=1;
-        case 'polylines'
-            markerflatfill=nval>0;
-            edgeflatcolour=nval>0;
-            SingleColor=0;
-            MultipleColors=1;
-            lineproperties=1;
-        case 'grid with numbers'
-            ask_for_textprops=1;
-        case {'edge','edge m','edge n'}
-            thindams=1;
-            lineproperties=1;
-            nval=0.9;
-        case 'vector'
-            vectors=1';
-            Ops.vectorcomponent='edge';
+                if strcmp(geometry,'POLYG') || strcmp(geometry,'POLYL')
+                    geometry='PNT';
+                end
+                lineproperties=0;
+            case 'polygons'
+                lineproperties=1;
+            case 'polylines'
+                if nval==0 || nval==4
+                    markerflatfill=0;
+                    edgeflatcolour=0;
+                    SingleColor=1;
+                    MultipleColors=0;
+                else
+                    markerflatfill=1;
+                    edgeflatcolour=1;
+                    SingleColor=0;
+                    MultipleColors=1;
+                end
+                lineproperties=1;
+            case 'grid with numbers'
+                ask_for_textprops=1;
+            case 'vector edges'
+                lineproperties=1;
+                thindams=1;
+                nval=0.9;
+            case {'edges','edges m','edges n'}
+                lineproperties=1;
+                switch nvalstr
+                    case {'strings'}
+                        SingleColor=1;
+                        MultipleColors=0;
+                    otherwise
+                        thindams=1;
+                        nval=0.9;
+                end
+            case 'vector'
+                vectors=1';
+                Ops.vectorcomponent='edge';
+        end
     end
+elseif strcmp(geometry,'SEG-EDGE') && nval==0
+    Ops.presentationtype = 'edges';
 end
 
 %--------------------------------------------------------------------------
 
-if vectors %&& ~isempty(strmatch(axestype,{'X-Y','X-Y-Z','X-Y-Val','X-Z'},'exact'))
+if (isequal(geometry,'PNT') && multiple(T_) && ~isempty(coordinates)) || (isequal(geometry,'POLYL') && strcmp(coordinates,'xyz'))
+    coltrack=findobj(OH,'tag','colourtracks');
+    set(coltrack,'enable','on')
+    if get(coltrack,'value')
+        coltrkm=findobj(OH,'tag','trackcolour=?');
+        ptrkCLR=get(coltrkm,'string');
+        coltrki=get(coltrkm,'value');
+        %
+        if strcmp(axestype,'X-Z')
+            % the X may not be the x coordinate; it's determined by Ops.plotcoordinate
+            switch Ops.plotcoordinate
+                case {'x coordinate','y coordinate'}
+                    crds_notplotted = coordinates(~ismember(coordinates,['z',Ops.plotcoordinate(1)]));
+                otherwise
+                    crds_notplotted = coordinates(~ismember(coordinates,'z'));
+            end
+        else
+            crds_notplotted = coordinates(~ismember(coordinates,lower(axestype)));
+        end
+        trkCLR = strcat(num2cell(crds_notplotted),' coordinate');
+        if multiple(T_) && isempty(strfind('Time',axestype))
+            trkCLR{end+1} = 'time';
+        end
+        if ~isequal(trkCLR,ptrkCLR)
+            % try to find an exact match when switching vector colouring strings
+            if isempty(ptrkCLR) || length(ptrkCLR)<coltrki
+                coltrki=1;
+            else
+                coltrki=strmatch(ptrkCLR{coltrki},trkCLR,'exact');
+                if isempty(coltrki)
+                    coltrki=1;
+                end
+            end
+            set(coltrkm,'value',1,'string',trkCLR,'value',coltrki)
+        end
+        if length(trkCLR)>1
+            set(coltrkm,'enable','on','backgroundcolor',Active)
+        end
+        Ops.trackcolour=trkCLR{coltrki};
+        MultipleColors=1;
+        SingleColor=0;
+    end
+end
+
+if vectors && ~strcmp(axestype,'Time-Val')
     colvect=findobj(OH,'tag','colourvectors');
     set(colvect,'enable','on')
     if get(colvect,'value')
@@ -1023,7 +1216,7 @@ end
 %
 %---- data units
 %
-if ~isempty(Units)
+if ~isempty(Units) && nval>0
     set(findobj(OH,'tag','dataunits'),'enable','on')
     dunit=findobj(OH,'tag','dataunits=?');
     set(dunit,'enable','on', ...
@@ -1159,7 +1352,9 @@ if thindams
     end
 end
 
-if nval>0 && nval<2
+% plot value as is, or absolute value?
+% in case of vector edges we need the sign for the vector direction
+if nval>0 && nval<2 && (~isfield(Ops,'presentationtype') || ~strcmp(Ops.presentationtype,'vector edges'))
     oper=findobj(OH,'tag','operator');
     set(oper,'enable','on')
     oper=findobj(OH,'tag','operator=?');
@@ -1168,6 +1363,18 @@ if nval>0 && nval<2
     operi   = get(oper,'value');
     if operi>1
         Ops.operator = operstr{operi};
+    end
+end
+
+if MultipleColors ...
+        && isfield(Ops,'presentationtype') ...
+        && ismember(Ops.presentationtype,{'patches','edges','vector edges'})
+    cun = findobj(OH,'tag','unicolour');
+    set(cun,'enable','on')
+    Ops.unicolour = get(cun,'value');
+    if Ops.unicolour
+        SingleColor = 1;
+        MultipleColors = 0;
     end
 end
 
@@ -1242,19 +1449,21 @@ if ask_for_textprops
     Ops.fontsize=get(hFontsize,'userdata');
     set(hFontsize,'enable','on','backgroundcolor',Active);
     
-    set(findobj(OH,'tag','alignment'),'enable','on');
-    set(findobj(OH,'tag','horizontalalignment'),'enable','on');
-    set(findobj(OH,'tag','verticalalignment'),'enable','on');
-    hHorAlign=findobj(OH,'tag','horizontalalignment=?');
-    iHorAlign=get(hHorAlign,'value');
-    strHorAlign=get(hHorAlign,'string');
-    Ops.horizontalalignment=strHorAlign{iHorAlign};
-    set(hHorAlign,'enable','on','backgroundcolor',Active);
-    hVerAlign=findobj(OH,'tag','verticalalignment=?');
-    iVerAlign=get(hVerAlign,'value');
-    strVerAlign=get(hVerAlign,'string');
-    Ops.verticalalignment=strVerAlign{iVerAlign};
-    set(hVerAlign,'enable','on','backgroundcolor',Active);
+    if ~strcmp(axestype,'Text')
+        set(findobj(OH,'tag','alignment'),'enable','on');
+        set(findobj(OH,'tag','horizontalalignment'),'enable','on');
+        set(findobj(OH,'tag','verticalalignment'),'enable','on');
+        hHorAlign=findobj(OH,'tag','horizontalalignment=?');
+        iHorAlign=get(hHorAlign,'value');
+        strHorAlign=get(hHorAlign,'string');
+        Ops.horizontalalignment=strHorAlign{iHorAlign};
+        set(hHorAlign,'enable','on','backgroundcolor',Active);
+        hVerAlign=findobj(OH,'tag','verticalalignment=?');
+        iVerAlign=get(hVerAlign,'value');
+        strVerAlign=get(hVerAlign,'string');
+        Ops.verticalalignment=strVerAlign{iVerAlign};
+        set(hVerAlign,'enable','on','backgroundcolor',Active);
+    end
 end
 
 if ask_for_thinningmode
@@ -1262,9 +1471,9 @@ if ask_for_thinningmode
     thinfld=findobj(OH,'tag','thinfld=?');
     set(thinfld,'enable','on','backgroundcolor',Active)
     thinmodes = {'none','uniform','distance'}'; %,'regrid'
-    if triangles
-        thinmodes(2)=[];
-    end
+    %if unstructured % no uniform thinning for unstructured meshes
+    %    thinmodes(2)=[];
+    %end
     prevthinmodes = get(thinfld,'string');
     thinmode = prevthinmodes{get(thinfld,'value')};
     if ~isequal(prevthinmodes,thinmodes)
@@ -1318,7 +1527,7 @@ if isfield(Props,'ClosedPoly')
 end
 
 if ask_for_textprops
-    if matlabversionnumber>=6.05
+    if matlabversionnumber>=6.05 && ~strcmp(axestype,'Text')
         hTextbox=findobj(OH,'tag','textbox=?');
         set(hTextbox,'enable','on');
         if get(hTextbox,'value')
@@ -1339,48 +1548,52 @@ if ismember(geometry,{'PNT'}) && ~multiple(T_) && nval>=0
         usesmarker = 1;
         forcemarker = 1;
     end
+    lineproperties = 0;
+elseif isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'vector edges')
+    usesmarker = 0;
 elseif lineproperties || nval==0
+    usesmarker = 1;
+end
+if lineproperties || nval==0
     set(findobj(OH,'tag','linestyle'),'enable','on')
     lns=findobj(OH,'tag','linestyle=?');
     set(lns,'enable','on','backgroundcolor',Active)
     lnstls=get(lns,'string');
     Ops.linestyle=lnstls{get(lns,'value')};
-    
-    set(findobj(OH,'tag','linewidth'),'enable','on')
-    lnw=findobj(OH,'tag','linewidth=?');
-    set(lnw,'enable','on','backgroundcolor',Active)
-    Ops.linewidth=get(lnw,'userdata');
-    usesmarker=1;
-elseif vectors
+end
+if usesmarker
+    set(findobj(OH,'tag','marker'),'enable','on')
+    mrk = findobj(OH,'tag','marker=?');
+    set(mrk,'enable','on','backgroundcolor',Active)
+    mrkrs = get(mrk,'string');
+    imrk = get(mrk,'value');
+    if forcemarker && ismember('none',mrkrs)
+        inone = strmatch('none',mrkrs);
+        if imrk == inone
+            set(mrk,'value',1)
+        end
+        mrkrs(inone)=[];
+        set(mrk,'string',mrkrs)
+    elseif ~forcemarker && ~ismember('none',mrkrs)
+        mrkrs{end+1} = 'none';
+        imrk = length(mrkrs); % select no by marker by default
+        set(mrk,'string',mrkrs,'value',imrk);
+    end
+    if imrk>length(mrkrs)
+        imrk = 1;
+        set(mrk,'value',imrk);
+    end
+    Ops.marker = mrkrs{get(mrk,'value')};
+end
+if (lineproperties && ~strcmp(Ops.linestyle,'none')) || ...
+        (usesmarker && (~strcmp(Ops.marker,'none') && ~strcmp(Ops.marker,'.'))) || ...
+        vectors
     set(findobj(OH,'tag','linewidth'),'enable','on')
     lnw=findobj(OH,'tag','linewidth=?');
     set(lnw,'enable','on','backgroundcolor',Active)
     Ops.linewidth=get(lnw,'userdata');
 end
 if usesmarker
-    set(findobj(OH,'tag','marker'),'enable','on')
-    mrk=findobj(OH,'tag','marker=?');
-    set(mrk,'enable','on','backgroundcolor',Active)
-    mrkrs=get(mrk,'string');
-    imrk=get(mrk,'value');
-    if forcemarker && ismember('none',mrkrs)
-        inone=strmatch('none',mrkrs);
-        if imrk==inone
-            set(mrk,'value',1)
-        end
-        mrkrs(inone)=[];
-        set(mrk,'string',mrkrs)
-    elseif ~forcemarker && ~ismember('none',mrkrs)
-        mrkrs{end+1}='none';
-        imrk=length(mrkrs); % select no by marker by default
-        set(mrk,'string',mrkrs,'value',imrk);
-    end
-    if imrk>length(mrkrs)
-        imrk=1;
-        set(mrk,'value',imrk);
-    end
-    Ops.marker=mrkrs{get(mrk,'value')};
-    %
     Ops.markersize=6;
     if ~strcmp(Ops.marker,'none') && ~strcmp(Ops.marker,'.')
         set(findobj(OH,'tag','markersize'),'enable','on')
@@ -1546,7 +1759,7 @@ Ops.axestype=axestype;
 %---- clipping values
 %
 
-if (nval==1 || isfield(Ops,'vectorcolour') || isfield(Ops,'colourdams') || (isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'values'))) && (lineproperties || TimeSpatial==2)
+if (nval==1 || isfield(Ops,'vectorcolour') || isfield(Ops,'colourdams') || (isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'values'))) && (lineproperties || TimeSpatial==2) && ~strcmp(nvalstr,'strings')
     set(findobj(OH,'tag','clippingvals'),'enable','on')
     set(findobj(OH,'tag','clippingvals=?'),'enable','on','backgroundcolor',Active)
     Ops.clippingvalues=get(findobj(OH,'tag','clippingvals=?'),'userdata');
@@ -1557,7 +1770,7 @@ if isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'values')
     Ops.clipnans=get(findobj(OH,'tag','clipnans'),'value');
 end
 
-if (SpatialH==2)
+if SpatialH == 2
     set(findobj(OH,'tag','clippingvals'),'enable','on')
     set(findobj(OH,'tag','xclipping'),'enable','on')
     set(findobj(OH,'tag','xclipping=?'),'enable','on','backgroundcolor',Active)
@@ -1565,6 +1778,11 @@ if (SpatialH==2)
     set(findobj(OH,'tag','yclipping'),'enable','on')
     set(findobj(OH,'tag','yclipping=?'),'enable','on','backgroundcolor',Active)
     Ops.yclipping=get(findobj(OH,'tag','yclipping=?'),'userdata');
+    if Spatial == 3
+        set(findobj(OH,'tag','zclipping'),'enable','on')
+        set(findobj(OH,'tag','zclipping=?'),'enable','on','backgroundcolor',Active)
+        Ops.zclipping=get(findobj(OH,'tag','zclipping=?'),'userdata');
+    end
 end
 
 %---- Export option
@@ -1579,14 +1797,14 @@ if nval>=0
         ExpTypes{end+1}='grid file';
         ExpTypes{end+1}='grid file (old format)';
     end
-    if strncmp(geometry,'UGRID',5) && multiple(M_) && ~multiple(K_) && ~multiple(T_)
+    if strncmp(geometry,'UGRID',5) && multiple(M_) && (~multiple(K_) || hslice) && ~multiple(T_)
         ExpTypes{end+1}='netCDF3 file';
         ExpTypes{end+1}='netCDF4 file';
     end
     if sum(multiple)==1 && sum(multiple([M_ N_]))==1 && nval==0
         ExpTypes{end+1}='spline';
     end
-    if (multiple(M_) && multiple(N_)) && ~multiple(K_) && ~multiple(T_)
+    if (multiple(M_) && multiple(N_)) && (~multiple(K_) || hslice) && ~multiple(T_)
         if nval>0
             ExpTypes{end+1}='QuickIn file';
         end
@@ -1602,12 +1820,13 @@ if nval>=0
             ExpTypes{end+1}='-SIMONA box file';
         end
     end
-    if (multiple(M_) && (multiple(N_) || triangles || strncmp(geometry,'UGRID',5) || strcmp(geometry,'sSEG'))) && ~multiple(K_) && ~multiple(T_)
+    if (multiple(M_) && (multiple(N_) || unstructured || strcmp(geometry,'sSEG'))) && ~multiple(K_) && ~multiple(T_)
         if ~isfield(Ops,'presentationtype')
             ExpTypes{end+1}='ARCview shape';
         elseif  ~isequal(Ops.presentationtype,'continuous shades')
             ExpTypes{end+1}='ARCview shape';
             if isequal(Ops.presentationtype,'contour patches') || isequal(Ops.presentationtype,'contour patches with lines')
+                ExpTypes{end+1}='GeoJSON file';
                 ExpTypes{end+1}='polygon file';
             end
         end
@@ -1617,6 +1836,7 @@ if nval>=0
     elseif strcmp(geometry,'POLYL') || strcmp(geometry,'POLYG')
         ExpTypes{end+1}='ARCview shape';
         if strcmp(geometry,'POLYG')
+            ExpTypes{end+1}='GeoJSON file';
             ExpTypes{end+1}='polygon file';
         end
         ExpTypes{end+1}='landboundary file';
@@ -1627,21 +1847,27 @@ if nval>=0
     end
     %
     maxTimeSteps = qp_settings('export_max_ntimes');
-    if ((length(selected{T_})<=maxTimeSteps && ~isequal(selected{T_},0)) || (maxt<=maxTimeSteps && isequal(selected{T_},0))) && nval>0 && (multiple(M_) || multiple(N_) || multiple(K_))
+    if ((length(selected{T_})<=maxTimeSteps && ~isequal(selected{T_},0)) || (maxt<=maxTimeSteps && isequal(selected{T_},0))) && nval>0 && (multiple(M_) || multiple(N_) || (multiple(K_) && ~hslice))
         ExpTypes{end+1}='csv file';
         ExpTypes{end+1}='Tekal file';
         ExpTypes{end+1}='Tecplot file';
     end
-    if (multiple(M_) || multiple(N_) || multiple(K_)) && ~multiple(T_) && nval>0
+    if (multiple(M_) || multiple(N_) || (multiple(K_) && ~hslice)) && ~multiple(T_) && nval>0
         ExpTypes{end+1}='sample file';
+    end
+    if multiple(M_) && triangles && (~multiple(K_) || hslice) && ~multiple(T_)
+        ExpTypes{end+1} = 'STL stereolithography file (ASCII)';
+        ExpTypes{end+1} = 'STL stereolithography file (Binary)';
     end
     %
     Mver = matlabversionnumber;
-    ExpTypes{end+1}='mat file (v6)';
-    if Mver>=7
-        ExpTypes{end+1}='mat file (v7)';
-        if Mver>=7.03
-            ExpTypes{end+1}='mat file (v7.3/hdf5)';
+    if ~((multiple(M_) || multiple(N_) || (multiple(K_) && ~hslice)) && ((length(selected{T_})>maxTimeSteps && ~isequal(selected{T_},0)) || (maxt>maxTimeSteps && isequal(selected{T_},0))))
+        ExpTypes{end+1}='mat file (v6)';
+        if Mver>=7
+            ExpTypes{end+1}='mat file (v7)';
+            if Mver>=7.03
+                ExpTypes{end+1}='mat file (v7.3/hdf5)';
+            end
         end
     end
 end
@@ -1674,7 +1900,7 @@ end
 if animate
     PlotType='Animate';
 end
-EnablePlot = ~strcmp(axestype,'noplot');
+EnablePlot = ~strcmp(axestype,'noplot') && ~strcmp(axestype,'Time');
 EnableLoad = nval~=-1;
 
 %---- Ops Version

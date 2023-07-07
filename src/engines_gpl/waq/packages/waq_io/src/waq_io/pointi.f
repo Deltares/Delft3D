@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2017.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -47,6 +47,7 @@
 !     Logical units      : lunut   = unit formatted output file
 !                          lun( 8) = unit intermediate file ('to-from')
 
+      use m_open_waq_files
       use grids          ! for the storage of contraction grids
       use rd_token       ! for the reading of tokens
       use timers       !   performance timers
@@ -57,7 +58,7 @@
 
 !     kind           function         name            Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun   (*)     !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)     !< array with unit numbers
       character( *), intent(inout) :: lchar (*)     !< array with file names of the files
       integer  ( 4), intent(in   ) :: noseg         !< number of computational volumes
       integer  ( 4), intent(in   ) :: noq           !< noq1 + noq2 + noq3
@@ -81,7 +82,10 @@
       integer      noq12       ! noq1 + noq2 (horizontal exchanges
       integer      iq          ! loop counter exchanges
       integer      ip          ! loop counter pointers
+      integer      ierr1       ! local I/O error
       integer      ierr2       ! local error count
+      integer      idummy
+      character(len=1) :: cdummy
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "pointi", ithndl )
 
@@ -91,13 +95,51 @@
 
       noq12 = noq1 + noq2
       if ( ipopt1 .eq. 0 )  then
-         call dhopnf  ( lun(44) , lchar(44) , 44      , 2+ftype, ierr2 )
+         call open_waq_files  ( lun(44) , lchar(44) , 44      , 2+ftype, ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          do iq = 1, noq
-            read ( lun(44) ) ipnt(:,iq)
+            read ( lun(44), iostat = ierr1 ) ipnt(:,iq)
+            if ( ierr1 /= 0 ) then
+               write( lunut, 2100 ) iq-1
+               close ( lun(44) )
+               ierr2 = 1
+               goto 100
+            endif
          enddo
+
+!        Check that there are no more data in the file
+!        For DELWAQ-G applications, there may already be more data
+!        than the raw 4*noq numbers ...
+
+         if ( noqt > noq ) then
+             ! Any extra exchange pointers already present?
+             read ( lun(44), iostat = ierr1 ) idummy
+             if ( ierr1 == 0 ) then
+                 ! Skip all extra exchange pointers that are expected
+                 read ( lun(44), iostat = ierr1 ) (idummy ,iq = 2,4*(noqt-noq))
+                 if ( ierr1 /= 0 ) then
+                     write( lunut, 2111 )
+                     close ( lun(44) )
+                     ierr2 = 1
+                     goto 100
+                 endif
+             endif
+         endif
+
+!        Any data after the expected exchange pointers indicate a problem
+
+         read ( lun(44), iostat = ierr1 ) cdummy
+         if ( ierr1 == 0 ) then
+            write( lunut, 2110 )
+            close ( lun(44) )
+            ierr2 = 1
+            goto 100
+         endif
+
+!        No problems found, so continue
+
          close ( lun(44) )
-         call dhopnf  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
+         call open_waq_files  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          if ( noq1 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq =       1, noq1  )
          if ( noq2 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq = noq1 +1, noq12 )
@@ -108,7 +150,7 @@
                if ( gettoken( ipnt(ip,iq), ierr2 ) .gt. 0 ) goto 100
             enddo
          enddo
-         call dhopnf  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
+         call open_waq_files  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          if ( noq1 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq =       1, noq1  )
          if ( noq2 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq = noq1 +1, noq12 )
@@ -154,5 +196,9 @@
  2030 format (     5I8 )
  2040 format (  /,'           Second direction :' )
  2050 format (  /,'           Third direction :' )
+ 2100 format (  /,' ERROR: premature end of the file with the exchange pointers',
+     &          /,'        number of exchanged read: ', i0 )
+ 2110 format (  /,' ERROR: more exchanges present in the exchanges file than expected' )
+ 2111 format (  /,' ERROR: too few extra exchanges (DELWAQG) present in the exchanges file' )
 
       end

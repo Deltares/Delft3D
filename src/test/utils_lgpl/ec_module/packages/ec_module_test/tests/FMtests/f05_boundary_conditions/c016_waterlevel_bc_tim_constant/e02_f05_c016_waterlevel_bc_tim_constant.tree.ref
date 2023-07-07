@@ -1,0 +1,23 @@
+.
+EC MODULE ITEMS:
+Target Item 00005 (name=polytim_item, vectormax=1)
+Element Set 00003
+   Connection 00015, Converter 00014, targetIndex  0001
+      Source Item 00013 (name=WATERLEVELBND, vectormax=1)
+         File Reader 00008(filename=tfl_01.bc)
+            BCBlock 00007
+            Quantity = WATERLEVELBND
+            Location = TFL_01_0001
+   Connection 00024, Converter 00023, targetIndex  0002
+      Source Item 00022 (name=WATERLEVELBND, vectormax=1)
+         File Reader 00017(filename=tfl_01.bc)
+            BCBlock 00016
+            Quantity = WATERLEVELBND
+            Location = TFL_01_0002
+Target Item 00031 (name=waterlevelbnd, vectormax=1)
+Element Set 00029
+   Connection 00033, Converter 00032, targetIndex -0987
+      Source Item 00005 (name=polytim_item, vectormax=1)
+         File Reader 00001(filename=tfl_01.pli)
+            Quantity = polytim_item
+.

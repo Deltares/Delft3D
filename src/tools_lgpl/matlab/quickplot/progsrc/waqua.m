@@ -25,7 +25,7 @@ function Out=waqua(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -110,7 +110,7 @@ if nargin==0
     end
     filename=[fp fn];
 end
-fid=fopen(filename,'rt');
+fid=fopen(filename,'rt','n','US-ASCII');
 
 Line=fgetl(fid);
 i=1;
@@ -1442,7 +1442,7 @@ for i=1:nr
     if NrLines(i)==0
         Message(i).Txt = '';
     else
-        Message(i).Txt = char(fread(fid,[80 NrLines(i)],'char'))';
+        Message(i).Txt = char(fread(fid,[80 NrLines(i)],'uchar'))';
     end
 end
 fclose(fid);

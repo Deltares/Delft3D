@@ -3,7 +3,7 @@ function Fcn=qp_file2function(Info)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -72,8 +72,9 @@ F={'Delft3D-com'                'd3d_comfil'
     'asciiwind'                  'asciiwindfil'
     'PCraster'                   'pcrasterfil'
     'SIMONA SDS FILE'            'waquafil'
-    'mikeCTDT'                   'mikezerofil'
-    'mikeDFS'                    'mikezerofil'
+    'MikeCTDT'                   'mikezerofil'
+    'MikeDFS'                    'mikezerofil'
+    'MikeXFS'                    'mikezerofil'
     'FLS-inc'                    'flsfil'
     'FLS-bin'                    'flsfil'
     'FLS-his'                    'flsfil'
@@ -82,6 +83,7 @@ F={'Delft3D-com'                'd3d_comfil'
     'wlgrid'                     'gridfil'
     'tekal'                      'tekalfil'
     'AutoCAD DXF'                'tekalfil'
+    'GeoJSON'                    'tekalfil'
     'BNA File'                   'tekalfil'
     'ArcInfoUngenerate'          'tekalfil'
     'ESRI-Shape'                 'tekalfil'
@@ -99,11 +101,14 @@ F={'Delft3D-com'                'd3d_comfil'
     'JSPost'                     'jspostfil'
     'bagdpt'                     'bagdptfil'
     'bitmap'                     'bitmapfil'
+    'video'                      'bitmapfil'
     'matlab'                     'matlabfil'
     'SOBEK network'              'sobekfil'
     'SOBEK River network'        'sobekfil'
     'NetCDF'                     'netcdffil'
+    'netCDF-PHAROS'              'pharosfil'
     'HDF5'                       'hdffil'
+    'XMDF'                       'hdffil'
     'SWAN spectral'              'swanfil'
     'TRITON'                     'nfs_tritonfil'
     'bil/hdr'                    'bilhdrfil'
@@ -116,6 +121,7 @@ F={'Delft3D-com'                'd3d_comfil'
     'SHYFEM mesh'                'flexmeshfil'
     'GeoSystems mesh'            'flexmeshfil'
     'Gmsh'                       'flexmeshfil'
+    'SMS mesh'                   'flexmeshfil'
     'diff'                       'difffil'
     'shipma'                     'shipmafil'
     'geodata'                    'geodatafil'
@@ -181,7 +187,6 @@ tp=qp_gettype(Info);
 % message and return with empty function name.
 %
 id = strcmpi(tp,F(:,1));
-Fcn = '';
 if ~any(id)
     previousMessage = 0;
     if isempty(MissingFileTypes)
@@ -196,6 +201,8 @@ if ~any(id)
     if ~previousMessage
         ui_message('warning','No function associated with a file of type "%s".',tp)
     end
+    Fcn = [];
     return
 end
-Fcn=F{id,2};
+FunName = F{id,2};
+Fcn = str2func(FunName);

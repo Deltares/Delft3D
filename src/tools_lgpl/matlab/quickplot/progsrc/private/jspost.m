@@ -11,7 +11,7 @@ function [Out1,Out2]=jspost(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -68,8 +68,8 @@ end;
 [p,f,e]=fileparts(filename);
 S.FileName=[p filesep f];
 
-fstu=fopen([S.FileName '.stu'],'r');
-fpst=fopen([S.FileName '.pst'],'r','l');
+fstu=fopen([S.FileName '.stu'],'r','n','US-ASCII');
+fpst=fopen([S.FileName '.pst'],'r','l','US-ASCII');
 
 if (fpst<0) | (fstu<0)
     if fpst>0
@@ -162,7 +162,7 @@ fclose(fstu);
 %
 DataL=abs(fread(fpst,[NSeg*NPar 1],'float32'));
 fclose(fpst);
-fpst=fopen([S.FileName '.pst'],'r','b');
+fpst=fopen([S.FileName '.pst'],'r','b','US-ASCII');
 DataB=abs(fread(fpst,[NSeg*NPar 1],'float32'));
 MaxDataL=max(DataL(:)); MinDataL=min(DataL(DataL>0));
 MaxDataB=max(DataB(:)); MinDataB=min(DataB(DataB>0));
@@ -258,7 +258,7 @@ else
 end
 nseg=length(seg);
 
-fid=fopen([S.FileName '.pst'],'r',S.ByteOrder);
+fid=fopen([S.FileName '.pst'],'r',S.ByteOrder,'US-ASCII');
 if fid<0
     error('Cannot open PST file.');
 end;

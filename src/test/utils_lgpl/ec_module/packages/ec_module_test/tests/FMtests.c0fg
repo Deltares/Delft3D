@@ -1,0 +1,321 @@
+# EC-module test 
+ [e02_f05_c010_waterlevel_tim_constant]
+ QuantityName       = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c010_waterlevel_tim_constant
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c010.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =     0.00  1200.00  200.00
+
+ [e02_f05_c011_waterlevel_tim_varying]
+ QuantityName       = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c011_waterlevel_tim_varying
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c011.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.AAA7    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =     0.00  1200.00  200.00
+
+ [e02_f05_c012_waterlevel_tim_mismatchstart]
+ QuantityName       = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c012_waterlevel_tim_mismatchstart
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c012.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =     100.00  1200.00  200.00
+
+ [e02_f05_c013_waterlevel_tim_mismatchend]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c013_waterlevel_tim_mismatchend
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c013.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+ [e02_f05_c014_waterlevel_cmp_constant]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c014_waterlevel_cmp_constant
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c014.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+ [e02_f05_c015_waterlevel_cmp_varying]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c015_waterlevel_cmp_varying
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c015.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+ [e02_f05_c016_waterlevel_bc_tim_constant]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c016_waterlevel_bc_tim_constant
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c016.ref
+ BCFileName        = tfl_01.bc
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+ [e02_f05_c017_waterlevel_bc_tim_varying]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c017_waterlevel_bc_tim_varying
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c017.ref
+ BCFileName        = tfl_01.bc
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+ [e02_f05_c018_waterlevel_bc_cmp_constant]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c018_waterlevel_bc_cmp_constant
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c018.ref
+ BCFileName        = tfl.bc
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+ [e02_f05_c019_waterlevel_bc_cmp_varying]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c019_waterlevel_bc_cmp_varying
+ InputFileName     = tfl_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c019.ref
+ BCFileName        = tfl.bc
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920901
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =     0.7500    0.7500    0.7500
+ LocationsY        =     0.6667    1.0000    1.3333
+ LocationsX2       =    -1.0000   -1.0000   -1.0000
+ LocationsY2       =     0.6667    1.0000    1.3333
+ TimeIntervals     =       0.00  1200.00  200.00
+
+
+ [e02_f05_c020_astronomic_cmp_standard]
+ QuantityName      = waterlevelbnd
+ TestPathName      = FMtests/f05_boundary_conditions/c020_astronomic_cmp_standard
+ InputFileName     = astronomic_01.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f05_c020.ref
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 20110929
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 1
+ LocationsX        =  133.215546 
+ LocationsY        =   -1.041589
+ LocationsX2       =  133.235504
+ LocationsY2       =   -1.007525
+ TimeIntervals     =       0.00   99900.00  300.00
+ 
+
+ [e02_f18_c020_uxuyadvectionvelocitybnd3d_bc]
+ QuantityName      = uxuyadvectionvelocitybnd
+ TestPathName      = FMtests/f18_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc
+ InputFileName     = zuiduxuy.pli
+ InputFileType     = poly_tim                              # type of input
+ RefFileName       = e02_f18_c020.ref
+ BCFileName        = tang_new.bc
+ ConverterMethod   = spacetimeSaveWeightFactors
+ Operand           = replace
+ KernelRefDate     = 19920831
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = minute
+ Tolerance         = 0.0000001
+ UseSpheric        = 0
+ VectorMax         = 2
+ LocationsX        =     459.709656  1137.474976
+ LocationsY        =     -20.157856   -22.518501
+ LocationsX2       =     650.0        750.0 
+ LocationsY2       =     -22.0        -20.0
+ TimeIntervals     =       0.00  150.00  30.00
+
+ [e02_f11_c010_spatially_varying_wind]
+ QuantityName      = windx
+ TestPathName      = FMtests/f11_wind/c010_spatially_varying_wind
+ InputFileName     = windtest.amu
+ InputFileType     = arcinfo                              # type of input
+ RefFileName       = e02_f11_c010.ref
+ ConverterMethod   = spacetime
+ Operand           = replace
+ KernelRefDate     = 20061225
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = hour
+ Tolerance         = 0.0000001
+ UseSpheric        = 1
+ VectorMax         = 1
+ LocationsX        =     -12 -11
+ LocationsY        =      48  50
+ TimeIntervals     =       0.00  70.0  10.0
+
+ [e02_f11_c055_curvi_netcdf_p]
+ QuantityName      = airpressure
+ TestPathName      = FMtests/f11_wind/c055_curvi_netcdf
+ InputFileName     = wind_deltares_matroos_hirlam72_20150418.nc
+ InputFileType     = netcdf                              # type of input
+ RefFileName       = e02_f11_c055_p.ref
+ ConverterMethod   = spacetimesaveweightfactors
+ Operand           = replace
+ KernelRefDate     = 20150418
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.001
+ UseSpheric        = 1
+ VectorMax         = 1
+ LocationsX        =       4   5
+ LocationsY        =      52  50
+ TimeIntervals     =     3600.00  82800.0  3600.0
+
+ [e02_f11_c055_curvi_netcdf_windx]
+ QuantityName      = windx
+ TestPathName      = FMtests/f11_wind/c055_curvi_netcdf
+ InputFileName     = wind_deltares_matroos_hirlam72_20150418.nc
+ InputFileType     = netcdf                              # type of input
+ RefFileName       = e02_f11_c055_windx.ref
+ ConverterMethod   = spacetimesaveweightfactors
+ Operand           = replace
+ KernelRefDate     = 20150418
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.00001
+ UseSpheric        = 1
+ VectorMax         = 1
+ LocationsX        =       4   5
+ LocationsY        =      52  50
+ TimeIntervals     =     3600.00  82800.0  3600.0
+
+
+ [e02_f11_c055_curvi_netcdf_windy]
+ QuantityName      = windy
+ TestPathName      = FMtests/f11_wind/c055_curvi_netcdf
+ InputFileName     = wind_deltares_matroos_hirlam72_20150418.nc
+ InputFileType     = netcdf                              # type of input
+ RefFileName       = e02_f11_c055_windy.ref
+ ConverterMethod   = spacetimesaveweightfactors
+ Operand           = replace
+ KernelRefDate     = 20150418
+ KernelTimeZone    = 0.000000000000000E+000
+ KernelTimeUnit    = second
+ Tolerance         = 0.00001
+ UseSpheric        = 1
+ VectorMax         = 1
+ LocationsX        =       4   5
+ LocationsY        =      52  50
+ TimeIntervals     =     3600.00  82800.0  3600.0
+

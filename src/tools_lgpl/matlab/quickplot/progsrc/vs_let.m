@@ -53,7 +53,7 @@ function [X,Success]=vs_let(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2017 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1601,7 +1601,7 @@ function Ind = subcript2ind(Siz,Sub)
 Nsub = cellfun('length',Sub);
 Nind = prod(Nsub);
 for i = 1:length(Nsub)
-    Sub{i} = reshape(repmat(Sub{i},[prod(Nsub(1:i-1)) 1 prod(Nsub(i+1:end))]),Nind,1);
+    Sub{i} = reshape(repmat(Sub{i}(:)',[prod(Nsub(1:i-1)) 1 prod(Nsub(i+1:end))]),Nind,1);
 end
 if Nind==0
     Ind = zeros(0,1);

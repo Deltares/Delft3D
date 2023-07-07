@@ -1,7 +1,7 @@
 subroutine rm_del( filnamin )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2017.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine rm_del( filnamin )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! Test existence of file and if delete file, using
 ! status='delete' in close statement
@@ -44,7 +44,6 @@ subroutine rm_del( filnamin )
 !
     integer           :: istat
     integer           :: luntmp  ! Unit number for file
-    integer, external :: new_lun
     logical           :: ex      ! Logical flag used for INQUIRE state-
     character(300)    :: filnam
 !
@@ -57,8 +56,7 @@ subroutine rm_del( filnamin )
        if (istat==0 .and. ex) then
           inquire (file = trim(filnam), number = luntmp, iostat =  istat)
        else
-          luntmp = new_lun()
-          open (luntmp, file = trim(filnam), iostat =  istat)
+          open (newunit=luntmp, file = trim(filnam), iostat =  istat)
        endif
        close (luntmp, status = 'delete', iostat =  istat)
     endif

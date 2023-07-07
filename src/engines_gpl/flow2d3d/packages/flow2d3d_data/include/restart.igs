@@ -1,0 +1,66 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type sv_restart
+    !
+    ! doubles
+    !
+    !
+    ! reals
+    !
+    !
+    ! integers
+    !
+    integer        :: filetype          !  Type of restart file
+    integer        :: i_restart         !  Restart index
+    !
+    ! pointers
+    !
+    ! 
+    ! logicals
+    !
+    logical        :: dp_from_map_file  !  Flag indicating whether dps SHOULD
+                                        !  BE read from restart file
+    logical        :: kfuv_from_restart !  Flag indicating whether KFU/V have
+                                        !  been read from restart file
+    logical        :: rst_dp            !  Flag indicating whether dps HAVE
+                                        !  BEEN read from restart file
+    !
+    ! characters
+    !
+    character(256) :: filename          !  Name of restart file
+    character(256) :: restid            !  Identification restart file
+    character(16)  :: rst_layer_model   !  Layer type of the restart/map file, options:
+                                        !  1) SIGMA-MODEL     (restarting from a map-file with sigma-layering)
+                                        !  2) Z-MODEL         (restarting from a map-file with Z-layering)
+                                        !  3) Z-MODEL, ZTBML  (restarting from a map-file with Z-layering and modified near-bed layering: ZTBML=#Y#)
+                                        !  4) UNKNOWN         (restarting from a restart-file, where the layering information is not on the file)
+end type sv_restart
+
+
