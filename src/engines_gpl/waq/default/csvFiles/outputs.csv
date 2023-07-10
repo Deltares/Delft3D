@@ -5243,3 +5243,16 @@ outppr,outpit,outpnm,outpdo,outpsx
 "RadioSub2 ","RadiatR2  ",   1,"x",1
 "RadioSub3 ","RadiatR3  ",   1,"x",1
 "AgeCART   ","EstimAge  ",   1,"x",1
+"GenWWman  ","Eff_WWTP  ",   1,"x",1
+"GenWWman  ","Sld_WWTP  ",   2,"x",1
+"GenWWman  ","WWtoSew   ",   3,"x",1
+"GenWWman  ","WWtoPav   ",   4,"x",1
+"GenWWman  ","WWtoUnp   ",   5,"x",1
+"GenWWman  ","WWtoStw   ",   6,"x",1
+"GenWWman  ","WWtoSfw   ",   7,"x",1
+"GenWWman  ","WWtoSoi   ",   8,"x",1
+"EM_GSS    ","Emis_Sfw  ",   1,"x",1
+"EM_GSS    ","Emis_Soi  ",   2,"x",1
+"WFLOW_Hydr","Velocity  ",   1,"x",1
+"WFLOW_Hydr","DumDepth  ",   2,"x",1
+"WFLOW_Hydr","Tau       ",   3,"x",1

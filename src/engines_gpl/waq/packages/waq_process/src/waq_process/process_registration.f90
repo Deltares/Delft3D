@@ -205,13 +205,24 @@ module process_registration
     use m_ssedph
     use m_phcarb
 
+    use m_espgss
+    use m_genwwm
+    use m_emltph
+    use m_emltni
+    use m_emlbod
+    use m_emlcol
+    use m_emltss
+    use m_emltra
+    use m_hydrau
+    use m_sedlnk
+
     implicit none
 
     private
 
     public :: pronrs, procal
 
-    integer, parameter :: max_processes = 180  ! Exact number of process routines
+    integer, parameter :: max_processes = 190  ! Exact number of process routines
 
     type :: process_routine_info
         character(len=6) :: pronam
@@ -440,6 +451,18 @@ subroutine pronrs( pronam, imodul )
         process_routine(178) = process_routine_info( 'PHPROT', PHPROT )
         process_routine(179) = process_routine_info( 'FLOCSD', FLOCSD )
         process_routine(180) = process_routine_info( 'AGECAR', AGECART)
+
+        process_routine(181) = process_routine_info( 'HYDRAU', HYDRAU )
+        process_routine(182) = process_routine_info( 'SEDLNK', SEDLNK )
+        process_routine(183) = process_routine_info( 'EMLBOD', EMLBOD )
+        process_routine(184) = process_routine_info( 'EMLCOL', EMLCOL )
+        process_routine(185) = process_routine_info( 'EMLTRA', EMLTRA )
+        process_routine(186) = process_routine_info( 'EMLTSS', EMLTSS )
+        process_routine(187) = process_routine_info( 'EMLTPH', EMLTPH )
+        process_routine(188) = process_routine_info( 'EMLTNI', EMLTNI )
+        process_routine(189) = process_routine_info( 'GENWWM', GENWWM )
+        process_routine(190) = process_routine_info( 'ESPGSS', ESPGSS )
+
 
 !
 !   Sanity check: all pointers in the array should be set
