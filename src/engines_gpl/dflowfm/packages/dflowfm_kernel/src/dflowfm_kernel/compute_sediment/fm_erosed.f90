@@ -1107,7 +1107,6 @@
                !
                thick0 = max(thicklc(kmaxsd) * h0, epshu)
                thick1 = max(thicklc(kmaxsd) * h1, epshu)
-               thick1 =thicklc(kmaxsd) * h1
                !
                call soursin_3d  (h1                ,thick1         ,thick1             ,              &      ! thick1 iso thick0 mass conservation
                               &  siglc(kmaxsd)     ,thicklc(kmaxsd),constituents(ll,kmxsed(nm,l))    , &
@@ -1265,7 +1264,9 @@
       do l = 1, lsed
          ll = lstart + l
          kmaxsd = kmxsed(nm,l)              ! meaning of kmaxsd changes here!
-         if (frac(nm,l)>0.0_fp)  evel(l) = (sourse(nm,l) - sour_im(nm,l)*constituents(ll,kmaxsd))/(cdryb(l)*frac(nm,l))
+         if (frac(nm,l)>0.0_fp)  then
+            evel(l) = (sourse(nm,l) - sour_im(nm,l)*constituents(ll,kmaxsd))/(cdryb(l)*frac(nm,l))
+         endif   
       enddo
       !
       ! recompute erosion velocities
@@ -1289,6 +1290,9 @@
    do l = 1, lsed
       do nm = 1, ndx
          sinkse(nm, l) = sinkse(nm, l) + sour_im(nm, l)
+         if (sourse(nm,l)<0d0) then
+            continue
+         endif
       enddo
    enddo
    !

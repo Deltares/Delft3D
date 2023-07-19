@@ -91,7 +91,7 @@
                thick0 = zws0(kmaxsd)-zws0(kmaxsd-1) ! should be safe for z and sigma, was: thick(kmaxsd)*h0
                thick1 = zws(kmaxsd)-zws(kmaxsd-1)   ! thick(kmaxsd)*h1
                dz     = (dts*morfac/cdryb(l)) &
-                  & * (sourse(nm, l)*thick0 - (sinkse(nm, l)+sour_im(nm, l))*thick1*constituents(ll, kmaxsd))
+                      & * (sourse(nm, l)*thick0 - (sinkse(nm, l)+sour_im(nm, l))*thick1*constituents(ll, kmaxsd))
                if (abs(dz) > h1*dzmax) then
                   reducfac = (h1*dzmax)/abs(dz)
                   if (reducfac < 0.01 .and. (time1 > tstart_user + tmor * tfac) .and. bedupd) then

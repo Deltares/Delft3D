@@ -1219,7 +1219,10 @@ if (mext /= 0) then
               if (success) then
                  do kk = 1,Ndx
                     if (viuh(kk) .ne. dmiss) then
-                       sed(iconst-ISED1+1,kk) = viuh(kk)
+                       sed(iconst-ISED1+1,kk) = max(viuh(kk),0d0)
+                       if (viuh(kk)<0.0) then
+                          continue
+                       endif
                        call getkbotktop(kk,kb,kt)
                        do k=kb,kb+kmxn(kk)-1
                           sed(iconst-ISED1+1,k) = sed(iconst-ISED1+1,kk)     ! fill array with vertically uniform values

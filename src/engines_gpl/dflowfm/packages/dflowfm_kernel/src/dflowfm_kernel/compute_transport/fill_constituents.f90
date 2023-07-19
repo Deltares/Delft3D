@@ -224,8 +224,8 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
                kkk = sedtra%kmxsed(kk,i)
                if ( kkk.gt.0 ) then
                   iconst = i+ISED1-1
-                  const_sour(iconst,kkk) = const_sour(iconst,kkk)+sedtra%sourse(kk,i)
-                  const_sink(iconst,kkk) = const_sink(iconst,kkk)+sedtra%sinkse(kk,i)
+                  const_sour(iconst,kkk) = const_sour(iconst,kkk)+max(sedtra%sourse(kk,i),0d0)
+                  const_sink(iconst,kkk) = const_sink(iconst,kkk)+max(sedtra%sinkse(kk,i),0d0)
                   
                   if (stmpar%morpar%flufflyr%iflufflyr .gt. 0) then
                      const_sour(iconst,kkk) = const_sour(iconst,kkk) + stmpar%morpar%flufflyr%sourf(i,kk)
@@ -233,10 +233,10 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
                   end if
 
                   ! BEGIN DEBUG
-                  !if ( constituents(iconst,kkk)+dts*const_sour(iconst,kkk).lt.0d0 ) then
-                  !   write(message, "('const. source < -const/dt, iconst=', I0, ', kk=', I0)") iconst, kk
-                  !   call mess(LEVEL_WARN, trim(message))
-                  !end if
+                  if ( constituents(iconst,kkk)+dts*const_sour(iconst,kkk).lt.0d0 ) then
+                     write(message, "('const. source < -const/dt, iconst=', I0, ', kk=', I0)") iconst, kk
+                     call mess(LEVEL_WARN, trim(message))
+                  end if
                  ! END DEBUG
                end if
             end do
