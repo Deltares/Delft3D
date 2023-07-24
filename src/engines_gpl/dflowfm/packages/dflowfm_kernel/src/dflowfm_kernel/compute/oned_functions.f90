@@ -319,7 +319,7 @@ module m_oned_functions
    !> For sediment transport on each node a cross section is required
    !! Fills gridpoint2cross with for each gridpoint a cross section index. \n
    !! Note: On connection nodes we have multiple cross sections (one for each 
-   !!       incoming or outgoing branch (link). \n
+   !!       incoming or outgoing branch (link).) \n
    !!       A connection node is located at the beginning or end of the branch.
    subroutine set_cross_sections_to_gridpoints()
    
@@ -341,14 +341,14 @@ module m_oned_functions
       integer, dimension(:), pointer          :: lin
       integer, dimension(:), pointer          :: grd
       double precision, dimension(:), pointer :: chainage
-      type(t_chainage2cross), pointer           :: gpnt2cross(:)                   !< list containing cross section indices per u-location
+      type(t_chainage2cross), dimension(:,:), pointer :: line2cross
 
       ! cross sections (in case of sediment transport every gridpoint requires a unique
       ! cross section)
+      line2cross => network%adm%line2cross
       if (jased > 0 .and. stm_included) then
          if (allocated(gridpoint2cross)) deallocate(gridpoint2cross)
          allocate(gridpoint2cross(ndxi))
-         gpnt2cross => network%adm%gpnt2cross
          do i = 1, ndxi
             gridpoint2cross(i)%num_cross_sections = 0
          enddo
@@ -386,7 +386,7 @@ module m_oned_functions
                      L = lin(1)
                      dh = (chainage(i+1)-chainage(i))/2d0
                   else
-                     L = lin(pointscount-1)
+                     L = lin(i-1)
                      dh = (chainage(i)-chainage(i-1))/2d0
                   endif
                   do j = 1,nd(k1)%lnx
@@ -396,14 +396,23 @@ module m_oned_functions
                   enddo
                else
                   ! Internal gridpoint on branch, only 1 cross section attached
+                  L = lin(i-1)
                   if (allocated(gridpoint2cross(k1)%cross)) deallocate(gridpoint2cross(k1)%cross)
                   allocate(gridpoint2cross(k1)%cross(1))
                   gridpoint2cross(k1)%num_cross_sections = 1
                   jpos = 1
                   dh = min(chainage(i)-chainage(i-1),chainage(i+1)-chainage(i))/2d0
+                  
                endif
-               c1 = gpnt2cross(igrid)%c1
-               c2 = gpnt2cross(igrid)%c2
+               if (i == 1) then
+                  ! See assignment of L in previous part. First point L points to the outgoing flow link
+                  c1 = line2cross(L,1)%c1
+                  c2 = line2cross(L,1)%c2
+               else
+                  ! See assignment of L in previous part. All points but the first L points to the incoming flow link
+                  c1 = line2cross(L,3)%c1
+                  c2 = line2cross(L,3)%c2
+               endif
                d1 = abs(network%crs%cross(c1)%chainage - chainage(i))
                d2 = abs(network%crs%cross(c2)%chainage - chainage(i))
                ! cross1%branchid and cross2%branchid should correspond to ibr
@@ -827,7 +836,7 @@ module m_oned_functions
    !! * the highest nearby cross section level ("embankment") for other nodes,
    !! * dmiss, i.e. not applicable, if no cross section is defined at the node.
    subroutine set_ground_level_for_1d_nodes(network)
-   use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d
+   use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d, nd, lnxi
    use m_Storage
    use m_CrossSections
    use m_network
@@ -835,27 +844,41 @@ module m_oned_functions
    type(t_network), intent(inout), target :: network
    type(t_storage), pointer               :: pSto
    type(t_administration_1d), pointer     :: adm
-   integer                                :: i, istor, cc1, cc2, length
+   integer                                :: i, istor, cc1, cc2, length, L, Lindex
+   double precision                       :: f
+   double precision, save                 :: help = -huge(1d0)
 
-   groundlevel(:) = dmiss
+   groundlevel(:) = help
    groundStorage(:) = 0
    adm => network%adm
 
    ! set for all 1D nodes, the ground level equals to the highest cross section "embankment" value
    do i = 1, ndxi-ndx2d
-      cc1 = adm%gpnt2cross(i)%c1
-      cc2 = adm%gpnt2cross(i)%c2
-      if (cc1 > 0 .and. cc2 > 0) then ! if there are defined cross sections
-         groundLevel(i) = getHighest1dLevel(network%crs%cross(cc1), network%crs%cross(cc2), adm%gpnt2cross(i)%f)
-         ! Note that for closed cross sections, the 'ground level' contains now the pipe roof level. This is intentional: for computing freeboard inside pipes.
-         if (network%crs%cross(cc1)%closed .and. network%crs%cross(cc2)%closed) then
-            groundStorage(i) = 0
+      do Lindex = 1, nd(i+ndx2d)%lnx
+         L = nd(i+ndx2d)%ln(Lindex)
+         if (iabs(L) > lnxi) then
+            cycle
+         else if (L > 0) then
+            cc1 = adm%line2cross(L,3)%c1
+            cc2 = adm%line2cross(L,3)%c2
+            f = adm%line2cross(L,3)%f
          else
-            groundStorage(i) = 1
+            L = -L
+            cc1 = adm%line2cross(L,1)%c1
+            cc2 = adm%line2cross(L,1)%c2
+            f = adm%line2cross(L,1)%f
          end if
-      else
-         continue ! dmiss + 0 defaults.
-      end if
+            
+         if (cc1 > 0 .and. cc2 > 0) then ! if there are defined cross sections
+            groundLevel(i) = max(groundlevel(i),getHighest1dLevel(network%crs%cross(cc1), network%crs%cross(cc2), f))
+            ! Note that for closed cross sections, the 'ground level' contains now the pipe roof level. This is intentional: for computing freeboard inside pipes.
+            if (.not. network%crs%cross(cc1)%closed) then
+               groundStorage(i) = 1
+            end if
+         else
+            continue ! dmiss + 0 defaults.
+         end if
+      end do
    end do
 
    ! set for storage nodes (either from a table, or a prescribed street level (storageType is reservoir or closed))
@@ -879,8 +902,15 @@ module m_oned_functions
          groundLevel(i) = maxval(pSto%storageArea%x(1:length))
          groundStorage(i) = 1
       end if
-   end do
+    end do
 
+   ! Set the groundlevel entries that are not set to DMISS
+   do i = 1, ndxi-ndx2d
+      if (groundlevel(i) == help) then
+         groundlevel(i) = dmiss
+      endif
+   enddo
+    
    end subroutine set_ground_level_for_1d_nodes
    
    !> Set maximal volume for 1d nodes, later used for computation of volOnGround(:).
