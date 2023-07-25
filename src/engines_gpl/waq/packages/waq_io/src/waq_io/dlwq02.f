@@ -395,6 +395,7 @@
             if ( idt .le. 0 ) then
                write ( lunut , 2230 ) idt
                ierr = ierr+1
+               call srstop(1)
             endif
             if ( .not. alone ) then
                if ( idt .ne. idelt ) then
@@ -452,6 +453,7 @@
                if ( iar(ibrk+1) .le. 0 ) then
                   write ( lunut , 2310 ) iar(ibrk+1)
                   ierr = ierr+1
+                  call srstop(1)
                endif
                if ( ibrk .eq. 1 ) cycle
                if ( iar(ibrk) .le. iar(ibrk-2) ) then
@@ -642,7 +644,7 @@
  2210 format (  ' Integration time stepsize is :',
      &            I2,'Y-',I3,'D-',I2,'H-',I2,'M-',I2,'S.')
  2220 format (  ' Integration time stepsize is :' ,I9 )
- 2230 format ( /' ERROR, invalid time step size:',I8 )
+ 2230 format ( /' ERROR, constant time step must be greater than 0:',I8 )
  2240 format (  ' Variable time step with number of breakpoints is ',i8 )
  2250 format (  /,' ERROR. allocating memory for variable timestep:',I4)
  2260 format (  ' Breakpoint          Timestep ',/)
@@ -652,7 +654,7 @@
      &                                   'output option 4 or higher !' )
  2290 format (    I10,10X,I10 )
  2300 format ( /' ERROR',I10,' larger than start time:',I10 )
- 2310 format ( /' ERROR invalid time step size:',I10)
+ 2310 format ( /' ERROR variable time step must not be smaller 0:',I10)
  2320 format ( /' ERROR',I10,' smaller than ',I10,' descending order !')
  2330 format (  ' ERROR !!!! This option is not implemented !!!')
  2340 format ( /  I4,' monitoring points specified:' )
