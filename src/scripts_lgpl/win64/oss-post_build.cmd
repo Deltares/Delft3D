@@ -293,6 +293,7 @@ rem ===============
     call :delwaq_lib
     call :delwaq1
     call :delwaq2
+    call :prototype_dflowfm_delwaq_dimr
     call :waqpb_export
     call :waqpb_import
     call :waqmerge
@@ -1169,6 +1170,26 @@ rem ==========================
 
 goto :endproc
 
+
+rem ==========================
+rem === POST_BUILD_prototype_dflowfm_delwaq_dimr
+rem ==========================
+:prototype_dflowfm_delwaq_dimr
+
+    echo "postbuild prototype_dflowfm_delwaq_dimr . . ."
+
+    call :setWaqFolders
+
+    call :makeAllDirs
+    call :copyDwaqDependentRuntimeLibraries                                                         !dest_share!
+
+    rem copy binaries and dll
+    call :copyFile "!build_dir!\delwaq_lib_examples\prototype_dimr_dflowfm_delwaq\!configuration!\prototype_dflowfm_delwaq_dimr.*"                        !dest_bin!
+
+    rem copy run scripts
+    rem call :copyFile "!checkout_src_root!\tools_gpl\prototype_dflowfm_delwaq_dimr\scripts\run_prototype_dflowfm_delwaq_dimr.bat"               !dest_scripts!
+
+goto :endproc
 
 
 rem ==========================

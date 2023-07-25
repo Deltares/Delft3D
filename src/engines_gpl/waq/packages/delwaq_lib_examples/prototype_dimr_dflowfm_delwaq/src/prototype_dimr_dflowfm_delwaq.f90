@@ -22,11 +22,12 @@
     !!  rights reserved.
 
     !> @file
-    !!    Run the computation step by step
+    !!    Protype program to run dflowm and delwaq computations step by step
+    !!    and make them exchange values
     !!
 
     !> Main program steering the computation
-    program delwaq_test_dimr
+    program prototype_dflowfm_delwaq
     use iso_c_binding
 
     implicit none
@@ -132,4 +133,4 @@
     dummy = finalize()
 
     stop(0)
-    end program delwaq_test_dimr
+    end program prototype_dflowfm_delwaq
