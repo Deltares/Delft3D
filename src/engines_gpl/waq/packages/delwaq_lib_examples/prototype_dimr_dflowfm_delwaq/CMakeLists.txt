@@ -5,7 +5,7 @@ set(src_path src)
 get_fortran_source_files(${src_path} source_files)
 
 # Executable target
-set(executable_name delwaq_dimr_test)
+set(executable_name prototype_dflowfm_delwaq_dimr)
 add_executable(${executable_name} ${source_files}) 
 
 # Extra dependencies
