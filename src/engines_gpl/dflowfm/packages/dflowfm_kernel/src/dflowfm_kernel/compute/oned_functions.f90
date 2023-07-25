@@ -836,7 +836,7 @@ module m_oned_functions
    !! * the highest nearby cross section level ("embankment") for other nodes,
    !! * dmiss, i.e. not applicable, if no cross section is defined at the node.
    subroutine set_ground_level_for_1d_nodes(network)
-   use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d, nd, lnxi
+   use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d, nd, lnxi, kcu
    use m_Storage
    use m_CrossSections
    use m_network
@@ -856,7 +856,7 @@ module m_oned_functions
    do i = 1, ndxi-ndx2d
       do Lindex = 1, nd(i+ndx2d)%lnx
          L = nd(i+ndx2d)%ln(Lindex)
-         if (iabs(L) > lnxi) then
+         if (kcu(abs(L)) /= 1) then
             cycle
          else if (L > 0) then
             cc1 = adm%line2cross(L,3)%c1
