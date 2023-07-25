@@ -170,7 +170,7 @@ subroutine test_set_value_apply_operations
 
     call GetDlwqd( my_dlwqd )
 
-    call test_apply_operations( my_dlwqd )
+    !!call test_apply_operations( my_dlwqd )
 
     call assert_equal( rc1+rc2+rc3, 3, "All return codes must be 1" )
 

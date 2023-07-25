@@ -22,21 +22,31 @@
 !!  rights reserved.
 
 !!  Interface to access Delwaq from MT3D
-   
+
    module MT3D
       logical :: MT3D_debug = .false.
+
+      !
+      ! Quick and dirty - copied from waq_omi_constants (this module was removed)
+      !
+      integer, parameter :: DLWQ_CONSTANT          = 1  !< Constant in the processes library (one value)
+      integer, parameter :: DLWQ_CONCENTRATION     = 3  !< Current concentration of a substance (noseg values)
+      integer, parameter :: ODA_ALL_SEGMENTS       = -1
+      integer, parameter :: DLWQ_SET               = 1
+
+
    end module
 
    logical function MT3D_set_debug_status (set_MT3D_debug)
       !DEC$ ATTRIBUTES DLLEXPORT::MT3D_set_debug_status
       !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MT3D_SET_DEBUG_STATUS' :: MT3D_set_debug_status
-      
+
       use MT3D
 
       implicit none
-      
+
       logical :: set_MT3D_debug
-      
+
       MT3D_debug = set_MT3D_debug
 
       MT3D_set_debug_status = .true.
@@ -47,13 +57,13 @@
                                          number_processes, processes, deltt_in)
       !DEC$ ATTRIBUTES DLLEXPORT::MT3D_processes_init
       !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MT3D_PROCESSES_INIT' :: MT3D_processes_init
-      
+
       use waq_omi_priv
       use waq_omi_interface
       use MT3D
 
       implicit none
-      
+
       integer, intent(in)                                        :: number_segments
       integer, intent(in)                                        :: number_substances
       character(len=*), dimension(number_substances), intent(in) :: substances
@@ -63,30 +73,30 @@
       integer, intent(in)                                        :: number_processes
       character(len=*), dimension(number_processes), intent(in)  :: processes
       real, intent(in)                                           :: deltt_in               ! In days, real
-   
-      
+
+
       integer, parameter      :: integration_method = 0
-      
+
       integer, dimension(1,4) :: pointers = reshape((/ 0, 0, 0, 0  /), (/ 1,4 /))
       integer, dimension(4)   :: number_exchanges = (/ 0, 0, 0, 0 /)
       real, dimension(3)      :: dispersion = (/ 0.0, 0.0, 0.0 /)
-      real, dimension(2)      :: dispersion_length = (/ 1.0, 1.0 /) 
+      real, dimension(2)      :: dispersion_length = (/ 1.0, 1.0 /)
       real, dimension(1)      :: flow = (/ 0.0 /)
-      real, dimension(1)      :: area = (/ 1.0 /) 
-   
+      real, dimension(1)      :: area = (/ 1.0 /)
+
       real, allocatable       :: substance_concentrations(:,:)
       real, allocatable       :: substance_boundary_concentrations(:)
       real, allocatable       :: volume(:)
       integer, allocatable    :: substance_mult(:)
       real                    :: dvol_dt
-   
+
       integer                 :: startTime = 0     !< Start time in seconds since the reference date/time
       integer                 :: endTime = huge(0) !< Stop time in seconds since the reference date/time
       integer                 :: deltt             !< Time step in seconds
-      
-      character(len=8)        :: cseg 
-      integer, dimension(number_segments) :: imon 
-      character(len=8), dimension(number_segments) :: cmon 
+
+      character(len=8)        :: cseg
+      integer, dimension(number_segments) :: imon
+      character(len=8), dimension(number_segments) :: cmon
 
       logical :: success, debug
       integer :: success_int, iseg, isub, ipar, i
@@ -99,7 +109,7 @@
       allocate (volume(number_segments))
       allocate (substance_mult(number_substances))
       substance_mult = 1
-      
+
       success = SetReferenceDate( 2014, 1, 1, 0, 0, 0 )
       if(.not.success) return
       success = SetIntegrationOptions(integration_method, .true., .true., .true., .false., .false.)
@@ -125,7 +135,7 @@
 
       success = DefineWQDispersion(dispersion, dispersion_length ) ! dummy values
       if(.not.success) return
-      
+
       success = DefineWQProcessesX( substances, substance_mult, number_substances, number_substances, &
                                     (/ 'DELT'/), 1 , &
                                    process_parameters, number_parameters,   &
@@ -157,7 +167,7 @@
          success = SetOutputTimers( 3, endTime, endTime, endTime )
          if(.not.success) return
       end if
-  
+
       volume  = 1.0e0
       success = SetInitialVolume( volume )
       if(.not.success) return
@@ -168,19 +178,19 @@
       substance_boundary_concentrations = 0.0
       success = SetBoundaryConditions( 1, substance_boundary_concentrations )
       if(.not.success) return
-   
+
       MT3D_processes_init = .true.
    end function MT3D_processes_init
 
    logical function MT3D_processes_setpar (number_parameters, number_segments, process_parameters, process_parameter_values)
       !DEC$ ATTRIBUTES DLLEXPORT::MT3D_processes_setpar
       !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MT3D_PROCESSES_SETPAR' :: MT3D_processes_setpar
-      
+
 !      use MT3D_PL
       use waq_omi_interface
 
       implicit none
-      
+
       integer, intent(in)                                        :: number_parameters
       integer, intent(in)                                        :: number_segments
       character(len=*), dimension(number_parameters), intent(in) :: process_parameters
@@ -199,12 +209,13 @@
 
       MT3D_processes_setpar = .true.
    end function MT3D_processes_setpar
-   
+
    logical function MT3D_processes_step (number_segments, number_substances, substance_concentrations, deltt_in )
       !DEC$ ATTRIBUTES DLLEXPORT::MT3D_processes_step
       !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MT3D_PROCESSES_STEP' :: MT3D_processes_step
 
 !      use MT3D_PL
+      use mt3d
       use waq_omi_priv
       use waq_omi_interface
 
@@ -245,7 +256,7 @@
 
       MT3D_processes_step = .true.
    end function MT3D_processes_step
-   
+
    logical function MT3D_processes_fin ()
       !DEC$ ATTRIBUTES DLLEXPORT::MT3D_processes_fin
       !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MT3D_PROCESSES_FIN' :: MT3D_processes_fin
@@ -260,4 +271,4 @@
 
       MT3D_processes_fin = success_int.eq.0
    end function MT3D_processes_fin
-   
+

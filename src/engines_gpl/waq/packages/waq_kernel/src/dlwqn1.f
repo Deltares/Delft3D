@@ -209,7 +209,6 @@
 
       IF ( ACTION == ACTION_SINGLESTEP ) THEN
           call dlwqdata_restore(dlwqd)
-          call apply_operations( dlwqd )
       ENDIF
 
       if ( timon ) call timstrt ( "dlwqn1", ithandl )

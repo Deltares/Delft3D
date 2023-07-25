@@ -287,7 +287,6 @@
 
       if ( action == ACTION_SINGLESTEP ) then
           call dlwqdata_restore(dlwqd)
-          call apply_operations( dlwqd )
       endif
 
       antidiffusion = btest(intopt,16)
