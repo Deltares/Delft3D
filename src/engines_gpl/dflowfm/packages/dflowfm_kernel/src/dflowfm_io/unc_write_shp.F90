@@ -33,11 +33,11 @@
  !> Writes shapefiles, these shapefiles can be visulaized in geographic information system (GIS) software
 #ifdef HAVE_SHAPELIB
 subroutine unc_write_shp()
-    use m_flowparameters, only: jashp_crs, jashp_obs, jashp_weir, jashp_thd, jashp_gate, jashp_emb, jashp_fxw, jashp_src, jashp_pump, jashp_dry, jashp_genstruc
+    use m_flowparameters, only: jashp_crs, jashp_obs, jashp_weir, jashp_thd, jashp_gate, jashp_emb, jashp_fxw, jashp_src, jashp_pump, jashp_dry, jashp_genstruc, jashp_dambreak
     use unstruc_shapefile
     use m_monitoring_crosssections, only: ncrs, crs
     use m_observations, only: numobs, kobs
-    use m_flowexternalforcings, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen
+    use m_flowexternalforcings, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, ndambreak, ndambreaksg, L1dambreaksg, L2dambreaksg
     use m_thindams
     use m_sobekdfm, only: nbnd1d2d
     use m_fixedweirs, only: nfxw
@@ -299,6 +299,32 @@ subroutine unc_write_shp()
     endif
 
 
+    ! dam break
+    if (jashp_dambreak > 0) then
+       if (jampi .eq. 0) then
+          if (ndambreak > 0) then
+             call unc_write_shp_dambreak()
+          else
+             call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dam breaks is written because no dam break is found.')
+          endif
+       else
+          if (ndambreak > 0) then
+             jawrite = ndambreaksg
+             do n = 1, ndambreaksg
+                if (L1dambreaksg(n) > L2dambreaksg(n)) then
+                   jawrite = jawrite - 1
+                endif
+             enddo
+             if (jawrite > 0) then
+                call unc_write_shp_dambreak()
+             else
+                call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dam breaks is written because no dam break is found on subdomain:', my_rank)
+             endif
+          else
+             call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dam breaks is written because no dam break is found on subdomain:', my_rank)
+          endif
+       endif
+    endif
 
 end subroutine unc_write_shp
 #endif
