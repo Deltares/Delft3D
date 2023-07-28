@@ -77,6 +77,8 @@
 
     integer :: dummy
 
+    integer :: num_args, ix
+    character(len=1023), dimension(:), allocatable :: args
     character(len=1023)     :: version_string
     character(len=1023)     :: key
     character(len=1023)     :: value
@@ -94,13 +96,16 @@
     if (log) write(lunlog,'(A)') 'dll version string:'
     if (log) write(lunlog,'(A200)') trim(version_string)
 
-    key = '-waq'
-    value = ' '
-    dummy = set_var( key, value)
-    key = '-p'
-    !   value = 'c:\Program Files\Deltares\Delft3D 4.02.00.01\win64\waq\default\proc_def.dat'
-    value = '..\..\bin\win64\waq\default\proc_def.dat'
-    dummy = set_var( key, value)
+
+
+    num_args = command_argument_count()
+    allocate(args(num_args)) 
+
+    do ix = 1, num_args
+        call get_command_argument(ix,args(ix))
+        write(*,*) ix, args(ix)
+    end do
+
 
     runid = ' '
     call get_command_argument(1,runid,status)

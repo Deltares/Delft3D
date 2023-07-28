@@ -6,6 +6,8 @@ title run_prototype_dflowfm_delwaq_dimr
     rem
 setlocal enabledelayedexpansion
 
+set userprocfile=none
+
     rem
     rem Set the input arguments
     rem
@@ -16,8 +18,9 @@ if [%1] EQU [] (
 ) else (
     if [%1] EQU [--help] (
         goto usage
-    ) else (
-        set procDefLoc=%1
+    )
+    if [%1] EQU [-p] (
+        set userprocfile=%2
     )
 )
 set csvFilesLoc=%procDefLoc%\csvFiles
@@ -39,6 +42,11 @@ rem last directory will be the architecture directory
 for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
 set waqdir=%D3D_HOME%\%ARCH%\dwaq\bin
+if [%userprocfile%] EQU [none] (
+    set procfile=%D3D_HOME%\%ARCH%\dwaq\default\proc_def
+    ) else (
+       set procfile=%userprocfile%
+    )
 
 set sharedir=%D3D_HOME%\%ARCH%\share\bin
 set PATH=%waqdir%;%sharedir%
@@ -52,8 +60,8 @@ set PATH=%waqdir%;%sharedir%;%~dp0
 
 
 
-echo executing in this window: "%waqdir%\prototype_dflowfm_delwaq_dimr.exe"
-"%waqdir%\prototype_dflowfm_delwaq_dimr.exe"
+echo executing in this window: "%waqdir%\prototype_dflowfm_delwaq_dimr.exe" -p %procfile%
+"%waqdir%\prototype_dflowfm_delwaq_dimr.exe" -p %procfile%
 
 
 
