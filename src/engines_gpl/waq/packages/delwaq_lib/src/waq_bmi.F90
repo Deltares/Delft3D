@@ -352,7 +352,8 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
    !DEC$ ATTRIBUTES DLLEXPORT :: set_var
    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
    use string_module
-   use MessageHandling 
+   use MessageHandling
+   use m_waq_bmi_data
    
    ! MDK 31-07-2023 from old version
       use iso_c_utils
@@ -392,99 +393,99 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
    ! DIMR will first call set_var("parameter_shape",shape_array)
    !      where shape_array is an integer(6) array containing the dimensions of "parameter"
    ! Then DIMR will call set_var("parameter",parameter_pointer)
-   !var_name = char_array_to_string(c_var_name, strlen(c_var_name))adsasdsaddsadsdsad
-   !call c_f_pointer(var_ptr, valuestr)
-   !slen = index(valuestr, c_null_char) - 1
+   var_name = char_array_to_string(c_var_name)
+   call c_f_pointer(var_ptr, valuestr)
+   slen = index(valuestr, c_null_char) - 1
    select case (str_tolower(var_name))
-   ! case ("flow_xcc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndx = var_1d_int_ptr(1)
-   ! case ("flow_xcc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
-   !     fm_xzw => var_1d_double_ptr
-   ! case ("flow_ycc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndx = var_1d_int_ptr(1)
-   ! case ("flow_ycc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
-   !     fm_yzw => var_1d_double_ptr
-   ! case ("z_level_cc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndkx = var_1d_int_ptr(1)
-   ! case ("z_level_cc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-   !     fm_z_level => var_1d_double_ptr
-   ! case ("kbot_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndx   = var_1d_int_ptr(1)
-   ! case ("kbot")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
-   !     fm_kbot => var_1d_int_ptr
-   ! case ("ktop_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndx   = var_1d_int_ptr(1)
-   ! case ("ktop")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
-   !     fm_ktop => var_1d_int_ptr
-   ! case ("water_depth_cc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndx = var_1d_int_ptr(1)
-   ! case ("water_depth_cc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
-   !     fm_water_depth => var_1d_double_ptr
-   ! case ("velocity_x_cc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndkx = var_1d_int_ptr(1)
-   ! case ("velocity_x_cc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-   !     fm_velocity_x => var_1d_double_ptr
-   ! case ("velocity_y_cc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndkx = var_1d_int_ptr(1)
-   ! case ("velocity_y_cc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-   !     fm_velocity_y => var_1d_double_ptr
-   ! case ("rho_cc_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_ndkx = var_1d_int_ptr(1)
-   ! case ("rho_cc")
-   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-   !     fm_rho => var_1d_double_ptr
-   ! case ("constituents_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_numconst = var_1d_int_ptr(1)
-   !     fm_ndkx     = var_1d_int_ptr(2)
-   ! case ("constituents")
-   !     call c_f_pointer(var_ptr, var_2d_double_ptr, (/ fm_numconst, fm_ndkx /))
-   !     fm_constituents => var_2d_double_ptr
-   ! case ("constituents_names_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     fm_numconst = var_1d_int_ptr(1)
-   !     fm_namlen   = var_1d_int_ptr(2)
-   !     !
-   !     ! Constituent names are copied instead of referenced
-   !     allocate(character(fm_namlen) :: fm_namcon(fm_numconst))
-   ! case ("constituents_names")
-   !     call c_f_pointer(var_ptr, var_1d_char_ptr, (/ fm_numconst * fm_namlen /))
-   !     fm_namcon = transfer(var_1d_char_ptr,fm_namcon)
-   ! case ("isalt")
-   !     call c_f_pointer(var_ptr, var_0d_int_ptr)
-   !     fm_isalt => var_0d_int_ptr
-   ! case ("itemp")
-   !     call c_f_pointer(var_ptr, var_0d_int_ptr)
-   !     fm_itemp => var_0d_int_ptr
-   ! case ("runid_shape")
-   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-   !     slen = var_1d_int_ptr(2)
-   ! case ("runid")
-   !     runid = valuestr(1:slen)
-   ! case ("skipuniqueid")
-   !     select case (str_tolower(valuestr(1:slen)))
-   !     case ("1", "yes", "true")
-   !         skipuniqueid = .true.
-   !     case ("0", "no", "false")
-   !         skipuniqueid = .false.
-      !  end select
+   case ("flow_xcc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndx = var_1d_int_ptr(1)
+   case ("flow_xcc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
+       fm_xzw => var_1d_double_ptr
+   case ("flow_ycc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndx = var_1d_int_ptr(1)
+   case ("flow_ycc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
+       fm_yzw => var_1d_double_ptr
+   case ("z_level_cc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndkx = var_1d_int_ptr(1)
+   case ("z_level_cc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+       fm_z_level => var_1d_double_ptr
+   case ("kbot_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndx   = var_1d_int_ptr(1)
+   case ("kbot")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
+       fm_kbot => var_1d_int_ptr
+   case ("ktop_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndx   = var_1d_int_ptr(1)
+   case ("ktop")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
+       fm_ktop => var_1d_int_ptr
+   case ("water_depth_cc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndx = var_1d_int_ptr(1)
+   case ("water_depth_cc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
+       fm_water_depth => var_1d_double_ptr
+   case ("velocity_x_cc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndkx = var_1d_int_ptr(1)
+   case ("velocity_x_cc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+       fm_velocity_x => var_1d_double_ptr
+   case ("velocity_y_cc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndkx = var_1d_int_ptr(1)
+   case ("velocity_y_cc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+       fm_velocity_y => var_1d_double_ptr
+   case ("rho_cc_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_ndkx = var_1d_int_ptr(1)
+   case ("rho_cc")
+       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+       fm_rho => var_1d_double_ptr
+   case ("constituents_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_numconst = var_1d_int_ptr(1)
+       fm_ndkx     = var_1d_int_ptr(2)
+   case ("constituents")
+       call c_f_pointer(var_ptr, var_2d_double_ptr, (/ fm_numconst, fm_ndkx /))
+       fm_constituents => var_2d_double_ptr
+   case ("constituents_names_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       fm_numconst = var_1d_int_ptr(1)
+       fm_namlen   = var_1d_int_ptr(2)
+       !
+       ! Constituent names are copied instead of referenced
+       allocate(character(fm_namlen) :: fm_namcon(fm_numconst))
+   case ("constituents_names")
+       call c_f_pointer(var_ptr, var_1d_char_ptr, (/ fm_numconst * fm_namlen /))
+       fm_namcon = transfer(var_1d_char_ptr,fm_namcon)
+   case ("isalt")
+       call c_f_pointer(var_ptr, var_0d_int_ptr)
+       fm_isalt => var_0d_int_ptr
+   case ("itemp")
+       call c_f_pointer(var_ptr, var_0d_int_ptr)
+       fm_itemp => var_0d_int_ptr
+   case ("runid_shape")
+       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+       slen = var_1d_int_ptr(2)
+   !case ("runid")
+   !    runid = valuestr(1:slen)
+   case ("skipuniqueid")
+       select case (str_tolower(valuestr(1:slen)))
+       case ("1", "yes", "true")
+           skipuniqueid = .true.
+       case ("0", "no", "false")
+           skipuniqueid = .false.
+       end select
    case default
        call mess(LEVEL_INFO, "'set_var(", var_name, ")' not implemented")
    end select   
