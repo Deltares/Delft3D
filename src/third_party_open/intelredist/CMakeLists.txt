@@ -19,7 +19,7 @@ if ("${OSS_MPI}" STREQUAL "IntelMPI")
 	PATTERN "debug" EXCLUDE
 	PATTERN "release" EXCLUDE
 	PATTERN "tune" EXCLUDE)
-	install(DIRECTORY ${mpi_path}/libfabric/bin/* DESTINATION lib FILES_MATCHING PATTERN "*.dll")
+	install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
 	install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
 endif()
 
