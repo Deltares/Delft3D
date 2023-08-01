@@ -77,7 +77,6 @@ contains
     
     call SetMessageHandling(write2screen = .true. , &
                         useLog = .true., &
-                        lunMessages = diafile, &
                         callback = waq_bmi_errorhandler, &
                         thresholdLevel = LEVEL_INFO, &
                         thresholdLevel_log = LEVEL_INFO, &
@@ -230,6 +229,7 @@ subroutine get_var(c_var_name, var_ptr) bind(C, name="get_var")
    !DEC$ ATTRIBUTES DLLEXPORT :: get_var
    use iso_c_binding, only: c_double, c_char, c_loc
    use iso_c_utils, only: strlen
+   use m_waq_bmi_data
    !
    ! Parameters
    character(kind=c_char), intent(in)    :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
@@ -241,162 +241,108 @@ subroutine get_var(c_var_name, var_ptr) bind(C, name="get_var")
    ! Body
    !
    ! Store the name
-   !var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+   var_name = char_array_to_string(c_var_name, strlen(c_var_name))
 
    ! Please be conservative in adding variables here. Most variables
    ! can be computed outside.
    ! You can generate extra variables here.
-   !select case(var_name)
+   select case(var_name)
    !
-   ! D-Flow FM ==> COSUMO_BMI
-   ! When DIMR asks COSUMO_BMI for this variable and it is not associated yet, COSUMO_BMI must notify DIMR
+   ! D-Flow FM ==> WAQ_BMI
+   ! When DIMR asks WAQ_BMI for this variable and it is not associated yet, WAQ_BMI must notify DIMR
    ! that it is able to accept that parameter by returning a dummy pointer
    !
-   ! case("flow_xcc")
-   !     if (.not.associated(fm_xzw)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_xzw)
-   !     continue
-   ! case("flow_ycc")
-   !     if (.not.associated(fm_yzw)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_yzw)
-   !     continue
-   ! case("z_level_cc")
-   !     if (.not.associated(fm_z_level)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_z_level)
-   !     continue
-   ! case("kbot")
-   !     if (.not.associated(fm_kbot)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_kbot)
-   !     continue
-   ! case("ktop")
-   !     if (.not.associated(fm_ktop)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_ktop)
-   !     continue
-   ! case("water_depth_cc")
-   !     if (.not.associated(fm_water_depth)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_water_depth)
-   !     continue
-   ! case("velocity_x_cc")
-   !     if (.not.associated(fm_velocity_x)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_velocity_x)
-   !     continue
-   ! case("velocity_y_cc")
-   !     if (.not.associated(fm_velocity_y)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_velocity_y)
-   !     continue
-   ! case("rho_cc")
-   !     if (.not.associated(fm_rho)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_rho)
-   !     continue
-   ! case("constituents")
-   !     if (.not.associated(fm_constituents)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_constituents)
-   !     continue
-   ! case("constituents_names")
-   !     if (.not.associated(fm_namcon)) then
-   !         return
-   !     endif
-   !     var_ptr = c_loc(fm_namcon)
-   !     continue
-   ! case("isalt")
-   !     if (.not.associated(fm_isalt)) then
-   !         allocate(fm_isalt)
-   !         fm_isalt = -999
-   !     endif
-   !     var_ptr = c_loc(fm_isalt)
-   !     continue
-   ! case("itemp")
-   !     if (.not.associated(fm_itemp)) then
-   !         allocate(fm_itemp)
-   !         fm_itemp = -999
-   !     endif
-   !     var_ptr = c_loc(fm_itemp)
-   !     continue
-   ! case("runid")
-   !     var_ptr = c_loc(runid)
-   !     continue
+   case("flow_xcc")
+       if (.not.associated(fm_xzw)) then
+           return
+       endif
+       var_ptr = c_loc(fm_xzw)
+       continue
+   case("flow_ycc")
+       if (.not.associated(fm_yzw)) then
+           return
+       endif
+       var_ptr = c_loc(fm_yzw)
+       continue
+   case("z_level_cc")
+       if (.not.associated(fm_z_level)) then
+           return
+       endif
+       var_ptr = c_loc(fm_z_level)
+       continue
+   case("kbot")
+       if (.not.associated(fm_kbot)) then
+           return
+       endif
+       var_ptr = c_loc(fm_kbot)
+       continue
+   case("ktop")
+       if (.not.associated(fm_ktop)) then
+           return
+       endif
+       var_ptr = c_loc(fm_ktop)
+       continue
+   case("water_depth_cc")
+       if (.not.associated(fm_water_depth)) then
+           return
+       endif
+       var_ptr = c_loc(fm_water_depth)
+       continue
+   case("velocity_x_cc")
+       if (.not.associated(fm_velocity_x)) then
+           return
+       endif
+       var_ptr = c_loc(fm_velocity_x)
+       continue
+   case("velocity_y_cc")
+       if (.not.associated(fm_velocity_y)) then
+           return
+       endif
+       var_ptr = c_loc(fm_velocity_y)
+       continue
+   case("rho_cc")
+       if (.not.associated(fm_rho)) then
+           return
+       endif
+       var_ptr = c_loc(fm_rho)
+       continue
+   case("constituents")
+       if (.not.associated(fm_constituents)) then
+           return
+       endif
+       var_ptr = c_loc(fm_constituents)
+       continue
+   case("constituents_names")
+       if (.not.associated(fm_namcon)) then
+           return
+       endif
+       var_ptr = c_loc(fm_namcon)
+       continue
+   case("isalt")
+       if (.not.associated(fm_isalt)) then
+           allocate(fm_isalt)
+           fm_isalt = -999
+       endif
+       var_ptr = c_loc(fm_isalt)
+       continue
+   case("itemp")
+       if (.not.associated(fm_itemp)) then
+           allocate(fm_itemp)
+           fm_itemp = -999
+       endif
+       var_ptr = c_loc(fm_itemp)
+       continue
+   case("runid")
+       var_ptr = c_loc(runid)
+       continue
    ! !
-   ! ! COSUMO_BMI ==> D-Flow FM 
-   ! !
-   ! case("nf_q_source")
-   !     if (.not.associated(nf_q_source)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_q_source)
-   !     continue
-   ! case("nf_q_intake")
-   !     if (.not.associated(nf_q_intake)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_q_intake)
-   !     continue
-   ! case("nf_const")
-   !     if (.not.associated(nf_const)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_const)
-   !     continue
-   ! case("nf_intake")
-   !     if (.not.associated(nf_intake)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_intake)
-   !     continue
-   ! case("nf_sink")
-   !     if (.not.associated(nf_sink)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_sink)
-   !     continue
-   ! case("nf_sour")
-   !     if (.not.associated(nf_sour)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_sour)
-   !     continue
-   ! case("nf_const_operator")
-   !     if (.not.associated(nf_const_operator)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_const_operator)
-   !     continue
-   ! case("nf_src_mom")
-   !     if (.not.associated(d0)) then
-   !         ! leave var_ptr undefined. It will be obtained via get_var later on
-   !         return
-   !     endif
-   !     var_ptr = c_loc(nf_src_mom)
-   !     continue
-   ! case default
-   !     call mess(LEVEL_ERROR, "'get_var(", var_name, ")' not implemented")
-   ! end select
+   ! ! WAQ_BMI ==> D-Flow FM 
+   ! ! MDK 01-08-2023: currently not implemented. Should we want to have a two-way coupling
+   ! ! we can do it here.  
+   ! !  
+   case default
+       call mess(LEVEL_ERROR, "'get_var(", var_name, ")' not implemented")
+   end select
 end subroutine get_var
 !
 !
