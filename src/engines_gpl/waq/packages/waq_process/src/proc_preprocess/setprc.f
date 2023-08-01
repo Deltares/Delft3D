@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setprc
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE SETPRC ( LUNREP     , NOKEY      ,
      +                    KEYNAM     , KEYVAL     ,
@@ -343,3 +349,5 @@
       RETURN
  2000 FORMAT(5A)
       END
+
+      end module m_setprc

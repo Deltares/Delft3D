@@ -20,6 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq08
+      use m_read_initials
+      use m_opt2
+      use m_opt1
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq08 ( lun    , lchar  , filtype, noseg  , notot  ,
      &                    syname , iwidth , vrsion , ioutpt , inpfil ,
@@ -64,6 +74,7 @@
 !                           lun(29) = unit formatted output file
 !                           lun(18) = unit intermediate file (initials)
 
+      use m_check
       use m_srstop
       use m_open_waq_files
       use grids          ! for the storage of contraction grids
@@ -307,3 +318,5 @@
  2110 format (  /,' WARNING: Binary initials file is assumed to have bed substances in mass/gridcell!' )
 
       end
+
+      end module m_dlwq08

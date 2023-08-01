@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq2_main
+use m_delwaq2_main_init
+
+
+implicit none
+
+contains
+
 
 !     FUNCTION            : MAIN module for DELWAQ2 , dimensioning
 !                           of the work array's.
@@ -47,6 +55,7 @@ subroutine dlwqmain(action, argc, argv, dlwqd)
 
       !DEC$ ATTRIBUTES DLLEXPORT::dlwqmain
 
+      use m_delwaq2_main_finalise
       use delwaq2
       use delwaq2_data
       use dhcommand
@@ -77,3 +86,5 @@ subroutine dlwqmain(action, argc, argv, dlwqd)
       call delwaq2_main_finalise(action, lunrep, rundat)
 
 end subroutine dlwqmain
+
+end module m_delwaq2_main

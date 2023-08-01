@@ -30,59 +30,53 @@
 
 ! 
 ! 
+module m_external_forcings
 
+public :: set_external_forcings
+
+contains
+    
 !> set field oriented boundary conditions
-subroutine flow_setexternalforcings(tim, l_initPhase, iresult)
-   use m_timer
-   use timers
+subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+   use timers,                 only : timstrt, timstop
    use m_flowtimes
    use m_flowgeom
    use m_flow
-   use m_sferic
-   use timespace
-   use m_missing
-   use m_structures
    use m_meteo
    use m_calbedform
    use m_bedform
    use dfm_error
-   use m_calibration, only: calibration_backup_frcu
+   use m_calibration,          only: calibration_backup_frcu
    use unstruc_channel_flow
-   use m_pump
-   use m_Dambreak
-   use m_flowexternalforcings
-   use m_partitioninfo
    use time_class
    use m_longculverts
-   use unstruc_messages
-   use m_nearfield, only : nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
+   use m_nearfield,            only : nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
 
    implicit none
 
-   double precision, intent(in)    :: tim !< Time in seconds
-   type(c_time)                    :: ecTime !< Time in EC-module
-   logical                         :: l_initPhase, first_time_wind
-   integer,          intent(out)   :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
+   double precision, intent(in)    :: time_in_seconds  !< Time in seconds
+   logical,          intent(in)    :: initialization   !< initialization phase
+   integer,          intent(out)   :: iresult          !< Integer error status: DFM_NOERR==0 if succesful.
 
-   double precision :: timmin
-   integer          :: k, L, i, k1, k2, iFirst, iLast, kb, ki, n
-   logical          :: l_set_frcu_mor = .false.
+   integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
+   integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 2
+   integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS = 3
+   integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 4
+  
+   double precision, parameter     :: SEA_LEVEL_PRESSURE = 101325d0
 
-   logical, external :: flow_initwaveforcings_runtime, flow_trachy_needs_update
-   character(len=255) :: tmpstr
-   type(tEcItem), pointer :: itemPtr !< Item under consideration, for right order of wind items
+   integer                         :: link, i, first, last
+   logical                         :: l_set_frcu_mor = .false.
+   logical                         :: first_time_wind
+
+   logical, external               :: flow_initwaveforcings_runtime, flow_trachy_needs_update
+   character(len=255)              :: tmpstr
+   type(c_time)                    :: ecTime         !< Time in EC-module
 
    ! variables for processing the pump with levels, SOBEK style
-   logical                               :: foundtempforcing, success_copy
-   double precision                      :: tUnitFactor
+   logical                         :: success_copy
 
-   double precision, allocatable :: wxtest(:)  , wytest(:)   
-
-
-   iresult = DFM_EXTFORCERROR
    call timstrt('External forcings', handle_ext)
-
-   timmin = tim/60d0   ! talking to Meteo1 is in minutes
 
    success = .true.
 
@@ -92,234 +86,412 @@ subroutine flow_setexternalforcings(tim, l_initPhase, iresult)
       patm = PavBnd
    end if
 
-   if (jawind == 1 .or. japatm > 0) then   ! setwind
-      if (allocated(wx)) then              ! initialize all winds to zero
-         wx = 0.d0
-      end if
-      if (allocated(wy)) then
-         wy = 0.d0
-      end if
-      if (allocated(wdsu_x)) then
-         wdsu_x = 0d0
-      endif
-      if (allocated(wdsu_y)) then
-         wdsu_y = 0d0
-      endif
-      if (allocated(wcharnock)) then
-         wcharnock = 0.d0
-      end if
-      if (allocated(ec_pwxwy_x)) then
-         ec_pwxwy_x = 0.d0
-      end if
-      if (allocated(ec_pwxwy_y)) then
-         ec_pwxwy_y = 0.d0
-      end if
-
-      first_time_wind = (id_last_wind < 0)
-      if (first_time_wind) then
-         iFirst = 1
-         iLast = ecInstancePtr%nItems
-      else
-         iFirst = id_first_wind
-         iLast = id_last_wind
-      endif
-      do i=iFirst, iLast
-         itemPtr => ecInstancePtr%ecItemsPtr(i)%ptr
-         ! Retrieve wind's x- and y-component for ext-file quantity 'windxy'.
-         if (itemPtr%id == item_windxy_x .and. item_windxy_y /= ec_undef_int) then
-            success = ec_gettimespacevalue(ecInstancePtr, item_windxy_x, irefdate, tzone, tunit, tim)
-         ! Retrieve wind's p-, x- and y-component for ext-file quantity 'airpressure_windx_windy'.
-         else if (itemPtr%id == item_apwxwy_p .and. item_apwxwy_x /= ec_undef_int .and. item_apwxwy_y /= ec_undef_int) then
-            if (item_apwxwy_c /= ec_undef_int) then
-               success = ec_gettimespacevalue(ecInstancePtr, 'airpressure_windx_windy_charnock', tim)
-            else
-               success = ec_gettimespacevalue(ecInstancePtr, 'airpressure_windx_windy', tim)
-            endif
-         ! Retrieve wind's x-component for ext-file quantity 'windx'.
-         else if (itemPtr%id == item_windx) then
-            success = ec_gettimespacevalue(ecInstancePtr, item_windx, irefdate, tzone, tunit, tim)
-         ! Retrieve wind's y-component for ext-file quantity 'windy'.
-         else if (itemPtr%id == item_windy) then
-            success = ec_gettimespacevalue(ecInstancePtr, item_windy, irefdate, tzone, tunit, tim)
-         ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
-         else if (itemPtr%id == item_atmosphericpressure) then
-            success = ec_gettimespacevalue(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, tim)
-         else
-            cycle  ! avoid updating id_first_wind and id_last_wind
-         endif
-         if (.not. success) goto 888
-         if (first_time_wind) then
-            id_first_wind = min(i, id_first_wind)
-            id_last_wind  = max(i, id_last_wind)
-         endif
-      enddo
-
-      if (jawindstressgiven > 0) then 
-         success = ec_gettimespacevalue(ecInstancePtr, item_stressx, irefdate, tzone, tunit, tim, wdsu_x)
-         success = ec_gettimespacevalue(ecInstancePtr, item_stressy, irefdate, tzone, tunit, tim, wdsu_y)
-      endif   
-   
-      ! FM performs an additional spatial interpolation:
-      if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then
-         do L  = 1, lnx
-            k1 = ln(1,L)
-            k2 = ln(2,L)
-            if (jawindstressgiven == 1) then 
-               wdsu_x(L) = wdsu_x(L) + 0.5d0*( ec_pwxwy_x(k1) + ec_pwxwy_x(k2) )
-               wdsu_y(L) = wdsu_y(L) + 0.5d0*( ec_pwxwy_y(k1) + ec_pwxwy_y(k2) )
-            else 
-               wx(L)     = wx(L)     + 0.5d0*( ec_pwxwy_x(k1) + ec_pwxwy_x(k2) )
-               wy(L)     = wy(L)     + 0.5d0*( ec_pwxwy_y(k1) + ec_pwxwy_y(k2) )
-            endif
-            if (allocated(ec_pwxwy_c)) then
-               wcharnock(L) = wcharnock(L) + 0.5d0*( ec_pwxwy_c(k1) + ec_pwxwy_c(k2) )
-            endif
-         enddo
-      endif
-
-      if (item_atmosphericpressure /= ec_undef_int) then
-         do k = 1,ndx
-            if (patm(k) == dmiss) patm(k) = 101325d0
-         enddo
-      endif
-
-      if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
-         call tauwavefetch(tim)
-      endif
-   endif
+   if (jawind == 1 .or. japatm > 0) then
+      call set_wind_data()
+   end if
 
    if (jawind > 0) then
       if (jawindspeedfac > 0) then
-         do L = 1,lnx
-            if (windspeedfac(L) .ne. dmiss) then
-                wx(L) = wx(L) *windspeedfac(L)
-                wy(L) = wy(L) *windspeedfac(L)
-            endif
-         enddo
-      endif
+         where (windspeedfac /= dmiss) 
+            wx = wx * windspeedfac
+            wy = wy * windspeedfac
+         end where
+      end if
       call setwindstress()
-   endif
-
-!   !$OMP  PARALLEL SECTIONS   &
-!   !$OMP REDUCTION(.AND.:success)
-
-
-!   !$OMP SECTION
+   end if
 
     if (jatem > 1) then
+       call set_temperature_models()
+   end if
 
-       ! Update arrays rhum, tair and clou in a single method call.
-       ! Nothing happens in case quantity 'humidity_airtemperature_cloudiness' has never been added through ec_addtimespacerelation.
-       select case (itempforcingtyp)
-       case (1)
-          success = success .and. ec_gettimespacevalue(ecInstancePtr, 'humidity_airtemperature_cloudiness', tim)
-       case (2)
-          success = success .and. ec_gettimespacevalue(ecInstancePtr, 'humidity_airtemperature_cloudiness_solarradiation', tim)
-       case (3)
-          success = success .and. ec_gettimespacevalue(ecInstancePtr, 'dewpoint_airtemperature_cloudiness', tim)
-       case (4)
-          success = success .and. ec_gettimespacevalue(ecInstancePtr, 'dewpoint_airtemperature_cloudiness_solarradiation', tim)
-       end select
+   call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
+   
+   call set_wave_parameters()
 
-       foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
+   call retrive_rainfall()
 
-       if (btempforcingtypH) then
-           success = success .and. ec_gettimespacevalue(ecInstancePtr, item_humidity, irefdate, tzone, tunit, tim)
-           foundtempforcing = .true.
-       endif
-       if (btempforcingtypA) then
-           success = success .and. ec_gettimespacevalue(ecInstancePtr, item_airtemperature, irefdate, tzone, tunit, tim)
-           foundtempforcing = .true.
-       endif
-       if (btempforcingtypS) then
-           success = success .and. ec_gettimespacevalue(ecInstancePtr, item_solarradiation, irefdate, tzone, tunit, tim)
-           foundtempforcing = .true.
-       endif
-       if (btempforcingtypC) then
-           success = success .and. ec_gettimespacevalue(ecInstancePtr, item_cloudiness, irefdate, tzone, tunit, tim)
-           foundtempforcing = .true.
-       endif
-       if (btempforcingtypL) then
-           success = success .and. ec_gettimespacevalue(ecInstancePtr, item_longwaveradiation, irefdate, tzone, tunit, tim)
-           foundtempforcing = .true.
-       endif
+   if (ncdamsg > 0) then
+      call get_timespace_value_by_item_array_consider_success_value(item_damlevel, zcdam)
+   end if
 
-       if (.not. foundtempforcing ) then
-            call mess(LEVEL_WARN,'No humidity, airtemperature, cloudiness and solar radiation forcing found, setting temperature model [physics:Temperature] = 1 (Only transport)')
-            jatem = 1
-       endif
-   endif
+   if (ncgensg > 0) then
+      call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen)
+      call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
+   end if
 
-!   !$OMP SECTION
+   if (npumpsg > 0) then
+      call get_timespace_value_by_item_array_consider_success_value(item_pump, qpump)
+   end if
+   
+   call update_network_data()
 
-   ! Get wave parameters within this parallel section:
-   tUnitFactor = ecSupportTimeUnitConversionFactor(tunit)
-   call ecTime%set4(tim, irefdate, tzone, tUnitFactor)
-   if (jawave==3 .or. jawave==6) then
+   if (nlongculverts > 0) then
+       call get_timespace_value_by_item_and_consider_success_value(item_longculvert_valve_relative_opening)
+   end if
+
+   if (nvalv > 0) then
+       call get_timespace_value_by_item_and_consider_success_value(item_valve1D)
+   end if
+
+   if (jatidep > 0 .or. jaselfal > 0) then
+      call flow_settidepotential(time_in_seconds/60d0)
+   end if
+
+   if (numlatsg > 0) then
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, irefdate, tzone, tunit, time_in_seconds) ! 'lateral(_)discharge'
+   end if
+
+   !Pump with levels, outside OpenMP region
+   if (nPumpsWithLevels > 0) then
+      call update_pumps_with_levels()
+   end if
+
+   if (numsrc > 0) then
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds)
+   end if
+
+   if (jasubsupl > 0) then
+     call update_subsidence_and_uplift_data()
+   end if
+
+   if (nearfield_mode == NEARFIELD_UPDATED) then
+      call addNearfieldData()
+   end if
+
+   call timstop(handle_ext)
+
+   if (.not. success) then
+      call print_error_message()
+      return
+   end if
+
+   if (jatem > 1 .and. jaheat_eachstep == 0) then
+      call heatu(time_in_seconds/3600d0)
+   end if
+
+   if (bfm_included .and. .not. initialization) then
+      if (bfmpar%lfbedfrm) then
+          call fm_calbf()            ! JRE+BJ to check: see with which timestep we update this?
+       end if
+   end if
+
+   if (bfmpar%lfbedfrmrou .and. .not. initialization)  then     ! .true. if van rijn 2004 or trachy contains ripple roughness
+      call fm_calksc()
+   end if
+
+   if ((jacali == 1) .and. initialization) then
+      ! Make backup of roughness factor after initialisation of frcu
+      call calibration_backup_frcu()
+   end if
+
+   if (jatrt == 1) then
+       if (flow_trachy_needs_update(time1)) then
+           call flow_trachyupdate()                            ! perform a trachy update step
+           l_set_frcu_mor = .true.
+       end if
+   end if
+
+   if (jacali == 1) then
+       ! update calibration definitions and factors on links
+       call calibration_update()
+       l_set_frcu_mor = .true.
+   end if
+
+   if (stm_included) then
+       if ((jased>0) .and. l_set_frcu_mor) then
+           call set_frcu_mor(1)     !otherwise frcu_mor is set in getprof_1d()
+           call set_frcu_mor(2)
+       end if
+   end if
+
+   ! Update nudging temperature (and salinity)
+   if (item_nudge_tem /= ec_undef_int .and. janudge > 0 ) then 
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_tem, irefdate, tzone, tunit, time_in_seconds)
+   end if
+
+   iresult = DFM_NOERR
+   
+contains
+
+!> set_wind_data data
+subroutine set_wind_data()
+
+    integer  :: ec_item_id
+
+    call initialize_array_with_zero(wx)
+    call initialize_array_with_zero(wy)
+    call initialize_array_with_zero(wdsu_x)
+    call initialize_array_with_zero(wdsu_y)
+    call initialize_array_with_zero(wcharnock)
+    call initialize_array_with_zero(ec_pwxwy_x)
+    call initialize_array_with_zero(ec_pwxwy_y)
+
+    first_time_wind = (id_last_wind < 0)
+    if (first_time_wind) then
+        first = 1
+        last  = get_ec_number_of_items()
+    else
+        first = id_first_wind
+        last  = id_last_wind
+    end if
+    do i = first, last
+        ec_item_id = get_ec_item_id(i)
+        ! Retrieve wind's x- and y-component for ext-file quantity 'windxy'.
+        if (ec_item_id == item_windxy_x .and. item_windxy_y /= ec_undef_int) then
+            call get_timespace_value_by_item(item_windxy_x)
+        ! Retrieve wind's p-, x- and y-component for ext-file quantity 'airpressure_windx_windy'.
+        else if (ec_item_id == item_apwxwy_p .and. item_apwxwy_x /= ec_undef_int .and. item_apwxwy_y /= ec_undef_int) then
+            if (item_apwxwy_c /= ec_undef_int) then
+               call get_timespace_value_by_name('airpressure_windx_windy_charnock')
+            else
+               call get_timespace_value_by_name('airpressure_windx_windy')
+            end if
+        ! Retrieve wind's x-component for ext-file quantity 'windx'.
+        else if (ec_item_id == item_windx) then
+            call get_timespace_value_by_item(item_windx)
+         ! Retrieve wind's y-component for ext-file quantity 'windy'.
+         else if (ec_item_id == item_windy) then
+            call get_timespace_value_by_item(item_windy)
+         ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
+        else if (ec_item_id == item_atmosphericpressure) then
+            call get_timespace_value_by_item(item_atmosphericpressure)
+        else
+            cycle  ! avoid updating id_first_wind and id_last_wind
+        end if
+        if (.not. success) then
+            call print_error_message()
+            return
+        end if
+        if (first_time_wind) then
+            id_first_wind = min(i, id_first_wind)
+            id_last_wind  = max(i, id_last_wind)
+        end if
+    end do
+
+    if (jawindstressgiven > 0) then 
+        call get_timespace_value_by_item_and_array(item_stressx, wdsu_x)
+        call get_timespace_value_by_item_and_array(item_stressy, wdsu_y)
+    end if   
+   
+    if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then
+        if (jawindstressgiven == 1) then 
+            call perform_additional_spatial_interpolation(wdsu_x, wdsu_y)
+        else
+            call perform_additional_spatial_interpolation(wx, wy)
+        end if
+        if (allocated(ec_pwxwy_c)) then
+            do link  = 1, lnx
+               wcharnock(link) = wcharnock(link) + 0.5d0*( ec_pwxwy_c(ln(1,link)) + ec_pwxwy_c(ln(2,link)) )
+            end do
+        end if
+    end if
+
+    if (item_atmosphericpressure /= ec_undef_int) then
+        where (patm == dmiss)
+            patm = SEA_LEVEL_PRESSURE
+        end where
+    end if
+
+    if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
+        call tauwavefetch(time_in_seconds)
+    end if
+      
+end subroutine set_wind_data
+
+!> initialize_array_with_zero
+subroutine initialize_array_with_zero(array)
+
+    double precision, allocatable, intent(inout) :: array(:)
+
+    if (allocated(array)) then
+         array(:) = 0.d0
+    end if
+    
+end subroutine initialize_array_with_zero
+
+!> ec_number_of_items
+integer function get_ec_number_of_items()
+
+    get_ec_number_of_items = ecInstancePtr%nItems
+
+end function get_ec_number_of_items
+
+!> get_ec_item_id
+integer function get_ec_item_id(i)
+
+    integer, intent(in) :: i
+    
+    get_ec_item_id = ecInstancePtr%ecItemsPtr(i)%ptr%id
+
+end function get_ec_item_id
+
+!> get_timespace_value_by_item
+subroutine get_timespace_value_by_item(item)
+
+    integer, intent(in) :: item
+
+    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
+
+end subroutine get_timespace_value_by_item
+
+!> get_timespace_value_by_name
+subroutine get_timespace_value_by_name(name)
+
+    character(*), intent(in) :: name
+
+    success = ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
+    
+end subroutine get_timespace_value_by_name
+
+!> get_timespace_value_by_item_and_array
+subroutine get_timespace_value_by_item_and_array(item, array)
+
+    integer, intent(in) :: item
+    double precision, intent(inout) :: array(:)
+
+    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
+
+end subroutine get_timespace_value_by_item_and_array
+
+
+!> get_timespace_value_by_item_and_array_and_consider_success_value
+subroutine get_timespace_value_by_item_array_consider_success_value(item, array)
+
+    integer, intent(in) :: item
+    double precision, intent(inout) :: array(:)
+
+    success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
+
+end subroutine get_timespace_value_by_item_array_consider_success_value
+
+subroutine perform_additional_spatial_interpolation(array_x, array_y)
+
+    double precision, intent(inout) :: array_x(:)
+    double precision, intent(inout) :: array_y(:)
+    
+    do link  = 1, lnx
+        array_x(link) = array_x(link) + 0.5d0*( ec_pwxwy_x(ln(1,link)) + ec_pwxwy_x(ln(2,link)) )
+        array_y(link) = array_y(link) + 0.5d0*( ec_pwxwy_y(ln(1,link)) + ec_pwxwy_y(ln(2,link)) )
+    end do
+
+end subroutine perform_additional_spatial_interpolation
+               
+
+!> set_temperature_models
+subroutine set_temperature_models()
+
+    logical :: foundtempforcing
+
+    ! Update arrays rhum, tair and clou in a single method call.
+    ! Nothing happens in case quantity 'humidity_airtemperature_cloudiness' has never been added through ec_addtimespacerelation.
+    select case (itempforcingtyp)
+    case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS)
+        call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness')
+    case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION)
+        call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness_solarradiation')
+    case (DEWPOINT_AIRTEMPERATURE_CLOUDINESS)
+        call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness')
+    case (DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION)
+        call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness_solarradiation')
+    end select
+
+    foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
+    
+    if (btempforcingtypH) then
+        call get_timespace_value_by_item_and_consider_success_value(item_humidity)
+        foundtempforcing = .true.
+    end if
+    if (btempforcingtypA) then
+        call get_timespace_value_by_item_and_consider_success_value(item_airtemperature)
+        foundtempforcing = .true.
+    end if
+    if (btempforcingtypS) then
+        call get_timespace_value_by_item_and_consider_success_value(item_solarradiation)
+        foundtempforcing = .true.
+    end if
+    if (btempforcingtypC) then
+        call get_timespace_value_by_item_and_consider_success_value(item_cloudiness)
+        foundtempforcing = .true.
+    end if
+    if (btempforcingtypL) then
+        call get_timespace_value_by_item_and_consider_success_value(item_longwaveradiation)
+        foundtempforcing = .true.
+    end if
+
+    if (.not. foundtempforcing ) then
+        call mess(LEVEL_WARN,&
+    'No humidity, airtemperature, cloudiness and solar radiation forcing found, setting temperature model [physics:Temperature] = 1 (Only transport)')
+        jatem = 1
+    end if
+    	   
+end subroutine set_temperature_models
+
+!> get_timespace_value_by_name_and_consider_success_value
+subroutine get_timespace_value_by_name_and_consider_success_value(name)
+
+    character(*), intent(in) :: name
+    
+    success = success .and. ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
+    
+end subroutine get_timespace_value_by_name_and_consider_success_value
+
+!> get_timespace_value_by_item_and_consider_success_value
+subroutine get_timespace_value_by_item_and_consider_success_value(item)
+
+    integer, intent(in) :: item
+
+    success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
+
+end subroutine get_timespace_value_by_item_and_consider_success_value
+
+!> set_wave_parameters
+subroutine set_wave_parameters()
+
+   if (jawave == 3 .or. jawave == 6) then
       !
       ! This part must be skipped during initialization
-      if (.not.l_initPhase) then
+      if (.not. initialization) then
          if (jawave == 3) then
             ! Finally the delayed external forcings can be initialized
             success = flow_initwaveforcings_runtime()
-         endif
+         end if
          if (allocated (hwavcom) ) then
             success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-         endif
+         end if
          if (allocated (twav) ) then
             success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-         endif
+         end if
          if (allocated (phiwav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+             call get_values_and_consider_jawave6(item_dir)
+         end if
          if (allocated (sxwav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_fx)
+         end if
          if (allocated (sywav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+             call get_values_and_consider_jawave6(item_fy)
+         end if
          if (allocated (sbxwav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_wsbu, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_wsbu)
+         end if
          if (allocated (sbywav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_wsbv, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_wsbv)
+         end if
          if (allocated (mxwav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_mx, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_mx)
+         end if
          if (allocated (mywav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_my, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_my)
+         end if
          if (allocated (dsurf) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_dissurf)
+         end if
          if (allocated (dwcap) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_diswcap, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
+            call get_values_and_consider_jawave6(item_diswcap)
+         end if
          if (allocated (uorbwav) ) then
-            success_copy = success
-            success = success .and. ecGetValues(ecInstancePtr, item_ubot, ecTime)
-            if (jawave == 6) success = success_copy
-         endif
-      endif
+            call get_values_and_consider_jawave6(item_ubot)
+         end if
+      end if
       if (.not. success) then
          !
          ! success = .false. : Most commonly, WAVE data has not been written to the com-file yet:
@@ -329,9 +501,9 @@ subroutine flow_setexternalforcings(tim, l_initPhase, iresult)
          ! - success must be set to .true., otherwise the calculation is aborted
          !
          message = dumpECMessageStack(LEVEL_WARN,callback_msg)
-         success=.true.
+         success = .true.
       end if
-      !
+      
       ! SWAN data used via module m_waves
       !    Data from FLOW 2 SWAN: s1 (water level), bl (bottom level), ucx (vel. x), ucy (vel. y), FlowElem_xcc, FlowElem_ycc, wx, wy
       !          NOTE: all variables defined @ cell circumcentre of unstructured grid
@@ -350,278 +522,152 @@ subroutine flow_setexternalforcings(tim, l_initPhase, iresult)
             !
             where (isnan(dsurf))
                dsurf = 0d0
-            endwhere
+            end where
             !
             where (isnan(dwcap))
                dwcap = 0d0
-            endwhere
-         endif
+            end where
+         end if
          
-         ! Fill open boundary cells with inner values, needed for values on flowlinks fo calculating stresses etc
          ! In MPI case, partition ghost cells are filled properly already, open boundaires are not
-         do n=1,nbndu
-            kb = kbndu(1,n)
-            ki = kbndu(2,n)
-            L  = kbndu(3,n)
-            !if (hu(L)<epshu) cycle
-            hwavcom(kb) = hwavcom(ki)
-            twav(kb)    = twav(ki)
-            phiwav(kb)  = phiwav(ki)
-            uorbwav(kb) = uorbwav(ki)
-            sbxwav(kb)  = sbxwav(ki)
-            sbywav(kb)  = sbywav(ki)
-            sxwav(kb)   = sxwav(ki)
-            sywav(kb)   = sywav(ki)
-            dsurf(kb)   = dsurf(ki)
-            dwcap(kb)   = dwcap(ki)
-            mxwav(kb)   = mxwav(ki)
-            mywav(kb)   = mywav(ki)
-         enddo
+         call fill_open_boundary_cells_with_innner_values(nbndu, kbndu)
          !
          ! waterlevels
-         do n=1,nbndz
-            kb = kbndz(1,n)
-            ki = kbndz(2,n)
-            L  = kbndz(3,n)
-            !if (hu(L)<epshu) cycle
-            hwavcom(kb) = hwavcom(ki)
-            twav(kb)    = twav(ki)
-            phiwav(kb)  = phiwav(ki)
-            uorbwav(kb) = uorbwav(ki)
-            sbxwav(kb)  = sbxwav(ki)
-            sbywav(kb)  = sbywav(ki)
-            sxwav(kb)   = sxwav(ki)
-            sywav(kb)   = sywav(ki)
-            dsurf(kb)   = dsurf(ki)
-            dwcap(kb)   = dwcap(ki)
-            mxwav(kb)   = mxwav(ki)
-            mywav(kb)   = mywav(ki)
-         enddo
+         call fill_open_boundary_cells_with_innner_values(nbndz, kbndz)
          !
          !  normal-velocity boundaries
-         do n=1,nbndn
-            kb = kbndn(1,n)
-            ki = kbndn(2,n)
-            L  = kbndn(3,n)
-            !if (hu(L)<epshu) cycle
-            hwavcom(kb) = hwavcom(ki)
-            twav(kb)    = twav(ki)
-            phiwav(kb)  = phiwav(ki)
-            uorbwav(kb) = uorbwav(ki)
-            sbxwav(kb)  = sbxwav(ki)
-            sbywav(kb)  = sbywav(ki)
-            sxwav(kb)   = sxwav(ki)
-            sywav(kb)   = sywav(ki)
-            dsurf(kb)   = dsurf(ki)
-            dwcap(kb)   = dwcap(ki)
-            mxwav(kb)   = mxwav(ki)
-            mywav(kb)   = mywav(ki)
-         end do
+         call fill_open_boundary_cells_with_innner_values(nbndn, kbndn)
          !
          !  tangential-velocity boundaries
-         do n=1,nbndt
-            kb = kbndt(1,n)
-            ki = kbndt(2,n)
-            L  = kbndt(3,n)
-            !if (hu(L)<epshu) cycle
-            hwavcom(kb) = hwavcom(ki)
-            twav(kb)    = twav(ki)
-            phiwav(kb)  = phiwav(ki)
-            uorbwav(kb) = uorbwav(ki)
-            sbxwav(kb)  = sbxwav(ki)
-            sbywav(kb)  = sbywav(ki)
-            sxwav(kb)   = sxwav(ki)
-            sywav(kb)   = sywav(ki)
-            dsurf(kb)   = dsurf(ki)
-            dwcap(kb)   = dwcap(ki)
-            mxwav(kb)   = mxwav(ki)
-            mywav(kb)   = mywav(ki)
-         end do
-      endif
+         call fill_open_boundary_cells_with_innner_values(nbndt, kbndt)
+      end if
 
       if (jawave>0) then
          ! this call  is needed for bedform updates with van Rijn 2007 (cal_bf, cal_ksc below)
          ! These subroutines need uorb, rlabda
          call compute_wave_parameters()
-      endif
+      end if
 
-   endif
+   end if
+	  
+end subroutine set_wave_parameters
 
-!   !$OMP SECTION
 
-!   !$OMP SECTION
+subroutine get_values_and_consider_jawave6(item)
+
+    integer, intent(in) :: item
+    
+    success_copy = success
+    success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
+    if (jawave == 6) success = success_copy
+    
+end subroutine get_values_and_consider_jawave6
+            
+
+!> fill_open_boundary_cells_with_innner_values
+subroutine fill_open_boundary_cells_with_innner_values(number_of_points, references)
+
+    integer, intent(in) :: number_of_points
+    integer, intent(in) :: references(:,:)
+    
+    integer             :: point, kb, ki 
+
+    do point = 1, number_of_points
+        kb   = references(1,point)
+        ki   = references(2,point)
+        hwavcom(kb) = hwavcom(ki)
+        twav(kb)    = twav(ki)
+        phiwav(kb)  = phiwav(ki)
+        uorbwav(kb) = uorbwav(ki)
+        sbxwav(kb)  = sbxwav(ki)
+        sbywav(kb)  = sbywav(ki)
+        sxwav(kb)   = sxwav(ki)
+        sywav(kb)   = sywav(ki)
+        dsurf(kb)   = dsurf(ki)
+        dwcap(kb)   = dwcap(ki)
+        mxwav(kb)   = mxwav(ki)
+        mywav(kb)   = mywav(ki)
+    end do
+         
+end subroutine fill_open_boundary_cells_with_innner_values
+
+!> retrive_rainfall
+subroutine retrive_rainfall()
 
    ! Retrieve rainfall for ext-file quantity 'rainfall'.
    if (jarain > 0) then
       if (item_rainfall /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall', tim)
-      endif
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall', time_in_seconds)
+      end if
       if (item_rainfall_rate /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall_rate', tim)
-      endif
-   endif
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall_rate', time_in_seconds)
+      end if
+   end if
 
-!   !$OMP SECTION
+end subroutine retrive_rainfall
 
-   if (ncdamsg > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_damlevel, irefdate, tzone, tunit, tim, zcdam)
-   endif
+!> update_network_data
+subroutine update_network_data()
 
-!   !$OMP SECTION
-
-   if (ncgensg > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_generalstructure, irefdate, tzone, tunit, tim, zcgen)
-      call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
-   endif
-
-!   !$OMP SECTION
-
-   if (npumpsg > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_pump, irefdate, tzone, tunit, tim, qpump)
-   endif
+   logical :: success_previous
+    
+   success_previous = success
+    
    if (network%sts%numPumps > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_pump_capacity, irefdate, tzone, tunit, tim)
-   endif
-
-   !   !$OMP SECTION
+      call get_timespace_value_by_item(item_pump_capacity)
+   end if
 
    if (network%sts%numCulverts > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_culvert_valveOpeningHeight, irefdate, tzone, tunit, tim)
-   endif
-
-   !   !$OMP SECTION
+      call get_timespace_value_by_item(item_culvert_valveOpeningHeight)
+   end if
 
    if (network%sts%numWeirs > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_weir_crestLevel, irefdate, tzone, tunit, tim)
-   endif
-
-   !   !$OMP SECTION
+      call get_timespace_value_by_item(item_weir_crestLevel)
+   end if
 
    if (network%sts%numOrifices > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_orifice_crestLevel, irefdate, tzone, tunit, tim)
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_orifice_gateLowerEdgeLevel, irefdate, tzone, tunit, tim)
-   endif
-
-   !   !$OMP SECTION
+      call get_timespace_value_by_item(item_orifice_crestLevel)
+      call get_timespace_value_by_item(item_orifice_gateLowerEdgeLevel)
+   end if
 
    if (network%sts%numGeneralStructures > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_general_structure_crestLevel, irefdate, tzone, tunit, tim)
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_general_structure_gateLowerEdgeLevel, irefdate, tzone, tunit, tim)
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_general_structure_crestWidth, irefdate, tzone, tunit, tim)
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_general_structure_gateOpeningWidth, irefdate, tzone, tunit, tim)
-   endif
+      call get_timespace_value_by_item(item_general_structure_crestLevel)
+      call get_timespace_value_by_item(item_general_structure_gateLowerEdgeLevel)
+      call get_timespace_value_by_item(item_general_structure_crestWidth)
+      call get_timespace_value_by_item(item_general_structure_gateOpeningWidth)
+   end if
+   
+end subroutine update_network_data
 
-   if (nlongculverts > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_longculvert_valve_relative_opening, irefdate, tzone, tunit, tim)
-   endif
+!> update_subsidence_and_uplift_data
+subroutine update_subsidence_and_uplift_data()
 
-   !   !$OMP SECTION
-
-   if (nvalv > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_valve1D, irefdate, tzone, tunit,tim)
-   endif
-
-!   !$OMP SECTION
-
-   if (jatidep > 0 .or. jaselfal > 0) then
-      call flow_settidepotential(timmin)
-   endif
-
-!   !$OMP SECTION
-
-   if (numlatsg > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, irefdate, tzone, tunit, tim) ! 'lateral(_)discharge'
-   endif
-
-!   !$OMP END PARALLEL SECTIONS
-
-   !Pump with levels, outside OpenMP region
-   if (nPumpsWithLevels > 0) then
-      call update_pumps_with_levels()
-   endif
-
-   if (numsrc > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, tim)
-   endif
-
-   if (jasubsupl > 0) then
-      if (.not. sdu_first) then
+ if (.not. sdu_first) then
          ! preserve the previous 'bedrock_surface_elevation' for computing the subsidence/uplift rate
          subsupl_tp = subsupl
-      endif
+      end if
       if (item_subsiduplift /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'bedrock_surface_elevation', tim)
-      endif
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'bedrock_surface_elevation', time_in_seconds)
+      end if
       if (sdu_first) then
          ! preserve the first 'bedrock_surface_elevation' field as the initial field
          subsupl_tp = subsupl
          subsupl_t0 = subsupl
          sdu_first  = .false.
-      endif
-   endif
+      end if
+    
+end subroutine update_subsidence_and_uplift_data
 
-   if (nearfield_mode == NEARFIELD_UPDATED) then
-      call addNearfieldData()
-   endif
+!> print_error_message
+subroutine print_error_message()
 
-   call timstop(handle_ext)
-
-   if (.not. success) then
-      goto 888
-   end if
-
-   if (jatem > 1 .and. jaheat_eachstep == 0) then
-      call heatu(timmin/60d0)                                  ! from externalforcings
-   endif
-
-   if (bfm_included .and. .not. l_initPhase) then
-      if (bfmpar%lfbedfrm) then
-          call fm_calbf()            ! JRE+BJ to check: see with which timestep we update this?
-       end if
-   end if
-
-   if (bfmpar%lfbedfrmrou .and. .not. l_initPhase)  then     ! .true. if van rijn 2004 or trachy contains ripple roughness
-      call fm_calksc()
-   end if
-
-   if ((jacali == 1) .and. l_initphase) then
-      ! Make backup of roughness factor after initialisation of frcu
-      call calibration_backup_frcu()
-   endif
-
-   if (jatrt == 1) then
-       if (flow_trachy_needs_update(time1)) then
-           call flow_trachyupdate()                            ! perform a trachy update step
-           l_set_frcu_mor = .true.
-       end if
-   end if
-
-   if (jacali == 1) then
-       ! update calibration definitions and factors on links
-       call calibration_update()
-       l_set_frcu_mor = .true.
-   end if
-
-   if (stm_included) then
-       if ((jased>0) .and. l_set_frcu_mor) then
-               call set_frcu_mor(1)     !otherwise frcu_mor is set in getprof_1d()
-           call set_frcu_mor(2)
-       endif
-   endif
-
-   ! Update nudging temperature (and salinity)
-   if (item_nudge_tem /= ec_undef_int .and. janudge > 0 ) then ! .and. .not.l_initphase) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_tem, irefdate, tzone, tunit, tim)
-!      tmpstr = dumpECMessageStack(LEVEL_INFO, callback_msg)
-   endif
-
-   iresult = DFM_NOERR
-   return ! return with success
-
-   ! Error handling:
-888 continue
    iresult = DFM_EXTFORCERROR
-   write(tmpstr,'(f22.11)') tim
+   write(tmpstr,'(f22.11)') time_in_seconds
    call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time=' // trim(tmpstr))
    tmpstr = dumpECMessageStack(LEVEL_WARN,callback_msg)
-end subroutine flow_setexternalforcings
+   
+end subroutine print_error_message
+   
+end subroutine set_external_forcings
+
+end module m_external_forcings

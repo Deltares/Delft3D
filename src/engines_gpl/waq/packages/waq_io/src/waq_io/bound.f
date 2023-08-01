@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_bound
+      use m_pointb
+
+
+      implicit none
+
+      contains
+
 
       subroutine bound  ( lun    , noseg  , noq    , noqt   , intsrt ,
      &                    ioutpt , GridPs , nobnd  , jtrack , ipoint ,
@@ -194,3 +202,5 @@
      &           ' are normally expected in models with z-layer hydrodynamics')
 
       end
+
+      end module m_bound

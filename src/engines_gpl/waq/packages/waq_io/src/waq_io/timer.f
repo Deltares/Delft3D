@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_timer
+
+      implicit none
+
+      contains
+
 
       subroutine timer  ( dtflg1 , it1    , it2    , it3    , noopt  ,
      &                    dtflg3 , ierr   )
@@ -155,3 +161,5 @@
      &          ' Allowed difference with T0 is usually ca. 68 years.' )
  2040 format ( /' ERROR: String is not a valid absolute timer :',A)
       end
+
+      end module m_timer

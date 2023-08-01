@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdfnam
+use m_write_version
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
       subroutine rdfnam ( lun    , ifnam    , fnam   , nfil   , iout   ,            &
      &                    ipri   , alone    )
@@ -220,3 +229,5 @@
               ' does not exist in current directory...')
 !
       end subroutine
+
+end module m_rdfnam

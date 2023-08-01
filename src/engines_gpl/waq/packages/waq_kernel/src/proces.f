@@ -36,7 +36,7 @@
      &                    idt    , deriv  , ndmpar , nproc  , noflux ,
      &                    ipmsa  , prvnio , promnr , iflux  , increm ,
      &                    flux   , flxdmp , stochi , ibflag , ipbloo ,
-     &                    ipchar , ioffbl , ioffch , amass  , nosys  ,
+     &                    ioffbl , amass  , nosys  ,
      &                    itfact , amass2 , iaflag , intopt , flxint ,
      &                    iexpnt , iknmrk , noq1   , noq2   , noq3   ,
      &                    noq4   , ndspn  , idpnew , dispnw , nodisp ,
@@ -60,7 +60,6 @@
 !>         Routine deals with:
 !>         - processes that act on different spatial grids (important application is layered bed)
 !>         - processes that act with coarser time steps (notably the Bloom algal growth model and the
-!>           Charon equilibrium chemistry model, but others are allowed at coarser time steps as well
 !>         - Paralellism of the different processes on shared memory multi core machines.
 
 !     Created:            : november 1992 by Jos van Gils and Jan van Beek
@@ -124,9 +123,7 @@
       real   ( 4), intent(in   ) :: stochi(notot ,noflux)       !< Proces stochiometry
       integer( 4), intent(in   ) :: ibflag                      !< if 1 then mass balance output
       integer( 4), intent(in   ) :: ipbloo                      !< Number of Bloom module  (if >0)
-      integer( 4), intent(in   ) :: ipchar                      !< Number of Charon module (if >0)
       integer( 4), intent(in   ) :: ioffbl                      !< Offset in IPMSA for Bloom
-      integer( 4), intent(in   ) :: ioffch                      !< Offset in IPMSA for Charon
       real   ( 4), intent(inout) :: amass (notot,noseg,nogrid)  !< mass array to be updated
       integer( 4), intent(in   ) :: nosys                       !< number of active substances
       integer( 4), intent(in   ) :: itfact                      !< time scale factor processes
@@ -473,153 +470,6 @@
          endif
       endif
 
-!     Charon fractional step
-
-      if ( ipchar .gt. 0 ) then
-         ivar   = prvvar(ioffch)
-         iarr   = vararr(ivar)
-         iv_idx = varidx(ivar)
-         ip_arr = arrpoi(iarr)
-         ipndt  = ip_arr + iv_idx - 1
-         ndtcha = nint( a(ipndt) )
-         prondt(ipchar) = ndtcha
-
-!        This timestep fractional step ?
-
-         if ( mod(istep-1,ndtcha) .eq. 0 ) then
-
-!           Set CONC on the Charon grid if that is not the first grid
-
-            igrcha = progrd(ipchar)
-            if ( igrcha .gt. 1 ) then
-               noseg2 = grdnos(igrcha)
-               ix_cnc = 1
-               ia_cnc = 6
-               call dhgvar( ia_cnc , ix_cnc , iv_cnc )
-               call dhgpoi( iv_hlp , ia_hlp , ik_hlp , ix_hlp , id1hlp ,
-     &                      id2hlp , ip_hlp , igrcha , isysh  , nototh ,
-     &                      ip_arh )
-
-!              actives and inactives if applicable
-
-               call dhagg2( noseg         , noseg2           , notot , 1     , nototh    ,
-     &                      notot         , 1                , 1     , isysh , 1         ,
-     &                      nosys         , grdseg(1,igrcha) , 3     , conc  , volume    ,
-     &                      a(ip_arh)     , conc(1,1,igrcha) )
-               if ( notot - nosys .gt. 0 )     !   inactives
-     &         call dhagg2( noseg         , noseg2           , notot , 1     , nototh    ,
-     &                      notot         , nosys + 1        , 1     , isysh , nosys + 1 ,
-     &                      notot - nosys , grdseg(1,igrcha) , 3     , conc  , surfac    ,
-     &                      a(ip_arh)     , conc(1,1,igrcha) )
-               do isys = 1 , notot
-                  ivar = iv_cnc + isys - 1
-                  vgrset(ivar,igrcha) = 1
-               enddo
-            endif
-
-            flux = 0.0
-            if ( ibflag .gt. 0 ) flxdmp = 0
-
-!           set idt and delt
-            idtpro     = prondt(ipchar)*idt
-            ipp_idt    = nodef - 2*nproc + ipchar
-            ipp_delt   = nodef -   nproc + ipchar
-            defaul(ipp_idt)  = float(idtpro)
-            defaul(ipp_delt) = float(idtpro)/float(itfact)
-            if ( timon ) call timstrt ( "onepro", ithand2 )
-            call onepro ( ipchar , ioffch , idt    , itfact , progrd ,
-     &                    grdnos , prvnio , prvtyp , prvvar , vararr ,
-     &                    varidx , arrknd , arrpoi , arrdm1 , arrdm2 ,
-     &                    vgrset , nogrid , vartda , vardag , noseg  ,
-     &                    grdseg , a      , varagg , ipmsa  , increm ,
-     &                    noflux , iflux  , promnr , flux   , iexpnt ,
-     &                    iknmrk , noq1   , noq2   , noq3   , noq4   ,
-     &                    nproc  , notot  , deriv  , stochi , volume ,
-     &                    prondt , ibflag , isdmp  , flxdmp , novar  ,
-     &                    vartag , iiknmr , pronam ,
-     &                    dspndt , velndt , dll_opb)
-            done( ipchar ) = 1
-            if ( timon ) call timstop ( ithand2 )
-            igrid  = progrd(ipchar)
-            noseg2 = grdnos(igrid)
-            if ( ipchar .ne. nproc ) then
-               nfluxp = iflux(ipchar+1) - iflux(ipchar)
-            else
-               nfluxp = noflux - iflux(ipchar) + 1
-            endif
-            if ( nfluxp .gt. 0 ) then
-
-!              If necessary set volume for this grid. Volume is always variable 1
-
-               if ( vgrset(1,igrid) .ne. 1 ) then
-                  call dhaggr( noseg           , noseg2 , 1      , 1      , 1      ,
-     &                         1               , 1      , 1      , 1      , 1      ,
-     &                         grdseg(1,igrid) , 1      , volume , volume , volume ,
-     &                         volume(1,igrid) )
-                  vgrset(1,igrid) = 1
-               endif
-
-!              Construct derivatives for these fluxes on this grid
-
-               call prodr2 ( deriv(1,1,igrid) , notot           , noflux , stochi          , iflux (ipchar) ,
-     &                       nfluxp           , flux(1,1,igrid) , noseg2 , volume(1,igrid) , prondt(ipchar) )
-
-!              For balances store FLXDMP
-
-               if ( ibflag .gt. 0 ) then
-                  call profld ( noflux  , iflux (ipchar) , nfluxp  , igrid  , noseg2          ,
-     &                          noseg   , prondt(ipchar) , isdmp   , grdseg , flux(1,1,igrid) ,
-     &                          volume  , flxdmp         )
-               endif
-            endif
-
-!           If processes on other grid convert derivs to base grid
-
-            igrcha = progrd(ipchar)
-            if ( noflux .gt. 0 .and. igrcha .gt. 1 ) then
-               iswcum = 1
-               noseg2 = grdnos(igrcha)
-               call dhdag2( noseg   , noseg2             , notot  , notot             , notot  ,
-     &                      notot   , 1                  , 1      , 1                 , 1      ,
-     &                      notot   , grdseg(1  ,igrcha) , 2      , deriv(1,1,igrcha) , amass  ,
-     &                      iswcum  , amass (1,1,igrcha) , deriv  )
-               deriv(:,:,igrcha) = 0.0   !     Zero derivs higher grids
-            endif
-
-!           Scale fluxes and update "processes" accumulation arrays
-
-            call dlwq14 ( deriv  , notot  , noseg  , itfact , amass2 ,
-     &                    idt    , iaflag , dmps   , intopt , isdmp  )
-
-!           Integration (derivs are zeroed)
-
-            call dlwqp0 ( conc   , amass  , deriv  , volume , idt     ,
-     &                    nosys  , notot  , noseg  , 0      , 0       ,
-     &                    surfac )
-
-!           Integrate the fluxes at dump segments
-
-            if ( ibflag .gt. 0 ) then
-               call proint ( noflux , ndmpar , idt    , itfact , flxdmp ,
-     &                       flxint , isdmp  , ipdmp  , ntdmpq )
-               flxdmp = 0.0
-            endif
-
-!           Set CONC not actual for higer grids
-
-            ix_cnc = 1
-            ia_cnc = 6
-            call dhgvar( ia_cnc, ix_cnc, iv_cnc)
-            do igrid = 2 , nogrid
-               do isys = 1 , notot
-                  ivar = iv_cnc + isys - 1
-                  vgrset(ivar,igrid) = 0
-               enddo
-            enddo
-         else
-            done ( ipchar ) = 1
-         endif
-      endif
 
 !     See if converting CONC in one step speeds up. Only in case of no fractional step
 
@@ -663,9 +513,9 @@
 !$OMP DO  PRIVATE(run,idtpro,k,nfluxp,ipp_idt,ipp_delt)  SCHEDULE(DYNAMIC)
       do iproc = 1,nproc
 
-!        NOT bloom and charon
+!        NOT bloom
 
-         if ( iproc .ne. ipbloo .and. iproc .ne. ipchar ) then
+         if ( iproc .ne. ipbloo ) then
 
 !           Check fractional step
 
@@ -730,7 +580,7 @@
      &              notot  , progrd , grdnos , iflux  , vgrset ,
      &              grdseg , volume , deriv  , stochi , flux   ,
      &              prondt , ibflag , isdmp  , flxdmp ,
-     &              ipbloo , ipchar , istep  )
+     &              ipbloo , istep  )
 
 !     Store fluxes and elaborate mass balances set fractional step
 !     Vraag , doen we nu altijd fractional step? of moeten we als we geen
@@ -1179,7 +1029,7 @@
      &                    notot  , progrd , grdnos , iflux  , vgrset ,
      &                    grdseg , volume , deriv  , stochi , flux   ,
      &                    prondt , ibflag , isdmp  , flxdmp ,
-     &                    ipbloo , ipchar , istep  )
+     &                    ipbloo , istep  )
 
 !     Deltares - Delft Software Department
 
@@ -1230,7 +1080,6 @@
       integer(4), intent(in   ) :: isdmp (noseg )                  ! Segment to dumped segment pointer
       real   (4), intent(inout) :: flxdmp(noflux, *     )          ! Dumped fluxes
       integer(4), intent(in   ) :: ipbloo                          ! The BLOOM  process if any
-      integer(4), intent(in   ) :: ipchar                          ! The CHARON process if any
       integer(4), intent(in   ) :: istep                           ! Time step nr.
 
 !     Local
@@ -1243,7 +1092,7 @@
       if ( timon ) call timstrt ( "twopro", ithandl )
 
       do iproc = 1, nproc
-         if ( iproc .eq. ipbloo .or. iproc .eq. ipchar ) cycle
+         if ( iproc .eq. ipbloo ) cycle
          if ( mod( istep-1, prondt(iproc) ) .ne. 0 ) cycle
 
 !        See if this process produces fluxes

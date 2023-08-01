@@ -34,11 +34,10 @@ module m_delwaq1_data
     use timers       !   performance timers
     use dhcommand
 
-    use D00SUB
     use ProcesSet
     use Workspace
     use Rd_token
-    
+
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
     use m_sysa          ! Pointers in real array workspace
@@ -48,10 +47,10 @@ module m_delwaq1_data
     implicit none
     integer, parameter             :: nlun   = 50              ! number of input / output files
     integer                        :: lun(nlun)                ! unit numbers input / output files
-    character(len=lchmax)             :: lchar(nlun)              ! file names input / output files
+    character(len=lchmax)          :: lchar(nlun)              ! file names input / output files
     integer, parameter             :: noint  = 200             ! number of integration options implemented
     integer                        :: iopt(noint)              ! integration option list
-          
+
 
     !
     !     work arrays

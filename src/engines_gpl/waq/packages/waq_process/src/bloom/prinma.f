@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_prinma
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *        SUBROUTINE TO PRINT MAXIMUM SOLUTION TO DEBUG FILE         *
@@ -63,3 +69,5 @@
   120 format ('  Number of intervals:',I3,2X,'Infeasible:',I3,2X,'Maximum interval:',I3,//)
       return
       end
+
+      end module m_prinma

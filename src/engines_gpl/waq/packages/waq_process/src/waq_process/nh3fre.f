@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_nh3fre
+
+      implicit none
+
+      contains
+
 
       subroutine nh3fre ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -53,12 +59,13 @@
 !     ------   -----  ------------
       use m_write_error_message
       USE PHYSICALCONSTS, ONLY: CtoKelvin
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-!
+      integer  iseg
       PARAMETER ( MNITRO =    14.0    ,
      +            KELVIN =    real(CtoKelvin),
      +            M3TOL  =     1.0E-3   )
@@ -166,3 +173,5 @@
 !
       RETURN
       END
+
+      end module m_nh3fre

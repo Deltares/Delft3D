@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq07
+      use m_read_block
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq07 ( lun    , lchar  , filtype, inpfil   , syname ,
      &                    iwidth , ioutpt , gridps , constants, chkpar ,
@@ -32,6 +40,7 @@
 
 !     Global declarations
 
+      use m_check
       use m_zoek
       use m_srstop
       use m_open_waq_files
@@ -52,7 +61,7 @@
 !     kind                    function         name           Descriptipon
 
       integer               , intent(inout) :: lun(*)       !< unit numbers used
-      character(len=*)      , intent(in   ) :: lchar(*)     !< filenames
+      character(len=*)      , intent(inout) :: lchar(*)     !< filenames
       integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       !< input file structure with include stack and flags
       character(len=*)      , intent(in   ) :: syname(*)    !< substance names
@@ -295,3 +304,5 @@
  2420 FORMAT ( /,' ERROR: No parameter or segment function "LENGTH" found - needed for special waste loads!' )
 !
       END
+
+      end module m_dlwq07

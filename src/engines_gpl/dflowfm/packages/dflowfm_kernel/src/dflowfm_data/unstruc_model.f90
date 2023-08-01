@@ -100,7 +100,9 @@ implicit none
     integer, parameter :: MD_AUTOSTARTSTOP = 2   !< Autostart this model and then exit (batchmode)
 
     type(tree_data), pointer, public :: md_ptr   !< Unstruc Model Data in tree_data
+
     character(len=64), target  :: md_ident         = ' ' !< Identifier of the model, used as suggested basename for some files. (runid)
+
     character(len=64)  :: md_mdu           = ' ' !< similar, used in parsing parsing commandline
     character(len=64)  :: md_ident_sequential = ' ' !< Sequential model identifier, used for parallel outputdir
 
@@ -706,7 +708,7 @@ subroutine readMDUFile(filename, istat)
     use m_physcoef
     use m_alloc
     use m_equatorial
-    use m_netw,                  only : Makeorthocenters
+    use m_netw,                  only : Makeorthocenters, strip_mesh
     use m_partitioninfo
     use m_fixedweirs
     use m_trachy, only: trtdef_ptr
@@ -727,7 +729,6 @@ subroutine readMDUFile(filename, istat)
     use unstruc_channel_flow
     use m_bedform, only: bfm_included
     use m_debug
-
     use m_sediment
     use m_waves, only: hwavuni, twavuni, phiwavuni
     use m_sedtrails_data, only: sedtrails_analysis
@@ -982,6 +983,7 @@ subroutine readMDUFile(filename, istat)
        call prop_get_integer(md_ptr, 'geometry', 'Zlayeratubybob' , jaZlayeratubybob , success)
     endif
     call prop_get_integer( md_ptr, 'geometry', 'Makeorthocenters' , Makeorthocenters)
+    call prop_get_integer( md_ptr, 'geometry', 'stripMesh'        , strip_mesh)
     call prop_get_double ( md_ptr, 'geometry', 'Dcenterinside'    , Dcenterinside)
     call prop_get_string ( md_ptr, 'geometry', 'PartitionFile'    , md_partitionfile, success)
     if (jampi .eq. 1 .and. md_japartition .ne. 1) then
@@ -1142,7 +1144,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection' , javakeps)
     call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
     call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
-  
+    call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
+ 
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
     call prop_get_integer(md_ptr, 'numerics', 'AntiCreep' , jacreep)
 
@@ -1364,12 +1367,16 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'sediment', 'InMorphoPol',          inmorphopol, success)              ! value of the update inside morphopol (only 0 or 1 make sense)
     call prop_get_integer(md_ptr, 'sediment', 'MorCFL',               jamorcfl, success )                ! use morphological time step restriction (1, default) or not (0)
     call prop_get_double (md_ptr, 'sediment', 'DzbDtMax',             dzbdtmax, success)                 ! Max bottom level change per timestep
+    call prop_get_double (md_ptr, 'sediment', 'MasBalMinDep',         botcrit, success)                  ! Minimum depth *after* bottom update for SSC adaptation mass balance
+    call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
+    call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)             ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
     call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
     call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)            ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
     
     call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
     call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
     call prop_get_integer(md_ptr, 'sediment', 'Seddenscoupling'    ,  jaseddenscoupling)
+    call prop_get_integer(md_ptr, 'sediment', 'Tracers_density_coupling',  ja_tracers_density_coupling)
     call prop_get_integer(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
 
@@ -1766,7 +1773,6 @@ subroutine readMDUFile(filename, istat)
     call unc_set_ncformat(md_ncformat)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
-
     call prop_get_integer(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
     call prop_get_integer(md_ptr, 'output', 'NcNoForcedFlush',  unc_noforcedflush, success)
 
@@ -1977,6 +1983,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_pump', jashp_pump, success)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_dryarea', jashp_dry, success)
     call prop_get_integer(md_ptr, 'output', 'wrishp_genstruc', jashp_genstruc, success)
+    call prop_get_integer(md_ptr, 'output', 'wrishp_dambreak', jashp_dambreak, success)
 
     call prop_get_integer(md_ptr, 'output', 'WriteDFMinterpretedvalues', jawriteDFMinterpretedvalues, success)
 
@@ -2327,12 +2334,14 @@ subroutine readMDUFile(filename, istat)
       jashp_obs = 0
    endif
 
-   if (len_trim(md_structurefile) == 0 .and. (jashp_weir > 0 .or. jashp_gate > 0 .or. jashp_genstruc > 0 )) then
+   if (len_trim(md_structurefile) == 0 .and. (jashp_weir > 0 .or. jashp_gate > 0 .or. jashp_genstruc > 0 .or. jashp_dambreak > 0)) then
       write (msgbuf, '(a)') 'MDU settings does not specify any structure: StructureFile =  , but sets to write a ' &
          //'shape file for structures (Wrishp_weir/Wrishp_gate/Wrishp_genstruc = 1). In this situation, no such shape file is written.'
       call warn_flush()
       jashp_weir = 0
       jashp_gate = 0
+      jashp_genstruc = 0
+      jashp_dambreak = 0
    endif
 
    if (len_trim(md_thdfile) == 0 .and. jashp_thd > 0) then
@@ -2623,7 +2632,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use dflowfm_version_module
     use m_equatorial
     use m_sediment
-    use m_netw,                  only : Makeorthocenters
+    use m_netw,                  only : Makeorthocenters, strip_mesh
     use m_fixedweirs
     use m_reduce,                only : maxdge
     use m_grw
@@ -2838,6 +2847,9 @@ endif
     if (writeall .or. (Makeorthocenters > 0)) then
        call prop_set(prop_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters, 'Switch from circumcentres to orthocentres in geominit (i>=1: number of iterations, 0: do not use)')
     endif
+    if (writeall .or. (strip_mesh > 0)) then
+       call prop_set(prop_ptr, 'geometry', 'stripMesh', strip_mesh, 'Strip unused nodes and links from the mesh after clipping (1: strip, 0: do not strip)')
+    endif
     if (writeall .or. (Dcenterinside .ne. 1d0)) then
     call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
     endif
@@ -3036,6 +3048,7 @@ endif
     endif
 
     call prop_set(prop_ptr, 'numerics', 'Icgsolver',       Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
+    call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
     if (writeall .or. Maxdge .ne. 6) then
        call prop_set(prop_ptr, 'numerics', 'Maxdegree',  Maxdge,      'Maximum degree in Gauss elimination')
     end if
@@ -3158,6 +3171,10 @@ endif
 
     if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
        call prop_set(prop_ptr, 'numerics', 'FacLaxturb' , FacLaxturb, '(Default: 0=TurKin0 from links, 1.0=from nodes. 0.5=fityfifty)')
+    endif
+
+    if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
     endif
 
     if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
@@ -3409,6 +3426,7 @@ endif
     endif
     call prop_set(prop_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum, '1: Switch on momentum transfer in NearField related entrainment')
 
+
 ! secondary flow
 ! output to mdu file
     call prop_set(prop_ptr, 'physics', 'SecondaryFlow'  , jasecflow, 'Secondary flow (0: no, 1: yes)')
@@ -3465,6 +3483,10 @@ endif
        endif
     endif
 
+    if (writeall .or. ja_tracers_density_coupling > 0 ) then
+        call prop_set(prop_ptr, 'sediment', 'Tracers_density_coupling',  ja_tracers_density_coupling, 'tracers rho coupling (0=no, 1=yes), it is active when no sed rho coupling')
+    end if
+    
     if (writeall .or. javeg > 0) then
        call prop_set(prop_ptr, 'veg', 'Vegetationmodelnr', javeg      , 'Vegetation model nr, (0=no, 1=Baptist DFM)')
        call prop_set(prop_ptr, 'veg', 'Clveg'          , Clveg        , 'Stem distance factor, default 0.8 ()' )
@@ -4117,6 +4139,9 @@ endif
     end if
     if( writeall .or. jashp_genstruc > 0 ) then
        call prop_set(prop_ptr, 'output', 'wrishp_genstruc', jashp_genstruc, 'Write a shape file for general structures')
+    end if
+    if( writeall .or. jashp_dambreak > 0 ) then
+       call prop_set(prop_ptr, 'output', 'wrishp_dambreak', jashp_dambreak, 'Write a shape file for dam breaks')
     end if
 
     call prop_set(prop_ptr, 'output', 'WriteDFMinterpretedvalues', jaWriteDFMinterpretedvalues, 'Write DFMinterpretedvalues (1: yes, 0: no)' )

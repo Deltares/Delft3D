@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_apatit
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE APATIT (PMSA  , FL    , IPOINT, INCREM, NOSEG ,
      +                   NOFLUX, IEXPNT, IKNMRK, NOQ1  , NOQ2  ,
@@ -58,6 +64,7 @@
 !     ------   -----  ------------
 !
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       INTEGER  NOSEG , NOFLUX, NOQ1  , NOQ2  , NOQ3  ,  NOQ4
       INTEGER  IPOINT(*)       , INCREM(*),
@@ -142,3 +149,5 @@
       RETURN
 !
       END
+
+      end module m_apatit

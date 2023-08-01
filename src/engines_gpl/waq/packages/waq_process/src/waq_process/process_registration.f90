@@ -22,8 +22,188 @@
 !!  rights reserved.
 
 module process_registration
-use m_srstop
-use m_monsys
+    use m_srstop
+    use m_monsys
+    use m_protistcm
+    use m_propsg
+    use m_heteroagg
+    use m_protistdiat
+    use m_protistdiatsedi
+    use m_protistgreen
+    use m_protistncm
+    use m_protistpfd
+    use m_protistsummation
+    use m_protistzoo
+    use m_attout
+    use m_prpagg
+    use m_sumtyr
+    use m_adspo4
+    use m_advtra
+    use m_agecart
+    use m_apatit
+    use m_atmdep
+    use m_sedimtyr
+    use m_waqsediment
+    use m_bacmrt
+    use m_calsed
+    use m_caltem
+    use m_calwav
+    use m_botmin
+    use m_burial
+    use m_bodcod
+    use m_calchz
+    use m_caltau
+    use m_d40blo
+    use m_consbl
+    use m_dayrad
+    use m_ddepth
+    use m_covmac
+    use m_cselac
+    use m_clcrad
+    use m_dayl
+    use m_debgrz
+    use m_cascad
+    use m_denwat
+    use m_depave
+    use m_decdet
+    use m_dectra
+    use m_diggin
+    use m_decpc5
+    use m_decbod
+    use m_degmp
+    use m_delwaqg
+    use m_densed
+    use m_extinc
+    use m_dsurf
+    use m_effblo
+    use m_espace
+    use m_grzmac
+    use m_flxfrc
+    use m_gemmpb
+    use m_dissi
+    use m_flocsd
+    use m_floceq
+    use m_emersi
+    use m_effave
+    use m_dradio
+    use m_dmvol
+    use m_ebuch4
+    use m_dlalg
+    use m_extina
+    use m_dsptra
+    use m_dredge
+    use m_secchi
+    use m_npps12
+    use m_staqtl
+    use m_somsed
+    use m_nralgs
+    use m_mac3du
+    use m_ptewor
+    use m_veg3dx
+    use m_rdbalg
+    use m_sedox
+    use m_oxymin
+    use m_harves
+    use m_vivian
+    use m_vbstat
+    use m_sumfrc
+    use m_nh3fre
+    use m_satoxy
+    use m_refl
+    use m_radalg
+    use m_veg3du
+    use m_phcomp
+    use m_wkcomp
+    use m_sedhm
+    use m_hdisp
+    use m_pprlim
+    use m_ulfix
+    use m_vbgro
+    use m_sednu2
+    use m_nitrif
+    use m_mpbnlm
+    use m_vbmrt
+    use m_stadpt
+    use m_sedcom
+    use m_hdispv
+    use m_priron
+    use m_veg2dn
+    use m_temper
+    use m_stageo
+    use m_partmp
+    use m_maxmac
+    use m_nutupt
+    use m_mpbnut
+    use m_macnut
+    use m_vervlu
+    use m_totdep
+    use m_sulfox
+    use m_stadsc
+    use m_specfe
+    use m_sedsod
+    use m_resant
+    use m_sedim
+    use m_waqmeteo
+    use m_sedcar
+    use m_strear
+    use m_heatfl
+    use m_sulpho
+    use m_s12tra
+    use m_nutrel
+    use m_radmac
+    use m_satch4
+    use m_vbupt
+    use m_ironox
+    use m_sulfid
+    use m_pripro
+    use m_trase2
+    use m_macrop
+    use m_trcoef
+    use m_ironre
+    use m_staday
+    use m_vbxs12
+    use m_macdis
+    use m_phcomb
+    use m_tfalg
+    use m_makpoc
+    use m_tempermode
+    use m_simph
+    use m_resdm
+    use m_posoxy
+    use m_wlcwoc
+    use m_salchl
+    use m_hdispa
+    use m_vtrans
+    use m_watage
+    use m_sdppro
+    use m_satco2
+    use m_rfpart
+    use m_swoxy
+    use m_resbuf
+    use m_rear
+    use m_spcarb
+    use m_trsoxy
+    use m_selfcool
+    use m_sedaap
+    use m_plastc
+    use m_s12tim
+    use m_varsal
+    use m_respup
+    use m_stox3d
+    use m_mpbllm
+    use m_sulfpr
+    use m_restim
+    use m_staprc
+    use m_mpbtmp
+    use m_varoxy
+    use m_sedomv
+    use m_intpol
+    use m_methox
+    use m_veloc
+    use m_vbxsum
+    use m_nlalg
+    use m_ssedph
+    use m_phcarb
 
     implicit none
 
@@ -70,21 +250,6 @@ subroutine pronrs( pronam, imodul )
     integer :: i
     logical :: okay
     logical, save :: first = .true.
-
-    external :: &
-        DDEPTH, DSURF, TOTDEP, EMERSI, METEO, HEATFL, DAYRAD, TEMPER, VARSAL, VELOC, RESTIM, STOX3D, HDISP, HDISPV, WATAGE, INTPOL,      &
-        CALCHZ, CALWAV, CALTAU, SIMPH, SPCARB, EXTINA, EXTINC, CLCRAD, DAYL, DEPAVE, VTRANS, D40BLO, PHCOMB, MAKPOC, PHCOMP, SEDCOM,     &
-        WKCOMP, DMVOL, BACMRT, SATCO2, REAR, ADSPO4, DENSED, DENWAT, NITRIF, SATOXY, VAROXY, BOTMIN, BODCOD, DECBOD, DECPC5, VIVIAN,     &
-        DISSI, SEDOX, TFALG, DLALG, NLALG, RADALG, RDBALG, PRIPRO, SDPPRO, PPRLIM, NUTUPT, NUTREL, NRALGS, OXYMIN, CSELAC, EBUCH4,       &
-        SATCH4, SULFID, SULFOX, SULFPR, METHOX, SPECFE, IRONOX, SULPHO, IRONRE, PRIRON, CALSED, SEDCAR, SEDNU2, SEDSOD, SSEDPH,          &
-        SOMSED, SEDAAP, RESDM, BURIAL, DIGGIN, ADVTRA, DSPTRA, RFPART, PARTMP, TRASE2, ULFIX, CONSBL, SWOXY, TRCOEF, VERVLU, DEGMP,      &
-        SEDHM, SEDOMV, ATMDEP, NH3FRE, POSOXY, SECCHI, PTEWOR, STREAR, TRSOXY, APATIT, HARVES, VEG2DN, VBSTAT, VBGRO, VBMRT, VEG3DX,     &
-        VBUPT, VEG3DU, SALCHL, DECDET, S12TRA, RESANT, STADAY, STADPT, STADSC, STAGEO, STAPRC, STAQTL, SUMFRC, FLXFRC, PHCARB, HDISPA,   &
-        MAXMAC, COVMAC, MACDIS, RADMAC, MACNUT, MACROP, MAC3DU, GRZMAC, NPPS12, DEBGRZ, FLOCEQ, DREDGE, RESPUP, RESBUF, SEDIM, S12TIM,   &
-        REFL, ATTOUT, CASCAD, EFFBLO, EFFAVE, DECTRA, ESPACE, CALTEM, PLASTC, WLCWOC, HDISS, TMODE, DLWQG2, GEMMPB, MPBNUT, MPBTMP,      &
-        MPBLLM, MPBNLM, VBXS12, VBXSUM, PROPSG, PRPAGG, HETAGG, SEDTYR, SEDAGG, SUMTYR, PROPFD, PRODIA, PROGRE, PRONCM, PROSED, PROTCM,  &
-        PROZOO, DRADIO, PHPROT, FLOCSD, AGECART
-
 !
 !   Register the process routines
 !

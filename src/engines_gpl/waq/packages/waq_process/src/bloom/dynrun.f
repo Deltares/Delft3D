@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dynrun
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *         SUBROUTINE DYNRUN TO SOLVE BLOOM PROBLEM                  *
@@ -41,6 +47,7 @@
 
       subroutine dynrun(exttot,extb,tmp,sol,dep,dayl,id,iseg,nset,extlim,deat,totchl,totdry,totcar,swblsa)
 
+      use m_bloom
       use bloom_data_dim
       use bloom_data_size 
       use bloom_data_io  
@@ -108,3 +115,5 @@
 99930 format (' Period: ',I4,' Potential degeneracy for species: ',20I3)
       return
       end
+
+      end module m_dynrun

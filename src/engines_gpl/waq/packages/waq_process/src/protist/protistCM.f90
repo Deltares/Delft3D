@@ -20,12 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistcm
+
+implicit none
+
+contains
+
 
 
   ! 6 char name for process mathc with second line of PDF
 subroutine PROTCM     ( pmsa   , fl     , ipoint , increm, noseg , &
-                            noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                            noq3   , noq4   )
+                        noflux , iexpnt , iknmrk , noq1  , noq2  , &
+                        noq3   , noq4   )
 !
 !*******************************************************************************
 !
@@ -548,3 +554,5 @@ use ieee_arithmetic
     deallocate (ipnt)
     return
 end ! end subroutine
+
+end module m_protistcm

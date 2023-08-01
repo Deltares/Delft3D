@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq09
+      use m_rdodef
+      use m_outboo
+      use m_opt1
+      use m_getopo
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq09 ( lun    , lchar  , filtype, car    , iar    ,
      &                    icmax  , iimax  , iwidth , ibflag , vrsion ,
@@ -47,6 +58,8 @@
 
 !     Logical units     : -
 
+      use m_defout
+      use m_check
       use m_rdwrk4
       use m_open_waq_files
       use rd_token     !   for the reading of tokens
@@ -296,3 +309,5 @@
  2070 format (/1X,109('*'),' B L O C K -',I2,' ',5('*')/)
 
       end
+
+      end module m_dlwq09

@@ -31,7 +31,6 @@
 module waq_omi_priv
 
     use waq_omi_utils
-    use waq_omi_constants
     use delwaq2_global_data
 
     implicit none
@@ -120,73 +119,6 @@ function DetermineIndex( dlwqtype, parid, locid )
     idxvol  = -1
     volcorr = 1
 
-    select case( dlwqtype )
-        case ( DLWQ_CONSTANT )
-            idx    = icons+parid-1
-            step   = 1
-            number = 1
-
-        case ( DLWQ_PARAMETER )
-            if ( locid /= ODA_ALL_SEGMENTS ) then
-                idx    = iparm+parid-1+(locid-1)*nopa
-                step   = nopa
-                number = 1
-            else
-                idx    = iparm+parid-1
-                step   = nopa
-                number = noseg
-            endif
-
-        case ( DLWQ_CONCENTRATION )
-            if ( locid /= ODA_ALL_SEGMENTS ) then
-                idx     = iconc+parid-1+(locid-1)*notot
-                step    = notot
-                number  = 1
-                idxmass = imass+parid-1+(locid-1)*notot
-                idxvol  = ivol+locid-1
-            else
-                idx     = iconc+parid-1
-                step    = notot
-                number  = noseg
-                idxmass = imass+parid-1
-                idxvol  = ivol
-            endif
-
-
-        case (DLWQ_ALL_CONCENTRATIONS)
-           ! all segments and all substances are adressed at once.
-                idx     = iconc
-                step    = 1
-                number  = noseg*notot
-                idxmass = imass
-                idxvol  = ivol
-                volcorr = notot
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            idx    = ibset+parid-1+(locid-1)*nosys
-            step   = nosys
-            number = nobnd
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            write(*,*) 'Not implemented yet!'
-            call srstop(1)
-
-        case ( DLWQ_DISCHARGE )
-            idx    = iwste+parid+(locid-1)*(notot+1)
-            step   = notot
-            number = nowst
-
-        case ( DLWQ_MONITOR_POINT )
-            idx     = iconc+parid-1+(locid-1)*notot
-            step    = notot
-            number  = 1
-
-        case default
-            idx     = 0
-            step    = 1
-            number  = 0
-    end select
-
     DetermineIndex(1) = idx
     DetermineIndex(2) = step
     DetermineIndex(3) = number
@@ -211,66 +143,7 @@ subroutine StoreOperation( index, number_values, new_value, operation )
 
     integer                               :: pos
 
-    pos = FreeOperationEntry()
-
-    dlwqd%operation(pos)%index         = index
-    dlwqd%operation(pos)%number_values = number_values
-
-    if ( number_values > 1 ) then
-        if ( associated( dlwqd%operation(pos)%new_value ) ) then
-            if ( size(dlwqd%operation(pos)%new_value) /= number_values ) then
-                deallocate( dlwqd%operation(pos)%new_value )
-                allocate( dlwqd%operation(pos)%new_value(1:number_values) )
-            endif
-        else
-           allocate( dlwqd%operation(pos)%new_value(1:number_values) )
-        endif
-        dlwqd%operation(pos)%new_value = new_value   ! so size of new_value is number_values!
-    else
-        dlwqd%operation(pos)%new_scalar = new_value(1)
-    endif
-
-    dlwqd%operation(pos)%operation = operation
-    dlwqd%number_operations        = pos
-
-
 end subroutine StoreOperation
-
-!> Find or create a new entry in the buffer of operations
-integer function FreeOperationEntry()
-
-    integer :: i
-    integer :: pos
-    type(operation_data), dimension(:), pointer :: new_operation
-
-    if ( .not. associated(dlwqd%operation) ) then
-        allocate( dlwqd%operation(10) )
-        dlwqd%operation%operation = DLWQ_FREE
-    endif
-
-    pos = -1
-    do i = 1,size(dlwqd%operation)
-        if ( dlwqd%operation(i)%operation == DLWQ_FREE ) then
-            pos = i
-            exit
-        endif
-    enddo
-
-    if ( pos == -1 ) then
-        allocate( new_operation( 2*size(dlwqd%operation) ) )
-
-        pos = 1 + size(dlwqd%operation)
-        new_operation%operation                = DLWQ_FREE
-        new_operation(1:size(dlwqd%operation)) = dlwqd%operation
-
-        deallocate( dlwqd%operation ) ! Not the new_value arrays! We still need those
-
-        dlwqd%operation => new_operation
-    endif
-
-    FreeOperationEntry = pos
-
-end function FreeOperationEntry
 
 !> Set the new value, based on the operation
 !!
@@ -281,20 +154,6 @@ subroutine SetNewValue( value, new_value, operation )
     real, intent(inout)    :: value
     real, intent(in)       :: new_value
     integer, intent(in)    :: operation
-
-    select case ( operation )
-        case ( DLWQ_SET )
-            value = new_value
-
-        case ( DLWQ_ADD )
-            value = value + new_value
-
-        case ( DLWQ_MULTIPLY )
-            value = value * new_value
-
-        case default
-            ! Do nothing
-    end select
 
 end subroutine SetNewValue
 
@@ -339,36 +198,7 @@ subroutine CheckParameterId( dlwqtype, parid, success )
     integer, intent(in)    :: parid
     logical, intent(inout) :: success
 
-
-    select case ( dlwqtype )
-        case ( DLWQ_CONSTANT )
-            success = parid >= 1 .and. parid <= nocons
-
-        case ( DLWQ_PARAMETER )
-            success = parid >= 1 .and. parid <= nopa
-
-        case ( DLWQ_CONCENTRATION )
-            success = parid >= 1 .and. parid <= notot
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            success = parid >= 1 .and. parid <= nosys
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            write(*,*) 'Not implemented yet!'
-            call srstop(1)
-
-        case ( DLWQ_DISCHARGE )
-            success = parid >= 1 .and. parid <= notot   ! Allow for Flow rate?
-
-        case ( DLWQ_MONITOR_POINT )
-            success = parid >= 1 .and. parid <= notot
-
-        case (DLWQ_ALL_CONCENTRATIONS)
-            success = parid == -1
-
-        case default
-            success = .false.
-    end select
+    success = .false.
 
 end subroutine CheckParameterId
 
@@ -381,29 +211,7 @@ subroutine CheckLocationId(  dlwqtype, locid, success )
     integer, intent(in)    :: locid
     logical, intent(inout) :: success
 
-    select case ( dlwqtype )
-        case ( DLWQ_CONSTANT )
-            success = .true. ! locid ignored
-
-        case ( DLWQ_PARAMETER, DLWQ_CONCENTRATION, DLWQ_ALL_CONCENTRATIONS )
-            success = (locid >= 1 .and. locid <= noseg) .or. (locid == ODA_ALL_SEGMENTS)       ! Allow for "all segments"?
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            success = locid >= 1 .and. locid <= nobnd
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            write(*,*) 'Not implemented yet!'
-            call srstop(1)
-
-        case ( DLWQ_DISCHARGE )
-            success = locid >= 1 .and. locid <= nowst
-
-        case ( DLWQ_MONITOR_POINT )
-            success = locid >= 1 .and. locid <= noseg
-
-        case default
-            success = .false.
-    end select
+    success = .false.
 
 end subroutine CheckLocationId
 
@@ -413,13 +221,7 @@ subroutine CheckOperation(   operation, success )
     integer, intent(in)    :: operation
     logical, intent(inout) :: success
 
-    select case ( operation )
-        case ( DLWQ_SET, DLWQ_ADD, DLWQ_MULTIPLY )
-            success = .true.
-
-        case default
-            success = .false.
-    end select
+    success = .false.
 
 end subroutine CheckOperation
 
@@ -430,32 +232,7 @@ integer function GetLocationCountPriv( type )
 
     integer, intent(in)    :: type
 
-    select case ( type )
-        case ( DLWQ_CONSTANT )
-            GetLocationCountPriv = 1
-
-        case ( DLWQ_PARAMETER )
-            GetLocationCountPriv = noseg
-
-        case ( DLWQ_CONCENTRATION )
-            GetLocationCountPriv = noseg
-
-        case ( DLWQ_DISCHARGE )
-            GetLocationCountPriv = nowst
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            GetLocationCountPriv = nobnd
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            write(*,*) 'Not implemented yet!'
-            call srstop(1)
-
-        case ( DLWQ_MONITOR_POINT )
-            GetLocationCountPriv = nodump
-
-        case default
-            GetLocationCountPriv = 0
-    end select
+    GetLocationCountPriv = 0
 
 end function GetLocationCountPriv
 
@@ -489,37 +266,7 @@ integer function GetItemCountPriv( type )
 
     integer, intent(in)    :: type
 
-    select case ( type )
-        case ( DLWQ_CONSTANT )
-            GetItemCountPriv = nocons
-
-        case ( DLWQ_PARAMETER )
-            GetItemCountPriv = nopa
-
-        case ( DLWQ_CONCENTRATION )
-            GetItemCountPriv = notot
-
-        case ( DLWQ_DISCHARGE )
-            GetItemCountPriv = notot
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            GetItemCountPriv = nosys
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            GetItemCountPriv = nosys
-
-        case ( DLWQ_ACTIVE_SUBSTANCES )
-            GetItemCountPriv = nosys
-
-        case ( DLWQ_ALL_SUBSTANCES )
-            GetItemCountPriv = notot
-
-        case ( DLWQ_MONITOR_POINT )
-            GetItemCountPriv = notot
-
-        case default
-            GetItemCountPriv = 0
-    end select
+    GetItemCountPriv = 0
 
 end function GetItemCountPriv
 
@@ -531,30 +278,7 @@ integer function GetItemIndexPriv( dlwqtype, name )
 
     integer                         :: idx
 
-    select case ( dlwqtype )
-        case ( DLWQ_CONSTANT )
-            call find_index( name, procparam_const, idx )
-
-        case ( DLWQ_PARAMETER )
-            call find_index( name, procparam_param, idx )
-
-        case ( DLWQ_CONCENTRATION )
-            call find_index( name, substance_name, idx )
-
-        case ( DLWQ_DISCHARGE )
-            call find_index( name, substance_name, idx )
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            call find_index( name, substance_name, idx )
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            call find_index( name, substance_name, idx )
-
-        case default
-            idx = 0
-    end select
-
-    GetItemIndexPriv = idx
+    GetItemIndexPriv = 0
 
 end function GetItemIndexPriv
 
@@ -565,35 +289,8 @@ integer function GetItemNamePriv( type, idx, name )
     character(len=*), intent(out)   :: name
     integer                         :: idx
 
-    if ( idx < 1 .or. idx > GetItemCountPriv( type ) ) then
-        GetItemNamePriv = -1
-        name             = '?'
-    endif
-
-    select case ( type )
-        case ( DLWQ_CONSTANT )
-            name = procparam_const(idx)
-
-        case ( DLWQ_PARAMETER )
-            name = procparam_param(idx)
-
-        case ( DLWQ_CONCENTRATION )
-            name = substance_name(idx)
-
-        case ( DLWQ_DISCHARGE )
-            name = substance_name(idx)
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            name = substance_name(idx)
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            name = substance_name(idx)
-
-        case default
-            name = '?'
-    end select
-
-    GetItemNamePriv = 0
+    GetItemNamePriv = -1
+    name             = '?'
 
 end function GetItemNamePriv
 
@@ -605,25 +302,7 @@ integer function GetLocationIndexPriv( type, name )
 
     integer                         :: idx
 
-    select case ( type )
-        case ( DLWQ_DISCHARGE )
-            call find_index( name, load_name, idx )
-
-        case ( DLWQ_BOUNDARY_VALUE )
-            call find_index( name, boundary_name, idx )
-
-        case ( DLWQ_BOUNDARY_SECTION )
-            write(*,*) 'Not implemented yet!'
-            call srstop(1)
-
-        case ( DLWQ_MONITOR_POINT )
-            call find_index( name, monitor_name, idx )
-
-        case default
-            idx = 0
-    end select
-
-    GetLocationIndexPriv = idx
+    GetLocationIndexPriv = 0
 
 end function GetLocationIndexPriv
 
@@ -656,7 +335,6 @@ integer function Count_Values(partype, parid, loctype, locid)
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'COUNT_VALUES' :: Count_Values
 
     use waq_omi_priv
-    use waq_omi_constants
     use m_sysn          ! System characteristics
     use m_sysa          ! Pointers in real array workspace
 
@@ -671,18 +349,7 @@ integer function Count_Values(partype, parid, loctype, locid)
     integer                               :: dlwqtype
     integer                               :: count
 
-
-    call odatype_2_dlwq(partype, loctype, dlwqtype)
-    if (dlwqtype == DLWQ_CONCENTRATION .or.           &
-        dlwqtype == DLWQ_PARAMETER) then
-        count = noseg
-    elseif (dlwqtype == DLWQ_ALL_CONCENTRATIONS) then
-        count = noseg*notot
-    else
-        count = 1
-    endif
-    ! return value:
-    Count_Values = count
+    Count_Values = 1
 
 end function Count_Values
 
@@ -713,7 +380,6 @@ integer function Set_Values(partype, parid, loctype, locid, operation, number, v
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SET_VALUES' :: Set_Values
 
     use waq_omi_priv
-    use waq_omi_constants
 
     implicit none
 
@@ -733,26 +399,7 @@ integer function Set_Values(partype, parid, loctype, locid, operation, number, v
     integer                               :: dlwqtype
     logical                               :: success
 
-    call odatype_2_dlwq(partype, loctype, dlwqtype)
-    parid_ = parid
-    if ( dlwqtype /= ODA_PAR_TYPE_GLOBALPAR .and. loctype == ODA_LOC_TYPE_ALL_SEGMENTS ) then
-        locid_ = ODA_ALL_SEGMENTS
-    else
-        locid_ = locid
-    endif
-    if (dlwqtype == DLWQ_ALL_CONCENTRATIONS) then
-       locid_ = ODA_ALL_SEGMENTS
-       parid_ = -1  ! TODO: ????
-    endif
-
-    allocate( r_values(number) )
-    r_values = values
-
-    success   = SetValuePriv( dlwqtype, parid_, locid_, r_values, operation )
-
-    deallocate( r_values )
-
-    Set_Values = merge( 1, 0, success )
+    Set_Values = 1
 end function Set_Values
 
 
@@ -788,7 +435,6 @@ integer function Set_Values_General(dlwqtype, parid, locid, operation, number, v
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SET_VALUES_GENERAL' :: Set_Values_General
 
     use waq_omi_priv
-    use waq_omi_constants
 
     implicit none
 
@@ -824,7 +470,6 @@ integer function Get_Values(partype, parid, loctype, locid, number, values)
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GET_VALUES' :: Get_Values
 
     use waq_omi_priv
-    use waq_omi_constants
 !    use m_delwaq_2_openda ! Only for current_instance
 
     implicit none
@@ -845,7 +490,6 @@ integer function Get_Values(partype, parid, loctype, locid, number, values)
 
     allocate( r_values(number) )
 
-    call odatype_2_dlwq(partype, loctype, dlwqtype)
     success  = GetValuePriv( dlwqtype, parid, locid, r_values )
     values = r_values
 
@@ -987,7 +631,7 @@ subroutine test_apply_operations( dlwqd )
 
     type(delwaq_data) :: dlwqd
 
-    call apply_operations( dlwqd )
+    !!call apply_operations( dlwqd )
 
 end subroutine test_apply_operations
 
@@ -1006,8 +650,7 @@ integer function GetLocationCount( odatype )
 
     integer :: dlwqtype
 
-    call odatype_2_dlwq(ODA_PAR_TYPE_SUBSTANCE, odatype, dlwqtype)
-    GetLocationCount = GetLocationCountPriv( dlwqtype )
+    GetLocationCount = 0
 
 end function GetLocationCount
 
@@ -1127,7 +770,7 @@ integer function GetActiveSubstancesCount( )
 
     implicit none
 
-    GetActiveSubstancesCount = GetItemCountPriv( DLWQ_ACTIVE_SUBSTANCES )
+    GetActiveSubstancesCount = 0
 
 end function GetActiveSubstancesCount
 
@@ -1141,7 +784,7 @@ integer function GetTotalSubstancesCount( )
 
     implicit none
 
-    GetTotalSubstancesCount = GetItemCountPriv( DLWQ_ALL_SUBSTANCES )
+    GetTotalSubstancesCount = 0
 
 end function GetTotalSubstancesCount
 
@@ -1158,7 +801,8 @@ integer function GetSubstanceName( subid, name )
     integer, intent(in)           :: subid
     character(len=*), intent(out) :: name
 
-    GetSubstanceName = GetItemNamePriv( DLWQ_CONCENTRATION, subid, name )
+    GetSubstanceName = 0
+    name = '?'
 
 end function GetSubstanceName
 
@@ -1174,7 +818,7 @@ integer function GetSubstanceId( name )
 
     character(len=*), intent(in)  :: name
 
-    GetSubstanceId = GetItemIndexPriv( DLWQ_CONCENTRATION, name )
+    GetSubstanceId = 0
 
 end function GetSubstanceId
 

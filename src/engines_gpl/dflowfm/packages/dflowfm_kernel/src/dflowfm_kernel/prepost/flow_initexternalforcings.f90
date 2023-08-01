@@ -2292,9 +2292,9 @@ if (mext /= 0) then
 
     do n = 1, ncgensg
        ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*3+1) is quickly need for updating bobs.)
-       zcgen((n-1)*3+1) = hulp( 6, n) ! levelcenter
-       zcgen((n-1)*3+2) = hulp(11, n) ! gateheight  == 'gateloweredgelevel', really a level
-       zcgen((n-1)*3+3) = hulp(26, n) ! door_opening_width
+       zcgen((n-1)*3+1) = hulp(idx_crestlevel, n)         ! CrestLevel
+       zcgen((n-1)*3+2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
+       zcgen((n-1)*3+3) = hulp(idx_gateopeningwidth, n)   ! GateOpeningWidth
 
        call togeneral(n, hulp(:,n), L2cgensg(n)-L1cgensg(n)+1,widths(L1cgensg(n):L2cgensg(n))) ! orgcode
     enddo
@@ -2384,14 +2384,14 @@ if (mext /= 0) then
              call clearECMessage()
              if (.not.ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then
                 msgbuf = 'Connecting time series file ''' // trim(filename0) // ''' and polyline file ''' // trim(filename) &
-                                                          // '''. for source/sinks failed:' // dumpECMessageStack(LEVEL_WARN,callback_msg)
+                                                         // '''. for source/sinks failed:' // dumpECMessageStack(LEVEL_WARN,callback_msg)
                 call warn_flush()
                 success = .false.
              endif
           else
-             msgbuf = 'File: ''' // trim(filename0) // '''  does not exist (associated with ''' // trim(filename) // ''').'
+             write (msgbuf, '(a,a,a)') 'No .tim-series file found for source/sinks ''', trim(filename), '''. It maybe provided by a coupler if it exists.'
              call warn_flush()
-            success = .false.
+             success = .true.
           endif
        endif
     enddo
@@ -2445,8 +2445,7 @@ end if
  if (allocated (kdd))      deallocate (kdd)
  if (allocated (kdgen))    deallocate (kdgen)
  if (allocated (kdp))      deallocate (kdp)
- if (allocated (kdss))     deallocate (kdss)
-
+ 
  if (allocated (xy2gate) ) deallocate (xy2gate)
  if (allocated (xy2cdam) ) deallocate (xy2cdam)
  if (allocated (xy2cgen) ) deallocate (xy2cgen)

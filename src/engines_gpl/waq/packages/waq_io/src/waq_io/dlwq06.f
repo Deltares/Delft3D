@@ -20,6 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq06
+      use m_opt1
+      use m_opt0
+      use m_dlwq5a
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq06 ( lun    , lchar  , filtype, icmax  , car    ,
      &                    iimax  , iar    , irmax  , rar    , notot  ,
@@ -61,6 +71,7 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(15) = unit intermediate file (waste load)
 
+      use m_check
       use m_zoek
       use m_srstop
       use rd_token
@@ -70,7 +81,7 @@
 !     Parameters    :
 !     type     kind  function         name             description
 
-      integer  ( 4), intent(in   ) :: lun    (*)     !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)     !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
       integer  ( 4), intent(inout) :: filtype(*)     !< type of binary files
       integer  ( 4), intent(in   ) :: icmax          !< size of the character workspace
@@ -120,6 +131,7 @@
       integer  (  4)                 ifound          !  help variable in searches
       integer  (  4)                 ifound2         !  help variable in searches
       logical                        ldummy          !  dummy logical
+      integer                        idummy          !  dummy integer
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dlwq06", ithndl )
 
@@ -340,9 +352,10 @@
       else                                   ! old input processing
          ierr2 = -2
          ldummy = .false.
+         idummy = 0
          call opt0   ( lun    , 15     , 0        , 0        , nowst,
      &                 notot+1, notot+1, nrftot(9), nrharm(9), 1    ,
-     &                 dtflg1 , ldummy , ldummy   , iwidth   , lchar,
+     &                 dtflg1 , ldummy , idummy   , iwidth   , lchar,
      &                 filtype, dtflg3 , vrsion   , ioutpt   , ierr2,
      &                 iwar   , .false.)
      &
@@ -401,3 +414,5 @@
      &gment function LENGTH required' )
 
       end
+
+      end module m_dlwq06

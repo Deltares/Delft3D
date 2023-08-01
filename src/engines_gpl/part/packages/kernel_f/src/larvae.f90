@@ -26,8 +26,10 @@ module larvae_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
 use precision_part               ! single/double precision
 use timers
+use m_t_forcing
 !
 !  module procedure(s)
 !
@@ -78,11 +80,6 @@ implicit none
       real   (sp), pointer       :: xa    ( : )         ! x-coordiante in real world
       real   (sp), pointer       :: ya    ( : )         ! y-coordinate in real world
 
-      ! external
-
-      real   (sp), external      :: t_forcing           ! temperature forcing
-      real   (sp), external      :: s_forcing           ! salinity forcing
-
       ! from input (const)
 
       integer, save              :: nstage              ! number of stages
@@ -130,8 +127,6 @@ implicit none
       real   (sp)                :: a                   ! a coefficient in development (-)
       real   (sp)                :: b                   ! b coefficient in development (-)
       real   (sp)                :: temp                ! temperature
-      real   (sp)                :: salinity            ! salinity
-      real   (sp)                :: salprev             ! salinity previous
       real   (sp)                :: delt                ! timestep in days
       real   (sp)                :: day                 ! time in days
       real   (sp)                :: duration            ! duration of current stage
@@ -303,7 +298,6 @@ implicit none
          zdepth = locdep(lgrid2(n,m),k) - (1.-z)*laydep
 
          temp     = t_forcing(itime,isegl)
-         salinity = s_forcing(itime,isegl,salprev)
 
          ! stage development
 

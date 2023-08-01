@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_compact_usefor
+
+      implicit none
+
+      contains
+
 
       subroutine compact_usefor ( lunut , waq_param, data_param, i     , icnt  )
 
@@ -135,3 +141,5 @@
  1030 format ( ' warning: item number: ',i3,' also not resolved: ',a)
 
       end
+
+      end module m_compact_usefor

@@ -1,3 +1,9 @@
+module m_fm_update
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -29,6 +35,8 @@
 
 !> update particles or add to summed fluxes
 subroutine update_part(itime)
+   use m_fm_update_particles
+   use m_fm_particles_in_grid
    use partmem
    use m_part_regular, only: npart
    use m_particles, laypart => kpart
@@ -158,3 +166,5 @@ subroutine update_part(itime)
 end subroutine update_part
 
 
+
+end module m_fm_update

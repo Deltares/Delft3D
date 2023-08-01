@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_satoxy
+
+      implicit none
+
+      contains
+
 
       subroutine satoxy ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -135,3 +141,5 @@
       RETURN
 !
       END
+
+      end module m_satoxy

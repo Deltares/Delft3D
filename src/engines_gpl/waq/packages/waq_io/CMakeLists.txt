@@ -19,6 +19,8 @@ add_library(${library_name} ${ods_files}
 set(oss_dependencies_general deltares_common
                              part_data_f
                              part_io_f
+                             part_kernel_f
+                             part_utils_f
                              io_hyd
                              io_netcdf
                              waq_data

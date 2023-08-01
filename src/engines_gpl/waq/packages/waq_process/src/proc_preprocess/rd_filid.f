@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_filid
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RD_FILID ( DEFFDS,         FFORM , VFFORM, CONTEN,
      +                      VERSIO, SERIAL, RUNDAT, SOURCE, REMARK,
@@ -209,3 +215,5 @@
       RETURN
 !
       END
+
+      end module m_rd_filid

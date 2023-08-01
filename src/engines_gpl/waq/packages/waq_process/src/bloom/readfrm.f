@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_readfrm
+
+      implicit none
+
+      contains
+
 
 !
 !  Readfrm reads the frm-file that contains the species/groups names and the integrated efficiency curves.
@@ -92,3 +98,5 @@
 
       return
       end
+
+      end module m_readfrm

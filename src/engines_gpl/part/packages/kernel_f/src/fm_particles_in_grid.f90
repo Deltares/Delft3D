@@ -1,3 +1,9 @@
+module m_fm_particles_in_grid
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -346,6 +352,7 @@ end subroutine dealloc_particles
 
 !> initialize particles
 subroutine ini_part(partfile, partrelfile, starttime_loc, timestep_loc, threeDtype_loc)
+   use m_fm_aux_routines
    use hydmod
    use partmem, only: xwaste, ywaste, zwaste, &
         radius, wparm, iwtime, ictime, amassd, amassc, nodye, nocont, ndprt, nopart, npmax, nosubs
@@ -360,6 +367,7 @@ subroutine ini_part(partfile, partrelfile, starttime_loc, timestep_loc, threeDty
    use m_alloc
    use MessageHandling
    use timers
+   use m_meteo1temphelpers
 
    implicit none
 
@@ -433,6 +441,7 @@ subroutine read_particles_release_file(partrelfile)
    use m_missing
    use m_alloc
    use MessageHandling
+   use m_meteo1temphelpers
    implicit none
 
    character(len=255), intent(in) :: partrelfile   !< release particle file
@@ -662,3 +671,5 @@ subroutine part06fm ( lun    , nodye  , nocont , xwaste ,      &
  1020 format( '  Total number of errors regarding waste loads: ', i0 )
 
 end subroutine part06fm
+
+end module m_fm_particles_in_grid

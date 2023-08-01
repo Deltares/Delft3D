@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_leng_string
+
+implicit none
+
+contains
+
 
       function lenstr(line,maxlen)
 
@@ -49,3 +55,5 @@
       if ( timon ) call timstop ( ithndl )
       return
       end function
+
+end module m_leng_string

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_tabr3
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RD_TABR3 ( DEFFDS      ,
      +                      NO_INPU_MAX , NO_INPU     ,
@@ -206,3 +212,5 @@
       RETURN
 !
       END
+
+      end module m_rd_tabr3

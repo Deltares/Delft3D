@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5d
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5D ( LUNUT  , IAR    , RAR    , IIMAX  , IRMAX  ,
      *                    IPOSR  , NPOS   , ILUN   , LCH    , LSTACK ,
@@ -78,10 +84,15 @@
       INTEGER       IIMAX  , IRMAX, I
       CHARACTER*(*) LCH(LSTACK) , CHULP
       CHARACTER*1   CCHAR
-      DIMENSION     IAR(*) , RAR(*) , ILUN( LSTACK )
+      DIMENSION     IAR(*) , ILUN( LSTACK )
       LOGICAL       NEWREC , DTFLG1 , DTFLG3, IGNORE
       integer       ihulp
       integer(4) :: ithndl = 0
+      integer    :: ittim, nobrk, itel, itel2, ierr3, itype
+      integer    :: lunut, ilun, iposr, npos, ierr, itfact
+      integer    :: iar, notot, nototc, lstack, iopt
+      real       :: rar(:), rhulp
+      
       if (timon) call timstrt( "dlwq5d", ithndl )
 !
 !     Some initialisation
@@ -190,3 +201,5 @@
  1040 FORMAT (/' WARNING ! There are only ',I2,' breakpoints found for this time series' )
 !
       END
+
+      end module m_dlwq5d

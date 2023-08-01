@@ -214,6 +214,14 @@
 ! also disabled isolated cells due to cutcells and store masks
   call cutcell_list(6,'dum',3, 1)
 
+ if (strip_mesh > 0) then
+     if (numl1d > 0) then
+         call mess(LEVEL_WARN, 'Stripping mesh not yet supported when including 1D segments.')
+     else
+         call remove_unused_nodes_and_links()
+     endif
+ endif
+ 
  ! if (makeorthocenters .gt. 0 .and. jglobe == 0) then
  if (makeorthocenters .gt. 0) then
     call make_orthocenters(0.5d-2,makeorthocenters)

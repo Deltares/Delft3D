@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwqj2
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQJ2 ( LUNWR  , NOBRK  , NOTOT  , ITAL   , IAR    ,
      *                                      RAR    , IFILSZ , JFILSZ )
@@ -53,8 +59,11 @@
 !
       use timers       !   performance timers
 
-      DIMENSION     IAR(*) , RAR(*)
       integer(4) :: ithndl = 0
+      integer    :: ITAL
+      integer    :: k, I, NOTOT
+      integer    :: lunwr, nobrk, itel, jtel, iar(:), ifilsz, jfilsz
+      real       :: rar(:)
       if (timon) call timstrt( "dlwqj2", ithndl )
 !
 !           Write nr of breakpoints first
@@ -80,3 +89,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_dlwqj2

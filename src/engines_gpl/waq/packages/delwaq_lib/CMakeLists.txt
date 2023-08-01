@@ -23,7 +23,6 @@ add_library(${library_name} SHARED ${source_files}
 
 set(oss_dependencies_general deltares_common
                              deltares_common_c
-                             waq_delftio
                              io_netcdf
                              nefis
                              waq_data

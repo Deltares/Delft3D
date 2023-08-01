@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_get_sfrac
+
+      implicit none
+
+      contains
+
 
       subroutine get_sfrac ( lunrep, notot , syname, nomult, imultp,
      +                       sfracs)
@@ -100,3 +106,5 @@
  2002 format ( 'substance fractions linked with substance :',a)
  2003 format ( 'total number of substances with fractions :',i3)
       end
+
+      end module m_get_sfrac

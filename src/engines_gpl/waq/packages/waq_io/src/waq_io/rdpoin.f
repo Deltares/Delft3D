@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdpoin
+
+      implicit none
+
+      contains
+
 
       subroutine rdpoin ( nmax   , iopt   , ioutpt , ipnt   , npnt   ,
      &                    ierr   )
@@ -115,3 +121,5 @@
  2030 format (   ' Printed output on input items only for option 3 and higher !')
 
       end
+
+      end module m_rdpoin

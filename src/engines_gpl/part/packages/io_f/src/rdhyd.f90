@@ -21,31 +21,10 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module rdhyd_mod
-   interface
-      subroutine rdhyd  ( nfiles , lunit  , fnam   , hyd    , nolay  , zmodel , ihdel  ,      &
-     &                    tcktot , zlbot  , zltop  , ndoms  , nbnds  , doms   , bnds   )
-      use precision_part       ! flexible size definition
-      use typos           ! the derived types
-      use hydmod
-      use openfl_mod
-      integer  ( ip), intent(in   ) :: nfiles            !< nr. of files
-      integer  ( ip), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
-      character(256), intent(inout) :: fnam (nfiles)     !< file names of all files
-      type(t_hyd)   , intent(in   ) :: hyd               !< description of the hydrodynamics
-      integer  ( ip), intent(  out) :: nolay             !< number of hydrodynamic layers
-      logical       , intent(in   ) :: zmodel            !< layer type
-      integer  ( ip), intent(  out) :: ihdel             !< hydrodynamic time step (s)
-      real     ( sp), pointer       :: tcktot(:)         !< relative layer thickness
-      real     ( sp), pointer       :: zlbot(:)          !< z-layer layer bottom level
-      real     ( sp), pointer       :: zltop(:)          !< z-layer layer top level
-      integer  ( ip), intent(  out) :: ndoms             !< number of domains
-      integer  ( ip), intent(  out) :: nbnds             !< number of DD-boundaries
-      type (domain) , pointer       :: doms  (:)         !< the domains
-      type (boundp) , pointer       :: bnds  (:)         !< the domain boundaries
-      end subroutine
-   end interface
-end module
+module m_rdhyd
+use m_stop_exit
+
+   contains
 
       subroutine rdhyd  ( nfiles , lunit  , fnam   , hyd    , nolay  , zmodel , ihdel  ,      &
      &                    tcktot , zlbot  , zltop  , ndoms  , nbnds  , doms   , bnds   )
@@ -301,4 +280,5 @@ end module
 
       if ( timon ) call timstop( ithndl )
       return
-      end
+   end subroutine
+   end module

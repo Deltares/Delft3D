@@ -616,6 +616,8 @@ function ionc_put_network(ioncid, networkgeom, networkid) result(ierr)
    character(len=ug_idsLen), allocatable                     :: nnodeids(:), nbranchids(:)       
    character(len=ug_idsLongNamesLen), allocatable            :: nnodelongnames(:), nbranchlongnames(:) 
    
+   integer :: ierrLocal
+   
    allocate(nnodeids(networkgeom%nnodes))
    allocate(nnodelongnames(networkgeom%nnodes))
    allocate(nbranchids(networkgeom%nbranches))
@@ -633,7 +635,20 @@ function ionc_put_network(ioncid, networkgeom, networkid) result(ierr)
    !this call writes mesh and network data contained in meshgeom
    ierr = ug_write_mesh_struct(ncid = datasets(ioncid)%ncid, meshids = meshids, networkids = networkids, crs = datasets(ioncid)%crs, &
       meshgeom = networkgeom, nnodeids = nnodeids, nnodelongnames = nnodelongnames, nbranchids = nbranchids, nbranchlongnames = nbranchlongnames, network1dname = networkgeom%meshname)
-	  
+   
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierrLocal = nf90_sync(datasets(ioncid)%ncid)
+   else  
+	  ! Check for any remaining native NetCDF errors   
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
 
 end function ionc_put_network
 
@@ -847,6 +862,23 @@ function ionc_put_node_coordinates(ioncid, meshid, xarr, yarr) result(ierr)
    integer                          :: ierr    !< Result status, ionc_noerr if successful.
 
    ierr = ug_put_node_coordinates(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), xarr, yarr)
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+   ! Check for any remaining native NetCDF errors
+   if (ierr /= nf90_noerr) then
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
+
 end function ionc_put_node_coordinates
 
 
@@ -897,6 +929,23 @@ function ionc_put_face_coordinates(ioncid, meshid, xarr, yarr) result(ierr)
    integer                          :: ierr    !< Result status, ionc_noerr if successful.
 
    ierr = ug_put_face_coordinates(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), xarr, yarr)
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+   ! Check for any remaining native NetCDF errors
+   if (ierr /= nf90_noerr) then
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
+
 end function ionc_put_face_coordinates
 
 
@@ -1374,6 +1423,7 @@ function ionc_write_mesh_struct(ioncid, meshids, networkids, meshgeom, network1d
    integer                            :: ierr        !< Result status, ionc_noerr if successful.
    
    !Locals
+   integer :: ierrLocal
    
    character(len=ug_idsLen), allocatable             :: nodeids(:)
    character(len=ug_idsLongNamesLen), allocatable    :: nodelongnames(:)
@@ -1388,7 +1438,21 @@ function ionc_write_mesh_struct(ioncid, meshids, networkids, meshgeom, network1d
    endif
    
    ierr = ug_write_mesh_struct( ncid = datasets(ioncid)%ncid, meshids = meshids, networkids = networkids, crs = datasets(ioncid)%crs, meshgeom = meshgeom, nodeids=nodeids, nodelongnames=nodelongnames, network1dname = network1dname)
-   
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+	  ierrLocal = nf90_sync(datasets(ioncid)%ncid)
+   else
+      ! Check for any remaining native NetCDF errors
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
+
 end function ionc_write_mesh_struct
 
 !> Initializes the io_netcdf library, setting up the logger.
@@ -1680,7 +1744,23 @@ function ionc_write_1d_network_nodes_ugrid(ioncid, networkid, nodesX, nodesY, no
       
    ierr = ug_write_1d_network_nodes(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%netids(networkid), nodesX, nodesY, nodeIds, &
        nodeLongnames)
-   
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+   ! Check for any remaining native NetCDF errors
+   if (ierr /= nf90_noerr) then
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
+
 end function ionc_write_1d_network_nodes_ugrid
 
 function ionc_put_1d_network_branches_ugrid(ioncid, networkid, sourcenodeid, targetnodeid, branchids, branchlengths, branchlongnames, &
@@ -1695,8 +1775,24 @@ function ionc_put_1d_network_branches_ugrid(ioncid, networkid, sourcenodeid, tar
    
    ierr = ug_put_1d_network_branches(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%netids(networkid),sourcenodeid,targetnodeid, &
        branchIds, branchlengths, branchlongnames, nbranchgeometrypoints,nBranches, startIndex) 
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+   ! Check for any remaining native NetCDF errors
+   if (ierr /= nf90_noerr) then
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
    
-    end function ionc_put_1d_network_branches_ugrid
+end function ionc_put_1d_network_branches_ugrid
     
 !< write the branch order array, it might be temporary function
 function ionc_put_1d_network_branchorder_ugrid(ioncid, networkid, branchorder) result(ierr)
@@ -1707,6 +1803,22 @@ function ionc_put_1d_network_branchorder_ugrid(ioncid, networkid, branchorder) r
     integer                            :: ierr
     
     ierr =  ug_put_1d_network_branchorder(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%netids(networkid), branchorder)
+
+    if (ierr == nf90_noerr) then
+       ! Flush file
+       ierr = nf90_sync(datasets(ioncid)%ncid)
+    end if
+
+    ! Check for any remaining native NetCDF errors
+    if (ierr /= nf90_noerr) then
+      goto 801
+    end if
+
+    ierr = IONC_NOERR
+    return ! Return with success
+
+801 continue
+    ! Some error (status was set earlier)
     
 end function ionc_put_1d_network_branchorder_ugrid
 
@@ -1718,6 +1830,22 @@ function ionc_put_1d_network_branchtype_ugrid(ioncid, networkid, branchtype) res
     integer                            :: ierr
     
     ierr =  ug_put_1d_network_branchtype(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%netids(networkid), branchtype)
+
+    if (ierr == nf90_noerr) then
+       ! Flush file
+       ierr = nf90_sync(datasets(ioncid)%ncid)
+    end if
+
+    ! Check for any remaining native NetCDF errors
+    if (ierr /= nf90_noerr) then
+      goto 801
+    end if
+    
+    ierr = IONC_NOERR
+    return ! Return with success
+
+801 continue
+    ! Some error (status was set earlier)
     
 end function ionc_put_1d_network_branchtype_ugrid
 
@@ -1730,6 +1858,22 @@ function ionc_write_1d_network_branches_geometry_ugrid(ioncid, networkid, geopoi
    
    ierr = ug_write_1d_network_branches_geometry(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%netids(networkid), geopointsX, &
        geopointsY)
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+   ! Check for any remaining native NetCDF errors
+   if (ierr /= nf90_noerr) then
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
 
 end function ionc_write_1d_network_branches_geometry_ugrid
 
@@ -1893,12 +2037,28 @@ function ionc_create_1d_mesh_ugrid_v1(ioncid, networkname, meshid, meshname, nme
    character(len=*),intent(in) :: meshname, networkname 
    integer                     :: ierr
    
+   integer :: ierrLocal
+   
    !adds a meshids structure
    ierr = ug_add_mesh(datasets(ioncid)%ncid, datasets(ioncid)%ug_file, meshid)
    ! set the meshname
    datasets(ioncid)%ug_file%meshnames(meshid) = meshname
    ! create mesh
    ierr = ug_create_1d_mesh_v2(datasets(ioncid)%ncid, networkname, datasets(ioncid)%ug_file%meshids(meshid), meshname, nmeshpoints, nmeshedges, writexy, datasets(ioncid)%crs)
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierrLocal = nf90_sync(datasets(ioncid)%ncid)
+   else
+      ! Check for any remaining native NetCDF errors
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
   
 end function ionc_create_1d_mesh_ugrid_v1
 
@@ -1919,7 +2079,23 @@ function ionc_put_1d_mesh_discretisation_points_ugrid(ioncid, meshid, branchidx,
   double precision,intent(in) :: offset(:)
   integer                     :: ierr
   
-  ierr=ug_put_1d_mesh_discretisation_points(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), branchidx, offset, startIndex)  
+  ierr = ug_put_1d_mesh_discretisation_points(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), branchidx, offset, startIndex)  
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+  ! Check for any remaining native NetCDF errors
+  if (ierr /= nf90_noerr) then
+    goto 801
+  end if
+
+  ierr = IONC_NOERR
+  return ! Return with success
+
+801 continue
+  ! Some error (status was set earlier)
   
 end function ionc_put_1d_mesh_discretisation_points_ugrid
 
@@ -1930,7 +2106,23 @@ function ionc_put_1d_mesh_discretisation_points_ugrid_v1(ioncid, meshid, branchi
   double precision,intent(in) :: offset(:), coordx(:), coordy(:) 
   integer                     :: ierr
   
-  ierr=ug_put_1d_mesh_discretisation_points_v1(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), branchidx, offset, startIndex, coordx, coordy)  
+  ierr = ug_put_1d_mesh_discretisation_points_v1(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), branchidx, offset, startIndex, coordx, coordy)  
+
+  if (ierr == nf90_noerr) then
+     ! Flush file
+     ierr = nf90_sync(datasets(ioncid)%ncid)
+  end if
+
+  ! Check for any remaining native NetCDF errors
+  if (ierr /= nf90_noerr) then
+    goto 801
+  end if
+  
+  ierr = IONC_NOERR
+  return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
   
 end function ionc_put_1d_mesh_discretisation_points_ugrid_v1
 
@@ -1952,7 +2144,23 @@ function ionc_put_1d_mesh_edges(ioncid, meshid, edgebranchidx, edgeoffset, start
   double precision,intent(in) :: edgeoffset(:), coordx(:), coordy(:) 
   integer                     :: ierr
   
-  ierr=ug_put_1d_mesh_edges(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), edgebranchidx, edgeoffset, startIndex, coordx, coordy)  
+  ierr = ug_put_1d_mesh_edges(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), edgebranchidx, edgeoffset, startIndex, coordx, coordy)  
+
+  if (ierr == nf90_noerr) then
+     ! Flush file
+     ierr = nf90_sync(datasets(ioncid)%ncid)
+  end if
+
+  ! Check for any remaining native NetCDF errors
+  if (ierr /= nf90_noerr) then
+    goto 801
+  end if
+
+  ierr = IONC_NOERR
+  return ! Return with success
+
+801 continue
+  ! Some error (status was set earlier)
   
 end function ionc_put_1d_mesh_edges
 
@@ -2016,7 +2224,7 @@ function ionc_write_mesh_1d_edge_nodes (ioncid, meshid, numEdge, mesh_1d_edge_no
    integer,          intent(in)         :: ioncid, meshid, numEdge
    integer,          intent(in)         :: mesh_1d_edge_nodes(:,:)  !< Edge-to-node mapping array.
    integer                              :: start_index              !< The base index of the provided arrays (0 if this function writes array from C/C++/C#, 1 for Fortran)
-   integer                              :: ierr                     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+   integer                              :: ierr                     !< Result status (IONC_NOERR==NF90_NOERR) if successful.
    
    character(len=nf90_max_name)         :: meshName     
    
@@ -2030,16 +2238,22 @@ function ionc_write_mesh_1d_edge_nodes (ioncid, meshid, numEdge, mesh_1d_edge_no
    
    !write the 1d mesh edge node array
    ierr = ug_write_mesh_1d_edge_nodes (datasets(ioncid)%ncid, datasets(ioncid)%ug_file%meshids(meshid), meshName, numEdge, mesh_1d_edge_nodes, start_index)
-   
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
    ! Check for any remaining native NetCDF errors
    if (ierr /= nf90_noerr) then
       goto 801
    end if
-   
-   ierr = UG_NOERR
+
+   ierr = IONC_NOERR
    return ! Return with success
 
 801 continue
+   ! Some error (status was set earlier)
     
 end function ionc_write_mesh_1d_edge_nodes
 
@@ -2063,6 +2277,22 @@ function ionc_put_mesh_contact_ugrid(ioncid, contactsmesh, mesh1indexes, mesh2in
    integer                            :: ierr
 
    ierr = ug_put_mesh_contact(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%contactids(contactsmesh), mesh1indexes, mesh2indexes, contacttype, contactsids, contactslongnames, startIndex) 
+
+   if (ierr == nf90_noerr) then
+      ! Flush file
+      ierr = nf90_sync(datasets(ioncid)%ncid)
+   end if
+
+   ! Check for any remaining native NetCDF errors
+   if (ierr /= nf90_noerr) then
+      goto 801
+   end if
+
+   ierr = IONC_NOERR
+   return ! Return with success
+
+801 continue
+   ! Some error (status was set earlier)
 
 end function ionc_put_mesh_contact_ugrid
 

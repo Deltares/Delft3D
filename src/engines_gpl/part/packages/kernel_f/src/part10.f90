@@ -22,6 +22,12 @@
 !!  rights reserved.
 
 module part10_mod
+use m_p10ddb
+use m_stop_exit
+use m_part11sp
+use m_part11
+use m_boombounce
+
 !
 !  module declarations
 !

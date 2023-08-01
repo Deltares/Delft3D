@@ -1,3 +1,10 @@
+module m_fm_reconst_vel
+
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -336,8 +343,6 @@ subroutine comp_fluxcoeffs()
 
    integer                                  :: i, im1, ip1, j, j2, k, L, L3, Lf
 
-   integer, external                        :: icommonval
-
    integer(4) ithndl              ! handle to time this subroutine
    data ithndl / 0 /
    if ( timon ) call timstrt( "comp_fluxcoeffs", ithndl )
@@ -605,3 +610,5 @@ subroutine dealloc_auxfluxes()
 
    if ( allocated(qfreesurf) ) deallocate(qfreesurf)
 end subroutine dealloc_auxfluxes
+
+end module m_fm_reconst_vel

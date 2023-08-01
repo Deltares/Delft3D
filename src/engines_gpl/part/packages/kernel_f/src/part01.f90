@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part01
+
+implicit none
+
+contains
+
 
       subroutine part01 ( lgrid  , lgrid2 , xp     , yp     , dx     ,  &
                           dy     , area   , angle  , nmax   , mmax   )
@@ -147,3 +153,5 @@
       return
 !
       end subroutine
+
+end module m_part01

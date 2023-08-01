@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_algrep
+
+      implicit none
+
+      contains
+
 
       subroutine algrep ( procesdef, notyp , nocof , algtyp , algact,
      +                    abrtyp   , cofnam, algcof, maxcof , alggrp,
@@ -385,3 +391,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_algrep

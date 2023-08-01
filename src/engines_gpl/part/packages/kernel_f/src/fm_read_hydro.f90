@@ -1,3 +1,9 @@
+module m_fm_read_hydro
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -156,3 +162,5 @@ subroutine read_hyd_step_fm(hyd,itime,istat)
 
    istat = 0 ! Assume it goes well
 end subroutine read_hyd_step_fm
+
+end module m_fm_read_hydro

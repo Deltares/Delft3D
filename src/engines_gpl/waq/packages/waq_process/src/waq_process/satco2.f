@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_satco2
+
+      implicit none
+
+      contains
+
 
       subroutine satco2 ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -151,3 +157,5 @@
       RETURN
 !
       END
+
+      end module m_satco2

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_dspfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_dspfrc( lunrep, procesdef, sfracs)
 
@@ -187,3 +193,5 @@
       return
  2000 format ( 5a )
       end
+
+      end module m_add_dspfrc

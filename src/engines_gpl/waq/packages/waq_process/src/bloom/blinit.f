@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blinit
+
+      implicit none
+
+      contains
+
 
       subroutine blinit
 
@@ -72,3 +78,5 @@
 
       return
       end
+
+      end module m_blinit

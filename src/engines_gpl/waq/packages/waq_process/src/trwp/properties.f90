@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_properties
+
+implicit none
+
+contains
+
 
 
 subroutine add_biofilm( diameter, density, biofilm_thk, biofilm_density )
@@ -100,3 +106,5 @@ subroutine calculate_sedim( diameter, density, shape_factor , settling, crit_str
         crit_stress = 1.0e20
     endif
 end subroutine calculate_sedim
+
+end module m_properties

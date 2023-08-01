@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_interpol
+
+      implicit none
+
+      contains
+
 
       subroutine interpol ( result , higher , lower  , tset   , thigh  ,
      &                      tlow   , nvar   , ndim2  , iftyp  )
@@ -82,3 +88,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_interpol

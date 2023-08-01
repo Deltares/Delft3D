@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_print_matrix
+
+      implicit none
+
+      contains
+
 
       subroutine print_matrix( lunut , iwidth, dlwqdata, strng1, strng2,
      +                         strng3, ioutpt)
@@ -46,7 +52,6 @@
 
 !     local declarations
 
-      character(len=20)                     :: car_used     ! function to help printing
       logical                               :: deflts       ! defaults for the parameters
       integer                               :: nopar        ! dlwqdata%no_param
       integer                               :: noloc        ! dlwqdata%no_loc
@@ -206,7 +211,9 @@
  1135 format ( ' info comes at runtime from external source: ',a)
  1160 format ( ' all data from this block ignored' )
 !
-      end
+      end subroutine print_matrix
+
+
       character*20 function car_used(i)
       integer       i
       if ( i .gt. 0 ) then
@@ -217,4 +224,6 @@
          car_used = 'ignored'
       endif
       return
-      end
+      end function car_used
+
+      end module m_print_matrix

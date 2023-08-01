@@ -28,6 +28,10 @@ module rdhydr_mod
 !
 !  data definition module(s)
 !
+      use m_stop_exit
+      use m_parttd
+      use m_dlwqfl
+      use m_dlwqbl
       use precision_part      ! single and double precision
       use timers
 !
@@ -39,6 +43,7 @@ module rdhydr_mod
       use m_part_regular
       use m_part_modeltypes
       use alloc_mod
+      use m_densty
 !
       implicit none      ! force explicit typing
 !
@@ -126,7 +131,6 @@ module rdhydr_mod
       real   (sp) :: depmin
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
-      real(sp) :: densty  ! AddedDana
       real(ip) :: ideltold !AddedMarc
       if ( timon ) call timstrt( "rdhydr", ithndl )
 !

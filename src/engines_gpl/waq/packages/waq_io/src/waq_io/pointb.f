@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_pointb
+
+      implicit none
+
+      contains
+
 
       subroutine pointb ( lun    , ioutpt , gridps , ibnd   , ipoint,
      &                    noqt   , ierr   )
@@ -323,3 +329,5 @@
      &         /'        does not match number in practice     :',I10 )
 
       END
+
+      end module m_pointb

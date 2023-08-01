@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_initials
+
+      implicit none
+
+      contains
+
 
       subroutine read_initials ( lun    , lchar  , filtype, inpfil , notot ,
      &                           syname , iwidth , ioutpt , gridps , noseg ,
@@ -31,6 +37,8 @@
 
 !     global declarations
 
+      use m_read_block
+      use m_check
       use m_srstop
       use grids          ! for the storage of contraction grids
       use dlwq_data      ! for definition and storage of data
@@ -41,8 +49,8 @@
 
 !     declaration of arguments
 
-      integer               , intent(in)    :: lun(*)       ! unit numbers used
-      character(len=*)      , intent(in)    :: lchar(*)     ! filenames
+      integer               , intent(inout) :: lun(*)       ! unit numbers used
+      character(len=*)      , intent(inout) :: lchar(*)     ! filenames
       integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       ! input file strucure with include stack and flags
       integer               , intent(in)    :: notot        ! nr of substances
@@ -174,3 +182,5 @@
  2050 format (/' ERROR, unrecognized token: ',A)
  2060 format (/' ERROR: evaluating initial conditions')
       end
+
+      end module m_read_initials

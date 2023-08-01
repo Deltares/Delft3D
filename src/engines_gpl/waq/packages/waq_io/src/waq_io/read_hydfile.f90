@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_read_hydfile
+
+implicit none
+
+contains
+
 
 subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, ierr )
 use m_get_filepath_and_pathlen
@@ -184,3 +190,5 @@ use m_get_filepath_and_pathlen
         return
     endif
 end subroutine read_hydfile
+
+end module m_read_hydfile

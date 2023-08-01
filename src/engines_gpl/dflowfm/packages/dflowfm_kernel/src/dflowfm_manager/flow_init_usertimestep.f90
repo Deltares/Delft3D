@@ -37,8 +37,9 @@ subroutine flow_init_usertimestep(iresult)
    use m_flowtimes
    use dfm_error
    use MessageHandling
-   use m_flowparameters, only: janudge
-   use m_partitioninfo, only: jampi, abort_all
+   use m_flowparameters,     only: janudge
+   use m_partitioninfo,      only: jampi, abort_all
+   use m_external_forcings
 
    implicit none
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -49,7 +50,7 @@ subroutine flow_init_usertimestep(iresult)
 
  tim1fld = max(time_user, tim1fld )
  if ( janudge.eq.1 ) call setzcs()
- call flow_setexternalforcings(tim1fld ,.false. , iresult)    ! set field oriented forcings. boundary oriented forcings are in
+ call set_external_forcings(tim1fld ,.false. , iresult)    ! set field oriented forcings. boundary oriented forcings are in
  if (iresult /= DFM_NOERR) then
     goto 888
  end if

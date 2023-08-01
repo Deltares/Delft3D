@@ -23,17 +23,12 @@
       module m_dlwqnf
       use m_zlayer
       use m_zercum
-      use m_waq2flow
       use m_sgmres
       use m_setset
-      use m_putper
       use m_proint
       use m_proces
-      use m_online
       use m_hsurf
-      use m_getper
       use m_dlwq_mt3d
-      use m_dlwq_boundio
       use m_dlwqtr
       use m_dlwqt0
       use m_dlwqo2
@@ -79,7 +74,6 @@
 !      |                   setset: not so clear what this does, probably process related
 !      |                   hsurf : set the surface array from the proces parameters
 !      |                   proces: DELWAQ water quality process system
-!      |                   dlwq_boundio: interface to on line boundary provision in bigger systems
 !      |                   dlwqo2: DELWAQ output system, provides all output to files
 !    time  ===> jump out   zercum: zero's the cummulative array's of balances and monitoring areas
 !    loop        point     dlwqb8: restores conc array (in case other routines did distroy ?!?)
@@ -97,7 +91,6 @@
 !      |                   dlwqb4: update mass arrays, set explicit step for all passive substances
 !      |                   dlwqce: computes closure error correction at rewind of volume file
 !      |                   proint: integration of fluxes for mass balances per monitoring area
-!      |                   rtcshl: call to the real-time-control interface if switched 'on'
 !     VVV                  srwshl: call to the standaard-raamwerk-water interface if switched 'on'
 !      V                   dlwqt0: updates all time dependent items (in this case exclusive of volumes)
 !                          dlwq13: system dump routine of restart files at the end
@@ -130,7 +123,6 @@
       use waqmem                         ! Global memory with allocatable GMRES arrays
       use delwaq2_data
       use m_openda_exchange_items, only : get_openda_buffer
-      use report_progress
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -157,15 +149,6 @@
 
 !$    include "omp_lib.h"
 
-
-
-!     Common to define external communications in SOBEK
-!     olcfwq             Flag indicating ONLINE running of CF and WQ
-!     srwact             Flag indicating active data exchange with SRW
-!     rtcact             Flag indicating output for RTC
-
-      logical            olcfwq, srwact, rtcact
-      common /commun/    olcfwq, srwact, rtcact
 
 !     Local declarations
 
@@ -286,8 +269,6 @@
           inwtyp   = intyp + nobnd
           noqt     = noq1  + noq2
 
-          call initialise_progress( dlwqd%progress, nstep, lchar(44) )
-
 !          initialize second volume array with the first one
 
           call move   ( a(ivol ), a(ivol2) , nosss   )
@@ -309,7 +290,6 @@
 
       if ( action == ACTION_SINGLESTEP ) then
           call dlwqdata_restore(dlwqd)
-          call apply_operations( dlwqd )
       endif
 
       if ( timon ) call timstrt ( "dlwqnf", ithandl )
@@ -368,7 +348,7 @@
      &                 idt      , a(iderv) , ndmpar   , nproc    , nflux    ,
      &                 j(iipms) , j(insva) , j(iimod) , j(iiflu) , j(iipss) ,
      &                 a(iflux) , a(iflxd) , a(istoc) , ibflag   , ipbloo   ,
-     &                 ipchar   , ioffbl   , ioffch   , a(imass) , nosys    ,
+     &                 ioffbl   ,  a(imass) , nosys    ,
      &                 itfact   , a(imas2) , iaflag   , intopt   , a(iflxi) ,
      &                 j(ixpnt) , iknmkv   , noq1     , noq2     , noq3     ,
      &                 noq4     , ndspn    , j(idpnw) , a(idnew) , nodisp   ,
@@ -385,21 +365,6 @@
      &                 surface  , lun(19)  )
 
 
-
-!          communicate with flow
-
-         call waq2flow ( nrvart   , c(ionam) , j(iiopo) , nocons   , nopa     ,
-     &                   nofun    , nosfun   , notot    , a(iconc) , a(isfun) ,
-     &                   a(ifunc) , a(iparm) , a(icons) , idt      , itime    ,
-     &                   a(ivol)  , noseg    , nosys    , nodump   , j(idump) ,
-     &                   nx       , ny       , j(igrid) , a(iboun) , noloc    ,
-     &                   a(iploc) , nodef    , a(idefa) , lun(19)  )
-
-
-!     communicate boundaries
-         call dlwq_boundio( lun  (19), notot   , nosys   , noseg   , nobnd   ,
-     &                      c(isnam) , c(ibnid), j(ibpnt), a(iconc), a(ibset),
-     &                      lchar(19))
 
 !     set new boundaries
          if ( itime .ge. 0   ) then
@@ -450,7 +415,6 @@
      &                    a(idmpq), a(idmps), noraai  , imflag  , ihflag  ,
      &                    a(itrra), ibflag  , nowst   , a(iwdmp))
          endif
-         call write_progress( dlwqd%progress )
 
 !        simulation done ?
 
@@ -612,25 +576,6 @@
          if ( ibflag .gt. 0 ) then
             call proint ( nflux   , ndmpar  , idt     , itfact  , a(iflxd),
      &                    a(iflxi), j(isdmp), j(ipdmp), ntdmpq  )
-         endif
-
-         if ( rtcact ) call rtcshl (itime, a, j, c) ! Interface to RTC (i)
-         if ( srwact ) call srwshl (itime, a, j, c) ! Interface to SRW (i)
-
-         if ( olcfwq ) then
-            call putpcf('wqtocf','datawqtocf')
-            if ( itime+idt .lt. itstop ) then
-               call getpcf('cftowq','datacftowq')
-               laatst = 0
-            else
-               laatst = -1
-            endif
-         endif
-
-!     new time values, volumes excluded
-         if ( olcfwq .or. srwact ) then
-            call putpev ( 'WQtoWQI', 'DataWQtoWQI', laatst )
-            call getper ( 'WQItoWQ', 'DataWQItoWQ' )
          endif
 
 !     update all other time functions

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_totdep
+
+      implicit none
+
+      contains
+
 
       subroutine totdep ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -44,6 +50,7 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
+      use m_advtra
       use m_evaluate_waq_attribute
       USE BottomSet     !  Module with definition of the waterbottom segments
 
@@ -234,3 +241,5 @@
 
       RETURN
       END
+
+      end module m_totdep

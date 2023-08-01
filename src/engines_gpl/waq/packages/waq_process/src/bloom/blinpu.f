@@ -20,23 +20,30 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blinpu
+
+      implicit none
+
+      contains
+
 
 !    Module to read BLOOM input files
 !
       subroutine blinpu (ntyp_m, ntyp_a, ngro_a, algtyp, lmixo, lfixn, lcarb, nunucom, nutcon, flxcon, con2out,
      &                   swblsolint, swblobject, bltemlim, blbasmor, swblgrochk, blbiobas, swblmorchk, bltoplev)
-      
+
       use m_srstop
+      use m_readfrm
       use m_getidentification
       use bloom_data_dim
-      use bloom_data_size 
-      use bloom_data_arran   
-      use bloom_data_mass_balance  
-      use bloom_data_io  
-      use bloom_data_matrix  
-      use bloom_data_phyt    
-      use bloom_data_putin   
-      use bloom_data_sumou   
+      use bloom_data_size
+      use bloom_data_arran
+      use bloom_data_mass_balance
+      use bloom_data_io
+      use bloom_data_matrix
+      use bloom_data_phyt
+      use bloom_data_putin
+      use bloom_data_sumou
 
       implicit none
 
@@ -52,13 +59,13 @@
       integer      nutcon(nunucom)      ! Nutrients involved in active nutrient constraints
       integer      flxcon(nunucom)      ! Uptake fluxes involved in active nutrient constraints
       integer      con2out(nunucom)     ! Mapping of actual nutrient constraints to DELWAQ output
-      
-!     Former D09 input      
+
+!     Former D09 input
       integer      swblsolint           ! Switch for solar irradiation as total radiation (0) or PAR (1)
       integer      swblobject           ! Switch for objective growth (1) or biomass (0)
       real         bltemlim             ! Minimum temperature for growth
       real         blbasmor             ! Base mortality when temperature is below minimum temperature for growth
-      integer      swblgrochk           ! Switch to use extra constraints on growth rates 
+      integer      swblgrochk           ! Switch to use extra constraints on growth rates
       real         blbiobas             ! Base biomass level per group
       integer      swblmorchk           ! Switch to use extra mortality constraints
       real         bltoplev             ! Top level of mortality constraints
@@ -139,7 +146,7 @@
 
 !     Set admin dependent on NUNUCO
 !     Note that we handle different sets of nutrient constraints
-!      - optional carbon limitation (LCARB) 
+!      - optional carbon limitation (LCARB)
 !      - mixotrophy (N,P) (LMIXO)
 !      - N-fixation (LFIXN)
       do i=1,nuspec
@@ -203,7 +210,7 @@
          write(*,*) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
          call srstop(1)
       end if
-      
+
 !  Establish various column and row indicators for A-matrix and output
 !  output vector X (or XDEF).
 !  It is assumed there are 2 energy constraints.
@@ -238,7 +245,7 @@
       limnam(nunuco+3) = 'Mor'
 
 !  Call subroutine readfrm to read species/groups names and the integrated efficiency curves
-      call readfrm 
+      call readfrm
 
 !  Abiotic constraints
       cnames = ' '
@@ -292,7 +299,7 @@
       do i=1,nuspec
          write(outdbg,'(1X,A10,2X,D10.3,3F10.5,F10.4,4F10.5)') spname(i),ekx(i),(aa(k,i),k=1,nunuco),chltoc(i),ctodry(i)
       end do
-      
+
 ! Switch for objective growth (1) or biomass (0)
       if (swblobject == 0) then
          lobfun = 0
@@ -301,9 +308,9 @@
          lobfun = 1
          write (outdbg,'(a)') ' Ojective function: maximize net growth rates.'
       endif
-      
+
 ! Minimum temperature for growth
-      temlim=real(bltemlim,8) 
+      temlim=real(bltemlim,8)
       basmor=real(blbasmor,8)
       basmor=1.000000000000000D-002
       write (outdbg,'(1X,"Minimum Pmax and mortality rate of ",F6.3," for temperatures less or equal to ",F4.1)') basmor, temlim
@@ -321,7 +328,7 @@
          nucols=nucols+nuecog
       endif
 
-! Switch to use extra mortality constraints     
+! Switch to use extra mortality constraints
       toplev=real(bltoplev,8)
       if(swblmorchk == 0) then
          lmorch=0
@@ -353,3 +360,5 @@
 
       return
       end
+
+      end module m_blinpu

@@ -73,7 +73,7 @@
          integer                                :: geometry               !
          integer                                :: layer_type             !
          real*8                                 :: zbot                   ! Maximum depth in the model (relative to the reference level; unit: metres; positive upwards, z-layer only).
-         real*8                                 :: ztop                   ! The ‘imaginary’ maximum water level in the model (relative to the reference level; unit: metres; positive upwards, z-layer only).
+         real*8                                 :: ztop                   ! The imaginary maximum water level in the model (relative to the reference level; unit: metres; positive upwards, z-layer only).
                                                                           ! This imaginary level is used only to determine the grid distribution. It does not mark the maximum surface level.
          integer                                :: horizontal_aggregation !
          integer                                :: minimum_vdf_used       !

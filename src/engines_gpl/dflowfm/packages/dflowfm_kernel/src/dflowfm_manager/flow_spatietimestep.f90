@@ -32,9 +32,10 @@
 
  subroutine flow_spatietimestep()                 ! do 1 flowstep
  use m_flowtimes
- use m_flowgeom, only: ndx
- use m_flowexternalforcings, only: nbndz, zbndz
- use m_flowparameters, only: janudge
+ use m_flowgeom,              only: ndx
+ use m_flowexternalforcings,  only: nbndz, zbndz
+ use m_flowparameters,        only: janudge
+ use m_external_forcings
 
  implicit none
  integer :: key, ierr
@@ -55,7 +56,7 @@
                                                      ! ipv time0
  tim1fld = max(time_user,tim1fld)
  if ( janudge.eq.1 ) call setzcs()
- call flow_setexternalforcings(tim1fld ,.false., ierr)    ! set field oriented forcings. boundary oriented forcings are in
+ call set_external_forcings(tim1fld ,.false., ierr)    ! set field oriented forcings. boundary oriented forcings are in
 
  ! call flow_externalinput(time_user)                  ! receive RTC signals etc
 

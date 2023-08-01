@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blfile
+
+      implicit none
+
+      contains
+
 
       subroutine blfile (lunrep)
 
@@ -53,3 +59,5 @@
 
       return
       end
+
+      end module m_blfile

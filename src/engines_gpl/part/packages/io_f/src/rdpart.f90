@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdpart
+use m_stop_exit
+use m_skip_comments
+use m_polpart
+use m_rdwnd
+
+
+implicit none
+
+contains
+
 
       subroutine rdpart ( lun1   , lun2   , lnam1  )
 
@@ -2594,7 +2605,6 @@
       character(len=max_len_line)         :: line
       character(len=max_len_key )         :: key
       logical                             :: key_found
-      logical more_data
 
       len_file = len_trim(ini_file)
 
@@ -2675,7 +2685,6 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       character(len=256)                  :: asc_file
       character(len=max_len_key )         :: key
       logical                             :: key_found
-      logical more_data
 
       len_file = len_trim(asc_file)
 
@@ -2709,6 +2718,7 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       call stop_exit(1)
       end subroutine
 
+
       logical function more_data(lun)
 !
 !     programmer : antoon koster
@@ -2720,7 +2730,6 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       integer, parameter           :: max_len_line=200
       integer                      :: nlines, lun, ios, iline
       logical                      :: end_of_file, comment_line
-!      logical                      :: more_data
       character(len=max_len_line)  :: line
 
       nlines      = 0
@@ -2749,3 +2758,4 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       end function more_data
 
       
+end module m_rdpart

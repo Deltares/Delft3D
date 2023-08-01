@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_vtrans
+
+      implicit none
+
+      contains
+
 
       subroutine vtrans ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -363,3 +369,5 @@
  1001 format(' noseg = ',I10)
  1002 format(' nolay = ',I10)
       end
+
+      end module m_vtrans

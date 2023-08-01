@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistdiat
+
+implicit none
+
+contains
+
 
 
 
@@ -394,3 +400,5 @@ use ieee_arithmetic
     deallocate (ipnt)
     return
 end ! end subroutine
+
+end module m_protistdiat

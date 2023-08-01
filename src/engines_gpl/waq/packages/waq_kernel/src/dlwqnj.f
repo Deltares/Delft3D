@@ -22,15 +22,10 @@
 !!  rights reserved.
       module m_dlwqnj
       use m_zercum
-      use m_waq2flow
       use m_setset
-      use m_putper
       use m_proint
       use m_proces
-      use m_online
       use m_hsurf
-      use m_getper
-      use m_dlwq_boundio
       use m_dlwqtr
       use m_dlwqt0
       use m_dlwqo2
@@ -123,7 +118,6 @@
       use waqmem                         ! Global memory with allocatable GMRES arrays
       use delwaq2_data
       use m_openda_exchange_items, only : get_openda_buffer
-      use report_progress
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -146,16 +140,6 @@
       TYPE(DELWAQ_DATA), TARGET   :: DLWQD
       type(GridPointerColl)       :: GridPs               ! collection of all grid definitions
 
-
-
-!     Common to define external communications in SOBEK
-!     olcfwq             Flag indicating ONLINE running of CF and WQ
-!     srwact             Flag indicating active data exchange with SRW
-!     rtcact             Flag indicating output for RTC
-
-      logical            olcfwq, srwact, rtcact
-      common /commun/    olcfwq, srwact, rtcact
-      integer                     :: laatst               ! detect latest step for communication
 
 !
 !     Local declarations
@@ -241,8 +225,6 @@
          FORESTER = BTEST(INTOPT,6)
          NOWARN   = 0
 
-         call initialise_progress( dlwqd%progress, nstep, lchar(44) )
-
 !          initialize second volume array with the first one
 
 !        This statement caused a stack overflow with a very large model
@@ -281,7 +263,6 @@
 
       IF ( ACTION == ACTION_SINGLESTEP ) THEN
           call dlwqdata_restore(dlwqd)
-          call apply_operations( dlwqd )
       ENDIF
 
       ICREEP   = 0
@@ -335,7 +316,7 @@
      &                 idt      , a(iderv) , ndmpar   , nproc    , nflux    ,
      &                 j(iipms) , j(insva) , j(iimod) , j(iiflu) , j(iipss) ,
      &                 a(iflux) , a(iflxd) , a(istoc) , ibflag   , ipbloo   ,
-     &                 ipchar   , ioffbl   , ioffch   , a(imass) , nosys    ,
+     &                 ioffbl   ,  a(imass) , nosys    ,
      &                 itfact   , a(imas2) , iaflag   , intopt   , a(iflxi) ,
      &                 j(ixpnt) , iknmkv   , noq1     , noq2     , noq3     ,
      &                 noq4     , ndspn    , j(idpnw) , a(idnew) , nodisp   ,
@@ -351,20 +332,6 @@
      &                 j(iprvpt), j(iprdon), nrref    , j(ipror) , nodef    ,
      &                 surface  , lun(19)  )
 
-!          communicate with flow
-
-         call waq2flow(nrvart   , c(ionam) , j(iiopo) , nocons   , nopa     ,
-     &                 nofun    , nosfun   , notot    , a(iconc) , a(isfun) ,
-     &                 a(ifunc) , a(iparm) , a(icons) , idt      , itime    ,
-     &                 a(ivol)  , noseg    , nosys    , nodump   , j(idump) ,
-     &                 nx       , ny       , j(igrid) , a(iboun) , noloc    ,
-     &                 a(iploc) , nodef    , a(idefa) , lun(19)  )
-
-!          communicate boundaries (for domain decomposition)
-
-         call dlwq_boundio ( lun(19)  , notot    , nosys    , nosss    , nobnd    ,
-     &                       c(isnam) , c(ibnid) , j(ibpnt) , a(iconc) , a(ibset) ,
-     &                       lchar(19))
 
 !          set new boundaries
 
@@ -417,7 +384,6 @@
      &                    a(idmpq), a(idmps), noraai  , imflag  , ihflag  ,
      &                    a(itrra), ibflag  , nowst   , a(iwdmp))
          endif
-         call write_progress( dlwqd%progress )
 
 !          simulation done ?
 
@@ -628,24 +594,6 @@
             call proint ( nflux   , ndmpar  , idt     , itfact  , a(iflxd),
      &                    a(iflxi), j(isdmp), j(ipdmp), ntdmpq  )
          endif
-
-      if ( rtcact ) call rtcshl (itime, a, j, c) ! Interface to RTC (i)
-      if ( srwact ) call srwshl (itime, a, j, c) ! Interface to SRW (i)
-
-      if ( olcfwq ) then
-         call putpcf('wqtocf','datawqtocf')
-         if ( itime+idt .lt. itstop ) then
-            call getpcf('cftowq','datacftowq')
-            laatst = 0
-         else
-            laatst = -1
-         endif
-      endif
-
-      if ( olcfwq .or. srwact ) then
-         call putpev ( 'WQtoWQI', 'DataWQtoWQI', laatst )
-         call getper ( 'WQItoWQ', 'DataWQItoWQ' )
-      endif
 
 !          new time values, volumes excluded
 

@@ -1,3 +1,9 @@
+      module m_decdet
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2023.
@@ -115,7 +121,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 !
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 !
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -469,3 +476,5 @@
 !
       RETURN
       END
+
+      end module m_decdet

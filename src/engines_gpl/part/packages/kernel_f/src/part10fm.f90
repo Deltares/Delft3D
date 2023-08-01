@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module part10fm_mod
+use m_fm_particles_in_grid
+
 
       implicit none
 !

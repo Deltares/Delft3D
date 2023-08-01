@@ -20,11 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq2
+
+implicit none
+
+contains
+
 
 
 subroutine delwaq2( argc, argv, errorcode )
       !DEC$ ATTRIBUTES DLLEXPORT::delwaq2
 
+      use m_delwaq2_main
       use delwaq2_data
       use m_actions
       implicit none
@@ -44,3 +51,4 @@ subroutine delwaq2( argc, argv, errorcode )
       errorcode = 0
 
 end subroutine delwaq2
+end module m_delwaq2

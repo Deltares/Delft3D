@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_cnfrep
+
+      implicit none
+
+      contains
+
 
       subroutine cnfrep( noalg   , noprot, namprot, nampact, nopralg,
      +                   nampralg)
@@ -39,6 +45,8 @@
       character*10   namep3
       logical        found
       integer(4) :: ithndl = 0
+      integer iproc, ipro, iproc2, ic, iprcnf, iprcnf2, ialg, ilen
+      
       if (timon) call timstrt( "cnfrep", ithndl )
 
       ! copy the license from the proto process to the process
@@ -103,3 +111,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_cnfrep

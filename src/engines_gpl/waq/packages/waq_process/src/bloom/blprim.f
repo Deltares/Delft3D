@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blprim
+      use m_dynrun
+      use m_bvect
+
+
+      implicit none
+
+      contains
+
 
 !    Store computed biomass in BIOMAS array for use in D40BLO
 !    Compute primary production and associated fluxes
@@ -90,7 +99,7 @@
       real(4)    outlim(noutlim)  ! limiting factors (extended)
       integer    nunucom          ! max nr of nutrient constraints in DELWAQ output
       integer    nuecogm          ! max nr of algae groups in DELWAQ in/out
-      integer    con2out          ! mapping of actual nutrient constraints to DELWAQ output
+      integer    con2out(nunucom) ! mapping of actual nutrient constraints to DELWAQ output
       integer    swblsa           ! switch for BLOOM stand alone option
 
       integer    nutcon(nunucom)  ! Nutrients involved in active nutrient constraints
@@ -444,3 +453,5 @@
       return
       end
 
+
+      end module m_blprim

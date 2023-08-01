@@ -25,6 +25,7 @@ module behv_asiancarpeggs_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
 use precision_part          ! single/double precision
 use timers
 !

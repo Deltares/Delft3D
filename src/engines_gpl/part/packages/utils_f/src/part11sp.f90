@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part11sp
+
+implicit none
+
+contains
+
 
       subroutine part11sp( lgrid  , xp     , yp     , nmax   , npart  ,        &
                            mpart  , xpart  , ypart  , xa     , ya     ,        &
@@ -117,3 +123,5 @@
 !
       end subroutine part11sp
 
+
+end module m_part11sp

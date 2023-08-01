@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_exclud
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  * SUBROUTINE EXCLUD TO DETERMINE SPECIES PERMITTED IN EACH INTERVAL *
@@ -119,3 +125,5 @@
       end do
       return
       end
+
+      end module m_exclud

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_tabp5
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RD_TABP5 ( DEFFDS      ,
      +                      NO_CONF_MAX , NO_CONF     ,
@@ -156,3 +162,5 @@
       RETURN
 !
       END
+
+      end module m_rd_tabp5

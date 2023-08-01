@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq05
+      use m_opt0
+      use m_dlwq5a
+
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ05 ( LUN    , LCHAR  , filtype, CAR    , IAR    ,
      &                    RAR    , NRFTOT , NRHARM , NOBND  , NOSYS  ,
@@ -59,6 +68,8 @@
 !                           LUN( 4) = unit intermediate file (pointers)
 !                           LUN(14) = unit intermediate file (boundaries)
 
+      use m_conver
+      use m_check
       use m_zoek
       use m_srstop
       use m_getcom
@@ -69,7 +80,7 @@
 !     kind           function         name                Descriptipon
 
       integer  ( 4), intent(in   ) :: irmax             !< size of the real workspace
-      integer  ( 4), intent(in   ) :: lun   (*)         !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
       character( *), intent(inout) :: lchar (*)         !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       character( *), intent(inout) :: car   (*)         !< character workspace
@@ -97,7 +108,7 @@
 !
       CHARACTER*1   CDUMMY
       CHARACTER*255 CHULP
-      LOGICAL       DISPER   , VOLUME
+      LOGICAL       DISPER
       CHARACTER(LEN=20) , ALLOCATABLE :: BNDID(:)               ! boundary id's 20 character
       CHARACTER(LEN=40) , ALLOCATABLE :: BNDNAME(:)             ! boundary names
       CHARACTER(LEN=20) , ALLOCATABLE :: BNDTYPE(:)             ! boundary types
@@ -108,13 +119,18 @@
       logical                         :: no_id_check            ! command line argument to skip double ID check
       real                            :: rdummy                 ! dummy real in argument list
       integer                         :: idummy                 ! dummy integer in argument list
+      integer                         :: VOLUME
       integer(4) :: ithndl = 0
+      integer               :: k, I, IERR_ALLOC
+      integer               :: ifact, lunwr, ierr2, iwar2, ifound, ityp2
+      integer               :: iaropt, nover, mxover, ibnd, it, nosubs
+      integer               :: ierrh, ihulp, rhulp, ifound2, l, itype
       if (timon) call timstrt( "dlwq05", ithndl )
 !
 !     Init
 !
       DISPER  = .FALSE.
-      VOLUME  = .FALSE.
+      VOLUME  = 0
       IFACT   =  1
       LUNUT   = LUN(29)
       LUNWR   = LUN( 2)
@@ -550,3 +566,5 @@
  2310 FORMAT (    ' number of boundaries             :',I7)
 !
       END
+
+      end module m_dlwq05

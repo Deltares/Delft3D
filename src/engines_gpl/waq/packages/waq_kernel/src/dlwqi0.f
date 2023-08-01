@@ -24,9 +24,6 @@
       module dlwqi0_mod
       use m_zlayer
       use m_segcol
-      use m_putper
-      use m_online
-      use m_getper
       use m_dlwqtd
       use m_dlwqt0
       use m_dlwqiv
@@ -119,13 +116,7 @@
 
       INTEGER       IERRIO, new_lun
 
-!     Common to define external communications in SOBEK
-!     OLCFWQ             Flag indicating ONLINE running of CF and WQ
-!     SRWACT             Flag indicating active data exchange with SRW
-!     RTCACT             Flag indicating output for RTC
-
-      LOGICAL            OLCFWQ, SRWACT, RTCACT, propor
-      COMMON /COMMUN/    OLCFWQ, SRWACT, RTCACT
+      LOGICAL       propor
       integer(4) ithandl /0/
       if ( timon ) call timstrt ( "dlwqi0", ithandl )
 
@@ -163,20 +154,6 @@
      *              J(IORAA:), J(NQRAA:), J(IQRAA:), J(IGNOS:), J(IGREF:),
      *              J(IGSEG:), gridps   , J(IDMPB:), dlwqd )
       CLOSE ( LUN(2) )
-
-      IF ( OLCFWQ ) THEN
-!     Synchronizing with CF(0) for on-line mode outside SRW only
-!     This step is lacking in the original SRW version of SOBEK-RE
-!     ERRONEOUSLY!!
-
-          call getpcf('CFtoWQ','DataCFtoWQ')
-      ENDIF
-
-      IF ( OLCFWQ .OR. SRWACT ) THEN
-!         Pass the stick to WQInt and wait for it to come back! (0)
-          call putpev ('WQtoWQI','DataWQtoWQI',0)
-          call GETPER ('WQItoWQ','DataWQItoWQ')
-      ENDIF
 !
 !     open binary system files for new input processing, if any
 !
@@ -206,8 +183,8 @@
          CALL DLWQIP (LUN(24)  , LCHAR(24), LUN(19)  , NOTOT     , NIPMSA  ,
      +                NPROC    , NOLOC    , NFLUX    , NODEF     , J(INSVA:),
      +                J(IIFLU:), J(IPVAR:), J(IPTYP:), A(IDEFA:) , A(ISTOC:),
-     +                C(IPRNA:), J(IIMOD:), IERR     , IPBLOO    , IPCHAR  ,
-     +                IOFFBL   , IOFFCH   , NOSYS    , NDSPX     , NVELX   ,
+     +                C(IPRNA:), J(IIMOD:), IERR     , IPBLOO    ,
+     +                IOFFBL   ,  NOSYS    , NDSPX     , NVELX   ,
      +                A(IDSTO:), A(IVSTO:), NDSPN    , J(IDPNW:) , NVELN   ,
      +                J(IVPNW:), NLOCX    , J(IPGRD:), J(IPNDT:) , NOVAR   ,
      +                J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:) , J(IVTAG:),
@@ -358,30 +335,9 @@
       endif
       close ( lun(18) )
 
-      IF ( RTCACT )
-!     Interface to RTC (0)
-     Jcall RTCSHL (ITSTRT, A, J, C)
-
-      IF ( SRWACT )
-!     Interface to SRW (0)
-     JCALL SRWSHL (ITSTRT, A, J, C)
-
-      IF ( OLCFWQ ) THEN
-!     Synchronizing with CF(0) for on-line mode outside SRW only
-          call putpcf('WQtoCF','DataWQtoCF')
-!     Synchronizing with CF(1) for on-line mode outside SRW only
-          call getpcf('CFtoWQ','DataCFtoWQ')
-      ENDIF
-
 !         first read of relevant time varying arrays
 !
       IFFLAG = 1
-
-      IF ( SRWACT .OR. OLCFWQ ) THEN
-!     Pass the stick to WQInt and wait for it to come back! (1)
-          call putpev ('WQtoWQI','DataWQtoWQI',0)
-          call GETPER ('WQItoWQ','DataWQItoWQ')
-      ENDIF
 
       CALL DLWQT0 ( LUN      , ITSTRT   , ITIMEL   , A(IHARM:), A(IFARR:),
      *              J(INRHA:), J(INRH2:), J(INRFT:), IDT      , A(IVOL:) ,

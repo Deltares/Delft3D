@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_fixinf
+
+      implicit none
+
+      contains
+
 
 !  Purpose of this module: modify some of the boundary conditions for
 !  infeasible systems. We follow a different approach for different
@@ -289,3 +295,5 @@
       infeas = 0
       return
       end
+
+      end module m_fixinf

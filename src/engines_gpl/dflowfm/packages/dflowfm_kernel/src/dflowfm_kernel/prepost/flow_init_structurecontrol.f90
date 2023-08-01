@@ -31,35 +31,25 @@
 ! 
 
 !> Initializes controllers that force structures.
-!! Currently only time series files, in the future also realtime control (RTC).
 function flow_init_structurecontrol() result (status)
 use dfm_error
-use m_1d_structures
-use m_flowexternalforcings
 use m_hash_search
 use m_alloc
 use m_flowgeom
 use m_netw
-use unstruc_messages
-use unstruc_boundaries, only : checkCombinationOldNewKeywordsGeneralStructure, adduniformtimerelation_objects
+use unstruc_boundaries, only : adduniformtimerelation_objects
 use unstruc_channel_flow
 use m_structures ! Jan's channel_flow for Sobek's generalstructure (TODO)
 use m_strucs     ! Herman's generalstructure
-use tree_structures
-! use unstruc_files
 use timespace
-use m_missing
-! use m_ship
-! use m_alloc
 use m_meteo
 use m_readstructures
 use m_sferic
 use geometry_module
-USE gridoperations, only: incells
+use gridoperations, only: incells
 use unstruc_model, only: md_structurefile_dir
 use unstruc_files, only: resolvePath
 use string_module, only: str_lower, strcmpi
-use iso_c_binding
 use m_inquire_flowgeom
 use m_longculverts, only: nlongculverts
 use m_partitioninfo, only: jampi
@@ -67,17 +57,16 @@ use m_partitioninfo, only: jampi
 implicit none
 logical                       :: status
 character(len=256)            :: plifile
-integer                       :: i, L, Lf, kb, LL, ierr, k, kbi, n, ifld, k1, k2
+integer                       :: i, L, Lf, kb, ierr, k, kbi, n, ifld, k1, k2
 integer                       :: nstr
-character (len=256)           :: fnam, rec, key, rec_old
+character (len=256)           :: fnam, rec, key
 integer, allocatable          :: pumpidx(:), gateidx(:), cdamidx(:), cgenidx(:), dambridx(:) ! temp
 double precision              :: tmpval
-integer                       :: istru, istrtype, itmp, janewformat
-integer                       :: numg, numd, npum, ngs, numgen, numgs, ilinstr, ndambr
+integer                       :: istrtype, itmp, janewformat
+integer                       :: numg, numd, npum, ngs, numgen, ndambr
 type(TREE_DATA), pointer      :: str_ptr
 double precision, allocatable :: widths(:)
 double precision              :: widthtot
-integer, allocatable          :: strnums(:)
 double precision, allocatable :: xdum(:), ydum(:)
 integer, allocatable          :: kdum(:)
 character(len=IdLen)          :: strid ! TODO: where to put IdLen (now in MessageHandling)
@@ -94,21 +83,18 @@ double precision, allocatable :: hulp(:,:) ! hulp
 type(c_ptr) :: cptr
 
 ! dambreak
-double precision              :: x_breach, y_breach, distemp
-double precision              :: xc, yc, xn, yn
-integer                       :: nDambreakCoordinates, k3, k4, kpol, indexInStructure, indexInPliset, indexLink, ja, Lstart
-double precision              :: xla, xlb, yla, ylb, rn, rt
+double precision              :: x_breach, y_breach
+double precision              :: xn, yn
+integer                       :: nDambreakCoordinates, k3, k4, kpol, indexInStructure, indexInPliset, indexLink, Lstart
+double precision              :: xla, xlb, yla, ylb
 integer, allocatable          :: lftopol(:)
 double precision, allocatable :: xl(:,:), yl(:,:)
-integer                       :: branchIndex
 integer                       :: istat
-double precision              :: chainage
-double precision, pointer :: tgtarr(:)
+double precision, pointer     :: tgtarr(:)
 integer :: loc_spec_type
-!! if (jatimespace == 0) goto 888                      ! Just cleanup and close ext file.
 
+! initialize exit status
 status = .False.
-
 !
 ! Some structures may have already been read by flow1d's readStructures into network.
 !
@@ -128,8 +114,6 @@ do i=1,network%forcinglist%Count
    success = adduniformtimerelation_objects(qid, '', trim(pfrc%object_type), trim(pfrc%object_id), trim(pfrc%param_name), trim(fnam), 1, 1, tgtarr)
 
 end do
-
-
 !
 ! Hereafter, conventional dflowfm structures.
 !
@@ -141,11 +125,9 @@ if (nstr > 0) then
 else
    jaoldstr = 1
    status = .True.
-   RETURN ! DEZE SUBROUTINE IS EEN KOPIE VAN MIJN CODE EN DAT BRENGT ME IN DE WAR
-                         ! DAAROM VOORLOPIG UIT UNSTRUC.F90 VERPLAATST
+   return
 end if
 
-if (allocated(strnums)) deallocate(strnums)
 if (allocated(widths)) deallocate(widths)
 if (allocated(lftopol)) deallocate(lftopol)
 if (allocated(dambreakLinksEffectiveLength)) deallocate(dambreakLinksEffectiveLength)
@@ -157,7 +139,6 @@ if (allocated(cgenidx)) deallocate(cgenidx)
 if (allocated(dambridx)) deallocate(dambridx)
 if (allocated(dambreakPolygons)) deallocate(dambreakPolygons)
 
-allocate(strnums(numl))
 allocate(widths(numl))
 allocate(lftopol(numl))
 allocate(dambreakLinksEffectiveLength(numl))
@@ -313,40 +294,13 @@ do i=1,nstr
 
    end if
 
-   ! TODO: remove branchIndex code for pumps below, use above loc_spec_type instead.
-   !branchIndex = -1
-   !call prop_get_string(str_ptr, '', 'branchid', branchid, success)
-   !if (success .and. strtype == 'pump') then
-   !   branchIndex = hashsearch(network%brs%hashlist, branchid)
-   !   if (branchIndex <= 0) then
-   !      msgbuf ='Branch ' // trim(branchid) // ' in structure ' // trim(strid)//' does not exist.'
-   !      call warn_flush()
-   !      cycle
-   !   endif
-   !   call prop_get_double(str_ptr, '', 'chainage', chainage, success)
-   !   if (.not. success) then
-   !      write(msgbuf, '(a,a,a)') 'Required field ''chainage'' is missing in '//trim(strtype)//' ''', trim(strid), '''.'
-   !      call warn_flush()
-   !      cycle
-   !   endif
-   !else
-   !   plifile = ' '
-   !   call prop_get_string(str_ptr, '', 'polylinefile', plifile, success)
-   !   if (.not. success .or. len_trim(plifile) == 0) then
-   !      write(msgbuf, '(a,a,a)') 'Required field ''polylinefile'' missing in '//trim(strtype)//' ''', trim(strid), '''.'
-   !      call warn_flush()
-   !      cycle
-   !   else
-   !      call resolvePath(plifile, md_structurefile_dir, plifile)
-   !   end if
-   !endif
    select case (strtype)
    case ('gateloweredgelevel')  ! Old-style controllable gateloweredgelevel
         !else if (qid == 'gateloweredgelevel' ) then
 
       call selectelset_internal_links(xz, yz, ndx, ln, lnx, keg(ngate+1:numl), numg, LOCTP_POLYLINE_FILE, plifile)
       success = .true.
-      WRITE(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , numg, ' nr of gateheight links' ; call msg_flush()
+      write(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , numg, ' nr of gateheight links' ; call msg_flush()
 
 
       ngatesg = ngatesg + 1
@@ -361,7 +315,7 @@ do i=1,nstr
 
       call selectelset_internal_links(xz, yz, ndx, ln, lnx, ked(ncdam+1:numl), numd, LOCTP_POLYLINE_FILE, plifile)
       success = .true.
-      WRITE(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , numd, ' nr of dam level cells' ; call msg_flush()
+      write(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , numd, ' nr of dam level cells' ; call msg_flush()
 
 
       ncdamsg = ncdamsg + 1
@@ -384,7 +338,7 @@ do i=1,nstr
 
       !endif
       success = .true.
-      WRITE(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , npum, ' nr of pump links' ; call msg_flush()
+      write(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , npum, ' nr of pump links' ; call msg_flush()
 
       npumpsg = npumpsg + 1
       pumpidx(npumpsg) = i
@@ -407,7 +361,7 @@ do i=1,nstr
       end if
 
       success = .true.
-      WRITE(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , ndambr, ' nr of dambreak links' ; call msg_flush()
+      write(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , ndambr, ' nr of dambreak links' ; call msg_flush()
 
       ndambreaksg = ndambreaksg + 1
       dambridx(ndambreaksg) = i
@@ -428,7 +382,7 @@ do i=1,nstr
       end if
 
       success = .true.
-      WRITE(msgbuf,'(a,1x,a,i8,a)') trim(qid), trim(plifile) , numgen, ' nr of '//trim(strtype)//' cells' ; call msg_flush()
+      write(msgbuf,'(a,1x,a,i8,a)') trim(qid), trim(plifile) , numgen, ' nr of '//trim(strtype)//' cells' ; call msg_flush()
 
       ncgensg = ncgensg + 1
       cgenidx(ncgensg) = i
@@ -436,19 +390,17 @@ do i=1,nstr
       call realloc(L2cgensg,ncgensg) ; L2cgensg(ncgensg) = ncgen + numgen
 
       ncgen = ncgen + numgen
-      !if(numgen > 0) then
       ! For later usage split up the set of all generalstructures into weirs, gates or true general structures (in user input)
-         select case(strtype)
-         case ('weir')
-            nweirgen = nweirgen + 1
-         case ('gate')
-            ngategen = ngategen + 1
-         case ('generalstructure')
-            ngenstru = ngenstru + 1
-         case default
-            call mess(LEVEL_ERROR, 'Programming error: unhandled structure type '''//trim(strtype)//''' under general structure block.')
-         end select
-      !endif
+      select case(strtype)
+      case ('weir')
+         nweirgen = nweirgen + 1
+      case ('gate')
+         ngategen = ngategen + 1
+      case ('generalstructure')
+         ngenstru = ngenstru + 1
+      case default
+         call mess(LEVEL_ERROR, 'Programming error: unhandled structure type '''//trim(strtype)//''' under general structure block.')
+      end select
    case ('generalstructuresobek') ! TODO: AvD: not hooked up yet.
       !call mess(LEVEL_ERROR, 'Programming error: structure type '''//trim(strtype)//''' not supported yet.')
       !cycle
@@ -472,38 +424,32 @@ do i=1,nstr
    end select
 end do
 
-!if (ngate == 0) ngatesg = 0
-!if (ncdam == 0) ncdamsg = 0
-!if (npump == 0) npumpsg = 0
-!if (ncgen == 0) ncgensg = 0
-!if (ngs   == 0) ncgensg = 0 ! genstru sobek?
+allocate ( xdum(1), ydum(1), kdum(1) , stat=ierr)
+call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
+xdum = 1d0 ; ydum = 1d0; kdum = 1
 
- allocate ( xdum(1), ydum(1), kdum(1) , stat=ierr)
- call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
- xdum = 1d0 ; ydum = 1d0; kdum = 1
+if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstructure user input
+   if (allocated   (zcgen)   ) deallocate( zcgen)
+   if (allocated   (kcgen)   ) deallocate( kcgen)
+   kx = 3 ! 1: crest/sill, 2: gateloweredge, 3: width (?)
+   allocate ( zcgen(ncgensg*kx), kcgen(4,ncgen) , stat=ierr     )
+   call aerr('zcgen(ncgensg*kx), kcgen(4,ncgen)',ierr, ncgen*(2*kx+3) )
+   kcgen = 0d0; zcgen = 1d10
 
- if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstructure user input
-    if (allocated   (zcgen)   ) deallocate( zcgen)
-    if (allocated   (kcgen)   ) deallocate( kcgen)
-    kx = 3 ! 1: crest/sill, 2: gateloweredge, 3: width (?)
-    allocate ( zcgen(ncgensg*kx), kcgen(4,ncgen) , stat=ierr     )
-    call aerr('zcgen(ncgensg*kx), kcgen(4,ncgen)',ierr, ncgen*(2*kx+3) )
-    kcgen = 0d0; zcgen = 1d10
+   if (allocated(cgen_ids))     deallocate(cgen_ids)
+   if (allocated(cgen_type))    deallocate(cgen_type)
+   if (allocated(cgen2str))     deallocate(cgen2str)
+   if (allocated(weir2cgen))    deallocate(weir2cgen)
+   if (allocated(gate2cgen))    deallocate(gate2cgen)
+   if (allocated(genstru2cgen)) deallocate(genstru2cgen)
+   allocate(cgen_ids(ncgensg), cgen_type(ncgensg), cgen2str(ncgensg))
+   allocate(weir2cgen(nweirgen), gate2cgen(ngategen), genstru2cgen(ngenstru))
+   if (allocated(gates))        deallocate(gates)
+   allocate (gates(ngategen) )
 
-    if (allocated(cgen_ids))     deallocate(cgen_ids)
-    if (allocated(cgen_type))    deallocate(cgen_type)
-    if (allocated(cgen2str))     deallocate(cgen2str)
-    if (allocated(weir2cgen))    deallocate(weir2cgen)
-    if (allocated(gate2cgen))    deallocate(gate2cgen)
-    if (allocated(genstru2cgen)) deallocate(genstru2cgen)
-    allocate(cgen_ids(ncgensg), cgen_type(ncgensg), cgen2str(ncgensg))
-    allocate(weir2cgen(nweirgen), gate2cgen(ngategen), genstru2cgen(ngenstru))
-    if (allocated(gates))        deallocate(gates)
-    allocate (gates(ngategen) )
-
-    nweirgen = 0
-    ngategen = 0
-    ngenstru = 0
+   nweirgen = 0
+   ngategen = 0
+   ngenstru = 0
 
    if (allocated(fusav)) deallocate(fusav)
    if (allocated(rusav)) deallocate(rusav)
@@ -512,64 +458,59 @@ end do
 
    do n = 1, ncgensg
 
-       do k = L1cgensg(n), L2cgensg(n)
-          Lf           = iabs(kegen(k))
-          kb           = ln(1,Lf)
-          kbi          = ln(2,Lf)
-          if (kegen(k) > 0) then
-             kcgen(1,k)   = kb
-             kcgen(2,k)   = kbi
-          else
-             kcgen(1,k)   = kbi
-             kcgen(2,k)   = kb
-          end if
+      do k = L1cgensg(n), L2cgensg(n)
+         Lf           = iabs(kegen(k))
+         kb           = ln(1,Lf)
+         kbi          = ln(2,Lf)
+         if (kegen(k) > 0) then
+            kcgen(1,k)   = kb
+            kcgen(2,k)   = kbi
+         else
+            kcgen(1,k)   = kbi
+            kcgen(2,k)   = kb
+         end if
 
-          kcgen(3,k)   = Lf
-          kcgen(4,k)   = n              ! pointer to general structure signal nr n
+         kcgen(3,k)   = Lf
+         kcgen(4,k)   = n              ! pointer to general structure signal nr n
+         call setfixedweirscheme3onlink(Lf)
+         iadv(Lf)     = 22             ! iadv = general
 
-          call setfixedweirscheme3onlink(Lf)
-          iadv(Lf)     = 22             ! iadv = general
+      enddo
 
-       enddo
+   enddo
 
-    enddo
+   allocate( hulp(NUMGENERALKEYWRD,ncgensg) )
+   hulp(idx_upstream1width,         1:ncgensg)  = 10  ! Upstream1Width
+   hulp(idx_upstream1level,         1:ncgensg)  = 0.0 ! Upstreamlevel
+   hulp(idx_upstream2width,         1:ncgensg)  = 10  ! Upstream2Width
+   hulp(idx_upstream2level,         1:ncgensg)  = 0.0 ! Upstream2Level
+   hulp(idx_crestwidth,             1:ncgensg)  = 10  ! CrestWidth
+   hulp(idx_crestlevel,             1:ncgensg)  = 0.0 ! CrestLevel
+   hulp(idx_downstream1width,       1:ncgensg)  = 10  ! Downstream1Width
+   hulp(idx_dowsstream1level,       1:ncgensg)  = 0.0 ! Downstream1Level
+   hulp(idx_downstream2width,       1:ncgensg)  = 10  ! Downstream2Width
+   hulp(idx_downstream2level,       1:ncgensg) = 0.0 ! Downstream2Level
+   hulp(idx_gateloweredgelevel,     1:ncgensg) = 0.0d0 ! GateLowerEdgeLevel
+   hulp(idx_gateheightintervalcntrl,1:ncgensg) = 1d10  ! gateheightintervalcntrl=12
+   hulp(idx_pos_freegateflowcoeff,  1:ncgensg) = 1   ! pos_freegateflowcoeff=1
+   hulp(idx_pos_drowngateflowcoeff, 1:ncgensg) = 1   ! pos_drowngateflowcoeff=1
+   hulp(idx_pos_freeweirflowcoeff,  1:ncgensg) = 1   ! pos_freeweirflowcoeff=1
+   hulp(idx_pos_drownweirflowcoeff, 1:ncgensg) = 1.0 ! pos_drownweirflowcoeff=1.0
+   hulp(idx_pos_contrcoeffreegate,  1:ncgensg) = 1.0 ! pos_contrcoeffreegate=0.6
+   hulp(idx_neg_freegateflowcoeff,  1:ncgensg) = 1   ! neg_freegateflowcoeff=1
+   hulp(idx_neg_drowngateflowcoeff, 1:ncgensg) = 1   ! neg_drowngateflowcoeff=1
+   hulp(idx_neg_freeweirflowcoeff,  1:ncgensg) = 1   ! neg_freeweirflowcoeff=1
+   hulp(idx_neg_drownweirflowcoeff, 1:ncgensg) = 1.0 ! neg_drownweirflowcoeff=1.0
+   hulp(idx_neg_contrcoeffreegate,  1:ncgensg) = 1.0 ! neg_contrcoeffreegate=0.6
+   hulp(idx_extraresistence,        1:ncgensg) = 0   ! extraresistance=0
+   hulp(idx_dynstrucentent,         1:ncgensg) = 1.  ! dynstructext=1.
+   hulp(idx_gateheight,             1:ncgensg) = 1d10! GateHeight
+   hulp(idx_gateopeningwidth,       1:ncgensg) = 0.  ! GateOpeningWidth
 
-    allocate( hulp(numgeneralkeywrd,ncgensg) )
-    hulp(1,1:ncgensg)  = 10  ! widthleftW1=10
-    hulp(2,1:ncgensg)  = 0.0 ! levelleftZb1=0.0
-    hulp(3,1:ncgensg)  = 10  ! widthleftWsdl=10
-    hulp(4,1:ncgensg)  = 0.0 ! levelleftZbsl=0.0
-    hulp(5,1:ncgensg)  = 10  ! widthcenter=10
-    hulp(6,1:ncgensg)  = 0.0 ! levelcenter=0.0
-    hulp(7,1:ncgensg)  = 10  ! widthrightWsdr=10
-    hulp(8,1:ncgensg)  = 0.0 ! levelrightZbsr=0.0
-    hulp(9,1:ncgensg)  = 10  ! widthrightW2=10
-    hulp(10,1:ncgensg) = 0.0 ! levelrightZb2=0.0
-    hulp(11,1:ncgensg) = 0.0d0  ! GateLowerEdgeLevel
-    hulp(12,1:ncgensg) = 1d10  ! gateheightintervalcntrl=12
-    hulp(13,1:ncgensg) = 1   ! pos_freegateflowcoeff=1
-    hulp(14,1:ncgensg) = 1   ! pos_drowngateflowcoeff=1
-    hulp(15,1:ncgensg) = 1   ! pos_freeweirflowcoeff=1
-    hulp(16,1:ncgensg) = 1.0 ! pos_drownweirflowcoeff=1.0
-    hulp(17,1:ncgensg) = 1.0 ! pos_contrcoeffreegate=0.6
-    hulp(18,1:ncgensg) = 1   ! neg_freegateflowcoeff=1
-    hulp(19,1:ncgensg) = 1   ! neg_drowngateflowcoeff=1
-    hulp(20,1:ncgensg) = 1   ! neg_freeweirflowcoeff=1
-    hulp(21,1:ncgensg) = 1.0 ! neg_drownweirflowcoeff=1.0
-    hulp(22,1:ncgensg) = 1.0 ! neg_contrcoeffreegate=0.6
-    hulp(23,1:ncgensg) = 0   ! extraresistance=0
-    hulp(24,1:ncgensg) = 1.  ! dynstructext=1.
-    hulp(25,1:ncgensg) = 1d10! gatedoorheight
-    hulp(26,1:ncgensg) = 0.  ! door_opening_width=0
+   if ( allocated(generalstruc) )   deallocate (generalstruc)
+   allocate (generalstruc(ncgensg) )
 
-    if ( allocated(generalstruc) )   deallocate (generalstruc)
-    allocate (generalstruc(ncgensg) )
-
-    do n = 1, ncgensg
-       if (L1cgensg(n) > L2cgensg(n)) then
-          ! 0 flow links found for this gens, so cycle
-!!!          cycle
-       endif
+   do n = 1, ncgensg
 
       str_ptr => strs_ptr%child_nodes(cgenidx(n))%node_ptr
 
@@ -586,43 +527,39 @@ end do
 
       ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
       if (strtype /= 'generalstructure') then
-         hulp(1, n) = huge(1d0)  ! widthleftW1=10
-         hulp(2, n) = -huge(1d0) ! levelleftZb1=0.0
-         hulp(3, n) = huge(1d0)  ! widthleftWsdl=10
-         hulp(4, n) = -huge(1d0) ! levelleftZbsl=0.0
-         hulp(5, n) = huge(1d0)  ! widthcenter=10
-         hulp(6, n) = -huge(1d0) ! levelcenter=0.0
-         hulp(7, n) = huge(1d0)  ! widthrightWsdr=10
-         hulp(8, n) = -huge(1d0) ! levelrightZbsr=0.0
-         hulp(9, n) = huge(1d0)  ! widthrightW2=10
-         hulp(10,n) = -huge(1d0) ! levelrightZb2=0.0
-         hulp(11,n) = 1d10! GateLowerEdgeLevel
-         hulp(12,n) = 1d10  ! gateheightintervalcntrl=12
-         hulp(13,n) = 1   ! pos_freegateflowcoeff=1
-         hulp(14,n) = 1   ! pos_drowngateflowcoeff=1
-         hulp(15,n) = 1   ! pos_freeweirflowcoeff=1
-         hulp(16,n) = 1.0 ! pos_drownweirflowcoeff=1.0
-         hulp(17,n) = 1.0 ! pos_contrcoeffreegate=0.6
-         hulp(18,n) = 1   ! neg_freegateflowcoeff=1
-         hulp(19,n) = 1   ! neg_drowngateflowcoeff=1
-         hulp(20,n) = 1   ! neg_freeweirflowcoeff=1
-         hulp(21,n) = 1.0 ! neg_drownweirflowcoeff=1.0
-         hulp(22,n) = 1.0 ! neg_contrcoeffreegate=0.6
-         hulp(23,n) = 0   ! extraresistance=0
-         hulp(24,n) = 1.  ! dynstructext=1.
-         hulp(25,n) = 1d10! gatedoorheight
-         hulp(26,n) = 0d0 ! door_opening_width
+         hulp(idx_upstream1width, n) = huge(1d0)  ! Upstream1Width
+         hulp(idx_upstream1level, n) = -huge(1d0) ! Upstream1Level
+         hulp(idx_upstream2width, n) = huge(1d0)  ! Upstream2Width
+         hulp(idx_upstream2level, n) = -huge(1d0) ! Upstream2Level
+         hulp(idx_crestwidth, n) = huge(1d0)  ! CrestWidth
+         hulp(idx_crestlevel, n) = -huge(1d0) ! CrestLevel
+         hulp(idx_downstream1width, n) = huge(1d0)  ! Downstream1Width
+         hulp(idx_dowsstream1level, n) = -huge(1d0) ! Downstream1Level
+         hulp(idx_downstream2width, n) = huge(1d0)  ! Downstream2Width
+         hulp(idx_downstream2level,n) = -huge(1d0) ! Downstream2Level
+         hulp(idx_gateloweredgelevel,n) = 1d10       ! GateLowerEdgeLevel
+         hulp(idx_gateheightintervalcntrl,n) = 1d10       ! gateheightintervalcntrl=12
+         hulp(idx_pos_freegateflowcoeff,n) = 1          ! pos_freegateflowcoeff=1
+         hulp(idx_pos_drowngateflowcoeff,n) = 1          ! pos_drowngateflowcoeff=1
+         hulp(idx_pos_freeweirflowcoeff,n) = 1          ! pos_freeweirflowcoeff=1
+         hulp(idx_pos_drownweirflowcoeff,n) = 1.0        ! pos_drownweirflowcoeff=1.0
+         hulp(idx_pos_contrcoeffreegate,n) = 1.0        ! pos_contrcoeffreegate=0.6
+         hulp(idx_neg_freegateflowcoeff,n) = 1          ! neg_freegateflowcoeff=1
+         hulp(idx_neg_drowngateflowcoeff,n) = 1          ! neg_drowngateflowcoeff=1
+         hulp(idx_neg_freeweirflowcoeff,n) = 1          ! neg_freeweirflowcoeff=1
+         hulp(idx_neg_drownweirflowcoeff,n) = 1.0        ! neg_drownweirflowcoeff=1.0
+         hulp(idx_neg_contrcoeffreegate,n) = 1.0        ! neg_contrcoeffreegate=0.6
+         hulp(idx_extraresistence,n) = 0          ! extraresistance=0
+         hulp(idx_dynstrucentent,n) = 1.         ! dynstructext=1.
+         hulp(idx_gateheight,n) = 1d10       ! GateHeight
+         hulp(idx_gateopeningwidth,n) = 0d0        ! GateOpeningWidth
       end if
-
 
       select case (strtype)
       !! WEIR !!
       case ('weir')
          rec = ' '
          call prop_get(str_ptr, '', 'CrestLevel', rec, success)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'crest_level', rec, success)
-         endif
          if (.not. success .or. len_trim(rec) == 0) then
             write(msgbuf, '(a,a,a)') 'Required field ''CrestLevel'' missing in weir ''', trim(strid), '''.'
             call warn_flush()
@@ -649,7 +586,7 @@ end do
             end if
          else
             zcgen((n-1)*kx+1) = tmpval ! Constant value for always, set it now already.
-            hulp(6, n)        = tmpval
+            hulp(idx_crestlevel, n)        = tmpval
          end if
 
          tmpval = dmiss
@@ -663,16 +600,16 @@ end do
          call prop_get(str_ptr, '', 'lat_contr_coeff', tmpval)
          ! TODO: Herman/Jaco: this is not relevant anymore, using width (gate only)??
          if (tmpval /= dmiss) then
-            hulp(13,n) = tmpval
-            hulp(14,n) = tmpval
-            hulp(15,n) = tmpval
-            hulp(16,n) = tmpval
-            hulp(17,n) = 1.0
-            hulp(18,n) = tmpval
-            hulp(19,n) = tmpval
-            hulp(20,n) = tmpval
-            hulp(21,n) = tmpval
-            hulp(22,n) = 1.0
+            hulp(idx_pos_freegateflowcoeff,n) = tmpval
+            hulp(idx_pos_drowngateflowcoeff,n) = tmpval
+            hulp(idx_pos_freeweirflowcoeff,n) = tmpval
+            hulp(idx_pos_drownweirflowcoeff,n) = tmpval
+            hulp(idx_pos_contrcoeffreegate,n) = 1.0
+            hulp(idx_neg_freegateflowcoeff,n) = tmpval
+            hulp(idx_neg_drowngateflowcoeff,n) = tmpval
+            hulp(idx_neg_freeweirflowcoeff,n) = tmpval
+            hulp(idx_neg_drownweirflowcoeff,n) = tmpval
+            hulp(idx_neg_contrcoeffreegate,n) = 1.0
          endif
          nweirgen = nweirgen+1
          weir2cgen(nweirgen) = n ! Mapping from 1:nweirgen to underlying generalstructure --> (1:ncgensg)
@@ -683,9 +620,6 @@ end do
       case ('gate')
          rec = ' '
          call prop_get(str_ptr, '', 'CrestLevel', rec, success)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'sill_level', rec, success)
-         endif
          if (.not. success .or. len_trim(rec) == 0) then
             write(msgbuf, '(a,a,a)') 'Required field ''CrestLevel'' missing in gate ''', trim(strid), '''.'
             call warn_flush()
@@ -713,14 +647,11 @@ end do
             end if
          else
             zcgen((n-1)*kx+1) = tmpval ! Constant value for always, set it now already.
-            hulp(6, n)        = tmpval
+            hulp(idx_crestlevel, n)        = tmpval
          end if
 
          tmpval = dmiss
          call prop_get(str_ptr, '', 'CrestWidth', tmpval, success)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'sill_width', tmpval, success)
-         endif
          if (.not. success .or. tmpval == dmiss) then
             ! Not required, just default to all crossed flow links
             tmpval = huge(1d0)
@@ -729,22 +660,16 @@ end do
 
          tmpval = dmiss
          call prop_get(str_ptr, '', 'GateHeight', tmpval, success) ! Gate height (old name: Door height) (from lower edge level to top, i.e. NOT a level/position)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'door_height', tmpval, success)
-         endif
          if (.not. success .or. tmpval == dmiss) then
             write(msgbuf, '(a,a,a)') 'Required field ''GateHeight'' missing in gate ''', trim(strid), '''.'
             call warn_flush()
             cycle
          end if
          gates(ngategen+1)%door_height = tmpval
-         hulp(25,n) = tmpval  ! gatedoorheight.
+         hulp(idx_gateheight,n) = tmpval  ! gatedoorheight.
 
          rec = ' '
          call prop_get(str_ptr, '', 'GateLowerEdgeLevel', rec, success)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'lower_edge_level', rec, success)
-         endif
          if (.not. success .or. len_trim(rec) == 0) then
             write(msgbuf, '(a,a,a)') 'Required field ''GateLowerEdgeLevel'' missing in gate ''', trim(strid), '''.'
             call warn_flush()
@@ -773,19 +698,13 @@ end do
             end if
          else
             zcgen((n-1)*kx+2) = tmpval ! Constant value for always, set it now already.
-            hulp(11, n)       = tmpval
+            hulp(idx_gateloweredgelevel, n)       = tmpval
          end if
 
          rec = ' '
          call prop_get(str_ptr, '', 'GateOpeningWidth', rec, success) ! Opening width between left and right doors. (If any. Otherwise set to 0 for a single gate door with under/overflow)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'opening_width', rec, success)
-         endif
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'door_opening_width', rec, success) ! Better keyword: door_opening_width instead of opening_width
-         end if
          if (len_trim(rec) == 0) then
-            zcgen((n-1)*kx+3) = dmiss   ! door_opening_width is optional
+            zcgen((n-1)*kx+3) = dmiss   ! GateOpeningWidth is optional
             success = .true.
          else
             read(rec, *, iostat = ierr) tmpval
@@ -809,7 +728,7 @@ end do
                end if
             else
                zcgen((n-1)*kx+3) = tmpval ! Constant value for always, set it now already.
-               hulp(5, n)       = tmpval
+               hulp(idx_crestwidth, n)       = tmpval
             end if
          end if
 
@@ -840,14 +759,9 @@ end do
 
       !! GENERALSTRUCTURE !!
       case ('generalstructure')
-         call checkCombinationOldNewKeywordsGeneralStructure(janewformat, str_ptr)
-         do k = 1,numgeneralkeywrd        ! generalstructure keywords
+         do k = 1,NUMGENERALKEYWRD        ! generalstructure keywords
             tmpval = dmiss
-            if (janewformat == 1) then
-               key = generalkeywrd(k)
-            else
-               key = generalkeywrd_old(k)
-            endif
+            key = generalkeywrd(k)
             call prop_get(str_ptr, '', trim(key), rec, successloc)
             if (.not. successloc .or. len_trim(rec) == 0) then
                ! consider all fields optional for now.
@@ -857,8 +771,7 @@ end do
             if (ierr /= 0) then ! No number, so check for timeseries filename
                if (trim(rec) == 'REALTIME') then
                   select case (trim(generalkeywrd(k)))
-                  case ('levelcenter', 'gatedoorheight', 'gateheight', 'door_opening_width', &
-                        'CrestLevel', 'GateHeight', 'GateLowerEdgeLevel', 'GateOpeningWidth')
+                  case ('CrestLevel', 'GateHeight', 'GateLowerEdgeLevel', 'GateOpeningWidth')
                      success = .true.
                      write(msgbuf, '(a,a,a)') 'Control for generalstructure ''', trim(strid), ''', '//trim(generalkeywrd(k))//' set to REALTIME.'
                      call dbg_flush()
@@ -876,11 +789,11 @@ end do
                   end if
                      
                   select case (key)
-                  case ('CrestLevel', 'levelcenter')
+                  case ('CrestLevel')
                      ifld = 1
-                  case ('GateLowerEdgeLevel', 'gateheight')
+                  case ('GateLowerEdgeLevel')
                      ifld = 2
-                  case ('GateOpeningWidth', 'door_opening_width')
+                  case ('GateOpeningWidth')
                      ifld = 3
                   case default
                      success = .false.
@@ -907,9 +820,9 @@ end do
          end do
 
          ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*3+1) is quickly need for updating bobs.)
-         zcgen((n-1)*3+1) = hulp( 6, n) ! levelcenter
-         zcgen((n-1)*3+2) = hulp(11, n) ! gateheight  == 'gateloweredgelevel', really a level
-         zcgen((n-1)*3+3) = hulp(26, n) ! door_opening_width
+         zcgen((n-1)*3+1) = hulp(idx_crestlevel        , n) ! CrestLevel
+         zcgen((n-1)*3+2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
+         zcgen((n-1)*3+3) = hulp(idx_gateopeningwidth  , n) ! GateOpeningWidth
 
          ngenstru = ngenstru+1
          genstru2cgen(ngenstru) = n ! Mapping from 1:ngenstru to underlying generalstructure --> (1:ncgensg)
@@ -928,9 +841,9 @@ end do
 
       call togeneral(n, hulp(:,n), numgen, widths(1:numgen))
 
-    enddo
+   enddo
 
-    deallocate( hulp )
+   deallocate( hulp )
 
 endif ! generalstructure: weir, gate, or true generalstructure
 
@@ -962,7 +875,7 @@ if (ngate > 0) then ! Old-style controllable gateloweredgelevel
 
    enddo
 
- do n = 1, ngatesg ! and now add it (poly_tim xys have just been prepared in separate loop)
+   do n = 1, ngatesg ! and now add it (poly_tim xys have just been prepared in separate loop)
       str_ptr => strs_ptr%child_nodes(gateidx(n))%node_ptr
 
       strid = ' '
@@ -1565,18 +1478,11 @@ end if
 ! Cleanup:
 888 continue
 
- if (mext /= 0) then
-!    call doclose(mext) ! close ext file
-!    deallocate ( keg, ked, kep, kegs) ! TODO: AvD: cleanup now still done in initexternalforcings. Split off later, or not?
- end if
-
- if (allocated (xdum))     deallocate (xdum, ydum, kdum)
- if (allocated (kdss))     deallocate (kdss)
-
- if (allocated (strnums) ) deallocate (strnums)
- if (allocated (widths) )  deallocate (widths)
- if (allocated (pumpidx) ) deallocate (pumpidx)
- if (allocated (gateidx) ) deallocate (gateidx)
- if (allocated (cdamidx) ) deallocate (cdamidx)
- if (allocated (cgenidx) ) deallocate (cgenidx)
+if (allocated (xdum))     deallocate (xdum, ydum, kdum)
+if (allocated (widths) )  deallocate (widths)
+if (allocated (pumpidx) ) deallocate (pumpidx)
+if (allocated (gateidx) ) deallocate (gateidx)
+if (allocated (cdamidx) ) deallocate (cdamidx)
+if (allocated (cgenidx) ) deallocate (cgenidx)
+ 
 end function flow_init_structurecontrol

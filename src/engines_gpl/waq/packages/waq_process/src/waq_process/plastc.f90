@@ -1,3 +1,9 @@
+module m_plastc
+
+implicit none
+
+contains
+
       subroutine PLASTC     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
@@ -347,3 +353,5 @@
 
       return
       end
+
+end module m_plastc

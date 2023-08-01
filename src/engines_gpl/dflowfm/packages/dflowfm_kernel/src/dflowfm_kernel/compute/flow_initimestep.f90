@@ -43,6 +43,7 @@
  use MessageHandling
  use m_partitioninfo
  use m_sediment, only: stm_included
+ use m_sethu
 
  implicit none
 
@@ -108,7 +109,7 @@
  adve = 0d0
 
  call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
- call sethu(jazws0)
+ call calculate_hu_au_and_advection_for_dams_weirs(jazws0)
 
  call setau()                                        ! set au and cfuhi for conveyance after limited h upwind at u points
  call timstop(handle_extra(39)) ! End huau

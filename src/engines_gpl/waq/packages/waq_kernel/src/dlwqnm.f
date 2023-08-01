@@ -25,14 +25,10 @@
       use m_zercum
       use m_sgmres
       use m_setset
-      use m_putper
       use m_proint
       use m_proces
-      use m_online
       use m_hsurf
-      use m_getper
       use m_dlwq_output_theta
-      use m_dlwq_boundio
       use m_dlwqtr
       use m_dlwqt0
       use m_dlwqo2
@@ -125,7 +121,6 @@
       use waqmem                         ! Global memory with allocatable GMRES arrays
       use delwaq2_data
       use m_openda_exchange_items, only : get_openda_buffer
-      use report_progress
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -149,14 +144,6 @@
       type(GridPointerColl)       :: GridPs     !< collection of all grid definitions
 
 !$    include "omp_lib.h"
-
-!     common to define external communications in SOBEK
-!     olcfwq             flag indicating ONLINE running of CF and WQ
-!     srwact             flag indicating active data exchange with SRW
-!     rtcact             flag indicating output for RTC
-
-      logical            olcfwq, srwact, rtcact
-      common /commun/    olcfwq, srwact, rtcact
 
 ! local declarations
 
@@ -278,7 +265,6 @@
           inwtyp = intyp + nobnd
           noqt   = noq1  + noq2
 
-          call initialise_progress( dlwqd%progress, nstep, lchar(44) )
 
 ! initialize second volume array with the first one
 
@@ -301,7 +287,6 @@
 
       if ( action == ACTION_SINGLESTEP ) then
           call dlwqdata_restore(dlwqd)
-          call apply_operations( dlwqd )
       endif
 
       antidiffusion = btest(intopt,16)
@@ -353,7 +338,7 @@
      &                 idt     , a(iderv), ndmpar  , nproc   , nflux   ,
      &                 j(iipms), j(insva), j(iimod), j(iiflu), j(iipss),
      &                 a(iflux), a(iflxd), a(istoc), ibflag  , ipbloo  ,
-     &                 ipchar  , ioffbl  , ioffch  , a(imass), nosys   ,
+     &                 ioffbl  , a(imass), nosys   ,
      &                 itfact  , a(imas2), iaflag  , intopt  , a(iflxi),
      &                 j(ixpnt), iknmkv  , noq1    , noq2    , noq3    ,
      &                 noq4    , ndspn   , j(idpnw), a(idnew), nodisp  ,
@@ -369,11 +354,6 @@
      &                 j(iprvpt), j(iprdon), nrref , j(ipror), nodef   ,
      &                 surface  ,lun(19) )
 
-
-!     communicate boundaries
-         call dlwq_boundio( lun  (19), notot   , nosys   , noseg   , nobnd   ,
-     &                      c(isnam) , c(ibnid), j(ibpnt), a(iconc), a(ibset),
-     &                      lchar(19))
 
 !     set new boundaries
          if ( itime .ge. 0   ) then
@@ -424,9 +404,6 @@
      &                    a(idmpq), a(idmps), noraai  , imflag  , ihflag  ,
      &                    a(itrra), ibflag  , nowst   , a(iwdmp))
          endif
-
-! progress file
-         call write_progress( dlwqd%progress )
 
 !     simulation done ?
          if ( itime .lt. 0      ) goto 9999
@@ -605,25 +582,6 @@
          if ( ibflag .gt. 0 ) then
             call proint ( nflux   , ndmpar  , idt     , itfact, a(iflxd),
      &                    a(iflxi), j(isdmp), j(ipdmp), ntdmpq          )
-         endif
-
-      if ( rtcact ) call rtcshl (itime, a, j, c) ! Interface to RTC (i)
-      if ( srwact ) call srwshl (itime, a, j, c) ! Interface to SRW (i)
-
-      if ( olcfwq ) then
-          call putpcf('wqtocf','datawqtocf')
-          if ( itime+idt .lt. itstop ) then
-              call getpcf('cftowq','datacftowq')
-              laatst = 0
-          else
-              laatst = -1
-          endif
-      endif
-
-!     new time values, volumes excluded
-         if ( olcfwq .or. srwact ) then
-            call putpev ( 'WQtoWQI', 'DataWQtoWQI', laatst )
-            call getper ( 'WQItoWQ', 'DataWQItoWQ' )
          endif
 
 !     update all other time functions

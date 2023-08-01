@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_sedcar
+
+      implicit none
+
+      contains
+
 
       subroutine sedcar ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -61,14 +67,15 @@
       use m_evaluate_waq_attribute
       USE BottomSet     !  Module with definition of the waterbottom segments
 
-      IMPLICIT REAL (A-H,J-Z)
-
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
+      
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
       REAL     MINDEP, MINDE2, DEPTH , DEPTH2
-
+      
       LOGICAL, SAVE :: FIRST = .TRUE.
       LOGICAL       :: SW_PSEDMIN
       INTEGER       :: IDUMMY
@@ -326,3 +333,5 @@
 !
       RETURN
       END
+
+      end module m_sedcar

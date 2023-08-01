@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dhpfil
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DHPFIL(LUNREP,TEKST,FILNAM)
 !
@@ -29,6 +35,8 @@
 
       INTEGER       LUNREP
       CHARACTER*(*) TEKST , FILNAM
+      
+      integer i, ilen, iend
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dhpfil", ithndl )
 !
@@ -44,3 +52,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_dhpfil

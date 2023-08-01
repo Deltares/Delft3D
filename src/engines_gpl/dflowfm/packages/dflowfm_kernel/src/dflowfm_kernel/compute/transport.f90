@@ -65,7 +65,7 @@ subroutine transport()                           ! transport for now, advect sal
 
  ! kuzmin 2D limiting 
 
- double precision, external     :: dslim, setrho, dlimitercentral
+ double precision, external     :: dslim, dlimitercentral
 
  integer                        :: j, kj, kdj, kuj, kl1j, kl2j, kbj, kij, ki, jastep, kk, kb1, kb2, n1, n2, kkua, kkub, ku2
 
@@ -105,8 +105,6 @@ subroutine transport()                           ! transport for now, advect sal
 
  ! It is not allowed to change the selection of limiters for sal/tem/sed as defined in the input file. Therefore, the next line is now a comment (and will be removed in future)
  ! limtyp = max(Limtypsa, limtyptm, limtypsed)                   ! check if limiter need be applied
-
- if (jasal == 0 .and. jatem == 0 .and. jased == 0 .and. jatransportmodule == 0 ) return    ! no salinity, or sediment, no higher orders
 
  if (jasal > 0) then
 

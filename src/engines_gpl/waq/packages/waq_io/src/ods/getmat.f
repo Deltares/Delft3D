@@ -20,9 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getmat
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETMAT ( FNAME  , ITYPE  , IPRCOD , LOC    , TIM    ,
-     *                    AMISS  , I3GL   , MAXDIM , DATA   , IERROR ,
+     *                    AMISS  , MAXDIM , DATA   , IERROR ,
      *                                                        OPTION )
 !
 !
@@ -48,7 +54,6 @@
 !     LOC     INTEGER   3*3       INPUT   List of indices of locations
 !     TIM     REAL*8     3        INPUT   Interval and step for data
 !     AMISS   REAL*4     2        INPUT   Missing value in output/input
-!     I3GL    INTEGER    1        INPUT   Nonsens
 !     MAXDIM  INTEGER    1        INPUT   Maximum dimension of output arr
 !     DATA    REAL*4   MAXDIM     OUTPUT  The produced information
 !     IERROR  INTEGER    1        IN/OUT  Error code
@@ -61,15 +66,22 @@
       use m_dhfext
 
       CHARACTER*256 FNAME (3) , OPTION
-      DIMENSION     LOC(*)    , DATA(*)
-      REAL*8        TIM(3)    , OTIME  , ATIME    , SECOND
+      REAL                  :: DATA(*)
+      INTEGER               :: LOC(*)
+      REAL*8        TIM(2)    , OTIME  , ATIME    , SECOND
       real  amiss
       character*256         :: ext     ! file extension
       integer               :: extpos  ! position of extension
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
       integer               :: lun
-!
+      integer               :: I1
+      integer               :: NODUMP, NOTOT
+      integer               :: k, L, i2, i3, i4, ierror, iyear, imonth, iday
+      integer               :: ihour, iminut, isecnd, isfact, idummy, idate
+      integer               :: itime, ntt, iset, iprcod, maxdim
+      integer               :: adummy, itype
+      
 !         Open the DELWAQ .HIS file if needed
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
@@ -148,7 +160,7 @@
 !
       END
       SUBROUTINE GETMAT2( FNAME  , ITYPE  , IPRCOD , LOC    , TIM    ,
-     *                    AMISS  , I3GL   , MAXDIM , DATA   , IERROR ,
+     *                    AMISS  , MAXDIM , DATA   , IERROR ,
      *                                                        OPTION )
 !
 !
@@ -177,9 +189,8 @@
 !     ITYPE   INTEGER    1        INPUT   File type
 !     IPRCOD  INTEGER  IERROR     INPUT   List of wanted parameters
 !     LOC     INTEGER   3*3       INPUT   List of indices of locations
-!     TIM     REAL*8     3        INPUT   Interval and step for data
+!     TIM     REAL*8     2        INPUT   Interval and step for data
 !     AMISS   REAL*4     2        INPUT   Missing value in output/input
-!     I3GL    INTEGER    1        INPUT   Nonsens
 !     MAXDIM  INTEGER    1        INPUT   Maximum dimension of output arr
 !     DATA    REAL*4   MAXDIM     OUTPUT  The produced information
 !     IERROR  INTEGER    1        IN/OUT  Error code
@@ -187,14 +198,19 @@
 !
 !
       CHARACTER*256 FNAME (3) , OPTION
-      DIMENSION     LOC(*)    , DATA(*)
-      REAL*8        TIM(3)    , OTIME  , ATIME    , SECOND
+      REAL      DATA(*)
+      integer   LOC(*)
+      REAL*8        TIM(2)    , OTIME  , ATIME    , SECOND
       real  amiss
       character*256         :: ext     ! file extension
       integer               :: extpos  ! position of extension
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun
+      integer               :: lun, NODUMP, NOTOT, k, NTT
+      integer               :: ierror, iyear, imonth, iday
+      integer               :: ihour, iminut, isecnd, isfact, idummy, idate
+      integer               :: itime, iset, iprcod(:), maxdim
+      integer               :: adummy, itype
 !
 !         Open the DELWAQ .HIS file if needed
 !
@@ -268,3 +284,5 @@
       RETURN
 !
       END
+
+      end module m_getmat

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_reaalg
+
+      implicit none
+
+      contains
+
 
       subroutine reaalg ( lunrep , lunblm , verspe , maxtyp , maxcof , 
      +                    notyp  , nocof  , noutgrp, nouttyp, alggrp ,
@@ -170,3 +176,5 @@
  3011 format(' Error reading BLOOM database, processes per type')
 !
       end
+
+      end module m_reaalg

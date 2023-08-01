@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_wlcwoc
+
+      implicit none
+
+      contains
+
 
       subroutine wlcwoc ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -398,3 +404,5 @@ C
       RETURN
 !
       END
+
+      end module m_wlcwoc

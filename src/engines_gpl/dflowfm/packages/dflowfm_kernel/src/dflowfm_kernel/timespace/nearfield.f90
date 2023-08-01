@@ -49,7 +49,7 @@ module m_nearfield
                                                    !<   is switched on
     integer, parameter :: NEARFIELD_UPDATED  = 2   !< nearfield_mode is set to NEARFIELD_UPDATED, everytime DIMR passes a data pointer
                                                    !< from cosumo_bmi to D-Flow FM. This is the trigger to call addNearfieldData in
-                                                   !< flow_setexternalforcings.
+                                                   !< set_external_forcings.
     integer, parameter :: NF_IX     = 1            !< Column 1 in COSUMO data          : x-coordinate
     integer, parameter :: NF_IY     = 2            !< Column 2 in COSUMO data          : y-coordinate
     integer, parameter :: NF_IZ     = 3            !< Column 3 in COSUMO data          : z-coordinate
@@ -118,7 +118,7 @@ module m_nearfield
 !
 !
 !==============================================================================
-!> Main entry point from within D-Flow FM (flow_setexternalforcings),
+!> Main entry point from within D-Flow FM (set_external_forcings),
 !! called after cosumo_bmi has updated data.
 !! By calling desa and nearfieldToFM, the new data is processed and added to the
 !! arrays used during the D-Flow FM computation

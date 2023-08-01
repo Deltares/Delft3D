@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_intpol
+
+      implicit none
+
+      contains
+
 
       subroutine intpol ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -50,9 +56,12 @@
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      INTEGER   MAXPAR,IP, NUMPAR
+      INTEGER   MAXPAR, NUMPAR, i, iseg
+      real      VALUE, RESULT
       PARAMETER (MAXPAR=8)
-      DIMENSION X(MAXPAR),Y(MAXPAR),IP(2*MAXPAR+2)
+      real    :: X(MAXPAR)
+      real    :: Y(MAXPAR)
+      integer :: IP(2*MAXPAR+2)
 
       DO 10 I=1,2*MAXPAR+2
         IP(I) = IPOINT(I)
@@ -100,3 +109,5 @@
       RETURN
 !
       END
+
+      end module m_intpol

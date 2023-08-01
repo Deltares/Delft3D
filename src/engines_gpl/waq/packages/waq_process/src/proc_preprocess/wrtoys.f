@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_wrtoys
+
+      implicit none
+
+      contains
+
 
       subroutine wrtoys ( lchar , lun    , notot , syname, noutp ,
      +                    ioutps, outputs)
@@ -147,3 +153,5 @@
  1060 format ( '''day''' )
  1070 format ( '0' )
       end
+
+      end module m_wrtoys

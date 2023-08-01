@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_data_ods
+
+      implicit none
+
+      contains
+
 
       subroutine read_data_ods( lunut     , fname, data_param, data_loc, amiss ,
      +                          data_block, ierr )
@@ -30,10 +36,16 @@
 
 !     Global declarations
 
+      use m_gettme
+      use m_getpar
+      use m_getmat
+      use m_getloc
+      use m_getdim
       use m_zoek
       use dlwq_data      ! for definition and storage of data
       use timers       !   performance timers
       use m_sysi          ! Timer characteristics
+      use m_gregor
 
       implicit none
 
@@ -52,7 +64,7 @@
       integer                               :: iorder       ! order of the parameters and locations in the data array
       integer                               :: loc(3)       ! to pass the locations to ODS
       character(len=256)                    :: cfile(3)     ! to pass the filename to ODS
-      character                             :: cdummy       ! dummy not used
+      character(len=3)                      :: cdummy       ! dummy not used
       real*8                                :: afact        ! scale factor for times
       real*8                                :: a1           ! time
       real*8                                :: a2           ! time
@@ -262,7 +274,7 @@
       if ( ierr_alloc .eq. 0 ) then
          maxdim = nsubs*nlocs*nobrk
          call getmat2( cfile , 0 , ipar_ods      , loc     , timdef   ,
-     *                 amiss , 0 , maxdim        , buffer2 , ierror   ,
+     *                 amiss , maxdim        , buffer2 , ierror   ,
      *                                                       cfile(3) )
          do ipar = 1 , data_param%no_item
             if ( ipar_ods(ipar) .gt. 0 ) then
@@ -289,7 +301,7 @@
                      loc(1) = iloc_ods(iloc)
                      loc(2) = iloc_ods(iloc)
                      call getmat ( cfile , 0 , ipar_ods(ipar), loc     , timdef   ,
-     *                             amiss , 0 , nobrk         , buffer  , ierror   ,
+     *                             amiss , nobrk         , buffer  , ierror   ,
      *                                                                   cfile(3) )
                      do ibrk = 1 , nobrk
                         if ( iorder .eq. ORDER_PARAM_LOC ) then
@@ -340,3 +352,5 @@
      *          ' that will become corrupted !' )
 !
       END
+
+      end module m_read_data_ods

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_zerome
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE ZEROME ( NAME )
       use m_srstop
@@ -36,3 +42,5 @@
       CALL SRSTOP(1)
       RETURN
       END
+
+      end module m_zerome

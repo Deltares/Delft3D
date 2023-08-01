@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_grid
+      use m_read_sub_procgrid
+      use m_read_proc_time
+      use m_read_nobottomlay
+      use m_read_grid
+
+
+      implicit none
+
+      contains
+
 
       subroutine grid   ( lun    , noseg  , notot  , nototp , nolay  ,
      &                    gridps , nseg2  , nogrid , syname , ierr   ,
@@ -61,7 +72,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun   (*)         !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
       integer  ( 4), intent(in   ) :: noseg             !< number of computational volumes
       integer  ( 4), intent(in   ) :: notot             !< total number of substances
       integer  ( 4), intent(in   ) :: nototp            !< total number of particle-substances
@@ -422,3 +433,5 @@
  2130 format (/' ERROR, reading sub-grids information.' )
 
       end
+
+      end module m_grid

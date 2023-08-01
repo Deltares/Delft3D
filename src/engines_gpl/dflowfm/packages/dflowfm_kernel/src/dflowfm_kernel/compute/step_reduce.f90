@@ -96,7 +96,7 @@
 
    222 if (nonlin == 2 .or. (nonlin ==3 .and. .not. firstnniteration)) then                               ! only for pressurised
        ! Nested newton iteration, start with s1m at bed level.
-       s1m = bl !  s1mini
+       s1m(:) = bl(:)
        call volsur()
        difmaxlevm = 0d0 ;  noddifmaxlevm = 0
     endif

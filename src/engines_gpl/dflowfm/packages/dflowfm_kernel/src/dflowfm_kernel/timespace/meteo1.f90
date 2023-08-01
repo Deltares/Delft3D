@@ -243,8 +243,8 @@ contains
    !! The (external forcing) file is opened elsewhere and read block-by-block
    !! by consecutive calls to this routine.
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-     use m_strucs, only: generalkeywrd_old, numgeneralkeywrd
-     use MessageHandling, only : LEVEL_INFO, mess
+     use m_flowexternalforcings, only: NTRANSFORMCOEF
+     use MessageHandling, only : LEVEL_WARN, LEVEL_INFO, mess
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
      integer,           intent(out)           :: filetype         !< File type of current quantity.
@@ -262,6 +262,36 @@ contains
      character (len=maxnamelen)       :: rec, keywrd
      integer                          :: l1, l2, jaopt, k, extrapolation
      logical, save                    :: alreadyPrinted = .false.  !< flag to avoid printing the same message many times
+     
+     integer, parameter :: NUMGENERALKEYWRD_OLD = 26
+     character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = (/ character(len=256) :: &
+      'widthleftW1',             & ! ( 1)
+      'levelleftZb1',            & ! ( 2)
+      'widthleftWsdl',           & ! ( 3)
+      'levelleftZbsl',           & ! ( 4)
+      'widthcenter',             & ! ( 5)
+      'levelcenter',             & ! ( 6)
+      'widthrightWsdr',          & ! ( 7)
+      'levelrightZbsr',          & ! ( 8)
+      'widthrightW2',            & ! ( 9)
+      'levelrightZb2',           & ! (10)
+      'gateheight',              & ! (11)
+      'gateheightintervalcntrl', & ! (12)
+      'pos_freegateflowcoeff',   & ! (13)
+      'pos_drowngateflowcoeff',  & ! (14)
+      'pos_freeweirflowcoeff',   & ! (15)
+      'pos_drownweirflowcoeff',  & ! (16)
+      'pos_contrcoeffreegate',   & ! (17)
+      'neg_freegateflowcoeff',   & ! (18)
+      'neg_drowngateflowcoeff',  & ! (19)
+      'neg_freeweirflowcoeff',   & ! (20)
+      'neg_drownweirflowcoeff',  & ! (21)
+      'neg_contrcoeffreegate',   & ! (22)
+      'extraresistance',         & ! (23)
+      'dynstructext',            & ! (24)
+      'gatedoorheight',          & ! (25)
+      'door_opening_width'       & ! (26)
+     /)
 
      if (minp == 0) then
         ja = 0
@@ -365,8 +395,12 @@ contains
 
      call readTransformcoefficients(minp, transformcoef)
 
-    if (qid == 'generalstructure') then 
-        do k = 1,numgeneralkeywrd        ! generalstructure 
+     if (qid == 'generalstructure') then 
+        call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
+                               Please use a structure file <*.ini> instead.')
+        if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN,'Not all expected keywords are provided.')
+        if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN,'More keywords provided than expected.')
+        do k = 1,NUMGENERALKEYWRD_OLD
            call readandchecknextrecord(minp, rec, generalkeywrd_old(k), jaopt)
            if (jaopt == 1) then
                L1 = index(rec,'=') + 1

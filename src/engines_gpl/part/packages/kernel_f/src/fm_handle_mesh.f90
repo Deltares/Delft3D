@@ -1,3 +1,12 @@
+module m_fm_handle_mesh
+use m_fm_reconst_vel
+use m_fm_particles_in_grid
+
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -141,6 +150,7 @@ end subroutine
 
 
 subroutine part_setmesh()
+   use m_fm_aux_routines
    use network_data, only: kn, xk, yk, xzw, yzw, numk, numL, nump, netcell, lnn, lne
    use m_flowgeom, only: lne2ln, ba
    use m_alloc
@@ -576,3 +586,5 @@ subroutine ini_part_grid(hyd)
 
    if ( timon ) call timstop ( ithndl )
 end subroutine ini_part_grid
+
+end module m_fm_handle_mesh

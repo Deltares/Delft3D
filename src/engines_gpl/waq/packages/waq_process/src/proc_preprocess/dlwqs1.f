@@ -20,6 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwqs1
+      use m_setqtl
+      use m_setprc
+      use m_setgeo
+      use m_setdsc
+      use m_setdpt
+      use m_setday
+      use m_rdstat
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQS1 ( LUNREP       , NPOS     ,
      +                    CCHAR        , VRSION   ,
@@ -47,9 +60,8 @@
 
       use m_zoek
       use timers       !   performance timers
-      use           stasub
-      use           dhralloc
-      use           ProcesSet
+      use dhralloc
+      use ProcesSet
 
       implicit      none
 
@@ -344,3 +356,5 @@
      &         /' End of period   :        ' ,I10 )
  3000 FORMAT (/1X, 59('*'),' B L O C K -',I2,' ',5('*')/)
       END
+
+      end module m_dlwqs1

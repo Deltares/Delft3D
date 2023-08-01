@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_wq_processes_proces
+use m_wq_processes_velocities
+
+
+implicit none
+
+contains
+
 
       subroutine wq_processes_proces ( notot  , noseg  , conc   , volume , time   , &
                                        dts    , deriv  , ndmpar , nproc  , noflux , &
@@ -42,6 +50,9 @@
 !>
 !>         Control routine of PROCES system. Process sub-system of DELWAQ waterquality modelling system.
 
+      use m_wq_processes_integrate_velocities
+      use m_wq_processes_integrate_fluxes
+      use m_wq_processes_derivatives
       use processes_pointers, only: dll_opb
       use process_registration
       use timers
@@ -402,6 +413,7 @@
                              volume , deriv  , stochi , flux   , &
                              prondt , ibflag , isdmp  , flxdmp , ipbloo , istep  )
 
+      use m_wq_processes_derivatives
       use timers
 
       implicit none
@@ -481,3 +493,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+end module m_wq_processes_proces

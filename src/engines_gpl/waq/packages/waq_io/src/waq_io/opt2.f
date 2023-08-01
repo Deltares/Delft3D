@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_opt2
+      use m_scale
+
+
+      implicit none
+
+      contains
+
 
       subroutine opt2 ( iopt2  , array  , nitem  , nvals  , nscale ,
      &                  iwidth , lun1   , ioutpt , ierr   )
@@ -210,3 +218,5 @@
  2140 format (   ' ERROR reading input!' )
 
       end
+
+      end module m_opt2

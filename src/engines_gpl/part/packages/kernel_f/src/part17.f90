@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part17
+
+implicit none
+
+contains
+
 
       subroutine part17 ( itime  , nosubs , idtset , idtime , decay  ,          &
                           decays )
@@ -93,3 +99,5 @@
       return
 !
       end subroutine
+
+end module m_part17

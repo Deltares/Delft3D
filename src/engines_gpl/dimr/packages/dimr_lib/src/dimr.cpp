@@ -836,7 +836,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                                 // TODO: This does not work for arrays (yet), only scalar double
                                 //
                                 // Getting data:
-                                double* transfer = new double[thisCoupler->sourceComponent->numProcesses];
+                                double* transfer = new double[thisCoupler->sourceComponent->numProcesses]{ 0 };
 
                                 // addresses eventually updated
                                 getAddress(thisCoupler->items[k].sourceName, thisCoupler->sourceComponent->type, thisCoupler->sourceComponent->dllGetVar, &(thisCoupler->items[k].sourceVarPtr),
@@ -1113,7 +1113,7 @@ double* Dimr::send(
 
     for (int m = 0; m < nProc; m++)
     {
-        transfer[m] = -999000.0;
+        //transfer[m] = -999000.0;
         if (my_rank == processes[m])
         {
             log->Write(ALL, my_rank, "Dimr::send (%s)", name);

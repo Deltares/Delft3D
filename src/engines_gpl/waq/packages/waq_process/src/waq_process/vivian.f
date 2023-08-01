@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_vivian
+
+      implicit none
+
+      contains
+
 
       subroutine vivian ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -61,7 +67,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 !
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       INTEGER  NOSEG , NOFLUX, NOQ1  , NOQ2  , NOQ3  , NOQ4
       INTEGER  IPOINT(*)       , INCREM(*),
@@ -148,3 +155,5 @@
       RETURN
 !
       END
+
+      end module m_vivian

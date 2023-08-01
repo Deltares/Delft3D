@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5c
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5C ( FNAME  , LUNUT  , CAR    , IAR    , RAR    ,
      *                    ICMAX  , IIMAX  , IRMAX  , DRAR   , NOITM  ,
@@ -99,14 +105,22 @@
 !     IF (SCALE) First NODIM entries the scale factors
 !     Then the matrix of values to be read in eg in this routine
 !
+      use m_dlwq5h
+      use m_gettme
+      use m_getpar
+      use m_getmat
+      use m_getloc
+      use m_getdim
       use m_zoek
       use timers       !   performance timers
       use m_sysi          ! Timer characteristics
+      use m_gregor
 
 
       INTEGER       ICMAX  , IIMAX  , IRMAX
       CHARACTER*(*) CAR(*) , FNAME
-      DIMENSION     IAR(*) , RAR(*)
+      integer       IAR(*)
+      real          RAR(*)
       LOGICAL       SCALE
       REAL*8        DRAR(*)
       CHARACTER     CFILE(3)*256
@@ -117,6 +131,15 @@
       DIMENSION     LOC(3)
       REAL*8        AFACT    , A1    , A2    , D_BEG    , D_END , DUMMY
       CHARACTER*3   CDUMMY
+      integer :: nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
+      integer :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
+      integer :: ierr, noloc, noit2, noitv, j
+      integer :: nottt, itmnr, notim, idmnr, I, iwar, ishft, ltot
+      integer :: noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
+      integer :: iy1, im1, id1, ih1, in1, is1
+      integer :: iy2, im2, id2, ih2, in12 is2
+      integer :: i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
+      integer :: kl, ig2
 !
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dlwq5c", ithndl )
@@ -405,7 +428,7 @@ CJVB
             LOC(1) = KL
             LOC(2) = KL
             CALL GETMAT ( CFILE , 0 , KP   , LOC     , DRAR(IS2),
-     *                    AMISS , 0 , MAXD , RAR(IS) , IERROR   ,
+     *                    AMISS , MAXD , RAR(IS) , IERROR   ,
      *                                                 CFILE(3) )
    95       IG2 = IG
 ! this loop is per location, so skip the amount of substances if IORDER is 1
@@ -454,3 +477,5 @@ CJVB
      *          ' that will become corrupted !' )
 !
       END
+
+      end module m_dlwq5c

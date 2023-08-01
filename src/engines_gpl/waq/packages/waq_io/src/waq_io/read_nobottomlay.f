@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_nobottomlay
+
+      implicit none
+
+      contains
+
 
       subroutine read_nobottomlay( GridPs, ierr  )
 
@@ -246,3 +252,5 @@
  2060 format (/' Space varying number of bottom layers defined on bottom grid')
 
       end
+
+      end module m_read_nobottomlay

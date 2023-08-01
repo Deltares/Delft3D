@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_solvlp
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *    SUBROUTINE FOR SETTING UP, SOLVING AND ARRANGING OUTPUT        *
@@ -28,6 +34,7 @@
 !
       subroutine solvlp(inow,x,biomax,ier,irs,nonuni,numuni,lib)
 
+      use m_qslp
       use bloom_data_dim
       use bloom_data_size 
       use bloom_data_matrix   
@@ -288,3 +295,5 @@
       end if
       return
       end
+
+      end module m_solvlp

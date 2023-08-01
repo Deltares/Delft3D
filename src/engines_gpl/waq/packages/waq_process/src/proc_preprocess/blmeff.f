@@ -20,9 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blmeff
+
+      implicit none
+
+      contains
+
 
       subroutine blmeff (lunrep, lunblm, verspe, lunfrm, grname, nuecog, typnam, noalg)
 !
+      use m_bleffpro
       use m_zoek
       use m_srstop
       use timers        !   performance timers
@@ -46,6 +53,7 @@
       real    tefcur
       character*1000 line
       integer(4) :: ithndl = 0
+
       if (timon) call timstrt( "blmeff", ithndl )
 
       if (verspe.lt.2.0) then
@@ -71,11 +79,11 @@
 ! base (SPNAM2). If a match is found, store the matching number in IFND.
 !
       else
-         read (lunblm,*) tefcur 
+         read (lunblm,*) tefcur
          read (lunblm,*) numtyp
          read (lunblm,*) (spnam2(i), i = 1, numtyp)
       end if
-      
+
       do i = 1, nuecog
          call zoekns(grname(i),numtyp,spnam2,8,nfnd)
          if (nfnd .ge. 1) then
@@ -91,7 +99,7 @@
 ! for the species names in BLOING.DAT.
 !
       call insort (ifnd, nuecog)
-      
+
       if (verspe.lt.2.0) then
 !
 !  Read the entire efficiency data base file using the same statements
@@ -112,7 +120,7 @@
 !
 !  Let bleffpro read the lightcurves, and calculate the efficiency database from that
 !
-         call bleffpro(lunrep, lunblm, numtyp, npoint, power, effic, nz, zvec, fun, der) 
+         call bleffpro(lunrep, lunblm, numtyp, npoint, power, effic, nz, zvec, fun, der)
       end if
 
       do i=1,24
@@ -153,7 +161,7 @@
           do i=1,nz
              write (lunfrm,301) zvec(i), (der(i,ifnd(j)),j=1,nuecog)
           enddo
-      else    
+      else
           write (lunfrm,290) nz,tefcur
           write (lunfrm,300) (zvec(i),i=1,nz)
           write (lunfrm,290) nz
@@ -161,7 +169,7 @@
              write (lunfrm,301) (fun(i,ifnd(j)),j=1,nuecog)
              write (lunfrm,301) (der(i,ifnd(j)),j=1,nuecog)
           end do
-      endif 
+      endif
       do i=1,24
          write (lunfrm,330) dl(i),(daymul(i,ifnd(j)),j=1,nuecog)
       end do
@@ -174,6 +182,7 @@
 
       subroutine insort (inarr, lenarr)
       integer inarr (*), lenarr
+      integer i, ihelp
       logical ready
 !
 10    continue
@@ -189,3 +198,5 @@
       if ( .not. ready) go to 10
       return
       end
+
+      end module m_blmeff

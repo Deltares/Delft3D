@@ -5,9 +5,6 @@ set(src_path src)
 get_fortran_source_files(${src_path}/bloom bloom_source)
 
 # Gather source files
-get_fortran_source_files(${src_path}/charon charon_source)
-
-# Gather source files
 get_fortran_source_files(${src_path}/protist protist_source)
 
 # Gather source files
@@ -23,7 +20,6 @@ get_fortran_source_files(${src_path}/waq_process waq_process_source)
 # Define library
 set(library_name waq_process)
 add_library(${library_name} ${bloom_source}
-                            ${charon_source}
                             ${protist_source}
                             ${proc_preprocess_source}
                             ${trwp_source}
@@ -72,7 +68,6 @@ target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 
 # Define how the files should be structured in Visual studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${bloom_source}
-                                                    ${charon_source}
                                                     ${protist_source}
                                                     ${proc_preprocess_source}
                                                     ${trwp_source}

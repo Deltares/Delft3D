@@ -24,8 +24,11 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+      module m_rd_tabm1
+
+      implicit none
+
+      contains
 
       SUBROUTINE RD_TABM1 ( DEFFDS      ,
      +                      n_old_items_max,
@@ -213,3 +216,5 @@
       RETURN
 !
       END
+
+      end module m_rd_tabm1

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_set_effi
+
+      implicit none
+
+      contains
+
 
       subroutine set_effi( temper, radiat, ext   , depthw, daylen,
      &                     id    )
@@ -28,6 +34,9 @@
 
 !     modules
 
+      use m_bloom_3dl
+      use m_natmor
+      use m_maxprd
       use      bloom_data_3dl   ! data and routine for 3D light approach
       
       use bloom_data_dim
@@ -99,3 +108,5 @@
 
       return
       end subroutine set_effi
+
+      end module m_set_effi

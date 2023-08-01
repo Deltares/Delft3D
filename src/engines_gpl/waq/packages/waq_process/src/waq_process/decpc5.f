@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_decpc5
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DECPC5 ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
@@ -89,7 +95,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -402,3 +409,5 @@
 
       RETURN
       END
+
+      end module m_decpc5

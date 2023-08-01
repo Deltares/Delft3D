@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_extina
+
+      implicit none
+
+      contains
+
 
       subroutine extina ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -35,7 +41,7 @@
 !
       INTEGER  NALG  , ISWFIX, NIPALG, IFLUX , ISEG  ,
      +         IALG  , IP    , IFIX
-      REAL(8)  EXTALG, EXTCF , BIOMAS
+      REAL(8)  EXTALG, EXTCF , BIOMAS, DEPTH, SDMIX
 !
       NALG  = NINT(PMSA(IPOINT(1)))
       ISWFIX= NINT(PMSA(IPOINT(2)))
@@ -97,3 +103,5 @@
       RETURN
 
       END
+
+      end module m_extina

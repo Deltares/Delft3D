@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_constr
+      use m_ebcalc
+
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *    SUBROUTINE TO DETERMINE LIMITS ON THE EXTINCTION COEFFICIENT   *
@@ -107,3 +115,5 @@
       end do
       return
       end
+
+      end module m_constr

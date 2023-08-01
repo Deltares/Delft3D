@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_vxlpoi
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE VXLPOI ( NOCONS , NOFUN  , NODISP , NOVELO , constants,
      +                    FUNAME , DINAME , VENAME , VALNAM , IVALIP   ,
@@ -64,8 +70,11 @@
 !
 !     Local
 !
-      PARAMETER   (NOPREF=4)
+      integer, PARAMETER  :: NOPREF=4
       CHARACTER*10 PREDEF(NOPREF)
+      
+      INTEGER       ICO, IDSP, IVEL, IFUN
+      
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "vxlpoi", ithndl )
 !
@@ -142,3 +151,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_vxlpoi

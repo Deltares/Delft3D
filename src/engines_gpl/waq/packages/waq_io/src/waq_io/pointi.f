@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_pointi
+
+      implicit none
+
+      contains
+
 
       subroutine pointi ( lun    , lchar  , noseg  , noq    , noq1   ,
      &                    noq2   , noq3   , noqt   , nobnd  , ipnt   ,
@@ -47,6 +53,7 @@
 !     Logical units      : lunut   = unit formatted output file
 !                          lun( 8) = unit intermediate file ('to-from')
 
+      use m_bound
       use m_open_waq_files
       use grids          ! for the storage of contraction grids
       use rd_token       ! for the reading of tokens
@@ -202,3 +209,5 @@
  2111 format (  /,' ERROR: too few extra exchanges (DELWAQG) present in the exchanges file' )
 
       end
+
+      end module m_pointi

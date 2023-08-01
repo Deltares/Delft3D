@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_varpoi
+
+      implicit none
+
+      contains
+
 
       subroutine varpoi ( notot  , nopa   , nosfun , syname , nocons ,
      &                    nofun  , coname , paname , funame , sfname ,
@@ -140,3 +146,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_varpoi

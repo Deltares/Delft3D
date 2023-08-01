@@ -22,6 +22,9 @@
 !!  rights reserved.
 
 module oildsp_mod
+use m_stop_exit
+use m_part11
+
 
    contains
         subroutine oildsp ( lgrid   , nmax    , conc    , volume  , area    ,    &

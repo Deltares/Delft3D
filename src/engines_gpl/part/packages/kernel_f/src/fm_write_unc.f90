@@ -1,3 +1,9 @@
+module m_fm_write_unc
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -545,3 +551,5 @@ subroutine comp_concentration(h, nconst, iconst, c)
    if ( timon ) call timstop ( ithndl )
 
 end subroutine comp_concentration
+
+end module m_fm_write_unc

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_tabp4
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RD_TABP4 ( DEFFDS      ,
      +                      NO_PROC_MAX , NO_PROC     ,
@@ -184,3 +190,5 @@
       RETURN
 !
       END
+
+      end module m_rd_tabp4

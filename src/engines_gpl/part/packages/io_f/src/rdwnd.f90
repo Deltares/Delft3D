@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdwnd
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
       subroutine rdwnd ( lunut  , sfile  , nmax   , mmax  , noseg  ,      &
      &                   xb     , yb     , lgrida , ierr  )
@@ -187,3 +195,5 @@
  1060 format( ' ERROR: setting up interpolation for y-wind meteo !' )
 
       end
+
+end module m_rdwnd

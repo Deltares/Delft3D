@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_gemmpb
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GEMMPB ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
@@ -136,8 +142,8 @@ C     from PMSA array
       REAL               :: LOCSEDDEPT         ! 70 in   Sediment layer depth to bottom of segment      (m)
       REAL               :: OXY                ! 71 in   Dissolved Oxygen                            (g/m3)
       REAL               :: MPBOXYCRIT         ! 72 in   Crit. oxygen conc. for growth and resp. MPB (g/m3)
-      REAL               :: MPB1MO_20          ! 73 in   MPB1peli mortality at 20�C under Oxygen depl.(1/d)
-      REAL               :: MPB2MO_20          ! 74 in   MPB2psam mortality at 20�C under Oxygen depl.(1/d)
+      REAL               :: MPB1MO_20          ! 73 in   MPB1peli mortality at 20°C under Oxygen depl.(1/d)
+      REAL               :: MPB2MO_20          ! 74 in   MPB2psam mortality at 20°C under Oxygen depl.(1/d)
       REAL               :: BIOMAS_MPB1_M2     ! 75 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
       REAL               :: BIOMAS_MPB2_M2     ! 76 out, MPB2psam biomass per m3 in layer S1        (gC/m3)
       REAL               :: BIOMAS_S1_MPB1_M3  ! 77 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
@@ -961,3 +967,5 @@ C        update pointering in PMSA and FL array
 
       RETURN
       END
+
+      end module m_gemmpb

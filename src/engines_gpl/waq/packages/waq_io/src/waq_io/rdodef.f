@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdodef
+
+      implicit none
+
+      contains
+
 
       subroutine rdodef ( noutp  , nrvar  , nrvarm , isrtou , ounam  ,
      &                    infile , nx     , ny     , nodump , ibflag ,
@@ -492,3 +498,5 @@
      &           '     Chunksize:       ',I0, ' - 0 means no chunking',/,
      &           '     Shuffling:       ',A)
       end
+
+      end module m_rdodef

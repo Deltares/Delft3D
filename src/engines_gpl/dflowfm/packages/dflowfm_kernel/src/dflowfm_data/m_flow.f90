@@ -78,6 +78,7 @@
  integer                           :: ieps              !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
  integer                           :: jadrhodz = 1
  double precision                  :: facLaxturb = 0    !< Turkineps0 from : 0.0=links ; 1.0=nodes 
+ integer                           :: jafaclaxturbtyp   !< (Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)
  double precision                  :: sigmagrowthfactor !<layer thickness growth factor from bed up
  double precision                  :: dztopuniabovez  = -999d0     !< bottom level of lowest uniform layer == blmin if not specified
  double precision                  :: Floorlevtoplay  = -999d0     !< floor  level of top zlayer, == sini if not specified
@@ -174,7 +175,6 @@
  double precision, allocatable         :: voldhu(:)   !< node volume based on downwind hu
 
  double precision, allocatable         :: s1m(:)      !< waterlevel   pressurized nonlin minus part
- double precision, allocatable         :: s1mini(:)   !< initial of s1m
  double precision, allocatable         :: a1m(:)      !< surface area pressurized nonlin minus part
 
  double precision, allocatable         :: negativeDepths(:)                 !< Number of negative depths during output interval at nodes.
@@ -294,7 +294,7 @@
 
 
 ! link related, dim = lnkx
- double precision, allocatable     :: u0    (:)   !< flow velocity (m/s)  at start of timestep
+ double precision, allocatable, target     :: u0    (:)   !< flow velocity (m/s)  at start of timestep
  double precision, allocatable, target     :: u1(:)   !< [m/s]  flow velocity (m/s)  at   end of timestep {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: u_to_umain(:)   !< [-]  Factor for translating general velocity to the flow velocity in the main channel at end of timestep (1d) {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: q1(:)   !< [m3/s] discharge     (m3/s) at   end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array {"location": "edge", "shape": ["lnkx"]}

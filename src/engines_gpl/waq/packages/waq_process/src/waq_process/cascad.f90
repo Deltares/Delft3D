@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_cascad
+
+implicit none
+
+contains
+
 
 subroutine cascad ( pmsa   , fl     , ipoint , increm , noseg  , &
                     noflux , iexpnt , iknmrk , noq1   , noq2   , &
@@ -142,3 +148,5 @@ use m_evaluate_waq_attribute
         ipnt  = ipnt  + increm(1:20)
     enddo
 end subroutine
+
+end module m_cascad

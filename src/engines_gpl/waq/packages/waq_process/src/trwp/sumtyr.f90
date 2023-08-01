@@ -1,3 +1,9 @@
+module m_sumtyr
+
+implicit none
+
+contains
+
       subroutine SUMTYR     ( pmsa   , fl     , ipoint , increm, noseg , &                            
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &                            
                               noq3   , noq4   )
@@ -91,3 +97,5 @@
 
       return
       end
+
+end module m_sumtyr

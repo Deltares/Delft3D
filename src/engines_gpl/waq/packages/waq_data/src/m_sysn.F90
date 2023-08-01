@@ -62,9 +62,7 @@ module m_sysn
     integer :: nbufmx   !  Length output buffer
     integer :: ifiopk   !  File option kenmerk array
     integer :: ipbloo   !  Number of Bloom module (if >0)
-    integer :: ipchar   !  Number of Charon module (if >0)
     integer :: ioffbl   !  Offset in IPMSA for Bloom
-    integer :: ioffch   !  Offset in IPMSA for Charon
     integer :: ndspx    !  Number of extra dispersion array's
     integer :: nvelx    !  Number of extra velocity array's
     integer :: nlocx    !  Number of local variables on exch. level
@@ -104,8 +102,8 @@ module m_sysn
                     niharm , nlines , npoins , nolun  , nx     ,         &
                     ny     , noitem , jtrack , nipmsa , nproc  ,         &
                     noloc  , nflux  , nodef  , noutp  , nrvart ,         &
-                    nbufmx , ifiopk , ipbloo , ipchar , ioffbl ,         &
-                    ioffch , ndspx  , nvelx  , nlocx  , ndspn  ,         &
+                    nbufmx , ifiopk , ipbloo , ioffbl ,                  &
+                    ndspx  , nvelx  , nlocx  , ndspn  ,                  &
                     nveln  , ndmpar , ndmpq  , ndmps  , ntdmpq ,         &
                     ntdmps , ncbufm , noraai , ntraaq , newrsp ,         &
                     newisp , nobtyp , nowtyp , nomat  , novec  ,         &

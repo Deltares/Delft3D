@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_skip_comments
+
+implicit none
+
+contains
+
 
       subroutine skip_comment_lines(lun,ios)
 !
@@ -52,3 +58,5 @@
       return
       end subroutine skip_comment_lines
 
+
+end module m_skip_comments

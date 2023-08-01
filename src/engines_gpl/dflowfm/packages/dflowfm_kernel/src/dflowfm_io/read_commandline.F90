@@ -40,7 +40,6 @@ function read_commandline() result(istat)
    use string_module, only: str_lower, str_tolower
    use m_samples_refine
    use m_partitioninfo
-   use dflowfm_version_module
    use dflowfm_version_module, only: getbranch_dflowfm, getfullversionstring_dflowfm
    use dfm_error
    use unstruc_api

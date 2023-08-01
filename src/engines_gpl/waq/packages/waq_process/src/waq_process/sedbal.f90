@@ -1,3 +1,9 @@
+module m_sedbal
+
+implicit none
+
+contains
+
      subroutine SEDBAL     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
@@ -521,3 +527,5 @@
 
       return
       end
+
+end module m_sedbal

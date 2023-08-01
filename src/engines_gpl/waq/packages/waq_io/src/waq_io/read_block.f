@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_block
+      use m_read_time_delay
+      use m_read_items
+      use m_read_header
+      use m_read_data_ods
+
+
+      implicit none
+
+      contains
+
 
       subroutine read_block ( lun       , lchar     , filtype   , inpfil    , ioutpt   ,
      &                        iwidth    , substances, constants , parameters, functions,
@@ -33,6 +44,10 @@
 
 !     Global declarations
 
+      use m_read_data
+      use m_print_matrix
+      use m_opt1
+      use m_compute_matrix
       use m_getcom
       use grids          ! for the storage of contraction grids
       use dlwq_data      ! for definition and storage of data
@@ -45,13 +60,13 @@
 
 !     declaration of arguments
 
-      integer               , intent(in)    :: lun(*)       !< unit numbers used
+      integer               , intent(inout) :: lun(*)       !< unit numbers used
       character(len=*)      , intent(inout) :: lchar(*)     !< filenames
       integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       !< input file strucure with include stack and flags
       integer               , intent(in)    :: ioutpt       !< level of reporting to ascii output file
       integer               , intent(in)    :: iwidth       !< width of output
-      type(t_dlwq_item)     , intent(in)    :: substances   !< delwaq substances list
+      type(t_dlwq_item)     , intent(inout) :: substances   !< delwaq substances list
       type(t_dlwq_item)     , intent(inout) :: constants    !< delwaq constants list
       type(t_dlwq_item)     , intent(inout) :: parameters   !< delwaq parameters list
       type(t_dlwq_item)     , intent(inout) :: functions    !< delwaq functions list
@@ -818,3 +833,4 @@
         end do
 
       end subroutine check_if_time_increases
+      end module m_read_block

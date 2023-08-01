@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_atrfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_atrfrc( lunrep, procesdef, sfracs)
 
@@ -82,3 +88,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_add_atrfrc

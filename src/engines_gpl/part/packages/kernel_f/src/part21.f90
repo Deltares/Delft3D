@@ -27,6 +27,8 @@ module part21_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
+use m_part11
 use precision_part           ! single/double precision
       use timers
 !

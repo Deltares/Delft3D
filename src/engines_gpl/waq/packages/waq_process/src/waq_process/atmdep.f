@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_atmdep
+
+      implicit none
+
+      contains
+
 
       subroutine atmdep ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -51,6 +57,9 @@
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      integer  IP1, IP2, IP3, IP4, IP5, IP6, IFLUX, ISEG, IKMRK1,
+     +         IKMRK2, ISW1, ISW2
+      real     zfl, depth, conc, delt  
 
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
@@ -109,3 +118,5 @@
       RETURN
 !
       END
+
+      end module m_atmdep

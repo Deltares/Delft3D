@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_print6
+
+      implicit none
+
+      contains
+
 
 !    Date:       4 Jan 1994
 !    Time:       19:05
@@ -202,3 +208,5 @@
       end do
       return
       end
+
+      end module m_print6

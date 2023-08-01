@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module oildspfm_mod
+use m_stop_exit
+
 
    contains
         subroutine oildspfm (itime)

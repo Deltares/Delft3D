@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdstat
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , VRSION ,
      +                    ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 ,
@@ -367,3 +373,5 @@
       RETURN
 !
       END
+
+      end module m_rdstat

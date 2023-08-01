@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setvat
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE SETVAT ( LUREP , NOCONS, NOPA  , NOFUN , NOSFUN,
      +                    NOSYS , NOTOT , NODISP, NOVELO, NODEF ,
@@ -54,7 +60,7 @@
       INTEGER             LUREP , NOCONS, NOPA  , NOFUN , NOSFUN,
      +                    NOSYS , NOTOT , NODISP, NOVELO, NODEF ,
      +                    NOLOC , NDSPX , NVELX , NLOCX , NFLUX ,
-     +                    NOPRED, NOVAR
+     +                    NOPRED, NOVAR , NOGRID
       INTEGER             VARARR(NOVAR) , VARIDX(NOVAR) ,
      +                    VARTDA(NOVAR) , VARDAG(NOVAR) ,
      +                    VARTAG(NOVAR) , VARAGG(NOVAR)
@@ -62,7 +68,7 @@
 !
 !     Locals
 !
-      PARAMETER ( MAXLOC = 2000 )
+      integer, PARAMETER  :: MAXLOC = 2000
       INTEGER      VATTAG(MAXLOC), VATTDA(MAXLOC)
       CHARACTER*20 VATNAM(MAXLOC), VATNAG(MAXLOC),
      +             VATNDA(MAXLOC)
@@ -72,7 +78,26 @@
      +             DENAME(*)
       CHARACTER*79 LINE, NAME
       LOGICAL      LEXI
-      INTEGER      LUN
+      INTEGER      LUN, IIVOL ,IIAREA, IIFLOW, IILENG, IIDISP, IICONC,
+     +             IIMASS, IIDERV, IIBOUN, IIBSET, IIBSAV, IIWSTE, IICONS,
+     +             IIPARM, IIFUNC, IISFUN, IIDNEW, IIDIFF, IIVNEW, IIVELO,
+     +             IIHARM, IIFARR, IIMAS2, IITIMR, IIVOL2, IITRAC, IIGWRK,
+     +             IIGHES, IIGSOL, IIGDIA, IIGTRI, IISMAS, IIPLOC, IIDEFA,
+     +             IIFLUX, IISTOC, IIFLXD, IIFLXI, IIRIOB, IIDSPX, IIVELX,
+     +             IILOCX, IIDSTO, IIVSTO, IIDMPQ, IIDMPS, IITRRA, IINRSP,
+     +             IIVOLL, IIVOL3, IIR1  , IIQXK , IIQYK , IIQZK,  IIDIFX,
+     +             IIDIFY, IIDIFZ, IIVOLA, IIVOLB, IIGUV , IIGVU, IIGZZ,
+     +             IIAAK, IIBBK, IICCK, IIBD3X, IIBDDX, IIBDX, IIBU3X, IIBUUX,
+     +             IIBUX, IIWRK1, IIWRK2, IIAAKL, IIBBKL, IICCKL, IIDDKL
+
+      integer      IVVOL,IVARE,IVFLO,IVLEN,IVCNS,IVPAR,IVFUN,IVSFU,IVCNC,
+     +             IVMAS,IVDER,IVDSP,IVVEL,IVDEF,IVLOC,IVDSX,IVVLX,IVLCX,
+     +             IVFLX
+
+      integer      isys, ipa, ifun, idsp, isfun, ivel, idef, ivar, iv_da, iv_ag,
+     +             idsx, ivlx, ilcx, iflx, novat, ierr, ivat, iloc, icons
+
+
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "setvat", ithndl )
 !
@@ -581,3 +606,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_setvat

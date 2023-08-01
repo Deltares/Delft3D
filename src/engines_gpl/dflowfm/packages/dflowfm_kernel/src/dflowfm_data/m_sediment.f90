@@ -95,6 +95,7 @@ module m_sediment
 
  integer                           :: jased                  !< Include sediment, 1=Krone, 2=Soulsby van Rijn 2007, 4=Delft3D morphology module
  integer                           :: jaseddenscoupling=0    !< Include sediment in rho 1 = yes , 0 = no
+ integer                           :: ja_tracers_density_coupling = 0 !< Include tracers in rho 1 = yes , 0 = no
  integer                           :: mxgr                   !< nr of grainsizes
  integer                           :: jatranspvel            !< transport velocities: 0=all lagr, 1=eul bed+lagr sus, 2=all eul; default=1
  integer, allocatable              :: sedtot2sedsus(:)       !< mapping of suspended fractions to total fraction index; name is somewhat misleading, but hey, who said this stuff should make sense..

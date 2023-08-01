@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_advtra
+
+      implicit none
+
+      contains
+
 
       subroutine advtra ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -78,6 +84,7 @@
      J         INRVOL, INSVOL, INBVOL, INPORI, INPORA,
      J         INDVOL, INDVEL, INSEEP
 
+      integer  IPSWRE, IPALPH, IPCFLX, INSWRE, INALPH, INCFLX
 !     Include column structure
 !     we define a double column structure, one for downward,
 !     and one for upward transport
@@ -515,6 +522,7 @@
      J           FLRES , PRES  , TCRR  , RESTH , RESMX , SURFW ,
      J           SURFB , ZRESLE, VELRES, DM    , DMTOP
       LOGICAL    SW_PARTHENIADES
+      real       TIME_LEFT, ALPHA
 
 !     Resuspension submodel for DELWAQ-G, equals Restra, bug fixed ZRESLE
 !     AM (august 2018) ZRESLE is not actually used
@@ -807,7 +815,7 @@
       LOGICAL          KOLOM
       logical, save :: FIRST
       INTEGER  IK    , IQ    , ivan  , inaar , ikmrkv, ikmrkn,
-     j         lenkol , nkolom
+     j         lenkol , nkolom, ist, iw1, iw2, isb
       DATA FIRST / .true. /
       INTEGER lunrep, errorcode
 
@@ -961,3 +969,5 @@
 
       RETURN
       END
+
+      end module m_advtra

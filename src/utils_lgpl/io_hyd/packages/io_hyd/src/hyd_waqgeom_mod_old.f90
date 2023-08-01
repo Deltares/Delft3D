@@ -1,5 +1,6 @@
 module wqhyd_version_module
 
+
 implicit none
 
     character(*),  public, parameter :: wqhyd_major        = '1'

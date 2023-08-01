@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_actrep
+
+      implicit none
+
+      contains
+
 
       subroutine actrep( noalg   , noprot   , namprot, nampact, nopralg,
      +                   nampralg, constants)
@@ -111,3 +117,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_actrep

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_intoou
+
+      implicit none
+
+      contains
+
 
       subroutine intoou ( procesdef, nproc , nflux , nsvar , pronam,
      +                    iflux    , ipmsa , ipssa , nipmsa, ioffx ,
@@ -246,13 +252,24 @@
       if (timon) call timstop( ithndl )
       return
       end
+     
       subroutine ip2var ( ipin  , ivar  , nocons, nopa  , nofun ,
      +                    nosfun, notot , nodisp, novelo, nodef ,
      +                    noloc , ndspx , nvelx , nlocx , nflux ,
      +                    nopred)
 
       use timers       !   performance timers
+      integer nocons, nopa , nofun, nosfun, notot, nodisp, novelo, nodef,
+     +        noloc , ndspx, nvelx, nlocx , nflux, nopred
+      
       integer(4) :: ithndl = 0
+      integer ipin, ivar
+      
+!     local
+      integer ivvol, ivare, ivflo, ivlen, ivcns, ivpar, ivfun
+      integer ivsfu, ivcnc, ivmas, ivder, ivdsp, ivvel, ivdef
+      integer ivloc, ivdsx, ivvlx, ivlcx, ivflx, ip   , ioff
+      
       if (timon) call timstrt( "ip2var", ithndl )
 
       ! a bit the other way around but set now the new variable pointers
@@ -451,3 +468,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_intoou

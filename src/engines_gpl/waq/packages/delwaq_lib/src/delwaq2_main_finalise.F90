@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq2_main_finalise
+
+implicit none
+
+contains
+
 
 
 
@@ -51,3 +57,5 @@ subroutine delwaq2_main_finalise(action, lunrep, rundat)
     endif
 
 END subroutine delwaq2_main_finalise
+
+end module m_delwaq2_main_finalise

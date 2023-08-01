@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setopp
+
+      implicit none
+
+      contains
+
 
       subroutine setopp ( procesdef, outputs, ioff  )
 
@@ -94,3 +100,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_setopp

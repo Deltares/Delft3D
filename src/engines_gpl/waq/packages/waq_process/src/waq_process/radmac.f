@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_radmac
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RADMAC     ( PMSA   , FL     , IPOINT , INCREM, NOSEG ,
      +                        NOFLUX , IEXPNT , IKNMRK , NOQ1  , NOQ2  ,
@@ -130,3 +136,5 @@
       RETURN
 !
       END
+
+      end module m_radmac

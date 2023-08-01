@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_umagi
+
+implicit none
+
+contains
+
 
       function umagi   (xp    , yp    , vz     , &
                         np    , mp    , kp     , &
@@ -86,6 +92,7 @@
 !     ypold   real        1       input   initial   y-coordinate
 !     zpold   real        1       input   initial   z-coordinate
 !
+      use m_stop_exit
       use precision_part    ! single/double precision
       use timers
 !
@@ -406,3 +413,5 @@
       return
       end function
 
+
+end module m_umagi

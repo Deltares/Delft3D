@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_flocsd
+
+implicit none
+
+contains
+
 
       subroutine flocsd     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
@@ -196,3 +202,5 @@
       enddo
 
       end subroutine flocsd
+
+end module m_flocsd

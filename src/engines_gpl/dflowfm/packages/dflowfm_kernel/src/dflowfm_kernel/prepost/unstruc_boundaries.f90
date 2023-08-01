@@ -68,8 +68,6 @@ integer            :: max_ext_bnd_items      = 64  ! Starting size, will grow dy
 character(len=max_registered_item_id), allocatable :: registered_items(:)
 integer            :: num_registered_items = 0
 
-private :: countUniqueKeys
-
 contains
 
 subroutine findexternalboundarypoints()             ! find external boundary points
@@ -500,7 +498,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
  use m_sobekdfm
  use m_flowparameters, only: jawave
  use string_module
- use m_strucs, only: numgeneralkeywrd
+ use m_strucs, only: NUMGENERALKEYWRD
  use m_missing, only: dmiss
 
  implicit none
@@ -515,7 +513,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
                                           numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf      !
  double precision      , intent(in)    :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
- double precision, dimension(numgeneralkeywrd), optional, intent(in) :: tfc
+ double precision, dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
  double precision, optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
  double precision, optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
 
@@ -1845,64 +1843,6 @@ subroutine init_threttimes()
     enddo
  endif
 
-end subroutine
-
-!> helper function to check combined usage of old style and new style keywords in General Structure.
-!! note that some keywords are used both in old style and new style
-subroutine checkCombinationOldNewKeywordsGeneralStructure(janewformat, str_ptr)
-   use m_strucs,         only : numgeneralkeywrd, generalkeywrd, generalkeywrd_old
-   use tree_structures,  only : TREE_DATA
-   use unstruc_messages, only : mess, LEVEL_ERROR
-   integer, intent(out)          :: janewformat
-   type(TREE_DATA), pointer      :: str_ptr
-
-   integer                       :: cnt_new, cnt_old
-
-   cnt_new = countUniqueKeys(str_ptr, generalkeywrd, generalkeywrd_old)
-   cnt_old = countUniqueKeys(str_ptr, generalkeywrd_old, generalkeywrd)
-
-   if (cnt_new > 0 .and. cnt_old > 0) then
-      call mess(LEVEL_ERROR, 'Combination of old and new keywords for a general structure is not supported ...' )
-   endif
-
-   if (cnt_old > 0) then
-      janewformat = 0
-   else
-      janewformat = 1
-   endif
-
-end subroutine checkCombinationOldNewKeywordsGeneralStructure
-
-!> helper function for checkCombinationOldNewKeywordsGeneralStructure
-function countUniqueKeys(str_ptr, list1, list2) result(cnt)
-   use properties,       only : prop_get
-   use tree_structures,  only : TREE_DATA
-   use string_module,    only : strcmpi
-   type(TREE_DATA), pointer      :: str_ptr
-   character(len=*), intent(in)  :: list1(:), list2(:)   !< list with keywords
-   integer                       :: cnt                  !< function result
-
-   integer                        :: k, l, length1, length2
-   character (len=256)            :: rec
-   character (len=:), allocatable :: key
-   logical             :: success
-
-   cnt = 0
-   length1 = size(list1)
-   length2 = size(list2)
-   outer: do k = 1,length1        ! count unique old keywords
-      key = trim(list1(k))
-      do l = 1,length2
-         if (strcmpi(key, list2(l))) then
-            cycle outer
-         endif
-      end do
-      call prop_get(str_ptr, '', key, rec, success)
-      if (success) then
-         cnt = cnt + 1
-      endif
-   enddo outer
-
-end function countUniqueKeys
+end subroutine init_threttimes
 
 end module unstruc_boundaries

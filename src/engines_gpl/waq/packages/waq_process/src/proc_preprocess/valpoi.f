@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_valpoi
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE VALPOI ( NOTOT  , NOPA     , NOSFUN , SYNAME , NOCONS ,
      +                    NOFUN  , constants, PANAME , FUNAME , SFNAME ,
@@ -68,9 +74,9 @@
 !
 !     Local
 !
-      INTEGER       NZOEK
+      INTEGER       NZOEK, ISYS, ISFUN, IPA, IFUN, ICO
       PARAMETER   ( NZOEK = 20 )
-      PARAMETER   ( NOPRED = 6 )
+      integer, PARAMETER  :: NOPRED = 6
       CHARACTER(NZOEK) PREDEF(NOPRED)
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "valpoi", ithndl )
@@ -167,3 +173,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_valpoi

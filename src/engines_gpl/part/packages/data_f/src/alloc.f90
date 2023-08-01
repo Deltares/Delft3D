@@ -29,6 +29,7 @@ module alloc_mod
 !
 !  data definition module(s)
 !
+      use m_stop_exit
       use precision_part               ! single and double precision
       implicit none   ! force explicit typing
 

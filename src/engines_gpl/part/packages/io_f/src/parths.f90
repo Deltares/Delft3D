@@ -28,6 +28,8 @@ module parths_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
+use m_part11
 use precision_part            ! single and double precision
 use m_part_modeltypes         ! part model definitions
 use timers

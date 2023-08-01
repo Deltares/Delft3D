@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_mpbtmp
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE MPBTMP ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
@@ -119,3 +125,5 @@ C        update pointering in PMSA
 
       RETURN
       END
+
+      end module m_mpbtmp

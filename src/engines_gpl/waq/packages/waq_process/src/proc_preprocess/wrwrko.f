@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_wrwrko
+
+      implicit none
+
+      contains
+
 
       subroutine wrwrko ( lunwro, noutp , nbufmx, ioutps, outputs,
      &                    notot,  substdname, subunit, subdescr)
@@ -85,3 +91,5 @@
       return
       return
       end
+
+      end module m_wrwrko

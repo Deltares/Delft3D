@@ -20,12 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setprg
+
+      implicit none
+
+      contains
+
 
       subroutine setprg ( procesdef, nogrid, notot , grdref, sysgrd,
      +                    sysndt   )
 
       ! set grid for all processes
 
+      use m_setgrd
+      use m_setgr2
       use m_zoek
       use dhralloc
       use processet
@@ -289,3 +297,5 @@ cjvb              afhandelen exception? of error
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_setprg

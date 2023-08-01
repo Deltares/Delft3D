@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq2_main_init
+
+implicit none
+
+contains
+
 
 subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, init, action, argc, argv )
 
@@ -71,3 +77,5 @@ subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, init, action, argc, arg
   endif
      
 end subroutine delwaq2_main_init
+
+end module m_delwaq2_main_init

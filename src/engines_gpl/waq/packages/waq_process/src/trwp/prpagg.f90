@@ -20,11 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_prpagg
+
+implicit none
+
+contains
+
 
 
 subroutine PRPAGG   (  pmsa  , fl    , ipoint, increm, noseg , &
                        noflux, iexpnt, iknmrk, noq1  , noq2  , &
                        noq3  , noq4  )
+use m_properties
 use m_evaluate_waq_attribute
 
 
@@ -157,3 +164,5 @@ use m_evaluate_waq_attribute
     
 end
 
+
+end module m_prpagg

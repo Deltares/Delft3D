@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dsptra
+
+      implicit none
+
+      contains
+
 
       subroutine dsptra ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -53,6 +59,7 @@
 
 !     Name     Type   Library
 !     ------   -----  ------------
+      use m_advtra
       USE BottomSet     !  Module with derived types and add function
 
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -194,3 +201,5 @@
 
       RETURN
       END
+
+      end module m_dsptra

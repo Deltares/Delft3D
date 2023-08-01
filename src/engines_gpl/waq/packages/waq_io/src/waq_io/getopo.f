@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getopo
+      use m_varpoi
+
+
+      implicit none
+
+      contains
+
 
       subroutine getopo ( noutp , nrvar , nrvarm, dlwnam, iopoin,
      &                    nmis  , notot , syname, nocons, coname,
@@ -97,3 +105,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_getopo

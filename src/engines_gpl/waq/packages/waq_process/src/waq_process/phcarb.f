@@ -20,13 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_phcarb
+
+      implicit none
+
+      contains
+
 
       subroutine phcarb  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
 !>\file
 !>       Integrated calculation of pH and CO2 system
- 
+
 !
 !     Description of the module :
 !
@@ -59,22 +65,22 @@
 ! K0             R*4 1 L  solubility of CO2 in seawater                  [mol/(kg*atm)]
 ! PH             R*4 1 O  pH                                             [-]
 ! CO2            R*4 1 O  concentration CO2 in water                     [gCO2/m3]
-! pCO2water      R*4 1 O  partial pressure of CO2 in water               [µatm]
+! pCO2water      R*4 1 O  partial pressure of CO2 in water               [Âµ atm]
 ! HCO3           R*4 1 O  concentration of HCO3                          [gC/m3]
-! CO3	         R*4 1 O  concentration of CO3                           [gC/m3]
+! CO3	           R*4 1 O  concentration of CO3                           [gC/m3]
 ! Satcal         R*4 1 O  saturation state of calcite                    [-]
 ! Satarg         R*4 1 O  saturation state of aragonite                  [-]
-! BOH4           R*4 1 O  concentration of borate		         [gB/m3]
+! BOH4           R*4 1 O  concentration of borate		             [gB/m3]
 ! S              R*4 1 I  salinity                                       [g/kg]
 ! TEMP           R*4 1 I  temperature                                    [oC]
 ! TEMPK          R*4 1 L  temperature in Kelvin                          [K]
 ! RHOH2O         R*4 1 L  water density                                  [kg/l]
 ! CM3TOM3        R*4 1 L  conversion from cm3 to m3                      [cm3/m3]
-! ATMTOMICROATM  R*4 1 L  conversion from atm to µatm                    [atm/µatm]
+! ATMTOMICROATM  R*4 1 L  conversion from atm to Âµ atm                   [atm/Âµ atm]
 ! ATMTOPA        R*4 1 L  conversion from atm to Pa                      [atm/Pa]
 ! R              R*4 1 L  ideal gas constant                             [m3*Pa/(K*mol)]
 ! MOLKGCO2       R*4 1 L  CO2 concentration in water                     [molCO2/kg]
-! FCO2           R*4 1 L  fugacity of CO2                                [µatm]
+! FCO2           R*4 1 L  fugacity of CO2                                [Âµ atm]
 ! BV             R*4 1 L  virial coefficient of pure CO2                 [m3/mol]
 ! DELTA          R*4 1 L  virial coefficient of CO2 in air               [m3/mol]
 !-----------------------------------------------------------------------
@@ -378,7 +384,7 @@
 ! CO2 conversion from gCO2/m3 to molCO2/kg
       MOLKGCO2 = CO2/(MCO2 * RHOH2O * M3TOL)
 
-! Calculation of fugacity of CO2. Dickson (2007). [µatm]
+! Calculation of fugacity of CO2. Dickson (2007). [Âµ atm]
       FCO2 = (MOLKGCO2/K0) * ATMTOMICROATM
 
 ! Calculation of virial coefficient of pure CO2. Weiss (1974). [m3/mol]
@@ -388,7 +394,7 @@
 ! Calculation of virial coefficient of CO2 in air. Weiss (1974). [m3/mol]
       DELTA = (57.7 - 0.118 * TEMPK) * CM3TOM3
 
-! Calculation of pCO2 in water. Dickson 2007. [µatm]
+! Calculation of pCO2 in water. Dickson 2007. [Âµatm]
       pCO2water = FCO2/(EXP(ATMTOPA * (BV + 2.0 * (DELTA))/(R * TEMPK)))
 
 ! ---- Calculation of HCO3 ----
@@ -447,3 +453,5 @@
 !
       RETURN
       END
+
+      end module m_phcarb

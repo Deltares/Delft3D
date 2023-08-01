@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_mac3du
+
+implicit none
+
+contains
+
 
       subroutine mac3du     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
@@ -267,3 +273,5 @@
 
       return
       end subroutine
+
+end module m_mac3du

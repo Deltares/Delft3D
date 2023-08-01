@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_maxprd
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *    SUBROUTINE TO CALCULATE MAXIMAL PRIMARY PRODUCTION AND         *
@@ -84,3 +90,5 @@
       end if
       return
       end
+
+      end module m_maxprd

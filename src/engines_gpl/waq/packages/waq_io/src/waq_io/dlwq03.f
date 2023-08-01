@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq03
+      use m_read_hydfile
+      use m_opt1
+      use m_opt0
+      use m_grid
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq03 ( lun    , lchar  , filtype, nrftot , nrharm ,
      &                    ivflag , dtflg1 , iwidth , dtflg3 , vrsion ,
@@ -61,6 +72,7 @@
 !                           LUN( 6) = unit intermediate file (grid)
 !                           LUN( 7) = unit intermediate file (volumes)
 
+      use m_check
       use m_srstop
       use m_open_waq_files
       use m_evaluate_waq_attribute
@@ -777,3 +789,5 @@
 
       end subroutine check_volume_time
       end
+
+      end module m_dlwq03

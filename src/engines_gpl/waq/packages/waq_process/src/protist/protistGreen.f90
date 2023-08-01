@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistgreen
+
+implicit none
+
+contains
+
 
 
   ! 6 char name for process mathc with second line of PDF
@@ -386,3 +392,5 @@ use ieee_arithmetic
     deallocate (ipnt)
     return
 end ! end subroutine
+
+end module m_protistgreen

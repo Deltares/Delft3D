@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_primpro
+
+      implicit none
+
+      contains
+
 
       subroutine primpro ( procesdef, notot , syname, ndspx , nvelx ,
      &                     ioffx    , nosys , dsto  , vsto  , ndspn ,
@@ -327,3 +333,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_primpro

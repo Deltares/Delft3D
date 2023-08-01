@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_iblbal
+
+      implicit none
+
+      contains
+
 
       subroutine iblbal( ntyp_m, ntyp_a, algtyp, ipoint)
       
@@ -52,3 +58,5 @@
 !
       return
       end
+
+      end module m_iblbal

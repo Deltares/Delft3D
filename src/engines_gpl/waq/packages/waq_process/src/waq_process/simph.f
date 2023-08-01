@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_simph
+
+      implicit none
+
+      contains
+
 
       subroutine simph  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -62,7 +68,8 @@
 !     ------   -----  ------------
       use m_monsys
       USE PHYSICALCONSTS, ONLY: CtoKelvin
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -266,3 +273,5 @@
 !
       RETURN
       END
+
+      end module m_simph

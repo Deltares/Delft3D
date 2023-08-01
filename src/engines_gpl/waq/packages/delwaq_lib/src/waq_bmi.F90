@@ -26,6 +26,8 @@
 #endif
 
 module bmi
+  use m_delwaq2_main
+  use m_delwaq1
   use m_getidentification
   use iso_c_binding
   implicit none

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_partvs
+
+implicit none
+
+contains
+
 
       subroutine partvs ( lun2   , itime  , nosubs , nopart , ivtset ,   &
                           ivtime , vsfour , vsfact , wpart  , wsettl ,   &
@@ -59,6 +65,7 @@
 
 !     functions   called    : none.
 
+      use m_stop_exit
       use precision_part    ! single/double precision
       use spec_feat_par
       use timers
@@ -232,3 +239,5 @@
  1040 format(6x,'Number of non-settling particles (i.e. v-settling = 0)  : ', i12 )
 
       end subroutine
+
+end module m_partvs

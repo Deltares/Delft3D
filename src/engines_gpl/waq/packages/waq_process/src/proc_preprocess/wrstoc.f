@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_wrstoc
+
+      implicit none
+
+      contains
+
 
       subroutine wrstoc ( procesdef, luout , notot  , syname, stoch2,
      +                    noutp    , ioutps, outputs, ndmpar, nbufmx,
@@ -281,3 +287,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_wrstoc

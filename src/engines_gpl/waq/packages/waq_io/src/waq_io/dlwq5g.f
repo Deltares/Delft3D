@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5g
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5G ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
      *                    NODIM  , IORDER , IIMAX  , CNAMES , IPOSR  ,
@@ -74,6 +80,7 @@
 !     Iwar    INTEGER    1         OUTPUT  cumulative warning count
 !
 !
+      use m_dlwq5h
       use m_zoek
       use timers       !   performance timers
       use m_cnvtim
@@ -85,6 +92,13 @@
       LOGICAL       DTFLG1 , DTFLG3 , FIRST
       integer ( 8)  ihulp8
       integer(4) :: ithndl = 0
+      integer    :: I, noitm, idmnr, nodim, iorder, ioffc, ioffd, notim
+      integer    :: itype, lunut, ilun, iposr, nopos, ihulp, ierr
+      integer    :: iar, nocol, ifound, itfact, icnt, iods, k, iwar
+      integer    :: ioffi, itmnr, nitm, npos, lstack
+      real       :: rhulp
+      
+      
       if (timon) call timstrt( "dlwq5g", ithndl )
 !
 !     Array offsets
@@ -168,3 +182,5 @@
  1000 FORMAT ( ' Column:',I3,' contains: ',A40,' Status: ',A8)
 !
       END
+
+      end module m_dlwq5g

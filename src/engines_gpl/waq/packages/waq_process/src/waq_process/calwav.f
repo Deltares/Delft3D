@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_calwav
+
+      implicit none
+
+      contains
+
 
       subroutine calwav ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -57,6 +63,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -158,3 +165,5 @@
 
       RETURN
       END
+
+      end module m_calwav

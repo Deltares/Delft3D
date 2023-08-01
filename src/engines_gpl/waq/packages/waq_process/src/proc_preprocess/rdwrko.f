@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdwrko
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RDWRKO ( LUNWRO, LCH   , LUREP , NOUTP , NRVART,
      +                    NBUFMX, IOUTPS, IOPOIN, OUNAM , VERSIO,
@@ -73,28 +79,14 @@
 !
 !     Local declarations
 !
-      PARAMETER   ( VERSI1 = 0.0 , VERSI2 = 0.1 )
-      INTEGER       NOUTPD, NRVARD, NBUFMD
+      INTEGER       NOUTPD, NRVARD, NBUFMD, K, IDUM
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "rdwrko", ithndl )
 !
 !     read and check version number
 !
       READ (LUNWRO, ERR=900, END=900) VERSIO
-!
-!     less than lowest supported version, ERROR
-!
-      IF ( VERSIO .LT. VERSI1 ) THEN
-         WRITE ( LUREP, 2000 ) VERSIO , VERSI1
-         CALL SRSTOP(1)
-      ENDIF
-!
-!     greater than this version, WARNING
-!
-      IF ( VERSIO .GT. VERSI2 ) THEN
-         NOWARN = NOWARN + 1
-         WRITE ( LUREP, 2010 ) VERSIO , VERSI2
-      ENDIF
+
 !
 !     read and check dimensions
 !
@@ -154,3 +146,5 @@
      +        /'          on unit number ',I3)
 !
       END
+
+      end module m_rdwrko

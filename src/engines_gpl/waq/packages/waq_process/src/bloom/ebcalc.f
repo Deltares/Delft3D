@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_ebcalc
+
+      implicit none
+
+      contains
+
 
 !
 !  *********************************************************************
@@ -65,3 +71,5 @@
 
       return
       end
+
+      end module m_ebcalc

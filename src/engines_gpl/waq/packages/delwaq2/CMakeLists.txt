@@ -32,7 +32,6 @@ set_source_files_properties(${fortran_version_file} ${fortran_version_file_delwa
 # Add dependencies
 set(oss_dependencies_general deltares_common
                              deltares_common_c
-                             waq_delftio
                              io_netcdf
                              nefis
                              delwaq_lib
@@ -142,4 +141,3 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.sh  DESTINATION bin)
 endif(UNIX)
-

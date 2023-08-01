@@ -1,3 +1,9 @@
+      module m_wr_proceswrk
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -44,6 +50,11 @@
 
 !     Created   : Aug   2012 by Jan van Beek
 
+      use m_wrstoc
+      use m_wripro
+      use m_setvat
+      use m_proc_totals
+      use m_intoou
       use m_open_waq_files
       use timers         !< performance timers
       use processet      !< use processet definitions
@@ -225,3 +236,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_wr_proceswrk

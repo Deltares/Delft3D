@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_sumfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_sumfrc ( lunrep , procesdef, allitems, sfracs, no_act,
      +                        actlst , nbpr     )
@@ -171,3 +177,5 @@
       return
  2000 format ( 3a )
       end
+
+      end module m_add_sumfrc

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5b
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5B ( LUNUT  , IPOSR  , NPOS   , CCHAR  , CAR    ,
      *                    IAR    , ICMAX  , IIMAX  , ANAME  , ATYPE  ,
@@ -82,9 +88,15 @@
       CHARACTER*(*) CAR(*)  , ANAME(*) , ATYPE(*) , LCH(LSTACK) ,
      *              CHULP
       CHARACTER*1   CCHAR*1 , CALLR*10
-      DIMENSION     IAR(*)  , ILUN(LSTACK), RAR(*)
       LOGICAL       USEFOR, SETNAM, COMPUT, SIGNON
       integer(4) :: ithndl = 0
+      integer    :: I, ihulp, ierr, iabs, iar(:), ifound, i2
+      integer    :: namset, ioutpt, icm, ntitm, nttype, iwar, lstack
+      real       :: vrsion
+      integer    :: itmnr, ioff, ioffc, nconst, itype, lunut, ilun(LSTACK)
+      integer    :: iposr, npos, noitm, noits, ioffi
+      real       :: rar(:), rhulp
+
       if (timon) call timstrt( "dlwq5b", ithndl )
 
 !
@@ -523,3 +535,5 @@ CJVB        GOTO 40
  1220 FORMAT (  ' Maximum value is: ',E15.6 )
 !
       END
+
+      end module m_dlwq5b

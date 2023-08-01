@@ -1,3 +1,9 @@
+      module m_set_stat_output
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -232,3 +238,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_set_stat_output

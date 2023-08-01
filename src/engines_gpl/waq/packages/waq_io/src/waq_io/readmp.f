@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_readmp
+
+      implicit none
+
+      contains
+
 
       subroutine readmp ( lun    , lchar  , filtype, duname , nsegdmp,
      &                    isegdmp, dmpbal , ndmpar , ntdmps , ioutpt ,
@@ -54,6 +60,7 @@
 !     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
 !                         LUN(29) = unitnumber formatted output file
 
+      use m_opt1
       use m_zoek
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
@@ -64,7 +71,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)        !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       character(20), pointer       :: duname (:)        !< name of monitoring areas
@@ -244,3 +251,5 @@
  2420 FORMAT (  /,' ERROR, unrecognised keyword for dump area:',A)
  2430 FORMAT (    ' Dump area is excluded from mass balance output')
       end
+
+      end module m_readmp

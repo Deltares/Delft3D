@@ -28,7 +28,7 @@ module pinpok_mod
 !  data definition module(s)
 !
 use precision_part      ! single/double precision
-      use timers
+use timers
 !
 implicit none      ! force explicit typing
 !

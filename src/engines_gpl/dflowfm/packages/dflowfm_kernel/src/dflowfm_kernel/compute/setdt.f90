@@ -118,11 +118,19 @@ subroutine setdt()
       kkcflmx = 0   ! SPvdP: safety, was undefined but could be used later
    endif
 
-   if (stm_included .and. jased>0) then
-      if (stmpar%morpar%multi .and. jamormergedtuser==0 .and. my_rank == 0 ) then
-         call put_get_time_step(stmpar%morpar%mergehandle, dts)
-      endif
-   endif
+   if (stm_included .and. jased > 0) then
+      if (stmpar%morpar%multi .and. jamormergedtuser == 0 ) then
+          if ( jampi == 0 ) then
+             call put_get_time_step(stmpar%morpar%mergehandle, dts)
+          else
+              call reduce_double_min(dts)
+              if ( my_rank == 0 ) then
+                  call put_get_time_step(stmpar%morpar%mergehandle, dts)
+              end if
+              call reduce_double_min(dts)
+         end if 
+      end if
+   end if
 
    call timestepanalysis(dtsc_loc)
 

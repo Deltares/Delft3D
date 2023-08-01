@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setabc
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *          SUBROUTINE TO SET MATRIX A AND B                         *
@@ -27,6 +33,7 @@
 
       subroutine setabc(xinit,extb,exttot,csol,dsol,t,dep,nset)
 
+      use m_maxprd
       use bloom_data_dim
       use bloom_data_size 
       use bloom_data_arran   
@@ -116,3 +123,5 @@
 99995 format ('  SDMIXN(J):  ',30(F5.2,1X))
       return
       end
+
+      end module m_setabc

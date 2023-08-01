@@ -36,7 +36,6 @@
 
  implicit none
 
- integer                           :: jatransportmodule = 1    !< use transport module (1) or subroutine (0), or no transport (2)
  integer                           :: itstep            !< time step 0=no, 1 =step_explicit, 2=step_reduce, 3=step_jacobi, 4: explicit
  integer                           :: iadvec            !< adv type, 0=no, 1 = Wenneker vol, qu-udzt array, 2=1, function,
                                                         !< 3 =Perot in uit, 4 =Perot in, explicit
@@ -57,7 +56,7 @@
                                                                  !< wet surface width and make sure the crest level is equal or larger than the
                                                                  !< bed level of the channel. 
  integer                           :: lincontin         !< 0 = no, 1 = yes linear continuity
-
+ 
  integer                           :: iPerot            !< Perot weigthing type of cell center velocities ucx, ucy
                                                         !! in vectoren:
                                                         !! 0 : uc*sum(w) = sum (u W)
@@ -573,6 +572,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jashp_pump                !< Write a shape file for pumps
  integer                           :: jashp_dry                 !< Write a shape file for dry areas
  integer                           :: jashp_genstruc            !< Write a shape file for general structures
+ integer                           :: jashp_dambreak            !< Write a shape file for dam breaks
 
  integer                           :: jambawritecsv             !< Option to write areas mass balance terms to a csv-file
 
@@ -615,7 +615,6 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_flowparameters() instead.
 subroutine default_flowparameters()
-    jatransportmodule = 1    ! transportmethod 1 (module) or 0 hk (subroutine) or no transport (2)
     itstep   = 2      ! time step 0=only transport, 1=transport + velocity update, 2=full implicit step_reduce
     iadvec   = 33     ! adv type, 0=no, 1= Wenneker vol, qu-udzt array, 2=1, function, 3=Perot in uit, 4=Perot in, 5=3,piaczek
     iadvec1D = 33     ! same, now for 1D links
@@ -630,7 +629,7 @@ subroutine default_flowparameters()
                                          !< wet surface width and make sure the crest level is equal or larger than the
                                          !< bed level of the channel. 
     lincontin= 0      ! 0 = no, 1 = yes linear continuity
-
+    
     iPerot   = 1      ! Perot weigthing type of cell center velocities ucx, ucy
                       ! in vectoren:
                       ! 0 : uc*sum(w) = sum (u W)
@@ -1030,7 +1029,7 @@ subroutine default_flowparameters()
     jashp_pump= 0
     jashp_dry = 0
     jashp_genstruc = 0
-
+    jashp_dambreak = 0
     jambawritecsv = 0
 
     jambalumpmba = 0

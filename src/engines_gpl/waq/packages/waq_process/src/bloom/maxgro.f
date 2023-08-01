@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_maxgro
+      use m_bloom_3dl
+
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *      SUBROUTINE TO CALCULATE MAXIMUM ATTAINABLE EQUILIBRIUM       *
@@ -121,3 +129,5 @@
 99990 format ('  Species ',A8,' EFFI = ',F5.2,' Growth rate = ',F5.2,' B-value = ',F7.3)
       return
       end
+
+      end module m_maxgro

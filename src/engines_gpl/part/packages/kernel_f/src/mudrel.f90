@@ -27,6 +27,8 @@ module mudrel_mod
 !
 !  data definition module(s)
 !
+      use m_stop_exit
+      use m_show_error
       use precision_part             ! single/double precision
       use timers
       use fileinfo              ! file information for all input/output files

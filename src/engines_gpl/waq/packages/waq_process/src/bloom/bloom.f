@@ -20,6 +20,24 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_bloom
+      use m_bloom_3dl
+      use m_spcsd
+      use m_solvlp
+      use m_setabc
+      use m_print6
+      use m_prinsu
+      use m_prinma
+      use m_maxprd
+      use m_maxgro
+      use m_fixinf
+      use m_exclud
+
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *    SUBROUTINE FOR SETTING UP AND SOLVING BLOOM MODEL PROBLEM      *
@@ -27,6 +45,7 @@
 
       subroutine bloom(cdate,t,csol,extb,day,death,dep,xinit,xdef,xeco,total,exttot,extlim,nset,infeas,nonun,numun,swblsa)
 
+      use m_constr
       use bloom_data_3dl
       use bloom_data_dim
       use bloom_data_size
@@ -307,3 +326,5 @@
 
       return
       end
+
+      end module m_bloom

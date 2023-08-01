@@ -111,7 +111,6 @@
       use waqmem
       use delwaq2_data
       use m_openda_exchange_items, only : get_openda_buffer
-      use report_progress
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -266,7 +265,7 @@
      &                 idt      , a(iderv) , ndmpar   , nproc    , nflux    ,
      &                 j(iipms) , j(insva) , j(iimod) , j(iiflu) , j(iipss) ,
      &                 a(iflux) , a(iflxd) , a(istoc) , ibflag   , ipbloo   ,
-     &                 ipchar   , ioffbl   , ioffch   , a(imass) , nosys    ,
+     &                 ioffbl   ,  a(imass) , nosys    ,
      &                 itfact   , a(imas2) , iaflag   , intopt   , a(iflxi) ,
      &                 j(ixpnt) , iknmkv   , noq1     , noq2     , noq3     ,
      &                 noq4     , ndspn    , j(idpnw) , a(idnew) , nodisp   ,

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_partmp
+
+      implicit none
+
+      contains
+
 
       subroutine partmp ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -110,7 +116,7 @@
      J         DISS  , DISHS , LKSOL , LKMES , LKMEHS, FSULF ,
      J         FDIS2 , CDISM , QUAL  , KDALL , VOLUME, IAP   ,
      J         FAC6C
-      INTEGER  LUNREP
+      INTEGER  LUNREP, IKMRK2
       INTEGER  IFLUX , ISEG  , ISWOX , IGROUP
       LOGICAL  SEDIME
 !
@@ -903,3 +909,5 @@
 !
       RETURN
       END
+
+      end module m_partmp

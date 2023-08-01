@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setdvp
+
+      implicit none
+
+      contains
+
 
       subroutine setdvp ( nodisp, idpnt , ndspn , idpnw , nosys ,
      +                    ndspx , dsto  )
@@ -136,3 +142,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_setdvp

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq01
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq01 ( lun    , syname , nosys  , notot  , nomult ,
      &                    multp  , iwidth , otime  , isfact , refday ,
@@ -55,6 +61,7 @@
 !                           lun(29) = unit formatted output file
 !                           lun( 2) = unit system-intermediate file
 
+      use m_check
       use m_zoek
       use m_srstop
       use m_rdvers
@@ -360,3 +367,5 @@
  2170 format ( /' ERROR encountered invalid repeat count - should start with an asterisk (*): ',A )
 
       end
+
+      end module m_dlwq01

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_bleffpro
+      
+      implicit none
+
+      contains
+
 
 !
 ! **********************************************************************
@@ -440,3 +446,4 @@
   190 fm(j)=alam*fofxm(i,j)+(1.0-alam)*fofxm(i-1,j)
       return
       end
+      end module m_bleffpro

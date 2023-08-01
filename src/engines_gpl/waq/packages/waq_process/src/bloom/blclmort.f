@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blclmort
+
+      implicit none
+
+      contains
+
 
 !     This file contains various subroutines concerning the setting of BLOOM parameters
 
@@ -119,3 +125,5 @@
 
       return
       end
+
+      end module m_blclmort

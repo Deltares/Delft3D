@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_time_delay
+
+      implicit none
+
+      contains
+
 
       subroutine read_time_delay ( ierr  )
 
@@ -50,6 +56,7 @@
       use rd_token       ! for definition and storage of data
       use timers         ! performance timers
       use m_sysi          ! Timer characteristics
+      use m_gregor
 
       implicit none
 
@@ -158,3 +165,5 @@
      &          ' a valid value string for the delay !'/' 2 integers',
      &          ' are expected in YYMMDD and HHMMSS format !')
       end
+
+      end module m_read_time_delay

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_caltau
+
+      implicit none
+
+      contains
+
 
       subroutine caltau ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -65,6 +71,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -233,3 +240,5 @@
 
       RETURN
       END
+
+      end module m_caltau

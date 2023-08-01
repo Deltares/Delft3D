@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getinv
+      use m_vxlpoi
+      use m_valpoi
+
+
+      implicit none
+
+      contains
+
 
       subroutine getinv ( procesdef, notot , syname, nocons, constants,
      +                    nopa     , paname, nofun , funame, nosfun,
@@ -462,3 +471,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_getinv

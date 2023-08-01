@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_write_messages
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -67,3 +73,4 @@ subroutine delwaq1_write_messages(errorcode)
     close ( lunrep )
 
 end subroutine delwaq1_write_messages
+end module m_delwaq1_write_messages

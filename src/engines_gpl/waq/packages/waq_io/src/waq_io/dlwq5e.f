@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5e
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5E ( LUNUT , IAR    , NOITM , ITMNR , NODIM  ,
      *                    IDMNR , IORDER , RAR   , IOPT  , RMAT   ,
@@ -60,9 +66,16 @@
 !
       use timers       !   performance timers
 
-      DIMENSION     IAR(*) , IARP(*) , RAR(*)  , RMAT(*) , RMATU(*)
       LOGICAL       MINIEM , MAXIEM
       integer(4) :: ithndl = 0
+      integer  :: ioff1, noitm, itmnr, idmnr, nodim, iorder, ioff0
+      integer  :: locbas, iloc, itel, itels, ifrst, ibrk, ioff, iopt
+      integer  :: ip, ip2, lunut, iloco, nocol, nobrk, ioff2
+      integer  :: iar(:), i, iarp(:)
+      real     :: accum, rmatu(:), amaxv, amiss, aminv
+      real     :: rar(:), rmat(:)
+      
+      
       if (timon) call timstrt( "dlwq5e", ithndl )
 !
 !     Some initialisation
@@ -328,3 +341,5 @@
      *         ' of ',E15.6,' !' )
 !
       END
+
+      end module m_dlwq5e

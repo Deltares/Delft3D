@@ -1,3 +1,9 @@
+module m_fm_update_particles
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -28,6 +34,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine update_particles(q,h0,h1,Dt)
+   use m_fm_reconst_vel
    use precision_part
    use partmem, only: nopart, mpart
    use m_particles
@@ -108,6 +115,7 @@ end subroutine update_particles
 
 !> update positions of particles within triangles
 subroutine update_particles_in_cells(numremaining, ierror)
+   use m_fm_aux_routines
    use partmem, only: nopart, mpart
    use m_particles, laypart => kpart
    use m_partrecons
@@ -342,3 +350,5 @@ subroutine update_particles_in_cells(numremaining, ierror)
 
    if ( timon ) call timstop ( ithndl )
 end subroutine update_particles_in_cells
+
+end module m_fm_update_particles

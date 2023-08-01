@@ -22,6 +22,7 @@
 !!  rights reserved.
 
 module m_itdate
+
    character (len=8)                          :: refdat
    integer                                    :: itdate      ! should be user specified for (asc routines)
 
@@ -31,6 +32,8 @@ end module m_itdate
 
 module timespace_read
    use precision_part
+   use m_stop_exit
+   use m_meteo1temphelpers
    implicit none
 
   integer,  parameter    :: maxnamelen     = 256
@@ -2070,7 +2073,6 @@ function readfourierdims(minp,mx,nx) result(success)
    integer                      :: L, i1, i2
    character(len=10)            :: compname
 
-   integer, external            :: ifirstletter
 
    success = .false.
    mx = 3 ; nx = 0
@@ -2126,9 +2128,6 @@ use m_itdate
    character(len=8)                           :: compname
    integer                                    :: k, n, L, ierrs, i1, i2
    double precision                           :: fff, omeg, ampl, phas, omegt, phast
-
-
-   integer, external                          :: ifirstletter
 
 
    success = .false.
@@ -3187,89 +3186,6 @@ end interface find_nearest
 
 contains
 
-
-subroutine pinpok(xl, yl, n, x, y, inside)
-
-    ! Author: H. Kernkamp
-   implicit none
-
-   double precision              , intent(in)  :: xl
-   double precision              , intent(in)  :: yl
-   integer               , intent(in)  :: n
-   double precision, dimension(n), intent(in)  :: x
-   double precision, dimension(n), intent(in)  :: y
-   integer               , intent(out) :: inside
-
-   integer  :: i
-   integer  :: i1
-   integer  :: i2
-   integer  :: np
-   integer  :: rechts
-   double precision :: rl
-   double precision :: rm
-   double precision :: x1
-   double precision :: x2
-   double precision :: y1
-   double precision :: y2
-
-   if (n .le. 2) then
-      inside = 1
-   else
-      np = 0
- 5    continue
-      np = np + 1
-      if (np .le. n) then
-         if ( x(np) .ne. dmiss_default) goto 5
-      endif
-      np = np - 1
-      inside = 0
-      rechts = 0
-      i = 0
-10    continue
-      i1 = mod(i,np) + 1
-      i2 = mod(i1,np) + 1
-      x1 = x(i1)
-      x2 = x(i2)
-      y1 = y(i1)
-      y2 = y(i2)
-      if (xl .ge. min(x1,x2) .and. xl .le. max(x1,x2) ) then
-         if (xl .eq. x1 .and. yl .eq. y1 .or. &                     ! tussen of op lijnstuk
-            (x1 .eq. x2 .and. &                                     ! op punt 1
-             yl .ge. min(y1,y2) .and. yl .le. max(y1,y2) ) .or. &
-            (yl .eq. y1 .and. y1 .eq. y2)  ) then                   ! op verticale lijn
-            ! op horizontale lijn
-            inside = 1
-            return
-         else if (x1 .ne. x2) then
-            !
-            ! scheve lijn
-            !
-            rl = ( xl - x1 )  / ( x2 - x1 )
-            rm = ( y1 - yl )  + rl * ( y2 - y1 )
-            if (rm .eq. 0) then
-               !
-               ! op scheve lijn
-               !
-               inside = 1
-               return
-            else if (rm .gt. 0d0) then
-               !
-               ! onder scheve lijn
-               !
-               if (xl .eq. x1 .or. xl .eq. x2) then
-                  if (x1 .gt. xl .or. x2 .gt. xl) then
-                     rechts = rechts + 1
-                  endif
-               endif
-               inside = 1 - inside
-            endif
-         endif
-      endif
-      i = i + 1
-      if (i .lt. np) goto 10
-      if (mod(rechts,2) .ne. 0) inside = 1 - inside
-   endif
-end subroutine pinpok
 
 
 

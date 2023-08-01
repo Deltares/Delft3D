@@ -935,7 +935,7 @@ module m_readCrossSections
       ! * add extra points (if necessary) at frictionsection transitions
       ! * generate segmentToSectionIndex
       call regulate_yz_coordinates(ycoordinates, zcoordinates, pcs%bedlevel, segmentToSectionIndex, numlevels, pCS%frictionSectionFrom, &
-                                   pCs%frictionSectionTo, frictionCount)
+                                   frictionCount)
 
       call realloc(pCS%y, numlevels)
       call realloc(pCS%z, numlevels)

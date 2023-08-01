@@ -47,7 +47,7 @@ subroutine flow_sedmorinit()
     use m_rdmorlyr, only: rdinimorlyr
     use m_flowexternalforcings, only: sfnames, numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
     use m_transport, only: ISED1, ISEDN, ifrac2const, const_names, constituents
-    use m_flowparameters, only: jatransportmodule, jasecflow, ibedlevtyp, jasal, jatem, eps4
+    use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
     use m_bedform, only: bfmpar, bfm_included
     use unstruc_channel_flow
     use m_branch

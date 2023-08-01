@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistpfd
+
+implicit none
+
+contains
+
 
 
     ! 6 char name for process mathc with second line of PDF
@@ -99,3 +105,5 @@ use m_evaluate_waq_attribute
     enddo ! end loop over segments
     return
 end ! end subroutine
+
+end module m_protistpfd

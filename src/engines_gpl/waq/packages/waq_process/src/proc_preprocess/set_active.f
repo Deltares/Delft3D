@@ -1,3 +1,9 @@
+      module m_set_active
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -119,3 +125,5 @@
  2150 format ( ' Process name [',a10,'] in input replaced with new name [',a10,']')
  2160 format ( ' Process [',a10,'] added because of active process [',a10,']')
       end
+
+      end module m_set_active

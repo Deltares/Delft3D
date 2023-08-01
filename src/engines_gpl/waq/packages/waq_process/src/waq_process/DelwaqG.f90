@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaqg
+use m_inverm
+
+
+implicit none
+
+contains
+
 
      subroutine DLWQG2     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
@@ -2185,7 +2193,7 @@
       ! Routine to initialise the sediment concentrations from the initial conditions file or from "S1" substances
       !
       subroutine initialise_sedconc
-
+     
       integer :: ilay, iseg, iseg2d, ip, isys, iflux
       integer :: ierr, luinit, lumon
       integer :: timeini, nosysini, nosegini
@@ -2441,3 +2449,5 @@
       end function getindex
 
       end subroutine dlwqg2
+
+end module m_delwaqg

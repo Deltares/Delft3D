@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_bloutc
+
+      implicit none
+
+      contains
+
 
       subroutine bloutc (dump)
       
@@ -34,3 +40,5 @@
       return
       end
 
+
+      end module m_bloutc

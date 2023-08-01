@@ -45,10 +45,6 @@ if(NOT TARGET delwaq_lib_examples)
     add_subdirectory(${checkout_src_root}/${delwaq_lib_examples_module} delwaq_lib_examples)
 endif()
 
-if(NOT TARGET waq_delftio)
-    add_subdirectory(${checkout_src_root}/${waq_delftio_module} waq_delftio)
-endif()
-
 if(NOT TARGET wq_processes)
     add_subdirectory(${checkout_src_root}/${wq_processes_module} wq_processes)
 endif()

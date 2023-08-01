@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_wripro
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE WRIPRO ( NPROC , NSVAR , IFLUX , NIPMSA, PRVVAR,
      +                    PRVTYP, NOLOC , NODEF , DEFAUL, PRONAM,
@@ -88,6 +94,8 @@
       REAL        DEFAUL(*), STOCHI(*),
      +            DSTO(*)  , VSTO(*)
       CHARACTER*10 PRONAM(*)
+      
+      integer k
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "wripro", ithndl )
 !
@@ -123,3 +131,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_wripro

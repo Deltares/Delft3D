@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_consbl
+
+      implicit none
+
+      contains
+
 
       subroutine consbl ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -126,7 +132,7 @@
      G        FRDBOT_SAVE(NTOGRZ)           ,
      H        GRZMC (NTOGRZ)
       INTEGER BENTHS(NTOGRZ)
-      INTEGER IKMRK2
+      INTEGER IKMRK2, iflux, iseg
       integer lunrep
       REAL    GEM, MaxFiltration, MaxUptake, GrowthResp,
      j        DetrGrazing
@@ -560,3 +566,5 @@
       RETURN
 !
       END
+
+      end module m_consbl

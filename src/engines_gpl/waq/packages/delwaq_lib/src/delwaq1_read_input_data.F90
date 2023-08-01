@@ -20,6 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_read_input_data
+use m_dlwq09
+use m_dlwq08
+use m_dlwq07
+use m_dlwq06
+use m_dlwq05
+use m_dlwq04
+use m_dlwq03
+use m_dlwq02
+use m_dlwq01
+
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -39,6 +55,9 @@
 !                          SPACE , computes space needed
 
 subroutine delwaq1_read_input_data()
+
+    use m_dlwqs1
+    use m_dlwqp1
     use m_delwaq1_data
 
     implicit none
@@ -184,3 +203,5 @@ subroutine delwaq1_read_input_data()
 
 
 end subroutine delwaq1_read_input_data
+
+end module m_delwaq1_read_input_data

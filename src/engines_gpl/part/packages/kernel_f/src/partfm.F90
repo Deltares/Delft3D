@@ -31,8 +31,22 @@
 #include "config.h"
 #endif
 
+module m_partfm
+use m_part17
+use m_part15
+use m_part08
+use m_fm_write_unc
+
+   implicit none
+   contains
+
    subroutine partfm(lunpr)
 
+   use m_fm_update
+   use m_fm_read_hydro
+   use m_fm_particles_in_grid
+   use m_fm_handle_mesh
+   use m_rdpart
    use precision_part
    use MessageHandling
    use partmem
@@ -227,3 +241,5 @@
 
    end subroutine report_progress
    end subroutine partfm
+
+end module m_partfm

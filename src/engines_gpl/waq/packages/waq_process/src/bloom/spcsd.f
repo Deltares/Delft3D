@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_spcsd
+
+      implicit none
+
+      contains
+
 
 !  *********************************************************************
 !  *  SUBROUTINE FOR ORDERING EXTINCTION COEFFICIENTS AND DETERMINING  *
@@ -112,3 +118,5 @@
   130 ni=0
       return
       end
+
+      end module m_spcsd

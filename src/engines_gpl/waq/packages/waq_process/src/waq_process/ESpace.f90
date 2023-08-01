@@ -1,3 +1,9 @@
+module m_espace
+
+implicit none
+
+contains
+
       subroutine ESPACE     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
@@ -612,3 +618,5 @@
       write(ddhhmmss1,'(i6,3(i2.2))') dd,hh,mm,ss
       return
       end
+
+end module m_espace

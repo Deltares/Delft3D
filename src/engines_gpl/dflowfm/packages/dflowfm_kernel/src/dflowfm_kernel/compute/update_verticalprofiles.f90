@@ -346,16 +346,25 @@ double precision, external :: setrhofixedp
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
      if (facLaxturb > 0) then 
-        do L  = Lb,Lt-1
-           zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
-           if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+        if (jafacLaxturbtyp == 1) then 
+           do L  = Lb,Lt-1
+              zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+              if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+                 k1 = ln(1,L) ; k2 = ln(2,L) 
+                 if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+                    faclax = facLaxturb*zf
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                 endif
+              endif
+           enddo
+        else if (jafacLaxturbtyp == 2) then 
+           do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-                 faclax = facLaxturb*zf
-                 dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*turkin0(L) +  0.5d0*facLaxturb*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
               endif
-           endif
-        enddo
+           enddo
+        endif
      endif
 
      vicu      = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigtkei        !
@@ -720,16 +729,25 @@ double precision, external :: setrhofixedp
                                                            ! Dirichlet condition on bed ; teta method:
 
      if (facLaxturb > 0) then 
-        do L  = Lb,Lt-1
-           zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
-           if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+        if (jafacLaxturbtyp == 1) then 
+           do L  = Lb,Lt-1
+              zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+              if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+                 k1 = ln(1,L) ; k2 = ln(2,L) 
+                 if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+                    faclax = facLaxturb*zf
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                 endif
+              endif
+           enddo
+        else if (jafacLaxturbtyp == 2) then 
+           do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                 faclax = facLaxturb*zf
-                 dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*tureps0(L) +  0.5d0*facLaxturb*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
               endif
-           endif
-        enddo
+           enddo
+        endif  
      endif
 
      vicu  = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigepsi

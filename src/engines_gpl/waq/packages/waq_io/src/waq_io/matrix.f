@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_matrix
+
+      implicit none
+
+      contains
+
 
       subroutine dmatrix ( ntot   , nvals  , nvarar , nvarnw , nobrk1 ,
      &                     nobrk2 , ibrk   , ibrknw , tab    , tabnw  ,
@@ -66,6 +72,7 @@
 
 !     Logical units      : none
 
+      use m_interpol
       use timers       !   performance timers
       use m_char1
 
@@ -184,3 +191,5 @@
  9999 if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_matrix

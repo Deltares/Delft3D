@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_oxymin
+
+      implicit none
+
+      contains
+
 
       subroutine oxymin ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -50,12 +56,15 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
+      integer  iseg
+      
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
       IP3  = IPOINT( 3)
@@ -126,3 +135,5 @@
       RETURN
 !
       END
+
+      end module m_oxymin

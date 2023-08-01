@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_outbo2
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE OUTBO2 ( NOUTP , IOUTPS, NOSEG , NODUMP, NX    ,
      +                    NY    , NRVART, NBUFMX, NDMPAR, NOTOT ,
@@ -64,9 +70,15 @@
 !
 !     Local
 !
-      PARAMETER ( IGSEG = 1 , IGMON = 2 , IGGRD = 3 , IGSUB = 4 )
+      integer, PARAMETER :: IGSEG = 1
+      integer, PARAMETER :: IGMON = 2 
+      integer, PARAMETER :: IGGRD = 3
+      integer, PARAMETER :: IGSUB = 4 
+      
       INTEGER     IGRID , NOCEL , NBUFOU, ISRTO
       integer(4) :: ithndl = 0
+      integer iout, nrvar, ncbufo
+      
       if (timon) call timstrt( "outbo2", ithndl )
 !
 !     Loop over the output files
@@ -164,3 +176,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_outbo2

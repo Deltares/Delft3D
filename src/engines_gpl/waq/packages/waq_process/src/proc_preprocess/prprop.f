@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_prprop
+
+      implicit none
+
+      contains
+
 
       subroutine prprop ( lunrep, laswi, config, no_act, actlst, allitems, procesdef,
      +                    noinfo, nowarn, old_items, ierror  )
@@ -442,3 +448,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_prprop

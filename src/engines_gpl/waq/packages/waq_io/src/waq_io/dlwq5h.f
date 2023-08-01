@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5h
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5H ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
      *                    NODIM  , IORDER , CNAMES , IOFFI  , IOFFC  ,
@@ -65,6 +71,9 @@
       DIMENSION     IAR(*)
       CHARACTER*20  CHULP
       integer(4) :: ithndl = 0
+      integer    :: I1, I3, I4, I5
+      integer    :: lunut, I, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
+      integer    :: itmnr, noitm, I2, iar, ioffd, ishft, ioffi, iods
       if (timon) call timstrt( "dlwq5h", ithndl )
 !
 !       Write message
@@ -179,3 +188,5 @@
  1040 FORMAT ( ' WARNING: Substance  : ',I3,' also not resolved: ',A)
 !
       END
+
+      end module m_dlwq5h

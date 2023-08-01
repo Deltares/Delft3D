@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_opt0
+      use m_opt3
+      use m_opt2
+
+
+      implicit none
+
+      contains
+
 
       subroutine opt0   ( lun    , is     , noql1  , noql2  , noql3  ,
      &                    ndim2  , ndim3  , nrftot , nrharm , ifact  ,
@@ -70,6 +79,7 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(is) = unit intermediate file (items)
 
+      use m_opt1
       use m_open_waq_files
       use timers       !   performance timers
       use rd_token
@@ -285,3 +295,5 @@
  2090 format (  /,' ERROR. This keyword is not allowed here: ',A )
 
       end
+
+      end module m_opt0

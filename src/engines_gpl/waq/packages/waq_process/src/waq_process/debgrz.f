@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_debgrz
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DEBGRZ  (PMSA , FL , IPOINT , INCREM , NOSEG , NOFLUX ,
      +                   IEXPNT, IKNMRK, IPODIM, NOQ1, NOQ2, NOQ3, NOQ4)
@@ -788,3 +794,5 @@
 
       RETURN
       END
+
+      end module m_debgrz

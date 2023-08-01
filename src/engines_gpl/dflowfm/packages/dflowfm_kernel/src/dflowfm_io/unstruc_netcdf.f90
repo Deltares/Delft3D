@@ -4919,6 +4919,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    use m_hydrology_data, only : jadhyd, ActEvap, PotEvap, interceptionmodel, DFM_HYD_NOINTERCEPT, InterceptHs
    use m_subsidence, only: jasubsupl, subsout, subsupl, subsupl_t0
    use Timers
+   
    implicit none
 
    type(t_unc_mapids), intent(inout) :: mapids   !< Set of file and variable ids for this map-type file.
@@ -4969,6 +4970,9 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    integer, save                                 :: jmax, nCrs
    double precision, dimension(:,:), allocatable :: work1d_z, work1d_n
    double precision, dimension(:,:,:), allocatable :: work3d, work3d2
+   
+   integer, parameter :: FIRST_ARRAY = 1
+   integer, parameter :: SECOND_ARRAY = 2
 
    if (ndxi <= 0) then
       call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
@@ -6117,12 +6121,13 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
 
    ! Water level
    if (jamaps1 == 1) then
-      !ierr = nf90_inq_varid(mapids%ncid, 'mesh2d'//'_s1', mapids%id_s1(2))
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, s1, jabndnd=jabndnd_)
+      call add_dmiss_to_dry_points_then_put_array_into_map(s1, hu, FIRST_ARRAY, &
+              mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, jabndnd_, ierr) 
    end if
 
    if (jamaps0 == 1) then
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_s0, UNC_LOC_S, s0, jabndnd=jabndnd_)
+      call add_dmiss_to_dry_points_then_put_array_into_map(s0, hu, FIRST_ARRAY, &
+              mapids%ncid, mapids%id_tsp, mapids%id_s0, UNC_LOC_S, jabndnd_, ierr)
    end if
 
    if (jamapqin > 0 .and. jaqin > 0) then
@@ -6169,7 +6174,8 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    ! Velocities
    if (jamapu1 == 1) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u1, iLocU, u1, 0d0, jabndnd=jabndnd_)
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, hu, jabndnd=jabndnd_)
+      call add_dmiss_to_dry_points_then_put_array_into_map(s1, hu, SECOND_ARRAY, &
+              mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, jabndnd_, ierr)
    end if
    if (jamapu0 == 1) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, iLocU, u0, 0d0, jabndnd=jabndnd_)
@@ -17409,5 +17415,51 @@ do n = 1,ndxndxi
    end do
 end do
 end subroutine linktonode2
+
+!> add_dmiss_to_dry_points_in s1, s0 or hu arrays then_put_array_into_map file
+subroutine add_dmiss_to_dry_points_then_put_array_into_map(water_level, upwind_waterheight, array, &
+    ncid, id_tsp, id_var, data_location, jabndnd_, ierr)
+
+   use m_alloc,         only : aerr
+   use m_missing,       only : dmiss
+
+   implicit none
+
+   double precision, allocatable, intent(in)       :: water_level(:)         !< water_level
+   double precision, allocatable, intent(in)       :: upwind_waterheight(:)  !< upwind_waterheight
+   integer,                       intent(in)       :: array                  !< 1 (water level) or 2 (upwind water height)
+   integer,                       intent(in)       :: ncid                   !< NetCDF dataset id
+   type(t_unc_timespace_id),      intent(in)       :: id_tsp                 !< Map file and other NetCDF ids.
+   integer,                       intent(in)       :: id_var(:)              !< Variable ID 
+   integer,                       intent(in)       :: data_location          !< Data location
+   integer,                       intent(in)       :: jabndnd_               !< Flag specifying whether boundary nodes are to be written.
+   integer,                       intent(out)      :: ierr                   !< Result status
+
+   double precision, allocatable                   :: temp_water_level(:)
+   double precision, allocatable                   :: temp_upwind_waterheight(:)
+   logical, parameter                              :: IS_MIN_WATER_LEVEL_AT_BOTTOM = .false.
+   logical, parameter                              :: IS_AU_TO_BE_REDUCED = .false.
+   integer, parameter                              :: JA_MAP_FLOW_ANALYSIS = 0
+
+   allocate(temp_water_level(size(water_level)), stat=ierr)
+   if (ierr /= 0) call aerr( 'water_level', ierr, size(water_level))
+   allocate(temp_upwind_waterheight(size(upwind_waterheight)), stat=ierr)
+   if (ierr /= 0) call aerr( 'upwind_waterheight', ierr, size(upwind_waterheight))
+
+    temp_water_level        = water_level
+    temp_upwind_waterheight = upwind_waterheight
+    call set_water_level_and_hu_for_dry_cells(size(temp_water_level), temp_water_level, &
+          size(temp_upwind_waterheight), temp_upwind_waterheight, dmiss, &
+          IS_MIN_WATER_LEVEL_AT_BOTTOM, IS_AU_TO_BE_REDUCED, JA_MAP_FLOW_ANALYSIS)
+    if ( array == 1 ) then
+        ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_water_level, jabndnd=jabndnd_)
+    else
+        ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_upwind_waterheight, jabndnd=jabndnd_)
+    end if
+    
+    deallocate(temp_water_level)
+    deallocate(temp_upwind_waterheight)
+      
+end subroutine add_dmiss_to_dry_points_then_put_array_into_map
 
 end module unstruc_netcdf

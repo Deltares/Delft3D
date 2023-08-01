@@ -453,7 +453,6 @@
  double precision, allocatable     :: zsrc2(:,:)        !< vertical level (m) top (optional)
  double precision, allocatable     :: srsn (:,:)        !< 2*(1+numvalssrc),numsrc, to be reduced
  integer, allocatable              :: jamess(:)         !< issue message mess for from or to point, 0, 1, 2
- integer, allocatable, target      :: kdss (:)          !< helper for multiple_uni_discharge_salinity_temperature
  double precision, allocatable, target :: qstss(:)      !< array to catch multiple_uni_discharge_salinity_temperature
  character(len=255), allocatable   :: srcname(:)        !< sources/sinks name (numsrc)
  double precision, allocatable     :: vsrccum(:)        !< cumulative volume at each source/sink from Tstart to now

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_p10ddb
+
+implicit none
+
+contains
+
 
       subroutine p10ddb ( nconn  , conn   , n0     , ddshift, np     ,      &
      &                    mp     , xp     , yp     )
@@ -99,3 +105,5 @@
 
       return
       end
+
+end module m_p10ddb

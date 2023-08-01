@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_flxfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_flxfrc( lunrep, procesdef, allitems, sfracs, no_act,
      +                       actlst, nbpr     )
@@ -381,3 +387,5 @@
       return
  2000 format ( 3a )
       end
+
+      end module m_add_flxfrc

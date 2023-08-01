@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setgr2
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE SETGR2 ( NOGRID, NOTOTG, GRDREF, PROSYS, GRPATH,
      +                    IPGRID)
@@ -56,7 +62,8 @@
 !
 !     Local declarations
 !
-      INTEGER             NPATH , IPATH , IGRID
+      INTEGER             NPATH , IPATH , IGRID , IGSYS , NCHECK
+      
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "setgr2", ithndl )
 !
@@ -130,3 +137,5 @@
  9999 if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_setgr2

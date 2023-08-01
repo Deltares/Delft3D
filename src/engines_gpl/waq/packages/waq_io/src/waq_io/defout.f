@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_defout
+
+      implicit none
+
+      contains
+
 
       subroutine defout ( noutp  , nrvar  , iostrt , iostop , iostep ,
      &                    isrtou , igrdou )
@@ -165,3 +171,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_defout

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_inipart_asc
+
+implicit none
+
+contains
+
 
       subroutine inipart_asc( lgrid   , lgrid2  , nmax    , mmax    , xcor,     &
                           ycor    , nopart  , nosubs  , subst   , ini_file,     &
@@ -27,12 +33,15 @@
                           ypart   , zpart   , npart   , mpart   , kpart   ,     &
                           iptime  , npmax   , nrowsmax, lunpr   )
 !
+      use m_skip_comments
       use precision_part ! single/double precision
       use timers
       use get_key_mod
       use grid_search_mod
       use pinpok_mod
       use random_generator
+      use m_stop_exit
+      use m_get_index
 
       implicit none ! force explicit typing
 
@@ -51,7 +60,6 @@
       integer  ( ip), intent(inout) :: nosubs                  !< number of substances
       character( * ), intent(in   ) :: subst (*)               !< substance names
       character( * ), intent(in   ) :: ini_file                !< polygon file
-!      integer  ( ip), intent(in   ) :: npol                    !< number of substances
       integer  ( ip), intent(in   ) :: nrowsmax                !< dimension of poligons
       real     ( rp), intent(  out) :: xpol  (nrowsmax)        !< xvalues polygons
       real     ( rp), intent(  out) :: ypol  (nrowsmax)        !< yvalues polygons
@@ -92,7 +100,6 @@
 !     local scalars
 !
       integer(ip) :: len_file, len_fract
-      integer(ip) :: get_index
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "inipart_asc", ithndl )
@@ -244,3 +251,5 @@
 
 
 
+
+end module m_inipart_asc

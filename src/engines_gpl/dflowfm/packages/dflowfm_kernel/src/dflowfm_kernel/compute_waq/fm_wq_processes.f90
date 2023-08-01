@@ -26,8 +26,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
    subroutine fm_wq_processes_ini_sub()
       use m_fm_wq_processes
       use m_alloc
@@ -371,6 +371,8 @@
 
    subroutine fm_wq_processes_ini_proc()
       use m_fm_wq_processes
+      use m_wq_processes_initialise
+      use m_wq_processes_pmsa_size
       use bloom_data_vtrans
       use m_alloc
       use unstruc_messages
@@ -575,7 +577,7 @@
       end if
       isffetchl = 0
       isffetchd = 0
-      if ( jawave.eq.1 .or. jawave.eq.2 ) then  ! copied from "flow_setexternalforcings", call to "tauwavefetch"
+      if ( jawave.eq.1 .or. jawave.eq.2 ) then  ! copied from "set_external_forcings", call to "tauwavefetch"
          if (icon>0) then
             nosfun = nosfun+1
             isffetchl = nosfun
@@ -728,7 +730,7 @@
          itstop_process = tstop_user
       endif
       otime = dble(julrefdat)-0.5d0 !refdate_mjd
-      
+
       !     Compute refday needed for daylight process
       call compute_refday(refdat, refdayNr)
 
@@ -1262,6 +1264,7 @@
 
    subroutine fm_wq_processes_step(dt,time)
       use m_fm_wq_processes
+      use m_wq_processes_proces
       use m_mass_balance_areas
       use unstruc_model, only: md_flux_int
       use m_flow, only: vol1
@@ -1396,14 +1399,14 @@
       do k=0,ktx-kbx
          pmsa(ipoivol + k) = vol1(k+kbx)
       end do
-      
+
       if (isftau.gt.0) then
          ipoitau  = arrpoi(iisfun) + (isftau-1)*noseg
          if (jawave==0 .or. flowWithoutWaves) then
             call gettaus(1,2)
          else
             call gettauswave(jawaveswartdelwaq)
-         endif   
+         endif
          do kk=1,Ndxi
             call getkbotktop(kk,kb,kt)
             pmsa(ipoitau+kb-kbx) = taus(kk)
@@ -1423,14 +1426,14 @@
       if ( isfsal.gt.0 ) then
          ipoisal = arrpoi(iisfun) + (isfsal-1)*noseg
          do k=0,ktx-kbx
-            pmsa(ipoisal + k) = constituents(isalt,k+kbx) 
+            pmsa(ipoisal + k) = constituents(isalt,k+kbx)
          end do
       end if
 
       if ( isftem.gt.0 ) then
          ipoitem = arrpoi(iisfun) + (isftem-1)*noseg
          do k=0,ktx-kbx
-            pmsa(ipoitem + k) = constituents(itemp, k+kbx) 
+            pmsa(ipoitem + k) = constituents(itemp, k+kbx)
          end do
       end if
 
@@ -1819,7 +1822,3 @@
 
       return
    end subroutine default_fm_wq_processes
-
-
-
-

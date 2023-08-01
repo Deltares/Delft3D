@@ -27,6 +27,12 @@
 !
 !-------------------------------------------------------------------------------
 
+module m_fm_aux_routines
+
+   implicit none
+   
+   contains
+   
 !> determine sample bounding box
 subroutine get_samples_boundingbox()
    use m_samples
@@ -195,6 +201,7 @@ SUBROUTINE REASAM(MSAM, JADOORLADEN)
    USE M_SAMPLES
    use m_alloc
    use MessageHandling
+   use m_meteo1temphelpers
    implicit none
    integer, intent(inout) :: msam        !< already opened file pointer to sample file
    integer, intent(in)    :: jadoorladen !< whether to append to global set (1) or start empty (0)
@@ -221,7 +228,6 @@ SUBROUTINE REASAM(MSAM, JADOORLADEN)
    COMMON /DRAWTHIS/ ndraw(50)
 
    CHARACTER REC*132, TEX*10, REC1*132
-   LOGICAL THISISANUMBER
 
    CALL SAVESAM()
    NSM = 0
@@ -463,3 +469,5 @@ SUBROUTINE TIDYSAMPLES(XS,YS,ZS,IPSAM,NS,MXSAM,MYSAM)
    end if
 
 END subroutine tidysamples
+
+end module m_fm_aux_routines

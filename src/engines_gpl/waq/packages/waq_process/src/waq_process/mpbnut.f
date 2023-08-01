@@ -20,10 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_mpbnut
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE MPBNUT ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
      +                    NOQ3   , NOQ4   )
+      use m_zerome
       use m_evaluate_waq_attribute
 
 C**********************************************************************
@@ -240,3 +247,5 @@ c --------------------------------------------------------
 
       RETURN
       END
+
+      end module m_mpbnut

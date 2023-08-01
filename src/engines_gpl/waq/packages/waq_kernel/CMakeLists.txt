@@ -16,7 +16,6 @@ add_library(${library_name} ${source_files})
 
 # Set dependencies
 set(oss_dependencies_general deltares_common
-                             waq_delftio
                              part_data_f
                              part_io_f
                              part_kernel_f
@@ -48,7 +47,7 @@ if(UNIX)
 endif(UNIX)
 
 if(WIN32)
-    set(oss_dependencies ${oss_dependencies_general}    
+    set(oss_dependencies ${oss_dependencies_general}
                          netcdf4
                          netcdff)
 

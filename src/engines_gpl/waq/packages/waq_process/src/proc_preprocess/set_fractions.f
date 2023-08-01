@@ -1,3 +1,9 @@
+      module m_set_fractions
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -37,6 +43,13 @@
 
 !     Created   : Aug   2012 by Jan van Beek
 
+      use m_get_sfrac
+      use m_expand_frc
+      use m_add_sumfrc
+      use m_add_prcfrc
+      use m_add_flxfrc
+      use m_add_dspfrc
+      use m_add_atrfrc
       use timers         !< performance timers
       use processet      !< use processet definitions
       implicit none
@@ -95,3 +108,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_set_fractions

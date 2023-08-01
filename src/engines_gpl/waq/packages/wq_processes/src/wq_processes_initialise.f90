@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_wq_processes_initialise
+
+implicit none
+
+contains
+
 
       subroutine wq_processes_initialise ( lunlsp, pdffil, shared_dll_so, blmfil, blmoutfil, sttfil, statprocesdef, outputs, &
                                            nomult, imultp, constants, refday, noinfo, nowarn, ierr)
@@ -36,6 +42,28 @@
 !>                             .
 !>                          to a consistent set of sequential processes for the simulation part
 
+      use m_set_old_items
+      use m_set_fractions
+      use m_set_active
+      use m_setvat
+      use m_setopp
+      use m_setopo
+      use m_setdvp
+      use m_repuse
+      use m_reaalg
+      use m_rd_tabs
+      use m_prsort
+      use m_prprop
+      use m_proc_totals
+      use m_primpro
+      use m_makbar
+      use m_intoou
+      use m_getinv
+      use m_fill_old_items
+      use m_cnfrep
+      use m_blmeff
+      use m_algrep
+      use m_actrep
       use m_zoek
       use m_dattim
       use m_srstop
@@ -923,3 +951,5 @@
                 ' WQ Number  (in)active  name')
  2110 format ( i7,3x,a,a )
       end
+
+end module m_wq_processes_initialise

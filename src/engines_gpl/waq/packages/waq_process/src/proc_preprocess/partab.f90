@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module partable
+      use m_valpoi
       use m_zoek
       use m_monsys
 

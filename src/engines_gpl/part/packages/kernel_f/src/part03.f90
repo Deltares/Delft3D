@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module part03_mod
+use m_stop_exit
+
 !
 contains
       subroutine part03 ( lgrid  , volume , flow   , dx     , dy     ,   &

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_repuse
+
+      implicit none
+
+      contains
+
 
       subroutine repuse ( procesdef, nocons, coname, nopa  , paname,
      +                    nofun    , funame, nosfun, sfname, noinfo)
@@ -237,3 +243,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_repuse

@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blmort
+      use m_natmor
+
+
+      implicit none
+
+      contains
+
 
       subroutine blmort (biomas, temp  , faut  , fdet  , flautn, fldetn,
      j                   flooxn, flmora, deat4 , tstepi, lmixo , lfixn ,
@@ -114,3 +122,4 @@
 
       return
       end
+      end module m_blmort

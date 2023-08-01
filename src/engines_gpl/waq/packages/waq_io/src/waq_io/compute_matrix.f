@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_compute_matrix
+
+      implicit none
+
+      contains
+
 
       subroutine compute_matrix ( lunut , data_param, data_loc, waq_param, waq_loc,
      +                            amiss , fdata     , wdata   )
@@ -303,3 +309,5 @@
      *         ' of ',e15.6,' !' )
 !
       end
+
+      end module m_compute_matrix
