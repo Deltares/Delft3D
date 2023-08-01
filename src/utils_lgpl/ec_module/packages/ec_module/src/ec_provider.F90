@@ -381,7 +381,7 @@ module m_ec_provider
                            "dewpoint_airtemperature_cloudiness",                          &
                            "dewpoint_airtemperature_cloudiness_solarradiation",           &
                            "solarradiation", "longwaveradiation", "wavesignificantheight", &
-                           "waveperiod" )
+                           "waveperiod", "friction_coefficient_time_dependent" )
                         success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                      case ("hrms","tp", "tps", "rtp","dir","fx","fy","wsbu","wsbv","mx","my","dissurf","diswcap","ubot") 
                         success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2592,6 +2592,9 @@ module m_ec_provider
             ncstdnames(1) = 'sea_water_potential_temperature'
             ncvarnames(2) = 'so'                             ! salinity
             ncstdnames(2) = 'sea_water_salinity'
+         case ('friction_coefficient_time_dependent')
+            ncvarnames(1) = 'friction_coefficient' 
+            ncstdnames(1) = 'friction_coefficient' 
          case ('wavesignificantheight')
             ncvarnames(1) = 'hs'                             ! significant wave height
             ncstdnames(1) = 'sea_surface_wave_significant_height'

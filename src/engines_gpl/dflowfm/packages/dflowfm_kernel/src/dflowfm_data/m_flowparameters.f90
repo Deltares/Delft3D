@@ -161,6 +161,8 @@
  integer                           :: jaCdwusp          !< if 1 spatially varying windstress coefficient
 
  integer                           :: jaWindspeedfac    !< if 1 spatially varying windstress coefficient
+ 
+ integer                           :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
  integer                           :: javiuplus3D = 1   !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
 

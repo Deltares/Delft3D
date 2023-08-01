@@ -70,7 +70,7 @@
  use m_ec_spatial_extrapolation, only : init_spatial_extrapolation
  use m_sferic, only: jsferic
  use m_trachy, only: trachy_resistance
- use unstruc_inifields, only: initInitialFields
+ use unstruc_inifields, only: initInitialFields, set_friction_type_values
  use Timers
  use m_subsidence
 
@@ -150,6 +150,8 @@
  btempforcingtypH = .false.
  btempforcingtypS = .false.
  btempforcingtypL = .false.
+
+ ja_friction_coefficient_time_dependent = 0
 
  if (allocated(xdum  )) deallocate(xdum, ydum, kdum, xy2dum)
  allocate ( xdum(1), ydum(1), kdum(1), xy2dum(2,1) , stat=ierr)
@@ -887,15 +889,8 @@ if (mext /= 0) then
 
             success = timespaceinitialfield(xu, yu, frcu, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
             if (success) then
-               if (transformcoef(3) .ne. -999d0 .and. int(transformcoef(3)) .ne. ifrctypuni .and. operand == 'O') then
-                  do L = 1,lnx
-                     if (frcu(L) .ne. dmiss) then
-                         ! type array only must be used if different from uni
-                         ifrcutp(L) = int( transformcoef(3) )
-                     endif
-                  enddo
-               endif
-            endif
+                call set_friction_type_values()
+            end if
 
         else if (qid == 'frictiontrtfactor') then
 
@@ -1481,7 +1476,25 @@ if (mext /= 0) then
            if (success) then 
                jawind = 1
            endif
-
+           
+        else if (qid == 'friction_coefficient_time_dependent') then
+           if (allocated (kcw) ) deallocate(kcw)
+           allocate( kcw(lnx) )
+           kcw(:) = 1
+       
+           if (len_trim(sourcemask)>0)  then
+              success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+           else
+              success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, varname=varname)
+           end if
+           if ( success) then
+               ja_friction_coefficient_time_dependent = 1
+               if ( ec_gettimespacevalue(ecInstancePtr, item_frcu, irefdate, tzone, tunit, tim1fld, frcu) ) then
+                  call set_friction_type_values()
+               end if
+           else 
+               ja_friction_coefficient_time_dependent = 0
+           end if
         else if (qid == 'airpressure_windx_windy' .or. &
                  qid == 'airpressure_stressx_stressy' .or. &
                  qid == 'airpressure_windx_windy_charnock') then

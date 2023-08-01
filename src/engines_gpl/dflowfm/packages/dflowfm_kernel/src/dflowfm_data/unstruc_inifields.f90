@@ -43,7 +43,7 @@ use string_module, only: str_lower, strcmpi
 implicit none
 private ! Prevent used modules from being exported
 
-public :: init1dField, initInitialFields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion
+public :: init1dField, initInitialFields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, set_friction_type_values
 
 !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
 !!
@@ -99,7 +99,7 @@ function initInitialFields(inifilename) result(ierr)
    use unstruc_files, only: resolvePath
    use system_utils
    use m_ec_interpolationsettings
-   use m_flow, only: s1, hs, frcu, ifrcutp, ifrctypuni
+   use m_flow, only: s1, hs, frcu
    use m_flowgeom
    use m_wind ! |TODO: AvD: reduce amount of uses 
    use m_missing
@@ -265,15 +265,8 @@ function initInitialFields(inifilename) result(ierr)
             ! TODO: masking u points
             success = timespaceinitialfield(xu, yu, frcu, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
                if (success) then
-                  if (transformcoef(3) .ne. -999d0 .and. int(transformcoef(3)) .ne. ifrctypuni .and. operand == 'O') then
-                     do L = 1,lnx
-                        if (frcu(L) .ne. dmiss) then
-                            ! type array only must be used if different from uni
-                            ifrcutp(L) = int( transformcoef(3) )
-                        endif
-                     enddo
-                  endif
-               endif
+                  call set_friction_type_values()
+               end if
          else if (strcmpi(groupname, 'Initial') .and. strcmpi(qid, 'bedlevel')) then
             ! Bed level was earlier set in setbedlevelfromextfile()
             cycle
@@ -948,5 +941,28 @@ subroutine spaceInit1dField(sBranchId, sChainages, sValues, ipos, res)
       end do
    end if
 end subroutine spaceInit1dField
+
+!> set  friction type (ifrcutp) values
+subroutine set_friction_type_values()
+
+   use m_flowexternalforcings, only : operand, transformcoef
+   use m_flow,                 only : ifrctypuni, ifrcutp, frcu
+   use m_flowgeom,             only : lnx
+   use m_missing,              only : dmiss
+   
+   implicit none
+
+   integer :: link
+
+   if (transformcoef(3) /= -999d0 .and. int(transformcoef(3)) /= ifrctypuni .and. operand == 'O') then
+      do link = 1, lnx
+         if (frcu(link) /= dmiss) then
+            ! type array only must be used if different from uni
+            ifrcutp(link) = int( transformcoef(3) )
+         end if
+     end do
+   end if
+
+end subroutine set_friction_type_values
 
 end module unstruc_inifields
