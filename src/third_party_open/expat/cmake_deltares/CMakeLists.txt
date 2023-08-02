@@ -15,8 +15,8 @@ if(UNIX)
    add_library(expat ${c_sources})
    add_definitions(-DHAVE_BCOPY)
 
-
+endif(UNIX)
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
    # Create the vfproj structure
    source_group(${visual_studio_source_group_name} FILES ${c_sources})
-
-endif(UNIX)
+endif()
