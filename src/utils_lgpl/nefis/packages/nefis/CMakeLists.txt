@@ -47,15 +47,16 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
-# Define the Visual Studio structure
-source_group(${visual_studio_source_group_name} FILES ${source})
-source_group("${visual_studio_source_group_name}\\Header Files" FILES ${headers})
-source_group("Version Files" FILES ${ini_version_file})
-
-# Create the folder structure in vfproj
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source})
-set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis)
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+	# Define the Visual Studio structure
+	source_group(${visual_studio_source_group_name} FILES ${source})
+	source_group("${visual_studio_source_group_name}\\Header Files" FILES ${headers})
+	source_group("Version Files" FILES ${ini_version_file})
+	
+	# Create the folder structure in vfproj
+	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source})
+	set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis)
+endif ()
 
 ###############
 # nefis_dll
