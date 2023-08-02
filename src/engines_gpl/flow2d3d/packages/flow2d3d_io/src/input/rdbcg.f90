@@ -236,7 +236,7 @@ subroutine rdbcg(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              write(keyw,'(a,i2.2)') "Rets", l-max(ltem,lsal)
              call prop_get(gdp%mdfile_ptr, '*', keyw, tmp_rettim(:,l,1), mxdnto)
              write(keyw,'(a,i2.2)') "Retb", l-max(ltem,lsal)
-             call prop_get(gdp%mdfile_ptr, '*', keyw, rettim(:,l,2), mxdnto)
+             call prop_get(gdp%mdfile_ptr, '*', keyw, tmp_rettim(:,l,2), mxdnto)
           endif
        enddo
        if (parll) then
