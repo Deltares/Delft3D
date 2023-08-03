@@ -345,8 +345,11 @@ contains
       
       ntot = numobs + nummovobs
     
+      !
+      ! Mass balance variables
+      !
       if (jahisbal > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VOLTOT                     ),voltot(1:1)                                   )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VOLTOT                     ),voltot(IDX_VOLTOT:IDX_VOLTOT)                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_STOR                       ),voltot(2:2)                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VOLERR                     ),voltot(3:3)                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BNDIN                      ),voltot(4:4)                                   )
@@ -387,6 +390,10 @@ contains
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EVAP_ICEPT                 ),voltot(39:39)                                  )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PRECIP_GROUND              ),voltot(40:40)                                  )
       endif
+
+      !
+      ! Source-sink variables
+      !
       if (jahissourcesink > 0 .and. numsrc > 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE),               qstss(1:(numconst+1)*numsrc:(numconst+1)))
          i = 1
@@ -395,12 +402,17 @@ contains
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT),   qstss(i:(numconst+1)*numsrc:(numconst+i)))
          endif
          if (itemp > 0) then
+            i = i + 1
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT),qstss(i:(numconst+1)*numsrc:(numconst+i)))
          endif
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE),qsrc)
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME),vsrccum)
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE),qsrcavg)
       endif
+
+      !
+      ! Hydraulic structures variables
+      !
       if (jahiscgen > 0 .and. ngenstru > 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE            ),valgenstru(IVAL_DIS   ,1:ngenstru))
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL          ),valgenstru(IVAL_CRESTL,1:ngenstru))
@@ -412,7 +424,7 @@ contains
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA            ),valgenstru(IVAL_AREA  ,1:ngenstru))
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY             ),valgenstru(IVAL_VEL   ,1:ngenstru))
       endif
-      if (network%sts%numGeneralStructures > 0) then
+      if (network%sts%numGeneralStructures > 0) then ! write extra fields for new general structure
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH                   ),valgenstru(IVAL_CRESTW   ,1:network%sts%numGeneralStructures))
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING),valgenstru(IVAL_DIS_OPEN ,1:network%sts%numGeneralStructures))
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_OVER_GATE           ),valgenstru(IVAL_DIS_OVER ,1:network%sts%numGeneralStructures))
@@ -554,6 +566,9 @@ contains
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
       endif
+      !
+      ! Variables on observation stations
+      !
       if ( kmx.gt.0 ) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_TKIN:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
@@ -692,11 +707,19 @@ contains
          call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
+
+      !
+      ! Variables on observation cross sections
+      !
       if (ncrs > 0 .and. NUMCONST_MDU > 0) then
          function_pointer => aggregate_constituent_data
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS),NULL(),function_pointer                                 )
       endif
       
+
+      !
+      ! Variables on lateral discharges
+      !
       if (jahislateral > 0 .and. numlatsg > 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
