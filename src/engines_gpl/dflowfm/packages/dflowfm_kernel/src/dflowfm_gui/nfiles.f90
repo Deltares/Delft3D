@@ -742,7 +742,7 @@
             NUM = 1
          ELSE
             call doclose(midp)
-            CALL unc_write_map(filnam)
+            CALL unc_write_map(filnam, md_nc_precision)
             CALL MESSAGE('YOU SAVED ' , filnam, ' ')
             NUM = 0
          ENDIF

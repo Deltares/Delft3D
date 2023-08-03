@@ -104,7 +104,7 @@ subroutine wrimap(tim)
              endif
              jabndnd = 0
              if (jamapbnd > 0) jabndnd = 1
-             call unc_write_map_filepointer_ugrid(mapids,tim,jabndnd)  ! wrimap
+             call unc_write_map_filepointer_ugrid(mapids,tim, md_nc_precision, jabndnd)  ! wrimap
           else
              call unc_write_map_filepointer(mapids%ncid,tim)  ! wrimap
           endif
