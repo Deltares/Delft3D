@@ -92,7 +92,8 @@ subroutine unc_write_shp()
        if (nweirgen > 0 .and. allocated(weir2cgen)) then
           jawrite = nweirgen
           do n = 1, nweirgen
-             if (L1cgensg(n) > L2cgensg(n)) then
+             igen = weir2cgen(n)
+             if (L1cgensg(igen) > L2cgensg(igen)) then
                 jawrite = jawrite - 1
              endif
           enddo
