@@ -123,6 +123,11 @@ endif(WIN32)
 # Set the location of the update_version script
 set(update_version_script_path ${checkout_src_root}/${update_version_script})
 
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(installdir "install_${configuration_type_lower}")
+  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
    # Set root name of the projects in the root UI of Visual Studio
    set(visual_studio_source_group_name "Source Files")
@@ -167,12 +172,6 @@ endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
-
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(installdir "install_${configuration_type_lower}")
-  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-
 
 # Basic (single-component) configurations
 set(dflowfm_configuration "DFLOWFM")
