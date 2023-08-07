@@ -34,7 +34,8 @@
  !! That is: snap observation stations to flow cells, cross sections to flow links.
  !! And bookkeeping for time series output on structures.
  subroutine flow_obsinit()
-    use m_observations, only: init_valobs
+    use m_observations, only : init_valobs
+    use unstruc_model,  only : md_delete_obsevation_points_outside_grid
     use m_wind
     use m_structures
     
@@ -49,7 +50,9 @@
 
     call obs_on_flowgeom(0)
     
-    call delete_static_observation_points_outside_grid()
+    if ( md_delete_obsevation_points_outside_grid ) then
+       call delete_static_observation_points_outside_grid()
+    end if
 
 
 !   for the following, it is assumed that the moving observation stations have been initialized (in flow_initexternalforcings)
@@ -79,7 +82,7 @@
       
       if (number_of_deleted_points > 0) then 
          call purgeObservations()
-         write(msgbuf, '(a,i0)') 'Number of deleted observation points outisde of the grid', number_of_deleted_points
+         write(msgbuf, '(a,i0)') 'Number of deleted observation points outside of the grid is ', number_of_deleted_points
          call msg_flush()
      end if
    

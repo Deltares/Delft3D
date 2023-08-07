@@ -155,6 +155,7 @@ implicit none
     character(len=255) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
 
     character(len=1024):: md_obsfile       = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
+    integer            :: md_delete_obsevation_points_outside_grid   !< 0 - do not delete, 1 - delete
     character(len=255) :: md_crsfile       = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
     character(len=255) :: md_rugfile       = ' ' !< File containing runup gauges (e.g., *_rug.pli)
     character(len=255) :: md_foufile       = ' ' !< File containing fourier modes to be analyzed
@@ -342,6 +343,7 @@ use unstruc_channel_flow
     md_sedtrailsfile = ' '
 
     md_obsfile = ' '
+    md_delete_obsevation_points_outside_grid = 0
     md_crsfile = ' '
     md_rugfile = ' '
     md_foufile = ' '
@@ -1729,6 +1731,7 @@ subroutine readMDUFile(filename, istat)
 ! Output
     ! [output] OutputDir was read earlier already.
     call prop_get_string(md_ptr, 'output', 'ObsFile', md_obsfile, success)
+    call prop_get_integer(md_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_obsevation_points_outside_grid, success)
     call prop_get_string(md_ptr, 'output', 'CrsFile', md_crsfile, success)
     call prop_get_string(md_ptr, 'output', 'RugFile', md_rugfile, success)
     call prop_get_string(md_ptr, 'output', 'FouFile', md_foufile, success)
@@ -3717,6 +3720,7 @@ endif
     call prop_set(prop_ptr, 'output', 'FlowGeomFile',trim(md_flowgeomfile), 'Flow geometry NetCDF *_flowgeom.nc')
 
     call prop_set(prop_ptr, 'output', 'ObsFile',     trim(md_obsfile), 'Points file *.xyn with observation stations with rows x, y, station name')
+    call prop_set(prop_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_obsevation_points_outside_grid, '0 - do not delete, 1 - delete')
     call prop_set(prop_ptr, 'output', 'CrsFile',     trim(md_crsfile), 'Polyline file *_crs.pli defining observation cross sections')
     call prop_set(prop_ptr, 'output', 'RugFile',     trim(md_rugfile), 'Polyline file *_rug.pli defining runup gauges')
     call prop_set(prop_ptr, 'output', 'FouFile',     trim(md_foufile), 'Fourier analysis input file *.fou')
