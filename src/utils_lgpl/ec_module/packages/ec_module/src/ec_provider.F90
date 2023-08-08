@@ -2564,6 +2564,13 @@ module m_ec_provider
             ncstdnames(1) = 'wind_speed'
          case ('wind_from_direction')
             ncstdnames(1) = 'wind_from_direction'
+         case ('humidity_airtemperature_cloudiness')
+            ncvarnames(1) = 'rhum'                           ! relative_humidity
+            ncstdnames(1) = 'relative_humidity'
+            ncvarnames(2) = 't2m'                            ! 2-meter air temperature
+            ncstdnames(2) = 'air_temperature'
+            ncvarnames(3) = 'tcc'                            ! cloud cover (fraction)
+            ncstdnames(3) = 'cloud_area_fraction'
          case ('dewpoint_airtemperature_cloudiness')
             ncvarnames(1) = 'd2m'                            ! dew-point temperature
             ncstdnames(1) = 'dew_point_temperature'

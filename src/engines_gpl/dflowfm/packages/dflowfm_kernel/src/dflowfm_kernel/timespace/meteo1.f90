@@ -8192,7 +8192,7 @@ module m_meteo
             end if
          case ('humidity_airtemperature_cloudiness')
             ! special case: m:n converter, (for now) handle seperately
-            if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform) then
+            if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform .or. ec_filetype == provFile_netcdf) then
                if (ec_filetype == provFile_curvi) then
                   sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_1')
                   sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_2')
@@ -8209,6 +8209,16 @@ module m_meteo
                      goto 1234
                   end if
                   success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               else if (ec_filetype == provFile_netcdf) then
+                  sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
+                  sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
+                  sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
+                  if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. sourceItemId_3 == ec_undef_int) then
+                     goto 1234 
+                  end if
+                  success              = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
+                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
                end if
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_humidity)
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_airtemperature)
