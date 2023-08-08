@@ -1472,7 +1472,7 @@
          do kk=1,Ndxi
             call getkbotktopmax(kk,kb,kt,ktmax)
             do k=kb,ktmax
-               pmsa(ipoiwaveheight  + k-kbx) = hwav(k)*sqrt(2.0_fp)
+               pmsa(ipoiwaveheight  + k-kbx) = hwav(kk)*sqrt(2.0_fp)
             end do
             !pmsa(ipoiwaveheight + ktmax-kbx) = hwav(kk)*sqrt(2.0_fp)
          end do
@@ -1482,7 +1482,7 @@
          do kk=1,Ndxi
             call getkbotktopmax(kk,kb,kt,ktmax)
             do k=kb,ktmax
-               pmsa(ipoiwavelength  + k-kbx) = rlabda(k)
+               pmsa(ipoiwavelength  + k-kbx) = rlabda(kk)
             end do
             !pmsa(ipoiwavelength + ktmax-kbx) = rlabda(kk)
          end do
@@ -1492,7 +1492,7 @@
          do kk=1,Ndxi
             call getkbotktopmax(kk,kb,kt,ktmax)
             do k=kb,ktmax
-               pmsa(ipoiwaveperiod  + k-kbx) = twav(k)
+               pmsa(ipoiwaveperiod  + k-kbx) = twav(kk)
             end do
             !pmsa(ipoiwaveperiod + ktmax-kbx) = twav(kk)
          end do
