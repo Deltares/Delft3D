@@ -65,7 +65,7 @@ private
    !> Derived type for the statistical output items. 
    type, public :: t_output_variable_item
       type(t_output_quantity_config), pointer   :: output_config        !< Pointer to output configuration item.
-      integer                                   :: operation_id         !< Specifies the kind of operation to perform on the output variable.
+      integer                                   :: operation_type       !< Specifies the kind of operation to perform on the output variable.
       integer                                   :: current_step         !< Latest entry in the work array. MOD(current_step+1,total_steps_count) is the next 
       integer                                   :: total_steps_count
       !< item to remove.   
@@ -182,20 +182,20 @@ contains
    
    end subroutine update_source_data
    
-   !> updates a stat_output_item using the stat_input array, depending on the operation_id
+   !> updates a stat_output_item using the stat_input array, depending on the operation_type
    !  stat_input is filled elsewhere and can be a moving average or a pointer to an input variable.
    elemental subroutine update_statistical_output(item,dts)
       
       type(t_output_variable_item), intent(inout) :: item   !< statistical output item to update
       double precision,             intent(in)    :: dts    !< current timestep
    
-      if (item%operation_id == SO_MIN .or. item%operation_id == SO_MAX ) then ! max/min of moving average requested
+      if (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX) then ! max/min of moving average requested
          call add_statistical_output_sample(item,dts)
          call update_moving_average(item)
          item%current_step = mod(item%current_step+1,item%total_steps_count)
       endif
 
-      select case (item%operation_id)
+      select case (item%operation_type)
       case (SO_CURRENT)
          continue
       case (SO_AVERAGE) 
@@ -216,7 +216,7 @@ contains
 
       type(t_output_variable_item), intent(inout) :: item !> stat output item to finalize
 
-      if (item%operation_id == SO_AVERAGE) then 
+      if (item%operation_type == SO_AVERAGE) then 
          item%stat_output = item%stat_output/item%timestep_sum
       endif
 
@@ -227,7 +227,7 @@ contains
 
       type(t_output_variable_item), intent(inout) :: item !< statistical output item to reset
       
-      select case (item%operation_id)
+      select case (item%operation_type)
       case (SO_CURRENT)
          continue
       case (SO_AVERAGE)
@@ -238,7 +238,7 @@ contains
       case (SO_MIN)
          item%stat_output = huge(1d0)
       case default 
-         call mess(LEVEL_ERROR, 'update_statistical_output: invalid operation_id')
+         call mess(LEVEL_ERROR, 'update_statistical_output: invalid operation_type')
       end select
 
    end subroutine reset_statistical_output
@@ -260,7 +260,7 @@ contains
       endif
       
       item%output_config => output_config
-      item%operation_id = set_operation_type(output_config)
+      item%operation_type = set_operation_type(output_config)
       item%source_input => data_pointer
       if (present(function_pointer)) then
          item%function_pointer => function_pointer
@@ -277,14 +277,13 @@ contains
       
       set_operation_type = -1
       
-      !if      (trim(str_tolower(output_config%input_value)) == 'current' ) then
       if      (strcmpi(output_config%input_value, 'current')) then
          set_operation_type = SO_CURRENT
-      else if (strcmpi(output_config%input_value,  'average' )) then
+      else if (strcmpi(output_config%input_value, 'average')) then
          set_operation_type = SO_AVERAGE
-      else if (strcmpi(output_config%input_value, 'max' )) then
+      else if (strcmpi(output_config%input_value, 'max')) then
          set_operation_type = SO_MAX             
-      else if (strcmpi(output_config%input_value, 'min' )) then
+      else if (strcmpi(output_config%input_value, 'min')) then
          set_operation_type = SO_MIN
       endif
          
@@ -306,7 +305,7 @@ contains
             call item%function_pointer(item%source_input)
          endif
 
-         select case (item%operation_id)
+         select case (item%operation_type)
          case (SO_CURRENT)
             item%stat_output => item%source_input
          case (SO_AVERAGE)
@@ -321,7 +320,7 @@ contains
             item%timesteps = 0
             item%timestep_sum = 0
             case default
-            call mess(LEVEL_ERROR, 'initialize_statistical_output: invalid operation_id')
+            call mess(LEVEL_ERROR, 'initialize_statistical_output: invalid operation_type')
          end select
 
          call reset_statistical_output(item)
