@@ -1512,7 +1512,10 @@ subroutine prepare_lateral_mask(kc, ilattype)
       enddo
    case (ILATTP_ALL)      ! both to everything 2D, and 1D, except to 1D pipes
       do L = 1,lnx1D
-         if (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0 ) then ! no pipes pos or neg, others only if pos
+         ! When is lateral allowed?
+         ! * (X)YZ profiles pointering to profiles number: always allow
+         ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
+         if (prof1D(1,L) < 0 .or. (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0) ) then
             k1 = ln(1,L) ; kc(k1) = 1
             k2 = ln(2,L) ; kc(k2) = 1
          else
