@@ -161,7 +161,7 @@ else
 endif
 
 if (jatem > 0) then
-   temp = max(0d0, constituents(itemp,k))  ! should be changed to -2d0 at some point in future
+   temp = max( -5d0, constituents(itemp,k) ) 
 else
    temp = backgroundwatertemperature
 endif
