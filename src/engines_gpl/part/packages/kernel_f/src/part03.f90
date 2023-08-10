@@ -234,7 +234,7 @@ contains
                   else
                     locdep(i0,ilay) = locdep(i0,ilay-1) + dplay
                   end if
-                  depth(i0)  = locdep(i0,layt)
+                  depth(i0)  = locdep(i0,ilay)
                end do
             end if
          end do
