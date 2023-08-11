@@ -516,7 +516,6 @@ end subroutine read_particles_release_file
 
 !> add released particles
 subroutine add_particles_from_release_file(time0)
-   use m_julian
    use precision_part
    use partmem, only: nopart, mpart
    use partmem, only: iptime

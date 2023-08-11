@@ -23,7 +23,7 @@
 
       module dlwq0t_data
       use m_zoek
-      use m_julian
+      use time_module
 
       
       integer :: dlwq0t_itstrt   ! Simulation start time ( scu )
@@ -81,7 +81,7 @@
       integer   ( 4) isecnd   !  workspace second value
       integer   ( 4) idate    !  workspace date value
       integer   ( 4) itime    !  workspace time value
-      real      ( 8) otim2    !  to compute distance from otime
+      real      ( 8) otim2    !  to compute distance from otime   
       real      ( 8) afact    !  system clock in days
       real      ( 8) rhulp    !  help variable
 
@@ -120,7 +120,7 @@
       read ( chulp(18:19) , '(i2)' ) isecnd
       idate  = iyear*10000+imonth*100+iday
       itime  = ihour*10000+iminut*100+isecnd
-      otim2  = julian ( idate , itime )
+      otim2  = julian_with_leapyears ( idate , itime )
       afact  = dlwq0t_isfact/864.0d+02
       if ( dlwq0t_isfact .lt. 0 ) afact = -1.0d+00/dlwq0t_isfact/864.0d+02     ! this should support
                                                                  ! time steps < 1 second

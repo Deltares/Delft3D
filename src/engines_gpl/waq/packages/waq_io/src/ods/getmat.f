@@ -60,7 +60,7 @@
 !     OPTION  CHAR*256   1        IN/OUT  For future use
 !
 !
-      use m_julian
+      use time_module
       use m_dhucas
       use m_open_waq_files
       use m_dhfext
@@ -120,7 +120,7 @@
       endif
       IDATE  = IYEAR*10000+IMONTH*100+IDAY
       ITIME  = IHOUR*10000+IMINUT*100+ISECND
-      OTIME  = JULIAN ( IDATE , ITIME )
+      OTIME  = julian_with_leapyears ( IDATE , ITIME )
       SECOND = ISFACT/864.00D+02
 !
 !         Standard ODS processing
@@ -174,7 +174,7 @@
 !
 !     SUBROUTINES CALLED :
 
-      use m_julian
+      use time_module
       use m_dhucas
       use m_dhfext
       use m_open_waq_files
@@ -250,7 +250,7 @@
       endif
       IDATE  = IYEAR*10000+IMONTH*100+IDAY
       ITIME  = IHOUR*10000+IMINUT*100+ISECND
-      OTIME  = JULIAN ( IDATE , ITIME )
+      OTIME  = julian_with_leapyears ( IDATE , ITIME )
       SECOND = ISFACT/864.00D+02
 !
 !         Standard ODS processing
