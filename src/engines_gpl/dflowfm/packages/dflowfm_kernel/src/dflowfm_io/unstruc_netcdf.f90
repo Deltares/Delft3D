@@ -12550,7 +12550,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     integer, allocatable :: id_sf1(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
     integer, allocatable :: id_rwqb(:)
 
-    integer :: it_read, nt_read, ndxi_read, lnx_read, L, tok1, tok2, tok3
+    integer :: it_read, nt_read, ndxi_read, lnx_read, L
     integer :: sedtot_read, sedsus_read, nlyr_read
     integer :: kloc,kk, kb, kt, itmp, i, iconst, iwqbot, nm, Lf, j, k, nlayb, nrlay
     integer :: iostat
@@ -12588,13 +12588,6 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call realloc(um%ilink_own, 0)
     allocate(character(len=0) :: convformat)
     allocate(character(len=0) :: refdat_map)
-
-    ! Identify the type of restart file: *_rst.nc or *_map.nc
-    tok1 = index( filename, '_rst.nc', .true. )
-    tok2 = index( filename, '_map.nc', .true. )
-
-    ! Convert the refdat from the mdu to seconds w.r.t. an absolute t0
-    call datetimestring_to_seconds(refdat//'000000', refdat, trefdat_mdu, iostat)
 
     call readyy('Reading map data',0d0)
 
@@ -12753,51 +12746,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call datetimestring_to_seconds(restartdatetime(1:14), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
     mdu_has_date = (iostat==0)
 
-    ! Restart from *yyyymmdd_hhmmss_rst.nc
-    !              15    0 8  5   1^tok1
-    if (tok1 .gt. 0) then
-
-       ! Derive time from restart file name (first: check if the string length is larger than 15 characters at all!)
+    if (nt_read == 1 .and. .not. mdu_has_date) then
+       ! Restart from rst or map file, no particular filename,
+       ! only a single time snapshot in file: directly use it.
        it_read     = 1
-
-       fname_has_date = .false.
-       if (tok1 .gt. 15) then
-          tmpstr  = filename(tok1-15:tok1-8)//filename(tok1-6:tok1-1)
-          call datetimestring_to_seconds(tmpstr(1:14), refdat, trefdat_rst, iostat)
-          fname_has_date = (iostat==0)
-          tok3    = index( filename(tok1-15:tok1-1), '_')
-          fname_has_date = fname_has_date .and. (tok3 > 0)                    ! require connecting underscore between date and time
-       endif
-
-       if (.not.fname_has_date) then
-          if (.not.mdu_has_date) then
-             call mess(LEVEL_WARN, 'No valid date-time-string in either the MDU-file or *yyyymmdd_hhmmss_rst.nc filename: '''// &
-                       trim(filename)//'''.')
-             ierr = DFM_WRONGINPUT
-             goto 999
-          else
-             call mess(LEVEL_INFO, 'No valid date-time-string in *yyyymmdd_hhmmss_rst.nc filename: '''//trim(filename)  &
-                             //'''. MDU RestartDateTime of '//restartdatetime(1:14)//' will be used.')
-          endif
-       endif
-
-       ! Check if restart time is within specified simulation time window
-       ! NOTE: UNST-1094, intentional behavior keep the original Tstart
-       if (trefdat_rst /= tstart_user) then
-           call mess(LEVEL_INFO, 'Datetime for restart state differs from model start date/time. Will use it anyway, and keep '&
-                     //'TStart the same.')
-           tmpstr = ''
-           call seconds_to_datetimestring(tmpstr, refdat, trefdat_rst)
-           msgbuf = 'Datetime for rst: '//trim(tmpstr)
-
-           call seconds_to_datetimestring(tmpstr, refdat, tstart_user)
-           msgbuf = trim(msgbuf)//', start datetime for model: '//trim(tmpstr)
-           call msg_flush()
-       end if
-    end if
-
-    ! Restart from *_map.nc
-    if (tok2 .gt. 0) then
+    else
+       ! Restart from *_map.nc and select time snapshot based on MDU RestartDateTime value.
         if (.not. mdu_has_date) then
            call mess(LEVEL_WARN, 'Missing RestartDateTime in MDU file. Will not read from map file '''//trim(filename)//'''.')
            ierr = DFM_WRONGINPUT
@@ -12835,7 +12789,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
         if (it_read == 0) then
             ! TODO: warning
             ! And stop, because no suitable restart time found.
-            call mess(LEVEL_WARN, 'No suitable restart time found in '''//trim(filename)//''', using '//trim(restartdatetime)//'.')
+            call mess(LEVEL_WARN, 'No suitable restart time found in '''//trim(filename)//''' for requested RestartDateTime='//trim(restartdatetime)//'.')
             ierr = DFM_WRONGINPUT
             goto 999
         end if
@@ -12844,19 +12798,6 @@ subroutine unc_read_map_or_rst(filename, ierr)
             call mess(LEVEL_WARN, 'Could not find exact restart datetime in '''//trim(filename)// &
                                   ''', now selected: '//tmpstr)
             ! And proceed, because this is still a good restart time.
-        end if
-
-        ! NOTE: UNST-1094, intentional behavior keep the original Tstart
-        if (trefdat_map /= tstart_user) then
-           call mess(LEVEL_INFO, 'Datetime for restart state differs from model start date/time. Will use it anyway, and keep '&
-                     //'TStart the same.')
-           tmpstr = ''
-           call seconds_to_datetimestring(tmpstr, refdat, trefdat_map)
-           msgbuf = 'Datetime for rst: '//trim(tmpstr)
-
-           call seconds_to_datetimestring(tmpstr, refdat, tstart_user)
-           msgbuf = trim(msgbuf)//', start datetime for model: '//trim(tmpstr)
-           call msg_flush()
         end if
     end if
 
@@ -12909,13 +12850,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call check_error(ierr, 'discharges')
     call readyy('Reading map data',0.50d0)
 
-    ! Read qa (flow link) only from rst file
-    if (tok1 > 0) then
-       ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
-                                um%ilink_own, um%ilink_merge)
-       call check_error(ierr, 'qa')
-       call readyy('Reading map data',0.50d0)
-    end if
+    ! Read qa (flow link), optional: only from rst file, so no error check
+    ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
+                             um%ilink_own, um%ilink_merge)
 
     if (um%jamergedmap_same == 1) then
        ! Read info. on waterlevel boundaries
@@ -13070,12 +13007,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
           endif
        endif
     else
-       if (tok1 > 0) then ! only read squ from *_rst.nc file
-          ! squ
-          ierr = get_var_and_shift(imapfile, 'squ', squ,  tmpvar1, UNC_LOC_W,   kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
-                                   um%inode_own, um%inode_merge)
-          call check_error(ierr, 'squ')
-       end if
+       ! Read squ, optional: only from rst file, so no error check
+       ierr = get_var_and_shift(imapfile, 'squ', squ,  tmpvar1, UNC_LOC_W,   kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
+                                um%inode_own, um%inode_merge)
     endif
     call readyy('Reading map data', 0.80d0)
 
