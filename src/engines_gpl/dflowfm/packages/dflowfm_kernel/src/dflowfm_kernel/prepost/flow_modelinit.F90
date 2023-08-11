@@ -67,6 +67,7 @@
  use m_sedtrails_network
  use m_sedtrails_netcdf, only: sedtrails_loadNetwork
  use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
+ use fm_statistical_output
  use unstruc_display, only : ntek, jaGUI
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -402,6 +403,9 @@
  call timstrt('Structure parameters', handle_extra(29)) ! structure parameters
  call structure_parameters()                         ! initialize structure values, after flow_flowinit() so that initial water levels and discharges are already set.
  call timstop(handle_extra(29)) ! end structure parameters
+
+ ! Prepare for his/map/clm output via statistical_output module
+ call flow_init_statistical_output_his(out_quan_conf_his, out_variable_set_his)
 
  call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
  if (jatrt == 1) then

@@ -187,6 +187,11 @@ subroutine unc_write_his(tim)            ! wrihis
     type(t_output_quantity_config), pointer:: config
     integer :: ivar
     integer, pointer :: id_var
+
+    integer :: id_twodim
+    integer, save :: id_timebds
+    double precision, save :: time_his_prev
+
     character(len=4)  :: stat_name_postfix      
     character(len=16) :: stat_long_name_postfix 
     character(len=16) :: stat_cell_methods      
@@ -268,6 +273,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         !if (unc_nounlimited > 0) then ! UNST-4764: His file has never shown good results with NcNoUnlimited option on.
         ierr = nf90_def_dim(ihisfile, 'time', nf90_unlimited, id_timedim)
+        ierr = nf90_def_dim(ihisfile, 'two', 2, id_twodim)
 
         strlen_netcdf = idlen  !< Max string length of Ids.
         ierr = nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim)
@@ -319,12 +325,18 @@ subroutine unc_write_his(tim)            ! wrihis
 
             if ( jahiswatlev > 0 ) then
                ! TODO: later change the following codes to be more generic by making a loop.
-               call test_s1_his_output(out_variable_set_his) ! TODO: later delete this test subroutine.
+               !call test_s1_his_output(out_variable_set_his) ! TODO: later delete this test subroutine.
 
-               ivar = 1
+            do ivar = 1,out_variable_set_his%count
                config => out_variable_set_his%statout(ivar)%output_config
                id_var => out_variable_set_his%statout(ivar)%id_var
-               select case(out_variable_set_his%statout(ivar)%operation_id)
+               
+               if (config%location_specifier /= UNC_LOC_STATION) then
+                  call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a station.')
+                  cycle
+               end if
+
+               select case(out_variable_set_his%statout(ivar)%operation_type)
                case(SO_CURRENT)
                   stat_name_postfix      = ''
                   stat_long_name_postfix = ''
@@ -362,6 +374,7 @@ subroutine unc_write_his(tim)            ! wrihis
                   ierr = nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods))
                end if
                ierr = nf90_put_att(ihisfile, id_var, '_FillValue', dmiss)
+            end do
             endif
 
             if ( jahisbedlev > 0 ) then
@@ -2521,6 +2534,12 @@ subroutine unc_write_his(tim)            ! wrihis
         ierr = nf90_def_var(ihisfile, 'time', nf90_double, id_timedim, id_time)
         ierr = nf90_put_att(ihisfile, id_time,  'units'        , trim(Tudunitstr))
         ierr = nf90_put_att(ihisfile, id_time,  'standard_name', 'time')
+        ierr = nf90_put_att(ihisfile, id_time,  'bounds', 'time_bds')
+
+        ierr = nf90_def_var(ihisfile, 'time_bds', nf90_double, (/ id_twodim, id_timedim /), id_timebds)
+        ierr = nf90_put_att(ihisfile, id_timebds,  'units'        , trim(Tudunitstr))
+        ierr = nf90_put_att(ihisfile, id_timebds,  'standard_name', 'time')
+        ierr = nf90_put_att(ihisfile, id_timebds,  'long_name', 'Time interval for each point in time.')
 
         ! Size of latest timestep
         ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/ id_timedim /), 'timestep', '',     'latest computational timestep size in each output interval', 's')
@@ -2736,12 +2755,17 @@ subroutine unc_write_his(tim)            ! wrihis
         if (timon) call timstop ( handle_extra(63))
     endif
     ! Increment output counters in m_flowtimes.
+    if (it_his == 0) then
+       time_his_prev = tim
+    end if
     time_his = tim
     it_his   = it_his + 1
 
     if (timon) call timstrt ('unc_write_his time data', handle_extra(64))
 
     ierr = nf90_put_var(ihisfile, id_time, time_his, (/ it_his /))
+    ierr = nf90_put_var(ihisfile, id_timebds, (/ time_his_prev, time_his /), (/ 1, it_his /))
+    time_his_prev = time_his
     ierr = nf90_put_var(ihisfile, id_timestep, dts, (/ it_his /))
     if (timon) call timstop ( handle_extra(64))
 
@@ -3908,11 +3932,17 @@ subroutine test_s1_his_output(output_set)
    i = 1
    output_set%count = i
    output_set%statout(i)%output_config => out_quan_conf_his%statout(IDX_HIS_WATERLEVEL)
-   output_set%statout(i)%operation_id = SO_CURRENT
+   output_set%statout(i)%operation_type = SO_CURRENT
    output_set%statout(i)%source_input => valobs(IPNT_S1,:)
    output_set%statout(i)%stat_input => valobs(IPNT_S1,:)
    output_set%statout(i)%stat_output => valobs(IPNT_S1,:)
-
+   i = i+1
+   output_set%count = i
+   output_set%statout(i)%output_config => out_quan_conf_his%statout(IDX_HIS_WATERLEVEL)
+   output_set%statout(i)%operation_type = SO_AVERAGE
+   output_set%statout(i)%source_input => valobs(IPNT_S1,:)
+   output_set%statout(i)%stat_input => valobs(IPNT_S1,:)
+   output_set%statout(i)%stat_output => valobs(IPNT_S1,:)
    call initialize_statistical_output(output_set)
 
 end subroutine test_s1_his_output

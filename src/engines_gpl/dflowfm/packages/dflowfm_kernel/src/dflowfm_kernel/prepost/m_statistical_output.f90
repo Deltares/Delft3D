@@ -43,7 +43,7 @@ private
 
    public realloc
    public dealloc
-   public update_statistical_output, update_source_data, add_stat_output_item, initialize_statistical_output
+   public update_statistical_output, update_source_data, add_stat_output_items, initialize_statistical_output
 
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
@@ -55,10 +55,17 @@ private
       module procedure dealloc_stat_output
    end interface dealloc
 
+   integer, parameter, public :: SO_UNKNOWN = -1 !< Unknown operation type (e.g., input error)
+   integer, parameter, public :: SO_NONE    = 0  !< Dummy value for 'None', to switch off output
    integer, parameter, public :: SO_CURRENT = 1
    integer, parameter, public :: SO_AVERAGE = 2
    integer, parameter, public :: SO_MAX     = 3
    integer, parameter, public :: SO_MIN     = 4
+
+   ! Error/result state constants for several utility functions:
+   integer, parameter, public :: SO_NOERR          =  0 !< Function successful
+   integer, parameter, public :: SO_INVALID_CONFIG = -1 !< Wrong value string provided in the MDU output configuration
+   integer, parameter, public :: SO_EOR            = -2 !< end-of-record reached while reading a value string provided in the MDU output configuration (= no error)
    
    integer :: window_size !< The size of the moving average window, in samples.
    
@@ -244,50 +251,125 @@ contains
    end subroutine reset_statistical_output
    
    !> Create a new output item and add it to the output set according to output quantity config
-   subroutine add_stat_output_item(output_set, output_config, data_pointer, source_input_function_pointer)
+   subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
    use m_statistical_callback
    
-      type(t_output_variable_set), intent(inout) :: output_set             !< Output set that item will be added to
-      type(t_output_quantity_config), pointer, intent(in) :: output_config !< Output quantity config linked to this output item
-      double precision, pointer, dimension(:), intent(in) :: data_pointer  !< Pointer to output quantity data ("source input")
-      procedure(process_data_double_interface), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
+      type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
+      type(t_output_quantity_config), target,                      intent(in   ) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
+      double precision, pointer, dimension(:),                     intent(in   ) :: data_pointer  !< Pointer to output quantity data ("source input")
+      procedure(process_data_double_interface), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
       
-      type(t_output_variable_item) :: item !> new item to be added
+      type(t_output_variable_item) :: item ! new item to be added
+      character(len=len_trim(output_config%input_value)) :: valuestring
+      integer :: ierr
+      valuestring = output_config%input_value
       
-      output_set%count = output_set%count + 1
-      if (output_set%count > output_set%size) then
-         call realloc_stat_output(output_set)
-      endif
+      do while (len_trim(valuestring) > 0) 
+         ierr = parse_next_stat_type_from_valuestring(valuestring, item%operation_type, item%total_steps_count)
+         if (ierr /= SO_NOERR) then
+            goto 999
+         else
+            output_set%count = output_set%count + 1
+            if (output_set%count > output_set%size) then
+               call realloc_stat_output(output_set)
+            endif
+
+            item%output_config => output_config
+            item%source_input => data_pointer
+            if (present(source_input_function_pointer)) then
+               item%source_input_function_pointer => source_input_function_pointer
+            endif
+
+            output_set%statout(output_set%count) = item
+         end if
+
+      enddo
       
-      item%output_config => output_config
-      item%operation_type = set_operation_type(output_config)
-      item%source_input => data_pointer
-      if (present(source_input_function_pointer)) then
-         item%source_input_function_pointer => source_input_function_pointer
-      endif
+      return ! No error
       
-      output_set%statout(output_set%count) = item
+999   continue ! Some error occurred
+      write (msgbuf, '(a,a,a,a,a,a)') 'add_stat_output_items: error while adding items for ', trim(output_config%name), '. Original input was: ', trim(output_config%key), ' = ', trim(output_config%input_value)
+      call err_flush()
+
+   end subroutine add_stat_output_items
+
+   !> Parse the a statistical operation type from the start of a value string.
+   !! Example input: "Wrihis_waterlevel = Current, Max(10)"
+   !! The value string may contain multiple comma-separated operations: only the
+   !! first one is read, and removed from the front of the input string, such that
+   !! this function can be called in a loop until SO_EOR is reached.
+   function parse_next_stat_type_from_valuestring(valuestring, operation_type, total_steps_count) result(ierr)
+      use string_module, only: str_token
+
+      character(len=*), intent(inout) :: valuestring       !< Valuestring in which to read the first entry. After reading, that piece will be removed from the front of the string, to enable repeated calls.
+      integer,          intent(  out) :: operation_type    !< The parsed operation_type (one of SO_CURRENT/AVERAGE/MAX/MIN/ALL)
+      integer,          intent(  out) :: total_steps_count !< Optional value for number of timesteps in moving average (only for max and min), 0 when unspecified in input.
+      integer                         :: ierr              !< Result status: SO_NOERR on successful read, SO_INVALID_CONFIG for invalid valuestring, SO_EOR if no further entries in string.
+
+      character(len=16) :: operation_string
+      integer :: len_token, iostat, i1, i2
+
+      ierr = SO_NOERR
+
+      call str_token(valuestring, operation_string, DELIMS=', ')
       
-   end subroutine add_stat_output_item
-   
-   integer function set_operation_type(output_config)
+      len_token = len_trim(operation_string)
+
+      if (len_token == 0) then
+         ierr = SO_EOR
+         return
+      else
+         i1 = index(operation_string, '(')
+         if (i1 > 0) then
+            i2 = index(operation_string, ')')
+            if (i2 > i1) then
+               read(operation_string(i1+1:i2-1), *, iostat = iostat) total_steps_count
+               if (iostat > 0) then
+                  ierr = SO_INVALID_CONFIG
+                  return
+               end if
+            else
+               ierr = SO_INVALID_CONFIG
+               return
+            end if
+         else
+            total_steps_count = 0
+            i1 = len_token+1
+         end if
+
+         operation_type = get_operation_type(operation_string(1:i1-1))
+         if (operation_type == SO_UNKNOWN) then
+            ierr = SO_INVALID_CONFIG
+            return
+         end if
+      end if
+
+   end function parse_next_stat_type_from_valuestring
+         
+            
+            
+   !> Determine integer operation_type given a string value.
+   function get_operation_type(valuestring) result(operation_type)
    use string_module, only: strcmpi
    
-      type(t_output_quantity_config), intent(in) :: output_config          !> output quantity config linked to output item
+      character(len=*) :: valuestring !<The input value string, typically stored in an output_config item
+      integer          :: operation_type !< Corresponding operation type (one of: SO_CURRENT/AVERAGE/MAX/MIN/NONE/UNKNOWN).      
+
+      operation_type = SO_UNKNOWN
       
-      set_operation_type = -1
-      
-      if      (strcmpi(output_config%input_value, 'current')) then
-         set_operation_type = SO_CURRENT
-      else if (strcmpi(output_config%input_value, 'average')) then
-         set_operation_type = SO_AVERAGE
-      else if (strcmpi(output_config%input_value, 'max')) then
-         set_operation_type = SO_MAX             
-      else if (strcmpi(output_config%input_value, 'min')) then
-         set_operation_type = SO_MIN
+      if      (strcmpi(valuestring, 'current') .or. strcmpi(valuestring, '1')) then
+         operation_type = SO_CURRENT
+      else if (strcmpi(valuestring, 'average')) then
+         operation_type = SO_AVERAGE
+      else if (strcmpi(valuestring, 'max')) then
+         operation_type = SO_MAX             
+      else if (strcmpi(valuestring, 'min')) then
+         operation_type = SO_MIN
+      else if (strcmpi(valuestring, 'none') .or. strcmpi(valuestring, '0')) then
+         operation_type = SO_NONE
       endif
-         
-   end function set_operation_type
+
+   end function get_operation_type
       
    !> For every item in output_set, allocate arrays depending on its operation_type.
    subroutine initialize_statistical_output(output_set)
@@ -303,7 +385,7 @@ contains
          input_size = size(item%source_input)
          
          !call set_statistical_output_pointer(i,success)
-         success = .true.
+         !success = .true.
 
          select case (item%operation_type)
          case (SO_CURRENT)
@@ -319,8 +401,9 @@ contains
             item%samples = 0
             item%timesteps = 0
             item%timestep_sum = 0
-            case default
-            call mess(LEVEL_ERROR, 'initialize_statistical_output: invalid operation_type')
+         case default
+            write (msgbuf,'(a,i0,a,a,a,a)') 'initialize_statistical_output: invalid operation_type ', item%operation_type, '. Original input for item was: ', trim(item%output_config%key), ' = ', trim(item%output_config%input_value)
+            call err_flush()
          end select
 
          call reset_statistical_output(item)
