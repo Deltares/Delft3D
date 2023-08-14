@@ -429,6 +429,10 @@
       character*20,parameter   :: cdoprocesses = 'DoProcesses'
       character*20,parameter   :: cprocessesinactive = 'ProcessesInactive'
 
+      character*20,parameter   :: cWaveH = 'WaveHeight' 
+      character*20,parameter   :: cWaveL = 'WaveLength'
+      character*20,parameter   :: cWaveT = 'WavePeriod'
+      
       if (timon) call timstrt( "fm_wq_processes_ini_proc", ithndl )
 
 !     try to open the lsp-file for logging output
@@ -491,6 +495,43 @@
          isfvel = 0
       end if
 
+      call zoekns(cWaveH,nocons,coname_sub,20,icon)
+      isfwaveheight = 0      
+      if (icon>0) then
+         nosfun = nosfun+1
+         isfwaveheight = nosfun
+         call realloc(sfunname, nosfun, keepExisting=.true., fill='WaveHeight')  ! this must be the name used in waq, process input param/in sub file.
+         call mess(LEVEL_INFO, '''flow element center WaveHeight'' connected as ''WaveHeight''')
+      else
+         call mess(LEVEL_INFO, '''flow element center WaveHeight'' not connected, because ''WaveHeight'' is not in the sub-file.')
+         isfwaveheight = 0
+      end if
+
+      call zoekns(cWaveL,nocons,coname_sub,20,icon)
+      isfwavelength = 0
+      if (icon>0) then
+         nosfun = nosfun+1
+         isfwavelength = nosfun
+         call realloc(sfunname, nosfun, keepExisting=.true., fill='WaveLength')  ! this must be the name used in waq, process input param/in sub file.
+         call mess(LEVEL_INFO, '''flow element center WaveLength'' connected as ''WaveLength''')
+      else
+         call mess(LEVEL_INFO, '''flow element center WaveLength'' not connected, because ''WaveLength'' is not in the sub-file.')
+         isfwavelength = 0
+      end if
+
+      call zoekns(cWaveT,nocons,coname_sub,20,icon)
+      isfwaveperiod = 0
+      if (icon>0) then
+         nosfun = nosfun+1
+         isfwaveperiod = nosfun
+         call realloc(sfunname, nosfun, keepExisting=.true., fill='WavePeriod')  ! this must be the name used in waq, process input param/in sub file.
+         call mess(LEVEL_INFO, '''flow element center WavePeriod'' connected as ''WavePeriod''')
+      else
+         call mess(LEVEL_INFO, '''flow element center WavePeriod'' not connected, because ''WavePeriod'' is not in the sub-file.')
+         isfwaveperiod = 0
+      end if
+      
+      
       call zoekns(csalinity,nocons,coname_sub,20,icon)
       isfsal = 0
       if ( jasal.eq.1 ) then
@@ -1337,7 +1378,7 @@
       use m_wind
       use m_meteo
       use processes_input
-      use m_waves,          only: fetch, nwf
+      use m_waves,          only: fetch, nwf, hwav, rlabda, twav
       use unstruc_messages
       implicit none
 
@@ -1350,6 +1391,7 @@
       integer          :: ipoisurf, ipoitau, ipoivel
       integer          :: ipoivol, ipoiconc, ipoisal, ipoitem
       integer          :: ipoivwind, ipoiwinddir, ipoifetchl, ipoifetchd, ipoiradsurf, ipoirain, ipoivertdisper, ipoileng
+      integer          :: ipoiwaveheight, ipoiwavelength, ipoiwaveperiod
       integer          :: ip, ifun, isfun
       integer          :: kk, k, kb, kt, ktmax, ktwq
       integer          :: L
@@ -1422,6 +1464,37 @@
             end do
          end do
       endif
+      !
+      ! get wave params from dflow-fm and put to PMSA array.      
+      !
+      if (isfwaveheight.gt.0) then
+         ipoiwaveheight  = arrpoi(iisfun) + (isfwaveheight-1)*noseg
+         do kk=1,Ndxi
+            call getkbotktopmax(kk,kb,kt,ktmax)
+            do k=kb,ktmax
+               pmsa(ipoiwaveheight  + k-kbx) = hwav(kk)*sqrt(2.0_fp)
+            end do
+         end do
+      endif
+      if (isfwavelength.gt.0) then
+         ipoiwavelength  = arrpoi(iisfun) + (isfwavelength-1)*noseg
+         do kk=1,Ndxi
+            call getkbotktopmax(kk,kb,kt,ktmax)
+            do k=kb,ktmax
+               pmsa(ipoiwavelength  + k-kbx) = rlabda(kk)
+            end do
+         end do
+      endif
+      if (isfwaveperiod.gt.0) then
+         ipoiwaveperiod  = arrpoi(iisfun) + (isfwaveperiod-1)*noseg
+         do kk=1,Ndxi
+            call getkbotktopmax(kk,kb,kt,ktmax)
+            do k=kb,ktmax
+               pmsa(ipoiwaveperiod  + k-kbx) = twav(kk)
+            end do
+         end do
+      endif
+      
 
       if ( isfsal.gt.0 ) then
          ipoisal = arrpoi(iisfun) + (isfsal-1)*noseg

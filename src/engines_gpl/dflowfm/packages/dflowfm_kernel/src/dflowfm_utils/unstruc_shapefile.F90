@@ -312,7 +312,7 @@ double precision            :: tmp_x(2), tmp_y(2)
       
       !! add shapes
       i = 0
-      do L = L1cgensg(n), L2cgensg(n)
+      do L = L1cgensg(igen), L2cgensg(igen)
          write(lenobj_loc, '(I4.4)') i
          objectid = trim(cgen_ids(igen))//'_'//lenobj_loc
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')

@@ -51,17 +51,20 @@
 !
 ! Name    T   L I/O  Description                              Units
 ! ----    --- -  -   -------------------                      ----
-! CHZ     R   1  L   Chezy coefficient                         [sqrt(m)/s]
-! DEPTH   R   1  I   Water depth                                       [m]
-! TOTDEP  R   1  I   Total water depth                                 [m]
+! H       R   1  I   Significant wave height                           [m]     
+! RL      R   1  I   Significant wave length                           [m]     
+! T       R   1  I   Significant wave period                           [s]     
+! CHZ     R   1  L   Chezy coefficient                         [sqrt(m)/s]     
+! DEPTH   R   1  I   Water depth                                       [m]     
+! TOTDEP  R   1  I   Total water depth                                 [m]     
 ! G       R   1  I   Acceleration of gravity                        [m/s2]
 ! RHOW    R   1  I   Density of water                              [kg/m3]
-! TAUWIN  R   1  O   Shearstress by wind                  [kg/m/s2 = N/m2]
-! TAUFLO  R   1  O   Shearstress by flow                            [N/m2]
-! TAUSCH  R   1  O   Shearstress by ships and human activity        [N/m2]
-! TAU     R   1  O   Total shearstress                              [N/m2]
-! TAUVEL  R   1  O   Calculated velocity based on TAU                [m/s]
-! VELOC   R   1  I   Velocity                                        [m/s]
+! TAUWIN  R   1  O   Shearstress by wind                  [kg/m/s2 = N/m2]     
+! TAUFLO  R   1  O   Shearstress by flow                            [N/m2]     
+! TAUSCH  R   1  O   Shearstress by ships and human activity        [N/m2]     
+! TAU     R   1  O   Total shearstress                              [N/m2]     
+! TAUVEL  R   1  O   Calculated velocity based on TAU                [m/s]     
+! VELOC   R   1  I   Velocity                                        [m/s]     
 
 !     Logical Units : -
 

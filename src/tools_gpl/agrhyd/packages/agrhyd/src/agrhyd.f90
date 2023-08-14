@@ -25,7 +25,7 @@
 
       use hydmod
       use m_getcom
-      use m_julian
+      use time_module
       use io_ugrid
       use system_utils
       use delwaq_version_module
@@ -524,8 +524,8 @@
          read(output_hyd%hyd_ref,'(I8,I6)',IOSTAT=ierr) input_t0_d, input_t0_t
          read(output_t0         ,'(I8,I6)',IOSTAT=ierr2) output_t0_d, output_t0_t
          if (ierr.eq.0.and.ierr2.eq.0) then
-            input_t0_jul = julian(input_t0_d, input_t0_t)
-            output_t0_jul = julian(output_t0_d, output_t0_t)
+            input_t0_jul = julian_with_leapyears(input_t0_d, input_t0_t)
+            output_t0_jul = julian_with_leapyears(output_t0_d, output_t0_t)
             if (output_t0_jul.gt.0.0 .and. input_t0_jul .gt. 0.0) then
                output_shift = nint((input_t0_jul - output_t0_jul) * 86400)
                output_hyd%hyd_ref = output_t0

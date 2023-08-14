@@ -77,6 +77,7 @@ character(len=:), allocatable :: str_buf
 type(t_structure), pointer    :: pstru
 type(t_forcing), pointer      :: pfrc
 logical                       :: successloc
+logical                       :: is_double
 
 integer :: istrtmp
 double precision, allocatable :: hulp(:,:) ! hulp
@@ -527,46 +528,50 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
 
       ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
       if (strtype /= 'generalstructure') then
-         hulp(idx_upstream1width, n) = huge(1d0)  ! Upstream1Width
-         hulp(idx_upstream1level, n) = -huge(1d0) ! Upstream1Level
-         hulp(idx_upstream2width, n) = huge(1d0)  ! Upstream2Width
-         hulp(idx_upstream2level, n) = -huge(1d0) ! Upstream2Level
-         hulp(idx_crestwidth, n) = huge(1d0)  ! CrestWidth
-         hulp(idx_crestlevel, n) = -huge(1d0) ! CrestLevel
+         hulp(idx_upstream1width, n) = huge(1d0)    ! Upstream1Width
+         hulp(idx_upstream1level, n) = -huge(1d0)   ! Upstream1Level
+         hulp(idx_upstream2width, n) = huge(1d0)    ! Upstream2Width
+         hulp(idx_upstream2level, n) = -huge(1d0)   ! Upstream2Level
+         hulp(idx_crestwidth, n) = huge(1d0)        ! CrestWidth
+         hulp(idx_crestlevel, n) = -huge(1d0)       ! CrestLevel
          hulp(idx_downstream1width, n) = huge(1d0)  ! Downstream1Width
          hulp(idx_dowsstream1level, n) = -huge(1d0) ! Downstream1Level
          hulp(idx_downstream2width, n) = huge(1d0)  ! Downstream2Width
-         hulp(idx_downstream2level,n) = -huge(1d0) ! Downstream2Level
-         hulp(idx_gateloweredgelevel,n) = 1d10       ! GateLowerEdgeLevel
-         hulp(idx_gateheightintervalcntrl,n) = 1d10       ! gateheightintervalcntrl=12
-         hulp(idx_pos_freegateflowcoeff,n) = 1          ! pos_freegateflowcoeff=1
-         hulp(idx_pos_drowngateflowcoeff,n) = 1          ! pos_drowngateflowcoeff=1
-         hulp(idx_pos_freeweirflowcoeff,n) = 1          ! pos_freeweirflowcoeff=1
-         hulp(idx_pos_drownweirflowcoeff,n) = 1.0        ! pos_drownweirflowcoeff=1.0
-         hulp(idx_pos_contrcoeffreegate,n) = 1.0        ! pos_contrcoeffreegate=0.6
-         hulp(idx_neg_freegateflowcoeff,n) = 1          ! neg_freegateflowcoeff=1
-         hulp(idx_neg_drowngateflowcoeff,n) = 1          ! neg_drowngateflowcoeff=1
-         hulp(idx_neg_freeweirflowcoeff,n) = 1          ! neg_freeweirflowcoeff=1
-         hulp(idx_neg_drownweirflowcoeff,n) = 1.0        ! neg_drownweirflowcoeff=1.0
-         hulp(idx_neg_contrcoeffreegate,n) = 1.0        ! neg_contrcoeffreegate=0.6
-         hulp(idx_extraresistence,n) = 0          ! extraresistance=0
-         hulp(idx_dynstrucentent,n) = 1.         ! dynstructext=1.
-         hulp(idx_gateheight,n) = 1d10       ! GateHeight
-         hulp(idx_gateopeningwidth,n) = 0d0        ! GateOpeningWidth
+         hulp(idx_downstream2level,n) = -huge(1d0)  ! Downstream2Level
+         hulp(idx_gateloweredgelevel,n) = 1d10      ! GateLowerEdgeLevel
+         hulp(idx_gateheightintervalcntrl,n) = 1d10 ! gateheightintervalcntrl=12
+         hulp(idx_pos_freegateflowcoeff,n) = 1      ! pos_freegateflowcoeff=1
+         hulp(idx_pos_drowngateflowcoeff,n) = 1     ! pos_drowngateflowcoeff=1
+         hulp(idx_pos_freeweirflowcoeff,n) = 1      ! pos_freeweirflowcoeff=1
+         hulp(idx_pos_drownweirflowcoeff,n) = 1.0   ! pos_drownweirflowcoeff=1.0
+         hulp(idx_pos_contrcoeffreegate,n) = 1.0    ! pos_contrcoeffreegate=0.6
+         hulp(idx_neg_freegateflowcoeff,n) = 1      ! neg_freegateflowcoeff=1
+         hulp(idx_neg_drowngateflowcoeff,n) = 1     ! neg_drowngateflowcoeff=1
+         hulp(idx_neg_freeweirflowcoeff,n) = 1      ! neg_freeweirflowcoeff=1
+         hulp(idx_neg_drownweirflowcoeff,n) = 1.0   ! neg_drownweirflowcoeff=1.0
+         hulp(idx_neg_contrcoeffreegate,n) = 1.0    ! neg_contrcoeffreegate=0.6
+         hulp(idx_extraresistence,n) = 0            ! extraresistance=0
+         hulp(idx_dynstrucentent,n) = 1.            ! dynstructext=1.
+         hulp(idx_gateheight,n) = 1d10              ! GateHeight
+         hulp(idx_gateopeningwidth,n) = 0d0         ! GateOpeningWidth
       end if
 
       select case (strtype)
       !! WEIR !!
       case ('weir')
          rec = ' '
-         call prop_get(str_ptr, '', 'CrestLevel', rec, success)
-         if (.not. success .or. len_trim(rec) == 0) then
-            write(msgbuf, '(a,a,a)') 'Required field ''CrestLevel'' missing in weir ''', trim(strid), '''.'
+         key = 'CrestLevel'
+         call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         if (.not. successloc) then
+            write(msgbuf, '(a,a,a)') 'Required field '//trim(key)//' missing in weir ''', trim(strid), '''.'
             call warn_flush()
             cycle
          end if
-         read(rec, *, iostat = ierr) tmpval
-         if (ierr /= 0) then ! No number, so check for timeseries filename
+         if (is_double) then
+            ! Constant value for always, set it now already.
+            zcgen((n-1)*kx+1) = tmpval
+            hulp(idx_crestlevel, n)        = tmpval
+         else
             if (trim(rec) == 'REALTIME') then
                success = .true.
                ! zcgen(1, 1+kx, ..) should be filled via DLL's API
@@ -584,9 +589,6 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                   success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n-1)*kx+1) ! Hook up 1 component at a time, even when target element set has kx=3
                endif
             end if
-         else
-            zcgen((n-1)*kx+1) = tmpval ! Constant value for always, set it now already.
-            hulp(idx_crestlevel, n)        = tmpval
          end if
 
          tmpval = dmiss
@@ -619,15 +621,18 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
       !! GATE !!
       case ('gate')
          rec = ' '
-         call prop_get(str_ptr, '', 'CrestLevel', rec, success)
-         if (.not. success .or. len_trim(rec) == 0) then
-            write(msgbuf, '(a,a,a)') 'Required field ''CrestLevel'' missing in gate ''', trim(strid), '''.'
+         key = 'CrestLevel'
+         call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         if (.not. successloc) then 
+            write(msgbuf, '(a)') 'Required field '//trim(key)//' missing in gate '//trim(strid)//'.'
             call warn_flush()
             cycle
          end if
-
-         read(rec, *, iostat = ierr) tmpval
-         if (ierr /= 0) then ! No number, so check for timeseries filename
+         if (is_double) then
+            ! Constant value for always, set it now already.
+            zcgen((n-1)*kx+1) = tmpval 
+            hulp(idx_crestlevel, n)        = tmpval
+         else
             if (trim(rec) == 'REALTIME') then
                success = .true.
                ! zcgen(1, 1+kx, ..) should be filled via DLL's API
@@ -645,9 +650,6 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                   success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n-1)*kx+1) ! Hook up 1 component at a time, even when target element set has kx=3
                endif
             end if
-         else
-            zcgen((n-1)*kx+1) = tmpval ! Constant value for always, set it now already.
-            hulp(idx_crestlevel, n)        = tmpval
          end if
 
          tmpval = dmiss
@@ -659,7 +661,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
          gates(ngategen+1)%sill_width = tmpval
 
          tmpval = dmiss
-         call prop_get(str_ptr, '', 'GateHeight', tmpval, success) ! Gate height (old name: Door height) (from lower edge level to top, i.e. NOT a level/position)
+         call prop_get(str_ptr, '', 'GateHeight', tmpval, success) ! Gate height (from lower edge level to top, i.e. NOT a level/position)
          if (.not. success .or. tmpval == dmiss) then
             write(msgbuf, '(a,a,a)') 'Required field ''GateHeight'' missing in gate ''', trim(strid), '''.'
             call warn_flush()
@@ -667,18 +669,19 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
          end if
          gates(ngategen+1)%door_height = tmpval
          hulp(idx_gateheight,n) = tmpval  ! gatedoorheight.
-
          rec = ' '
-         call prop_get(str_ptr, '', 'GateLowerEdgeLevel', rec, success)
-         if (.not. success .or. len_trim(rec) == 0) then
-            write(msgbuf, '(a,a,a)') 'Required field ''GateLowerEdgeLevel'' missing in gate ''', trim(strid), '''.'
-            call warn_flush()
+         key = 'GateLowerEdgeLevel'
+         call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         if (.not. successloc) then 
+            write(msgbuf, '(a)') 'Required field '//trim(key)//' missing in gate '//trim(strid)//'.'
+            call warn_flush()         
             cycle
-         end if
-
-
-         read(rec, *, iostat = ierr) tmpval
-         if (ierr /= 0) then ! No number, so check for timeseries filename
+         endif
+         if (is_double) then
+            ! Constant value for always, set it now already.
+            zcgen((n-1)*kx+2) = tmpval 
+            hulp(idx_gateloweredgelevel, n)       = tmpval
+         else
             if (trim(rec) == 'REALTIME') then
                success = .true.
                ! zcgen(2, 2+kx, ..) should be filled via DLL's API
@@ -696,19 +699,23 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                    success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n-1)*kx+2) ! Hook up 1 component at a time, even when target element set has kx=3
                endif
             end if
-         else
-            zcgen((n-1)*kx+2) = tmpval ! Constant value for always, set it now already.
-            hulp(idx_gateloweredgelevel, n)       = tmpval
          end if
 
+         ! Opening width between left and right doors. (If any. Otherwise set to 0 for a single gate door with under/overflow)
          rec = ' '
-         call prop_get(str_ptr, '', 'GateOpeningWidth', rec, success) ! Opening width between left and right doors. (If any. Otherwise set to 0 for a single gate door with under/overflow)
-         if (len_trim(rec) == 0) then
+         key = 'GateOpeningWidth'
+         call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         if (.not. successloc) then
+            write(msgbuf, '(a)') 'Optional field '//trim(key)//' not available for gate '//trim(strid)//'. Use default value.'
+            call msg_flush()
             zcgen((n-1)*kx+3) = dmiss   ! GateOpeningWidth is optional
             success = .true.
          else
-            read(rec, *, iostat = ierr) tmpval
-            if (ierr /= 0) then ! No number, so check for timeseries filename
+            if (is_double) then
+               ! Constant value for always, set it now already.
+               zcgen((n-1)*kx+3) = tmpval 
+               hulp(idx_gateopeningwidth, n)        = tmpval
+            else
                if (trim(rec) == 'REALTIME') then
                   success = .true.
                   ! zcgen(3, 3+kx, ..) should be filled via DLL's API
@@ -726,18 +733,15 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                       success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n-1)*kx+3) ! Hook up 1 component at a time, even when target element set has kx=3
                   endif
                end if
-            else
-               zcgen((n-1)*kx+3) = tmpval ! Constant value for always, set it now already.
-               hulp(idx_crestwidth, n)       = tmpval
             end if
          end if
 
          rec = ' '
          call prop_get(str_ptr, '', 'GateOpeningHorizontalDirection', rec, success)
-         if (.not. success) then
-            call prop_get(str_ptr, '', 'horizontal_opening_direction', rec, success)
-         endif
-         success = .true. ! horizontal_opening_direction is optional
+         if (.not. successloc) then
+            write(msgbuf, '(a,a,a)') 'Optional field ''GateOpeningHorizontalDirection'' not available for gate ''', trim(strid), '''. Use default value.'
+            call msg_flush()
+         end if
          call str_lower(rec)
          select case(trim(rec))
          case ('from_left', 'fromleft')
@@ -762,13 +766,16 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
          do k = 1,NUMGENERALKEYWRD        ! generalstructure keywords
             tmpval = dmiss
             key = generalkeywrd(k)
-            call prop_get(str_ptr, '', trim(key), rec, successloc)
-            if (.not. successloc .or. len_trim(rec) == 0) then
-               ! consider all fields optional for now.
+            call read_property(strs_ptr%child_nodes(cgenidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+            if (.not. successloc) then
+               write(msgbuf, '(a)') 'Required field '//trim(key)//' not available for generalstructure '//trim(strid)//'.'
+               call msg_flush()
                cycle
             end if
-            read(rec, *, iostat = ierr) tmpval
-            if (ierr /= 0) then ! No number, so check for timeseries filename
+            if (is_double) then
+               ! Constant value for always, set it now already.
+               hulp(k,n) = tmpval
+            else
                if (trim(rec) == 'REALTIME') then
                   select case (trim(generalkeywrd(k)))
                   case ('CrestLevel', 'GateHeight', 'GateLowerEdgeLevel', 'GateOpeningWidth')
@@ -813,8 +820,6 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                      endif
                   end if
                end if
-            else
-               hulp(k,n) = tmpval ! Constant value for always, set it now already.
             end if
             if (.not.success) goto 888
          end do
@@ -886,16 +891,17 @@ if (ngate > 0) then ! Old-style controllable gateloweredgelevel
       call prop_get_string(str_ptr, '', 'polylinefile', plifile, success) ! TODO: Remove? This plifile is nowhere used below
       call resolvePath(plifile, md_structurefile_dir, plifile)
 
-      rec = ' '
-      call prop_get(str_ptr, '', 'lower_edge_level', rec, success)
-      if (.not. success .or. len_trim(rec) == 0) then
-         write(msgbuf, '(a,a,a)') 'Required field ''lower_edge_level'' missing in gate ''', trim(strid), '''.'
+      key = 'lower_edge_level'
+      call read_property(strs_ptr%child_nodes(gateidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+      if (.not. successloc) then 
+         write(msgbuf, '(a)') 'Required field '//trim(key)//' missing in gate '//trim(strid)//'.'
          call warn_flush()
          cycle
       end if
-
-      read(rec, *, iostat = ierr) tmpval
-      if (ierr /= 0) then ! No number, so check for timeseries filename
+      if (is_double) then
+         ! Constant value for always, set it now already.
+         zgate(n) = tmpval
+      else
          if (trim(rec) == 'REALTIME') then
             success = .true.
             ! zgate should be filled via DLL's API
@@ -914,10 +920,7 @@ if (ngate > 0) then ! Old-style controllable gateloweredgelevel
                success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
             endif
          end if
-      else
-         zgate(n) = tmpval ! Constant value for always, set it now already.
       end if
-
    enddo
 
 endif ! Old style controllable gateloweredgelevel
@@ -961,9 +964,18 @@ if (ncdamsg > 0) then ! Old-style controllable damlevel
       call resolvePath(plifile, md_structurefile_dir, plifile)
 
       rec = ' '
-      call prop_get(str_ptr, '', 'crest_level', rec)
-      read(rec, *, iostat = ierr) tmpval
-      if (ierr /= 0) then ! No number, so check for timeseries filename
+      key = 'crest_level'
+      call read_property(strs_ptr%child_nodes(cdamidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+      if (.not. successloc) then
+         write(msgbuf, '(a,a,a)') 'Field ''crest_level'' not available for damlevel ''', trim(strid), '''.'
+         call msg_flush()
+         ! consider all fields optional for now.
+         cycle
+      end if
+      if (is_double) then
+         ! Constant value for always, set it now already.
+         zcdam(n) = tmpval
+      else
          if (trim(rec) == 'REALTIME') then
             success = .true.
             ! zcdam should be filled via DLL's API
@@ -982,8 +994,6 @@ if (ncdamsg > 0) then ! Old-style controllable damlevel
                success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
             endif
          end if
-      else
-         zcdam(n) = tmpval ! Constant value for always, set it now already.
       end if
 
    enddo
@@ -1090,9 +1100,17 @@ if (npump > 0) then
          call resolvePath(plifile, md_structurefile_dir, plifile)
 
          rec = ' '
-         call prop_get(str_ptr, '', 'capacity', rec)
-         read(rec, *, iostat = ierr) tmpval
-         if (ierr /= 0) then ! No number, so check for timeseries filename
+         key = 'capacity'
+         call read_property(strs_ptr%child_nodes(pumpidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
+         if (.not. successloc) then 
+            write(msgbuf, '(a,i0,a)') 'Required field '//trim(key)//' missing for pump #', n, '.'
+            call warn_flush()         
+         end if
+         if (is_double) then
+            ! Constant value for always, set it now already.
+            qpump(n) = tmpval
+            success = .true.
+         else
             if (trim(rec) == 'REALTIME') then
                success = .true.
                ! zgate should be filled via DLL's API
@@ -1119,9 +1137,6 @@ if (npump > 0) then
                   endif
                endif
             end if
-         else
-            qpump(n) = tmpval ! Constant value for always, set it now already.
-            success = .true.
          end if
       end if
    enddo

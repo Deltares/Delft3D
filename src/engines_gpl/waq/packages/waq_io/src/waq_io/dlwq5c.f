@@ -114,7 +114,7 @@
       use m_zoek
       use timers       !   performance timers
       use m_sysi          ! Timer characteristics
-      use m_gregor
+      use time_module
 
 
       INTEGER       ICMAX  , IIMAX  , IRMAX

@@ -1512,7 +1512,10 @@ subroutine prepare_lateral_mask(kc, ilattype)
       enddo
    case (ILATTP_ALL)      ! both to everything 2D, and 1D, except to 1D pipes
       do L = 1,lnx1D
-         if (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0 ) then ! no pipes pos or neg, others only if pos
+         ! When is lateral allowed?
+         ! * (X)YZ profiles pointering to profiles number: always allow
+         ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
+         if (prof1D(1,L) < 0 .or. (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0) ) then
             k1 = ln(1,L) ; kc(k1) = 1
             k2 = ln(2,L) ; kc(k2) = 1
          else
@@ -1561,6 +1564,7 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
    double precision, pointer  :: dbleptr(:)
    integer            :: tgtitem
    integer, pointer   :: intptr, multuniptr
+   logical            :: file_exists
 
    success = .true.   ! initialization
    xdum = 1d0 ; ydum = 1d0; kdum = 1
@@ -1572,6 +1576,15 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
       ! Prepare time series relation, if the .pli file has an associated .tim file.
       L = index(locationfile,'.', back=.true.) - 1
       valuestring = locationfile(1:L)//'_0001.tim'
+      inquire(file=valuestring, exist=file_exists)
+      if ( .not. file_exists ) then
+          valuestring = locationfile(1:L)//'.tim'
+          inquire(file=valuestring, exist=file_exists)
+          if ( .not. file_exists ) then
+             call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(locationfile(1:L)//'_0001.tim')//''' do not exist.')
+          end if
+      end if
+
    else
       ! TODO: AvD: error msg?
       success = .false.
@@ -1582,7 +1595,7 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
    targetarrayptr => targetarray
    tgtitem = ec_undef_int
 
-   if (ierr /= 0) then ! No number, so check for timeseries filename
+   if (ierr /= 0 .or. index(valuestring,'/') == 1) then ! No number or a string starting with '/': check for timeseries filename
       if (strcmpi(trim(valuestring), 'REALTIME')) then
          success = .true.
          ! targetarray(targetindex) should be filled via DLL's API

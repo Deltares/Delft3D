@@ -161,6 +161,8 @@
  integer                           :: jaCdwusp          !< if 1 spatially varying windstress coefficient
 
  integer                           :: jaWindspeedfac    !< if 1 spatially varying windstress coefficient
+ 
+ integer                           :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
  integer                           :: javiuplus3D = 1   !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
 
@@ -451,6 +453,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  
  integer                           :: jadpuopt                  !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean. 
 
+ integer                           :: ja_vis_diff_limit         !< write info in dia file when viscosity/diffusivity is limited (0: no, 1: yes)
  ! written to his file yes or no
  integer                           :: jahisbal                  !< Write mass balance/volume totals to his file, 0: no, 1: yes
  integer                           :: jahissourcesink           !< Write discharge/volume at sources/sinks, 0: no, 1: yest
@@ -930,6 +933,8 @@ subroutine default_flowparameters()
     jaupwindsrc = 1
     jalogsolverconvergence = 0
     jalogtransportsolverlimiting = 0
+    
+    ja_vis_diff_limit = 0
 
     jahisbal = 1
     jahissourcesink = 1

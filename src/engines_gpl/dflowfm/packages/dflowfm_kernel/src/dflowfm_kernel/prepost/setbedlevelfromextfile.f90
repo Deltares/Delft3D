@@ -224,7 +224,7 @@ bft:do ibathyfiletype=1,2
     call tree_destroy(inifield_ptr)
 
     ! Interpreted values for debugging.
-    if ( md_jasavenet == 1 ) then
+    if ( md_exportnet_bedlevel == 1 ) then
 !      save network
        select case (ibedlevtyp)
           case (3,4,5,6) ! primitime position = netnode, cell corner

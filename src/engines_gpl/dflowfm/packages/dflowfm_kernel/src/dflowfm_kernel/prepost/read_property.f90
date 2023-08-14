@@ -34,7 +34,7 @@
 !! The (single!) property block should come from an already-parsed .ini file.
 !! The string value is always returned, if found, and an attempt is also made to
 !! parse it into a scalar double, or alternatively to check whether it is an existing file.
-subroutine read_required_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
+subroutine read_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
    use properties
    use unstruc_messages
    implicit none
@@ -54,18 +54,21 @@ subroutine read_required_property(prop_ptr, key, strvalue, dblvalue, is_double, 
 
    call prop_get(prop_ptr, '', trim(key), strvalue, success)
    if (.not. success .or. len_trim(strvalue) == 0) then
-      write(msgbuf, '(a,a,a,a,a)') 'Required field ''', trim(key), ''' missing in ', trim(typeandid), '.'
-      call warn_flush()
+      write(msgbuf, '(a,a,a,a,a)') 'Field ''', trim(key), ''' is missing in ''', trim(typeandid), '''.'
+      call msg_flush()
       goto 888
    else
-      read(strvalue, *, iostat = ierr) tmpvalue
-      if (ierr == 0) then
-         dblvalue = tmpvalue
-         is_double = .true.
-      end if
+      ! strvalue is now filled. Check that it does not start with a /
+      if (index(strvalue,'/') /= 1) then 
+         read(strvalue, *, iostat = ierr) tmpvalue
+         if (ierr == 0) then
+            dblvalue = tmpvalue
+            is_double = .true.
+         end if
+      endif
    end if
 
    success = .true.
 888 continue
 
-end subroutine read_required_property
+end subroutine read_property

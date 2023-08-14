@@ -38,6 +38,7 @@ subroutine setumod(jazws0)                          ! set cell center Perot velo
  use timers
  use m_flow
  use m_flowgeom
+ use m_flowparameters, only : ja_vis_diff_limit
  use m_flowtimes
  use m_sferic
  use m_wind
@@ -46,6 +47,8 @@ subroutine setumod(jazws0)                          ! set cell center Perot velo
  use m_xbeach_data, only : DR, roller, swave, nuhfac
  use unstruc_model, only : md_restartfile
  use m_setucxcuy_leastsquare, only: reconst2nd
+ use MessageHandling
+
  implicit none
 
  integer,intent(in):: jazws0
@@ -76,6 +79,9 @@ subroutine setumod(jazws0)                          ! set cell center Perot velo
 
  double precision, external :: nod2linx, nod2liny, lin2nodx, lin2nody, cor2linx, cor2liny
  double precision, external :: nod2wallx, nod2wally, wall2linx, wall2liny
+ 
+ integer                    :: number_limited_links
+ double precision           :: viscocity_max_limit
 
  call timstrt('Umod', handle_umod)
  if(jazws0==1 .and. len_trim(md_restartfile)>0) then
@@ -325,6 +331,7 @@ if (vicouv < 0d0) then
 endif
 
 if (ihorvic > 0 .or. NDRAW(29) == 37) then
+  number_limited_links = 0
   dvxc = 0 ; dvyc = 0; suu = 0
   if (kmx == 0) then
 
@@ -403,10 +410,14 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
 
              if (ja_timestep_auto_visc == 0) then
                 dxiAu = dxi(L)*hu(L)*wu(L)
-                if ( dxiAu.gt.0d0 ) then
-                   vicL = min(vicL, 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu )  ! see Tech Ref.: Limitation of Viscosity Coefficient
-                endif
-             endif
+                if ( dxiAu > 0d0 ) then
+                   viscocity_max_limit = 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu
+                   if ( vicL > viscocity_max_limit ) then
+                      vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+                      number_limited_links = number_limited_links + 1
+                   end if
+                end if
+             end if
 
              vicLu(L) = vicL                       ! horizontal eddy viscosity applied in mom eq.
              viu(L) = max(0d0, vicL - vicc)        ! modeled turbulent part
@@ -520,10 +531,14 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
 
              if (ja_timestep_auto_visc == 0) then
                 dxiAu = dxi(LL)*Au(L)
-                if ( dxiAu.gt.0d0 ) then
-                   vicL = min(vicL, 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu )
-                endif
-             endif
+                if ( dxiAu > 0d0 ) then
+                   viscocity_max_limit = 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu
+                   if ( vicL > viscocity_max_limit ) then
+                      vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+                      number_limited_links = number_limited_links + 1
+                   end if
+                end if
+             end if
 
              vicLu(L) = vicL                       ! horizontal eddy viscosity applied in mom eq.
              viu(L) = max(0d0, vicL - vicc)        ! modeled turbulent part
@@ -556,10 +571,15 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
 
        enddo
 
-     endif
-   endif
-
- endif
+     end if
+   end if
+   
+   if ( number_limited_links > 0 .and. ja_vis_diff_limit == 1) then
+      write(msgbuf,'(a,i0,a)') 'Viscosity coefficient was limited for ', number_limited_links,' links.'
+      call mess(LEVEL_WARN, msgbuf)
+   end if 
+   
+ end if
 
  if (ihorvic > 0) then
 
@@ -749,6 +769,5 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
  endif
 
  call timstop(handle_umod)
-
-
+ 
  end subroutine setumod

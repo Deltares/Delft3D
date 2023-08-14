@@ -513,20 +513,26 @@ contains
    !
    !
    ! ==========================================================================
-   !> 
-   subroutine read1polylin(minp,xs,ys,ns,pliname)
+   !> Reads a single polyline from an open file.
+   !! Assumes two-column data with x,y pairs.
+   subroutine read1polylin(minp,xs,ys,ns,pliname, has_more_records)
       use m_alloc
-      integer          :: minp                          ! unit number of poly file
-      double precision, allocatable :: xs(:)            ! x-coordinates read from file    
-      double precision, allocatable :: ys(:)            ! y-coordinates read from file
-      integer                       :: ns               ! number of pli-points
-      character(len=:),allocatable,optional :: pliname  ! Optional, name (identifier) of pli
-   
+      integer,                                 intent(inout) :: minp     !< Unit number of poly file (already opened), will be closed after successful read.
+      double precision, allocatable,           intent(  out) :: xs(:)    !< x-coordinates read from file    
+      double precision, allocatable,           intent(  out) :: ys(:)    !< y-coordinates read from file
+      integer,                                 intent(  out) :: ns       !< Number of pli-points read
+      character(len=:), allocatable, optional, intent(  out) :: pliname  !< (Optional) Name (identifier) of the polyline read
+      logical,                       optional, intent(  out) :: has_more_records !< (Optional) Whether or not more polyline data exists in the remainder of the file, after reading this one polyline.
+
       character (len=maxnamelen)   :: rec
       integer                      :: k
    
       ns = 0
-   
+
+      if (present(has_more_records)) then
+         has_more_records = .false.
+      end if
+
    10 read(minp,'(a)',end = 999) rec
       if  (rec(1:1) == '*' ) goto 10
       if (present(pliname)) then
@@ -553,6 +559,10 @@ contains
          read(rec ,*    ,err = 777) xs(k), ys(k)
       enddo
    
+      if (present(has_more_records)) then
+         has_more_records = polyfile_has_more_records(minp)
+      end if
+
       call doclose(minp)
    
       return
@@ -568,6 +578,45 @@ contains
        return
    
    end subroutine read1polylin
+
+   
+   
+   !> Determine whether there is more data still left in the open polyfile.
+   !! Returns .true. when more non-whitepace/non-comment lines exist beyond
+   !! the current file pointer position.
+   !! After checking, 'backspaces' the filepointer to the first new data position.
+   function polyfile_has_more_records(minp) result(has_more)
+      integer, intent(inout) :: minp     !< Unit number of poly file, already open, filepointer can be anywhere in the file.
+      logical                :: has_more !< Result, whether or not more polyline data may exist in the remainder of the file.
+   
+      character (len=maxnamelen)   :: rec
+      integer                      :: k
+   
+      has_more = .false.
+
+      do
+         read(minp,'(a)',end = 999) rec
+         if (rec(1:1) == '*') then
+            cycle
+         end if
+         
+         if (len_trim(rec) == 0) then
+            cycle
+         else
+            ! We encountered a non-comment line, non-whitespace line before EOF
+            has_more = .true.
+            backspace(minp)
+            exit
+         end if
+      end do
+
+      return
+   
+   999 continue
+      ! EOF reached, simply return (.false.)
+      return
+   
+   end function polyfile_has_more_records
    !
    !
    ! ==========================================================================
@@ -5679,6 +5728,7 @@ contains
      integer                         :: JACROS
      integer                         :: ierr
      double precision                :: SL,SM,XCR,YCR,CRP
+     logical                         :: has_more_pli
    
      num = 0
    
@@ -5687,8 +5737,13 @@ contains
      if (filetype == poly_tim) then
 
         call oldfil(minp, filename)
-        call read1polylin(minp,xs,ys,ns,pliname)
-   
+        call read1polylin(minp,xs,ys,ns,pliname, has_more_records=has_more_pli)
+        
+        if (has_more_pli) then
+           call mess(LEVEL_WARN, 'While reading polyline file '''//trim(filename)//''': multiple polylines are not supported in a single file.')
+           call mess(LEVEL_WARN, 'Only using first polyline '''//trim(pliname)//''' and ignoring the rest.')
+        end if
+
         if (.not. allocated(kcs)) then
           allocate(kcs(ns))
         else if (ns > size(kcs)) then
@@ -6553,6 +6608,8 @@ module m_meteo
    integer, target :: item_stressy                                           !< Unique Item id of the ext-file's 'stressy' quantity's y-component.
    integer, target :: item_stressxy_x                                        !< Unique Item id of the ext-file's 'stressxy_x' quantity's x-component.
    integer, target :: item_stressxy_y                                        !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
+   
+   integer, target :: item_frcu                                              !< Unique Item id of the ext-file's 'frcu' quantity's component.
       
    integer, target :: item_apwxwy_p                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
@@ -6667,7 +6724,9 @@ module m_meteo
       item_stressy                               = ec_undef_int
       item_stressxy_x                            = ec_undef_int
       item_stressxy_y                            = ec_undef_int
-   
+
+      item_frcu                                  = ec_undef_int
+            
       item_apwxwy_p                              = ec_undef_int
       item_apwxwy_x                              = ec_undef_int
       item_apwxwy_y                              = ec_undef_int
@@ -6953,6 +7012,9 @@ module m_meteo
             dataPtr1 => wdsu_x
             itemPtr2 => item_stressxy_y
             dataPtr2 => wdsu_y
+        case ( 'friction_coefficient_time_dependent')
+            itemPtr1 => item_frcu
+            dataPtr1 => frcu
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
             itemPtr1 => item_apwxwy_p
             dataPtr1 => patm
@@ -7721,7 +7783,7 @@ module m_meteo
          ! Each qhbnd polytim file replaces exactly one element in the target data array.
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', &
-            'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy','humidity','airtemperature','cloudiness','solarradiation', 'longwaveradiation' )
+            'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy','humidity','airtemperature','cloudiness','solarradiation', 'longwaveradiation')
          if (present(srcmaskfile)) then 
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not.ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -8015,6 +8077,13 @@ module m_meteo
             if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
+        case ('friction_coefficient_time_dependent')
+             if (ec_filetype == provFile_netcdf) then
+               sourceItemName = 'friction_coefficient' 
+            else
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
+               return
+            end if
          case ('windxy')
             ! special case: m:n converter, (for now) handle here in case switch
             if (ec_filetype == provFile_unimagdir) then
@@ -8123,7 +8192,7 @@ module m_meteo
             end if
          case ('humidity_airtemperature_cloudiness')
             ! special case: m:n converter, (for now) handle seperately
-            if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform) then
+            if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform .or. ec_filetype == provFile_netcdf) then
                if (ec_filetype == provFile_curvi) then
                   sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_1')
                   sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_2')
@@ -8140,6 +8209,16 @@ module m_meteo
                      goto 1234
                   end if
                   success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               else if (ec_filetype == provFile_netcdf) then
+                  sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
+                  sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
+                  sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
+                  if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. sourceItemId_3 == ec_undef_int) then
+                     goto 1234 
+                  end if
+                  success              = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
+                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
                end if
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_humidity)
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_airtemperature)

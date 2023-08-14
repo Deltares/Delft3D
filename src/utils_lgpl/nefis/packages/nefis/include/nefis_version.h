@@ -4,7 +4,7 @@
 #define NEFIS_MAJOR "5"
 #define NEFIS_MINOR "09"
 #define NEFIS_REVISION "00"
-#define COMPONENT_NAME "nefis"
+#define COMPONENT_NAME "NEFIS"
 
 #include "version_definition.h"
 /*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */

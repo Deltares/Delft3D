@@ -102,8 +102,12 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
     if (jatem > 1) then
        call set_temperature_models()
-   end if
+    end if
 
+    if (ja_friction_coefficient_time_dependent > 0) then
+       call set_friction_coefficient()
+   end if
+        
    call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
    
    call set_wave_parameters()
@@ -425,6 +429,13 @@ subroutine set_temperature_models()
     end if
     	   
 end subroutine set_temperature_models
+
+!> set friction coeffciient values at this time moment
+subroutine set_friction_coefficient()
+
+   call get_timespace_value_by_item_and_array(item_frcu, frcu)
+
+end subroutine set_friction_coefficient
 
 !> get_timespace_value_by_name_and_consider_success_value
 subroutine get_timespace_value_by_name_and_consider_success_value(name)

@@ -65,7 +65,7 @@
       use m_zoek
       use m_srstop
       use m_rdvers
-      use m_julian
+      use time_module
       use rd_token     !   tokenized reading
       use dlwq0t_data
       use timers       !   performance timers
@@ -179,7 +179,7 @@
          read ( runid2(31:38) , '(i8)' ) isfact
          idate  = iyear*10000+imonth*100+iday
          itime  = ihour*10000+iminut*100+isecnd
-         otime  = JULIAN ( idate , itime )
+         otime  = julian_with_leapyears ( idate , itime )
          if ( isfact .gt. 0 ) then
             write ( lunut  , 2050 )  isfact
          else

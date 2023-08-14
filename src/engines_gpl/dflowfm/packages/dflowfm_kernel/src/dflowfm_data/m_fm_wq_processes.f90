@@ -134,6 +134,9 @@ module m_fm_wq_processes
    integer                                   :: isffmlayer                  !< pointer to fmlayer         segment function
    integer                                   :: isffmktop                   !< pointer to fmktop          segment function
    integer                                   :: isffmkbot                   !< pointer to fmkbot          segment function
+   integer                                   :: isfwaveheight               !< pointer to wave height     segment function
+   integer                                   :: isfwavelength               !< pointer to wave length     segment function 
+   integer                                   :: isfwaveperiod               !< pointer to wave period     segment function
 !
 !     Balance output
 !

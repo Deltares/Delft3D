@@ -290,10 +290,10 @@ contains
    call initialize_salinity_and_temperature_with_nudge_variables()
 
    if (jasal > OFF) then 
-       call fill_constituents_with(isalt, sa1)
+       call fill_constituents_with_salinity()
    end if
    if (itemp > OFF) then 
-      call fill_constituents_with(itemp, tem1)
+      call fill_constituents_with_temperature()
    end if
 
    call initialise_density_at_cell_centres()
@@ -1482,24 +1482,35 @@ subroutine initialize_salinity_and_temperature_with_nudge_variables()
 end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 
-!> fill_constituents_with
-subroutine fill_constituents_with(item, input)
-   use m_flow,           only : ndkx
-   use m_transportdata,  only : constituents
+!> fill_constituents_with_salinity
+subroutine fill_constituents_with_salinity()
+   use m_flow,           only : ndkx, sa1
+   use m_transportdata,  only : constituents, isalt
 
    implicit none
-
-   integer,          intent(in) :: item
-   double precision, intent(in) :: input(:)
 
    integer                      :: node3D
 
    do node3D = 1, ndkx
-       constituents(item,node3D) = max( 0d0,  input(node3D) )
+       constituents(isalt,node3D) = max( 0d0,  sa1(node3D) )
    end do
 
-end subroutine fill_constituents_with
+end subroutine fill_constituents_with_salinity
 
+!> fill_constituents_with_temperature
+subroutine fill_constituents_with_temperature()
+   use m_flow,           only : ndkx, tem1
+   use m_transportdata,  only : constituents, itemp
+
+   implicit none
+
+   integer                      :: node3D
+
+   do node3D = 1, ndkx
+       constituents(itemp,node3D) = tem1(node3D)
+   end do
+
+end subroutine fill_constituents_with_temperature
 
 !> initialise_density_at_cell_centres
 subroutine initialise_density_at_cell_centres()
