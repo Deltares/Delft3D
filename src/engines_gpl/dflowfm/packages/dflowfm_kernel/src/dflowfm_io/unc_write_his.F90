@@ -322,64 +322,6 @@ subroutine unc_write_his(tim)            ! wrihis
             ierr = sgeom_def_geometry_variables(ihisfile, station_geom_container_name, 'station', 'point', nNodeTot, id_statdim, &
                id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, add_latlon, id_statgeom_node_lon, id_statgeom_node_lat)
 
-
-            if ( jahiswatlev > 0 ) then
-               ! TODO: later change the following codes to be more generic by making a loop.
-               !call test_s1_his_output(out_variable_set_his) ! TODO: later delete this test subroutine.
-
-            do ivar = 1,out_variable_set_his%count
-               config => out_variable_set_his%statout(ivar)%output_config
-               id_var => out_variable_set_his%statout(ivar)%id_var
-               
-               if (config%location_specifier /= UNC_LOC_STATION &
-                   .and. config%location_specifier /= UNC_LOC_GLOBAL) then
-                  call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a station nor global.')
-                  cycle
-               end if
-
-               select case(out_variable_set_his%statout(ivar)%operation_type)
-               case(SO_CURRENT)
-                  stat_name_postfix      = ''
-                  stat_long_name_postfix = ''
-                  stat_cell_methods      = 'time: point'
-               case(SO_AVERAGE)
-                  stat_name_postfix      = '_avg'
-                  stat_long_name_postfix = ' (average)'
-                  stat_cell_methods      = 'time: mean'
-               case(SO_MAX)
-                  stat_name_postfix      = '_max'
-                  stat_long_name_postfix = ' (maximum)'
-                  stat_cell_methods      = 'time: maximum'
-               case(SO_MIN)
-                  stat_name_postfix      = '_min'
-                  stat_long_name_postfix = ' (minimum)'
-                  stat_cell_methods      = 'time: minimum'
-               end select
-               var_name          = trim(config%name) // trim(stat_name_postfix)
-               var_standard_name = config%standard_name ! Intentionally no pre/postfix for standard_name
-               if (len_trim(config%long_name) > 0) then
-                  var_long_name = trim(config%long_name) // trim(stat_long_name_postfix)
-               else
-                  var_long_name = ''
-               end if
-
-               select case(config%location_specifier)
-               case (UNC_LOC_STATION)
-                  call definencvar(ihisfile, id_var, config%nc_type, (/ id_statdim, id_timedim /), 2, var_name, var_long_name, config%unit, statcoordstring, station_geom_container_name, fillVal=dmiss, add_gridmapping = .true.)
-               case (UNC_LOC_GLOBAL)
-                  if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
-                  call definencvar(ihisfile, id_var, config%nc_type, (/ id_timedim /), 1, var_name, var_long_name, config%unit, "", fillVal=dmiss)
-                  if (timon) call timstop (handle_extra(59))
-               end select
-
-               if (len_trim(var_standard_name) > 0) then
-                  ierr = nf90_put_att(ihisfile, id_var, 'standard_name', trim(var_standard_name))
-               end if
-               if (len_trim(stat_cell_methods) > 0) then
-                  ierr = nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods))
-               end if
-            end do
-            end if
             if (.false.) then
             if ( jahisbedlev > 0 ) then
                if( stm_included ) then
@@ -1436,6 +1378,7 @@ subroutine unc_write_his(tim)            ! wrihis
                id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy)
 
 
+            if (.false.) then
             ierr = nf90_def_var(ihisfile, 'general_structure_discharge',     nf90_double, (/ id_genstrudim, id_timedim /), id_genstru_dis)
             !ierr = nf90_put_att(ihisfile, id_genstru_dis, 'standard_name', 'integral_of_discharge_wrt_time') ! TODO: introduce time windows in nc
             ierr = nf90_put_att(ihisfile, id_genstru_dis, 'long_name', 'Total discharge through general structure')
@@ -1590,6 +1533,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_genstru_forcedif, 'coordinates', 'general_structure_id')
                ierr = nf90_put_att(ihisfile, id_genstru_forcedif, 'geometry', genstru_geom_container_name)
             end if
+            end if !(.false.)
         endif
 
         if(jahispump > 0 .and. npumpsg > 0) then
@@ -2529,6 +2473,62 @@ subroutine unc_write_his(tim)            ! wrihis
            call unc_write_part_header(ihisfile,id_timedim,id_partdim,id_parttime,id_partx,id_party,id_partz)
         end if
 
+         do ivar = 1,out_variable_set_his%count
+            config => out_variable_set_his%statout(ivar)%output_config
+            id_var => out_variable_set_his%statout(ivar)%id_var
+               
+            if (config%location_specifier /= UNC_LOC_STATION &
+                  .and. config%location_specifier /= UNC_LOC_GLOBAL &
+                  .and. config%location_specifier /= UNC_LOC_GENSTRU) then
+               call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a station/global/genstru.')
+               cycle
+            end if
+
+            select case(out_variable_set_his%statout(ivar)%operation_type)
+            case(SO_CURRENT)
+               stat_name_postfix      = ''
+               stat_long_name_postfix = ''
+               stat_cell_methods      = 'time: point'
+            case(SO_AVERAGE)
+               stat_name_postfix      = '_avg'
+               stat_long_name_postfix = ' (average)'
+               stat_cell_methods      = 'time: mean'
+            case(SO_MAX)
+               stat_name_postfix      = '_max'
+               stat_long_name_postfix = ' (maximum)'
+               stat_cell_methods      = 'time: maximum'
+            case(SO_MIN)
+               stat_name_postfix      = '_min'
+               stat_long_name_postfix = ' (minimum)'
+               stat_cell_methods      = 'time: minimum'
+            end select
+            var_name          = trim(config%name) // trim(stat_name_postfix)
+            var_standard_name = config%standard_name ! Intentionally no pre/postfix for standard_name
+            if (len_trim(config%long_name) > 0) then
+               var_long_name = trim(config%long_name) // trim(stat_long_name_postfix)
+            else
+               var_long_name = ''
+            end if
+
+            select case(config%location_specifier)
+            case (UNC_LOC_GENSTRU)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_genstrudim, id_timedim /), 2, var_name, var_long_name, config%unit, 'general_structure_id', genstru_geom_container_name, fillVal=dmiss)
+            case (UNC_LOC_STATION)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_statdim, id_timedim /), 2, var_name, var_long_name, config%unit, statcoordstring, station_geom_container_name, fillVal=dmiss, add_gridmapping = .true.)
+            case (UNC_LOC_GLOBAL)
+               if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_timedim /), 1, var_name, var_long_name, config%unit, "", fillVal=dmiss)
+               if (timon) call timstop (handle_extra(59))
+            end select
+
+            if (len_trim(var_standard_name) > 0) then
+               ierr = nf90_put_att(ihisfile, id_var, 'standard_name', trim(var_standard_name))
+            end if
+            if (len_trim(stat_cell_methods) > 0) then
+               ierr = nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods))
+            end if
+         end do
+
         ierr = nf90_enddef(ihisfile)
         if (timon) call timstop (handle_extra(61))
 
@@ -2763,12 +2763,15 @@ subroutine unc_write_his(tim)            ! wrihis
       id_var => out_variable_set_his%statout(ivar)%id_var
                
       if (config%location_specifier /= UNC_LOC_STATION &
-            .and. config%location_specifier /= UNC_LOC_GLOBAL) then
-         call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a station.')
+            .and. config%location_specifier /= UNC_LOC_GLOBAL &
+            .and. config%location_specifier /= UNC_LOC_GENSTRU) then
+         call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a station/global/genstru.')
          cycle
       end if
 
       select case(config%location_specifier)
+      case (UNC_LOC_GENSTRU)
+         ierr = nf90_put_var(ihisfile, id_var,   out_variable_set_his%statout(ivar)%stat_output,    start = (/ 1, it_his /)) ! , count = (/ ngenstru, 1 /)
       case (UNC_LOC_STATION)
          ierr = nf90_put_var(ihisfile, id_var,   out_variable_set_his%statout(ivar)%stat_output,    start = (/ 1, it_his /), count = (/ ntot, 1 /))
       case (UNC_LOC_GLOBAL)
