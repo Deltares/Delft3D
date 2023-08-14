@@ -66,7 +66,9 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ec_module_test.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+if(WIN32)
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+endif()
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION share PATTERN "src" EXCLUDE PATTERN "CMakeLists.txt" EXCLUDE PATTERN "Scripts" EXCLUDE)
 
 

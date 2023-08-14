@@ -22,7 +22,9 @@ set(build_project ${executable_name})
 
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+if(WIN32)
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+endif()
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION share)
 
 

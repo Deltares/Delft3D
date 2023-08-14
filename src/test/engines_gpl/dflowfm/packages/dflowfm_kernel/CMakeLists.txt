@@ -143,6 +143,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/engines_gpl/dflowfm)
 
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../test_dflowfm/test_data DESTINATION share)
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+if (WIN32)
+	install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+endif()
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 

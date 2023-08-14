@@ -58,4 +58,6 @@ if(WIN32)
 endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+if(WIN32)
+	install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+endif()
