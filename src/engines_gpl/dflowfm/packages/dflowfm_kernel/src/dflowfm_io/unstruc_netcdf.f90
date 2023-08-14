@@ -4855,13 +4855,13 @@ end subroutine unc_write_rst_filepointer
 !! If file exists, it will be overwritten. Therefore, only use this routine
 !! for separate snapshots, the automated map file should be filled by calling
 !! unc_write_map_filepointer directly instead!
-subroutine unc_write_map(filename, md_nc_precision, iconventions)
+subroutine unc_write_map(filename, md_nc_map_precision, iconventions)
     use m_flowparameters, only: jamapbnd
     implicit none
 
     character(len=*),  intent(in) :: filename
-    integer,           intent(in) :: md_nc_precision !< NetCDF data precission in map files (0: double, 1: float)
-    integer, optional, intent(in) :: iconventions    !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
+    integer,           intent(in) :: md_nc_map_precision !< NetCDF data precision in map files (0: double, 1: float)
+    integer, optional, intent(in) :: iconventions        !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     
     type(t_unc_mapids) :: mapids
     integer :: ierr, iconv
@@ -4883,7 +4883,7 @@ subroutine unc_write_map(filename, md_nc_precision, iconventions)
     if (iconv == UNC_CONV_UGRID) then
        jabndnd = 0
        if (jamapbnd > 0) jabndnd = 1
-       call unc_write_map_filepointer_ugrid(mapids, 0d0, md_nc_precision, jabndnd)
+       call unc_write_map_filepointer_ugrid(mapids, 0d0, md_nc_map_precision, jabndnd)
     else
        call unc_write_map_filepointer(mapids%ncid, 0d0, 1)
     end if
@@ -4894,7 +4894,7 @@ end subroutine unc_write_map
 
 !> Writes map/flow data to an already opened netCDF dataset. NEW version according to UGRID conventions + much cleanup.
 !! The netnode and -links have been written already.
-subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_precision, jabndnd) ! wrimap
+subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jabndnd) ! wrimap
    use m_flow
    use m_flowtimes
    use m_flowgeom
@@ -4923,13 +4923,13 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_precision, jabndnd
    
    implicit none
 
-   type(t_unc_mapids), intent(inout) :: mapids           !< Set of file and variable ids for this map-type file.
+   type(t_unc_mapids), intent(inout) :: mapids               !< Set of file and variable ids for this map-type file.
    real(kind=hp),      intent(in)    :: tim
-   integer,            intent(in)    :: md_nc_precision  !< NetCDF data precission in map files (0: double, 1: float)
-   integer, optional,  intent(in)    :: jabndnd          !< Whether to include boundary nodes (1) or not (0). Default: no.
+   integer,            intent(in)    :: md_nc_map_precision  !< NetCDF data precision in map files (0: double, 1: float)
+   integer, optional,  intent(in)    :: jabndnd              !< Whether to include boundary nodes (1) or not (0). Default: no.
 
-   integer                           :: jabndnd_         !< Flag specifying whether boundary nodes are to be written.
-   integer                           :: ndxndxi         !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
+   integer                           :: jabndnd_             !< Flag specifying whether boundary nodes are to be written.
+   integer                           :: ndxndxi              !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
    integer, save                     :: ierr, ndim
 
    double precision, allocatable                       :: ust_x(:), ust_y(:), wavout(:), wavout2(:), scaled_rain(:)
@@ -4979,7 +4979,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_precision, jabndnd
    integer, parameter :: SECOND_ARRAY = 2
    
    nc_precision = nf90_double
-   if ( md_nc_precision == SINGLE_PRECISION ) then
+   if ( md_nc_map_precision == SINGLE_PRECISION ) then
        nc_precision = nf90_float
    end if 
    
@@ -5041,7 +5041,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_precision, jabndnd
       end if
 
       call check_error(ierr, 'def time dim')
-      ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_time, nc_precision, (/ mapids%id_tsp%id_timedim /), 'time', 'time', '', trim(Tudunitstr))
+      ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_time, nf90_double, (/ mapids%id_tsp%id_timedim /), 'time', 'time', '', trim(Tudunitstr))
       mapids%id_tsp%idx_curtime = 0
 
 

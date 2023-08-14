@@ -987,6 +987,9 @@ function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name,
    if (itype == nf90_double .and. present(dfill)) then
       ierr = nf90_put_att(ncid, id_var, '_FillValue'   , dfill)
    end if
+   if (itype == nf90_float .and. present(dfill)) then
+      ierr = nf90_put_att(ncid, id_var, '_FillValue'   , SNGL(dfill))
+   end if
 
    ! Leave the dataset in the same mode as we got it.
    if (wasInDefine == 0) then
