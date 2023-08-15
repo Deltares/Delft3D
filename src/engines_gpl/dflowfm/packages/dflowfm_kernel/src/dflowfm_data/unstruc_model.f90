@@ -3048,7 +3048,7 @@ endif
     endif
  
  
-    if (writeall .or. jarhoxu .ne. 0 ) then
+    if (jarhoxu /= 0 ) then
       call prop_set(prop_ptr, 'numerics', 'Jarhoxu', Jarhoxu,   'Include density gradient in advection term (0: no(strongly advised), 1: yes, 2: Also in barotropic and baroclinic pressure term)')
     endif
     if (writeall .or. (jahazlayer .ne. 0 .and. layertype .ne. 1)) then
