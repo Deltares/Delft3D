@@ -1967,126 +1967,99 @@ private
       
       integer :: i, ntot
       
-      if (jamaps0 > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
+
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
+
+      if(jadhyd == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_POTEVAP),PotEvap                                                   )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_ACTEVAP),ActEvap                                            )
       endif
-      if (jamaps1 > 0) then
-          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
+      if (jaevap == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PRESCREVAP),evap                                                )
       endif
-      if (jamapevap > 0) then
-         if(jadhyd == 1) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_POTEVAP),PotEvap                                                   )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_ACTEVAP),ActEvap                                            )
-         endif
-         if (jaevap == 1) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PRESCREVAP),evap                                                )
-         endif
+
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOL1),vol1                                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH),hs                                                )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HU),hu                                                        )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U1),u1                                                        )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U0),u0                                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT      ), negativeDepths               )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT_CUM  ), negativeDepths_cum           )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER      ), noIterations                 )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER_CUM  ), noIterations_cum             )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP    ), limitingTimestepEstimation          )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM), limitingTimestepEstimation_cum          )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_COURANT     ), flowCourantNumber            )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_AU),au                                                      )
+
+   if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN),ucxq                                           )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN),ucyq                                           )
+   else
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ),ucxq                                                    )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ),ucyq                                                    )
+   endif
+
+   if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG_EULER),ucmag                                               )
+   else
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG),ucmag                                                     )
+   endif
+
+   if (kmx > 0) then
+      function_pointer => calculate_ucmaga
+      temp_pointer => null()
+      if (jaeulervel==1 .and. jawave>0) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),temp_pointer,function_pointer                                                )
+      else
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA),temp_pointer,function_pointer                                                    )
       endif
-      if (jamapvol1 == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOL1),vol1                                                      )
+   endif
+   
+   function_pointer => calculate_viu
+   temp_pointer => null()
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
+
+   function_pointer => calculate_diu
+   temp_pointer => null()
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU),temp_pointer,function_pointer                                                       )
+
+   if (kmx > 0) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
+   endif
+
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1),q1                                                        )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1_MAIN),q1_main                                                   )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FIXED_WEIR_ENERGY_LOSS),map_fixed_weir_energy_loss                                    )
+
+   if (jasecflow > 0) then
+      if (kmx == 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRCRV),spircrv                                                   )
       endif
-      if (jamaphs == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH),hs                                                )
-      endif
-      if (jamapu1 == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HU),hu                                                        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U1),u1                                                        )
-      endif
-      if (jamapu0 == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U0),u0                                                      )
-      endif
-      if (jamapflowanalysis == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT      ), negativeDepths               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT_CUM  ), negativeDepths_cum           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER      ), noIterations                 )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER_CUM  ), noIterations_cum             )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP    ), limitingTimestepEstimation          )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM), limitingTimestepEstimation_cum          )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_COURANT     ), flowCourantNumber            )
-      endif
-      if (jamapau == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_AU),au                                                      )
-      endif
-      if (jamapucqvec == 1) then
-         if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN),ucxq                                           )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN),ucyq                                           )
-         else
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ),ucxq                                                    )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ),ucyq                                                    )
-         endif
-      endif
-      if(jamapucmag > 0) then
-         if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG_EULER),ucmag                                               )
-         else
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG),ucmag                                                     )
-         endif
-         if (kmx > 0) then           
-            function_pointer => calculate_ucmaga
-            temp_pointer => null()
-            if (jaeulervel==1 .and. jawave>0) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
-               call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),temp_pointer,function_pointer                                                )
-            else
-               call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA),temp_pointer,function_pointer                                                    )
-            endif
-         endif
-      endif
-      if (jamapviu > 0) then
-         function_pointer => calculate_viu
-         temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
-      endif
-      if (jamapdiu > 0) then
-         function_pointer => calculate_diu
-         temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU),temp_pointer,function_pointer                                                       )
-      endif
-      if (kmx > 0) then
-         if(jamapww1 > 0) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
-         endif
-         if(jamaprho > 0) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
-         endif
-      endif
-      if (jamapq1 == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1),q1                                                        )
-      endif
-      if (jamapq1main == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1_MAIN),q1_main                                                   )
-      endif
-      if (jamapfw == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FIXED_WEIR_ENERGY_LOSS),map_fixed_weir_energy_loss                                    )
-      endif
-      if (jasecflow > 0 .and. jamapspir > 0) then
-         if (kmx == 0) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRCRV),spircrv                                                   )
-         endif
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRINT),spirint                                                   )
-      endif
-      if (jamapnumlimdt > 0) then
-         !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUMLIMDT),numlimdt                                                  )
-      endif
-      if (jamaptaucurrent>0) then
-         function_pointer => calculate_tausxy
-         temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
-         function_pointer => set_pointer_tausy
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),temp_pointer,function_pointer                      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
-         if (stm_included) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSMAX),sedtra%taub                                                   )
-         endif
-      endif
-      if (jamapz0>0) then  
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UCUR),z0ucur                                                    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UROU),z0urou                                                    )
-      endif
-      if (jasal > 0) then  ! Write the data: salinity
-         call c_f_pointer (c_loc(constituents(itemp, 1:ndxi)), temp_pointer, [ndxi])
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SA1),temp_pointer                                                       )
-      endif
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRINT),spirint                                                   )
+   endif
+
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUMLIMDT),numlimdt                                                  )
+
+   function_pointer => calculate_tausxy
+   temp_pointer => null()
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
+   function_pointer => set_pointer_tausy
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),temp_pointer,function_pointer                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
+   if (stm_included) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSMAX),sedtra%taub                                                   )
+   endif
+
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UCUR),z0ucur                                                    )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UROU),z0urou                                                    )
+
+   if (jasal > 0) then  ! Write the data: salinity
+      call c_f_pointer (c_loc(constituents(itemp, 1:ndxi)), temp_pointer, [ndxi])
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SA1),temp_pointer                                                       )
+   endif
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZS                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZU                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFU                                                       )
