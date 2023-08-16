@@ -32,8 +32,12 @@ private
    
    
    subroutine calculate_scaled_rain(data_pointer)
-
+   use m_flowparameters, only: jamapbnd
+   use m_flowgeom, only: ndx, ndxi, bare, ba
+   use m_wind, only: rain
    double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   
+   integer :: ndxndxi, n
    
    if (.not. allocated(scaled_rain_data)) then
       ! Include boundary cells in output (ndx) or not (ndxi)
@@ -50,8 +54,8 @@ private
       data_pointer => scaled_rain_data
    endif
    
-   do k = 1, ndxndxi
-      scaled_rain_data(k) = sqrt(ucx(k)**2 + ucy(k)**2)
+   do n = 1, ndxndxi
+      scaled_rain_data(n) = rain(n)*bare(n)/ba(n)*1d-3/(24d0*3600d0)
    enddo
    
    end subroutine calculate_scaled_rain
@@ -99,7 +103,7 @@ private
    subroutine calculate_windxy(data_pointer)
    use m_flowgeom, only: ndx, ndxi
    use m_flow, only: wx, wy, wdsu_x, wdsu_y
-   
+   use m_flowparameters, only: jamapbnd
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
    
    integer :: ndxndxi
@@ -1211,37 +1215,37 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_TUREPS1_4,                                          &
                      'Wrimap_turbulence', 'tureps1', 'turbulent time scale',                                                          &
                      '', 's-1', UNC_LOC_WU)
-      call addoutval(out_quan_conf_map, IDX_MAP_CFRT_0,                                             &
+      call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_0,                                             &
                      'Wrimap_trachytopes', 'cfrt', 'Chezy roughness from trachytopes',                                              &
                      '', '', UNC_LOC_L)
             
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFRT_0)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFRT_0)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFRT_0)%additional_attributes(1), 'non_si_units', 'm0.5s-1')
+      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT_0)%additional_attributes(1))
+      out_quan_conf_map%statout(IDX_MAP_CFTRT_0)%num_additional_attributes = 1
+      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT_0)%additional_attributes(1), 'non_si_units', 'm0.5s-1')
 
-      call addoutval(out_quan_conf_map, IDX_MAP_CFRT_1,                                             &
+      call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_1,                                             &
                      'Wrimap_trachytopes', 'cfrt', 'Manning roughness from trachytopes',                                            &
                      '', '', UNC_LOC_L, 'Write trachytope roughnesses to map file')
             
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFRT_1)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFRT_1)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFRT_1)%additional_attributes(1), 'non_si_units', 'sm-0.333')
+      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT_1)%additional_attributes(1))
+      out_quan_conf_map%statout(IDX_MAP_CFTRT_1)%num_additional_attributes = 1
+      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT_1)%additional_attributes(1), 'non_si_units', 'sm-0.333')
 
-      call addoutval(out_quan_conf_map, IDX_MAP_CFRT_2,                                             &
+      call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_2,                                             &
                      'Wrimap_trachytopes', 'cfrt', 'White-Colebrook roughness from trachytopes',                                    &
                      '', '', UNC_LOC_L)
             
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFRT_2)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFRT_2)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFRT_2)%additional_attributes(1), 'non_si_units', 'm')
+      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT_2)%additional_attributes(1))
+      out_quan_conf_map%statout(IDX_MAP_CFTRT_2)%num_additional_attributes = 1
+      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT_2)%additional_attributes(1), 'non_si_units', 'm')
 
-      call addoutval(out_quan_conf_map, IDX_MAP_CFRT,                                               &
+      call addoutval(out_quan_conf_map, IDX_MAP_CFTRT,                                               &
                      'Wrimap_trachytopes', 'cfrt', 'Roughness from trachytopes',                                                    &
                      '', '', UNC_LOC_L)
       
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFRT)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFRT)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFRT)%additional_attributes(1), 'non_si_units', ' ')
+      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT)%additional_attributes(1))
+      out_quan_conf_map%statout(IDX_MAP_CFTRT)%num_additional_attributes = 1
+      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT)%additional_attributes(1), 'non_si_units', ' ')
       
       call addoutval(out_quan_conf_map, IDX_MAP_CFCL,                                               &
                      'Wrimap_calibration', 'cfcl', 'Calibration factor for roughness',                                              &
@@ -2004,7 +2008,8 @@ private
    use m_statistical_callback
    use m_flowparameters
    use m_sediment, only: stm_included, sedtra
-   use m_transport, only: itemp, constituents
+   use m_transport, only: itemp, constituents, ITRA1,ITRAN
+   use m_sferic, only: jsferic
    USE, INTRINSIC :: ISO_C_BINDING
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
@@ -2080,6 +2085,7 @@ private
    function_pointer => calculate_tausxy
    temp_pointer => null()
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
+   call calculate_tausxy(temp_pointer) !> ugly call to make sure tausy_data is allocated
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),tausy_data) ! This variable is updated by calculate_tausxy
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
    if (stm_included) then
@@ -2094,7 +2100,7 @@ private
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZS),czs                                                       )
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZU),czu                                                       )
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFU),frcu                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFUTYP),ifrcutp                                                    )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFUTYP),ifrcutp                                                    )
    if (jatem > 0) then
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TEM1),tem1                                                      )
    endif
@@ -2128,27 +2134,36 @@ private
    if (jacali == 1) then
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFCL),cfclval                                                      )
    endif
-   if (jarain /= 0)
+   if (jarain /= 0) then
       function_pointer => calculate_scaled_rain
       temp_pointer => null()
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RAINFALL_RATE                                             )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RAINFALL_RATE),temp_pointer,function_pointer                         )
    endif
-   if (interceptionmodel /= DFM_HYD_NOINTERCEPT)
+   if (interceptionmodel /= DFM_HYD_NOINTERCEPT) then
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERCEPTION_WATERDEPTH),InterceptHs                                   )
    endif
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PATM),patm                                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ),                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU),wx                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU),wy                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ),                               )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),                               )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU_SFERIC),wx                               )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU_SFERIC),wy                               )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),                                     )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX_SFERIC                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC                                        )
+   if (jawind > 0) then
+      function_pointer => calculate_windxy
+      temp_pointer => null()
+      call calculate_windxy_data(temp_pointer) ! arrays need to initialize before they can be pointered to
+      if (jsferic == 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ),temp_pointer,function_pointer                                              )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),wy_data                                               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU),wx                                                   )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU),wy                                                   )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),wdsu_x_data                             )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),wdsu_y_data                                     )
+      else
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ),temp_pointer,function_pointer                  )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),wy_data                     )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU_SFERIC),wx                               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU_SFERIC),wy                               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX_SFERIC),wdsu_x_data                                       )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC),wdsu_y_data                                       )
+      endif
+   endif
+   
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAIR                                                      )
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHUM                                                      )
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CLOU                                                      )

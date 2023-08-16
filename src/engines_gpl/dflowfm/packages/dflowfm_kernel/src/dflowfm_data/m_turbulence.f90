@@ -112,9 +112,9 @@
  double precision, allocatable, target :: turkin1(:)    !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
 
  double precision, allocatable     :: tureps0  (:)      ! eps old (1/s)  , at layer interface at u
- double precision, allocatable     :: tureps1  (:)      ! eps new        , at layer interface at u
+ double precision, allocatable, target :: tureps1  (:)      ! eps new        , at layer interface at u
 
- double precision, allocatable     :: vicwwu   (:)      ! vertical eddy viscosity (m2/s) at layer interface at u point
+ double precision, allocatable, target :: vicwwu   (:)      ! vertical eddy viscosity (m2/s) at layer interface at u point
  double precision, allocatable, target :: vicwws   (:)  !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
 
  !real            , allocatable    :: tkepro   (:)      ! vertical production t

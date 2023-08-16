@@ -320,14 +320,14 @@
  double precision, allocatable, target :: frcu(:) !< [TODO] friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
  double precision, allocatable     :: frcu_mor(:) !< friction coefficient in morphologically active region set by initial fields {"location": "edge", "shape": ["lnx"]}
  double precision, allocatable     :: frcu_bkp(:) !< Backup of friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
- double precision, allocatable     :: cfclval(:)  !< array for calibration factor for friction coefficients
- double precision, allocatable     :: cftrt(:,:)  !< array for friction coefficients due to trachytopes
+ double precision, allocatable, target :: cfclval(:)  !< array for calibration factor for friction coefficients
+ double precision, allocatable, target :: cftrt(:,:)  !< array for friction coefficients due to trachytopes
  double precision, allocatable     :: cftrtfac(:) !< array for optional multiplication factor for trachytopes's returned roughness values
  integer                           :: jacftrtfac  !< Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
- double precision, allocatable     :: czs(:)      !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
- double precision, allocatable     :: czu(:)      !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
+ double precision, allocatable, target :: czs(:)      !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
+ double precision, allocatable, target :: czu(:)      !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
  double precision, allocatable     :: frculin(:)  !< friction coefficient set by initial fields ( todo mag later ook single real worden)
- integer,          allocatable     :: ifrcutp(:)  !< friction coefficient type   initial fields ( todo mag later ook single real worden)
+ integer,          allocatable, target :: ifrcutp(:)  !< friction coefficient type   initial fields ( todo mag later ook single real worden)
  double precision, allocatable     :: Cdwusp(:)   !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
  double precision, allocatable     :: Windspeedfac(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
  double precision, allocatable, target :: z0ucur(:)   !< current related roughness, moved from waves, always needed
