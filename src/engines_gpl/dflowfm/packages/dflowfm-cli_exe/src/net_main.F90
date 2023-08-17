@@ -122,6 +122,8 @@
 
    call klok(tstartall)
 
+!  call checkinnerloopindex12()
+
 !  call checkunesco83()
 
 #if HAVE_DISPLAY==0
@@ -471,3 +473,53 @@
 
 
    end program unstruc
+
+   subroutine checkinnerloopindex12()
+   implicit none
+   integer          :: n, k, i, nx, kx, ix 
+   double precision :: t0, t1, tinner1, tinner2, ratio12
+   double precision, allocatable :: a(:,:), b(:,:), c(:,:) 
+    
+   nx = 100000   ! nodes
+   kx = 200      ! layers
+   ix = 100      ! nr of timesteps 100 debug, 1000 release
+
+   ALLOCATE (a (kx, nx), b(kx, nx), c(kx,nx) )
+
+   b = 1d0 ; c = 1d0   
+ 
+   call klok(t0); a = 0d0
+   do i = 1,ix 
+      do n = 1,nx
+         do k = 1,kx
+            a(k,n) = a(k,n) + b(k,n) * c(k,n) 
+         enddo
+      enddo
+   enddo
+   call klok(t1)
+   tinner1 = t1-t0
+
+   call klok(t0); a = 0d0
+   do i = 1,ix 
+      do k = 1,kx
+         do n = 1,nx
+            a(k,n) = a(k,n) + b(k,n) * c(k,n)
+         enddo
+      enddo
+   enddo
+   call klok(t1)
+   tinner2 = t1-t0
+
+   ratio12 = tinner1/tinner2
+
+   write(*,*) 'a(k,n) = a(k,n) + b(k,n) * c(k,n) : '   
+   write(*,*) 'isteps, kx, nx                    : ' , ix, kx, nx   
+   write(*,*) 'time inner loop first  index      : ' , tinner1 
+   write(*,*) 'time inner loop second index      : ' , tinner2 
+   write(*,*) 'ratio first/second                : ' , ratio12 
+
+   ! debug: ratio12 = 0.31, release : ratio12 = 1.06 or 0.94
+
+   read(*,*) 
+
+   end subroutine checkinnerloopindex12

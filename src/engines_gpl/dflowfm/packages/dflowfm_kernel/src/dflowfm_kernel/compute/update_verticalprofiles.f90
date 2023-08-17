@@ -75,8 +75,11 @@ subroutine update_verticalprofiles()
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
  integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
-double precision, external :: setrhofixedp
+ integer          :: newtonlin = 1, jasumsoursink = 0
+ double precision :: sourbuoy, sourshear, soureps
+ 
 
+ double precision, external :: setrhofixedp
 
  if (iturbulencemodel <= 0 .or. kmx == 0) return
 
@@ -421,6 +424,7 @@ double precision, external :: setrhofixedp
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
 
+        sourbuoy = 0d0 ; sourshear = 0d0 ; soureps = 0d0
 
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
@@ -497,25 +501,8 @@ double precision, external :: setrhofixedp
  !
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
             buoflu(k)  = max(vicwwu(L), vicwminb)*bruva(k)
+            sourbuoy   = -buoflu(k)
 
-            !c Production, dissipation, and buoyancy term in TKE equation;
-            !c dissipation and positive buoyancy are split by Newton linearization:
-            if (iturbulencemodel == 3) then
-               if (bruva(k) > 0d0) then
-                   dk(k) = dk(k) +     buoflu(k)
-                   bk(k) = bk(k) + 2d0*buoflu(k) / turkin0(L)
-                   ! EdG: make buoyance term in matrix safer
-                   !  bk(k) = bk(k) + 2d0*buoflu(k) / max(turkin0(L), 1d-20)
-               elseif (bruva(k)  < 0d0) then
-                   dk(k) = dk(k) -     buoflu(k)
-               endif
-            else if (iturbulencemodel == 4) then
-               if (bruva(k) > 0d0) then
-                  bk(k) = bk(k) + buoflu(k) / turkin0(L)
-               else if (bruva(k) < 0d0) then
-                  dk(k) = dk(k) - buoflu(k)
-               endif
-            endif
         endif
 
         !c TKEPRO is the energy transfer flux from Internal Wave energy to
@@ -540,20 +527,21 @@ double precision, external :: setrhofixedp
             rich(L) = sigrho*bruva(k)/max(1d-8,dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
         endif
 
-        sourtu    = max(vicwwu(L),vicwminb)*dijdij(k)
-
-        !
+        sourshear = max(vicwwu(L),vicwminb)*dijdij(k)
+         
         if (iturbulencemodel == 3) then
-           sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
-           bk(k)  = bk(k)  + sinktu*2d0
-           dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+           soureps = - tureps0(L)                  
         else if (iturbulencemodel == 4) then
-           sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
-           bk(k)  = bk(k)  + sinktu
-           dk(k)  = dk(k)  + sourtu
+           soureps = - turkin0(L) / tureps0(L)                     
         endif
 
-        ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
+        if (jasumsoursink == 1) then 
+           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy+sourshear+soureps)
+        else 
+           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy)
+           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourshear)
+           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),soureps)
+        endif
 
      enddo  ! Lb, Lt-1
      
@@ -1067,3 +1055,22 @@ double precision, external :: setrhofixedp
  call linkstocenterstwodoubles(vicwws, vicwwu)
 
  end subroutine update_verticalprofiles
+
+ subroutine addsoursink(newtonlin,sor,tur,b,d) 
+ ! add sor (or sink if <0) to diag and rhs to compute tur 
+ integer         , intent(in)     :: newtonlin
+ double precision, intent(in)     :: sor,tur
+ double precision, intent(inout)  :: b,d
+
+ if (sor > 0) then 
+    d = d + sor 
+ else if (sor < 0) then 
+    if (newtonlin == 1) then 
+        b = b - sor*2d0/tur
+        d = d - sor 
+    else if (sork < 0) then 
+        b = b - sor/tur
+    endif  
+ endif  
+ 
+ end subroutine addsoursink
