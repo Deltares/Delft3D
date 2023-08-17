@@ -27,8 +27,8 @@ module m_statistical_callback
       !! written to the his/map file cannot be a pointer but must be calculated and stored every timestep.
       !!
       !! NOTE: these callback functions are also called once during init_statistical_output();
-      !!       if %source_input must be allocated, that is the time to do it once, and should never
-      !!       be reallocated after that.
+      !!       if %source_input must point to newly allocated memory, that is the time to do it once,
+      !!       and should never be reallocated after that.
       subroutine process_data_double_interface(datapointer)
          double precision, pointer, dimension(:), intent(inout) :: datapointer !< pointer to function in-output data
       end subroutine process_data_double_interface
