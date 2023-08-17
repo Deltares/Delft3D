@@ -3907,32 +3907,3 @@ subroutine unc_write_his(tim)            ! wrihis
     if (timon) call timstop (handle_extra(54))
 
 end subroutine unc_write_his
-
-!> A test subroutine for writing s1 to his-file, to be removed later.
-subroutine test_s1_his_output(output_set)
-   use m_observations
-   use m_statistical_output
-   use m_output_config
-   use fm_statistical_output
-   implicit none
-   type(t_output_variable_set), intent(inout) :: output_set     !> output set that needs to be initialized
-   integer :: i
-   
-   call realloc(output_set)
-   i = 1
-   output_set%count = i
-   output_set%statout(i)%output_config => out_quan_conf_his%statout(IDX_HIS_WATERLEVEL)
-   output_set%statout(i)%operation_type = SO_CURRENT
-   output_set%statout(i)%source_input => valobs(IPNT_S1,:)
-   output_set%statout(i)%stat_input => valobs(IPNT_S1,:)
-   output_set%statout(i)%stat_output => valobs(IPNT_S1,:)
-   i = i+1
-   output_set%count = i
-   output_set%statout(i)%output_config => out_quan_conf_his%statout(IDX_HIS_WATERLEVEL)
-   output_set%statout(i)%operation_type = SO_AVERAGE
-   output_set%statout(i)%source_input => valobs(IPNT_S1,:)
-   output_set%statout(i)%stat_input => valobs(IPNT_S1,:)
-   output_set%statout(i)%stat_output => valobs(IPNT_S1,:)
-   call initialize_statistical_output(output_set)
-
-end subroutine test_s1_his_output
