@@ -51,20 +51,20 @@
 !
 ! Name    T   L I/O  Description                              Units
 ! ----    --- -  -   -------------------                      ----
-! H       R   1  I   Significant wave height                           [m]     
-! RL      R   1  I   Significant wave length                           [m]     
-! T       R   1  I   Significant wave period                           [s]     
-! CHZ     R   1  L   Chezy coefficient                         [sqrt(m)/s]     
-! DEPTH   R   1  I   Water depth                                       [m]     
-! TOTDEP  R   1  I   Total water depth                                 [m]     
+! H       R   1  I   Significant wave height                           [m]
+! RL      R   1  I   Significant wave length                           [m]
+! T       R   1  I   Significant wave period                           [s]
+! CHZ     R   1  L   Chezy coefficient                         [sqrt(m)/s]
+! DEPTH   R   1  I   Water depth                                       [m]
+! TOTDEP  R   1  I   Total water depth                                 [m]
 ! G       R   1  I   Acceleration of gravity                        [m/s2]
 ! RHOW    R   1  I   Density of water                              [kg/m3]
-! TAUWIN  R   1  O   Shearstress by wind                  [kg/m/s2 = N/m2]     
-! TAUFLO  R   1  O   Shearstress by flow                            [N/m2]     
-! TAUSCH  R   1  O   Shearstress by ships and human activity        [N/m2]     
-! TAU     R   1  O   Total shearstress                              [N/m2]     
-! TAUVEL  R   1  O   Calculated velocity based on TAU                [m/s]     
-! VELOC   R   1  I   Velocity                                        [m/s]     
+! TAUWIN  R   1  O   Shearstress by wind                  [kg/m/s2 = N/m2]
+! TAUFLO  R   1  O   Shearstress by flow                            [N/m2]
+! TAUSCH  R   1  O   Shearstress by ships and human activity        [N/m2]
+! TAU     R   1  O   Total shearstress                              [N/m2]
+! TAUVEL  R   1  O   Calculated velocity based on TAU                [m/s]
+! VELOC   R   1  I   Velocity                                        [m/s]
 
 !     Logical Units : -
 
@@ -73,21 +73,30 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      IMPLICIT REAL (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+      IMPLICIT NONE
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
-     +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      REAL     :: PMSA  ( * ) , FL    (*)
+      INTEGER  :: IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+     +            IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+
 !
 !     Local declarations, constants in source
 !
-      PARAMETER ( G      =     9.8    ,
-     +            RHOW   =  1000.0    ,
-     +            PI     = 3.14159265 ,
-     +            KARMAN = 0.41       ,
-     +            GRVITY = 9.811      )
-      INTEGER     LUNREP
+      INTEGER  :: IP1,  IP2,  IP3,  IP4,  IP5,  IP6,  IP7,  IP8,
+     +            IP9,  IP10, IP11, IP12, IP13, IP14, IP15, IP16
+
+      REAL, PARAMETER :: RHOW    =  1000.0    ,
+     +                   PI      = 3.14159265 ,
+     +                   KARMAN  = 0.41       ,
+     +                   GRAVITY = 9.811
+
+      INTEGER  :: LUNREP
+      INTEGER  :: IFLUX, ISEG, IKMRK2, ISWTAU, ISWTAUVELOC,
+     +            ISWTAUMAX
+
+      REAL     :: CHZ, CHZ3D, DEPTH, KARMC1, KARMC2, H, RL, T,
+     +            TAUSCH, VELOC, TOTDEP, TAU, TAUWIN, TAUVEL,
+     +            TAUFLO, ROUGH, A6, UBG, ALM, RLF, FWG
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
@@ -104,9 +113,10 @@
       IP13 = IPOINT(13)
       IP14 = IPOINT(14)
       IP15 = IPOINT(15)
+      IP16 = IPOINT(16)
 !
-      KARMC1 = SQRT(GRVITY) / KARMAN
-      KARMC2 = KARMAN / SQRT(GRVITY)
+      KARMC1 = SQRT(GRAVITY) / KARMAN
+      KARMC2 = KARMAN / SQRT(GRAVITY)
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
@@ -126,6 +136,7 @@
       TOTDEP  = PMSA(IP9 )
       ISWTAU  = NINT(PMSA(IP10))
       DEPTH   = PMSA(IP11)
+      ISWTAUMAX = NINT(PMSA(IP12))
 !
 !     Nelson criteria
 !
@@ -163,7 +174,7 @@
 !     Shear stress by flow, calculate if wanted otherwise from input
 
       IF ( ISWTAUVELOC .EQ. 1 ) THEN
-         TAUFLO = RHOW * G * VELOC**2 / CHZ3D**2
+         TAUFLO = RHOW * GRAVITY * VELOC**2 / CHZ3D**2
       ENDIF
 
 !     Shear stress by waves
@@ -192,7 +203,12 @@
                 FWG    = 0.237* RLF**(-0.52)
             ENDIF
 
-            TAUWIN = FWG * 0.25 * RHOW * UBG**2
+            IF ( ISWTAUMAX .EQ. 1 ) THEN
+                TAUWIN = FWG * 0.5 * RHOW * UBG**2
+            ELSE
+                TAUWIN = FWG * 0.25 * RHOW * UBG**2
+            ENDIF
+
          ELSE
             TAUWIN = 0.0
          ENDIF
@@ -210,13 +226,13 @@
       ELSE
          TAU = TAUFLO  + TAUWIN + TAUSCH
 !PBO  Re-calculate total sheerstress (TAU) to a total stream velocity
-         TAUVEL = SQRT ( TAU * CHZ3D**2 / (RHOW * G) )
+         TAUVEL = SQRT ( TAU * CHZ3D**2 / (RHOW * GRAVITY) )
       ENDIF
 
-      PMSA (IP12) = TAU
-      PMSA (IP13) = TAUFLO
-      PMSA (IP14) = TAUWIN
-      PMSA (IP15) = TAUVEL
+      PMSA (IP13) = TAU
+      PMSA (IP14) = TAUFLO
+      PMSA (IP15) = TAUWIN
+      PMSA (IP16) = TAUVEL
 !
       ENDIF
       ENDIF
@@ -237,6 +253,7 @@
       IP13  = IP13  + INCREM ( 13 )
       IP14  = IP14  + INCREM ( 14 )
       IP15  = IP15  + INCREM ( 15 )
+      IP16  = IP16  + INCREM ( 16 )
 !
  9000 CONTINUE
 !

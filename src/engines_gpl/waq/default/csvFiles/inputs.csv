@@ -342,6 +342,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalTau    ","TotalDepth",   9,"N","x",1
 "CalTau    ","SWTau     ",  10,"Y","x",1
 "CalTau    ","Depth     ",  11,"N","x",1
+"CalTau    ","SWTauMax  ",  12,"Y","x",1
 "MACDIS01  ","Surf      ",   1,"N","x",1
 "MACDIS01  ","Depth     ",   2,"N","x",1
 "MACDIS01  ","TotalDepth",   3,"N","x",1
