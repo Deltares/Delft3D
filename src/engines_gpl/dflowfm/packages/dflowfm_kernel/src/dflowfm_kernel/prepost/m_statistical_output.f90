@@ -247,8 +247,8 @@ contains
    use m_statistical_callback
    
       type(t_output_variable_set), intent(inout) :: output_set             !< Output set that item will be added to
-      type(t_output_quantity_config), pointer, intent(in) :: output_config !< Output quantity config linked to this output item
-      double precision, pointer, dimension(:), intent(in) :: data_pointer  !< Pointer to output quantity data ("source input")
+      type(t_output_quantity_config), pointer, intent(in)    :: output_config !< Output quantity config linked to this output item
+      double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< Pointer to output quantity data ("source input")
       procedure(process_data_double_interface), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
       
       type(t_output_variable_item) :: item !> new item to be added
@@ -263,6 +263,7 @@ contains
       item%source_input => data_pointer
       if (present(source_input_function_pointer)) then
          item%source_input_function_pointer => source_input_function_pointer
+         call source_input_function_pointer(data_pointer)
       endif
       
       output_set%statout(output_set%count) = item
@@ -300,9 +301,6 @@ contains
       do j = 1, output_set%count
          item => output_set%statout(j)
          input_size = size(item%source_input)
-         if (associated(item%source_input_function_pointer)) then
-            call item%source_input_function_pointer(item%source_input)
-         endif
 
          select case (item%operation_type)
          case (SO_CURRENT)
