@@ -223,13 +223,13 @@
  double precision, allocatable, target :: freeboard(:)  !< [m] For output purposes: freeboard at cell center, only for 1D
  double precision, allocatable, target :: hsOnGround(:) !< [m] For output purposes: waterdepth above ground level, only for 1D
  double precision, allocatable, target :: volOnGround(:)!< [m3] For output purposes: volume above ground level, only for 1D
- double precision, allocatable         :: qCur1d2d(:)   !< [m3/s] total 1d2d net inflow, current discharge
- double precision, allocatable         :: vTot1d2d(:)   !< [m3] total 1d2d net inflow, cumulative volume
- double precision, allocatable         :: qCurLat(:)    !< [m3/s] total lateral net inflow, current discharge
- double precision, allocatable         :: vTotLat(:)    !< [m3] total lateral net inflow, cumulative volume
+ double precision, allocatable, target :: qCur1d2d(:)   !< [m3/s] total 1d2d net inflow, current discharge
+ double precision, allocatable, target :: vTot1d2d(:)   !< [m3] total 1d2d net inflow, cumulative volume
+ double precision, allocatable, target :: qCurLat(:)    !< [m3/s] total lateral net inflow, current discharge
+ double precision, allocatable, target :: vTotLat(:)    !< [m3] total lateral net inflow, cumulative volume
 
  ! link related, dim = lnx
- double precision, allocatable         :: s1Gradient(:) !< [1] For output purposes: water level gradient on flow links
+ double precision, allocatable, target :: s1Gradient(:) !< [1] For output purposes: water level gradient on flow links
 
 !    Secondary Flow
  double precision, allocatable         :: ducxdx   (:)   !< cell center gradient of x-velocity in x-dir,    (1/s)

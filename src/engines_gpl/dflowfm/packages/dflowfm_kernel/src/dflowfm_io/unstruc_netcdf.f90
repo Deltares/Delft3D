@@ -4222,7 +4222,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     end if
 
 
-    
+    if (jasal > 0) then  ! Write the data: salinity
        if (kmx > 0) then
           !do kk=1,Ndxi
           !   call getkbotktop(kk,kb,kt)

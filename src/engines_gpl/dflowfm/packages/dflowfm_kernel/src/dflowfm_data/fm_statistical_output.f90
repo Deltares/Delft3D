@@ -241,6 +241,31 @@ private
    end if
 
    end subroutine calculate_tausxy
+
+   subroutine linktonode2(u_x, u_y, s_x, s_y, ndxndxi)   ! bring 2 scalars on u points to zeta points
+
+   use m_flowgeom
+   use m_flow
+
+   implicit none
+
+   double precision :: u_x(:),  u_y(:), s_x(:),  s_y(:)
+   integer :: ndxndxi
+
+   integer :: n, L, LL, LLL, k1, k2, k3
+
+   s_x = 0.0d0
+   s_y = 0.0d0
+   do n = 1,ndxndxi
+      do LL=1,nd(n)%lnx
+         LLL = abs(nd(n)%ln(LL))
+         k1 = ln(1,LLL) ; k2 = ln(2,LLL)
+         k3 = 1 ; if( nd(n)%ln(LL) > 0 ) k3 = 2
+         s_x(n) = s_x(n) + u_x(LLL) * wcL(k3,LLL)
+         s_y(n) = s_y(n) + u_y(LLL) * wcL(k3,LLL)
+      end do
+   end do
+   end subroutine linktonode2
    
    subroutine calculate_windxy(data_pointer)
    use m_flowgeom, only: ndx, ndxi
@@ -2144,7 +2169,7 @@ private
 
    subroutine flow_init_statistical_output_map(output_config,output_set)
    use m_flow
-   use m_flowgeom, only: ndxi, ntheta, ndx, ndxi
+   use m_flowgeom, only: ndxi, ntheta, ndx, ndxi, ndx2d, lnx1d
    use m_hydrology_data, only: PotEvap, ActEvap
    use m_wind, only: evap
    use m_statistical_callback
@@ -2154,6 +2179,8 @@ private
    use m_sferic, only: jsferic
    use m_waves
    use m_xbeach_data
+   USE m_flowtimes, only: dtcell, time_wetground
+   use unstruc_channel_flow, only: network
    USE, INTRINSIC :: ISO_C_BINDING
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
@@ -2296,7 +2323,6 @@ private
    if (jawind > 0) then
       function_pointer => calculate_windxy
       temp_pointer => null()
-      call calculate_windxy_data(temp_pointer) ! arrays need to initialize before they can be pointered to
       if (jsferic == 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ),temp_pointer,function_pointer                                              )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),wy_data                                               )
@@ -2432,28 +2458,58 @@ private
          endif
       endif ! jawave gt. 0
    endif !flowWithoutWaves - else case
-   
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL),dtcell                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD                                                 )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND                                          )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D                             )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D                          )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL                          )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL),dtcell                                                    )
+   if (ndxi-ndx2d>0 .and. network%loaded) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND),time_wetground                                      )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD),freeboard                                                 )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND),hsOnGround                                      )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND),volonground                                          )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D),qCur1d2d                             )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D),vTot1d2d                          )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL),qCurLat                          )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL),vTotLat                       )
+   endif
+   if (lnx1d > 0) then
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT),s1gradient                                      )
+   endif
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QIN                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_S1                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_WATERDEPTH                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG_EULER                                               )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCDIR                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCDIR_EULER                                               )
-      !
       
-      call initialize_statistical_output(output_set)
+   call initialize_statistical_output(output_set)
          
    end subroutine flow_init_statistical_output_map
+   
+   !subroutine flow_init_statistical_output_classmap(output_config,output_set)
+   !use m_alloc
+   !use m_output_config
+   !type(t_unc_mapids), intent(inout) :: incids   !< class file and other NetCDF ids.
+   !real(kind=hp),      intent(in)    :: tim      !< simulation time
+   !
+   !integer :: ierr, ndim, i
+   !integer, parameter :: jabndnd_ = 0 !< Whether to include boundary nodes (1) or not (0). Default: no.
+   !integer :: id_class_s1, id_class_hs, id_class_ucmag, id_class_ucdir, tl, var_ids(MAX_ID_VAR)
+   !integer :: id_twodim
+   !character(len=:), allocatable :: errmsg
+   !logical :: isLast, need_flush
+   !real(kind=hp), allocatable :: ucdir(:)
+   !real(kind=hp) :: angle
+   !real(kind=hp), allocatable :: workbounds(:,:)
+   !integer :: nclasses_s1, nclasses_hs, nclasses_ucmag, nclasses_ucdir
+   !
+   ! USE, INTRINSIC :: ISO_C_BINDING
+   !
+   ! type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
+   ! type(t_output_quantity_config_set), intent(in)  :: output_config !> output config for which an output set is needed.
+   ! double precision, pointer, dimension(:) :: temp_pointer
+   ! procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
+   !   
+   !
+   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_S1                                                        )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_WATERDEPTH                                                )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG                                                     )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG_EULER                                               )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCDIR                                                     )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCDIR_EULER                                               )
+   !
+   !end subroutine flow_init_statistical_output_classmap
    
 end module fm_statistical_output

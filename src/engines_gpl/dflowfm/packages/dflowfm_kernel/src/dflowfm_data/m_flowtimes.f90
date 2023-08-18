@@ -72,8 +72,8 @@
  double precision                  :: tim1bnd     !< last time boundary signals were given
  double precision                  :: tim1fld     !< last time field    signals were given
  integer                           :: jatimestepanalysis = 0
- double precision, allocatable     :: dtcell(:)   !< time step per cell based on CFL (s), size:ndkx
- double precision, allocatable     :: time_wetground(:) !< Cumulative time when water is above ground level, size: ndxi (now only for 1d, later also for 2d)
+ double precision, allocatable, target :: dtcell(:)   !< time step per cell based on CFL (s), size:ndkx
+ double precision, allocatable, target :: time_wetground(:) !< Cumulative time when water is above ground level, size: ndxi (now only for 1d, later also for 2d)
 
  !TODO: use in the trachytopes this variable and fully remove reading from rdtrt
  double precision                  :: dt_trach    !< DtTrt Trachytope roughness update time interval (s)
