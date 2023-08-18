@@ -263,8 +263,6 @@ contains
       item%source_input => data_pointer
       if (present(source_input_function_pointer)) then
          item%source_input_function_pointer => source_input_function_pointer
-         call source_input_function_pointer(data_pointer)
-         endif
       endif
       
       output_set%statout(output_set%count) = item
@@ -302,6 +300,9 @@ contains
       do j = 1, output_set%count
          item => output_set%statout(j)
          input_size = size(item%source_input)
+         if (associated(item%source_input_function_pointer)) then
+            call item%source_input_function_pointer(item%source_input)
+         endif
 
          select case (item%operation_type)
          case (SO_CURRENT)
