@@ -39,11 +39,8 @@
 
 !     CREATED:            : march 1993 by Jan van Beek
 
-!     Modified            :       2012 by Jan van Beek, MT3D coupling arrays added
-
 !     FILES               : -
 
-      use dlwq_mt3d_data
       use timers
 
       implicit none
@@ -92,8 +89,6 @@
       if ( imflag .or. ihflag ) then
          dmpq = 0.0
          dmps = 0.0
-         if (allocated(gsl_prev_inf)) gsl_prev_inf = 0.0
-         if (allocated(gsl_prev_upw)) gsl_prev_upw = 0.0
       endif
 
 !     Zero all history realted
