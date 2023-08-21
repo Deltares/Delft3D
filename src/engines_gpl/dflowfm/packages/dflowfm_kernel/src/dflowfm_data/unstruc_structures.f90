@@ -160,7 +160,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_PP_DISDIR = NUMVALS_COMMON_PUMP + 7               !< Pump discharge w.r.t. pumping orientation (same sign as capacity)
  integer, parameter :: NUMEXTVALS_PUMP = 7                                  !< Number of extra variables for pump
  integer, parameter :: NUMVALS_PUMP = NUMVALS_COMMON_PUMP + NUMEXTVALS_PUMP !< Total number of variables for pump
- double precision, dimension(:,:), allocatable :: valpump                   !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valpump                   !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
                                                                             !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
 
  ! Long culvert

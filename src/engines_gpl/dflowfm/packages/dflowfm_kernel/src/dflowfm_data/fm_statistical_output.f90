@@ -1434,17 +1434,17 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_S1DN                ), valcdam(4,:)                  )
       endif
       if (jahispump > 0 .and. npumpsg > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valgenstru(IVAL_DIS       ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_CAPACITY           ),valgenstru(IVAL_PP_CAP    ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valgenstru(IVAL_PP_DISDIR ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1UP               ),valgenstru(IVAL_S1UP      ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1DN               ),valgenstru(IVAL_S1DN      ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valgenstru(IVAL_PP_HEAD   ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valgenstru(IVAL_PP_STAG   ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_HEAD               ),valgenstru(IVAL_PP_HEAD   ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valgenstru(IVAL_PP_RED    ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valgenstru(IVAL_PP_S1DEL  ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valgenstru(IVAL_PP_S1SUC  ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valpump(IVAL_DIS       ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_CAPACITY           ),valpump(IVAL_PP_CAP    ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valpump(IVAL_PP_DISDIR ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1UP               ),valpump(IVAL_S1UP      ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1DN               ),valpump(IVAL_S1DN      ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valpump(IVAL_PP_STAG   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_HEAD               ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valpump(IVAL_PP_S1DEL  ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valpump(IVAL_PP_S1SUC  ,1:npumpsg))
       endif                                                                                          
       if (jahisgate > 0 .and. ngatesg > 0) then
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_DISCHARGE       ),valgate(2,:)                                   )
