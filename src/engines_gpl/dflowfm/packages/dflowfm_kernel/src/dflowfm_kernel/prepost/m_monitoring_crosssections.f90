@@ -441,6 +441,36 @@ subroutine pol_to_crosssections(xpl, ypl, npl, names)
     end do
 end subroutine pol_to_crosssections
 
+!> To which polyline segment ic does this point npl belong? 
+subroutine getpolindex(xpl, npl, ic)
+    use m_missing
+
+    double precision, intent(in)  :: xpl(:)   !< Long array with one or more polylines, separated by dmiss
+    integer,          intent(in)  :: npl      !< point index
+    integer,          intent(out) :: ic       !< polyline index
+    
+    integer :: i, i1, i2
+   
+    i1 = 1 ! First possible start index
+    i2 = 0 ! No end index found yet.
+    ic = 0 ! Nr of polylines found so far
+    do i = 1,npl
+        if (xpl(i) == dmiss .or. i == npl) then
+            if (i == npl .and. xpl(i) /= dmiss) then
+                i2 = i ! Last polyline, no dmiss separator, so also include last point #npl.
+            end if
+            if (i1 <= i2) then
+                ! 1: Special name for this CRS or not?
+                ic = ic + 1
+            end if
+            i1 = i+1
+            cycle
+        else
+            i2 = i ! Advance end point by one.
+        end if
+    end do
+end subroutine getpolindex
+
 !> Fills in the geometry arrays of cross sections for history output
 !! Two special situations are also treated:
 !! 1. The flowlinks of one cross section are not successive on one subdomain, which can happen in both sequetial and parallel simulations.

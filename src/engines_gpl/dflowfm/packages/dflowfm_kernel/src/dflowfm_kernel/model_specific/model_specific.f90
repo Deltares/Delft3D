@@ -442,7 +442,7 @@ integer             :: k, L, LL, num  , kk, k1, k2, Lweir, ncgentst
 double precision    :: slinks,srechts, eup, edo, dE, dH, foot, zg, z1, z2, z3, qg, a, cc, f1, f2, qglab, z2lab, qsimple, tim
 double precision    :: zupstream,zdownstream,crestheight,zcrestperfect,zminsub,zcrest, submer,qfree, g=9.81d0 , qg12, qgen, zg12   
 double precision    :: qweirana,qweirc,uupstream,ucrest,udownstream,bedlev,crestlev, qsub, qsup, qcond, qthd, gateheight, qcrit
-double precision    :: qrajaratnam
+double precision    :: qrajaratnam, qfx6, qfx8, qfx9
 character(len=132)  :: tex
 character(len= 32)  :: regime
 character(len= 15)  :: datetime
@@ -453,7 +453,7 @@ if (mout == 0) then
    tex = 'qweirs6.out'
    write(tex(7:7) , '(i1.1)' ) ifixedweirscheme  
    call newfil(mout, trim(getoutputdir())//tex)
-   write(mout,'(A)') ' submergence  analytic  subgrid'   
+   write(mout,'(A)') ' submergence    analytic    ecm      tab    Vil    General'   
 endif
 
 slinks      = s1(kobs(1))           
@@ -583,34 +583,46 @@ CALL ICTEXT(TRIM(TEX),5,20,Ncolana)
 
 if (j12 == 1) then    
    TEX =  'Q supergrid    :            (m2/s); Q/Qana =                              '
-   qsup = 0.1D0*crs(4)%sumvalcur(IPNT_Q1C) ! specific
+   qsup = 0.1D0*crs(6)%sumvalcur(IPNT_Q1C) ! specific
    WRITE (TEX(18:27),'(f10.3)')  qsup
    WRITE (TEX(47:56),'(f10.3)')  qsup/qweirana
    CALL ICTEXT(TRIM(TEX),5,22,221)
 
-   TEX =  'Q nothing      :            (m2/s); Q/Qana =                              '
-   qsub = 0.1D0*crs(3)%sumvalcur(IPNT_Q1C) ! specific
+   TEX  =  'Q nothing      :            (m2/s); Q/Qana =                              '
+   qsub = 0.1D0*crs(5)%sumvalcur(IPNT_Q1C) ! specific
    WRITE (TEX(18:27),'(f10.3)')  qsub
    WRITE (TEX(47:56),'(f10.3)')  qsub/qweirana
    CALL ICTEXT(TRIM(TEX),5,24,221)
 
    TEX   =  'Q General      :            (m2/s); Q/Qana =                              '
-   qcond = 0.1D0*crs(2)%sumvalcur(IPNT_Q1C) ! specific
-   WRITE (TEX(18:27),'(f10.3)')  qcond
-   WRITE (TEX(47:56),'(f10.3)')  qcond/qweirana
+   qgen  = 0.1D0*crs(4)%sumvalcur(IPNT_Q1C) ! specific
+   WRITE (TEX(18:27),'(f10.3)')  qgen
+   WRITE (TEX(47:56),'(f10.3)')  qgen/qweirana
    CALL ICTEXT(TRIM(TEX),5,26,221)
 
-   TEX  =  'Q fixedweir    :            (m2/s); Q/Qana =                              '
-   qthd = 0.1D0*crs(1)%sumvalcur(IPNT_Q1C) ! specific
-   WRITE (TEX(18:27),'(f10.3)')  qthd 
-   WRITE (TEX(47:56),'(f10.3)')  qthd/qweirana
+   TEX  =  'Q fixedweir VIL:            (m2/s); Q/Qana =                              '
+   qfx9 = 0.1D0*crs(3)%sumvalcur(IPNT_Q1C) ! specific
+   WRITE (TEX(18:27),'(f10.3)')  qfx9 
+   WRITE (TEX(47:56),'(f10.3)')  qfx9/qweirana
    CALL ICTEXT(TRIM(TEX),5,28,221)
+
+   TEX  =  'Q fixedweir TAB:            (m2/s); Q/Qana =                              '
+   qfx8 = 0.1D0*crs(2)%sumvalcur(IPNT_Q1C) ! specific
+   WRITE (TEX(18:27),'(f10.3)')  qfx8 
+   WRITE (TEX(47:56),'(f10.3)')  qfx8/qweirana
+   CALL ICTEXT(TRIM(TEX),5,30,221)
+
+   TEX  =  'Q fixedweir ECM:            (m2/s); Q/Qana =                              '
+   qfx6 = 0.1D0*crs(1)%sumvalcur(IPNT_Q1C) ! specific
+   WRITE (TEX(18:27),'(f10.3)')  qfx6 
+   WRITE (TEX(47:56),'(f10.3)')  qfx6/qweirana
+   CALL ICTEXT(TRIM(TEX),5,32,221)
             
    nt = nt + 1
    if (mod(nt, 100) == 0) then 
      if (zupstream > 0) then 
        submer = zdownstream/zupstream
-       write(mout,'(6F9.6)') submer, Qweirana/qfree,  qthd/qfree   ! qsup/qfree, qsub/qfree,
+       write(mout,'(6F9.6)') submer, Qweirana/qfree,  qfx6/qfree, qfx8/qfree, qfx9/qfree, qgen/qfree  
      else
        submer = 0d0
      endif

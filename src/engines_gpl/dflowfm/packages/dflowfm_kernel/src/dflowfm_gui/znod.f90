@@ -182,7 +182,7 @@ else if (nodval == 27) then
     if (numlimdt(kk) > 0) znod = numlimdt(kk)
  else if (nodval == 33) then
    ZNOD = ( ucx(k)*ucx(k) + ucy(k)*ucy(k) ) / (2d0*ag)
-   znod = u1(min(k,lnx))*u1(min(k,lnx)) / (2d0*ag)
+   !znod = u1(min(k,lnx))*u1(min(k,lnx)) / (2d0*ag)
    znod = znod + s1(kk)
 
    plotlin(kk) = znod

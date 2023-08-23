@@ -48,6 +48,7 @@ subroutine setfixedweirs()
  use string_module,      only: strsplit, get_dirsep
  use geometry_module,    only: dbdistance, CROSSinbox, dcosphi, duitpl, normalout
  use unstruc_caching
+ use m_monitoring_crosssections
 
  implicit none
 
@@ -65,7 +66,7 @@ subroutine setfixedweirs()
  integer,          dimension(:), allocatable :: iPol
 
  integer                                     :: iL, numLL, numcrossedLinks, ii, LLL, LLLa, nx
- integer                                     :: mout, jatabellenboekorvillemonte
+ integer                                     :: mout, jatabellenboekorvillemonte, ifxwscheme
  integer                                     :: ierror
 
  integer                                     :: jakdtree=1
@@ -77,7 +78,7 @@ subroutine setfixedweirs()
  character(len=128)                          :: mesg
  
  integer, parameter                          :: KEEP_PLI_NAMES = 1
- integer                                     :: number_of_plis
+ integer                                     :: number_of_plis, ipli
 
 
  if ( len_trim(md_fixedweirfile) == 0 ) then
@@ -328,15 +329,15 @@ subroutine setfixedweirs()
 
                           if (Lf > 0 .and. adjacentbob .ne. dmiss) then
                              if (jaconveyance2D >= 1) then 
-                             if (lncn(1,Lf) == n1) then
-                                 bob(1,Lf) = adjacentbob
-                             else 
-                                 bob(2,Lf) = adjacentbob
-                             endif
+                                if (lncn(1,Lf) == n1) then
+                                    bob(1,Lf) = adjacentbob
+                                else 
+                                    bob(2,Lf) = adjacentbob
+                                endif
                              else
                                  bob(1,Lf) = adjacentbob
                                  bob(2,Lf) = adjacentbob
-                          endif
+                             endif
                              !nl1 = ln(1,Lf) ; nl2 = ln(2,Lf)
                              !bl(nl1) = min(bl(nl1), adjacentbob )
                              !bl(nl2) = min(bl(nl2), adjacentbob ) ! still needs to be done 
@@ -405,13 +406,20 @@ subroutine setfixedweirs()
              endif
              !! write (msgbuf,'(a,2i5,7f10.3)') 'Projected fixed weir', L, iweirtyp(L), zc, bobL, dzsillu(L), dzsilld(L),crestlen(L),taludu(L),taludd(L); call msg_flush()
           else                                                       ! use global type definition
-             if (ifixedweirscheme == 7) then
+             ifxwscheme = ifixedweirscheme
+             call getpolindex(xpl, k, ipli)
+             if (nampli(ipli)(1:3) ==  'ECM') ifxwscheme = 6 ! Energy Conservation Momentum conservation
+             if (nampli(ipli)(1:3) ==  'RAJ') ifxwscheme = 7 ! Rajaratnam
+             if (nampli(ipli)(1:3) ==  'TAB') ifxwscheme = 8 ! Tabellenboek
+             if (nampli(ipli)(1:3) ==  'VIL') ifxwscheme = 9 ! Villemonte 
+
+             if (ifxwscheme == 7) then
                 iadv(L)    = 23    !  Rajaratnam
-             else if (ifixedweirscheme == 8) then
+             else if (ifxwscheme == 8) then
                 iadv(L)    = 24    !  Tabellenboek
                 dzsillu(L) = max(0.0d0, zc - blu(L));  dzsilld(L) = max(0.0d0, zc - blu(L))  ! if not specified then estimate
                 zcrest(L) = zc
-             else if (ifixedweirscheme == 9) then
+             else if (ifxwscheme == 9) then
                 iadv(L)    = 25    !  Villemonte
                 dzsillu(L) = max(0.0d0, zc - blu(L));  dzsilld(L) = max(0.0d0, zc - blu(L))  ! if not specified then estimate
                 zcrest(L) = zc
@@ -535,7 +543,7 @@ subroutine setfixedweirs()
            call setfixedweirscheme3onlink(L)
            if (ifixedweirscheme == 7) then
                iadv(L) = 23
-    endif
+           endif
        endif
 
     endif
@@ -595,7 +603,7 @@ subroutine setfixedweirs()
 
  deallocate(ihu, csh, snh, zcrest, dzsillu, dzsilld, crestlen, taludu, taludd, vegetat, iweirtyp, ztoeu, ztoed)
  if (jatabellenboekorvillemonte == 0 .and. jashp_fxw == 0 .and. allocated(shlxw) ) then
-    deallocate(shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
+!    deallocate(shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
  endif
 
  do i = 1, nfxw
