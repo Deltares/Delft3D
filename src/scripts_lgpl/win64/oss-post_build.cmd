@@ -227,9 +227,9 @@ rem ===============
         rem Note the awkward usage of !-characters
         call :copyFile !!localstring! !dest_bin!!
         if "!argument!" == "withPetsc" (
-            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\libpetsc.dll"               !dest_bin!
+            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"               !dest_bin!
             rem is needed for dimr nuget package? please check
-            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\libpetsc.dll"               !dest_share!
+            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"               !dest_share!
         )
     )
 goto :endproc
@@ -265,9 +265,9 @@ rem ===============
         if "!argument!" == "withPetsc" (
             rem if 'mkl_redist_dir' contains 'oneAPI', use the version of petsc built with oneAPI Fortran
             if not "x!mkl_redist_dir:oneAPI=!"=="x!mkl_redist_dir!" (
-                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release-oneAPI\libpetsc.dll"             !dest_bin!
+                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release-oneAPI\*.dll"             !dest_bin!
             ) else (
-                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\libpetsc.dll"             !dest_bin!
+                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"             !dest_bin!
             )
         )
     )

@@ -29,6 +29,8 @@ if (WIN32)
     set(floating_point_exception_flag         /fpe:0)
     set(traceback_flag                        /traceback)
     
+    set(codecov_flag                          /Qcov-gen)
+
     if (CMAKE_GENERATOR MATCHES "Visual Studio") # for visual studio
         # To prevent Visual Studio compilation failures when trying to write the manifest file
         # to a blocked .exe
@@ -71,3 +73,11 @@ endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
 set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag} ${traceback_flag})
+
+
+# Define the custom flag about code coverage with a default value of OFF
+option(ENABLE_CODE_COVERAGE "Enable the code coverage" OFF)
+if(ENABLE_CODE_COVERAGE)
+    message("Code coverage analysis is enabled")
+    set(waq_default_flags ${codecov_flag})
+endif(ENABLE_CODE_COVERAGE)

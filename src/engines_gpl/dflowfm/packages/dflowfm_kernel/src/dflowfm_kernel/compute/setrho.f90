@@ -111,16 +111,17 @@ if (jased > 0 .and. stm_included) then
          end if
       end do
    end if
+else if (jasubstancedensitycoupling > 0) then ! for now, DELWAQ concentrations in g/m3
+   rhom = setrho
+   do i = itra1, itran 
+      setrho = setrho + (1d-3)*constituents(i,cell)*(SAND_DENSITY - rhom)/SAND_DENSITY ! Herman's suggestion 
+    enddo
 else if (jaseddenscoupling > 0) then  ! jased < 4
    rhom = setrho
    do i = 1,mxgr
       setrho = setrho + sed(i,cell)*(rhosed(i) - rhom)/rhosed(i) ! good to see this is also adopted officially above %
    enddo
-else if (ja_tracers_density_coupling > 0) then
-   rhom = setrho
-   do i = itra1, itran 
-      setrho = setrho + constituents(i,cell)*(SAND_DENSITY - rhom)/SAND_DENSITY ! Herman's suggestion 
-   enddo
+
 end if
 
 setrho = min(setrho, 1250d0)          ! check overshoots at thin water layers

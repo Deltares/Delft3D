@@ -26,7 +26,6 @@
       use m_proint
       use m_proces
       use m_hsurf
-      use m_dlwq_mt3d
       use m_dlwqtr
       use m_dlwqo2
 
@@ -184,13 +183,6 @@
          call dryfld ( noseg    , nosss    , nolay    , a(ivol)  , noq1+noq2,
      &                 a(iarea) , nocons   , c(icnam) , a(icons) , surface  ,
      &                 j(iknmr) , iknmkv   )
-
-!        mt3d coupling
-
-         call dlwq_mt3d ( lun (19) , itime    , idt      , itstop   , notot    ,
-     &                    nosys    , nosss    , nobnd    , c(isnam) , c(ibnid) ,
-     &                    j(ibpnt) , a(iconc) , a(ibset) , noqtt    , j(ixpnt) ,
-     &                    a(iflow) , ndmpq    , j(iqdmp) , a(idmpq) )
 
 !        user transport processes
 

@@ -6130,13 +6130,11 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
 
    ! Water level
    if (jamaps1 == 1) then
-      call add_dmiss_to_dry_points_then_put_array_into_map(s1, hu, FIRST_ARRAY, &
-              mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, jabndnd_, ierr) 
+      ierr = write_array_with_dmiss_for_dry_cells_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, s1, jabndnd=jabndnd_) 
    end if
 
    if (jamaps0 == 1) then
-      call add_dmiss_to_dry_points_then_put_array_into_map(s0, hu, FIRST_ARRAY, &
-              mapids%ncid, mapids%id_tsp, mapids%id_s0, UNC_LOC_S, jabndnd_, ierr)
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_s0, UNC_LOC_S, s0, jabndnd=jabndnd_)
    end if
 
    if (jamapqin > 0 .and. jaqin > 0) then
@@ -6183,8 +6181,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
    ! Velocities
    if (jamapu1 == 1) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u1, iLocU, u1, 0d0, jabndnd=jabndnd_)
-      call add_dmiss_to_dry_points_then_put_array_into_map(s1, hu, SECOND_ARRAY, &
-              mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, jabndnd_, ierr)
+      ierr = write_array_with_dmiss_for_dry_faces_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, hu, jabndnd=jabndnd_)
    end if
    if (jamapu0 == 1) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, iLocU, u0, 0d0, jabndnd=jabndnd_)
@@ -17359,50 +17356,68 @@ do n = 1,ndxndxi
 end do
 end subroutine linktonode2
 
-!> add_dmiss_to_dry_points_in s1, s0 or hu arrays then_put_array_into_map file
-subroutine add_dmiss_to_dry_points_then_put_array_into_map(water_level, upwind_waterheight, array, &
-    ncid, id_tsp, id_var, data_location, jabndnd_, ierr)
-
+!> write_array_with_dmiss_for_dry_cells_into_netcdf_file
+function write_array_with_dmiss_for_dry_cells_into_netcdf_file(ncid, id_tsp, id_var, data_location, array, jabndnd) result(ierr)
+   use m_flowgeom,      only : kfs
    use m_alloc,         only : aerr
    use m_missing,       only : dmiss
 
    implicit none
 
-   double precision, allocatable, intent(in)       :: water_level(:)         !< water_level
-   double precision, allocatable, intent(in)       :: upwind_waterheight(:)  !< upwind_waterheight
-   integer,                       intent(in)       :: array                  !< 1 (water level) or 2 (upwind water height)
    integer,                       intent(in)       :: ncid                   !< NetCDF dataset id
    type(t_unc_timespace_id),      intent(in)       :: id_tsp                 !< Map file and other NetCDF ids.
    integer,                       intent(in)       :: id_var(:)              !< Variable ID 
    integer,                       intent(in)       :: data_location          !< Data location
-   integer,                       intent(in)       :: jabndnd_               !< Flag specifying whether boundary nodes are to be written.
-   integer,                       intent(out)      :: ierr                   !< Result status
+   double precision, allocatable, intent(in)       :: array(:)               !< array to be written
+   integer, optional,             intent(in)       :: jabndnd                !< Flag specifying whether boundary nodes are to be written.
+   
+   integer                                         :: ierr                   !< Result status
+   double precision, allocatable                   :: temp_array(:)
 
-   double precision, allocatable                   :: temp_water_level(:)
-   double precision, allocatable                   :: temp_upwind_waterheight(:)
-   logical, parameter                              :: IS_MIN_WATER_LEVEL_AT_BOTTOM = .false.
-   logical, parameter                              :: IS_AU_TO_BE_REDUCED = .false.
-   integer, parameter                              :: JA_MAP_FLOW_ANALYSIS = 0
-
-   allocate(temp_water_level(size(water_level)), stat=ierr)
-   if (ierr /= 0) call aerr( 'water_level', ierr, size(water_level))
-   allocate(temp_upwind_waterheight(size(upwind_waterheight)), stat=ierr)
-   if (ierr /= 0) call aerr( 'upwind_waterheight', ierr, size(upwind_waterheight))
-
-    temp_water_level        = water_level
-    temp_upwind_waterheight = upwind_waterheight
-    call set_water_level_and_hu_for_dry_cells(size(temp_water_level), temp_water_level, &
-          size(temp_upwind_waterheight), temp_upwind_waterheight, dmiss, &
-          IS_MIN_WATER_LEVEL_AT_BOTTOM, IS_AU_TO_BE_REDUCED, JA_MAP_FLOW_ANALYSIS)
-    if ( array == 1 ) then
-        ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_water_level, jabndnd=jabndnd_)
-    else
-        ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_upwind_waterheight, jabndnd=jabndnd_)
-    end if
+   allocate(temp_array(size(array)), stat=ierr)
+   if (ierr /= 0) call aerr( 'temp_array', ierr, size(array))
+   
+   where (kfs==0)
+       temp_array = dmiss
+   elsewhere
+       temp_array = array
+   end where
+   ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_array, jabndnd=jabndnd)
     
-    deallocate(temp_water_level)
-    deallocate(temp_upwind_waterheight)
+   deallocate(temp_array)
       
-end subroutine add_dmiss_to_dry_points_then_put_array_into_map
+end function write_array_with_dmiss_for_dry_cells_into_netcdf_file
+
+!> write_array_with_dmiss_for_dry_faces_into_netcdf_file
+function write_array_with_dmiss_for_dry_faces_into_netcdf_file(ncid, id_tsp, id_var, data_location, array, jabndnd) result(ierr)
+   use m_flow,           only : hu
+   use m_alloc,          only : aerr
+   use m_missing,        only : dmiss
+
+   implicit none
+
+   integer,                       intent(in)       :: ncid                   !< NetCDF dataset id
+   type(t_unc_timespace_id),      intent(in)       :: id_tsp                 !< Map file and other NetCDF ids.
+   integer,                       intent(in)       :: id_var(:)              !< Variable ID 
+   integer,                       intent(in)       :: data_location          !< Data location
+   double precision, allocatable, intent(in)       :: array(:)               !< array to be written
+   integer, optional,             intent(in)       :: jabndnd                !< Flag specifying whether boundary nodes are to be written.
+   
+   integer                                         :: ierr                   !< Result status
+   double precision, allocatable                   :: temp_array(:)
+
+   allocate(temp_array(size(array)), stat=ierr)
+   if (ierr /= 0) call aerr( 'temp_array', ierr, size(array))
+
+   where (hu > 0d0) ! taken from setkfs.f90
+       temp_array = array
+   elsewhere
+       temp_array = dmiss
+   end where
+   ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_array, jabndnd=jabndnd)
+    
+   deallocate(temp_array)
+      
+end function write_array_with_dmiss_for_dry_faces_into_netcdf_file
 
 end module unstruc_netcdf

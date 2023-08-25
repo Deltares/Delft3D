@@ -630,10 +630,12 @@ contains
     
 subroutine check_fixed_weirs_parameters_against_limits()
 
-   double precision, parameter :: GROUND_HEIGHT_MINIMUM = 0.0d0
+   double precision, parameter :: GROUND_HEIGHT_MINIMUM =-500.0d0
    double precision, parameter :: GROUND_HEIGHT_MAXIMUM = 500.0d0 
-   double precision, parameter :: SLOPE_MINIMUM = 0.001d0
+   
+   double precision, parameter :: SLOPE_MINIMUM = -1.0d-8
    double precision, parameter :: SLOPE_MAXIMUM = 1000.0d0
+   
    double precision, parameter :: CREST_LEVEL_MAXIMUM = 10000.0d0
    double precision, parameter :: CREST_LEVEL_MINIMUM =-10000.0d0
 
