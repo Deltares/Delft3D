@@ -774,6 +774,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get_logical(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
     call prop_get_logical(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
     call prop_get_logical(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
+    call prop_get_double(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     fluxlimstring = ' '
     call prop_get_string(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
     call str_lower(fluxlimstring)
