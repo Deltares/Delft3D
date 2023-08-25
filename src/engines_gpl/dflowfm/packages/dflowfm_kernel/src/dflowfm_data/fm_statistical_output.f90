@@ -41,20 +41,23 @@ private
 
    contains
    
-   subroutine calculate_FXY_data(data_pointer)
+   !> Calculates wave force vectors for map output.
+   !! Will allocate and fill both the fx and fy and wavfu_l and wafv_l arrays,
+   !! but should be called only for the fx output item.
+   subroutine calculate_FXY_data(source_input)
    use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
    use m_flow, only: kmx, ndkx, hu, wavfu, wavfv
    use m_physcoef, only: rhomean
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< pointer to source input array for the "Fx" item, to be assigned once on first call.
    
    integer :: L, LL, Lb, Lt, k1, k2
    
-    if (.not. allocated(FX_data)) then
-      allocate(FX_data(ndkx),FY_data(ndkx),wavfu_data(ndkx),wavfv_data(ndkx))
+   if (.not. allocated(FX_data)) then
+      allocate(FX_data(ndkx), FY_data(ndkx), wavfu_data(ndkx), wavfv_data(ndkx))
    endif
    
-   if (.not. associated(data_pointer))then
-      data_pointer => FX_data
+   if (.not. associated(source_input))then
+      source_input => FX_data
    endif
    
    if (kmx==0) then
@@ -223,7 +226,6 @@ private
    
    if (jawave==0) then        ! Else, get taus from subroutine tauwave (taus = f(taucur,tauwave))
       call gettaus(1,1)
-      !workx=DMISS; worky=DMISS
       if (kmx==0) then
          do k = 1, ndx   ! stack
             tausx_data(k) = taus(k)*ucx(k)/max(hypot(ucx(k),ucy(k)),1d-4)  ! could use ucmag, but not guaranteed to exist
@@ -294,7 +296,7 @@ private
 
    end subroutine calculate_windxy
    
-   !> calculates ucmaga vector norm
+   !> Calculates the velocity magnitude on cell centers.
    subroutine calculate_ucmaga(data_pointer)
    use m_flow, only: ucx, ucy
    use m_flowgeom, only: ndx, ndxi
@@ -2232,9 +2234,8 @@ private
    endif
    if (kmx > 0) then
       function_pointer => calculate_ucmaga
-      temp_pointer => null()
       if (jaeulervel==1 .and. jawave>0) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),temp_pointer,function_pointer                                                )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),null(),function_pointer                                                )
       else
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA),temp_pointer,function_pointer                                                    )
       endif

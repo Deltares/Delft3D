@@ -405,8 +405,8 @@ private
    integer, public :: IDX_MAP_L1
    integer, public :: IDX_MAP_SWE
    integer, public :: IDX_MAP_SWT
-   integer, public :: IDX_MAP_UST_X
-   integer, public :: IDX_MAP_UST_Y
+   integer, public :: IDX_MAP_UXST_CC
+   integer, public :: IDX_MAP_UYST_CC
    integer, public :: IDX_MAP_USTOKES
    integer, public :: IDX_MAP_VSTOKES
    integer, public :: IDX_MAP_THETAMEAN
