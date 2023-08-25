@@ -29,7 +29,7 @@ contains
                           nmax   , mmax   , mnmaxk , lgrid2 , velo   ,   &
                           layt   , area   , depth  , dps    , locdep ,   &
                           zlevel , zmodel , laytop , laytopp, laybot ,   &
-                          pagrid , aagrid , tcktot , ltrack , flow2m ,   & 
+                          pagrid , aagrid , tcktot , ltrack , flow2m ,   &
                           lgrid3 , vol1   , vol2   , vel1   , vel2   )
 !
 !
@@ -83,9 +83,9 @@ contains
       real   (rp), intent(in   ) :: volume(:)              !< volumes
       real   (rp), intent(in   ) :: flow  (*)              !< flows
       real   (rp), intent(in   ) :: area  (:)              !< horizontal surface area
-      real   (rp), intent(  out) :: depth (:)              !< water depth
+      real   (rp), intent(  out) :: depth (:)              !< total water depth (from current surface to bottom)
       real   (rp), intent(  out) :: velo  (:)              !< velocities in 3D
-      real   (rp), intent(in   ) :: dps   (:)              !< bed depth
+      real   (rp), intent(in   ) :: dps   (:)              !< bed depth w.r.t. reference (fixed in time!)
       real   (rp), intent(  out) :: locdep(:,:)            !< depth per layer
       real   (rp), intent(  out) :: zlevel(:)
       logical    , intent(in   ) :: zmodel
@@ -181,60 +181,68 @@ contains
                   i3 = lgrid2(i1 - 1, i2    )
                   i33d = i3 + (ilay-1)*nmax*mmax
                   if (i3  >  0) then
-                    vy  = flow(i33d        ) / volume(i03d) * dy(i0)
-                    sum = sum + vy**2
+                     vy  = flow(i33d        ) / volume(i03d) * dy(i0)
+                     sum = sum + vy**2
                   endif
                   i4 = lgrid2(i1    , i2 - 1)
                   i43d = i4 + (ilay-1)*nmax*mmax
                   if (i4  >  0) then
-                    vx  = flow(i43d+mnmaxk) / volume(i03d) * dx(i0)
-                    sum = sum + vx**2
+                     vx  = flow(i43d+mnmaxk) / volume(i03d) * dx(i0)
+                     sum = sum + vx**2
                   endif
                   velo(i03d) = sqrt(sum / 2.0)
                   dplay = volume(i03d)/area(i0)
                   if (ilay .eq. 1) then
-                    vel1(iseg) = velo(i03d)
+                     vel1(iseg) = velo(i03d)
 
-                    ! next time level
-                    if(vol2(iseg) .gt. 0.0001) then
-                      vy = flow2m(i03d        ) / vol2(iseg) * dy(i0)
-                      vx = flow2m(i03d+ mnmaxk) / vol2(iseg) * dx(i0)
-                    else
-                      vy = 0.0
-                      vx = 0.0
-                    endif
+                     ! next time level
+                     if(vol2(iseg) .gt. 0.0001) then
+                        vy = flow2m(i03d        ) / vol2(iseg) * dy(i0)
+                        vx = flow2m(i03d+ mnmaxk) / vol2(iseg) * dx(i0)
+                     else
+                        vy = 0.0
+                        vx = 0.0
+                     endif
 !
 !                   calculate sum; value >= 0
 !
-                    sum = vx**2 + vy**2
+                     sum = vx**2 + vy**2
 !
-                    i3 = lgrid2(i1 - 1, i2    )
-                    i33d = i3 + (ilay-1)*nmax*mmax
-                    if (i3  >  0) then
-                      if(vol2(iseg) .gt. 0.0001) then
-                        vy  = flow2m(i33d        ) / vol2(iseg) * dy(i0)
-                      else
-                        vy = 0.0
-                      endif
-                      sum = sum + vy**2
-                    endif
+                     i3 = lgrid2(i1 - 1, i2    )
+                     i33d = i3 + (ilay-1)*nmax*mmax
+                     if (i3  >  0) then
+                        if(vol2(iseg) .gt. 0.0001) then
+                           vy  = flow2m(i33d        ) / vol2(iseg) * dy(i0)
+                        else
+                           vy = 0.0
+                        endif
+                        sum = sum + vy**2
+                     endif
 !
-                    i4 = lgrid2(i1    , i2 - 1)
-                    i43d = i4 + (ilay-1)*nmax*mmax
-                    if (i4  >  0) then
-                      if(vol2(iseg) .gt. 0.0001) then
-                        vx  = flow2m(i43d+mnmaxk) / vol2(iseg) * dx(i0)
-                      else
-                        vx = 0.0
-                      endif
-                      sum = sum + vx**2
-                    endif
-                    vel2(iseg) = sqrt(sum/2.0)
-                    locdep(i0,ilay) = dplay
+                     i4 = lgrid2(i1    , i2 - 1)
+                     i43d = i4 + (ilay-1)*nmax*mmax
+                     if (i4  >  0) then
+                        if(vol2(iseg) .gt. 0.0001) then
+                           vx  = flow2m(i43d+mnmaxk) / vol2(iseg) * dx(i0)
+                        else
+                           vx = 0.0
+                        endif
+                        sum = sum + vx**2
+                     endif
+                     vel2(iseg) = sqrt(sum/2.0)
+                     locdep(i0,ilay) = dplay
                   else
-                    locdep(i0,ilay) = locdep(i0,ilay-1) + dplay
+                     locdep(i0,ilay) = locdep(i0,ilay-1) + dplay
                   end if
-                  depth(i0)  = locdep(i0,layt)
+
+                  !
+                  ! As not all segment in the water column are actually
+                  ! active in the case of z-layers, store the last
+                  ! local depth in the total depth - the last update
+                  ! is automatically the total depth for that water
+                  ! column.
+                  !
+                  depth(i0)  = locdep(i0,ilay)
                end do
             end if
          end do
