@@ -254,6 +254,8 @@ type moroutputtype
     logical :: taub
     logical :: taurat
     logical :: tcrero
+    logical :: td
+    logical :: preload
     logical :: umod
     logical :: ustar
     logical :: uuuvvv
@@ -1651,6 +1653,8 @@ subroutine initmoroutput(moroutput, def)
     moroutput%frac          = no
     moroutput%lyrfrac       = yes
     moroutput%msed          = yes
+    moroutput%td            = no
+    moroutput%preload       = no
     moroutput%mudfrac       = no
     moroutput%orbvel        = no
     moroutput%percentiles   = no

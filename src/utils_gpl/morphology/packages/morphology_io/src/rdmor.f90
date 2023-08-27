@@ -857,6 +857,8 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get_logical(mor_ptr, 'Output', 'TcrEro'                      , moroutput%tcrero)
     call prop_get_logical(mor_ptr, 'Output', 'Taub'                        , moroutput%taub)
     call prop_get_logical(mor_ptr, 'Output', 'Taurat'                      , moroutput%taurat)
+    call prop_get_logical(mor_ptr, 'Output', 'td    '                      , moroutput%td)
+    call prop_get_logical(mor_ptr, 'Output', 'preload'                     , moroutput%preload)
     !
     call prop_get_logical(mor_ptr, 'Output', 'Dm'                          , moroutput%dm)
     call prop_get_logical(mor_ptr, 'Output', 'Dg'                          , moroutput%dg)
