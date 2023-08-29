@@ -46,7 +46,7 @@ module m_xbeach_data
    double precision, allocatable              :: ee_s(:,:)       !< wave energy single dir
    double precision, allocatable, target      :: kwav(:)         !< wavenumber k (rad/m)
    double precision, allocatable, target      :: nwav(:)         !< cg/c (-)
-   double precision, allocatable              :: ctheta(:,:)     !< propagation speed in theta space
+   double precision, allocatable, target      :: ctheta(:,:)     !< propagation speed in theta space
    double precision, allocatable, target      :: sigmwav(:)      !< wave frequency (rad/s)
    double precision, allocatable              :: sigt(:,:)
    double precision, allocatable              :: horadvec(:,:)   !< horizontal advection

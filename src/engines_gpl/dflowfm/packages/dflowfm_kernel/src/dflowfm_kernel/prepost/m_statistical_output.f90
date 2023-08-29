@@ -248,7 +248,7 @@ contains
    
       type(t_output_variable_set), intent(inout) :: output_set             !< Output set that item will be added to
       type(t_output_quantity_config), pointer, intent(in)    :: output_config !< Output quantity config linked to this output item
-      double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< Pointer to output quantity data ("source input")
+      double precision, pointer, dimension(:), intent(in) :: data_pointer  !< Pointer to output quantity data ("source input")
       procedure(process_data_double_interface), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
       
       type(t_output_variable_item) :: item !> new item to be added
@@ -260,10 +260,11 @@ contains
       
       item%output_config => output_config
       item%operation_type = set_operation_type(output_config)
-      item%source_input => data_pointer
       if (present(source_input_function_pointer)) then
          item%source_input_function_pointer => source_input_function_pointer
-         call source_input_function_pointer(data_pointer)
+         call source_input_function_pointer(item%source_input)
+      else
+         item%source_input => data_pointer
       endif
       
       output_set%statout(output_set%count) = item
