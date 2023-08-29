@@ -132,6 +132,7 @@ private
    use m_transport
    use m_flow, only: ndkx
    use m_missing, only: dmiss
+
    double precision, pointer, dimension(:), intent(inout) :: data_pointer
    
    integer :: k
@@ -161,6 +162,7 @@ private
    subroutine calculate_tidpot(data_pointer)
    use m_flow, only: tidep
    use m_flowgeom, only: ndx
+   use m_flowparameters, only: jaselfal
 
    double precision, pointer, dimension(:), intent(inout) :: data_pointer
    
@@ -173,10 +175,15 @@ private
    if (.not. associated(data_pointer))then
       data_pointer => tidepot
    endif
-   
-   do k = 1, Ndx
-     tidepot(k) = tidep(1,k) - tidep(2,k)
-   end do
+   if ( jaselfal == 0 ) then
+      do k = 1, Ndx
+         tidepot(k) = tidep(1,k) 
+      end do
+   else
+      do k = 1, Ndx
+        tidepot(k) = tidep(1,k) - tidep(2,k)
+      end do
+   endif
    
    end subroutine calculate_tidpot
    
