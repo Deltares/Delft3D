@@ -53,7 +53,7 @@ public :: calculate_hu_au_and_advection_for_dams_weirs
 
 contains
 ! 
-!> Set upwind waterdepth hu and au
+!> Set upwind waterdepth hu and au. Original name : subroutine sethu( 
 subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0)                           
    use m_flowgeom
    use m_flow
@@ -92,7 +92,7 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0)
    double precision    :: sigma
    double precision    :: hub
    double precision    :: zw0u
-   double precision    :: ucx_up, ucy_up, u_in, vhei, eup
+   double precision    :: ucx_up, ucy_up, u_in, vhei, eup, vhei1, vhei2
    logical             :: dams_or_weirs
 
    double precision, pointer  :: velocity_pointer(:)
@@ -323,7 +323,7 @@ subroutine calculate_advection_block_Tabellenboek_and_Villemonte()
    double precision  :: dte0
    double precision  :: dtefri
    double precision  :: vbov
-   double precision  :: agwdxi
+   double precision  :: agwdxi, desol
 
    nfw     =  nfxwL(link)
    wsbov   =  upstream_water_level
@@ -337,30 +337,33 @@ subroutine calculate_advection_block_Tabellenboek_and_Villemonte()
       d1 = shlxw(nfw)
    end if
 
-   vhei   =  0.5d0 * u_in * u_in / ag
-   energy_height_upstream  =  max (0.000001d0, wsbov + hkru_in) + vhei
+   vhei1  =  0.5d0 * u_in * u_in / ag 
+   energy_height_upstream  =  max (0.000001d0, wsbov + hkru_in) + vhei1
    qvolk  =  avolk * energy_height_upstream**1.5d0
    qunit  =  abs(u_in) * water_height_no_weir
 
    vben   = qunit / max (0.000001d0, wsben - bl(downstream_cell))
-   vhei   =  0.5d0 * vben * vben / ag
-   energy_height_downstream  =  max (0.000001d0, wsben + hkru_in) + vhei
+   vhei2  =  0.5d0 * vben * vben / ag 
+   energy_height_downstream = max (0.000001d0, wsben + hkru_in) + vhei2
    energy_height_downstream = min(energy_height_downstream, energy_height_upstream)
-                
+
+   desol  = energy_height_upstream - energy_height_downstream
+               
    hov    =  wsbov + hkru_in
    vov    =  qunit / hov
-   if (vov < 0.5d0 ) then
+!   if (vov < 0.5d0 ) then
       itel  = 0
       hvolk = TWO_THIRDS * energy_height_upstream
       tol   = 0.001d0 *max(0.0001d0, qunit)
       qov   = 0d0
-      do while (itel < 100 .and. (abs(qunit - qov)) > tol )
+!      do while (itel < 100 .and. (abs(qunit - qov)) > tol )
+      do while (itel < 100 .and. (abs(qunit - qov)) > 0.0001d0*qunit )
           itel = itel + 1
           vov  = qunit / hov
           hov  = max(hvolk, energy_height_upstream - (vov**2)/(2d0*ag) )
           qov  = vov * hov
       end do
-   end if
+!   end if
    dte0   = weirdte(nfw)
    dtefri = 0.0d0
    call enloss(ag, d1, energy_height_upstream, hkru_in, hov, qunit, qvolk, toest, vov, &
@@ -370,11 +373,20 @@ subroutine calculate_advection_block_Tabellenboek_and_Villemonte()
 
    ! attention total waterdepth instead of water above crest
    vbov   =  abs(u_in)
-   if ( toest == 'volk' ) then
-       vbov = qvolk/max(water_height_no_weir, 1d-6 )
-   end if
+  ! if ( toest == 'volk' ) then
+  !     vbov = qvolk/max(water_height_no_weir, 1d-6 )
+  ! end if
+
    if (vbov > 1d-8) then
-      agwdxi  = ag * weirdte(nfw) * dxi(link)
+      if ( iadv(link) == 25) then 
+         agwdxi  = ag * (weirdte(nfw) - vhei1 + vhei2) * dxi(link)
+      else
+         if ( toest == 'volk' ) then
+            vbov = qvolk/max(water_height_no_weir, 1d-6 )
+         end if
+         agwdxi  = ag * (weirdte(nfw)                ) * dxi(link)
+      endif 
+
       if (kmx == 0) then
          advi(link) = advi(link) + agwdxi / vbov        ! 1/s
       else

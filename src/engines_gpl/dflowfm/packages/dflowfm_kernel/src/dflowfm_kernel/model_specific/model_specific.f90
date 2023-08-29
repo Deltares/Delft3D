@@ -554,7 +554,7 @@ if (qweirana == 0d0) return
 eup = zupstream   + 0.5d0*uupstream*uupstream/ag
 edo = zdownstream + 0.5d0*udownstream*udownstream/ag 
 dE  = eup - edo   ; dH = zupstream - zdownstream  
-dE  = max(0d0, dE) ; dH = max(0d0, dH)  
+dE  = max(0d0, dE); dH = max(0d0, dH)  
 
 TEX  =  'Uup :            Ucr :               Udown :                '
 WRITE (TEX( 7:16),'(f10.3)')  uupstream  
@@ -562,16 +562,18 @@ WRITE (TEX(24:33),'(f10.3)')  ucrest
 WRITE (TEX(46:55),'(f10.3)')  udownstream  
 CALL ICTEXT(TRIM(TEX),5,14,Ncolana)
 
-TEX  =  'Zup :            Zcr :               Zdown :                '
+TEX  =  'Zup :            Zcr :               Zdown :            dZ :                '
 WRITE (TEX( 7:16),'(f10.3)')  zupstream      
 WRITE (TEX(24:33),'(f10.3)')  zcrest 
 WRITE (TEX(46:55),'(f10.3)')  zdownstream  
+WRITE (TEX(60:69),'(f10.3)')  dH 
 CALL ICTEXT(TRIM(TEX),5,16,Ncolana)
 
-TEX  =  'Eup :            Ecr :               Edown :                '
+TEX  =  'Eup :            Ecr :               Edown :            dE :                '
 WRITE (TEX( 7:16),'(f10.3)')  eup   
 WRITE (TEX(24:33),'(f10.3)')  zcrest + 0.5d0*ucrest*ucrest/ag     
 WRITE (TEX(46:55),'(f10.3)')  edo 
+WRITE (TEX(60:69),'(f10.3)')  dE 
 CALL ICTEXT(TRIM(TEX),5,18,Ncolana)
 
 TEX =  'Q-analytic     : '

@@ -66,7 +66,7 @@ subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
 !
     real(fp)    , intent(in)    :: ag     !  Description and declaration in esm_alloc_real.f90
     real(fp)    , intent(in)    :: d1     !!  Distance between crest and downstream depth
-    real(fp)    , intent(out)   :: dte    !!  Subgrid energy loss due to weir
+    real(fp)    , intent(out)   :: dte    !!  Subgrid energy loss due to weir (m)
     real(fp)    , intent(in)    :: dtefri !!  Energy loss due to friction
     real(fp)    , intent(in)    :: ewben  !!  Energy height downstream
     real(fp)    , intent(in)    :: eweir  !!  Energy height at weir
@@ -228,7 +228,8 @@ subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
     !
     if (iflagweir == 24) then    !! Tabellenboek
        !
-       if (dtevol*qqv**2>=dteonv) then
+ !       if (dtevol*qqv**2>=dteonv) then
+        if (dtevol*qqv**2>dteonv) then
            !
            ! It is a free weir flow
            !
@@ -245,7 +246,7 @@ subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
            !
            ! It is a free weir flow
            !
-           toest = 'volk'
+           toest  = 'volk'
         else
            !
            ! It is a submerged weir flow
