@@ -146,7 +146,9 @@ private
    
      do k=1,ndkx
         if ( nudge_tem(k).ne.DMISS ) then
-           nudge_time_data(k) = 1d0/nudge_rate(k)
+           if ( nudge_rate(k).gt.0d0 ) then
+              nudge_time_data(k) = 1d0/nudge_rate(k)
+           endif
            nudge_Dtemp(k) = nudge_tem(k)-constituents(itemp, k)
            nudge_Dsal(k)  = nudge_sal(k)-constituents(isalt,k)
         end if
