@@ -2627,12 +2627,6 @@ module m_ec_provider
          case ('bottomorbitalvelocity')
              ncvarnames(1) = 'ubot'                            !BS OWC, I don't have a NetCDF standard name for this one 
              ncstdnames(1) = 'ubot'
-         !case ('totalwaveenergydissipation')
-         !    ncvarnames(1) = 'dissip'
-         !    ncstdnames(1) = 'total_energy_dissipation'
-         !case ('bottomdissipation')
-         !    ncvarnames(1) = 'sfric'
-         !    ncstdnames(1) = 'bottom_friction_energy_dissipation'
              case default                                        ! experiment: gather miscellaneous variables from an NC-file,
              if (index(quantityName,'waqsegmentfunction')==1) then
                  ncvarnames(1) = quantityName
