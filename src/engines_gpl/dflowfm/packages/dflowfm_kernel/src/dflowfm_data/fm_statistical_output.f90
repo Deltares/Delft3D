@@ -88,6 +88,8 @@ private
 
    end subroutine calculate_FXY
    
+   !> wrapper function that calls reconstruct_cc_stokesdrift
+   ! also allocates and associates ust_x and ust_y 
    subroutine calculate_ustxy(data_pointer)
    use m_flow, only: ndkx
 
@@ -107,6 +109,7 @@ private
    
    end subroutine calculate_ustxy
    
+   !> calculates significant wave height and allocates data array
    subroutine calculate_hwav_significant(data_pointer)
    use m_waves, only: hwav
    use m_flowgeom, only: ndx
@@ -127,6 +130,7 @@ private
    
    end subroutine calculate_hwav_significant
    
+   !> allocates and calculates nudge time, relative temp and relative salinity
    subroutine calculate_nudge(data_pointer)
    use m_nudge
    use m_transport
@@ -159,6 +163,7 @@ private
    
    end subroutine calculate_nudge
    
+   !> allocates and calculates tidal potential
    subroutine calculate_tidpot(data_pointer)
    use m_flow, only: tidep
    use m_flowgeom, only: ndx
@@ -187,6 +192,7 @@ private
    
    end subroutine calculate_tidpot
    
+   !> allocates and calculates scaled rain data
    subroutine calculate_scaled_rain(data_pointer)
    use m_flowparameters, only: jamapbnd
    use m_flowgeom, only: ndx, ndxi, bare, ba
@@ -216,7 +222,7 @@ private
    
    end subroutine calculate_scaled_rain
    
-      !> calculates ucmaga vector norm
+   !> allocates and calculates x and y components of taus
    subroutine calculate_tausxy(data_pointer)
    use m_flowgeom, only: ndx
    use m_flow, only: kmx, taus, ucx, ucy
@@ -260,8 +266,9 @@ private
    endif   
 
    end subroutine calculate_tausxy
-
-   subroutine linktonode2(u_x, u_y, s_x, s_y, ndxndxi)   ! bring 2 scalars on u points to zeta points
+   
+   !> bring 2 scalars on u points to zeta points
+   subroutine linktonode2(u_x, u_y, s_x, s_y, ndxndxi)   
 
    use m_flowgeom
    use m_flow
@@ -286,6 +293,7 @@ private
    end do
    end subroutine linktonode2
    
+   !> allocates and calculates wind x and y data on zeta points
    subroutine calculate_windxy(data_pointer)
    use m_flowgeom, only: ndx, ndxi
    use m_flow, only: wx, wy, wdsu_x, wdsu_y
@@ -344,7 +352,7 @@ private
    
    end subroutine calculate_ucmaga
    
-      !> calculates viu
+   !> calculates viu
    subroutine calculate_viu_data(data_pointer)
    use m_flowgeom, only: lnx
    use m_flow, only: viusp, viu, vicouv, kmx
