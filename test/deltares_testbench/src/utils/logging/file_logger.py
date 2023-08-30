@@ -62,9 +62,7 @@ class FileLogger(ILogger):
         handler.doRollover()
         handler.setLevel(log_level)
 
-        format_str = (
-            "%(asctime)s [%(levelname)-7s] : %(message)s (%(module)s.%(funcName)s)"
-        )
+        format_str = "%(asctime)s [%(levelname)-7s] : %(message)s"
 
         handler.setFormatter(logging.Formatter(format_str))
         return handler

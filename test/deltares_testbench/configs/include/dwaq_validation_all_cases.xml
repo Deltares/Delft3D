@@ -146,7 +146,6 @@
             </file>
         </checks>
     </testCase>
-    <!-- Disabled: scheme 24 does not work when dispersion is dominant
     <testCase name="e03_f09_c10_channel_flow_closed_sides_scheme24" ref="dwaq_default">
         <path>e03_waq/f09_validation_water_quality_delwaq/c10_channel_flow_closed_sides_scheme24</path>
         <checks>
@@ -162,7 +161,6 @@
             </file>
         </checks>
     </testCase>
-    -->
     <testCase name="e03_f09_c11_channel_flow_open_sides_scheme15" ref="dwaq_default">
         <path>e03_waq/f09_validation_water_quality_delwaq/c11_channel_flow_open_sides_scheme15</path>
         <checks>
@@ -193,7 +191,6 @@
             </file>
         </checks>
     </testCase>
-    <!-- Disabled: scheme 24 does not work when dispersion is dominant
     <testCase name="e03_f09_c13_channel_flow_open_sides_scheme24" ref="dwaq_default">
         <path>e03_waq/f09_validation_water_quality_delwaq/c13_channel_flow_open_sides_scheme24</path>
         <checks>
@@ -209,7 +206,6 @@
             </file>
         </checks>
     </testCase>
-    -->
     <testCase name="e03_f09_c14_tidal_flow_one_dimensional_scheme15" ref="dwaq_default">
         <path>e03_waq/f09_validation_water_quality_delwaq/c14_tidal_flow_one_dimensional_scheme15</path>
         <checks>
@@ -240,7 +236,6 @@
             </file>
         </checks>
     </testCase>
-    <!-- Disabled: scheme 24 does not work when dispersion is dominant
     <testCase name="e03_f09_c16_tidal_flow_one_dimensional_scheme24" ref="dwaq_default">
         <path>e03_waq/f09_validation_water_quality_delwaq/c16_tidal_flow_one_dimensional_scheme24</path>
         <checks>
@@ -256,7 +251,6 @@
             </file>
         </checks>
     </testCase>
-    -->
 
     <!-- Water quality processes, no transport -->
 

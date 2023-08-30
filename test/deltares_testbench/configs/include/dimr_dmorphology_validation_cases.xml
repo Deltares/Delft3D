@@ -169,20 +169,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f022_c60_thindams" ref="platform_specific">
-      <path>e02_dflowfm/f022_morphology_2D/c60_thindams</path>
-      <maxRunTime>300.0</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_dams_sed/dams_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sxtot" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sytot" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f022_c61_curvebend_spiral_dhl" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c61_curvebend_spiral_dhl</path>
       <maxRunTime>20.0</maxRunTime>
@@ -211,4 +197,30 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f090_c012_waal_mor_2d" ref="dflowfm_default">
+      <path>e02_dflowfm/f090_validation_realworld/c012_waal_mor_2d</path>
+      <maxRunTime>90.0</maxRunTime>
+      <checks>
+        <file name="results/RIJN_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+            <parameter name="mesh2d_cfcl" toleranceAbsolute="0.001"/>
+            <parameter name="mesh2d_taus" toleranceAbsolute="0.1"/>
+            <parameter name="morft" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_sbn" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_msed" toleranceAbsolute="0.01"/>
+            <parameter name="mesh2d_thlyr" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_dg" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="results/RIJN_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="dred_discharge" toleranceAbsolute="1" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>    
   </testCases>

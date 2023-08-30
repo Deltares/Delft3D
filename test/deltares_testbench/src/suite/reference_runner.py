@@ -1,9 +1,11 @@
 import os
+from datetime import datetime
 from distutils import dir_util, file_util
 from typing import List
 
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.path_type import PathType
+from src.suite.run_data import RunData
 from src.suite.test_case_result import TestCaseResult
 from src.suite.test_set_runner import TestSetRunner
 from src.utils.handlers.handler_factory import HandlerFactory
@@ -14,7 +16,10 @@ from src.utils.paths import Paths
 
 class ReferenceRunner(TestSetRunner):
     def post_process(
-        self, test_case_config: TestCaseConfig, logger: ITestLogger
+        self,
+        test_case_config: TestCaseConfig,
+        logger: ITestLogger,
+        run_data: RunData,
     ) -> TestCaseResult:
         # Get the reference networkPath of the testcase
         refNetworkPath = None
@@ -84,7 +89,9 @@ class ReferenceRunner(TestSetRunner):
             logger.warning(
                 "Could not find reference network path for case to upload to"
             )
-        return TestCaseResult(test_case_config)
+        run_data.end_time = datetime.now()
+
+        return TestCaseResult(test_case_config, run_data)
 
     def show_summary(self, results: List[TestCaseResult], logger: ILogger):
         logger.info("SUMMARY of the reference run")
@@ -120,8 +127,10 @@ class ReferenceRunner(TestSetRunner):
                     lines.append(value.strip())
             return lines
 
-    def create_error_result(self, testCaseConfig) -> TestCaseResult:
+    def create_error_result(
+        self, test_case_config: TestCaseConfig, run_data: RunData
+    ) -> TestCaseResult:
         # the result of a reference run is only determined by whether an error was detected or not.
         # This is reflected in the testCaseConfig (not to be confused with testCase, which also tracks errors).
-        testCaseConfig.errors = [""]
-        return TestCaseResult(testCaseConfig)
+        test_case_config.errors = [""]
+        return TestCaseResult(test_case_config, run_data)
