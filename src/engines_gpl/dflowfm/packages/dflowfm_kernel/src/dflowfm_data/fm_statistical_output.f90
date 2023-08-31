@@ -48,7 +48,7 @@ private
    use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
    use m_flow, only: kmx, ndkx, hu, wavfu, wavfv
    use m_physcoef, only: rhomean
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< pointer to source input array for the "Fx" item, to be assigned once on first call.
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "Fx" item, to be assigned once on first call.
    
    integer :: L, LL, Lb, Lt, k1, k2
    
@@ -88,12 +88,14 @@ private
 
    end subroutine calculate_FXY
    
-   !> wrapper function that calls reconstruct_cc_stokesdrift
-   ! also allocates and associates ust_x and ust_y 
+   !> Wrapper function that computes the Stokes drift vector.
+   !! Will allocate and fill both the ust_x and ust_y arrays,
+   !! but should be called only for the ust_x output item.
+   !! Calls reconstruct_cc_stokesdrift.
    subroutine calculate_ustxy(data_pointer)
    use m_flow, only: ndkx
 
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "ust_x" item, to be assigned once on first call.
    
    integer :: k
    
@@ -109,12 +111,13 @@ private
    
    end subroutine calculate_ustxy
    
-   !> calculates significant wave height and allocates data array
+   !> Wrapper function that computes the significant wave height.
+   !! Will allocate and fill the hwav_significant array.
    subroutine calculate_hwav_significant(data_pointer)
    use m_waves, only: hwav
    use m_flowgeom, only: ndx
 
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "hwav_significant" item, to be assigned once on first call.
    
    integer :: k
    
@@ -130,14 +133,16 @@ private
    
    end subroutine calculate_hwav_significant
    
-   !> allocates and calculates nudge time, relative temp and relative salinity
+   !> Wrapper function that computes nudge time, relative temperature and relative salinity.
+   !! Will allocate and fill both the nudge_time_data and nudge_Dtemp and nudge_Dsal arrays,
+   !! but should be called only for the nudge_time_data output item.
    subroutine calculate_nudge(data_pointer)
    use m_nudge
    use m_transport
    use m_flow, only: ndkx
    use m_missing, only: dmiss
 
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "nudge_time_data" item, to be assigned once on first call.
    
    integer :: k
    
@@ -163,13 +168,14 @@ private
    
    end subroutine calculate_nudge
    
-   !> allocates and calculates tidal potential
+   !> Wrapper function that computes tidal potential.
+   !! Will allocate and fill the tidepot array.
    subroutine calculate_tidpot(data_pointer)
    use m_flow, only: tidep
    use m_flowgeom, only: ndx
    use m_flowparameters, only: jaselfal
 
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "tidepot" item, to be assigned once on first call.
    
    integer :: k
    
@@ -192,12 +198,13 @@ private
    
    end subroutine calculate_tidpot
    
-   !> allocates and calculates scaled rain data
+   !> Wrapper function that computes scaled rain data.
+   !! Will allocate and fill the scaled_rain array.
    subroutine calculate_scaled_rain(data_pointer)
    use m_flowparameters, only: jamapbnd
    use m_flowgeom, only: ndx, ndxi, bare, ba
    use m_wind, only: rain
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "scaled_rain" item, to be assigned once on first call.
    
    integer :: ndxndxi, n
    
@@ -215,13 +222,15 @@ private
    
    end subroutine calculate_scaled_rain
    
-   !> allocates and calculates x and y components of taus
+   !> Wrapper function that computes bed shear stress vector.
+   !! Will allocate and fill both the tausx and tausy arrays,
+   !! but should be called only for the tausx output item.
    subroutine calculate_tausxy(data_pointer)
    use m_flowgeom, only: ndx
    use m_flow, only: kmx, taus, ucx, ucy
    use m_flowparameters, only: jawave, flowWithoutWaves, jamap_chezy_links, jawaveSwartDelwaq
    
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "tausx" item, to be assigned once on first call.
    
    integer :: k, kb, kt
    double precision :: ux, uy, um
@@ -286,12 +295,14 @@ private
    end do
    end subroutine linktonode2
    
-   !> allocates and calculates wind x and y data on zeta points
+   !> Wrapper function that computes the interpolated wind vector on zeta points.
+   !! Will allocate and fill both the wx and wy arrays,
+   !! but should be called only for the wx output item.
    subroutine calculate_windxy(data_pointer)
    use m_flowgeom, only: ndx, ndxi
    use m_flow, only: wx, wy, wdsu_x, wdsu_y
    use m_flowparameters, only: jamapbnd
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "wx" item, to be assigned once on first call.
       
    if (.not. allocated(wx)) then
       allocate(wx(ndx),wy(ndx),wdsu_x(ndx),wdsu_y(ndx))
@@ -306,13 +317,14 @@ private
 
    end subroutine calculate_windxy
    
-   !> Calculates the velocity magnitude on cell centers.
+   !> Wrapper function that computes the flow velocity magnitude on zeta points.
+   !! Will allocate and fill the ucmaga array.
    subroutine calculate_ucmaga(data_pointer)
    use m_flow, only: ucx, ucy
    use m_flowgeom, only: ndx, ndxi
    !use unstruc_model, only: md_unc_conv
    use m_flowparameters, only: jamapbnd
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "ucmaga" item, to be assigned once on first call.
    
    integer :: k, ndxndxi
    
@@ -330,12 +342,13 @@ private
    
    end subroutine calculate_ucmaga
    
-   !> calculates viu
+   !> Wrapper function that computes horizontal eddy viscosity.
+   !! Will allocate and fill the viu_data array.
    subroutine calculate_viu_data(data_pointer)
    use m_flowgeom, only: lnx
    use m_flow, only: viusp, viu, vicouv, kmx
    use m_flowparameters, only: javiusp
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to viu
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "viu_data" item, to be assigned once on first call.
    
    integer :: ll, LB, LT, L
    double precision :: vicc
@@ -373,12 +386,13 @@ private
 
    end subroutine calculate_viu_data
    
-   !> calculates diu
+   !> Wrapper function that computes horizontal eddy diffusivity
+   !! Will allocate and fill the diu array.
    subroutine calculate_diu(data_pointer)
    use m_flowgeom, only: lnx
    use m_flow, only: diusp, viu, dicouv, kmx
    use m_flowparameters, only: jadiusp
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to diu
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "diu" item, to be assigned once on first call.
    
    integer :: LL, LB, LT, L
    double precision :: dicc
@@ -394,7 +408,7 @@ private
 
    if (kmx > 0) then
       do LL = 1,lnx
-         if (jadiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+         if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
             dicc = diusp(LL)
          else
             dicc = dicouv
@@ -406,7 +420,7 @@ private
       end do
    else
       do LL = 1,lnx
-         if (jadiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+         if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
             dicc = diusp(LL)
          else
             dicc = dicouv
@@ -422,7 +436,7 @@ private
    use m_monitoring_crosssections
    use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
    use m_sediment, only: sedtot2sedsus, stmpar
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer !< Pointer to source input array for the "tausx" item, to be assigned once on first call.
 
    integer :: i, IP, num, l
    double precision :: rhol
