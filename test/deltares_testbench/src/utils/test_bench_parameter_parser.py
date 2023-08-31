@@ -16,7 +16,6 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
-from src.utils.logging.i_logger import ILogger
 from src.utils.xml_config_parser import XmlConfigParser
 
 
@@ -77,6 +76,9 @@ class TestBenchParameterParser:
         # automatically commit reference run if succesfull
         new_settings.autocommit = cls.__get_argument_value("autocommit", args) or False
 
+        # Enables running the tests in parallel (multi-process)
+        new_settings.parallel = cls.__get_argument_value("parallel", args) or False
+
         # If option is used, all logging is decorated with TeamCity messages.
         # Additionally, extra TeamCity messages will be produced.
         new_settings.teamcity = cls.__get_argument_value("teamcity", args) or False
@@ -107,7 +109,7 @@ class TestBenchParameterParser:
 
         if not return_value and is_interactive:
             if secret_value:
-                return getpass.getpass(f"{name}")
+                return getpass.getpass(f"{name} : ")
 
             return input(f"{name}")
 
@@ -292,6 +294,12 @@ class TestBenchParameterParser:
             help="Skip running",
             action="store_true",
             dest="only_post",
+        )
+        parser.add_argument(
+            "--parallel",
+            action="store_true",
+            help="Turns on running in parallel.",
+            dest="parallel",
         )
         parser.add_argument(
             "--autocommit",

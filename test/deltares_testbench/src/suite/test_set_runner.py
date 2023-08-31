@@ -1,16 +1,16 @@
 """
 Description: Manager for running test case sets
 -----------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+Copyright (C)  Stichting Deltares, 2023
 """
 
 import multiprocessing
 import os
 import sys
 from abc import ABC, abstractmethod
-from email import message
+from datetime import datetime, timedelta
 from multiprocessing.pool import AsyncResult
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
@@ -19,7 +19,7 @@ from src.config.types.handler_type import HandlerType
 from src.config.types.mode_type import ModeType
 from src.config.types.path_type import PathType
 from src.suite.program import Program
-from src.suite.run_time_data import RunTimeData
+from src.suite.run_data import RunData
 from src.suite.test_bench_settings import TestBenchSettings
 from src.suite.test_case import TestCase
 from src.suite.test_case_result import TestCaseResult
@@ -40,6 +40,7 @@ class TestSetRunner(ABC):
     def __init__(self, settings: TestBenchSettings, logger: IMainLogger) -> None:
         self.__settings = settings
         self.__logger = logger
+        self.__duration = None
         self.programs: List[Program] = []
         self.finished_tests: int = 0
 
@@ -52,8 +53,19 @@ class TestSetRunner(ABC):
         """
         return self.__settings
 
+    @property
+    def duration(self) -> Optional[timedelta]:
+        """Time it took to run the testbench
+
+        Returns:
+            Optional[timedelta]: elapsed time
+        """
+        return self.__duration
+
     def run(self):
         """Run test cases to generate reference data"""
+        start_time = datetime.now()
+
         try:
             self.programs = list(self.__update_programs())
         except Exception:
@@ -63,20 +75,70 @@ class TestSetRunner(ABC):
                     "##teamcity[testFailed name='Update programs' message='Exception occurred']\n"
                 )
 
-        n_testcases = len(self.__settings.configs)
+        self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
+        self.__settings.configs = self.__settings.configs
+        results = (
+            self.run_tests_in_parallel()
+            if self.__settings.parallel
+            else self.run_tests_sequentially()
+        )
+
+        log_separator(self.__logger, char="-", with_new_line=True)
+
+        self.show_summary(results, self.__logger)
+        self.__duration = datetime.now() - start_time
+
+    def run_tests_sequentially(self) -> List[TestCaseResult]:
+        """Runs the test configurations sequentially and
+        returns the results
+
+        Returns:
+            List[TestCaseResult]: list of test results
+        """
+        n_testcases = len(self.__settings.configs)
+        results: List[TestCaseResult] = []
+
+        for i_testcase, config in enumerate(self.__settings.configs):
+            run_data = RunData(i_testcase + 1, n_testcases)
+            logger = self.__logger.create_test_case_logger(config.name)
+
+            try:
+                result = self.run_test_case(config, run_data, logger)
+            except Exception as exception:
+                self.__log_failed_test(exception)
+                continue
+
+            self.__log_successful_test(result)
+            results.append(result)
+
+        return results
+
+    def run_tests_in_parallel(self) -> List[TestCaseResult]:
+        """Runs the test configurations in parallel and
+        returns the results
+
+        Returns:
+            List[TestCaseResult]: list of test results
+        """
+        n_testcases = len(self.__settings.configs)
+
         max_processes = min(len(self.__settings.configs), multiprocessing.cpu_count())
+        self.__logger.info(f"Creating {max_processes} processes to run test cases on.")
 
         with multiprocessing.Pool(processes=max_processes) as pool:
             self.finished_tests = 0
+
             result_futures: List[AsyncResult] = []
 
             for i_testcase, config in enumerate(self.__settings.configs):
-                test_logger = self.__logger.create_test_case_logger(config.name)
+                run_data = RunData(i_testcase + 1, n_testcases)
+                logger = self.__logger.create_test_case_logger(config.name)
+
                 config_result_future = pool.apply_async(
                     self.run_test_case,
-                    [config, i_testcase, n_testcases, test_logger],
+                    [config, run_data, logger],
                     callback=self.__log_successful_test,
                     error_callback=self.__log_failed_test,
                 )
@@ -89,47 +151,24 @@ class TestSetRunner(ABC):
             results: List[TestCaseResult] = []
             for result in result_futures:
                 results.append(result.get())
-
-        log_separator(self.__logger, char="-", with_new_line=True)
-
-        self.show_summary(results, self.__logger)
-
-    def __check_for_skipping(self, config: TestCaseConfig):
-        skip_testcase = False  # No check defined still running (so no regression test, test against measurements or other numerical package)
-        skip_postprocessing = True  # No check defined still running and do not perform the standard postprocessing
-
-        if len(config.checks) > 0:
-            skip_testcase = True
-            skip_postprocessing = True
-
-        for file_check in config.checks:
-            if not file_check.ignore:
-                skip_testcase = False
-                skip_postprocessing = False
-
-        if not skip_testcase:
-            if config.ignore:
-                skip_testcase = True
-                skip_postprocessing = True
-
-        return skip_testcase, skip_postprocessing
+        return results
 
     def run_test_case(
-        self,
-        config: TestCaseConfig,
-        i_testcase: int,
-        n_testcases: int,
-        logger: ITestLogger,
+        self, config: TestCaseConfig, run_data: RunData, logger: ITestLogger
     ) -> TestCaseResult:
         """Runs one test configuration (in a separate process)
 
         Args:
             config (TestCaseConfig): configuration to run
-            i_testcase (int): test case index
-            n_testcases (int): total amount of test cases
-            logger (ITestLogger): logger for this test case
+            run_data (RunData): Data related to the test run
         """
-        test_result: TestCaseResult = TestCaseResult(config)
+        run_data.start_time = datetime.now()
+        curr_process = multiprocessing.current_process()
+        if curr_process and curr_process.ident:
+            run_data.process_id = curr_process.pid if curr_process.pid else 0
+            run_data.process_name = curr_process.name
+
+        test_result: TestCaseResult = TestCaseResult(config, run_data)
 
         skip_testcase, skip_postprocessing = self.__check_for_skipping(config)
         if not skip_testcase:
@@ -137,13 +176,9 @@ class TestSetRunner(ABC):
         else:
             logger.test_ignored()
 
-        curr_process = multiprocessing.current_process()
-        process_id = "Unknown"
-        if curr_process and curr_process.ident:
-            process_id = str(curr_process.ident)
-
         log_header(
-            f"Testcase {i_testcase + 1} of {n_testcases} (process id {process_id}): {config.name} ...",
+            f"Testcase {run_data.test_number} of {run_data.number_of_tests} "
+            + "(process id {run_data.process_id}): {config.name} ...",
             logger,
         )
 
@@ -167,9 +202,7 @@ class TestSetRunner(ABC):
 
             # Check for errors during execution of testcase
             if len(testcase.getErrors()) > 0:
-                errstr = "\n"
-                for error in testcase.getErrors():
-                    errstr = errstr + str(error) + "\n"
+                errstr = ",".join(str(e) for e in testcase.getErrors())
                 logger.error("Errors during testcase: " + errstr)
                 raise TestCaseFailure("Errors during testcase: " + errstr)
 
@@ -186,7 +219,7 @@ class TestSetRunner(ABC):
                     )
 
                 # execute concrete method in subclass
-                test_result = self.post_process(config, logger)
+                test_result = self.post_process(config, logger, run_data)
                 log_separator(logger, char="-")
 
             if not skip_testcase:
@@ -194,30 +227,20 @@ class TestSetRunner(ABC):
 
         except Exception as exception:
             logger.error(str(exception))
-            test_result = self.create_error_result(config)
+            test_result = self.create_error_result(config, run_data)
 
             if not skip_testcase:
-                logger.test_Result(TestResultType.Exception, exception)
-        finally:
-            # Debug statements:
-            # Something goes wrong on Linux with passing through the output of esm_create to
-            # setenv(DIO_SHM_ESM)/esm_delete. It only works fine the first time (and the 6th).
-            # It seems that when esm_create is executed for the second testcase, the output in
-            # RunTimeData is not overwritten.
-            # To tackle this problem:
-            # - Only the output of esm_create is being stored (introduced: flag storeOutput="true")
-            # - At the end of each testcase (here):
-            #   - ALL stored output is dumped to screen
-            #   - ALL stored output is removed
-            RunTimeData().dump(logger)
-            RunTimeData().clean()
+                logger.test_Result(TestResultType.Exception, str(exception))
 
         logger.test_finished()
         return test_result
 
     @abstractmethod
     def post_process(
-        self, test_case_config: TestCaseConfig, logger: ITestLogger
+        self,
+        test_case_config: TestCaseConfig,
+        logger: ITestLogger,
+        run_data: RunData,
     ) -> TestCaseResult:
         """Post process run results (files)
 
@@ -243,11 +266,14 @@ class TestSetRunner(ABC):
         """
 
     @abstractmethod
-    def create_error_result(self, testCaseConfig: TestCaseConfig) -> TestCaseResult:
+    def create_error_result(
+        self, test_case_config: TestCaseConfig, run_data: RunData
+    ) -> TestCaseResult:
         """Creates an error result
 
         Args:
             testCaseConfig (TestCaseConfig): test case to use
+            run_data (RunData): Data related to the run
 
         Returns:
             TestCaseResult: Error result
@@ -255,8 +281,15 @@ class TestSetRunner(ABC):
 
     def __log_successful_test(self, test_case_result: TestCaseResult):
         self.finished_tests += 1
+        run_data = test_case_result.run_data
+
+        max_index_length = len(str(run_data.number_of_tests))
+
         self.__logger.info(
-            f"Finished running ({self.finished_tests}/{len(self.__settings.configs)}): {test_case_result.config.name}"
+            f"Finished test ({str(self.finished_tests).rjust(max_index_length)} - {run_data.absolute_duration_str()}) "
+            + f"{test_case_result.config.name.ljust(50)}"
+            + f"(index: {run_data.index_str()}) "
+            + f"{run_data.timing_str()} -> process {run_data.process_id_str()}"
         )
 
     def __log_failed_test(self, exception: BaseException):
@@ -264,6 +297,38 @@ class TestSetRunner(ABC):
         self.__logger.error(
             f"Error running ({self.finished_tests}/{len(self.__settings.configs)}): {str(exception)}"
         )
+
+    def __check_for_skipping(self, config: TestCaseConfig):
+        skip_testcase = False  # No check defined still running (so no regression test, test against measurements or other numerical package)
+        skip_postprocessing = True  # No check defined still running and do not perform the standard postprocessing
+
+        if len(config.checks) > 0:
+            skip_testcase = True
+            skip_postprocessing = True
+
+        for file_check in config.checks:
+            if not file_check.ignore:
+                skip_testcase = False
+                skip_postprocessing = False
+
+        if not skip_testcase:
+            if config.ignore:
+                skip_testcase = True
+                skip_postprocessing = True
+
+        return skip_testcase, skip_postprocessing
+
+    def __download_dependencies(self):
+        configs_to_handle = [c for c in self.__settings.configs if c.dependency]
+        if len(configs_to_handle) == 0:
+            return
+
+        log_sub_header("Downloading test dependencies", self.__logger)
+
+        for config in configs_to_handle:
+            self.__download_config_dependencies(config, self.__logger)
+
+        log_separator(self.__logger, char="-", with_new_line=True)
 
     def __update_programs(self) -> Iterable[Program]:
         """Update network programs and initialize the stack"""
@@ -452,8 +517,8 @@ class TestSetRunner(ABC):
             if location.root == "" or location.from_path == "":
                 error_message: str = (
                     f"Could not update case {config.name}"
-                    + ", invalid network input path part (root:{location.root},"
-                    + " from:{location.from_path}) given"
+                    + f", invalid network input path part (root:{location.root},"
+                    + f" from:{location.from_path}) given"
                 )
                 raise TestBenchError(error_message)
 
@@ -548,3 +613,26 @@ class TestSetRunner(ABC):
             # We need always case input data
             logger.error(f"Could not download from {remote_path}")
             raise exception
+
+    def __download_config_dependencies(self, config: TestCaseConfig, logger: ILogger):
+        if not config.dependency:
+            return
+
+        location = next(loc for loc in config.locations if loc.type == PathType.INPUT)
+        destination_dir = self.__settings.local_paths.cases_path
+
+        localPath = Paths().rebuildToLocalPath(
+            Paths().mergeFullPath(
+                destination_dir,
+                location.to_path,
+                config.dependency,
+            )
+        )
+
+        if os.path.exists(localPath):
+            return
+
+        remote_path = Paths().mergeFullPath(
+            location.root, location.from_path, config.dependency
+        )
+        self.__download_file(location, remote_path, localPath, "dependency", logger)

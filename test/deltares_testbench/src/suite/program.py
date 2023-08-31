@@ -10,13 +10,11 @@ import os
 import platform
 import re
 import subprocess
-import threading
 import time
 from datetime import datetime
 from typing import Optional
 
 from src.config.program_config import ProgramConfig
-from src.suite.run_time_data import RunTimeData
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import add_search_path, stripPassword
 from src.utils.logging.file_logger import FileLogger
@@ -29,9 +27,7 @@ class Program:
     """Process runner that runs a program (part of a test case)"""
 
     # global variables
-    __process: Optional[subprocess.Popen] = None
     __error = None
-    __stop = False
 
     # constructor
     def __init__(self, program_config: ProgramConfig, settings: TestBenchSettings):
@@ -46,33 +42,7 @@ class Program:
         return self.__program_config.name
 
     def run(self, logger: ILogger):
-        """start a thread to run the program"""
-
-        # reset thread flags
-        self.__stop = False
-        thread = threading.Thread(target=self.__execute__, args=[logger])
-        thread.start()
-        # set thread join on time-out if one is given
-        if self.__program_config.max_run_time == 0:
-            thread.join()
-        else:
-            logger.debug(f"Waiting {str(self.__program_config.max_run_time)} for join")
-            thread.join(self.__program_config.max_run_time)
-            # if the thread is still alive, runners are still active
-            if thread.is_alive():
-                # if the thread is still running, terminate all runners
-                logger.warning(
-                    f"{self.__program_config.name} thread still alive after maximum run time, terminating processes"
-                )
-                self.terminate(logger)
-                # end the thread
-                thread.join()
-                self.__error = RuntimeError(
-                    "Execution of "
-                    + self.__program_config.name
-                    + " timed out (s) > "
-                    + str(self.__program_config.max_run_time)
-                )
+        self.__execute__(logger)
 
     def overwriteConfiguration(self, program_config: ProgramConfig):
         """overwrite program configuration settings
@@ -141,145 +111,124 @@ class Program:
 
     def terminate(self, logger: ILogger):
         """terminate the run"""
-        if self.__stop:
-            return
-
-        self.__stop = True
-
-        if not self.__process:
-            return
-        #
-        # It is important that all process activities are stopped
-        # Checking whether the process still exists/ is active does
-        # not seems to be necessary on Windows. So try it the rough way:
-        logger.debug("Regular process termination")
-        try:
-            self.__process.terminate()
-        except:
-            logger.debug("Termination generated error")
-
-        logger.debug("Regular process killing")
-        try:
-            self.__process.kill()
-        except:
-            logger.debug("Process kill generated error")
+        return
 
     def __execute__(self, logger: ILogger):
         """run given configuration"""
         try:
             logger.debug(
                 f"Starting {self.__program_config.absolute_bin_path} with"
-                + " delay {str(self.__program_config.delay)}"
+                + f" delay {str(self.__program_config.delay)}"
             )
+
             time.sleep(self.__program_config.delay)
-            execmd = self.__buildExeCommand__(logger)
-            # Don't display the Windows GPF dialog if the invoked program dies.
-            if platform.system() == "Windows":
-                # http://msdn.microsoft.com/en-us/library/windows/desktop/ms680621(v=vs.85).aspx
-                # 1 : SEM_FAILCRITICALERRORS = 0x0001
-                # 2 : SEM_NOGPFAULTERRORBOX = 0x0002
-                # 3 : SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX = 0x0003
-                # 4 : SEM_NOALIGNMENTFAULTEXCEPT = 0x0004
-                # 8 : SEM_NOOPENFILEERRORBOX = 0x8000
-                # !! NOTE : that we are not able to suppress debug build errors of the runtime, only release builds
-                ctypes.windll.kernel32.SetErrorMode(0x8003)  # @UndefinedVariable
-            if self.__stop:
-                logger.debug("Received terminate, stopped before starting process.")
-            else:
-                logger.info(f"Executing :: {str(stripPassword(execmd))}")
-                logger.debug(
-                    f"Executing (in separate thread)::{str(stripPassword(execmd))}"
-                    + "::in directory::{self.__program_config.working_directory}"
-                )
+            completed_process = self.__start_process(logger)
 
-                program_env = self.__program_config.environment
-                tb_root = self.__settings.test_bench_root
-                if tb_root is not None:
-                    program_env["TestBenchRoot"] = tb_root
-                self.__process = subprocess.Popen(
-                    execmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    cwd=self.__program_config.working_directory,
-                    env=program_env,
-                )
+            logger.debug("Subprocess finished")
 
-                logger.debug("Subprocess created")
-                # clear previous errors if they exist and create output variable
-                self.__error = None
-                out = ""
-                # write output while executing, optionally create a log file
-                unique_name = "%s-%s-%s" % (
-                    self.__program_config.name,
-                    datetime.now().strftime("%y%m%d_%H%M%S"),
-                    str(self.__process.pid),
-                )
-                log_file = os.path.abspath(
-                    os.path.join(
-                        str(self.__program_config.working_directory),
-                        ("%s.log" % (unique_name)),
+            # write output while executing, optionally create a log file
+            self.__handle_process_output(logger, completed_process)
+
+            # check results
+            if completed_process.returncode != 0:
+                prog_path = str(self.__program_config.path)
+                return_code = str(completed_process.returncode)
+                if self.__program_config.ignore_return_value:
+                    logger.debug(
+                        f"{prog_path} generated non-null "
+                        + f"error code {return_code}, but ignoring it"
                     )
+                else:
+                    logger.warning(
+                        f"{prog_path} generated " + f"non-null error code {return_code}"
+                    )
+                    self.__error = subprocess.CalledProcessError(
+                        completed_process.returncode,
+                        self.__program_config.path,
+                        "process raised non null error code",
+                    )
+
+            if completed_process.stderr:
+                prog_path = str(self.__program_config.path)
+                error_message = (
+                    completed_process.stderr.decode().rstrip().replace("'", "")
                 )
-                file_logger: Optional[FileLogger] = None
-                if self.__program_config.log_output_to_file:
-                    logger.debug(f"Program output will be written to: {log_file}")
-                    file_logger = FileLogger(LogLevel.DEBUG, unique_name, log_file)
-
-                # needed for showing output while running
-                while not self.__stop:
-                    line = self.__process.stdout.readline().decode("utf-8")
-                    if line == "" and self.__process.poll() != None:
-                        break
-                    elif line != "":
-                        out += line
-                        if file_logger:
-                            file_logger.debug(line)
-
-                # catch errors
-                (_, stderr) = self.__process.communicate()
-                # store output
-                if self.__program_config.store_output:
-                    RunTimeData().addOutput(self, out)
-                # check results
-                if self.__process.returncode != 0:
-                    prog_path = str(self.__program_config.path)
-                    return_code = str(self.__process.returncode)
-                    if self.__program_config.ignore_return_value:
-                        logger.debug(
-                            f"{prog_path} generated non-null "
-                            + f"error code {return_code}, but ignoring it"
-                        )
-                    else:
-                        logger.warning(
-                            f"{prog_path} generated "
-                            + f"non-null error code {return_code}"
-                        )
-                        self.__error = subprocess.CalledProcessError(
-                            self.__process.returncode,
-                            self.__program_config.path,
-                            "process raised non null error code",
-                        )
-                if stderr:
-                    prog_path = str(self.__program_config.path)
-                    error_message = str(stderr.rstrip()).replace("'", "")
-                    if self.__program_config.ignore_standard_error:
-                        logger.debug(
-                            f"{prog_path} contained error message -"
-                            + f" {error_message}, but ignoring it"
-                        )
-                    else:
-                        logger.warning(
-                            f"{prog_path} contained error message - {error_message}"
-                        )
-                        self.__error = subprocess.CalledProcessError(
-                            -1, self.__program_config.path, str(stderr).rstrip()
-                        )
-                self.__process.stdout.close()
-                if platform.system() == "Windows":
-                    # clean up lingering subprocess
-                    self.terminate(logger)
+                if self.__program_config.ignore_standard_error:
+                    logger.debug(
+                        f"{prog_path} contained error message -"
+                        + f" {error_message}, but ignoring it"
+                    )
+                else:
+                    logger.warning(
+                        f"{prog_path} contained error message - {error_message}"
+                    )
+                    self.__error = subprocess.CalledProcessError(
+                        -1, self.__program_config.path, error_message
+                    )
         except Exception as e:
             self.__error = str(e)
+
+    def __handle_process_output(
+        self, logger: ILogger, completed_process: subprocess.CompletedProcess
+    ):
+        if not self.__program_config.log_output_to_file:
+            return
+        file_logger: Optional[FileLogger] = None
+
+        time_str = datetime.now().strftime("%y%m%d_%H%M%S")
+        unique_name = f"{self.__program_config.name}={time_str}.log"
+        log_file = os.path.abspath(
+            os.path.join(
+                str(self.__program_config.working_directory),
+                unique_name,
+            )
+        )
+        logger.debug(f"Program output will be written to: {log_file}")
+        file_logger = FileLogger(LogLevel.DEBUG, unique_name, log_file)
+        for line in completed_process.stdout.splitlines():
+            file_logger.debug(line.decode())
+
+    def __start_process(self, logger):
+        execmd = self.__buildExeCommand__(logger)
+        # Don't display the Windows GPF dialog if the invoked program dies.
+        if platform.system() == "Windows":
+            # http://msdn.microsoft.com/en-us/library/windows/desktop/ms680621(v=vs.85).aspx
+            # 1 : SEM_FAILCRITICALERRORS = 0x0001
+            # 2 : SEM_NOGPFAULTERRORBOX = 0x0002
+            # 3 : SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX = 0x0003
+            # 4 : SEM_NOALIGNMENTFAULTEXCEPT = 0x0004
+            # 8 : SEM_NOOPENFILEERRORBOX = 0x8000
+            # !! NOTE : that we are not able to suppress debug build errors of the runtime, only release builds
+            ctypes.windll.kernel32.SetErrorMode(0x8003)  # @UndefinedVariable
+
+        logger.info(f"Executing :: {str(stripPassword(execmd))}")
+        logger.debug(
+            f"Executing ::{str(stripPassword(execmd))}"
+            + f"::in directory::{self.__program_config.working_directory}"
+        )
+
+        program_env = self.__program_config.environment
+        tb_root = self.__settings.test_bench_root
+
+        if tb_root is not None:
+            program_env["TestBenchRoot"] = tb_root
+
+        logger.debug("Creating subprocess")
+        timeout = (
+            self.__program_config.max_run_time
+            if self.__program_config.max_run_time != 0
+            else None
+        )
+        completed_process = subprocess.run(
+            execmd,
+            capture_output=True,
+            check=True,
+            env=program_env,
+            cwd=self.__program_config.working_directory,
+            timeout=timeout,
+        )
+
+        return completed_process
 
     # create a command string for either windows or linux
     def __buildExeCommand__(self, logger: ILogger):

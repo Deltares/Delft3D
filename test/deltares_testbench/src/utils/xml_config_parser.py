@@ -271,11 +271,6 @@ class XmlConfigParser(object):
         ):
             p.log_output_to_file = True
         if (
-            "storeOutput" in element
-            and str(element["storeOutput"][0]).lower() == "true"
-        ):
-            p.store_output = True
-        if (
             "addSearchPaths" in element
             and str(element["addSearchPaths"][0]).lower() == "true"
         ):
@@ -464,6 +459,10 @@ class XmlConfigParser(object):
                 test_case.path = newpath
             else:
                 test_case.path = str(element["path"][0]["txt"])
+
+        if "dependency" in element:
+            test_case.dependency = str(element["dependency"][0]["txt"])
+
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
             for el in element["maxRunTime"]:

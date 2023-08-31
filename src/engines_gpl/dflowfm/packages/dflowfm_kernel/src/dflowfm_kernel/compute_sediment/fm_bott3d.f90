@@ -621,7 +621,18 @@
    !    EROSED CODE MOVED UNTIL THIS POINT ------------------------------------
 
    !
-   ! if bed composition computations have started
+   ! make sure that the transport layer thickness is known
+   ! if the bed composition computations have started or
+   ! if dredging is active
+   !
+   if (((time1 >= tstart_user + tcmp * tfac) .and. cmpupd) .or. dad_included) then
+      !
+      ! Determine new thickness of transport layer
+      !
+      call compthick()
+   endif
+   !
+   ! if the bed composition computations have started ...
    !
    if (time1 >= tstart_user + tcmp * tfac) then   ! tmor/tcmp in tunit since start of computations, time1 in seconds since reference date
       !
@@ -1085,10 +1096,6 @@
       ! Apply erosion and sedimentation to bookkeeping system
       !
       if (cmpupd) then
-         !
-         ! Determine new thickness of transport layer
-         !
-         call compthick()
          !
          ! Update layers and obtain the depth change
          !

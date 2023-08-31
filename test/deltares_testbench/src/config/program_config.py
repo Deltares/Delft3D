@@ -36,7 +36,6 @@ class ProgramConfig:
         self.__sequence: int = 0
         self.__delay: float = 0
         self.__max_run_time: float = 0
-        self.__store_output: bool = False
 
     @property
     def shell(self) -> Optional["ProgramConfig"]:
@@ -220,15 +219,6 @@ class ProgramConfig:
     @max_run_time.setter
     def max_run_time(self, value: float):
         self.__max_run_time = value
-
-    @property
-    def store_output(self) -> bool:
-        """Flag that output of this program should be stored by RunTimeData or not"""
-        return self.__store_output
-
-    @store_output.setter
-    def store_output(self, value: bool):
-        self.__store_output = value
 
     @property
     def shell_arguments(self) -> str:

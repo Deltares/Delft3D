@@ -7,11 +7,22 @@ include_directories(${waq_kernel_include_path})
 set(src_path src)
 
 # Gather source files
-get_fortran_source_files(${src_path} source_files)
+get_fortran_source_files(${src_path}/kernel kernel_files)
+get_fortran_source_files(${src_path}/kernel/integration integration_files)
+get_fortran_source_files(${src_path}/kernel/calculation calculation_files)
+get_fortran_source_files(${src_path}/kernel/reactions reactions_files)
+get_fortran_source_files(${src_path}/results result_files)
+get_fortran_source_files(${src_path}/read_wrk read_wrk_files)
 
 # Define library
 set(library_name waq_kernel)
-add_library(${library_name} ${source_files})
+add_library(${library_name} ${kernel_files}
+                            ${integration_files}
+                            ${calculation_files}
+                            ${reactions_files}
+                            ${result_files}
+                            ${read_wrk_files}
+                            )
 
 
 # Set dependencies
@@ -21,6 +32,7 @@ set(oss_dependencies_general deltares_common
                              part_kernel_f
                              part_utils_f
                              waq_data
+                             waq_memory
                              waq_plugin_wasteload
                              waq_process
                              waq_utils_c
@@ -64,7 +76,12 @@ target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 
 
 # Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files}
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${kernel_files}
+                                                    ${integration_files}
+                                                    ${calculation_files}
+                                                    ${reactions_files}
+                                                    ${read_wrk_files}
+                                                    ${result_files}
                                                     ${preproccessor_files}
                                                     ${openmq_files}
                                                     ${proces_file})

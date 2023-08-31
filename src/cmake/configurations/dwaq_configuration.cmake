@@ -21,6 +21,10 @@ if(NOT TARGET waq_kernel)
     add_subdirectory(${checkout_src_root}/${waq_kernel_module} waq_kernel)
 endif()
 
+if(NOT TARGET waq_memory)
+    add_subdirectory(${checkout_src_root}/${waq_memory_module} waq_memory)
+endif()
+
 if(NOT TARGET waq_io)
     add_subdirectory(${checkout_src_root}/${waq_io_module} waq_io)
 endif()
