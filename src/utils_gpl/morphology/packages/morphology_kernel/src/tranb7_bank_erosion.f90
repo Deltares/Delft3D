@@ -39,6 +39,7 @@ subroutine tranb7(utot      ,d50       ,d90       ,h         ,par       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
+    use sed_support_routines, only: shld
     !use glob_bankPLIC ,only: ratio_ca_c2d,simpleVR84,prescVR93refHEIGHT,prescVR93settl
     implicit none
 !
@@ -90,7 +91,7 @@ subroutine tranb7(utot      ,d50       ,d90       ,h         ,par       , &
     real(fp)       :: ustar
     real(fp)       :: ws     ! settling velocity
     real(fp)       :: zc
-    real(fp), external :: shld
+    !real(fp), external :: shld
 !
 !! executable statements -------------------------------------------------------
 !
