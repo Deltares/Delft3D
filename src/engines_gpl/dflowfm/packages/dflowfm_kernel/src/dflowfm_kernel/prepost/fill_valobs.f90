@@ -178,7 +178,7 @@ subroutine fill_valobs()
             valobs(IPNT_WAVEH,i) = hwav(k)*wavfac
             valobs(IPNT_WAVET,i) = twav(k)
             if (.not. flowWithoutWaves) then
-               valobs(IPNT_WAVED,i) = 270d0-phiwav(k)  ! Direction from
+               valobs(IPNT_WAVED,i) = modulo(270d0 - phiwav(k), 360d0)  ! Direction from
                valobs(IPNT_WAVEL,i) = rlabda(k)
                valobs(IPNT_WAVEU,i) = uorb(k)
             endif
