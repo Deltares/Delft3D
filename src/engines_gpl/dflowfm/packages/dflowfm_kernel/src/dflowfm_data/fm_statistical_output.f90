@@ -2206,8 +2206,7 @@ private
       !
       if (ncrs > 0 .and. NUMCONST_MDU > 0) then
          function_pointer => aggregate_constit_crs_obs
-         temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS),temp_pointer,function_pointer                                 )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS), null(), function_pointer                                 )
       endif
       
 
@@ -2295,15 +2294,13 @@ private
       if (jaeulervel==1 .and. jawave>0) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),null(),function_pointer                                                )
       else
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA),temp_pointer,function_pointer                                                    )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA), null(), ffunction_pointer                                                    )
       endif
    endif
    function_pointer => calculate_viu_data
-   temp_pointer => null()
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU), null(), function_pointer                                                       )
    function_pointer => calculate_diu
-   temp_pointer => null()
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU),temp_pointer,function_pointer                                                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU), null(), function_pointer                                                       )
    if (kmx > 0) then
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
@@ -2319,9 +2316,7 @@ private
    endif
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUMLIMDT),numlimdt                                                  )
    function_pointer => calculate_tausxy
-   temp_pointer => null()
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
-!   call calculate_tausxy(temp_pointer) !> ugly call to make sure tausy is allocated
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX), null(), function_pointer                                                     )
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),tausy) ! This variable is updated by calculate_tausxy
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
    if (stm_included) then
@@ -2372,8 +2367,7 @@ private
    endif
    if (jarain /= 0) then
       function_pointer => calculate_scaled_rain
-      temp_pointer => null()
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RAINFALL_RATE),temp_pointer,function_pointer                         )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RAINFALL_RATE), null(), function_pointer                         )
    endif
    if (interceptionmodel /= DFM_HYD_NOINTERCEPT) then
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERCEPTION_WATERDEPTH),InterceptHs                                   )
@@ -2381,16 +2375,15 @@ private
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PATM),patm                                                      )
    if (jawind > 0) then
       function_pointer => calculate_windxy
-      temp_pointer => null()
       if (jsferic == 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ),temp_pointer,function_pointer                                              )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ), null(), function_pointer                                              )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),wy                                               )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU),wx                                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU),wy                                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),wdsu_x                             )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),wdsu_y                                     )
       else
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ),temp_pointer,function_pointer                  )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ), null(), function_pointer                  )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),wy                     )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU_SFERIC),wx                               )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU_SFERIC),wy                               )
@@ -2414,8 +2407,7 @@ private
    endif
    if ( jatidep > 0 ) then
       function_pointer => calculate_tidpot
-      temp_pointer => null()
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIDALPOTENTIAL),temp_pointer,function_pointer                                 )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIDALPOTENTIAL), null(), function_pointer                                 )
       if (jaselfal > 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SALPOTENTIAL),tidep(2,:)                                           )
       endif
@@ -2425,9 +2417,7 @@ private
    endif
    if (janudge > 0) then
       function_pointer => calculate_nudge
-      temp_pointer => null()
-!      call calculate_nudge(temp_pointer)
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE    ),temp_pointer,function_pointer                                              )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE    ), null(), function_pointer                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_TEM ),nudge_tem                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_SAL ),nudge_sal                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp                                  )
@@ -2437,8 +2427,7 @@ private
       if (allocated (hwav)) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),hwav                                                      )
          function_pointer => calculate_hwav_significant
-         temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG),temp_pointer,function_pointer                                                        )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG), null(), function_pointer                                                        )
       endif
       if(allocated(twav)) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                  )
@@ -2501,8 +2490,7 @@ private
       endif
       if (jawave > 0) then
          function_pointer => calculate_ustxy
-         temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UXST_CC  ), temp_pointer,function_pointer                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UXST_CC  ), null(), function_pointer                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UYST_CC  ), ust_y                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES), ustokes                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES), vstokes                                         )
@@ -2510,7 +2498,7 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                      )
          if (jawave == 3 .or. jawave==4) then
             function_pointer => calculate_FXY
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX   ),temp_pointer,function_pointer                                            )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX   ), null(), function_pointer                                            )
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY   ),FY_data                                            )
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU),WAVFU_data                                        )
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFV),WAVFV_data                                        )
