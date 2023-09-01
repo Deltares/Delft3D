@@ -68,7 +68,8 @@ set(oss_dependencies    deltares_common
                         flow2d3d_io_dol_f
                         flow2d3d_kernel_dd_f
                         morphology_data
-                        morphology_kernel) 
+                        morphology_kernel
+						lapack) 
 oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)
