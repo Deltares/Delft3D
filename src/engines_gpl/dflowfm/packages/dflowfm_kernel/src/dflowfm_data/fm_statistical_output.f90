@@ -15,29 +15,29 @@ private
    type(t_output_variable_set), allocatable, public :: out_variable_set_map
    type(t_output_variable_set), allocatable, public :: out_variable_set_clm
    
-   double precision, dimension(:), allocatable, target :: constit_crs_obs !< constituent data on observation cross sections to be written
-   double precision, dimension(:), allocatable, target :: ucmaga !< uc vector norm data to be written
-   double precision, dimension(:), allocatable, target :: viu_data, diu !< viu and diu data to be written
-   double precision, dimension(:), allocatable, target :: tausx, tausy !< viu and diu data to be written
-   double precision, dimension(:), allocatable, target :: scaled_rain !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target :: wx 
-   double precision, dimension(:), allocatable, target :: wy 
-   double precision, dimension(:), allocatable, target :: wdsu_x 
-   double precision, dimension(:), allocatable, target :: wdsu_y 
-   double precision, dimension(:), allocatable, target :: tidepot
-   double precision, dimension(:), allocatable, target :: nudge_time_data
-   double precision, dimension(:), allocatable, target :: nudge_Dtemp
-   double precision, dimension(:), allocatable, target :: nudge_Dsal
-   double precision, dimension(:), allocatable, target :: ust_x
-   double precision, dimension(:), allocatable, target :: ust_y
-   double precision, dimension(:), allocatable, target :: theta_mean
-   double precision, dimension(:), allocatable, target :: FX_data
-   double precision, dimension(:), allocatable, target :: FY_data
-   double precision, dimension(:), allocatable, target :: wavfu_data
-   double precision, dimension(:), allocatable, target :: wavfv_data
-   double precision, dimension(:), allocatable, target :: hwav_significant
-   double precision, dimension(:), allocatable, target :: ucx_data
-   double precision, dimension(:), allocatable, target :: ucy_data
+   double precision, dimension(:), allocatable, target :: constit_crs_obs  !< constituent data on observation cross sections to be written
+   double precision, dimension(:), allocatable, target :: ucmaga           !< uc vector norm data to be written
+   double precision, dimension(:), allocatable, target :: viu_data, diu    !< viu and diu data to be written
+   double precision, dimension(:), allocatable, target :: tausx, tausy     !< tausx and tausy data to be written
+   double precision, dimension(:), allocatable, target :: scaled_rain      !< mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
+   double precision, dimension(:), allocatable, target :: wx               !< wind vector x component
+   double precision, dimension(:), allocatable, target :: wy               !< wind vector y component
+   double precision, dimension(:), allocatable, target :: wdsu_x           !< wind stress, x-component
+   double precision, dimension(:), allocatable, target :: wdsu_y           !< wind stress, y-component
+   double precision, dimension(:), allocatable, target :: tidepot          !< tidal potential in flow element center
+   double precision, dimension(:), allocatable, target :: nudge_time_data  !< nudging relaxation time
+   double precision, dimension(:), allocatable, target :: nudge_Dtemp      !< difference between nudging temperature and actual temperature
+   double precision, dimension(:), allocatable, target :: nudge_Dsal       !< difference nudgint salinity and actual salinity
+   double precision, dimension(:), allocatable, target :: ust_x            !< Stokes velocity, x-component
+   double precision, dimension(:), allocatable, target :: ust_y            !< Stokes velocity, y-component
+   double precision, dimension(:), allocatable, target :: theta_mean       !< Mean sea surface wave direction
+   double precision, dimension(:), allocatable, target :: FX_data          !< wave force vector, x-component
+   double precision, dimension(:), allocatable, target :: FY_data          !< wave force vector, y-component
+   double precision, dimension(:), allocatable, target :: wavfu_data       !< Wave force at velocity point, n-component
+   double precision, dimension(:), allocatable, target :: wavfv_data       !< Wave force at velocity point, t-component
+   double precision, dimension(:), allocatable, target :: hwav_significant !< significant wave height
+   double precision, dimension(:), allocatable, target :: ucx_data         !< Flow velocity vector on zeta points, x-component
+   double precision, dimension(:), allocatable, target :: ucy_data         !< Flow velocity vector on zeta points, y-component
    
    public default_fm_statistical_output
 
@@ -50,10 +50,11 @@ private
    !! Also accounts for Eulerian velocities using getucxucyeulmag()
    subroutine calculate_ucxy(source_input)
    use m_flowparameters, only: jawave, jaeulervel
+   use m_flow, only:ndkx
    double precision, pointer, dimension(:), intent(inout) :: source_input !< pointer to source input array for the "ucx_data" item, to be assigned once on first call.
    
    integer :: jaeulerloc
-   double precision :: dummy(ndx)
+   double precision :: dummy(ndkx)
    
    if (.not. allocated(ucx_data)) then
       allocate(ucx_data(ndkx), ucy_data(ndkx))
