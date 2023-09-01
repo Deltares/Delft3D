@@ -64,7 +64,7 @@ private
    endif
    
       jaeulerloc = 0
-    if (jaeulervel==1 .and. jawave.gt.0) then
+    if (jaeulervel==1 .and. jawave > 0) then
        jaeulerloc = 1
     endif
     !
@@ -186,13 +186,13 @@ private
    endif
    
      do k=1,ndkx
-        if ( nudge_rate(k).gt.0d0 ) then
+        if (nudge_rate(k) > 0d0) then
               nudge_time_data(k) = 1d0/nudge_rate(k)
         endif
-        if ( nudge_tem(k).ne.DMISS ) then
+        if (nudge_tem(k) /= DMISS) then
            nudge_Dtemp(k) = nudge_tem(k)-constituents(itemp, k)
         endif
-        if (nudge_sal(k) .ne. DMISS) then
+        if (nudge_sal(k) /= DMISS) then
            nudge_Dsal(k)  = nudge_sal(k)-constituents(isalt,k)
         end if
      end do
@@ -2062,7 +2062,7 @@ private
       endif
       
       ! Turbulence model
-      if ( kmx.gt.0 ) then
+      if ( kmx > 0 ) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_TKIN:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
@@ -2432,7 +2432,7 @@ private
    if ( jaFrcInternalTides2D > 0) then
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERNAL_TIDES_DISSIPATION),DissInternalTidesPerArea                                )
    endif
-   if (janudge.gt.0) then
+   if (janudge > 0) then
       function_pointer => calculate_nudge
       temp_pointer => null()
 !      call calculate_nudge(temp_pointer)
@@ -2483,7 +2483,7 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UORB),uorbwav                                                      )
       endif
    else
-      if (jawave .eq. 4) then
+      if (jawave == 4) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_E),E                                                         )
          if (roller>0) then
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_R),R                                                         )
@@ -2501,14 +2501,14 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
          call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndxndxi)), temp_pointer, [ndxndxi*ntheta])
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
-         if (windmodel .eq. 0) then
+         if (windmodel == 0) then
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
-         elseif ( (windmodel.eq.1) .and. (jawsource.eq.1 ) ) then
+         elseif ((windmodel == 1) .and. (jawsource == 1 )) then
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
          endif
       endif
-      if (jawave .gt. 0) then
+      if (jawave > 0) then
          function_pointer => calculate_ustxy
          temp_pointer => null()
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UXST_CC  ), temp_pointer,function_pointer                                         )
