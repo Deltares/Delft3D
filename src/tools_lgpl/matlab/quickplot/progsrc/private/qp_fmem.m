@@ -162,7 +162,7 @@ switch cmd
                     try_next='geomesh';
                 case {'.msh'}
                     try_next='gmsh';
-                case {'.mat'}
+                case {'.mat','.fig'}
                     try_next='matlab';
                 case {'.map'}
                     try_next='pcraster';
@@ -373,10 +373,15 @@ switch cmd
                         else
                             FI=load('-mat',FileName);
                         end
+                        if strcmpi(en,'.fig')
+                            qp_plotmanager('openfigure',[],0,0,{FileName});
+                            FI=[];
+                            break
+                        end
                         if isstruct(FI)
                             f=fieldnames(FI);
-                            if length(f)==1 && strcmp(lower(f{1}),'data')
-                                FI=getfield(FI,f{1});
+                            if length(f)==1 && strcmpi(f{1},'data')
+                                FI = FI.(f{1});
                                 FI.FileName=FileName;
                                 Tp=try_next;
                             else
