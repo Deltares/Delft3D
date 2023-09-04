@@ -187,6 +187,8 @@ class TestSetRunner(ABC):
             self.__prepare_test_case(config, logger)
             log_separator(logger, char="-")
 
+            run_data.prepare_ended = datetime.now()
+
             # Run testcase
             testcase = TestCase(config, logger)
 
@@ -197,6 +199,7 @@ class TestSetRunner(ABC):
                     log_sub_header("Execute testcase...", logger)
                     testcase.run(self.programs)
                     log_separator(logger, char="-")
+                    run_data.run_ended = datetime.now()
                 else:
                     logger.info("Testcase not executed (ignored)...\n")
 

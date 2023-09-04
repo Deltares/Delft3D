@@ -23,6 +23,8 @@ class RunData:
         self.__process_name: str = "Unknown"
         self.__test_number: int = test_number
         self.__number_of_tests: int = number_of_tests
+        self.__prepare_ended: Optional[datetime]
+        self.__run_ended: Optional[datetime]
 
     @property
     def creation_time(self) -> datetime:
@@ -50,6 +52,24 @@ class RunData:
     @end_time.setter
     def end_time(self, end_time: datetime):
         self.__end_time = end_time
+
+    @property
+    def prepare_ended(self) -> Optional[datetime]:
+        """Time that preparation of the run took"""
+        return self.__prepare_ended
+
+    @prepare_ended.setter
+    def prepare_ended(self, prepare_time: datetime):
+        self.__prepare_ended = prepare_time
+
+    @property
+    def run_ended(self) -> Optional[datetime]:
+        """Time that the run took"""
+        return self.__run_ended
+
+    @run_ended.setter
+    def run_ended(self, run_ended: datetime):
+        self.__run_ended = run_ended
 
     @property
     def process_id(self) -> int:
@@ -103,12 +123,39 @@ class RunData:
 
         return None
 
+    @property
+    def preprocessing_duration(self) -> Optional[timedelta]:
+        """Duration of the pre-processing of the run"""
+        if self.prepare_ended and self.start_time:
+            return self.prepare_ended - self.start_time
+
+        return None
+
+    @property
+    def run_duration(self) -> Optional[timedelta]:
+        """Duration of the test run"""
+        if self.run_ended and self.prepare_ended:
+            return self.run_ended - self.prepare_ended
+
+        return None
+
+    @property
+    def postprocessing_duration(self) -> Optional[timedelta]:
+        """Duration of the post-processing of the run"""
+        if self.run_ended and self.end_time:
+            return self.end_time - self.run_ended
+
+        return None
+
     def timing_str(self) -> str:
         """Report timings as string"""
         duration = self.__chop_microseconds(self.test_duration)
         waiting_period = self.__chop_microseconds(self.waiting_period)
+        preprocessing = self.__chop_microseconds(self.preprocessing_duration)
+        run = self.__chop_microseconds(self.run_duration)
+        postprocessing = self.__chop_microseconds(self.postprocessing_duration)
 
-        return f"duration {duration} - waiting {waiting_period}"
+        return f"duration {duration} -> pre {preprocessing} -> run {run} -> post {postprocessing} - waiting {waiting_period}"
 
     def absolute_duration_str(self) -> str:
         absolute_duration = self.__chop_microseconds(self.absolute_duration)
