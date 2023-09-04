@@ -1471,14 +1471,16 @@ if ask_for_thinningmode
     thinfld=findobj(OH,'tag','thinfld=?');
     set(thinfld,'enable','on','backgroundcolor',Active)
     thinmodes = {'none','uniform','distance'}'; %,'regrid'
-    %if unstructured % no uniform thinning for unstructured meshes
-    %    thinmodes(2)=[];
-    %end
+    switch Ops.presentationtype
+        case {'values','labels'}
+            thinmodes = cat(1,thinmodes,{'dynamic'});
+    end
     prevthinmodes = get(thinfld,'string');
     thinmode = prevthinmodes{get(thinfld,'value')};
     if ~isequal(prevthinmodes,thinmodes)
-        thinmode=thinmodes{1};
-        set(thinfld,'string',thinmodes,'value',1)
+        ithinmode = max(1,ustrcmpi(thinmode,thinmodes));
+        set(thinfld,'string',thinmodes,'value',ithinmode)
+        thinmode = thinmodes{ithinmode};
     end
     Ops.thinningmode=thinmode;
     switch lower(Ops.thinningmode)
@@ -1493,6 +1495,11 @@ if ask_for_thinningmode
             thindist=findobj(OH,'tag','thindist=?');
             set(thindist,'enable','on','backgroundcolor',Active);
             Ops.thinningdistance=get(thindist,'userdata');
+        case {'dynamic'}
+            set(findobj(OH,'tag','thincount'),'enable','on');
+            thincount=findobj(OH,'tag','thincount=?');
+            set(thincount,'enable','on','backgroundcolor',Active);
+            Ops.thinningcount = get(thincount,'userdata');
     end
 end
 

@@ -140,9 +140,7 @@ switch cmd
         qck_anim(cmd,cmdargs{:});
 
     case 'set'
-        if length(cmdargs)==2
-            qp_settings(cmdargs{:})
-        end
+        qp_settings(cmdargs{:})
         
     case 'debug'
         error('Insert a break point HERE for debugging!')
@@ -2614,12 +2612,12 @@ switch cmd
                 update_option_positions(UD,'main',pos(4)-30+1)
         end
         
-    case {'climmin','climmax','1vecunit','vscale','thinfact','thindist','fontsize','markersize','linewidth'}
+    case {'climmin','climmax','1vecunit','vscale','thinfact','thindist','thincount','fontsize','markersize','linewidth'}
         switch cmd
             case {'climmin','climmax'}
                 pos=0;
                 int=0;
-            case 'thinfact'
+            case {'thinfact','thincount'}
                 pos=1;
                 int=1;
             case {'1vecunit','vscale','thindist','fontsize','markersize','linewidth'}
@@ -4960,6 +4958,7 @@ switch cmd
         set(findobj(UOH,'tag','thinfld=?'),'value',1)
         set(findobj(UOH,'tag','thinfact=?'),'userdata',1,'string','1')
         set(findobj(UOH,'tag','thindist=?'),'userdata',50,'string','50')
+        set(findobj(UOH,'tag','thincount=?'),'userdata',1000,'string','1000')
         %
         % ------ data clipping values ...
         %
@@ -4971,8 +4970,8 @@ switch cmd
         %
         % ------ x/y clipping values ...
         %
-        set(findobj(UOH,'tag','xclipping'),'string','')
-        set(findobj(UOH,'tag','yclipping'),'string','')
+        set(findobj(UOH,'tag','xclipping=?'),'string','')
+        set(findobj(UOH,'tag','yclipping=?'),'string','')
         %
         % ------ export data ...
         %

@@ -31,31 +31,26 @@ function qp_validate(varargin)
 %   $HeadURL$
 %   $Id$
 
-%% process input arguments: finish, report style, and validation directory
-if matlabversionnumber >= 9.06 && batchStartupOptionUsed
-    finish = 'none';
-    teamcity = true;
-else
-    finish = 'openlog';
-    teamcity = false;
-end
+%% default reporting setting
+finish = 'default';
+teamcity = false;
 log_style('latex')
 val_dir = '';
+
+%% auto switch on teamcity when MATLAB runs in batch mode
+if matlabversionnumber >= 9.06 && batchStartupOptionUsed
+    teamcity = true;
+end
+
+%% process input arguments: finish, report style, and validation directory
 i = 0;
-while i<nargin
+while i < nargin
     i = i+1;
     switch lower(varargin{i})
-        case 'openlog'
-            i = i+1;
-            if varargin{i}
-                finish = 'openlog';
-            else
-                finish = 'none';
-            end
         case 'finish'
             i = i+1;
             switch lower(varargin{i})
-                case {'openlog','none','buildpdf'}
+                case {'openlog','none','buildpdf','exit'}
                     finish = lower(varargin{i});
             end
         case 'teamcity'
@@ -66,6 +61,13 @@ while i<nargin
             log_style(lower(varargin{i}))
         otherwise
             val_dir = varargin{i};
+    end
+end
+if strcmp(finish,'default')
+    if teamcity
+        finish = 'exit';
+    else
+        finish = 'openlog';
     end
 end
 
@@ -87,8 +89,12 @@ else
     val_dir = absfullfile(val_dir);
 end
 
-%% add QUICKPLOT path
-if ~isstandalone
+%% add QUICKPLOT path and switch on diary when runnning stand alone on TeamCity
+if isstandalone
+    if teamcity
+        diary on % will be inserted into build log when QUICKPLOT finishes
+    end
+else
     qp_path=which('d3d_qp');
     qp_path=fileparts(qp_path);
     addpath(qp_path)
@@ -166,12 +172,11 @@ ssz=qp_getscreen;
 set(Hpb,'position',[ssz(1)+10 ssz(2)+ssz(4)-pHpb(4)-30 pHpb(3) pHpb(4)])
 %
 UserInterrupt=0;
-if matlabversionnumber>=7.02
-    saveops={'-v6' '-mat'};
-elseif matlabversionnumber>=7
-    saveops={'-NOUNICODE' '-mat'};
+if matlabversionnumber<7.03
+    error('MATLAB versions older than 7.3 are no longer supported.')
 else
-    saveops={'-mat'};
+    saveops={'-v7.3', '-mat'};
+    fprintf('The default character set on this system is %s\n',feature('DefaultCharacterSet'))
 end
 %
 % Allow for a large number of messages
@@ -238,6 +243,7 @@ try
     % this dialog affects the timing.
     %
     d3d_qp('hideplotmngr');
+    d3d_qp('set','<DEFAULT>');
     new_procdef = fullfile(val_dir,'proc_def.dat');
     if exist(new_procdef,'file')
         current_procdef = qp_settings('delwaq_procdef');
@@ -435,73 +441,78 @@ try
                                     % Check for differences in the datafields
                                     Prop = Props{dm};
                                     PropRef = PrevProps{dm};
-                                    pName = {Prop.Name};
-                                    pNameRef = {PropRef.Name};
-                                    pnAdded = setdiff(pName,pNameRef);
-                                    pnRemoved = setdiff(pNameRef,pName);
-                                    if length(Props)>1
-                                        write_log_domain(logid2,Dms{dm});
-                                    end
-                                    if ~isempty(pnAdded)
-                                        pnAdded = protected(pnAdded);
-                                        write_log(logid2,'New datafields:');
-                                        write_list(logid2,pnAdded);
-                                        Prop(ismember(pName,pnAdded)) = [];
-                                        pName = {Prop.Name};
-                                    end
-                                    if ~isempty(pnRemoved)
+                                    if isempty(PropRef)
+                                        write_log(logid2,'Old datafields record is empty.');
                                         JustAddedData=0;
-                                        pnRemoved = protected(pnRemoved);
-                                        write_log(logid2,'Deleted datafields:');
-                                        write_list(logid2,pnRemoved);
-                                        PropRef(ismember(pNameRef,pnRemoved)) = [];
+                                    else
+                                        pName = {Prop.Name};
                                         pNameRef = {PropRef.Name};
-                                    end
-                                    %
-                                    % Make sure that the datafields are in the same order
-                                    if ~isequal(pName,pNameRef)
-                                        write_log(logid2,'Order of datafields changed.');
-                                        [~,iProp] = unique(pName);
-                                        [~,iPropRef] = unique(pNameRef);
-                                        Prop = Prop(iProp);
-                                        PropRef = PropRef(iPropRef);
-                                    end
-                                    %
-                                    % Check for differences in the property field names
-                                    fProp = fieldnames(Prop);
-                                    fPropRef = fieldnames(PropRef);
-                                    fAdded = setdiff(fProp,fPropRef);
-                                    fRemoved = setdiff(fPropRef,fProp);
-                                    if ~isempty(fAdded)
-                                        fAdded = protected(fAdded);
-                                        write_log(logid2,'New property fields:');
-                                        write_list(logid2,fAdded);
-                                        Prop = rmfield(Prop,fAdded);
+                                        pnAdded = setdiff(pName,pNameRef);
+                                        pnRemoved = setdiff(pNameRef,pName);
+                                        if length(Props)>1
+                                            write_log_domain(logid2,Dms{dm});
+                                        end
+                                        if ~isempty(pnAdded)
+                                            pnAdded = protected(pnAdded);
+                                            write_log(logid2,'New datafields:');
+                                            write_list(logid2,pnAdded);
+                                            Prop(ismember(pName,pnAdded)) = [];
+                                            pName = {Prop.Name};
+                                        end
+                                        if ~isempty(pnRemoved)
+                                            JustAddedData=0;
+                                            pnRemoved = protected(pnRemoved);
+                                            write_log(logid2,'Deleted datafields:');
+                                            write_list(logid2,pnRemoved);
+                                            PropRef(ismember(pNameRef,pnRemoved)) = [];
+                                            pNameRef = {PropRef.Name};
+                                        end
+                                        %
+                                        % Make sure that the datafields are in the same order
+                                        if ~isequal(pName,pNameRef)
+                                            write_log(logid2,'Order of datafields changed.');
+                                            [~,iProp] = unique(pName);
+                                            [~,iPropRef] = unique(pNameRef);
+                                            Prop = Prop(iProp);
+                                            PropRef = PropRef(iPropRef);
+                                        end
+                                        %
+                                        % Check for differences in the property field names
                                         fProp = fieldnames(Prop);
-                                    end
-                                    if ~isempty(fRemoved)
-                                        JustAddedFields=0;
-                                        fRemoved = protected(fRemoved);
-                                        write_log(logid2,'Deleted property fields:');
-                                        write_list(logid2,fRemoved);
-                                        PropRef = rmfield(PropRef,fRemoved);
                                         fPropRef = fieldnames(PropRef);
-                                    end
-                                    %
-                                    % Make sure that the property fields are in the same order
-                                    if ~isequal(fProp,fPropRef)
-                                        write_log(logid2,'Order of property fields changed.');
-                                        [~,iProp] = sort(fProp);
-                                        [~,iPropRef] = sort(fPropRef);
-                                        fProp = fProp(iProp);
+                                        fAdded = setdiff(fProp,fPropRef);
+                                        fRemoved = setdiff(fPropRef,fProp);
+                                        if ~isempty(fAdded)
+                                            fAdded = protected(fAdded);
+                                            write_log(logid2,'New property fields:');
+                                            write_list(logid2,fAdded);
+                                            Prop = rmfield(Prop,fAdded);
+                                            fProp = fieldnames(Prop);
+                                        end
+                                        if ~isempty(fRemoved)
+                                            JustAddedFields=0;
+                                            fRemoved = protected(fRemoved);
+                                            write_log(logid2,'Deleted property fields:');
+                                            write_list(logid2,fRemoved);
+                                            PropRef = rmfield(PropRef,fRemoved);
+                                            fPropRef = fieldnames(PropRef);
+                                        end
                                         %
-                                        cProp = struct2cell(Prop);
-                                        cProp = cProp(iProp,:);
-                                        Prop = cell2struct(cProp,fProp,1);
-                                        %
-                                        cPropRef = struct2cell(PropRef);
-                                        cPropRef = cPropRef(iPropRef,:);
-                                        PropRef = cell2struct(cPropRef,fProp,1);
+                                        % Make sure that the property fields are in the same order
+                                        if ~isequal(fProp,fPropRef)
+                                            write_log(logid2,'Order of property fields changed.');
+                                            [~,iProp] = sort(fProp);
+                                            [~,iPropRef] = sort(fPropRef);
+                                            fProp = fProp(iProp);
+                                            %
+                                            cProp = struct2cell(Prop);
+                                            cProp = cProp(iProp,:);
+                                            Prop = cell2struct(cProp,fProp,1);
+                                            %
+                                            cPropRef = struct2cell(PropRef);
+                                            cPropRef = cPropRef(iPropRef,:);
+                                            PropRef = cell2struct(cPropRef,fProp,1);
+                                        end
                                     end
                                     %
                                     if vardiff(Prop,PropRef)>1
@@ -529,6 +540,7 @@ try
                         write_log(logid2,'Conclusion: %s',sc3{DiffMessage});
                     else
                         localsave(RefFile,Props,saveops);
+                        localsave(WrkFile,Props,saveops);
                     end
                     if DiffFound
                         frcolor=Color.Failed;
@@ -680,6 +692,7 @@ try
                                             end
                                         else
                                             localsave(RefFile,Data,saveops);
+                                            localsave(WrkFile,Data,saveops);
                                             write_table2_line(logid2,[],[],[],CREATED,'');
                                             emptyTable2 = false;
                                             if isequal(frresult,PASSED)
@@ -853,7 +866,10 @@ try
             logid2=[];
             %
             if isnan(dt2_old)
-                timid = fopen('../reference/timing.txt','w','n','US-ASCII');
+                timid = fopen([sref,'timing.txt'],'w','n','US-ASCII');
+                fprintf(timid,'%5.1f',dt2);
+                fclose(timid);
+                timid = fopen([swrk,'timing.txt'],'w','n','US-ASCII');
                 fprintf(timid,'%5.1f',dt2);
                 fclose(timid);
             end
@@ -950,19 +966,6 @@ end
 fclose('all');
 if AnyFail
     ui_message('error','Testbank failed on %i out of %i cases! Check log file.\n',NFailed,NTested)
-    %
-    switch finish
-        case 'openlog'
-            if matlabversionnumber>5
-                ops={'-browser'};
-            else
-                ops={};
-            end
-            try
-                web(full_ln,ops{:});
-            catch
-            end
-    end
 else
     ui_message('','Testbank completed successfully (%i cases).\n',NTested)
 end
@@ -971,6 +974,16 @@ qp_settings('defaultfigurecolor',DefFigProp.defaultfigurecolor)
 qp_settings('defaultaxescolor',DefFigProp.defaultaxescolor)
 qp_settings('boundingbox',DefFigProp.boundingbox)
 switch finish
+    case 'openlog'
+        if matlabversionnumber>5
+            ops={'-browser'};
+        else
+            ops={};
+        end
+        try
+            web(full_ln,ops{:});
+        catch
+        end
     case 'buildpdf'
         try
             ui_message('','Building PDF of validation report.')
@@ -992,6 +1005,8 @@ switch finish
             qp_error('Catch while building PDF of validation report:',Ex,'qp_validate')
         end
         cd(currdir)
+    case 'exit'
+        exit
 end
 
 

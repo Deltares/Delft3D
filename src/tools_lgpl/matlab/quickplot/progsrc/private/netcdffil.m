@@ -240,16 +240,17 @@ if FI.NumDomains>1
         end
         %
         if iscell(Props.varid)
-            if strcmp(Props.varid{1},'stream_function')
+            if strcmp(Props.varid{1},'stream_function') || strcmp(Props.varid{1},'net_discharge_into_cell')
                 % select all M_
+                for i = 1:length(Props.Partitions)
+                    PProps = Props.Partitions{i};
+                    PFI = FI.Partitions{i};
+                    PProps.Geom = 'UGRID2D-EDGE';
+                    PProps.varid = Props.varid{2};
+                    PProps.DimName{M_} = PFI.Dataset(PFI.Dataset(PProps.varid+1).Mesh{2}).Mesh{6};
+                    Props.Partitions{i} = PProps;
+                end
                 Props.Geom = 'UGRID2D-EDGE';
-                Props.varid = Props.varid{2};
-                Props.DimName{M_} = FI.Dataset(FI.Dataset(Props.varid+1).Mesh{2}).Mesh{6};
-            elseif strcmp(Props.varid{1},'net_discharge_into_cell')
-                % select all M_
-                Props.Geom = 'UGRID2D-EDGE';
-                Props.varid = Props.varid{2};
-                Props.DimName{M_} = FI.Dataset(FI.Dataset(Props.varid+1).Mesh{2}).Mesh{6};
             end
         end
     else
@@ -289,6 +290,9 @@ if FI.NumDomains>1
             Data.YUnits = FI.MergedPartitions(m).XYUnits;
             Data.EdgeNodeConnect = FI.MergedPartitions(m).EdgeNodeConnect;
             Data.FaceNodeConnect = FI.MergedPartitions(m).FaceNodeConnect;
+            if isfield(FI.MergedPartitions,'EdgeFaceConnect')
+                Data.EdgeFaceConnect = FI.MergedPartitions(m).EdgeFaceConnect;
+            end
         end
         
         % z values
@@ -364,7 +368,7 @@ if FI.NumDomains>1
                 Data.ValLocation = 'NODE';
             elseif strcmp(Props.varid{1},'net_discharge_into_cell')
                 if DataRead
-                    Data.Val = compute_net_discharge_into_cell(Data.Val, Data.EdgeNodeConnect, FI.MergedPartitions(m).nFaces);
+                    Data.Val = compute_net_discharge_into_cell(Data.Val, Data.EdgeFaceConnect, FI.MergedPartitions(m).nFaces);
                 end
                 Data.ValLocation = 'FACE';
             end
@@ -1064,6 +1068,23 @@ if XYRead || XYneeded || ZRead
                 Coord(Active~=1,:)=NaN; % Active~=1 excludes boundary points, Active==0 includes boundary points
             end
             %--------------------------------------------------------------------
+            % PALM special
+            %
+            if ~isempty(FI.Attribute)
+                GlobalAttribs = {FI.Attribute.Name}';
+                switch coordname{iCoord}
+                    case 'X'
+                        xo = strmatch('origin_x',GlobalAttribs);
+                        if ~isempty(xo)
+                            Coord = FI.Attribute(xo).Value + Coord;
+                        end
+                    case 'Y'
+                        yo = strmatch('origin_y',GlobalAttribs);
+                        if ~isempty(yo)
+                            Coord = FI.Attribute(yo).Value + Coord;
+                        end
+                end
+            end
             %
             %--------------------------------------------------------------------
             % ROMS special
@@ -3129,8 +3150,8 @@ delete(hPB)
 Psi = Psi - min(Psi);
 
 function Psi = compute_net_discharge_into_cell(Discharge, EdgeFaceConnect, nFaces)
-from_somewhere = EdgeFaceConnect(:,1)~=0;
-to_somewhere = EdgeFaceConnect(:,2)~=0;
+from_somewhere = EdgeFaceConnect(:,1)~=0 & ~isnan(EdgeFaceConnect(:,1));
+to_somewhere = EdgeFaceConnect(:,2)~=0 & ~isnan(EdgeFaceConnect(:,2));
 Psi = -accumarray(EdgeFaceConnect(from_somewhere,1),Discharge(from_somewhere)',[nFaces,1]) ...
       +accumarray(EdgeFaceConnect(to_somewhere,2),Discharge(to_somewhere)',[nFaces,1]);
 

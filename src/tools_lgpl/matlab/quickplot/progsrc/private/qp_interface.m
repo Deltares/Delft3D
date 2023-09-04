@@ -1696,10 +1696,13 @@ ThinMths={'<dummy>'};
 set(h1(2),'string',ThinMths)
 voffset=voffset-25;
 LocTextEdit_line(mfig,'Factor','thinfact',1,[offset voffset width 20], ...
-    'Keep every <?> select method used for thinning of the vectors / values');
+    'Specify the factor by which to reduce the data points.');
 voffset=voffset-25;
 LocTextEdit_line(mfig,'Distance','thindist',50,[offset voffset width 20], ...
-    'Specify minimum distance between vector plot locations.');
+    'Specify minimum distance between data points.');
+voffset=voffset-25;
+LocTextEdit_line(mfig,'Count','thincount',1000,[offset voffset width 20], ...
+    'Specify number of data points to visualize.');
 %
 % ------ data clipping values ...
 %

@@ -533,50 +533,7 @@ switch cmd
                 qp_plotmanager refreshaxes
                 qp_plotmanager refreshfigprop
             else
-                Items=allchild(Ax);
-                if iscell(Items)
-                    Items(:,2)={0};
-                    Items(end,2)={[]};
-                    Items=Items';
-                    Items=cat(1,Items{:});
-                end
-                Types=cget(Items,'type');
-                null = strcmp(Types,'root');
-                %
-                Tags=cget(Items,'tag');
-                for t=find(null)'
-                    Tags(t)={sprintf('QPPlotTag---%i',t)};
-                end
-                UserDatas=cget(Items,'userdata');
-                UserDatas(null)={'---'};
-                %---
-                TUDvalid=~cellfun('isempty',Tags) & ~cellfun('isempty',UserDatas);
-                Items=Items(TUDvalid);
-                Tags=Tags(TUDvalid);
-                UserDatas=UserDatas(TUDvalid);
-                %---
-                QPTag=strncmp('QPPlotTag',Tags,9);
-                Items=Items(QPTag);
-                Tags=Tags(QPTag);
-                UserDatas=UserDatas(QPTag);
-                %---
-                [Tags,I]=unique(Tags);
-                [I,Isort]=sort(I);
-                Tags=Tags(Isort);
-                Items=Items(I);
-                UserDatas=UserDatas(I);
-                %---
-                while ~isempty(Items) && Items(end)==0
-                    Items(end)=[];
-                    UserDatas(end)=[];
-                    Tags(end)=[];
-                end
-                %---
-                while ~isempty(Items) && Items(1)==0
-                    Items(1)=[];
-                    UserDatas(1)=[];
-                    Tags(1)=[];
-                end
+                [Items, UserDatas, Tags] = qp_get_items(Ax);
                 %---
                 separator='------';
                 if isempty(Items)

@@ -1206,12 +1206,15 @@ qp_settings('LastFileType',lasttp)
 
 function [isASCII,REASON] = verifyascii(arg)
 fid = fopen(arg,'r');
-S = fread(fid,[1 100],'uint8');
+S = fread(fid,[1 1024],'uint8');
 fclose(fid);
 if isempty(S)
     isASCII = false;
     REASON  = 'the file is empty';
 else
+    if S(end) == 26 % last chracter can be an EOF marker
+        S = S(1:end-1);
+    end
     invalid_chars = S(S~=9 & S~=10 & S~=13 & S<32); % TAB,LF,CR allowed
     if ~isempty(invalid_chars)
         isASCII = false;
