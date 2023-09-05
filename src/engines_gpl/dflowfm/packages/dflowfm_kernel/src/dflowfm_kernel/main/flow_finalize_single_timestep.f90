@@ -79,6 +79,29 @@ integer, intent(out) :: iresult
      call updateCumulativeInflow(dts)
   end if
 
+!       only update values at the observation stations when necessary
+!          alternative: move this to flow_externaloutput
+   call timstrt('update HIS data DtUser', handle_extra(75))
+   if (ti_his > 0) then
+      if (comparereal(time1, time_his, eps10)>=0) then
+         !do_fourier = do_fourier .or. (md_fou_step == 2)
+         call updateValuesOnObservationStations()
+         if (jampi == 1) then
+            call updateValuesOnCrossSections_mpi(time1)
+            call updateValuesOnRunupGauges_mpi()
+            call reduce_particles()
+         endif
+         if (jahisbal > 0) then ! Update WaterBalances etc.
+            call updateBalance()
+         endif
+         if ( jacheckmonitor == 1 ) then
+           !compute "checkerboard" monitor
+            call comp_checkmonitor()
+         endif
+      endif
+      endif
+      call timstop(handle_extra(75))
+
   call updateValuesOnCrossSections(time1)             ! Compute sum values across cross sections.
   call updateValuesOnRunupGauges()
  if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
@@ -118,6 +141,14 @@ integer, intent(out) :: iresult
  if ( jaGUI.eq.1 ) then
     call TEXTFLOW()
  end if
+ 
+ call update_source_data(out_variable_set_his)
+ call update_source_data(out_variable_set_map)
+ call update_source_data(out_variable_set_clm)
+
+ call update_statistical_output(out_variable_set_his%statout,dts)
+!call update_statistical_output(out_variable_set_map%statout,dts)
+!call update_statistical_output(out_variable_set_clm%statout,dts)
  
  dnt    = dnt + 1
  time0  = time1                                      ! idem
@@ -160,13 +191,5 @@ integer, intent(out) :: iresult
       end if
       call postpr_fourier(time0, dts)
    endif
-   
-call update_source_data(out_variable_set_his)
-call update_source_data(out_variable_set_map)
-call update_source_data(out_variable_set_clm)
-
-call update_statistical_output(out_variable_set_his%statout(1:out_variable_set_his%count),dts)
-!call update_statistical_output(out_variable_set_map%statout,dts)
-!call update_statistical_output(out_variable_set_clm%statout,dts)
 
 end subroutine flow_finalize_single_timestep

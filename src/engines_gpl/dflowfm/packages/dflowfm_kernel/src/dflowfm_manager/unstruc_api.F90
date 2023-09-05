@@ -271,7 +271,8 @@ end subroutine api_loadmodel
    use dfm_error
    use m_partitioninfo, only: jampi
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
-
+   use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
+   use m_statistical_output, only: update_source_data, update_statistical_output
    integer, external :: flow_modelinit
    integer          :: timerHandle, inner_timerhandle
 
@@ -322,6 +323,14 @@ end subroutine api_loadmodel
       call reduce_particles()
    endif
    call timstop(inner_timerhandle)
+   
+   call update_source_data(out_variable_set_his)
+   call update_source_data(out_variable_set_map)
+   call update_source_data(out_variable_set_clm)
+
+   call update_statistical_output(out_variable_set_his%statout,dts)
+   !call update_statistical_output(out_variable_set_map%statout,dts)
+   !call update_statistical_output(out_variable_set_clm%statout,dts)
     
     call mess(LEVEL_INFO,'Writing initial output to file(s)...')
     inner_timerhandle = 0

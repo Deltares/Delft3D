@@ -52,6 +52,9 @@
  use m_structures, only: structure_parameters_rst
  use m_monitoring_runupgauges
  use Timers
+ use fm_statistical_output, only: out_variable_set_his
+ use m_statistical_output, only: reset_statistical_output, finalize_SO_average
+ 
 #ifdef _OPENMP
  use omp_lib
 #endif
@@ -70,9 +73,11 @@
 
    if (ti_his > 0) then
       if (comparereal(tim, time_his, eps10)>= 0) then
+         call finalize_SO_AVERAGE(out_variable_set_his%statout)
          if ( jampi.eq.0 .or. ( jampi.eq.1 .and. my_rank.eq.0 ) ) then
             call unc_write_his(tim)   ! wrihis
          endif
+         call reset_statistical_output(out_variable_set_his%statout)
          if (nrug>0) then
             ! needs to be done at exactly ti_his, but over all domains, so cannot go in wrihis
             call clearRunupGauges()
