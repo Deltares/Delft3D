@@ -7193,11 +7193,11 @@ module m_meteo
             itemPtr1 => item_dir
             dataPtr1 => phiwav
             jamapwav_phiwav = 1
-         case ('fx')
+         case ('fx','xwaveforce')
             itemPtr1 => item_fx
             dataPtr1 => sxwav
             jamapwav_sxwav = 1
-         case ('fy')
+         case ('fy','ywaveforce')
             itemPtr1 => item_fy
             dataPtr1 => sywav
             jamapwav_sywav = 1
@@ -7209,23 +7209,23 @@ module m_meteo
             itemPtr1 => item_wsbv
             dataPtr1 => sbywav
             jamapwav_sybwav = 1
-         case ('mx')
+         case ('mx','xwaveinducedvolumeflux')
             itemPtr1 => item_mx
             dataPtr1 => mxwav
             jamapwav_mxwav = 1
-         case ('my')
+         case ('my','ywaveinducedvolumeflux')
             itemPtr1 => item_my
             dataPtr1 => mywav
             jamapwav_mywav = 1
-         case ('dissurf')
+         case ('dissurf','freesurfacedissipation')
             itemPtr1 => item_dissurf
             dataPtr1 => dsurf
             jamapwav_dsurf = 1
-         case ('diswcap')
+         case ('diswcap','whitecappingdissipation')
             itemPtr1 => item_diswcap
             dataPtr1 => dwcap
             jamapwav_dwcap = 1
-         case ('ubot')
+         case ('ubot','bottomorbitalvelocity')
             itemPtr1 => item_ubot
             dataPtr1 => uorbwav            
             jamapwav_uorb = 1
@@ -7999,8 +7999,11 @@ module m_meteo
                 ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
                 fileReaderPtr%one_time_field = .true.
             endif
-         case ('wavesignificantheight', 'waveperiod', 'wavedirection')
-            ! the name of the source item created by the file reader will be the same as the ext.force. quant name
+         case ( 'wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce',                     &
+                'xwaveinducedvolumeflux','ywaveinducedvolumeflux','freesurfacedissipation','whitecappingdissipation',   &
+                'bottomorbitalvelocity','totalwaveenergydissipation','bottomdissipation')
+             !BS OWC: wsbu,wsbv might be included here with more appropriate names. 'totalwaveenergydissipation','bottomdissipation': included for now, might be removed if unused
+             ! the name of the source item created by the file reader will be the same as the ext.force. quant name
             sourceItemName = varname
          case ('airpressure', 'atmosphericpressure')
             if (ec_filetype == provFile_arcinfo) then

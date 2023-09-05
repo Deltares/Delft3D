@@ -124,8 +124,10 @@
 
  integer                           :: jarhoxu           !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term
 
- integer                           :: jawave                      !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=XBeach wave driver, 5=Const, 6=SWAN-NetCDF
+ integer                           :: jawave            !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=XBeach wave driver, 5=Const, 6=SWAN-NetCDF, 7=Offline Wave Coupling
 
+ integer                           :: waveforcing       !< Wave forcing type, 0=no, 1=based on gradients radiation stresse, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
+ 
  logical                           :: flowWithoutWaves = .false.  !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
 
  integer                           :: jawavestreaming   !< Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
@@ -722,6 +724,8 @@ subroutine default_flowparameters()
 
     jawave   = 0      ! Include wave model nr
 
+    waveforcing = 0   !< Include wave forcing 
+    
     jawavestreaming = 0   ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
     jawavestokes = 1      ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
