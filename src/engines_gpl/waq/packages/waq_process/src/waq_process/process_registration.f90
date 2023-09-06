@@ -204,6 +204,7 @@ module process_registration
     use m_nlalg
     use m_ssedph
     use m_phcarb
+    use m_pclake
 
     implicit none
 
@@ -211,7 +212,7 @@ module process_registration
 
     public :: pronrs, procal
 
-    integer, parameter :: max_processes = 180  ! Exact number of process routines
+    integer, parameter :: max_processes = 181  ! Exact number of process routines
 
     type :: process_routine_info
         character(len=6) :: pronam
@@ -440,6 +441,7 @@ subroutine pronrs( pronam, imodul )
         process_routine(178) = process_routine_info( 'PHPROT', PHPROT )
         process_routine(179) = process_routine_info( 'FLOCSD', FLOCSD )
         process_routine(180) = process_routine_info( 'AGECAR', AGECART)
+        process_routine(181) = process_routine_info( 'PCLK  ', PCLK   )
 
 !
 !   Sanity check: all pointers in the array should be set
