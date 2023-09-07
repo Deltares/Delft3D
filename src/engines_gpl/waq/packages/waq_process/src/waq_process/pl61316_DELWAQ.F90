@@ -4388,6 +4388,8 @@ CHARACTER :: textfile
       ID0sDpETT                 = 133
  !
        do 9000 iseg = 1 , noseg
+         ! Only acrive segments ...
+         IF (BTEST(IKNMRK(ISEG),0)) THEN
 
          if ( iseg == 23984 ) then
              write(*,*) 'Here!'
@@ -27309,6 +27311,10 @@ End If
          pmsa( ipnt( 3908) ) = min( 1.0d030, dSExTT                     )
          pmsa( ipnt( 3909) ) = min( 1.0d030, dO2ETT                     )
          pmsa( ipnt( 3910) ) = min( 1.0d030, dDpETT                     )
+
+         endif ! End of handling active segments
+               ! But always increase the pointers!
+
          ID0sMxDpW               = ID0sMxDpW                + noflux
          ID0sNH4WH               = ID0sNH4WH                + noflux
          ID0sNO3WH               = ID0sNO3WH                + noflux
