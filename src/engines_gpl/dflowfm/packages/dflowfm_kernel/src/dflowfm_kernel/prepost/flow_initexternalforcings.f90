@@ -658,7 +658,7 @@
                 bndsf(isf)%k(1,k)   = kb
                 bndsf(isf)%k(2,k)   = kbi
                 bndsf(isf)%k(3,k)   = Lf
-                bndsf(isf)%k(5,k)   = lnxbnd(Lf-lnxi)
+                bndsf(isf)%k(5,k)   = lnxbnd(Lf-lnxi) ! flow boundary to which constituent belongs
               endif
 
               if (numnos > 0) then

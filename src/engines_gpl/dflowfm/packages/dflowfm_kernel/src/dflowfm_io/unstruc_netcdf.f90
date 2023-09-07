@@ -2910,7 +2910,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     use m_sferic
     use network_data
     use m_sediment
-    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units
+    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units, ifrac2const
     use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits, wqbot
     use m_xbeach_data, only: E, thetamean, sigmwav
     use m_flowexternalforcings, only: numtracers
@@ -3094,7 +3094,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
             allocate(id_bndsedfracdim(numfracs))
          endif
          do i=1,numfracs
-            if (max_threttim(i+ISED1-1) > 0d0) then
+            iconst = ifrac2const(i)
+            if (iconst==0) cycle
+            if(max_threttim(iconst) > 0d0) then     ! allocated on NUMCONST
                write(numsedfracstr,numformat) i
                ierr = nf90_def_dim(irstfile, 'sfbndpt'//trim(numsedfracstr), nbndsf(i), id_bndsedfracdim(i))
             endif
@@ -3589,7 +3591,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
             allocate(id_zsedfracbnd(numfracs))
          endif
          do i=1,numfracs
-            if (max_threttim(i+ISED1-1) > 0d0) then
+            iconst = ifrac2const(i)
+            if (iconst==0) cycle
+            if(max_threttim(iconst) > 0d0) then
                write(numsedfracstr,numformat) i
                ierr = nf90_def_var(irstfile, 'tsedfracbnd'//numsedfracstr, nf90_double, (/ id_bndsedfracdim(i), id_timedim /), id_tsedfracbnd(i))
                ierr = nf90_put_att(irstfile, id_tsedfracbnd(i), 'long_name', 'TH time interval '//numsedfracstr)
@@ -4439,7 +4443,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
       endif
       if (numfracs > 0) then !JRE sedfrac
          do i = 1, numfracs
-            if (max_threttim(i+ISED1-1) > 0d0) then
+            iconst=ifrac2const(i)
+            if (iconst==0) cycle
+            if(max_threttim(iconst) > 0d0) then
                ierr = nf90_put_var(irstfile, id_tsedfracbnd(i), bndsf(i)%tht, (/1, itim/), (/nbndsf(i), 1/))
                ierr = nf90_put_var(irstfile, id_zsedfracbnd(i), bndsf(i)%thz, (/1, itim/), (/nbndsf(i)*kmxd, 1/))
             endif
@@ -12486,7 +12492,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     use time_module, only :  datetimestring_to_seconds, seconds_to_datetimestring
     use m_flow
     use m_flowtimes
-    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names
+    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names,ifrac2const
     use m_fm_wq_processes
     use m_flowexternalforcings, only: numtracers, trnames
     use m_sediment
@@ -13488,7 +13494,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
          if (.not. allocated(id_tsedfracbnd)) allocate(id_tsedfracbnd(numfracs))
          if (.not. allocated(id_zsedfracbnd)) allocate(id_zsedfracbnd(numfracs))
          do i=1,numfracs
-            if (max_threttim(ISED1+i-1) > 0d0) then
+            iconst=ifrac2const(i)
+            if (iconst==0) cycle
+            if(max_threttim(iconst) > 0d0) then
                write(numsedfracstr,numformat) i
                ierr = nf90_inq_varid(imapfile, 'tsedfracbnd'//numsedfracstr, id_tsedfracbnd(i))
                ierr = nf90_get_var(imapfile, id_tsedfracbnd(i), bndsf(i)%tht(1:nbndsf(i)), start=(/1, it_read/), count=(/nbndsf(i), 1/))

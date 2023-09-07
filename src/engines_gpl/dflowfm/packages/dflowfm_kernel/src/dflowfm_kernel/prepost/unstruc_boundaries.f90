@@ -697,11 +697,11 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
         call realloc(ketr, (/ Nx, numtracers /), keepExisting=.true., fill=0 )
      end if
 
-  else if (qidfm(1:10) == 'sedfracbnd' .and. jased > 0) then
+  else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
      call get_sedfracname(qidfm, sfnam, qidnam)
      isf = findname(numfracs, sfnames, sfnam)
 
-     if ( isf.eq.0 ) then   ! add
+     if ( isf.eq.0) then   ! add
 
         numfracs = numfracs+1
 !       realloc
@@ -1772,9 +1772,11 @@ subroutine init_threttimes()
        ierr = 0
        call get_sedfracname(qidfm, sedfracnam, qidnam)
        ifrac = findname(numfracs, sfnames, sedfracnam)
-       if (allocated(bndsf)) then
-          nseg = bndsf(ifrac)%k(5,thrtn(i))
-          if (nseg /=i) cycle
+       if (allocated(bndsf).and.thrtn(i)<=nbndsf(ifrac)) then      ! i      = no of TH boundaries (i.e. 1 per fraction bnd)
+                                                                   ! thrtn  = no of boundaries per fraction
+                                                                   ! nbndsf = total no of bnd links per fractions
+          nseg = bndsf(ifrac)%k(5,thrtn(i))  ! 5, has open bnd section where TH bnd applies
+          !if (nseg /=i) cycle
           if (nseg == 0 .or. nseg > nopenbndsect) then
              ierr = 1
           endif

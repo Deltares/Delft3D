@@ -83,7 +83,7 @@
   do i = 1,size(handle_extra)
      if (handle_extra(i) > 0) then
         time_cpu = tim_get_wallclock(handle_extra(i))
-        if ( time_cpu > 0.01d0) then ! only the relevant
+        if ( time_cpu > 0.01d0) then                     ! only the relevant
            write(msgbuf,'(a,a,F25.10)') 'extra timer:' , tim_get_label(handle_extra(i)), time_cpu      ; call msg_flush()
         endif
      endif
