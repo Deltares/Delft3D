@@ -365,7 +365,7 @@ subroutine write_wave_map (sg, sof, sif, n_swan_grids, wavedata, casl, prevtime,
               & elmqty(1) ,elmunt(1) ,elmdes(1) ,elmtps(1) ,nbytsg(1) , &
               & elmnms(29),celidt    ,wrswch    ,error     ,sof%fy     )
     !
-    call perpar(gamma0, perfac, ierror)
+    call jonswap_mean2peak_period_factor(gamma0, perfac, ierror)
     if (ierror < 0) then
        write(*,'(a,f10.5)') 'ERROR: gamma0 = ',gamma0,' lies outside allowed range [1,20]'
        stop
