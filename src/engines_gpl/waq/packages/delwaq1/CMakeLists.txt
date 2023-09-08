@@ -36,6 +36,7 @@ set(oss_dependencies_general deltares_common
                              nefis
                              delwaq_lib
                              waq_io
+                             waq_validation
                              waq_data
                              waq_kernel
                              waq_plugin_wasteload

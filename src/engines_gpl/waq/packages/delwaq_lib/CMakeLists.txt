@@ -31,6 +31,7 @@ set(oss_dependencies_general deltares_common
                              waq_kernel
                              waq_plugin_wasteload
                              waq_process
+                             waq_validation
                              waq_utils_c
                              waq_utils_f
                              part_utils_f)

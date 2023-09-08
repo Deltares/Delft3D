@@ -151,7 +151,7 @@
             IF ( NOBRK .LE. IIMAX ) THEN
                IAR(NOBRK) = IHULP
                if ( nobrk .gt. 1 ) then
-                  if ( ihulp .le. iar(nobrk-1) ) then
+                   if ( ihulp .le. iar(nobrk-1) ) then
                      write ( lunut, 1030 ) ihulp, iar(nobrk-1)
                      ierr3 = ierr3 + 1
                   endif
