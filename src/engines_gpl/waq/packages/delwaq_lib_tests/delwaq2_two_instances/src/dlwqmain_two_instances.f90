@@ -30,10 +30,12 @@
 program delwaq2_two_instances
 
     use delwaq2_data
+    use m_actions
+    use m_delwaq2_main
 
     implicit none
 
-    include 'actions.inc'
+    
 
     character(len=100), dimension(1) :: argv
     integer                          :: argc

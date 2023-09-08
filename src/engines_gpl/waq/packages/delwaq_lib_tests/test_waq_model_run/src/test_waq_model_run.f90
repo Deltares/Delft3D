@@ -26,13 +26,12 @@
 !     using preprocessed files from DELWAQ1
 !
 program test_waq_model_run
+    use waq_omi_interface
 
     implicit none
 
     integer :: dummy
-    integer :: ModelInitialize_By_Id, ModelPerformTimeStep, ModelFinalize
     logical :: success
-    logical :: GetCurrentValue
 
     character(len=20) :: runid = 'arjen-ws'
 

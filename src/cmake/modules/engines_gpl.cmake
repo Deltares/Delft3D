@@ -20,7 +20,7 @@ set(waq_data_module "${waq_module_path}/waq_data")
 set(delwaq_lib_module "${waq_module_path}/delwaq_lib")
 set(delwaq1_module "${waq_module_path}/delwaq1")
 set(delwaq2_module "${waq_module_path}/delwaq2")
-set(delwaq_lib_examples_module "${waq_module_path}/delwaq_lib_examples")
+set(delwaq_lib_tests_module "${waq_module_path}/delwaq_lib_tests")
 set(waq_delftio_module "${waq_module_path}/waq_delftio/packages/waq_delftio")
 
 # Waves

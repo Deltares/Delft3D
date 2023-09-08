@@ -27,12 +27,12 @@
 
 !> Main program steering the computation
 program delwaq2_stepwise
+    use waq_omi_interface
+    use waq_omi_api
 
     implicit none
 
     integer :: dummy
-    integer :: ModelInitialize_By_Id, ModelPerformTimeStep, ModelFinalize
-    integer :: GetTimeHorizon, GetWQCurrentTime, WriteRestartFileDefaultName, WriteRestartFile
 
     character(len=200)     :: runid
     character(len=200)     :: resfile
@@ -64,8 +64,6 @@ program delwaq2_stepwise
     ! Start the computation - stepwise
     !
     dummy = ModelInitialize_By_Id( runid )
-
-!    dummy = ModelInitialize_By_Id( runid ) ! Twice as a test
 
     dummy = GetTimeHorizon( startTime, stopTime )
     i = 0

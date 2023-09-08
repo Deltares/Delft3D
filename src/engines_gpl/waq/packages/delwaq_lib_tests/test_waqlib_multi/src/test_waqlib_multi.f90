@@ -25,6 +25,7 @@
 !     Test program to check that DELWAQ2 works correctly via the OpenMI/Delta-Shell
 !
 program test_waq_omi_lib
+    use waq_omi_interface
 
     implicit none
 
@@ -57,17 +58,6 @@ program test_waq_omi_lib
     integer                    :: test_starttime
     integer                    :: test_endtime
     integer                    :: test_tstep
-
-    logical, external :: SETINTEGRATIONOPTIONS, SETSIMULATIONTIMES,           &
-                         DEFINEWQDISPERSION,    DEFINEWQPROCESSES,            &
-                         SETCURRENTVALUESCALARINIT, DEFINEDISCHARGELOCATIONS, &
-                         SETINITIALVOLUME,                                    &
-                         DEFINEWQSCHEMATISATION, SETFLOWDATA,                 &
-                         SETWASTELOADVALUES, SETBOUNDARYCONDITIONS,           &
-                         SETOUTPUTTIMERS, DEFINEMONITORINGLOCATIONS,          &
-                         GETCURRENTVALUE
-    integer, external :: MODELPERFORMTIMESTEP, MODELINITIALIZE_BY_ID,         &
-                         MODELFINALIZE,  MODELINITIALIZE
 
 
     integer, parameter                           :: number_of_runs = 2

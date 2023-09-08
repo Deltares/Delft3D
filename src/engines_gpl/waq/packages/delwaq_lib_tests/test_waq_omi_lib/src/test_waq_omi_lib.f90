@@ -25,11 +25,15 @@
 !     Test program to check that DELWAQ2 works correctly via the OpenMI/Delta-Shell
 !
 program test_waq_omi_lib
+    use waq_omi_interface
+
+    implicit none
 
     logical :: success
     logical :: varying_volume
 
     integer :: integration_method
+    integer :: i
 
     integer, dimension(4,4) :: pointers = &
         reshape((/ -1, 1, 0, 2, &
@@ -46,15 +50,6 @@ program test_waq_omi_lib
     real                    :: dvol_dt
     real                    :: deltt
 
-    logical, external :: SETINTEGRATIONOPTIONS, SETSIMULATIONTIMES,    &
-                         DEFINEWQDISPERSION,    DEFINEWQPROCESSES,     &
-                         SETCURRENTVALUESCALARINIT, DEFINEDISCHARGELOCATIONS, &
-                         SETINITIALVOLUME,   &
-                         DEFINEWQSCHEMATISATION, SETFLOWDATA,   &
-                         SETWASTELOADVALUES, SETBOUNDARYCONDITIONS, &
-                         GETCURRENTVALUE, &
-                         SETOUTPUTTIMERS, DEFINEMONITORINGLOCATIONS, &
-                         DEFINEWQEXTRAOUTPUTPARAMETERS
 
     varying_volume     = .false.
     integration_method = 5
