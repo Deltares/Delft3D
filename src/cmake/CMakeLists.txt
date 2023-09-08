@@ -49,12 +49,6 @@ if (UNIX)
     set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
 endif(UNIX)
 
-# Define the custom flag about code coverage and profiling with a default value of OFF
-option(ENABLE_CODE_COVERAGE "Enable the code and profiling coverage" OFF)
-if(ENABLE_CODE_COVERAGE)
-    message("Code coverage and profiling analysis is enabled")
-    set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS} ${codecov_flag} ${profiling_flag} ${srcrootdir_code_cov}$)
-endif(ENABLE_CODE_COVERAGE)
 
 # Set available build configurations for the .sln file
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
