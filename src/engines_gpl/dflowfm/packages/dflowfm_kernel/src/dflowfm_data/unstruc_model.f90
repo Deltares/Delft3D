@@ -2026,6 +2026,7 @@ subroutine readMDUFile(filename, istat)
 
     ti_rst_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'RstInterval'   ,  ti_rst_array, 3, success)
+    if (ti_rst_array(1) .gt. 0d0) ti_rst_array(1) = max(ti_rst_array(1) , dt_user)
     if (dt_user .gt. 0 .and. ti_rst_array(1) .gt. 0) then
         if ((mod(ti_rst_array(1),dt_user) .ne. 0) .or. (mod(ti_rst_array(2),dt_user) .ne. 0) .or. (mod(ti_rst_array(3),dt_user) .ne. 0)) then
             write(msgbuf, '(a,f9.1,f9.1,f9.1,a,f9.1,a)') 'RstInterval = ', ti_rst_array(1), ti_rst_array(2), ti_rst_array(3),' should be multiple of DtUser = ', dt_user, ' s'
@@ -2238,6 +2239,10 @@ subroutine readMDUFile(filename, istat)
     ti_classmap_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
     if (ti_classmap_array(1) .gt. 0d0) ti_classmap_array(1) = max(ti_classmap_array(1) , dt_user)
+    if ((mod(ti_classmap_array(1),dt_user) .gt. 0) .or. (mod(ti_classmap_array(2),dt_user) .gt. 0) .or. (mod(ti_classmap_array(3),dt_user) .gt. 0)) then
+        write(msgbuf, '(a,f9.1,f9.1,f9.1,a,f9.1,a)') 'ClassMapInterval = ', ti_classmap_array(1), ti_classmap_array(2), ti_classmap_array(3),' should be multiple of DtUser = ', dt_user, ' s'
+        call mess(LEVEL_ERROR, msgbuf)
+    end if
     call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
 
     if (ti_classmap > 0d0) then
