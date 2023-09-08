@@ -80,7 +80,7 @@
  double precision                  :: facLaxturb = 0    !< Turkineps0 from : 0.0=links ; 1.0=nodes 
  integer                           :: jafaclaxturbtyp   !< (Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)
  integer                           :: janettosplit      !< default 0 split each contrib., 1=split on netto sum (for tke) 
- double precision                  :: splitfac = 1      !< 0d0 = Patankar , 1d0 = Newton
+ double precision                  :: splitfac = 1d0    !< 0d0 = Patankar , 1d0 = Newton
  double precision                  :: sigmagrowthfactor !<layer thickness growth factor from bed up
  double precision                  :: dztopuniabovez  = -999d0     !< bottom level of lowest uniform layer == blmin if not specified
  double precision                  :: Floorlevtoplay  = -999d0     !< floor  level of top zlayer, == sini if not specified
