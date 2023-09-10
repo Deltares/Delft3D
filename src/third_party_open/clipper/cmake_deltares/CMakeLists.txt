@@ -4,12 +4,10 @@ set(library_name clipper)
 set(src_path "${CMAKE_CURRENT_SOURCE_DIR}/../")
 
 # Gather source files
-file(GLOB headers include/*.h)
 file(GLOB source ${src_path}/*.cpp)
 
 # Define library
-add_library(${library_name} ${headers}
-                            ${source})
+add_library(${library_name} ${source})
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../ FILES ${source})
