@@ -54,10 +54,11 @@ if (WIN32)
                          io_hyd
                          netcdf4
                          netcdff
-                         waq_utils_f)
+                         waq_utils_f
+                         netcdf)
 
     oss_include_libraries(${executable_name} oss_dependencies)
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PUBLIC ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
@@ -72,7 +73,6 @@ if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
 endif(WIN32)
 
-target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     # Set linker properties
