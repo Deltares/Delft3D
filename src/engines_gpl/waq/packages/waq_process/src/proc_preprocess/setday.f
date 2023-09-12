@@ -103,16 +103,16 @@
          ISUSED(IKEY) = 1
       ENDIF
 !
-!     Fill the Proces Properties
+!     Fill the Propces Properties
 !
       aProcesProp%name       = 'STADAY'
       WRITE(aProcesProp%name(7:10),'(I4.4)') IPROC
       aProcesProp%routine    = 'STADAY'
-      aProcesProp%text       = 'periodic average, periodic minimum, periodic maximum'
+      aProcesProp%text       = 'periodic average'
       aProcesProp%swtransp   = 123
       aProcesProp%type       = PROCESTYPE_OUTPUT
-      aProcesProp%no_input      = 9
-      aProcesProp%no_output     = 7
+      aProcesProp%no_input      = 7
+      aProcesProp%no_output     = 3
       aProcesProp%no_FluxOutput = 0
       aProcesProp%no_FluxStochi = 0
       aProcesProp%no_DispStochi = 0
@@ -278,40 +278,6 @@
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
      +                   '] created with periodic average from [',aProcesProp%input_item(1)%name,']'
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
-         aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
-      ELSE
-         aItemProp%name    = 'TMIN_'//aProcesProp%input_item(1)%name
-      ENDIF
-      aItemProp%default = -999.
-      aItemProp%text    = 'periodic minimum '//aProcesProp%input_item(1)%name
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(2)%name=aItemProp%name
-      aProcesProp%output_item(2)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(2)%indx= 2
-      aProcesProp%output_item(2)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                  '] created with periodic minimum from [',aProcesProp%input_item(1)%name,']'
-!
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
-         aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
-      ELSE
-         aItemProp%name    = 'TMAX_'//aProcesProp%input_item(1)%name
-      ENDIF
-      aItemProp%default = -999.
-      aItemProp%text    = 'periodic maximum '//aProcesProp%input_item(1)%name
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(3)%name=aItemProp%name
-      aProcesProp%output_item(3)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(3)%indx= 3
-      aProcesProp%output_item(3)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                  '] created with periodic maximum from [',aProcesProp%input_item(1)%name,']'
-!
 !     work array in input and in output
 !
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
@@ -323,64 +289,17 @@
       aItemProp%text    = 'work array '//aProcesProp%input_item(1)%name
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(4)%name=aItemProp%name
-      aProcesProp%output_item(4)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%output_item(4)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(4)%indx= 4
-      aProcesProp%output_item(4)%ip_val= 0
+      aProcesProp%output_item(2)%name=aItemProp%name
+      aProcesProp%output_item(2)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(2)%indx= 2
+      aProcesProp%output_item(2)%ip_val= 0
       aProcesProp%input_item(7)%name=aItemProp%name
       aProcesProp%input_item(7)%type=IOTYPE_SEGMENT_WORK
       aProcesProp%input_item(7)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%input_item(7)%actdef=-999.
       aProcesProp%input_item(7)%indx  = 7
       aProcesProp%input_item(7)%ip_val  = 0
-!
-!     work array in input and in output
-!
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
-         aItemProp%name    = 'MINDYN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
-      ELSE
-         aItemProp%name    = 'MINDYN_'//aProcesProp%input_item(1)%name
-      ENDIF
-      aItemProp%default = -999.
-      aItemProp%text    = 'work array '//aProcesProp%input_item(1)%name
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(5)%name=aItemProp%name
-      aProcesProp%output_item(5)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%output_item(5)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(5)%indx= 5
-      aProcesProp%output_item(5)%ip_val= 0
-      aProcesProp%input_item(8)%name=aItemProp%name
-      aProcesProp%input_item(8)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%input_item(8)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(8)%actdef=-999.
-      aProcesProp%input_item(8)%indx  = 8
-      aProcesProp%input_item(8)%ip_val  = 0
-
-!
-!     work array in input and in output
-!
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
-         aItemProp%name    = 'MAXDYN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
-      ELSE
-         aItemProp%name    = 'MAXDYN_'//aProcesProp%input_item(1)%name
-      ENDIF
-      aItemProp%default = -999.
-      aItemProp%text    = 'work array '//aProcesProp%input_item(1)%name
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(6)%name=aItemProp%name
-      aProcesProp%output_item(6)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%output_item(6)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(6)%indx= 6
-      aProcesProp%output_item(6)%ip_val= 0
-      aProcesProp%input_item(9)%name=aItemProp%name
-      aProcesProp%input_item(9)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%input_item(9)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(9)%actdef=-999.
-      aProcesProp%input_item(9)%indx  = 9
-      aProcesProp%input_item(9)%ip_val  = 0
 
       ! Add the companion for the TCOUNT input item
       aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
@@ -388,11 +307,11 @@
       aItemProp%text    = 'time step counter (work array)'
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(7)%name=aItemProp%name
-      aProcesProp%output_item(7)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(7)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(7)%indx= 7
-      aProcesProp%output_item(7)%ip_val= 0
+      aProcesProp%output_item(3)%name=aItemProp%name
+      aProcesProp%output_item(3)%type=IOTYPE_SEGMENT_OUTPUT
+      aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(3)%indx= 3
+      aProcesProp%output_item(3)%ip_val= 0
 
 !
 !     check the use of the key words
