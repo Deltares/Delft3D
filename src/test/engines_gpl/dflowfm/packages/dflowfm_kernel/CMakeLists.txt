@@ -10,10 +10,11 @@ if(UNIX)
 
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
+  #  find_package(MPI REQUIRED)
+    
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+   # pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+   # pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     pkg_check_modules(PETSC      REQUIRED IMPORTED_TARGET PETSc)
 
     set(oss_dependencies    deltares_common
@@ -38,6 +39,8 @@ if(UNIX)
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
+                            netcdf4
+                            netcdff
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -57,10 +60,7 @@ if(UNIX)
     target_link_libraries(${executable_name}
          ${oss_dependencies}
          Threads::Threads
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
-         PkgConfig::PETSC
-         "metis")
+         PkgConfig::PETSC)
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)

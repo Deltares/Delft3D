@@ -25,29 +25,29 @@ set(oss_dependencies_general deltares_common
                              waq_data
                              io_netcdf)
 
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
+# if (UNIX)
+    # # the `pkg_check_modules` function is created with this call
+   # # find_package(PkgConfig REQUIRED)
 
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    # # these calls create special `PkgConfig::<MODULE>` variables
+  # #  pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+  # #  pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-    # WARNING: waq_process and waq_util_f are (weakly) circular dependent
-    # Just add waq_process to "target_lib_libraries", nothing more
-    set(oss_dependencies ${oss_dependencies_general})
+    # # WARNING: waq_process and waq_util_f are (weakly) circular dependent
+    # # Just add waq_process to "target_lib_libraries", nothing more
+    # set(oss_dependencies ${oss_dependencies_general})
 
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         waq_process
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
-endif(UNIX)
-if (WIN32)
+    # target_link_libraries(${library_name}
+         # ${oss_dependencies}
+         # waq_process
+        # # PkgConfig::NETCDF
+       # #  PkgConfig::NETCDF_FTN)
+# endif(UNIX)
+
     set(oss_dependencies ${oss_dependencies_general}
                          netcdf4
                          netcdff)
-endif(WIN32)
+
 
 oss_include_libraries(${library_name} oss_dependencies)
 

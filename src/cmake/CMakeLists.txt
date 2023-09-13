@@ -98,15 +98,15 @@ if (UNIX)
     add_definitions(-DHAVE_MPI)
     
     #NetCDF
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    #pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+    #pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
 
     # Proj
-    pkg_check_modules(PROJ REQUIRED proj)
+    #pkg_check_modules(PROJ REQUIRED proj)
 
 endif(UNIX)
 
@@ -127,8 +127,10 @@ string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 # Set the location of the update_version script
 set(update_version_script_path ${checkout_src_root}/${update_version_script})
 
+    message(Build type: ${CMAKE_BUILD_TYPE})
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(installdir "install_${configuration_type_lower}")
+
+  set(installdir "install_${configuration_type_lower}/${CMAKE_BUILD_TYPE}")
   SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 

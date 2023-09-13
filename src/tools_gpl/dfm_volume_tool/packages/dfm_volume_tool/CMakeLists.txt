@@ -22,8 +22,8 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+   # pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+   # pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(oss_dependencies deltares_common 
                          deltares_common_c
@@ -32,14 +32,17 @@ if (UNIX)
                          flow1d_core
                          io_netcdf 
                          FLAP
+                         netcdf4
+                         netcdff
                          dfm_api_access)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+       #  PkgConfig::NETCDF
+       #  PkgConfig::NETCDF_FTN
+       )
 endif(UNIX)
 
 if (WIN32)

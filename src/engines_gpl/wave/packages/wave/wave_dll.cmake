@@ -58,8 +58,8 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    #pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+    #pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(library_dependencies    wave_data
                                 delftio
@@ -76,17 +76,23 @@ if(UNIX)
                                 triangle_c
                                 swan
                                 esmfsm
+                                netcdf4
+                                netcdff
                                 )
                                 
     oss_include_libraries(${library_name} library_dependencies)
-
+    target_link_directories(${library_name}
+                            PRIVATE
+                            "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib")
+                            
     target_link_libraries(${library_name}
          ${library_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         #PkgConfig::NETCDF
+         #PkgConfig::NETCDF_FTN
+         "netcdf.lib")
 
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     
     #target_link_options(${library_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)

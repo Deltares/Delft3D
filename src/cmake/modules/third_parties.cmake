@@ -10,9 +10,9 @@ set(kdtree_module ${third_party_open_path}/kdtree2/${cmake_directory})
 set(md5_module ${third_party_open_path}/md5/${cmake_directory})
 
 # metis
-if(WIN32)
+#if(WIN32)
     set(metis_module ${third_party_open_path}/metis/${cmake_directory})
-endif(WIN32)
+#endif(WIN32)
 
 # petsc
 if(WIN32)
@@ -31,14 +31,14 @@ set(FLAP_module ${third_party_open_path}/FLAP/${cmake_directory})
 # fortrangis
 set(fortrangis_module ${third_party_open_path}/fortrangis/${cmake_directory})
 set(shp_module ${third_party_open_path}/shapelib/${cmake_directory})
-if(WIN32)
+#if(WIN32)
     set(proj_module ${third_party_open_path}/proj4/${cmake_directory})
-endif(WIN32)
+#endif(WIN32)
 
 # netcdf
-if(WIN32)
+#if(WIN32)
     set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
-endif(WIN32)
+#endif(WIN32)
 set(netcdf_version "netCDF 4.6.1")
 
 

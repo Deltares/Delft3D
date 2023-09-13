@@ -8,14 +8,8 @@ get_fortran_source_files(${src_path} source_files)
 add_library(${library_name} ${source_files})
 
 # Specify dependencies
-if (UNIX)
-    set(oss_dependencies    deltares_common
-                            ec_module
-                            flow1d_core
-                            gridgeom
-                            io_netcdf)
-endif(UNIX)
-if (WIN32)
+
+
     set(oss_dependencies    deltares_common
                             gridgeom
                             ec_module
@@ -24,7 +18,7 @@ if (WIN32)
                             io_netcdf
                             netcdf4
                             netcdff)
-endif(WIN32)
+
 oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)

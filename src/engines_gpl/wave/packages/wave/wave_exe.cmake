@@ -44,8 +44,8 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+   # pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+   # pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(exe_dependencies    wave_data
                             delftio
@@ -59,6 +59,8 @@ if(UNIX)
                             wave_kernel
                             wave_manager
                             nefis
+                            netcdf4
+                            netcdff
                             triangle_c
                             swan
                             esmfsm
@@ -68,8 +70,9 @@ if(UNIX)
 
     target_link_libraries(${executable_name}
          ${exe_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+       #  PkgConfig::NETCDF
+       #  PkgConfig::NETCDF_FTN
+       )
 endif(UNIX)
 
 include_directories(${mpi_include_path} ${version_include_dir})
@@ -96,8 +99,10 @@ endif(WIN32)
 if (UNIX)
     # Set linker properties
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
+    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+        target_link_directories(${executable_name}
+                            PRIVATE
+                            "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib")
     #target_link_options(${executable_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
