@@ -819,7 +819,7 @@ subroutine tricom_init(olv_handle, gdp)
               & betac     ,dml       ,restid    ,icreep    ,trasol    ,forfuv    , &
               & forfww    ,ktemp     ,keva      ,temint    ,evaint    ,lturi     , &
               & tkemod    ,riglid    ,tstprt    ,prsmap    ,prshis    ,selmap    , &
-              & selhis    ,filrol    ,kmax      ,gdp       )
+              & selhis    ,filrol    ,filic     ,kmax      ,gdp       )
     call dfsync (gdp)
     if (error) goto 9996
     !
