@@ -124,9 +124,8 @@
 
    if (jamodelspecific == 1) then  ! HK: This code is for performance testing
       call checkinnerloopindex12()
+      call checkunesco83()
    endif
-
-!  call checkunesco83()
 
 #if HAVE_DISPLAY==0
 ! For dflowfm-cli executable, switch off all GUI calls here at *runtime*,
