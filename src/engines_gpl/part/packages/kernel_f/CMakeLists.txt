@@ -16,7 +16,6 @@ set(oss_dependencies deltares_common
                      gridgeom
                      kdtree_wrapper
                      kdtree2
-                     io_netcdf
                      io_hyd)
 
 
