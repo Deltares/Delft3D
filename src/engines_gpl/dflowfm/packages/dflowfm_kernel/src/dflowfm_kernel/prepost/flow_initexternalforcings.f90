@@ -107,16 +107,21 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    double precision,  external   :: ran0
    logical, external             :: flow_init_structurecontrol
 
-   integer                       :: L1, L2
-   integer                       :: ilattype
-   character(len=20)             :: wqinput
-   character(len=NAMMBALEN)      :: mbainputname
-   integer                       :: imba, needextramba, needextrambar
-   logical                       :: hyst_dummy(2)
-   double precision              :: area, width, hdx, factor
-   type(t_storage), pointer      :: stors(:)
-   integer                       :: i, nstor, ec_item
-   integer                       :: num_lat_ini_blocks !< Number of [Lateral] providers read from new extforce file.
+ integer                       :: L1, L2
+ integer                       :: ilattype
+ integer                       :: ifun
+ character(len=20)             :: wqinput
+ character(len=NAMMBALEN)      :: mbainputname
+ integer                       :: imba, needextramba, needextrambar
+ character(len=20)             :: wqbotunit
+ logical                       :: hyst_dummy(2)
+ double precision              :: area, width, hdx, factor
+ type(t_storage), pointer      :: stors(:)
+ integer                       :: i, nstor, ec_item
+ integer                       :: num_lat_ini_blocks !< Number of [Lateral] providers read from new extforce file.
+ integer                       :: tmp_nbndu
+ integer                       :: tmp_nbndn
+ integer                       :: tmp_nbndt
 
    iresult = DFM_NOERR
 
@@ -198,28 +203,163 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    id_first_wind =  huge(id_first_wind)
    id_last_wind  = -huge(id_last_wind)
 
-   call realloc(lnxbnd, lnx-lnxi, keepExisting = .false., fill = 0)
+ call realloc(lnxbnd, lnx-lnxi, keepExisting = .false., fill = 0)
 
-   n4 = 6
-   if (nbndz > 0) then                                 ! now you know the elementsets for the waterlevel bnds
-      allocate ( xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
-      call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*10 )
-      if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
-         if (allocated(zkbndz) ) deallocate (zkbndz, kbanz)
-         allocate ( zkbndz(2,nbndz) ,stat= ierr    )
-         call aerr('zkbndz(2,nbndz)',ierr, 2*nbndz )
-         allocate ( kbanz(2,nbndz) ,stat= ierr    )
-         call aerr('kban2(2,nbndz)',ierr, 2*nbndz )
-         kbanz = 0
-      endif
+ n4 = 6
+ if (nbndz > 0) then                                 ! now you know the elementsets for the waterlevel bnds
+    allocate ( xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
+    call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*10 )
+    if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+       if (allocated(zkbndz) ) deallocate (zkbndz, kbanz)
+       allocate ( zkbndz(2,nbndz) ,stat= ierr    )
+       call aerr('zkbndz(2,nbndz)',ierr, 2*nbndz )
+       allocate ( kbanz(2,nbndz) ,stat= ierr    )
+       call aerr('kban2(2,nbndz)',ierr, 2*nbndz )
+       kbanz = 0
+    endif
 
-      kbndz = 0 ; kdz = 1
+    kbndz = 0 ; kdz = 1
 
-      do k = 1, nbndz
-         L          = kez(k)
-         Lf         = lne2ln(L)
-         kb         = ln(1,Lf)
-         kbi        = ln(2,LF)
+    do k = 1, nbndz
+       L          = kez(k)
+       Lf         = lne2ln(L)
+       kb         = ln(1,Lf)
+       kbi        = ln(2,LF)
+
+       xbndz(k)     = xe(L) ! xz(kb)
+       ybndz(k)     = ye(L) ! yz(kb)
+       zbndz0(k)    = dmiss
+       xy2bndz(:,k) = xyen(:,L)
+
+       kbndz(1,k) = kb
+       kbndz(2,k) = kbi
+       kbndz(3,k) = Lf
+       kbndz(4,k) = itpez(k)
+       kbndz(5,k) = itpenz(k)
+       kbndz(6,k) = ftpet(k)
+
+       !! hier vullen
+
+       lnxbnd(Lf-lnxi) = itpenz(k)
+
+       do n = 1,nd(kbi)%lnx
+          L = iabs(nd(kbi)%ln(n))
+          teta(L) = 1d0
+       enddo
+
+       if (iadvec /=0 .and. kcu(L) == -1) then
+          iad = iadvec1D
+       else
+          iad = iadvec
+       endif
+       if (iad .ne. 0) then
+           iadv(Lf) = 6   ! piaczeck upw
+       else
+           iadv(Lf) = 0
+       endif
+
+       if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+           zkbndz(1,k) = zk(lncn(1,Lf) )
+           zkbndz(2,k) = zk(lncn(2,Lf) )
+       endif
+
+
+    enddo
+
+    do k = 1,nbndz
+       kbi = kbndz(2,k)
+       Lf  = kbndz(3,k)
+       if (iadvec /=0 .and. kcu(Lf) == -1) then
+          iad = iadvec1D
+       else
+          iad = iadvec
+       endif
+
+       do k2 = 1,nd(kbi)%lnx
+          L  = abs(nd(kbi)%ln(k2))
+          if (L .ne. Lf) then
+             if (iad .ne. 0) then
+                iadv(L) = 6  ! piaczeck upw
+             else
+                iadv(L) = 0
+             endif
+          endif
+       enddo
+    enddo
+
+ endif
+
+ if (allocated(kbndu)) deallocate(  xbndu,ybndu,xy2bndu,zbndu,kbndu,zbndu0)
+ if (allocated(zkbndu)) deallocate( zkbndu)
+ if (allocated(zbndq)) deallocate(  zbndq)
+ if (allocated(sigmabndu)) deallocate(sigmabndu)
+ if (allocated(zminmaxu)) deallocate(zminmaxu)
+ 
+ ! allocate the following even if not needed (for debugging purposes)
+ tmp_nbndu = max(nbndu,1)
+                                 ! similar for u bnd's
+ allocate ( xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2,tmp_nbndu), kbndu(n4,tmp_nbndu), kdu(tmp_nbndu) , stat=ierr)
+ call aerr('xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2,tmp_nbndu), kbndu(n4,tmp_nbndu), kdu(tmp_nbndu)', ierr, tmp_nbndu*(n4+5) )
+ if (jased ==1 .or. jased == 2 .and. jaceneqtr == 2) then
+     if (allocated (zkbndu) ) deallocate(zkbndu, kbanu)
+     allocate ( zkbndu(2,tmp_nbndu) , stat= ierr    )
+     call aerr('zkbndu(2,tmp_nbndu)', ierr, 2*tmp_nbndu )
+     allocate ( kbanu (2,tmp_nbndu) , stat= ierr    )
+     call aerr('kbanu (2,tmp_nbndu)', ierr, 2*tmp_nbndu )
+     kbanu = 0
+ endif
+ 
+ allocate ( zbndu    (tmp_nbndu*kmxd) , stat = ierr       )
+ call aerr('zbndu    (tmp_nbndu*kmxd)', ierr , tmp_nbndu*kmxd )
+ allocate ( zbndu0   (tmp_nbndu*kmxd) , stat = ierr       ) ! TODO: Spee/Reyns: the zbndu array was made 3D by Spee, but Reyns's zbndu0 changes have not been updated for this yet.
+ call aerr('zbndu0   (tmp_nbndu*kmxd)', ierr , tmp_nbndu*kmxd )
+     
+ !allocate ( zbndq    (tmp_nbndu*kmxd) , stat = ierr       )
+ !call aerr('zbndq    (tmp_nbndu*kmxd)', ierr , tmp_nbndu*kmxd )
+ 
+ allocate ( zbndq    (tmp_nbndu) , stat = ierr       )
+ call aerr('zbndq    (tmp_nbndu)', ierr , tmp_nbndu      )
+     
+ allocate ( zminmaxu (tmp_nbndu*2  )  , stat = ierr       )
+ call aerr('zminmaxu (tmp_nbndu*2  )' , ierr , tmp_nbndu*2    )
+ if (kmx > 0) then                   ! only used in 3D:
+     allocate ( sigmabndu(tmp_nbndu*kmxd) , stat = ierr       )
+     call aerr('sigmabndu(tmp_nbndu*kmxd)', ierr , tmp_nbndu*kmxd )
+ endif
+ 
+if (nbndu > 0) then
+    kbndu = 0 ; kdu = 1
+    do k = 1, nbndu
+        L          = keu(k)
+        Lf         = lne2ln(L)
+        kb         = ln(1,Lf)
+        kbi        = ln(2,Lf)
+        xbndu(k)   = xe(L) ! xz(kb)
+        ybndu(k)   = ye(L) ! yz(kb)
+        xy2bndu(:,k) = xyen(:,L)
+        
+        kbndu(1,k) = kb
+        kbndu(2,k) = kbi
+        kbndu(3,k) = Lf
+        kbndu(4,k) = itpeu(k)
+        kbndu(5,k) = itpenu(k)
+        kbndu(6,k) = ftpet(k)       ! riemann relaxation time
+ 
+        lnxbnd(Lf-lnxi) = itpenu(k)
+ 
+        do n = 1,nd(kbi)%lnx
+            L = iabs(nd(kbi)%ln(n))
+            teta(L) = 1d0
+        enddo
+        
+        iadv(Lf)   = -1                              ! switch off adv at open u-bnd's
+        
+        if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+            zkbndu(1,k) = zk(lncn(1,Lf) )
+            zkbndu(2,k) = zk(lncn(2,Lf) )
+        endif
+    enddo
+endif
 
          xbndz(k)     = xe(L) ! xz(kb)
          ybndz(k)     = ye(L) ! yz(kb)
@@ -660,33 +800,28 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       allocate ( zminmaxuxy(2*nbnduxy) , stat=ierr )
       call aerr('zminmaxuxy(2*nbnduxy)', ierr, 2*nbnduxy )
 
-      kbnduxy= 0 ; kduxy= 1
-      do k = 1, nbnduxy
-         L          = keuxy(k)
-         Lf         = lne2ln(L)
-         if (Lf <= 0 .or. Lf > lnx) then
-            numnos = numnos + 1
-            cycle
-         end if
-         kb         = ln(1,Lf)
-         kbi        = ln(2,Lf)
-         if (kcs(kb)   < 0 ) then                      ! if already opened by flow bnd's
-            xbnduxy(k)   = xe(L) ! xz(kb)
-            ybnduxy(k)   = ye(L) ! yz(kb)
-            xy2bnduxy(:,k) = xyen(:,L)
-            kbnduxy(1,k) = kb
-            kbnduxy(2,k) = kbi
-            kbnduxy(3,k) = Lf
-         endif
-      enddo
-      if (numnos > 0) then
-         rec = ' '
-         write (rec, '(a,i6,a)') '(', numnos, ' points)'
-         call qnerror('UxUy velocity boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
-         iresult = DFM_WRONGINPUT
-         goto 888
-      end if
-   endif
+ if (allocated   (kbndt) ) deallocate(xbndt, ybndt, xy2bndt, zbndt, kbndt)
+ ! allocate the following even if not needed (for debugging purposes)
+ tmp_nbndt = max(nbndt,1) !BS
+ allocate ( xbndt(nbndt), ybndt(nbndt), xy2bndt(2,nbndt), zbndt(nbndt), kbndt(4,nbndt), kdt(nbndt) , stat=ierr     )
+ call aerr('xbndt(nbndt), ybndt(nbndt), xy2bndt(2,nbndt), zbndt(nbndt), kbndt(4,nbndt), kdt(nbndt)', ierr, nbndt*10 )
+    
+ if (nbndt > 0) then                                 ! Tangential velocity boundaries as u bnds
+    numnos = 0
+    kbndt = 0 ; kdt= 1
+    do k = 1, nbndt
+       L          = ket(k)
+       Lf         = lne2ln(L)
+       if (Lf <= 0 .or. Lf > lnx) then
+          numnos = numnos + 1
+          cycle
+       end if
+       kb         = ln(1,Lf)
+       kbi        = ln(2,Lf)
+       if (kcs(kb)   < 0 ) then                      ! if already opened by flow bnd's
+          xbndt(k)   = xe(L) ! xz(kb)
+          ybndt(k)   = ye(L) ! yz(kb)
+          xy2bndt(:,k) = xyen(:,L)
 
    if (allocated   (kbndn) ) deallocate(  xbndn,ybndn,xy2bndn,zbndn,kbndn)
    if (nbndn > 0) then                                 ! Normal velocity boundaries as z bnds
@@ -748,8 +883,28 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    call realloc(mbadef, Ndkx, keepExisting=.false., fill =-999)
    call realloc(mbadefdomain, Ndkx, keepExisting=.false., fill =-999)
 
-   ! Start processing ext files, start with success.
-   success = .true.
+ if (allocated   (kbndn) ) deallocate(  xbndn,ybndn,xy2bndn,zbndn,kbndn)
+ ! allocate the following even if not needed (for debugging purposes)
+ tmp_nbndn = max(nbndn,1) !BS 
+ allocate ( xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2,tmp_nbndn), zbndn(tmp_nbndn), kbndn(4,tmp_nbndn), kdn(tmp_nbndn) , stat=ierr     )
+ call aerr('xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2,tmp_nbndn), zbndn(tmp_nbndn), kbndn(4,tmp_nbndn), kdn(tmp_nbndn)', ierr, tmp_nbndn*10 )
+ 
+ if (nbndn > 0) then                                 ! Normal velocity boundaries as z bnds
+    numnos = 0 
+    kbndn = 0 ; kdn= 1
+    do k = 1, nbndn
+       L          = ken(k)
+       Lf         = lne2ln(L)
+       if (Lf <= 0 .or. Lf > lnx) then
+          numnos = numnos + 1
+          cycle
+       end if
+       kb         = ln(1,Lf)
+       kbi        = ln(2,Lf)
+       if (kcs(kb)   < 0 ) then                      ! if already opened by flow bnd's
+          xbndn(k)   = xe(L) ! xz(kb)
+          ybndn(k)   = ye(L) ! yz(kb)
+          xy2bndn(:,k) = xyen(:,L)
 
    ! First initialize new-style ExtForceFileNew quantities.
    num_lat_ini_blocks = 0
