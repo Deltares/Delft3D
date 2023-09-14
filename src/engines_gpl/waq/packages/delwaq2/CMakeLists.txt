@@ -32,6 +32,7 @@ set_source_files_properties(${fortran_version_file} ${fortran_version_file_delwa
 # Add dependencies
 set(oss_dependencies deltares_common
                      deltares_common_c
+                     io_netcdf
                      nefis
                      delwaq_lib
                      waq_io

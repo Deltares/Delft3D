@@ -105,7 +105,8 @@ end function dlwqnc_lowercase
 ! - detect network by edge_geometry = "network_geometry" ;
 
 integer function dlwqnc_find_meshes_by_att( ncid, varid2d, type_ugrid, varid1d, varidnetwork, varidnetwork_geometry )
-   use dlwq_netcdf_utils, only: ncu_get_att
+   use io_ugrid
+   use netcdf_utils, only: ncu_get_att
 
    implicit none
 
@@ -628,7 +629,8 @@ end function dlwqnc_copy_dims
 !
 recursive function dlwqnc_copy_associated( ncidin, ncidout, meshidin, meshidout, attribute, &
                                                    dimsizes, use_attrib ) result(dlwqnc_result)
-    use dlwq_netcdf_utils, only: ncu_get_att
+    use io_ugrid
+    use netcdf_utils, only: ncu_get_att
 
     integer, intent(in)               :: ncidin, ncidout, meshidin, meshidout
     character(len=*), intent(in)      :: attribute
@@ -1215,7 +1217,7 @@ end function dlwqnc_create_wqtime
 !     time ID? mesh ID? Roles?
 !
 integer function dlwqnc_create_wqvariable( ncidout, mesh_name, wqname, longname, stdname, unit, ntimeid, noseglid, nolayid, wqid )
-    use dlwq_netcdf_utils, only: ncu_get_att
+    use netcdf_utils, only: ncu_get_att
 
     integer, intent(in)                        :: ncidout
     character(len=*), intent(in)               :: mesh_name
