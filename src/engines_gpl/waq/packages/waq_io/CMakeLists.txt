@@ -22,7 +22,6 @@ set(oss_dependencies deltares_common
                      part_io_f
                      part_utils_f
                      io_hyd
-                     io_netcdf
                      waq_data
                      waq_netcdf
                      waq_validation

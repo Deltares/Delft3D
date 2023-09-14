@@ -39,7 +39,6 @@ set(oss_dependencies deltares_common
                      waq_utils_c
                      waq_utils_f
                      waq_netcdf
-                     io_netcdf
                      io_hyd)
 
 oss_include_libraries(${library_name} oss_dependencies)
