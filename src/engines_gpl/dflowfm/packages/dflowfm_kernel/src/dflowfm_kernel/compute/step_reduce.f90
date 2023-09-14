@@ -307,8 +307,6 @@
  call transport()
  if ( jatimer.eq.1 ) call stoptimer (ITRANSPORT)
 
- !update particles
- call update_part()
 
  if (jased > 0 .and. stm_included) then
     call fm_bott3d() ! bottom update

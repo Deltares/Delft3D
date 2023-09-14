@@ -316,6 +316,4 @@
 
  call tekship()
 
- call tekpart()
-
  end subroutine tekflowstuff

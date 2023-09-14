@@ -125,8 +125,6 @@ subroutine unc_write_part(ifile,itime,id_parttime,id_partx,id_party,id_partz)
 !     particle vertical coordinate
    end if
 
-   if ( japart.eq.1 ) call restore_particles()
-
    ierror = 0
 1234 continue
 
