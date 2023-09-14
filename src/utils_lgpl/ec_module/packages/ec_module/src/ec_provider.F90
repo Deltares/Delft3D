@@ -381,9 +381,7 @@ module m_ec_provider
                            "dewpoint_airtemperature_cloudiness",                          &
                            "dewpoint_airtemperature_cloudiness_solarradiation",           &
                            "solarradiation", "longwaveradiation", "wavesignificantheight", &
-                           "waveperiod", "friction_coefficient_time_dependent", "wavedirection", & 
-                           "xwaveforce", "ywaveforce", "xwaveinducedvolumeflux","ywaveinducedvolumeflux", &
-                           "freesurfacedissipation","whitecappingdissipation","bottomorbitalvelocity","totalwaveenergydissipation","bottomdissipation" )
+                           "waveperiod", "friction_coefficient_time_dependent" )
                         success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                      case ("hrms","tp", "tps", "rtp","dir","fx","fy","wsbu","wsbv","mx","my","dissurf","diswcap","ubot") 
                         success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2608,28 +2606,11 @@ module m_ec_provider
             ncvarnames(1) = 'hs'                             ! significant wave height
             ncstdnames(1) = 'sea_surface_wave_significant_height'
          case ('waveperiod')
-             ncvarnames(1) = varname                          ! wave period
-             ncstdnames(1) = varname
-         case ('wavedirection')
-             ncvarnames(1) = 'theta0'
-             ncstdnames(1) = 'sea_surface_wave_from_direction'
-         case ('xwaveforce')
-             ncvarnames(1) = 'xfor'
-         case ('ywaveforce')
-             ncvarnames(1) = 'yfor'
-         case ('xwaveinducedvolumeflux')
-             ncvarnames(1) = 'xtrsp'
-         case ('ywaveinducedvolumeflux')
-             ncvarnames(1) = 'ytrsp'
-         case ('freesurfacedissipation')
-             ncvarnames(1) = 'ssurf'
-         case ('whitecappingdissipation')
-             ncvarnames(1) = 'swcap'
-         case ('bottomorbitalvelocity')
-             ncvarnames(1) = 'ubot'
-             case default                                        ! experiment: gather miscellaneous variables from an NC-file,
-             if (index(quantityName,'waqsegmentfunction')==1) then
-                 ncvarnames(1) = quantityName
+            ncvarnames(1) = varname                          ! significant wave height
+            ncstdnames(1) = varname
+         case default                                        ! experiment: gather miscellaneous variables from an NC-file,
+            if (index(quantityName,'waqsegmentfunction')==1) then
+               ncvarnames(1) = quantityName
                ncstdnames(1) = quantityName
             else if (index(quantityName,'initialtracer')==1) then
                ncvarnames(1) = quantityName(14:)
@@ -2698,7 +2679,7 @@ module m_ec_provider
                call setECMessage("Variable '" // nameVar // "' not found in NetCDF file '"//trim(fileReaderPtr%filename))
                return
             endif
-            fileReaderPtr%standard_names(idvar)=ncstdnames(i)                 ! overwrite the standardname by the one required
+            fileReaderPtr%standard_names(idvar)=ncstdnames(i)                 ! overwrite the standardname by the one rquired
 
             ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims)  ! get the number of dimensions
             if (allocated(coordids)) deallocate(coordids)                                 ! allocate space for the variable id's 
