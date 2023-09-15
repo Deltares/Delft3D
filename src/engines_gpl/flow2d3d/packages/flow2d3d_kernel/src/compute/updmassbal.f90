@@ -130,7 +130,7 @@ subroutine updmassbal(imode     ,qxk       ,qyk       ,kcs       ,r1        , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                            , intent(in) :: gvv
     real(fp)  , dimension(gdp%d%lstsc,gdp%d%nsrc)                           , intent(in) :: rintsm
     real(fp)  , dimension(gdp%d%nsrc)                                       , intent(in) :: disch
-    real(fp)                                                                             :: dt
+    real(fp)                                                                , intent(in) :: dt
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                            , intent(in) :: dps
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                :: dps0
     integer                                                     :: lsecfl
