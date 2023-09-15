@@ -68,10 +68,10 @@ if (UNIX)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            wq_processes
                             waq_process
                             waq_utils_c
                             waq_utils_f
-                            wq_processes
                             dflowfm_kernel)
 
     oss_include_libraries(${library_name} oss_dependencies)
@@ -116,10 +116,10 @@ if (WIN32)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            wq_processes
                             waq_process
                             waq_utils_c
                             waq_utils_f
-                            wq_processes
                             dflowfm_kernel)
 
     oss_include_libraries(${library_name} oss_dependencies)
