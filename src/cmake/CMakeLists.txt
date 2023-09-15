@@ -104,8 +104,9 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     
+    set(ENV{'PKG_CONFIG_PATH'} "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib/pkgconfig/")
     #NetCDF
-    #pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+    pkg_check_modules(NETCDF     REQUIRED netcdf)
     #pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
 
