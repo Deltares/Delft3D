@@ -56,6 +56,8 @@ public :: fm_bott3d
    !! bathymetry changes
    subroutine fm_bott3d()
 
+   !2DO: remove locals and variables in `use` which are not necessary anymore
+   
    !!!--declarations----------------------------------------------------------------
    use precision
    use bedcomposition_module
@@ -81,7 +83,6 @@ public :: fm_bott3d
    use precision_basics
    use m_mormerge_mpi
    use m_waves
-   use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
    use m_tables, only: interpolate
    use m_debug
    !
@@ -90,10 +91,7 @@ public :: fm_bott3d
    type (handletype)                    , pointer :: bcmfile
    type (bedbndtype)     , dimension(:) , pointer :: morbnd
    logical                              , pointer :: cmpupd
-   !
-   type(t_nodefraction)                 , pointer :: pFrac
-   type(t_noderelation)                 , pointer :: pNodRel
-   type(t_node)                         , pointer :: pnod
+
    !!
    !! Local parameters
    !!
@@ -119,24 +117,7 @@ public :: fm_bott3d
    double precision, dimension(lsedtot)        :: bc_sed_distribution
    double precision, dimension(:), allocatable :: bl_ave0
 
-   integer                       :: nrd_idx
-   integer                       :: ifrac
-   double precision              :: faccheck
-   double precision              :: expQ
-   double precision              :: expW
-   double precision              :: facQ
-   double precision              :: facW
-   double precision              :: qb1d, wb1d, sb1d
-   double precision              :: sbrratio, qbrratio, Qbr1, Qbr2
-   !
-   real(fp), dimension(:), allocatable :: qb_out          !< sum of outgoing discharge at 1d node
-   real(fp), dimension(:), allocatable :: width_out       !< sum of outgoing main channel widths
-   real(fp), dimension(:,:), allocatable :: sb_in         !< sum of incoming sediment transport at 1d node
-   integer, dimension(:,:,:), allocatable :: sb_dir       !< direction of transport at node (nnod, lsedtot, nbr) (-1 = incoming or no transport, +1 = outgoing)
-   integer, dimension(:), allocatable :: branInIDLn       !< ID of Incoming Branch (If there is only one) (nnod)
-
    integer                                     :: icond
-   integer                                     :: istat
    integer                                     :: jb
    integer                                     :: ib
    integer                                     :: li
@@ -144,14 +125,10 @@ public :: fm_bott3d
    integer                                     :: nxmx
    integer                                     :: lm
    integer                                     :: jawaveswartdelwaq_local
-   integer                                     :: inod
-   integer                                     :: ised
-   integer                                     :: k3
    double precision                            :: alfa_dist
    double precision                            :: alfa_mag
    double precision                            :: rate
    double precision                            :: timhr
-   double precision                            :: Ldir
    !!
    !!! executable statements -------------------------------------------------------
    !!
@@ -178,17 +155,6 @@ public :: fm_bott3d
    timhr = time1 / 3600.0d0
    nto    = nopenbndsect
    blchg = 0d0
-   !
-   istat   = 0
-   if (istat == 0) allocate(qb_out(network%nds%Count), stat = istat)
-   if (istat == 0) allocate(width_out(network%nds%Count), stat = istat)
-   if (istat == 0) allocate(sb_in(network%nds%Count, lsedtot), stat = istat)
-   if (istat == 0) allocate(sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat = istat)
-   if (istat == 0) allocate(branInIDLn(network%nds%Count), stat = istat)
-   !
-   qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = -1
-   BranInIDLn = 0
-   
    e_ssn  = 0d0
    
    call fm_suspended_sand_correction()
@@ -226,179 +192,9 @@ public :: fm_bott3d
       aval=.true.
       call fm_adjust_bedload(e_sbcn, e_sbct, aval)
    endif
-   
-!======================================================================
-!======================================================================
-!======================================================================
-!BEGIN CUT
-   
-!consider moving it after all the calls to `fm_adjust_bedload`
-   
-   !
-   ! Determine incoming discharge and transport at nodes
-   !
-   qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = 1
-   BranInIDLn = 0
-   do inod = 1, network%nds%Count
-      pnod => network%nds%node(inod)
-      if (pnod%numberofconnections > 1) then
-         k3 = pnod%gridnumber
-         do j=1,nd(k3)%lnx
-            L = iabs(nd(k3)%ln(j))
-            Ldir = sign(1,nd(k3)%ln(j))
-            !
-            wb1d = wu_mor(L)
-            !
-            if (u1(L)*Ldir < 0d0) then
-               ! Outgoing discharge
-               qb1d = -qa(L)*Ldir  ! replace with junction advection: to do WO
-               width_out(inod) = width_out(inod) + wb1d
-               qb_out(inod)    = qb_out(inod) + qb1d
-               do ised = 1, lsedtot
-                  sb_dir(inod, ised, j) = -1           ! set direction to outgoing
-               enddo
-            else
-               ! Incoming discharge
-               if (branInIDLn(inod) == 0) then
-                  branInIDLn(inod) = L
-               else
-                  branInIDLn(inod) = -444               ! multiple incoming branches
-               endif
-            endif
-         enddo
-      endif
-   enddo
-   !
-   ! Apply nodal relations to transport
-   !
-   do inod = 1, network%nds%Count
-      pnod => network%nds%node(inod)
-      if (pnod%numberofconnections == 1) cycle
-      if (pnod%nodeType == nt_LinkNode) then  ! connection node
-         k1 = pnod%gridnumber
-         do j=1,nd(k1)%lnx
-            L = iabs(nd(k1)%ln(j))
-            Ldir = sign(1,nd(k1)%ln(j))
-            !
-            wb1d = wu_mor(L)
-            do ised = 1, lsedtot
-               sb1d = e_sbcn(L, ised) * Ldir  ! first compute all outgoing sed. transport.
-               ! this works for one incoming branch TO DO: WO
-               if (sb_dir(inod, ised, j) == -1) then
-                  sb_in(inod, ised) = sb_in(inod, ised) + max(-wb1d*sb1d, 0.0_fp)  ! outgoing transport is negative
-               endif
-            enddo
-         enddo
-      endif
-   enddo
-   !
-   ! Determining sediment redistribution
-   !
-   ! loop over sediment fractions
-   do ised = 1, lsedtot
 
-      ! mor%nrd%nFractions = or 1 (One for All Fractions) or lsedtot (One for Every Fraction)
-      iFrac = min(ised, stmpar%nrd%nFractions)
-
-      pFrac => stmpar%nrd%nodefractions(iFrac)
-
-      do inod = 1, network%nds%Count
-         pnod => network%nds%node(inod)
-         if (pnod%nodeType == nt_LinkNode) then  ! connection node
-
-            facCheck = 0.d0
-
-            if (pnod%numberofconnections == 1) cycle
-
-
-            ! loop over branches and determine redistribution of incoming sediment
-            k3 = pnod%gridnumber
-            do j=1,nd(k3)%lnx
-               L = iabs(nd(k3)%ln(j))
-               Ldir = sign(1,nd(k3)%ln(j))
-               qb1d = -qa(L)*Ldir
-               wb1d = wu_mor(L)
-
-               ! Get Nodal Point Relation Data
-               nrd_idx = get_noderel_idx(inod, pFrac, pnod%gridnumber, branInIDLn(inod), pnod%numberofconnections)
-
-               pNodRel => pFrac%noderelations(nrd_idx)
-
-               if (sb_dir(inod, ised, j) == -1) then ! is outgoing
-
-                  if (qb_out(inod) > 0.0_fp) then
-
-                     if (pNodRel%Method == 'function') then
-
-                        expQ = pNodRel%expQ
-                        expW = pNodRel%expW
-
-                        facQ = (qb1d / qb_out(inod))**expQ
-                        facW = (wb1d / width_out(inod))**expW
-
-                        facCheck = facCheck + facQ * facW
-
-                        e_sbcn(L,ised) = -Ldir * facQ * facW * sb_in(inod, ised) / wu_mor(L)
-
-                     elseif (pNodRel%Method == 'table') then
-
-                        facCheck = 1.0d0
-
-                        if (L == pNodRel%BranchOut1Ln) then
-                           Qbr1 = qb1d
-                           Qbr2 = qb_out(inod) - qb1d
-                        elseif (L == pNodRel%BranchOut2Ln) then
-                           Qbr1 = qb_out(inod) - qb1d
-                           Qbr2 = qb1d
-                        else
-                           call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
-                        endif
-
-                        QbrRatio = Qbr1 / Qbr2
-
-                        SbrRatio = interpolate(pNodRel%Table, QbrRatio)
-
-                        if (L == pNodRel%BranchOut1Ln) then
-                           e_sbcn(L,ised) = -Ldir * SbrRatio * sb_in(inod, ised) / (1 + SbrRatio) / wu_mor(L)
-                           e_sbct(L,ised) = 0.0
-                        elseif (L == pNodRel%BranchOut2Ln) then
-                           e_sbcn(L,ised) = -Ldir * sb_in(inod, ised) / (1 + SbrRatio) / wu_mor(L)
-                           e_sbct(L,ised) = 0.0
-                        endif
-
-
-                     else
-                        call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
-                     endif
-
-                  else
-                     e_sbcn(L,ised) = 0.0_fp
-                     e_sbct(L,ised) = 0.0
-                  endif
-
-               endif
-
-            enddo    ! Branches
-
-            ! Correct Total Outflow
-            if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
-               ! loop over branches and correct redistribution of incoming sediment
-               do j=1,nd(k3)%lnx
-                  L = iabs(nd(k3)%ln(j))
-                  if (sb_dir(inod, ised, j) == -1) then
-                     e_sbcn(L,ised) = e_sbcn(L,ised)/facCheck
-                  endif
-               enddo    ! Branches
-            endif
-         endif
-      enddo      ! Nodes
-
-   enddo    ! Fractions
-
-!======================================================================
-!======================================================================
-!======================================================================
-!END CUT 
+   !2DO: consider moving call to `apply_nodal_point_relation` after all the calls to `fm_adjust_bedload`
+   call apply_nodal_point_relation()
    
    !
    ! Bed-slope and sediment availability effects for
@@ -1307,18 +1103,6 @@ public :: fm_bott3d
          enddo
       endif
    endif !bedupd
-   !
-   if (istat == 0) deallocate(qb_out, stat = istat)
-   if (istat == 0) deallocate(width_out, stat = istat)
-   if (istat == 0) deallocate(sb_in, stat = istat)
-   if (istat == 0) deallocate(sb_dir, stat = istat)
-   if (istat == 0) deallocate(BranInIDLn, stat = istat)
-   !
-   if (istat /= 0) then
-      error = .true.
-      write(errmsg,'(a)') 'fm_bott3d::error deallocating memory.'
-      call mess(LEVEL_FATAL, errmsg)
-   endif
 
    end subroutine fm_bott3d
 
@@ -1567,5 +1351,261 @@ public :: fm_bott3d
    endif           ! sus /= 0.0
 
    end subroutine fm_suspended_sand_correction
+
+   !< Distribute sediment transport at a 1D node connected to more than 
+   !! one branch (e.g., a bifurcation). This is done by applying a closure
+   !! relation (the nodal point relation)
+   subroutine apply_nodal_point_relation()  
+
+   !!
+   !! Declarations
+   !!
+   
+   use Messagehandling
+   use message_module, only: writemessages, write_error
+   use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
+   use m_flowgeom , only: ndxi, nd, wu_mor
+   use m_flow, only: u1, qa
+   use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
+   use m_sediment, only: stmpar
+   use m_ini_noderel, only: get_noderel_idx
+   use m_tables, only: interpolate
+   use morphology_data_module, only: t_nodefraction, t_noderelation
+   
+   implicit none
+   
+   !!
+   !! Local variables
+   !!
+   
+   !logical
+   logical                                     :: error
+   
+   !integer
+   integer                                     :: inod, j, istat, ised, ifrac, k1, k3, nrd_idx, L
+
+   integer, dimension(:), allocatable          :: branInIDLn       !< ID of Incoming Branch (If there is only one) (nnod)
+   
+   integer, dimension(:,:,:), allocatable      :: sb_dir       !< direction of transport at node (nnod, lsedtot, nbr) (-1 = incoming or no transport, +1 = outgoing)
+
+   !real
+   real(fp), dimension(:), allocatable         :: qb_out          !< sum of outgoing discharge at 1d node
+   real(fp), dimension(:), allocatable         :: width_out       !< sum of outgoing main channel widths
+   
+   real(fp), dimension(:,:), allocatable       :: sb_in         !< sum of incoming sediment transport at 1d node
+
+   !double precision
+   double precision                            :: ldir
+   double precision                            :: faccheck
+   double precision                            :: expQ
+   double precision                            :: expW
+   double precision                            :: facQ
+   double precision                            :: facW
+   double precision                            :: qb1d, wb1d, sb1d
+   double precision                            :: sbrratio, qbrratio, Qbr1, Qbr2
+   
+   !structures
+   type(t_nodefraction)                 , pointer :: pFrac
+   type(t_noderelation)                 , pointer :: pNodRel
+   type(t_node)                         , pointer :: pnod
+   
+
+   
+   !!
+   !! Allocate and initialize
+   !!
+   
+   istat   = 0
+   if (istat == 0) allocate(qb_out(network%nds%Count), stat = istat)
+   if (istat == 0) allocate(width_out(network%nds%Count), stat = istat)
+   if (istat == 0) allocate(sb_in(network%nds%Count, lsedtot), stat = istat)
+   if (istat == 0) allocate(sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat = istat)
+   if (istat == 0) allocate(branInIDLn(network%nds%Count), stat = istat)
+   
+   qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = -1
+   BranInIDLn = 0
+   
+   !!
+   !! Execute
+   !!
+   
+   !
+   ! Determine incoming discharge and transport at nodes
+   !
+   qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = 1
+   BranInIDLn = 0
+   do inod = 1, network%nds%Count
+      pnod => network%nds%node(inod)
+      if (pnod%numberofconnections > 1) then
+         k3 = pnod%gridnumber
+         do j=1,nd(k3)%lnx
+            L = iabs(nd(k3)%ln(j))
+            Ldir = sign(1,nd(k3)%ln(j))
+            !
+            wb1d = wu_mor(L)
+            !
+            if (u1(L)*Ldir < 0d0) then
+               ! Outgoing discharge
+               qb1d = -qa(L)*Ldir  ! replace with junction advection: to do WO
+               width_out(inod) = width_out(inod) + wb1d
+               qb_out(inod)    = qb_out(inod) + qb1d
+               do ised = 1, lsedtot
+                  sb_dir(inod, ised, j) = -1           ! set direction to outgoing
+               enddo
+            else
+               ! Incoming discharge
+               if (branInIDLn(inod) == 0) then
+                  branInIDLn(inod) = L
+               else
+                  branInIDLn(inod) = -444               ! multiple incoming branches
+               endif
+            endif
+         enddo
+      endif
+   enddo
+   !
+   ! Apply nodal relations to transport
+   !
+   do inod = 1, network%nds%Count
+      pnod => network%nds%node(inod)
+      if (pnod%numberofconnections == 1) cycle
+      if (pnod%nodeType == nt_LinkNode) then  ! connection node
+         k1 = pnod%gridnumber
+         do j=1,nd(k1)%lnx
+            L = iabs(nd(k1)%ln(j))
+            Ldir = sign(1,nd(k1)%ln(j))
+            !
+            wb1d = wu_mor(L)
+            do ised = 1, lsedtot
+               sb1d = e_sbcn(L, ised) * Ldir  ! first compute all outgoing sed. transport.
+               ! this works for one incoming branch TO DO: WO
+               if (sb_dir(inod, ised, j) == -1) then
+                  sb_in(inod, ised) = sb_in(inod, ised) + max(-wb1d*sb1d, 0.0_fp)  ! outgoing transport is negative
+               endif
+            enddo
+         enddo
+      endif
+   enddo
+   !
+   ! Determining sediment redistribution
+   !
+   ! loop over sediment fractions
+   do ised = 1, lsedtot
+
+      ! mor%nrd%nFractions = or 1 (One for All Fractions) or lsedtot (One for Every Fraction)
+      iFrac = min(ised, stmpar%nrd%nFractions)
+
+      pFrac => stmpar%nrd%nodefractions(iFrac)
+
+      do inod = 1, network%nds%Count
+         pnod => network%nds%node(inod)
+         if (pnod%nodeType == nt_LinkNode) then  ! connection node
+
+            facCheck = 0.d0
+
+            if (pnod%numberofconnections == 1) cycle
+
+
+            ! loop over branches and determine redistribution of incoming sediment
+            k3 = pnod%gridnumber
+            do j=1,nd(k3)%lnx
+               L = iabs(nd(k3)%ln(j))
+               Ldir = sign(1,nd(k3)%ln(j))
+               qb1d = -qa(L)*Ldir
+               wb1d = wu_mor(L)
+
+               ! Get Nodal Point Relation Data
+               nrd_idx = get_noderel_idx(inod, pFrac, pnod%gridnumber, branInIDLn(inod), pnod%numberofconnections)
+
+               pNodRel => pFrac%noderelations(nrd_idx)
+
+               if (sb_dir(inod, ised, j) == -1) then ! is outgoing
+
+                  if (qb_out(inod) > 0.0_fp) then
+
+                     if (pNodRel%Method == 'function') then
+
+                        expQ = pNodRel%expQ
+                        expW = pNodRel%expW
+
+                        facQ = (qb1d / qb_out(inod))**expQ
+                        facW = (wb1d / width_out(inod))**expW
+
+                        facCheck = facCheck + facQ * facW
+
+                        e_sbcn(L,ised) = -Ldir * facQ * facW * sb_in(inod, ised) / wu_mor(L)
+
+                     elseif (pNodRel%Method == 'table') then
+
+                        facCheck = 1.0d0
+
+                        if (L == pNodRel%BranchOut1Ln) then
+                           Qbr1 = qb1d
+                           Qbr2 = qb_out(inod) - qb1d
+                        elseif (L == pNodRel%BranchOut2Ln) then
+                           Qbr1 = qb_out(inod) - qb1d
+                           Qbr2 = qb1d
+                        else
+                           call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
+                        endif
+
+                        QbrRatio = Qbr1 / Qbr2
+
+                        SbrRatio = interpolate(pNodRel%Table, QbrRatio)
+
+                        if (L == pNodRel%BranchOut1Ln) then
+                           e_sbcn(L,ised) = -Ldir * SbrRatio * sb_in(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                           e_sbct(L,ised) = 0.0
+                        elseif (L == pNodRel%BranchOut2Ln) then
+                           e_sbcn(L,ised) = -Ldir * sb_in(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                           e_sbct(L,ised) = 0.0
+                        endif
+
+
+                     else
+                        call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
+                     endif
+
+                  else
+                     e_sbcn(L,ised) = 0.0_fp
+                     e_sbct(L,ised) = 0.0
+                  endif
+
+               endif
+
+            enddo    ! Branches
+
+            ! Correct Total Outflow
+            if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
+               ! loop over branches and correct redistribution of incoming sediment
+               do j=1,nd(k3)%lnx
+                  L = iabs(nd(k3)%ln(j))
+                  if (sb_dir(inod, ised, j) == -1) then
+                     e_sbcn(L,ised) = e_sbcn(L,ised)/facCheck
+                  endif
+               enddo    ! Branches
+            endif
+         endif
+      enddo      ! Nodes
+
+   enddo    ! Fractions
+
+   !!
+   !! Deallocate
+   !!
+   
+   if (istat == 0) deallocate(qb_out, stat = istat)
+   if (istat == 0) deallocate(width_out, stat = istat)
+   if (istat == 0) deallocate(sb_in, stat = istat)
+   if (istat == 0) deallocate(sb_dir, stat = istat)
+   if (istat == 0) deallocate(BranInIDLn, stat = istat)
+   
+   if (istat /= 0) then
+      error = .true.
+      write(errmsg,'(a)') 'fm_bott3d::error deallocating memory.'
+      call mess(LEVEL_FATAL, errmsg)
+   endif
+   
+   end subroutine apply_nodal_point_relation
    
 end module m_fm_bott3d
