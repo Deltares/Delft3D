@@ -11,8 +11,11 @@ set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_ut
 set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/../../version/version_number.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-
-
+# Set dependencies
+set(oss_dependencies_general deltares_common
+                             waq_process
+                             waq_utils_c
+                             waq_utils_f)
 # Gather source files
 get_fortran_source_files(${src_path} source)
 
@@ -27,32 +30,27 @@ set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 
-# Set dependencies
-set(oss_dependencies_general deltares_common
-                             waq_process
-                             waq_utils_c
-                             waq_utils_f)
-
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(oss_dependencies ${oss_dependencies_general})
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
          PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         netcdf4
+         netcdff)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
                          netcdf4
                          netcdff)
 endif(WIN32)
+
 
 oss_include_libraries(${library_name} oss_dependencies)
 

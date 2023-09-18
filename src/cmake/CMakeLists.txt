@@ -105,7 +105,7 @@ if (UNIX)
     add_definitions(-DHAVE_MPI)
     
     #NetCDF
-    #pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
     #pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
 

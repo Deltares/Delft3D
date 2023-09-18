@@ -74,7 +74,7 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-target_link_libraries(${executable_name} netcdf)
+#target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${mpi_include_path}
