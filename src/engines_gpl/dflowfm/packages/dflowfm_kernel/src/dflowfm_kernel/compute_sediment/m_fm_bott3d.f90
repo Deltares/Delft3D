@@ -104,12 +104,11 @@ public :: fm_bott3d
    !!
    logical                                     :: bedload, error, jamerge, aval
    integer                                     :: ierror
-   integer                                     :: l, nm, ii, ll, Lx, Lf, lstart, j, bedchangemesscount, k, k1, k2, knb, kb, kk, itrac
+   integer                                     :: l, nm, ii, ll, Lx, Lf, lstart, j, k, k1, k2, knb, kb, kk, itrac
    integer                                     :: Lb, Lt, ka, kf1, kf2, kt, nto, iL, ac1, ac2
-   double precision                            :: dsdnm, eroflx, sedflx, thick1, trndiv, flux, sumflux, dtmor, hsk, ddp
-   double precision                            :: dhmax, h1, totdbodsd, totfixfrac, bamin, thet, dv
+   double precision                            :: eroflx, sedflx, trndiv, flux, dtmor, hsk, ddp
+   double precision                            :: totdbodsd, totfixfrac, bamin, thet, dv
 
-   integer,          parameter                 :: bedchangemessmax = 50
    double precision, parameter                 :: dtol = 1d-16
 
    !double precision                            :: tausum2(1)
@@ -143,7 +142,7 @@ public :: fm_bott3d
       bl_ave0 = 0d0
    endif
 
-   bedload = .false.
+   !bedload = .false.
    dtmor   = dts*morfac
    lstart  = ised1-1
    error = .false.
@@ -238,186 +237,11 @@ public :: fm_bott3d
        
        call fm_bed_boundary_conditions()
        
-      
-!======================================================================
-!======================================================================
-!======================================================================
-!BEING CUT 
-      
-      !
-      ! Update quantity of bottom sediment
-      !
-      dbodsd = 0d0
-      !
-      ! compute change in bodsed (dbodsd)
-      !
-      bedchangemesscount = 0
-      do l = 1, lsedtot
-         bedload = tratyp(l) == TRA_BEDLOAD
-         j = lstart + l   ! constituent index
-         !
-         ! loop over internal (ndxi) nodes - don't update the boundary nodes
-         !
-         do nm=1,Ndxi
-            trndiv  = 0d0
-            sedflx  = 0d0
-            eroflx  = 0d0
-            if (sus/=0d0 .and. .not. bedload) then
-               if (neglectentrainment) then
-                  !
-                  ! mass balance based on transport fluxes only: entrainment and deposition
-                  ! do not lead to erosion/sedimentation.
-                  !
-                  sumflux = 0d0
-                  if (kmx>0) then
-                     do ii=1,nd(nm)%lnx
-                        LL = nd(nm)%ln(ii)
-                        Lf = iabs(LL)
-                        call getLbotLtop(Lf,Lb,Lt)
-                        if (Lt<Lb) cycle
-                        flux = 0d0
-                        do iL = Lb,Lt
-                           flux = flux + fluxhortot(j,iL)
-                        enddo
-                        ! to check: correct for 3D?
-                        if ( LL>0 ) then  ! inward
-                           sumflux = sumflux + flux
-                        else                 ! outward
-                           sumflux = sumflux - flux
-                        end if
-                     end do
-                  else
-                     do ii=1,nd(nm)%lnx
-                        LL = nd(nm)%ln(ii)
-                        Lf = iabs(LL)
+       call fm_change_in_sediment_thickness(dtmor)
 
-                        flux = fluxhortot(j,Lf)
+       call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
+       
 
-                        if ( LL>0 ) then  ! inward
-                           sumflux = sumflux + flux
-                        else                 ! outward
-                           sumflux = sumflux - flux
-                        end if
-                     end do
-                  endif
-                  trndiv = trndiv + sumflux * bai_mor(nm)
-               else
-                  !
-                  ! mass balance includes entrainment and deposition
-                  !
-                  if (tratyp(l) == TRA_COMBINE) then
-                     !
-                     ! l runs from 1 to lsedtot, kmxsed is defined for 1:lsed
-                     ! The first lsed fractions are the suspended fractions,
-                     ! so this is correct
-                     !
-                     k = kmxsed(nm, l)
-                  else
-                     call getkbotktop(nm, kb, kt)
-                     k = kb
-                  endif
-                  thick1 = vol1(k) * bai_mor(nm)
-                  sedflx = sinksetot(j,nm)*bai_mor(nm) + ssccum(l,nm)   ! kg/s/m2
-                  ssccum(l,nm) = 0d0
-                  eroflx = sourse(nm,l)*thick1            ! mass conservation, different from D3D
-                  !
-                  ! Update fluff layer
-                  !
-                  if (iflufflyr>0) then
-                     mfluff(l, nm) = mfluff(l, nm) + &
-                        & dts*(  sinkftot(j,nm)*bai_mor(nm)   &
-                        &      - sourf(l, nm)                  *thick1  )
-                  endif
-                  !
-                  ! add suspended transport correction vector
-                  !
-                  sumflux = 0d0
-                  do ii=1,nd(nm)%lnx
-                     LL = nd(nm)%ln(ii)
-                     Lf = iabs(LL)
-                     flux = e_scrn(Lf,l)*wu(Lf)
-
-                     if ( LL>0 ) then  ! inward
-                        sumflux = sumflux + flux
-                     else                 ! outward
-                        sumflux = sumflux - flux
-                     end if
-                  end do
-                  trndiv = trndiv + sumflux * bai_mor(nm)
-               endif
-            endif
-            if (bed /= 0.0d0) then
-               sumflux = 0d0
-               do ii=1,nd(nm)%lnx
-                  LL = nd(nm)%ln(ii)
-                  Lf = iabs(LL)
-                  flux = e_sbn(Lf,l)*wu_mor(Lf)
-
-                  if ( LL>0 ) then     ! inward
-                     sumflux = sumflux + flux
-                  else                 ! outward
-                     sumflux = sumflux - flux
-                  end if
-               end do
-               trndiv = trndiv + sumflux * bai_mor(nm)
-            endif
-            !
-            if (duneavalan) then   ! take fluxes out of timestep restriction
-               sumflux = 0d0       ! drawback: avalanching fluxes not included in total transports
-               do ii=1,nd(nm)%lnx
-                  LL = nd(nm)%ln(ii)
-                  Lf = iabs(LL)
-                  flux = avalflux(Lf,l)*wu_mor(Lf)
-                  if ( LL>0 ) then  ! inward
-                     sumflux = sumflux + flux
-                  else              ! outward
-                     sumflux = sumflux - flux
-                  end if
-               end do
-               trndiv = trndiv + sumflux * bai_mor(nm)
-            endif
-            !
-            dsdnm = (trndiv+sedflx-eroflx) * dtmor
-            !
-            ! Warn if bottom changes are very large,
-            ! depth change NOT LIMITED
-            !
-            dhmax = 0.05d0
-            h1 = max(0.01d0, s1(nm) - bl(nm))
-            if (abs(dsdnm) > dhmax*h1*cdryb(1) .and. bedupd) then
-               !
-               ! Only write bed change warning when bed updating is true
-               ! (otherwise no problem)
-               ! Limit the number of messages with bedchangemessmax
-               !
-               bedchangemesscount = bedchangemesscount + 1
-               if (bedchangemesscount <= bedchangemessmax) then
-                  write (mdia, '(a,f5.1,a,i0,a,i0,a,f10.0,a,f10.0)') &
-                     & '*** WARNING Bed change exceeds ' , dhmax*100.0d0, ' % of waterdepth after ', int(dnt),  &
-                     & ' timesteps, flow node = (', nm,') at x=', xz(nm),', y=', yz(nm)
-               endif
-            endif
-            !
-            ! Update dbodsd value at nm
-            !
-            dbodsd(l, nm) = dbodsd(l, nm) + dsdnm
-         enddo    ! nm
-      enddo       ! l
-
-      !
-      if (bedchangemesscount > bedchangemessmax) then
-         write (mdia,'(12x,a,i0,a)') 'Bed change messages skipped (more than ',bedchangemessmax,')'
-         write (mdia,'(12x,2(a,i0))') 'Total number of Bed change messages for timestep ', int(dnt), ' : ',bedchangemesscount
-      endif
-      
-!======================================================================
-!======================================================================
-!======================================================================
-!END CUT 
-      
-
-      !
-      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
       
 !======================================================================
 !======================================================================
@@ -1672,5 +1496,233 @@ public :: fm_bott3d
       enddo          ! jb (open boundary)
 
    end subroutine fm_bed_boundary_conditions
+
+   !> Compute change in bed level `dbodsd`
+   subroutine fm_change_in_sediment_thickness(dtmor)
+
+   !!
+   !! Declarations
+   !!
    
+   use sediment_basics_module
+   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu, wu_mor, xz, yz
+   use m_flow, only: kmx, s1, vol1
+   use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, morfac, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff
+   use m_sediment, only: avalflux, ssccum
+   use m_flowtimes, only: dts, dnt
+   use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
+   use unstruc_files, only: mdia
+   
+   implicit none
+
+   !!
+   !! I/O
+   !!
+   
+   double precision,                intent(in) :: dtmor
+   
+   !!
+   !! Local variables
+   !!
+   
+   !parameter
+   integer,          parameter                 :: bedchangemessmax = 50
+   
+   !logical
+   logical                                     :: bedload
+   
+   !integer
+   integer                                     :: j, l, ii, il, nm, ll, lt, kb, kt, lb, lf, k
+   integer                                     :: bedchangemesscount
+   integer                                     :: lstart
+
+   !double precision
+   double precision                            :: trndiv
+   double precision                            :: sedflx
+   double precision                            :: eroflx
+   double precision                            :: flux
+   double precision                            :: dhmax
+   double precision                            :: dsdnm
+   double precision                            :: h1
+   double precision                            :: sumflux
+   double precision                            :: thick1
+      
+   !!
+   !! Allocate and initialize
+   !!
+         
+   !!
+   !! Execute
+   !!
+
+   lstart  = ised1-1
+   bedload = .false.
+   
+   !
+   ! Update quantity of bottom sediment
+   !
+   dbodsd = 0d0
+   !
+   ! compute change in bodsed (dbodsd)
+   !
+   bedchangemesscount = 0
+   do l = 1, lsedtot
+      bedload = tratyp(l) == TRA_BEDLOAD
+      j = lstart + l   ! constituent index
+      !
+      ! loop over internal (ndxi) nodes - don't update the boundary nodes
+      !
+      do nm=1,Ndxi
+         trndiv  = 0d0
+         sedflx  = 0d0
+         eroflx  = 0d0
+         if (sus/=0d0 .and. .not. bedload) then
+            if (neglectentrainment) then
+               !
+               ! mass balance based on transport fluxes only: entrainment and deposition
+               ! do not lead to erosion/sedimentation.
+               !
+               sumflux = 0d0
+               if (kmx>0) then
+                  do ii=1,nd(nm)%lnx
+                     LL = nd(nm)%ln(ii)
+                     Lf = iabs(LL)
+                     call getLbotLtop(Lf,Lb,Lt)
+                     if (Lt<Lb) cycle
+                     flux = 0d0
+                     do iL = Lb,Lt
+                        flux = flux + fluxhortot(j,iL)
+                     enddo
+                     ! to check: correct for 3D?
+                     if ( LL>0 ) then  ! inward
+                        sumflux = sumflux + flux
+                     else                 ! outward
+                        sumflux = sumflux - flux
+                     end if
+                  end do
+               else
+                  do ii=1,nd(nm)%lnx
+                     LL = nd(nm)%ln(ii)
+                     Lf = iabs(LL)
+
+                     flux = fluxhortot(j,Lf)
+
+                     if ( LL>0 ) then  ! inward
+                        sumflux = sumflux + flux
+                     else                 ! outward
+                        sumflux = sumflux - flux
+                     end if
+                  end do
+               endif
+               trndiv = trndiv + sumflux * bai_mor(nm)
+            else
+               !
+               ! mass balance includes entrainment and deposition
+               !
+               if (tratyp(l) == TRA_COMBINE) then
+                  !
+                  ! l runs from 1 to lsedtot, kmxsed is defined for 1:lsed
+                  ! The first lsed fractions are the suspended fractions,
+                  ! so this is correct
+                  !
+                  k = kmxsed(nm, l)
+               else
+                  call getkbotktop(nm, kb, kt)
+                  k = kb
+               endif
+               thick1 = vol1(k) * bai_mor(nm)
+               sedflx = sinksetot(j,nm)*bai_mor(nm) + ssccum(l,nm)   ! kg/s/m2
+               ssccum(l,nm) = 0d0
+               eroflx = sourse(nm,l)*thick1            ! mass conservation, different from D3D
+               !
+               ! Update fluff layer
+               !
+               if (iflufflyr>0) then
+                  mfluff(l, nm) = mfluff(l, nm) + &
+                     & dts*(  sinkftot(j,nm)*bai_mor(nm)   &
+                     &      - sourf(l, nm)                  *thick1  )
+               endif
+               !
+               ! add suspended transport correction vector
+               !
+               sumflux = 0d0
+               do ii=1,nd(nm)%lnx
+                  LL = nd(nm)%ln(ii)
+                  Lf = iabs(LL)
+                  flux = e_scrn(Lf,l)*wu(Lf)
+
+                  if ( LL>0 ) then  ! inward
+                     sumflux = sumflux + flux
+                  else                 ! outward
+                     sumflux = sumflux - flux
+                  end if
+               end do
+               trndiv = trndiv + sumflux * bai_mor(nm)
+            endif
+         endif
+         if (bed /= 0.0d0) then
+            sumflux = 0d0
+            do ii=1,nd(nm)%lnx
+               LL = nd(nm)%ln(ii)
+               Lf = iabs(LL)
+               flux = e_sbn(Lf,l)*wu_mor(Lf)
+
+               if ( LL>0 ) then     ! inward
+                  sumflux = sumflux + flux
+               else                 ! outward
+                  sumflux = sumflux - flux
+               end if
+            end do
+            trndiv = trndiv + sumflux * bai_mor(nm)
+         endif
+         !
+         if (duneavalan) then   ! take fluxes out of timestep restriction
+            sumflux = 0d0       ! drawback: avalanching fluxes not included in total transports
+            do ii=1,nd(nm)%lnx
+               LL = nd(nm)%ln(ii)
+               Lf = iabs(LL)
+               flux = avalflux(Lf,l)*wu_mor(Lf)
+               if ( LL>0 ) then  ! inward
+                  sumflux = sumflux + flux
+               else              ! outward
+                  sumflux = sumflux - flux
+               end if
+            end do
+            trndiv = trndiv + sumflux * bai_mor(nm)
+         endif
+         !
+         dsdnm = (trndiv+sedflx-eroflx) * dtmor
+         !
+         ! Warn if bottom changes are very large,
+         ! depth change NOT LIMITED
+         !
+         dhmax = 0.05d0
+         h1 = max(0.01d0, s1(nm) - bl(nm))
+         if (abs(dsdnm) > dhmax*h1*cdryb(1) .and. bedupd) then
+            !
+            ! Only write bed change warning when bed updating is true
+            ! (otherwise no problem)
+            ! Limit the number of messages with bedchangemessmax
+            !
+            bedchangemesscount = bedchangemesscount + 1
+            if (bedchangemesscount <= bedchangemessmax) then
+               write (mdia, '(a,f5.1,a,i0,a,i0,a,f10.0,a,f10.0)') &
+                  & '*** WARNING Bed change exceeds ' , dhmax*100.0d0, ' % of waterdepth after ', int(dnt),  &
+                  & ' timesteps, flow node = (', nm,') at x=', xz(nm),', y=', yz(nm)
+            endif
+         endif
+         !
+         ! Update dbodsd value at nm
+         !
+         dbodsd(l, nm) = dbodsd(l, nm) + dsdnm
+      enddo    ! nm
+   enddo       ! l
+
+   if (bedchangemesscount > bedchangemessmax) then
+      write (mdia,'(12x,a,i0,a)') 'Bed change messages skipped (more than ',bedchangemessmax,')'
+      write (mdia,'(12x,2(a,i0))') 'Total number of Bed change messages for timestep ', int(dnt), ' : ',bedchangemesscount
+   endif
+
+   end subroutine fm_change_in_sediment_thickness
+    
 end module m_fm_bott3d
