@@ -50,10 +50,17 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
+    # the `pkg_check_modules` function is created with this call
+    find_package(PkgConfig REQUIRED)
+
+    # these calls create special `PkgConfig::<MODULE>` variables
+    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+
     set(oss_dependencies    netcdf4
-                            netcdff)
+                            netcdff
+                            PkgConfig::NETCDF)
     oss_include_libraries(${executable_name} ${oss_dependencies})
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} ${oss_dependencies} )
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})

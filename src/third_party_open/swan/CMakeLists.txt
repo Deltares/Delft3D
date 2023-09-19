@@ -22,8 +22,15 @@ add_library(${library_name} ${library_source_list})
 
 # Add dependencies
 if (UNIX)
+    # the `pkg_check_modules` function is created with this call
+    find_package(PkgConfig REQUIRED)
+
+    # these calls create special `PkgConfig::<MODULE>` variables
+    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+
     set(oss_dependencies    netcdf4
-                            netcdff)
+                            netcdff
+                            PkgConfig::NETCDF)
     oss_include_libraries(${library_name} ${oss_dependencies})
     target_link_libraries(${library_name} ${oss_dependencies})
 
