@@ -9,7 +9,7 @@ module load gcc/12.2.0_gcc12.2.0
 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/u/buwalda/petsc/arch-linux-c-opt/lib/pkgconfig/
 
-cmake ./src/cmake -DCMAKE_Fortran_COMPILER=mpiifort -D CONFIGURATION_TYPE:STRING=All -D CMAKE_BUILD_TYPE=Debug -B build_all
+cmake ./src/cmake -DCMAKE_Fortran_COMPILER=mpiifort -DCMAKE_CXX_COMPILER=mpicxx -D CONFIGURATION_TYPE:STRING=All -D CMAKE_BUILD_TYPE=Debug -B build_all
 
 cd build_all
-cmake --build . -j --target install --config Release
+cmake --build . -j --target install --config Debug #-v
