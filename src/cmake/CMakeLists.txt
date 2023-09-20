@@ -29,12 +29,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 enable_language(Fortran C CXX)
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     # To be implemented later on
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     include(compiler_options/intel.cmake)
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
     # To be implemented later on
+else()
+    echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
+    include(compiler_options/intel.cmake)
 endif()
 
 if (WIN32)

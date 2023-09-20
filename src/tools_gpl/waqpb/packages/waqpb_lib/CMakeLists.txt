@@ -12,10 +12,11 @@ set(library_name waqpb_lib)
 add_library(${library_name} ${source_files})
 
 set(oss_dependencies deltares_common
+                     nefis
                      waq_utils_f)
 
 oss_include_libraries(${library_name} oss_dependencies)
-
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")

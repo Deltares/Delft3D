@@ -68,6 +68,7 @@ set(oss_dependencies    deltares_common
                         kdtree_wrapper
                         kdtree2
                         triangle_c
+                        proj
                         gridgeom)
 oss_include_libraries(${library_name} oss_dependencies)
 

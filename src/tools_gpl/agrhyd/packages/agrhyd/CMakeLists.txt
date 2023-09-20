@@ -36,21 +36,21 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    #pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+    #pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(oss_dependencies deltares_common
                          deltares_common_c
                          io_netcdf
                          io_hyd
+                         netcdf4
+                         netcdff
                          waq_utils_f)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
     target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         ${oss_dependencies})
 endif(UNIX)
 
 if (WIN32)
