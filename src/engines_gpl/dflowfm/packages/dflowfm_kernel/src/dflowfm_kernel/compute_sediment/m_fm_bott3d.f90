@@ -30,7 +30,7 @@
 !
 !
 
-!> Module with subroutines (and no data) for bed level update. 
+!> Module with subroutines for bed level update. 
 module m_fm_bott3d
 
 use precision
@@ -248,7 +248,11 @@ public :: fm_bott3d
          call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
       end if
       
-      call fm_consider_mormerge(dtmor)
+      call fm_apply_mormerge(dtmor)
+      
+      do ll = 1, lsedtot
+         dbodsd(ll,:) = dbodsd(ll,:)*kcsmor
+      end do
             
       !
       call reconstructsedtransports()   ! reconstruct cell centre transports for morstats and cumulative st output
@@ -269,6 +273,8 @@ public :: fm_bott3d
       !
       !
       !2DO: check why this can not be moved before the first `if (cmpupd)` or after the last `if (cmpupd)`
+      ! JRE: should be at least here, see UNST-6697: move cmpupdfrac before morstats call
+      !      could be moved below
       if (stmpar%morpar%moroutput%morstats .and. ti_sed>0d0) then
          call morstats(dbodsd, hs_mor, ucxq_mor, ucyq_mor, sbcx, sbcy, sbwx, sbwy, sscx, sscy, sswx, sswy)
       endif
@@ -1502,7 +1508,7 @@ public :: fm_bott3d
    end subroutine fm_dry_bed_erosion
 
    !>Update `dbodsd` considering mormerge
-   subroutine fm_consider_mormerge(dtmor)
+   subroutine fm_apply_mormerge(dtmor)
    
    !!
    !! Declarations
@@ -1576,12 +1582,8 @@ public :: fm_bott3d
          mergebodsed = 0d0
       endif
    endif
-       
-   do ll = 1, lsedtot
-      dbodsd(ll,:) = dbodsd(ll,:)*kcsmor
-   end do
-   
-   end subroutine fm_consider_mormerge
+          
+   end subroutine fm_apply_mormerge
 
    !> Apply bed boundary condition
    subroutine fm_apply_bed_boundary_condition(dtmor,timhr)
@@ -1757,16 +1759,15 @@ public :: fm_bott3d
    !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
    
+   use m_flow
+   use m_flowgeom
+   use m_sediment, m_sediment_sed=>sed
+   use m_fm_erosed
+   use m_transport
    !!
    !! Declarations
    !!
-   
-   use m_transport, only: constituents, itra1, itran, isalt
-   use m_sediment, only: stmpar, botcrit
-   use m_sediment, m_sediment_sed=>sed 
-   use m_flow, only: kmx, hs
-   use m_flowparameters, only: epshs, jasal
-   use m_fm_erosed, only: blchg
+
    
    implicit none
    
@@ -1775,7 +1776,7 @@ public :: fm_bott3d
    !!
          
    !integer
-   integer                                     :: k, ndx, ll, kb, kt, kk, itrac
+   integer                                     :: k, ll, kb, kt, kk, itrac
       
    !double 
    double precision                            :: hsk
@@ -1784,8 +1785,6 @@ public :: fm_bott3d
    !!
    !! Allocate and initialize
    !!
-     
-   !m_sediment_sed => sed
    
    !!
    !! Execute
