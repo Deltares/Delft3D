@@ -1459,9 +1459,13 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
             else if (qid == 'charnock') then
                if (.not. allocated(ec_charnock) ) then
-                  allocate ( ec_charnock(ndx) , wcharnock(lnx), stat=ierr)
-                  call aerr('ec_charnock(ndx), wcharnock(lnx)' , ierr, ndx+lnx)
-                  ec_charnock = 0d0
+                  allocate ( ec_charnock(ndx)  , stat=ierr)
+                  call aerr('ec_charnock(ndx)' , ierr, ndx)
+                  ec_charnock(:) = 0d0
+               endif
+               if (.not. allocated(wcharnock) ) then
+                  allocate ( wcharnock(lnx)  , stat=ierr)
+                  call aerr('wcharnock(lnx)' , ierr, lnx)
                endif
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname)
                if (success) then

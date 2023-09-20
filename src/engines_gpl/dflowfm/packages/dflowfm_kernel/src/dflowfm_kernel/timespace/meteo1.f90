@@ -7167,9 +7167,12 @@ module m_meteo
             dataPtr3 => clou
             itemPtr4 => item_dacs_solarradiation 
             dataPtr4 => qrad
-         case ('humidity', 'dewpoint')       ! Relative humidity array used to store dewpoints
+         case ('humidity')      
             itemPtr1 => item_humidity
             dataPtr1 => rhum                 ! Relative humidity                
+         case ('dewpoint')                   
+            itemPtr1 => item_humidity
+            dataPtr1 => rhum                 ! Relative humidity array used to store dewpoints              
          case ('airtemperature')
             itemPtr1 => item_airtemperature
             dataPtr1 => tair
