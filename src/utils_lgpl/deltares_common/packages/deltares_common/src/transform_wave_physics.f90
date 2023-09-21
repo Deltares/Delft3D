@@ -40,6 +40,7 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     ! NONE
     !!--declarations----------------------------------------------------------------
     use mathconsts, only: pi_sp, sqrt2_sp, degrad_sp
+    use precision
     implicit none
     !
     ! Global variables
@@ -69,7 +70,7 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     !
     ! Local variables
     !
-    integer                        :: l
+    integer                        :: lcount
     integer                        :: npnt
     logical                        :: corht
     logical                        :: ldep
@@ -86,9 +87,8 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     real                           :: perfac
     real                           :: qbsli
     real                           :: tpp
-    real                           :: wavek
     real                           :: wavel
-    real                           :: wsbodyuu
+    real                          :: wsbodyuu
     real                           :: wsbodyvv
     !
     !! executable statements -------------------------------------------------------
@@ -104,17 +104,17 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     ! Start loop
     !
     npnt  = m*n
-    do l = 1,npnt
-        hrm   = hs(l)/sqrt2_sp
-        dirh  = dir(l)
-        deph  = depth(l)
-        tpp   = period(l)*perfac
-        fxhis = fx(l)
-        fyhis = fy(l)
-        dish  = distot(l)
-        diss  = dissurf(l) + diswcap(l)
+    do lcount = 1,npnt
+        hrm   = hs(lcount)/sqrt2_sp
+        dirh  = dir(lcount)
+        deph  = depth(lcount)
+        tpp   = period(lcount)*perfac
+        fxhis = fx(lcount)
+        fyhis = fy(lcount)
+        dish  = distot(lcount) !BS tmp note: distot is real, dish is real(fp=hp). Values are converted and differ a bit. Significant?
+        diss  = dissurf(lcount) + diswcap(lcount)
         !
-        call wave_length(  hrm, deph, tpp, wavel, wavek, ldep, grav  )
+        call wave_length(  hrm, deph, tpp, wavel, ldep, grav  )
         !
         ! If .not. swdis use fx, fy from SWAN
         ! else compute forces based on dissipation and celerity
@@ -125,26 +125,26 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
                        & fyhis     ,dish      ,diss      ,wavel     , &
                        & ldep      ,fxx       ,fyy       ,dismax    , &
                        & corht     ,swdis     ,grav      ,wsbodyuu  , wsbodyvv  )
-        hrms(l)    = hrm
-        dir(l)     = dirh
-        depth(l)   = deph
-        tp(l)      = tpp
-        fx(l)      = fxx
-        fy(l)      = fyy
-        wsbodyu(l) = wsbodyuu
-        wsbodyv(l) = wsbodyvv
-        distot(l)  = dish
+        hrms(lcount)    = hrm
+        dir(lcount)     = dirh
+        depth(lcount)   = deph
+        tp(lcount)      = tpp
+        fx(lcount)      = fxx
+        fy(lcount)      = fyy
+        wsbodyu(lcount) = wsbodyuu
+        wsbodyv(lcount) = wsbodyvv
+        distot(lcount)  = dish
         if (.not.ldep) then
             if (wavel>1.0E-6 .and. swflux) then
-                mx(l) = .125*grav*hrm*hrm*tpp/wavel*cos(dirh*degrad_sp)
-                my(l) = .125*grav*hrm*hrm*tpp/wavel*sin(dirh*degrad_sp)
+                mx(lcount) = .125*grav*hrm*hrm*tpp/wavel*cos(dirh*degrad_sp)
+                my(lcount) = .125*grav*hrm*hrm*tpp/wavel*sin(dirh*degrad_sp)
             else
-                mx(l) = 0.
-                my(l) = 0.
+                mx(lcount) = 0.
+                my(lcount) = 0.
             endif
         else
-            mx(l) = 0.
-            my(l) = 0.
+            mx(lcount) = 0.
+            my(lcount) = 0.
         endif
         !
         ! End loop

@@ -44,7 +44,7 @@
         & fof%fx             ,fof%fy            ,fof%mx             ,fof%my            , &
         & fof%dissip(:,:,1)  ,fof%dissip(:,:,2) ,fof%dissip(:,:,3)  , &
         & fof%mmax           ,fof%nmax          ,fof%hrms           ,fof%tp            , &
-        & sr%grav            ,sr%swflux         ,sr%swdis           ,sr%rho            , &
+        & sr%grav            ,sr%swflux         ,sr%swdis           , &
         & sr%gamma0          ,fof%wsbodyu       ,fof%wsbodyv        ,ierr )
 
     if (ierr < 0) then

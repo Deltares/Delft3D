@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-    subroutine wave_length(  hrm, deph, tp, wavel, wavek, ldep, grav  )
+    subroutine wave_length(  hrm, deph, tp, wavel, ldep, grav  )
     !!--description-----------------------------------------------------------------
     !
     !
@@ -36,7 +36,7 @@
     !
     !     Output:
     !     --------
-    !     wavel, wavek, ldep
+    !     wavel, ldep
     !     LDEP  : logical variable, .true. when depth or wave height too small
     !
     !     Compute wave lenght (for high enough waves and for deep enough water)
@@ -45,7 +45,10 @@
     ! NONE
     !!--declarations----------------------------------------------------------------
     use mathconsts, only: twopi_sp, sqrt2_sp
+    use precision
+    
     implicit none
+    
     !
     ! Global variables
     !
@@ -54,22 +57,22 @@
     real                           :: grav
     real                           :: hrm
     real                           :: tp
-    real                           :: wavek
     real   , intent(out)           :: wavel
     !
     ! Local variables
     !
-    real :: hmax
-    real :: hs
-    real :: tpmin
+    real(fp) :: depth_flex_precision
+    real(fp) :: period_flex_precision
+    real(fp) :: gravity_flex_precision
+    real(fp) :: wavek
     !
     !! executable statements -------------------------------------------------------
     !
     ldep   = .false.
     if (deph>0.05 .and. hrm>=0.01 .and. tp>0.0) then
-        call wavenr(deph, tp, wavek, grav)
+        call wavenr(depth_flex_precision, period_flex_precision, wavek, gravity_flex_precision)
         !
-        wavel = twopi_sp/wavek
+        wavel = twopi_sp/real(wavek)
     else
         !
         ! Too shallow water or waves too small

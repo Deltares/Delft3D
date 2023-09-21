@@ -25,7 +25,7 @@
    !                                                                               
    !-------------------------------------------------------------------------------
     
-subroutine wavenr(h         ,t         ,k         ,ag)
+subroutine wavenr(water_height, period, wave_number, local_gravity)
     !!--description-----------------------------------------------------------------
     !
     !    Function: Approximation of the dispersion, original sub-
@@ -56,32 +56,33 @@ subroutine wavenr(h         ,t         ,k         ,ag)
     !
     ! Global variables
     !
-    real(fp), intent(in   )              :: h  !< Waterheight
-    real(fp), intent(  out)              :: k  !< Approximation of wave number
-    real(fp), intent(in   )              :: t  !< Period
-    real(fp), intent(in   )              :: ag !< Gravitational acceleration
+    real(fp), intent(in   )              :: water_height    !< Water height
+    real(fp), intent(  out)              :: wave_number     !< Approximation of wave number
+    real(fp), intent(in   )              :: period          !< Period
+    real(fp), intent(in   )              :: local_gravity   !< Gravitational acceleration
     !
     ! Local parameters
     !
-    real(hp), parameter :: a1 = 5.060219360721177D-01, a2 = 2.663457535068147D-01,&
-        & a3 = 1.108728659243231D-01, a4 = 4.197392043833136D-02,&
-        & a5 = 8.670877524768146D-03, a6 = 4.890806291366061D-03,&
-        & b1 = 1.727544632667079D-01, b2 = 1.191224998569728D-01,&
-        & b3 = 4.165097693766726D-02, b4 = 8.674993032204639D-03
+    real(hp), parameter ::    a1 = 5.060219360721177D-01, a2 = 2.663457535068147D-01,&
+                            & a3 = 1.108728659243231D-01, a4 = 4.197392043833136D-02,&
+                            & a5 = 8.670877524768146D-03, a6 = 4.890806291366061D-03,&
+                            & b1 = 1.727544632667079D-01, b2 = 1.191224998569728D-01,&
+                            & b3 = 4.165097693766726D-02, b4 = 8.674993032204639D-03
    !
-    real(hp)               :: den                  ! Denominator
-    real(hp)               :: kd                   ! Double value for K
-    real(hp)               :: num                  ! Numerator
-    real(hp)               :: ome2                 ! Omega
+    real(hp)               :: denominator
+    real(hp)               :: wave_number_double_precision
+    real(hp)               :: numerator
+    real(hp)               :: omega
     !
     !
     !! executable statements -------------------------------------------------------
     !
-    ome2 = (2.0D0*pi_hp/real(t, hp))**2*real(h, hp)/real(ag, hp)
-    !
-    num = 1.0D0 +                                                               &
-        & ome2*(a1 + ome2*(a2 + ome2*(a3 + ome2*(a4 + ome2*(a5 + ome2*a6)))))
-    den = 1.0D0 + ome2*(b1 + ome2*(b2 + ome2*(b3 + ome2*(b4 + ome2*a6))))
-    kd = sqrt(ome2*num/den)/real(h, hp)
-    k = real(kd, fp)
+    omega = (2.0D0*pi_hp/real(period, hp))**2*real(water_height, hp)/real(local_gravity, hp)
+
+    numerator   = 1.0D0 + omega*(a1 + omega*(a2 + omega*(a3 + omega*(a4 + omega*(a5 + omega*a6)))))
+    denominator = 1.0D0 + omega*(b1 + omega*(b2 + omega*(b3 + omega*(b4 +             omega*a6))))
+    
+    wave_number_double_precision = sqrt(omega*numerator/denominator)/real(water_height, hp)
+    wave_number = real(wave_number_double_precision, fp)
+    
     end subroutine wavenr
