@@ -1762,10 +1762,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_string(md_ptr, 'output', 'HisFile', md_hisfile, success)
     ti_his_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'HisInterval'   ,  ti_his_array, 3, success)
-    if (ti_his_array(1) > 0d0) then
-        ti_his_array(1) = max(ti_his_array(1) , dt_user)
-        call check_multiple_time_interval(ti_his_array,dt_user,'HisInterval')
-    end if
+    call check_time_interval(ti_his_array,dt_user,'HisInterval')
     call getOutputTimeArrays(ti_his_array, ti_hiss, ti_his, ti_hise, success)
 
     call prop_get_double(md_ptr, 'output', 'XLSInterval', ti_xls, success)
@@ -1776,10 +1773,7 @@ subroutine readMDUFile(filename, istat)
 
     ti_map_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'MapInterval'   ,  ti_map_array, 3, success)
-    if (ti_map_array(1) > 0d0) then
-        ti_map_array(1) = max(ti_map_array(1) , dt_user)
-        call check_multiple_time_interval(ti_map_array,dt_user,'MapInterval')
-    end if
+    call check_time_interval(ti_map_array,dt_user,'MapInterval')
     call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
 
     call prop_get_integer(md_ptr, 'output', 'MapFormat', md_mapformat, success)
@@ -2024,10 +2018,7 @@ subroutine readMDUFile(filename, istat)
 
     ti_rst_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'RstInterval'   ,  ti_rst_array, 3, success)
-    if (ti_rst_array(1) > 0d0) then
-        ti_rst_array(1) = max(ti_rst_array(1) , dt_user)
-        call check_multiple_time_interval(ti_rst_array,dt_user,'RstInterval')
-    end if
+    call check_time_interval(ti_rst_array,dt_user,'RstInterval')
     call getOutputTimeArrays(ti_rst_array, ti_rsts, ti_rst, ti_rste, success)
 
     call prop_get_double (md_ptr, 'output', 'MbaInterval', ti_mba, success)
@@ -2233,10 +2224,7 @@ subroutine readMDUFile(filename, istat)
     ! Map classes output (formerly: incremental file)
     ti_classmap_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
-    if (ti_classmap_array(1) > 0d0) then
-        ti_classmap_array(1) = max(ti_classmap_array(1) , dt_user)
-        call check_multiple_time_interval(ti_classmap_array,dt_user,'ClassMapInterval')
-    end if
+    call check_time_interval(ti_classmap_array,dt_user,'ClassMapInterval')
     call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
 
     if (ti_classmap > 0d0) then
@@ -4405,18 +4393,21 @@ end if
 end subroutine getOutputTimeArrays
 
 !> check if time interval is multiple of DtUser
-subroutine check_multiple_time_interval(time_interval,dt_user,parameter_name)
+subroutine check_time_interval(time_interval,user_time_step,time_interval_name)
     implicit none
-    real(kind=hp)    , intent(in)  :: time_interval(3) !< Array of time interval to be checked. It contains 3 elements: interval, start_time, stop_time
-    real(kind=hp)    , intent(in)  :: dt_user          !< DtUser, user defined 
-    character(*)     , intent(in)  :: parameter_name   !< Name of the time interval parameter to check, to be used in the log message.
+    real(kind=hp)    , intent(inout)  :: time_interval(3)     !< Array of time interval to be checked. It contains 3 elements: interval, start_time, stop_time
+    real(kind=hp)    , intent(in)     :: user_time_step       !< User specified time step (s) for external forcing update
+    character(*)     , intent(in)     :: time_interval_name   !< Name of the time interval parameter to check, to be used in the log message.
 
-    if ((modulo(time_interval(1),dt_user) /= 0d0) .or. (modulo(time_interval(2),dt_user) /= 0d0) .or. (modulo(time_interval(3),dt_user) /= 0d0)) then
-        write(msgbuf, *) parameter_name,' = ', time_interval,' should be multiple of DtUser = ', dt_user, ' s'
-        call mess(LEVEL_ERROR, msgbuf)
+    if (time_interval(1) > 0d0) then
+        time_interval(1) = max(time_interval(1) , user_time_step)
+        if ((modulo(time_interval(1),user_time_step) /= 0d0) .or. (modulo(time_interval(2),user_time_step) /= 0d0) .or. (modulo(time_interval(3),user_time_step) /= 0d0)) then
+            write(msgbuf, *) time_interval_name,' = ', time_interval,' should be multiple of DtUser = ', user_time_step, ' s'
+            call mess(LEVEL_ERROR, msgbuf)
+        end if
     end if
 
-end subroutine check_multiple_time_interval
+end subroutine check_time_interval
 
    end module unstruc_model
 
