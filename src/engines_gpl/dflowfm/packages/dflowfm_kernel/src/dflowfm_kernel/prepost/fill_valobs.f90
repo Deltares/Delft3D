@@ -354,20 +354,6 @@ subroutine fill_valobs()
                if (idensform > 10 ) then  
                   valobs(IPNT_RHO+klay-1,i) = rho(kk)
                endif
-               if (kmx > 0) then 
-                   if (zws(kt) - zws(kb-1) > epshu .and. kk < kt ) then
-                      if (idensform > 10 ) then           
-                         prsappr = ag*rhomean*( zws(kt) - zws(kk) )  
-                         drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)    ! FIXME!!!!
-                      else 
-                         drhodz  = ( rho(kk+1) - rho(kk)                                   ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs) 
-                      endif
-                      rhomea  = 0.5d0*( rho(kk+1) + rho(kk) )
-                      valobs(IPNT_BRUV+klay-1,i) = -ag*drhodz/rhomea
-                  else
-                      valobs(IPNT_BRUV+klay-1,i) = 0d0 
-                  endif
-               endif
             end if
             if (jahisvelocity > 0) then
                valobs(IPNT_UMAG+klay-1,i) = ucmag(kk)
@@ -426,6 +412,18 @@ subroutine fill_valobs()
             do kk = kb-1, kt
                klay = kk - kb + nlayb + 1
                valobs(IPNT_ZWS+klay-1,i) = zws(kk)
+               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                  if (zws(kt) - zws(kb-1) > epshu .and. kk > kb-1 .and. kk < kt ) then
+                     if (idensform > 10 ) then           
+                        prsappr = ag*rhomean*( zws(kt) - zws(kk) )  
+                        drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)    ! FIXME!!!!
+                     else 
+                        drhodz  = ( rho(kk+1) - rho(kk)                                   ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs) 
+                     endif
+                     rhomea  = 0.5d0*( rho(kk+1) + rho(kk) )
+                     valobs(IPNT_BRUV+klay-1,i) = -ag*drhodz/rhomea
+                  endif
+               end if
             enddo
 
             call getlink1(k,LL)

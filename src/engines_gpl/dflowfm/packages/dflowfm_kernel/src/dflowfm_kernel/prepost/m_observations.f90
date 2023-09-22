@@ -149,6 +149,7 @@ implicit none
     integer                           :: IVAL_ZCS
     integer                           :: IVAL_ZWS         ! 3D, layer interfaces after layer centered
     integer                           :: IVAL_ZWU
+    integer                           :: IVAL_BRUV
     integer                           :: IVAL_TKIN
     integer                           :: IVAL_TEPS
     integer                           :: IVAL_VICWW
@@ -171,7 +172,6 @@ implicit none
     integer                           :: IVAL_QTOT
     integer                           :: IVAL_RHOP
     integer                           :: IVAL_RHO
-    integer                           :: IVAL_BRUV
     integer                           :: IVAL_SBCX1
     integer                           :: IVAL_SBCXN
     integer                           :: IVAL_SBCY1
@@ -258,6 +258,7 @@ implicit none
     integer                           :: IPNT_ZCS
     integer                           :: IPNT_ZWS
     integer                           :: IPNT_ZWU
+    integer                           :: IPNT_BRUV
     integer                           :: IPNT_TKIN
     integer                           :: IPNT_TEPS
     integer                           :: IPNT_VICWW
@@ -281,7 +282,6 @@ implicit none
     integer                           :: IPNT_NUM
     integer                           :: IPNT_RHOP
     integer                           :: IPNT_RHO
-    integer                           :: IPNT_BRUV
     integer                           :: IPNT_SBCX1           ! should be done per fraction
     integer                           :: IPNT_SBCXN
     integer                           :: IPNT_SBCY1
@@ -420,6 +420,7 @@ subroutine init_valobs_pointers()
    IVAL_ZCS        = 0
    IVAL_ZWS        = 0
    IVAL_ZWU        = 0
+   IVAL_BRUV       = 0
    IVAL_TKIN       = 0
    IVAL_TEPS       = 0
    IVAL_VICWW      = 0
@@ -445,7 +446,6 @@ subroutine init_valobs_pointers()
    IVAL_INFILTACT  = 0
    IVAL_RHOP       = 0
    IVAL_RHO        = 0
-   IVAL_BRUV       = 0
    IVAL_SBCX1      = 0          ! should be done per fraction
    IVAL_SBCXN      = 0
    IVAL_SBCY1      = 0
@@ -645,9 +645,8 @@ subroutine init_valobs_pointers()
    if( jasal > 0 .or. jatem > 0 .or. jased > 0 ) then
       i=i+1;            IVAL_RHOP       = i
       if (idensform > 10) then 
-      i=i+1;            IVAL_RHO        = i
-   endif
-      i=i+1;            IVAL_BRUV       = i
+         i=i+1;         IVAL_RHO        = i
+      endif
    endif
    MAXNUMVALOBS3D                       = i-i0
 
@@ -656,6 +655,7 @@ subroutine init_valobs_pointers()
    if ( kmx.gt.0 ) then
       i=i+1;            IVAL_ZWS        = i
       i=i+1;            IVAL_ZWU        = i
+      i=i+1;            IVAL_BRUV       = i
       if ( iturbulencemodel.gt.0 ) then
          i=i+1;         IVAL_TKIN       = i
          i=i+1;         IVAL_TEPS       = i
@@ -732,13 +732,13 @@ subroutine init_valobs_pointers()
    IPNT_ZCS   = ivalpoint(IVAL_ZCS,   kmx, nlyrs)
    IPNT_ZWS   = ivalpoint(IVAL_ZWS,   kmx, nlyrs)
    IPNT_ZWU   = ivalpoint(IVAL_ZWU,   kmx, nlyrs)
+   IPNT_BRUV  = ivalpoint(IVAL_BRUV,  kmx, nlyrs)
    IPNT_TKIN  = ivalpoint(IVAL_TKIN,  kmx, nlyrs)
    IPNT_TEPS  = ivalpoint(IVAL_TEPS,  kmx, nlyrs)
    IPNT_VICWW = ivalpoint(IVAL_VICWW, kmx, nlyrs)
    IPNT_RICH  = ivalpoint(IVAL_RICH,  kmx, nlyrs)
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)
-   IPNT_BRUV  = ivalpoint(IVAL_BRUV,  kmx, nlyrs)
    IPNT_WS1   = ivalpoint(IVAL_WS1,   kmx, nlyrs)
    IPNT_WSN   = ivalpoint(IVAL_WSN,   kmx, nlyrs)
    IPNT_SEDDIF1 = ivalpoint(IVAL_SEDDIF1,   kmx, nlyrs)

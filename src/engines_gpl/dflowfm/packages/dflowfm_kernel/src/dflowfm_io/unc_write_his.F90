@@ -2796,7 +2796,6 @@ subroutine unc_write_his(tim)            ! wrihis
           if (idensform > 10) then
              ierr = nf90_put_var(ihisfile, id_varrho  , valobsT(:,IPNT_RHO +kk-1) , start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
           endif
-          ierr = nf90_put_var(ihisfile, id_bruv    , valobsT(:,IPNT_BRUV+kk-1) , start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
        end if
        if (jased > 0 .and. .not. stm_included) then
              ierr = nf90_put_var(ihisfile, id_varsed, valobsT(:,IPNT_SED +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
@@ -2972,6 +2971,9 @@ subroutine unc_write_his(tim)            ! wrihis
           if (kk > 1) then
              ierr = nf90_put_var(ihisfile, id_zcs,    valobsT(:,IPNT_ZCS+kk-2),   start = (/ kk-1,1, it_his /), count = (/ 1, ntot, 1 /))
           endif
+          if ( (jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+             ierr = nf90_put_var(ihisfile, id_bruv,   valobsT(:,IPNT_BRUV+kk-1),  start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+          end if
        if (iturbulencemodel >= 3 .and. jahistur > 0) then
              ierr = nf90_put_var(ihisfile, id_turkin, valobsT(:,IPNT_TKIN +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
              ierr = nf90_put_var(ihisfile, id_tureps, valobsT(:,IPNT_TEPS +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
