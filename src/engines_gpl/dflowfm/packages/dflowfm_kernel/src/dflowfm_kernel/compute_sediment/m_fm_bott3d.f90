@@ -56,84 +56,68 @@ public :: fm_bott3d
    !! bathymetry changes
    subroutine fm_bott3d()
 
-   use precision
-   use bedcomposition_module
-   use sediment_basics_module
-   use m_flow     , only: vol1, s0, s1, hs, u1, kmx, hu, qa
-   use m_flowgeom , only: ndxi, nd, wu, bl, ba, ln, ndx, lnx, lnxi, acl, xz, yz, wu_mor, bai_mor, bl_ave
-   use m_flowexternalforcings, only: nopenbndsect
-   use m_flowparameters, only: epshs, eps10, flowWithoutWaves, jawaveswartdelwaq, jawave
-   use m_sediment, m_sediment_sed=>sed 
-   use m_flowtimes, only: dts, tstart_user, time1, dnt, julrefdat, tfac, ti_sed, ti_seds, time_user
-   use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot, numconst
-   use unstruc_files, only: mdia, close_all_files
-   use morphology_data_module, only: bedbndtype
-   use m_fm_erosed, only: dzbdt, tratyp, tmor, bc_mor_array, lsedtot, cmpupdfrac, e_scrn, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbn, e_sbt, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, bedupd, blchg, cdryb, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
+   !!
+   !! Declarations
+   !!
+   
    use Messagehandling
    use message_module, only: writemessages, write_error
-   use unstruc_netcdf, only: unc_closeall
-   use m_fm_dredge, only: fm_dredge
-   use m_dad, only: dad_included
-   use table_handles , only:handletype, gettabledata
-   use m_partitioninfo
-   use m_fm_update_crosssections
-   use m_fm_morstatistics, only: morstats, morstatt0
+   use precision
    use precision_basics
-   use m_waves
+   use bedcomposition_module
+   use sediment_basics_module
+   use m_flowgeom , only: ndxi, ndx
+   use m_flowparameters, only: eps10, jawave 
+   use m_flowexternalforcings, only: nopenbndsect
+   use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds
+   use m_transport, only: ised1
+   use unstruc_files, only: mdia
+   use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
+   use m_sediment, only: kcsmor
+   use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
+   use m_fm_morstatistics, only: morstats, morstatt0
    use m_tables, only: interpolate
-   use m_debug
-   !
+
    implicit none
-   !
-   type (handletype)                    , pointer :: bcmfile
-   type (bedbndtype)     , dimension(:) , pointer :: morbnd
-   logical                              , pointer :: cmpupd
 
    !!
    !! Local parameters
    !!
-   character(len=256)                             :: msg
-   !!
-   !! Global variables
-   !!
+   
+   double precision, parameter                 :: day2sec = 86400.0d0 !< seconds in a day  
+   double precision, parameter                 :: h2sec   = 3600.0d0  !< seconds in an hour 
+   
    !!
    !! Local variables
    !!
-   logical                                     :: bedload, error, aval
-   integer                                     :: ierror
-   integer                                     :: l, nm, ii, ll, Lx, Lf, lstart, j, k, k1, k2, knb, kk, itrac
-   integer                                     :: Lb, Lt, ka, kf1, kf2, kt, nto, iL, ac1, ac2
-   double precision                            :: eroflx, sedflx, trndiv, flux, dtmor
-   double precision                            :: bamin
    
-   double precision, parameter                 :: day2sec = 86400.0d0 !< seconds in a day
-   double precision, parameter                 :: dtol = 1d-16
-
-   !double precision                            :: tausum2(1)
-   !double precision                            :: sbsum, taucurc, czc
-   double precision, dimension(lsedtot)        :: bc_sed_distribution
-   double precision, dimension(:), allocatable :: bl_ave0
-
-   integer :: jb
-   integer                                     :: icond
-   !integer                                     :: jnto    = nopenbndsect
-   integer                                     :: ib
-   integer                                     :: li
-   !integer                                     :: lsedbed
-   integer                                     :: nxmx
-   integer                                     :: lm
-   integer                                     :: jawaveswartdelwaq_local
-   double precision                            :: alfa_dist
-   double precision                            :: alfa_mag
-   double precision                            :: rate
+   !logical
+   logical                                     :: error, aval
+   
+   !integer
+   integer                                     :: ierror, nm, ll
+   
+   !double precision
+   double precision                            :: dtmor
    double precision                            :: timhr
+   
+   double precision, dimension(:), allocatable :: bl_ave0
+   
+   !character
+   character(len=256)                             :: msg
+
+   !pointer
+   logical                              , pointer :: cmpupd
+
    !!
-   !!! executable statements -------------------------------------------------------
+   !! Point
    !!
-   bcmfile             => stmpar%morpar%bcmfile
-   morbnd              => stmpar%morpar%morbnd
+   
    cmpupd              => stmpar%morpar%cmpupd
-   bermslopetransport  => stmpar%morpar%bermslopetransport 
+
+   !!
+   !! Execute
+   !!
 
    if (.not. allocated(bl_ave0)) then
       allocate(bl_ave0(1:ndx),stat=ierror)
@@ -141,12 +125,10 @@ public :: fm_bott3d
    endif
 
    dtmor   = dts*morfac
-   lstart  = ised1-1
    error = .false.
-   timhr = time1 / 3600.0d0
-   nto    = nopenbndsect
-   blchg = 0d0
-   e_ssn  = 0d0
+   timhr = time1 / h2sec
+   blchg(:) = 0d0
+   e_ssn(:) = 0d0
    
    call fm_suspended_sand_correction()
       
@@ -264,7 +246,7 @@ public :: fm_bott3d
          !
          ! Apply composition boundary conditions
          !
-         call bndmorlyr( lsedtot, timhr, nto, bc_mor_array, stmpar )
+         call bndmorlyr( lsedtot, timhr, nopenbndsect, bc_mor_array, stmpar )
       endif
    endif       ! time1>tcmp
 
@@ -358,8 +340,8 @@ public :: fm_bott3d
    !! Execute
    !!
    
-   e_scrn = 0d0
-   e_scrt = 0d0
+   e_scrn(:) = 0d0
+   e_scrt(:) = 0d0
    
    !
    ! calculate corrections
@@ -615,8 +597,8 @@ public :: fm_bott3d
    if (istat == 0) allocate(sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat = istat)
    if (istat == 0) allocate(branInIDLn(network%nds%Count), stat = istat)
    
-   qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = -1
-   BranInIDLn = 0
+   qb_out(:) = 0d0; width_out(:) = 0d0; sb_in(:) = 0d0; sb_dir(:) = -1
+   BranInIDLn(:) = 0
    
    !!
    !! Execute
@@ -1886,6 +1868,7 @@ public :: fm_bott3d
    use m_fm_update_crosssections, only: fm_update_crosssections
    use morphology_data_module, only: bedbndtype
    use m_flowexternalforcings, only: nopenbndsect
+   use m_fm_dredge, only: fm_dredge
    
    implicit none
    
