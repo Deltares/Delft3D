@@ -36,7 +36,6 @@ if(UNIX)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(UNIX)
 
-target_link_libraries(${library_name} ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)
 
 # Define how the files should be structured within Visual Studio
