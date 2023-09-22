@@ -102,6 +102,8 @@
       integer    :: OFFSET_I_ARRAY, COUNT_ITEMS_ASSIGN, COUNT_NAMES, npos, lstack
       real       :: rhulp
       
+      integer :: KKVACA
+      
       
       if (timon) call timstrt( "dlwq5g", ithndl )
 !
@@ -179,9 +181,13 @@
           ENDIF
       END DO
 !
-!       Is everything resolved ?
+!     Is everything resolved ?
       ICNT = 0
       IODS = 0
+!      DO I = 1, COUNT_NAMES
+!          WRITE(*,*) "G->", I, NAMES_TO_CHECK(OFFSET_NAMES + I)
+!      END DO
+      
       DO I = 1, COUNT_NAMES
          K = I - ICNT
          IF ( (NAMES_TO_CHECK(OFFSET_NAMES + K) /= '&$&$SYSTEM_NAME&$&$!')
@@ -190,8 +196,8 @@
      *                COUNT_ITEMS_COMP_RULE, COUNT_SUBS_ASSIGN,
      *                COUNT_SUBS_COMP_RULE, INDEX_FIRST, NAMES_TO_CHECK,
      *                OFFSET_I_ARRAY, OFFSET_NAMES,
-     *                IODS, OFFSET_COMMON, K, ICNT)
-            ERROR_IDX = 2
+     *                IODS, OFFSET_COMMON, K, ICNT, ERROR_IDX, IWAR)
+            !ERROR_IDX = 2
          END IF
       END DO
 !

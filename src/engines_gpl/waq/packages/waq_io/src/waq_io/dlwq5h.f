@@ -29,7 +29,7 @@
 
       SUBROUTINE compact_usefor_list ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
      *                    NODIM  , IORDER , CNAMES , IOFFI  , IOFFC  ,
-     *                             IODS   , IOFFD  , I      , ICNT   )
+     *                             IODS   , IOFFD, I , ICNT, IERR, IWAR)
 !
 !
 !     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -69,19 +69,23 @@
 
       CHARACTER*(*) CNAMES(*)
       DIMENSION     IAR(*)
-      CHARACTER*20  CHULP
+      CHARACTER*20  CHULP,  MESSAGE_TYPE
       integer(4) :: ithndl = 0
       integer    :: I1, I3, I4, I5
       integer    :: lunut, I, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
       integer    :: itmnr, noitm, I2, iar, ioffd, ishft, ioffi, iods
       
+      INTEGER :: KKVACA, IERR, IWAR
       
+      
+      IERR = -1
+      MESSAGE_TYPE = "WARNING"
       if (timon) call timstrt( "compact_usefor_list", ithndl )
 !
 !       Write message
 !
       WRITE ( LUNUT ,   *  )
-      WRITE ( LUNUT , 1010 ) I+ICNT, CNAMES(I+IOFFC)
+      !WRITE ( LUNUT , 1010 ) I+ICNT, CNAMES(I+IOFFC)
       IF ( IORDER == 1 ) THEN ! items first
           NTT  = IDMNR
           NITM = NODIM
@@ -112,19 +116,30 @@
                WRITE (LUNUT,1030) I4,CHULP
             ELSE
                WRITE (LUNUT,1040) I4,CHULP
-            ENDIF
-         ENDIF
-      ENDIF
-      IF ( I2 > 0 .AND. I2 <  100000 ) THEN
+            END IF
+         END IF
+      ELSE IF ( I2 > 0 .AND. I2 <  100000 ) THEN
          I4 = I2
          CHULP = CNAMES( I2+IOFFD)
-         IF ( CNAMES(I+IOFFC) .NE. CHULP ) THEN
-            IF ( IORDER == 2 ) THEN
-               WRITE (LUNUT,1030)  I2,CHULP
+!         WRITE(*,*)
+!         DO KKVACA = 1, LEN(CNAMES)
+!             WRITE(*,*) "H->", IOFFC, KKVACA, CNAMES(KKVACA)
+!         END DO
+         
+         IF ( CNAMES(I+IOFFC) == CHULP ) THEN
+             IWAR = IWAR + 1
+             MESSAGE_TYPE = "WARNING"
+             WRITE ( LUNUT , 1010 ) MESSAGE_TYPE, I+ICNT, CNAMES(I+IOFFC)
+         ELSE
+             MESSAGE_TYPE = "ERROR"
+             WRITE ( LUNUT , 1010 ) MESSAGE_TYPE, I+ICNT, CNAMES(I+IOFFC)
+             IERR = 1
+             IF ( IORDER == 2 ) THEN
+               WRITE (LUNUT,1030)  MESSAGE_TYPE, I2, CHULP
             ELSE
-               WRITE (LUNUT,1040)  I2,CHULP
-            ENDIF
-         ENDIF
+               WRITE (LUNUT,1040)  MESSAGE_TYPE, I2, CHULP
+            END IF
+         END IF
       ENDIF
       I2 = I4
 !
@@ -177,9 +192,9 @@
       if (timon) call timstop( ithndl )
       RETURN
 !
- 1010 FORMAT ( ' ERROR: Input item : ',I3,' not resolved: ',A)
- 1030 FORMAT ( ' ERROR: Item number: ',I3,' also not resolved: ',A)
- 1040 FORMAT ( ' ERROR: Substance  : ',I3,' also not resolved: ',A)
+ 1010 FORMAT ( ' ', A, ': Input item : ',I3,' not resolved: ',A)
+ 1030 FORMAT ( ' ', A, ': Item number: ',I3,' also not resolved: ',A)
+ 1040 FORMAT ( ' ', A, ': Substance  : ',I3,' also not resolved: ',A)
 !
       END subroutine compact_usefor_list
 

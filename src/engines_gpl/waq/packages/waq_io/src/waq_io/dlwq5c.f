@@ -293,8 +293,8 @@
          ENDIF
          CALL compact_usefor_list ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
      *                 NODIM  , IORDER , CAR    , K5     , IOFFB  ,
-     *                          NSHFT  , IOFFD  , K      , ICNT   )
-         IERR = 1
+     *                          NSHFT  , IOFFD  , K      , ICNT   , IERR, IWAR)
+         !IERR = 1
          IF (timon) CALL timstop( ithndl )
          RETURN
          !IF ( J + ICNT >= NITM ) EXIT
