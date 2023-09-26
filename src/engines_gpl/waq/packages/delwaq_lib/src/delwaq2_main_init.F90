@@ -27,24 +27,19 @@ implicit none
 contains
 
 
-subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, init, action, argc, argv )
-
+subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, argc, argv )
 
   use delwaq2
   use delwaq2_data
   use dhcommand
-  use m_actions
   use m_sysn
   use m_sysi
 
-
   implicit none
-  
+
   ! Arguments
   integer       imaxa , imaxi , imaxc
 
-  logical, intent(inout)                        :: init
-  integer, intent(in)                           :: action
   integer, intent(in)                           :: argc
   character(len=*), dimension(argc), intent(in) :: argv
   type(delwaq_data), target                     :: dlwqd
@@ -54,28 +49,14 @@ subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, init, action, argc, arg
   integer, intent(inout)                        :: itoti
   integer, intent(inout)                        :: itotc
 
-  
+  call dhstore_command( argv )
 
-  init = .false.
-  if ( action == action_initialisation  .or. action == action_fullcomputation ) then
-      init = .true.
+  itota=0
+  itoti=0
+  itotc=0
 
-      call dhstore_command( argv )
+  call dlwqd%buffer%intialize()
 
-      itota=0
-      itoti=0
-      itotc=0
-
-      nullify( dlwqd%rbuf  )
-      nullify( dlwqd%ibuf  )
-      nullify( dlwqd%chbuf )
-
-      allocate( dlwqd%rbuf(0) )
-      allocate( dlwqd%ibuf(0) )
-      allocate( dlwqd%chbuf(0) )
-
-  endif
-     
 end subroutine delwaq2_main_init
 
 end module m_delwaq2_main_init

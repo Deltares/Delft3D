@@ -183,7 +183,7 @@ logical function GetValuePriv(type, parid, locid, value)
 
     idx = DetermineIndex( type, parid, locid )
 
-    value = dlwqd%rbuf(idx(1):idx(1)+(idx(3)-1)*idx(2):idx(2))
+    value = dlwqd%buffer%rbuf(idx(1):idx(1)+(idx(3)-1)*idx(2):idx(2))
     GetValuePriv = .true.
 
 end function GetValuePriv

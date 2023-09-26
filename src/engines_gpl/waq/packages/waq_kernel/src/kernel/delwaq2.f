@@ -53,7 +53,7 @@
 
       CONTAINS
 
-      SUBROUTINE DELWQ2 ( A, J, C, IMAXA, IMAXI, IMAXC, INIT,
+      SUBROUTINE DELWQ2 ( buffer, IMAXA, IMAXI, IMAXC, INIT,
      &                    ACTION, DLWQD                     )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -68,15 +68,9 @@
 !
 !     SUBROUTINES CALLED : DLWQI0, initialises the system
 !                          integration_scheme_1, first   integration procedure
-!                          DLWQN2, second  integration procedure
-!                          DLWQN3, third   integration procedure
-!                          DLWQN4, fourth  integration procedure
 !                          integration_scheme_5, fifth   integration procedure
 !                          integration_scheme_6, sixth   integration procedure
 !                          integration_scheme_7, seventh integration procedure
-!                          DLWQN8, eighth  integration procedure
-!                          DLWQN9, nineth  integration procedure
-!                          DLWQNB, tenth   integration procedure
 !                          integration_scheme_11, 11th    integration procedure
 !                          integration_scheme_12, 12th    integration procedure
 !                          integration_scheme_13, 13th    integration procedure
@@ -85,7 +79,6 @@
 !                          integration_scheme_16, 16th    integration procedure
 !                          integration_scheme_17, 17th    integration procedure
 !                          integration_scheme_18, 18th    integration procedure
-!                          DLWQNJ, 19+20   integration procedure
 !                          SRSTOP, stops execution
 !                          open_waq_files, opens files
 !
@@ -107,6 +100,7 @@
       USE DLWQI0_MOD
       USE Timers
       use delwaq2_data
+      use m_waq_data_buffer
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -120,10 +114,8 @@
 !
 !     Declaration of arguments
 !
+      type(waq_data_buffer), target             :: buffer
       INTEGER       IMAXA , IMAXI , IMAXC
-      INTEGER, DIMENSION(:), POINTER          :: J
-      REAL, DIMENSION(:), POINTER             :: A
-      CHARACTER(LEN=*), DIMENSION(:), POINTER :: C
       LOGICAL                                 :: INIT
       LOGICAL                                 :: exists
       INTEGER                                 :: ACTION
@@ -241,7 +233,7 @@
 !
          IERR = 0
          gridps => dlwqd%gridps
-         call dlwqi0 ( nlun   , a      , j      , c      , imaxa  ,
+         call dlwqi0 ( buffer, nlun   , imaxa  ,
      &                 imaxi  , imaxc  , ipage  , lun    , lchar  ,
      &                 filtype, gridps , dlwqd  , ierr   )
 !
@@ -270,67 +262,67 @@
       select case ( intsrt )
 
          case (  0 )     !      not transport, just processes
-            call integration_scheme_0 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_0 (buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  1 )     !      backward in space and time
-            call integration_scheme_1 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_1 (buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  2, 3, 4 ) ! deprecated
             goto 991
-            
+
          case (  5 )     !      Flux corrected transport
-            call integration_scheme_5 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_5 (buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  6 )     !      Direct steady state, backward differences in space
-            call integration_scheme_6 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_6 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  7 )     !      Direct steady state, central differences in space
-            call integration_scheme_7 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_7 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  8, 9, 10 ) ! deprecated
             goto 991
 
          case ( 11 )     !      Horizontal explicit upwind, vertical implicit central
-            call integration_scheme_11 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_11 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 12 )     !      Horizontal explicit FCT   , vertical implicit central
-            call integration_scheme_12 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_12 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 13 )     !      Horizontal explicit upwind, vertical implicit upwind
-            call integration_scheme_13 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_13 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 14 )     !      Horizontal explicit FCT   , vertical implicit upwind
-            call integration_scheme_14 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_14 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 15 )     !      GMRES, horizontal upwind, vertical upwind
-            call integration_scheme_15 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_15 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 16 )     !      GMRES, horizontal upwind, vertical central
-            call integration_scheme_16 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_16 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 17 )     !      stationary GMRES, horizontal upwind, vertical upwind
-            call integration_scheme_17 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_17 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 18 )     !      stationary GMRES, horizontal upwind, vertical central
-            call integration_scheme_18 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_18 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  19, 20 ) ! deprecated
             goto 991
 
          case ( 21 )     !      Self adjusting teta method (limiter Salezac)
-            call integration_scheme_21_22 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_21_22 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 22 )     !      Self adjusting teta method (limiter Boris and Book)
-            call integration_scheme_21_22 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_21_22 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 23 )     !      Leonards QUICKEST
-            call integration_scheme_23 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_23 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 24 )     !      Local flexible time step method by Leonard Postma
-            call integration_scheme_24 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_24 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 25 )     !      Special for emission module
-            call integration_scheme_25 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_25 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case default
             goto 990

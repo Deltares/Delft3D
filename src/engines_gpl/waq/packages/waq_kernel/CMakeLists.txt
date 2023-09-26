@@ -7,22 +7,11 @@ include_directories(${waq_kernel_include_path})
 set(src_path src)
 
 # Gather source files
-get_fortran_source_files(${src_path}/kernel kernel_files)
-get_fortran_source_files(${src_path}/kernel/integration integration_files)
-get_fortran_source_files(${src_path}/kernel/calculation calculation_files)
-get_fortran_source_files(${src_path}/kernel/reactions reactions_files)
-get_fortran_source_files(${src_path}/results result_files)
-get_fortran_source_files(${src_path}/read_wrk read_wrk_files)
+get_fortran_source_files_recusive(${src_path}, kernel_files)
 
 # Define library
 set(library_name waq_kernel)
-add_library(${library_name} ${kernel_files}
-                            ${integration_files}
-                            ${calculation_files}
-                            ${reactions_files}
-                            ${result_files}
-                            ${read_wrk_files}
-                            )
+add_library(${library_name} ${kernel_files})
 
 
 # Set dependencies

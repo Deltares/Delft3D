@@ -40,7 +40,7 @@
       use m_open_waq_files
 
       contains
-      subroutine dlwqi0 ( nlun   , a      , j      , c      , imaxa  ,
+      subroutine dlwqi0 ( buffer, nlun   , imaxa  ,
      &                    imaxi  , imaxc  , ipage  , lun    , lchar  ,
      &                    filtype, gridps , dlwqd  , ierr   )
 
@@ -89,11 +89,8 @@
 !     Parameters          :
 
 !     kind           function         name            description
-
+      type(waq_data_buffer), intent(inout) :: buffer        !< System total array space
       integer              , intent(in   ) :: nlun          !< Number of files
-      real                 , pointer       :: a(:)          !< Real      model workspace
-      integer              , pointer       :: j(:)          !< Integer   model workspace
-      character(*)         , pointer       :: c(:)          !< Character model workspace
       integer              , intent(inout) :: imaxa         !< dimension   A-array
       integer              , intent(inout) :: imaxi         !< dimension   J-array
       integer              , intent(inout) :: imaxc         !< dimension   C-array
@@ -118,13 +115,16 @@
 
       LOGICAL       propor
       integer(4) ithandl /0/
+
       if ( timon ) call timstrt ( "dlwqi0", ithandl )
 
 !         initialise the system
 
       ftype = filtype
-      CALL SPACE  ( LUN(19) , .TRUE.  , A       , J       , C       ,
+      CALL SPACE  ( LUN(19) , .TRUE.  , buffer%rbuf, buffer%ibuf, buffer%chbuf,
      +              IMAXA   , IMAXI   , IMAXC   )
+      
+      associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 !
 !     copy common to (possible) shared array to share these values with
 !     other processes (domain decomposition)
@@ -422,6 +422,7 @@
      &              nosfun   , c(isfna:), a(isfun:), a(iconc:) , a(imass:) ,
      &              j(iknmr:), iknmkv   , j(ixpnt:) )
 
+      
 !     temporary for closure error
 
    40 CALL ZOEK20 ( 'CLOSE_ERR ',NOCONS,C(ICNAM),10,INDX )
@@ -432,7 +433,9 @@
          ICFLAG = 0
          WRITE(LUN(19),*) ' Closure error correction disabled'
       ENDIF
-
+      
+      end associate
+      
       if ( timon ) call timstop ( ithandl )
       RETURN
       END subroutine

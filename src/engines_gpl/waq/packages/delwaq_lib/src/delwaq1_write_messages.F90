@@ -52,7 +52,7 @@ subroutine delwaq1_write_messages(errorcode)
         itota = 0
         itoti = 0
         itotc = 0
-        call space  ( lunrep, .false., abuf   , ibuf   , chbuf  , &
+        call space  ( lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                       itota , itoti  , itotc  )
 
         call open_waq_files  ( lun(1) , lchar(1) , 1     , 1     , ioerr )

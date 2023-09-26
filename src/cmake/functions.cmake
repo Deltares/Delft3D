@@ -19,8 +19,8 @@ endfunction()
 # oss_include_libraries
 # Adds oss dependencies to the specified library.
 #
-# Note that it is assumed that the dependency is located in the PROJECT_BINARY_DIR in a subdirectory with the same dependency name. 
-# 
+# Note that it is assumed that the dependency is located in the PROJECT_BINARY_DIR in a subdirectory with the same dependency name.
+#
 # Argument
 # library_name : The name of the library where dependencies should be added.
 # dependencies : A list of dependencies to set for the library_name.
@@ -33,7 +33,7 @@ function(oss_include_libraries library_name dependencies)
             include_directories( ${PROJECT_BINARY_DIR}/${dependency} )
         endif()
     endforeach()
-    
+
 endfunction()
 
 
@@ -43,7 +43,7 @@ endfunction()
 #
 # Argument
 # source_directory : The directory to gather the source files from.
-# 
+#
 # Return
 # source_files : The source files that were gathered.
 function(get_fortran_source_files source_directory source_files)
@@ -55,10 +55,25 @@ function(get_fortran_source_files source_directory source_files)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 
-
+# get_fortran_source_files_recusive
+# Gathers Fortran *.f or *.f90 files from a given directory recurcivly.
+#
+# Argument
+# source_directory : The directory to gather the source files from.
+#
+# Return
+# source_files : The source files that were gathered.
+function(get_fortran_source_files_recusive source_directory source_files)
+    file(GLOB_RECURSE source ${source_directory} *.f90
+                        ${source_directory} *.F90
+                        ${source_directory} *.for
+                        ${source_directory} *.f
+                        ${source_directory} *.F)
+    set(${source_files} ${source} PARENT_SCOPE)
+endfunction()
 
 # add_postbuild_event
-# Adds a postbuild event to the target. 
+# Adds a postbuild event to the target.
 #
 # Argument
 # target_name : The name of the target to add this postbuild event to.
@@ -72,7 +87,7 @@ function(add_postbuild_event target_name)
     if (UNIX)
        execute_process(COMMAND /bin/bash ${postbuild_event_path})
     endif(UNIX)
-    
+
     if (WIN32)
        IF(DEFINED ARGV5 AND ARGV5)
           add_custom_command( TARGET ${target_name}
@@ -99,35 +114,35 @@ endfunction()
 function(post_build_target target_name install_dir build_dir checkout_src_root build_project)
 
    if (CMAKE_GENERATOR MATCHES "Visual Studio")
-   
+
     # compiler_redist_dir : Compiler dlls (Windows only)
     # mkl_redist_dir      : mkl dlls (Windows only)
 
-      if (DEFINED ENV{ONEAPI_ROOT})  
+      if (DEFINED ENV{ONEAPI_ROOT})
          set(oneapi_root $ENV{ONEAPI_ROOT})
          set(compiler_redist_dir "${oneapi_root}/compiler/latest/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "${oneapi_root}/mkl/latest/redist/intel64/")   
+         set(mkl_redist_dir   "${oneapi_root}/mkl/latest/redist/intel64/")
          set(mpi_redist_dir "${oneapi_root}/mpi/latest/")
       else()
          set(compiler_redist_dir "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/mkl/")   
+         set(mkl_redist_dir   "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/mkl/")
       endif()
 
-      set(build_config $<CONFIG>) 
+      set(build_config $<CONFIG>)
 
       add_custom_command(TARGET ${target_name}
                          POST_BUILD
-                         COMMAND call "${checkout_src_root}/scripts_lgpl/win64/oss-post_build.cmd"  
-                         ${install_dir} 
-                         ${build_dir} 
-                         ${checkout_src_root} 
+                         COMMAND call "${checkout_src_root}/scripts_lgpl/win64/oss-post_build.cmd"
+                         ${install_dir}
+                         ${build_dir}
+                         ${checkout_src_root}
                          ${build_config}
                          ${build_project}
                          ${compiler_redist_dir}
                          ${mkl_redist_dir}
-                         ${mpi_redist_dir}) 
+                         ${mpi_redist_dir})
    endif(CMAKE_GENERATOR MATCHES "Visual Studio")
-   
+
 endfunction()
 
 
@@ -142,7 +157,7 @@ endfunction()
 # Return
 # return_include_path   : The value of the include_path property for the module_path.
 function(get_module_include_path module_path library_name return_include_path)
-    get_directory_property(public_include_path  DIRECTORY ${module_path} 
+    get_directory_property(public_include_path  DIRECTORY ${module_path}
                                                 DEFINITION public_include_path)
 
     if(NOT public_include_path)
@@ -190,4 +205,3 @@ endfunction(configure_package_installer)
 function(set_rpath targetDir rpathValue)
   execute_process(COMMAND find "${targetDir}" -type f -exec bash -c "patchelf --set-rpath '${rpathValue}' $1" _ {} \; -exec echo "patched rpath of: " {} \;)
 endfunction(set_rpath)
-

@@ -72,12 +72,12 @@
 !
       INTEGER       LUNREP, IMAXA  , IMAXI  , IMAXC
       LOGICAL       L_DECL
-      REAL, DIMENSION(:), POINTER             :: A
-      INTEGER, DIMENSION(:), POINTER          :: J
-      CHARACTER(LEN=*), DIMENSION(:), POINTER :: C
+      REAL, DIMENSION(:), allocatable             :: A
+      INTEGER, DIMENSION(:), allocatable          :: J
+      CHARACTER(LEN=*), DIMENSION(:), allocatable :: C
 
-      INTEGER, DIMENSION(:), POINTER               :: JNEW
-      CHARACTER(LEN=LEN(C)), DIMENSION(:), POINTER :: CNEW
+      INTEGER, DIMENSION(:), allocatable               :: JNEW
+      CHARACTER(LEN=LEN(C)), DIMENSION(:), allocatable :: CNEW
       CHARACTER(LEN=20),     DIMENSION(:), ALLOCATABLE :: CNAME
 
       INTEGER                :: K1, K2
@@ -90,9 +90,9 @@
 !
       NOARR  = IASIZE + IJSIZE + ICSIZE
 
-      IF ( ASSOCIATED(J)    ) DEALLOCATE( J )
-      IF ( ASSOCIATED(C)    ) DEALLOCATE( C )
-      IF ( ALLOCATED(CNAME) ) DEALLOCATE( CNAME )
+      IF ( allocated(J)    ) DEALLOCATE( J )
+      IF ( allocated(C)    ) DEALLOCATE( C )
+      IF ( allocated(CNAME) ) DEALLOCATE( CNAME )
 
       ALLOCATE( J(     IASIZE + 1 + IJSIZE + ICSIZE + 1 + 8 * NOARR  ) )
       ALLOCATE( C( 20*(IASIZE + 1 + IJSIZE + ICSIZE + 1) ) )
@@ -176,13 +176,13 @@
               ENDDO
           ENDDO
           DEALLOCATE( C )
-          C => CNEW
+          C = CNEW
 
           ALLOCATE( JNEW(part%jpoint) )
           JNEW = 0
           JNEW(1:SIZE(J)) = J
           DEALLOCATE( J )
-          J => JNEW
+          J = JNEW
 
           ALLOCATE( A(part%apoint) )
           A    = 0.0
