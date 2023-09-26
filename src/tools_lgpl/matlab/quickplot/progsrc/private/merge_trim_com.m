@@ -1,4 +1,4 @@
-function [ Ans, OrigFI ] = merge_trim_com( OrigFI,domain,Props,XYRead,DataRead,DataInCell,get_single_partition,nPartitions,mergeParts,mergeDim, varargin)
+function [ Ans, OrigFI ] = merge_trim_com( OrigFI,domain,Props,XYRead,DataRead,DataInCell,get_single_partition,nPartitions,mergeParts,mergeDim,hasSubfields,varargin)
 %MERGE_TRIM_COM Routine for merging partitioned data from trim/com files
 %
 %   See also: d3d_trimfil, d3d_comfil
@@ -35,12 +35,13 @@ function [ Ans, OrigFI ] = merge_trim_com( OrigFI,domain,Props,XYRead,DataRead,D
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
 if isfield(OrigFI,'NEFIS')
-    if nPartitions == 1
+    if nPartitions == 1 || Props.DimFlag(M_) == 0
+        domain = min(domain,length(OrigFI.NEFIS));
         OrigFI.NEFIS(domain).QP_Options = OrigFI.QP_Options;
-        [Ans,OrigFI.NEFIS(domain)] = get_single_partition(OrigFI.NEFIS(domain),1,Props,XYRead,DataRead,DataInCell,varargin);
+        [Ans,OrigFI.NEFIS(domain)] = get_single_partition(OrigFI.NEFIS(domain),1,Props,XYRead,DataRead,DataInCell,varargin{:});
     else
         if mergeParts
-            indexVarArg = sum(Props.DimFlag(1:mergeDim) ~= 0);
+            indexVarArg = sum(Props.DimFlag(1:mergeDim) ~= 0) + hasSubfields;
             if indexVarArg > length(varargin)
                 returnSelected = 0;
             else
@@ -112,7 +113,7 @@ if isfield(OrigFI,'NEFIS')
             if isfield(OrigFI,'QP_Options')
                 OrigFI.NEFIS(d).QP_Options = OrigFI.QP_Options;
             end
-            [Ans(d),OrigFI.NEFIS(d)] = get_single_partition(OrigFI.NEFIS(d),1,Props,XYRead,DataRead,DataInCell,varargin);
+            [Ans(d),OrigFI.NEFIS(d)] = get_single_partition(OrigFI.NEFIS(d),1,Props,XYRead,DataRead,DataInCell,varargin{:});
         end
         if mergeParts
             hasMultiTime = 0;
@@ -170,5 +171,5 @@ if isfield(OrigFI,'NEFIS')
         end
     end
 else
-    [Ans,OrigFI] = get_single_partition(OrigFI,domain,Props,XYRead,DataRead,DataInCell,varargin);
+    [Ans,OrigFI] = get_single_partition(OrigFI,domain,Props,XYRead,DataRead,DataInCell,varargin{:});
 end
