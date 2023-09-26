@@ -369,7 +369,7 @@ switch cmd
                             FI=load('-mat',FileName);
                         end
                         if strcmpi(en,'.fig')
-                            qp_plotmanager('openfigure',[],0,0,{FileName});
+                            d3d_qp('openfigure',FileName);
                             FI=[];
                             break
                         end

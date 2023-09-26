@@ -69,7 +69,8 @@ elseif strcmp(Ops.plotcoordinate,'time')
     end
 else % distance-Val, X-Val, X-Time, Time-X
     %Ops.plotcoordinate='(x,y)';
-    if isfield(data,'Time') && length(data.Time)>1
+    plotTime = ~isempty(strfind(Ops.basicaxestype,'Time'));
+    if plotTime && isfield(data,'Time') && length(data.Time)>1
         mask = all(isnan(data.Val(:,:)),1);
     else
         mask = isnan(data.Val);
@@ -93,7 +94,7 @@ else % distance-Val, X-Val, X-Time, Time-X
             y=data.Val;
             z=zeros(size(x));
     end
-    if isfield(data,'Time') && length(data.Time)>1
+    if plotTime && isfield(data,'Time') && length(data.Time)>1
         nx = numel(x);
         nt = numel(data.Time);
         if strcmp(Ops.axestype,'X-Time')

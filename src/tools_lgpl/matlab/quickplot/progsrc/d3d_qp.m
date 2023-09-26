@@ -3711,6 +3711,17 @@ switch cmd
             end
         end
         
+    case 'axesaspectreset'
+        ax = qpsa;
+        PM = UD.PlotMngr;
+        hordas_auto = getappdata(ax,'haspectdefaultvalue');
+        if ~isempty(hordas_auto)
+            set(PM.Y.AspectValue, ...
+                'string',num2str(1/hordas_auto), ...
+                'userdata',1/hordas_auto);
+        end
+        d3d_qp axesaspect
+        
     case 'axesaspect'
         ax = qpsa;
         PM = UD.PlotMngr;
@@ -3742,15 +3753,11 @@ switch cmd
             end
         end
         if ~isempty(cmdargs)
-            if getappdata(ax,'haspectenforced')
-                % ok
-            else
-                y = cmdargs{1};
-                if strcmpi(y,'auto')
-                    yaspect = 'auto';
-                elseif isscalar(y) && isnumeric(y) && y>0
-                    yaspect = y;
-                end
+            y = cmdargs{1};
+            if strcmpi(y,'auto')
+                yaspect = 'auto';
+            elseif isscalar(y) && isnumeric(y) && y>0
+                yaspect = y;
             end
             if length(cmdargs)>1
                 z = cmdargs{2};
@@ -3765,7 +3772,12 @@ switch cmd
             zaspect = [];
         end
         if strcmp(yaspect,'auto')
-            set(ax,'dataAspectratioMode','auto');
+            hordas_auto = getappdata(ax,'haspectautovalue');
+            %if isempty(hordas_auto) %truly auto
+                set(ax,'dataAspectratioMode','auto');
+            %else
+            %    set(ax,'dataAspectratio',[1 1/hordas_auto 1]);
+            %end
             if ~getappdata(ax,'axes2d')
                 zaspect = 'auto';
             end
