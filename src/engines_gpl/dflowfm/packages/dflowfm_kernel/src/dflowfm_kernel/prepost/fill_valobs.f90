@@ -416,7 +416,7 @@ subroutine fill_valobs()
                   if (zws(kt) - zws(kb-1) > epshu .and. kk > kb-1 .and. kk < kt ) then
                      if (idensform > 10 ) then           
                         prsappr = ag*rhomean*( zws(kt) - zws(kk) )  
-                        drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)
+                        drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)    ! FIXME!!!!
                      else 
                         drhodz  = ( rho(kk+1) - rho(kk)                                   ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs) 
                      endif
