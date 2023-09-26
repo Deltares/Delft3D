@@ -4,7 +4,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
                  & npar     ,par       ,numintpar ,numrealpar, &
                  & numstrpar,dllfunc  ,dllhandle ,intpar    , &
                  & realpar  ,strpar   ,iflufflyr ,mflufftot , &
-                 & fracf    ,maxslope ,wetslope  , &
+                 & fracf    ,tcrero_bed,eropar_bed,maxslope ,wetslope  , &
 ! output:
                  & error    ,wstau     ,sinktot   ,sourse   , &
                  & sourf    )
@@ -48,7 +48,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
 !!--declarations----------------------------------------------------------------
     use precision
     use sediment_basics_module
-    use morphology_data_module, only: RP_TAUB
+    use morphology_data_module, only: RP_RHOSL, RP_TAUB, RP_MUDFR, RP_D50, RP_POROS
     use message_module, only: write_error
     use iso_c_binding, only: c_char
     !
@@ -69,6 +69,8 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
     real(fp)                            , intent(in)    :: frac
     real(fp)                            , intent(in)    :: fracf
     real(fp)                            , intent(in)    :: maxslope
+    real(fp)                            , intent(in)    :: tcrero_bed  ! critical bed shear stress for erosion from bed composition module
+    real(fp)                            , intent(in)    :: eropar_bed  ! maximum erosion rate from bed composition module
     real(fp)                            , intent(in)    :: mflufftot
     real(fp)     , dimension(npar)      , intent(inout) :: par
     real(fp)                            , intent(out)   :: sinktot
@@ -92,6 +94,8 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
 !
 ! Local variables
 !
+    integer  :: ierosion
+    real(fp) :: rhosol
     real(fp) :: betaslope     !> coefficient in bed slope effect on critical shear stress for bed erosion (-)
     real(fp) :: sour          !> entrainment flux from bed (kg/m2/s)
     real(fp) :: sour_fluff    !> entrainment flux from fluff layer (kg/m2/s)
@@ -108,6 +112,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
     real(fp) :: parfl1        !> first-order erosion rate parameter for the fluff layer (m*s/kg)
     real(fp) :: depeff        !> coefficient determining mud sedimentation (to fluff layer or bed) (-)
     real(fp) :: powern        !> exponent in the erosion rate formulation (-)
+    
     !
     ! Interface to dll is in High precision!
     !
@@ -125,9 +130,12 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
 !! executable statements ------------------
 !
     error  = .false.
+    eropar = -999.0_fp
+    tcrero = -999.0_fp
     !
     ! Calculate total (possibly wave enhanced) roughness
     !
+    rhosol = real(realpar(RP_RHOSL), fp)
     taub   = real(realpar(RP_TAUB), fp)
     !
     ! Bed transport following Partheniades and Krone
@@ -157,17 +165,17 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
           sink = 0.0
        endif
     else
-       if (iform == -3) then
-          eropar = par(11)
+       if (iform == -3 .or. iform == -5) then
+          eropar = eropar_bed * par(11)
           tcrdep = par(12)
-          tcrero = par(13)
+          tcrero = tcrero_bed * par(13)
           tcrflf = par(14)
           parfl0 = par(15)
           parfl1 = par(16)
           depeff = par(17)
           powern = par(18)
           !
-          ! Default Partheniades-Krone formula
+          ! Partheniades-Krone formula
           !
           if (maxslope>wetslope) then
              !
@@ -180,16 +188,20 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
              tcrero = max(tcrero, taucrmin)
           endif
           !
-          taum = max(0.0_fp, taub/tcrero - 1.0_fp)
-          sour = eropar * taum**powern
+          if (iform == -3) then
+             taum = max(0.0_fp, taub/tcrero - 1.0_fp)**powern
+          else ! iform == -5
+             taum = max(0.0_fp, taub - tcrero)
+          endif
+          sour = eropar * taum
           !
           ! Erosion from fluff layer
           !
           if (iflufflyr>0) then
-            taum       = max(0.0_fp, taub - tcrflf)
-            sour_fluff = min(mflufftot*parfl1,parfl0)*taum
+             taum       = max(0.0_fp, taub - tcrflf)
+             sour_fluff = min(mflufftot*parfl1,parfl0)*taum
           else
-            sour_fluff = 0.0_fp
+             sour_fluff = 0.0_fp
           endif
           !
           if (comparereal(depeff,-1.0_fp)==0) then
@@ -201,6 +213,11 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
           else
              sink = max(0.0_fp,min(depeff,1.0_fp))
           endif
+          !
+          ! Partheniades-Krone specific output
+          par     = -999.0_fp
+          par( 1) = eropar
+          par( 2) = tcrero
        elseif (iform == 21) then
           !
           ! Initialisation of output variables of user defined transport formulae

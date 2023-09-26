@@ -103,6 +103,8 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp), dimension(:,:)             , pointer :: sourse
     real(fp), dimension(:)               , pointer :: taub
     real(fp), dimension(:,:)             , pointer :: taurat
+    !real(fp), dimension(:,:)             , pointer :: tcrero
+    !real(fp), dimension(:,:)             , pointer :: eropar
     real(fp), dimension(:)               , pointer :: ust2
     real(fp), dimension(:)               , pointer :: umod
     real(fp), dimension(:)               , pointer :: uuu
@@ -225,6 +227,8 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     sourse         => gdp%gderosed%sourse
     taub           => gdp%gderosed%taub
     taurat         => gdp%gderosed%taurat
+    !tcrero         => gdp%gderosed%tcrero
+    !eropar         => gdp%gderosed%eropar
     ust2           => gdp%gderosed%ust2
     umod           => gdp%gderosed%umod
     uuu            => gdp%gderosed%uuu
@@ -365,6 +369,12 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
        if (moroutput%taurat) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TAURAT', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Excess bed shear ratio', acl='z')
        endif
+       !if (moroutput%tcrero) then
+       !   call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TCRERO', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Critical bed shear stress', unit='Pa', acl='z')
+       !endif
+       !if (moroutput%eropar) then
+       !   call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'EROPAR', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Erosion parameter', unit='s/m', acl='z')
+       !endif
        if (moroutput%dm) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DM', ' ', io_prec        , 2, dimids=(/iddim_n, iddim_m/), longname='Arithmetic mean sediment diameter', unit='m', acl='z')
        endif
@@ -1148,6 +1158,26 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                         & ierror, lundia, taurat, 'TAURAT')
           if (ierror /= 0) goto 9999
        endif
+       !
+       !if (moroutput%tcrero) then
+       !   !
+       !   ! element 'TCRERO'
+       !   !
+       !   call wrtarray_nml_ptr(fds, filename, filetype, grpnam, celidt, &
+       !                 & nf, nl, mf, ml, iarrc, gdp, lsed, &
+       !                 & ierror, lundia, tcrero, 'TCRERO')
+       !   if (ierror /= 0) goto 9999
+       !endif
+       !
+       !if (moroutput%eropar) then
+       !   !
+       !   ! element 'EROPAR'
+       !   !
+       !   call wrtarray_nml_ptr(fds, filename, filetype, grpnam, celidt, &
+       !                 & nf, nl, mf, ml, iarrc, gdp, lsed, &
+       !                 & ierror, lundia, eropar, 'EROPAR')
+       !   if (ierror /= 0) goto 9999
+       !endif
        !
        ! element 'DM'
        !

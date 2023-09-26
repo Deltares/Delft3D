@@ -182,7 +182,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     ! Calculate geometric mean sediment diameter Dg
     ! Calculate percentiles Dxx
     !
-    call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+    call compdiam(frac      ,sedd50    ,sedd50    ,lsedtot   , &
                 & logsedsig ,nseddia   ,logseddia ,nmmax     ,nmlb      , &
                 & nmub      ,xx        ,nxx       ,sedpar%max_mud_sedtyp, sedpar%min_dxx_sedtyp, &
                 & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )

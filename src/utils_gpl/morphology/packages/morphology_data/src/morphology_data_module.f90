@@ -241,12 +241,14 @@ type moroutputtype
     logical :: dmsedcum
     logical :: dpbedlyr
     logical :: dzduuvv
+    logical :: eropar
     logical :: fixfac
     logical :: hidexp
     logical :: frac
     logical :: lyrfrac
     logical :: msed
     logical :: mudfrac
+    logical :: orbvel
     logical :: percentiles
     logical :: poros
     logical :: rca
@@ -267,6 +269,9 @@ type moroutputtype
     logical :: sourcesink
     logical :: taub
     logical :: taurat
+    logical :: tcrero
+    logical :: td
+    logical :: preload
     logical :: umod
     logical :: ustar
     logical :: uuuvvv
@@ -276,6 +281,14 @@ type moroutputtype
     logical :: blave
     logical :: bamor
     logical :: wumor
+    !
+    logical :: cmudlyr
+    logical :: csandlyr
+    logical :: conclyr
+    !
+    logical :: burflxf
+    logical :: depflxf
+    logical :: eroflxf
 end type moroutputtype
 
 !
@@ -338,6 +351,9 @@ type fluffy_type
     !
     ! single / doubles (fp)
     !
+    real(fp) :: cmfluff   ! fluffy layer dry density, near gelling density
+    real(fp) :: kkfluff   ! permeability of fluffy layer
+    real(fp) :: acalbur0  ! calibration parameter
     !
     ! singles (sp)
     !
@@ -348,6 +364,9 @@ type fluffy_type
                           !  0: no fluff layer
                           !  1: all mud to fluff layer, burial to bed layers
                           !  2: part mud to fluff layer, other part to bed layers (no burial) 
+    integer :: iburtype   !  switch for burial type
+                          !  1: based on parameter bfluff0
+                          !  2: based on parameters cmfluff, kkfluff, acalbur0
     !
     ! pointers
     !
@@ -358,6 +377,9 @@ type fluffy_type
     real(fp)      , dimension(:,:)  , pointer :: depfac        ! Deposition factor to fluff layer (only when FluffLayer=2) [-]
     real(fp)      , dimension(:,:)  , pointer :: sinkf         ! Settling to fluff layer []
     real(fp)      , dimension(:,:)  , pointer :: sourf         ! Source from fluff layer [] 
+    real(fp)      , dimension(:,:)  , pointer :: burflxf       ! burial flux from fluff layer [kg/m2/s] 
+    real(fp)      , dimension(:,:)  , pointer :: depflxf       ! deposition flux in fluff layer [kg/m2/s]
+    real(fp)      , dimension(:,:)  , pointer :: eroflxf       ! erosion flux from fluff layer [kg/m2/s] 
     character(256), dimension(:)    , pointer :: mflfil        ! fluff mass file
     ! 
     ! logicals
@@ -574,6 +596,7 @@ type sedpar_type
     integer  :: sc_mudfac      !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
     integer  :: max_mud_sedtyp !  largest sediment type associated with mud
     integer  :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
+    !integer  :: peatfrac
     !
     ! pointers
     !
@@ -593,8 +616,8 @@ type sedpar_type
     real(fp)      , dimension(:)    , pointer :: seddm                 !  Arithmetic mean sediment diameter [m]
     real(fp)      , dimension(:)    , pointer :: sedd90                !  90% Diameter sediment fraction [m]
     !
-    real(fp)      , dimension(:)    , pointer :: cdryb      !  Dry bed concentration for determining
-                                                            !  sediment depths
+    real(fp)      , dimension(:)    , pointer :: cdryb      !  Dry bed concentration for determining sediment depths
+    !real(fp)      , dimension(:)    , pointer :: peatflag   ! flag for peat fraction
     real(fp)      , dimension(:)    , pointer :: dstar      !  Dimensionless grain size 
     real(fp)      , dimension(:)    , pointer :: taucr      !  Critical shear stress 
     real(fp)      , dimension(:)    , pointer :: tetacr     !  Dimensionless critical shear stress (Shields parameter)
@@ -692,82 +715,85 @@ type trapar_type
 end type trapar_type
 
 type sedtra_type
-    integer          , dimension(:)      , pointer :: kfsed    !(nc1:nc2)
-    integer          , dimension(:,:)    , pointer :: kmxsed   !(nc1:nc2,lsed)
+    integer          , dimension(:)      , pointer :: kfsed    !< morphologically active flag (nc1:nc2)
+    integer          , dimension(:,:)    , pointer :: kmxsed   !< index of flow layer for deposition and resuspension (nc1:nc2,lsed)
     !
-    real(fp)         , dimension(:)      , pointer :: bc_mor_array !(lsedtot*2)
+    real(fp)         , dimension(:)      , pointer :: bc_mor_array !< morphological boundary conditions array (lsedtot*2)
     !
-    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:kmax)
-    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: wslc     !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: dcwwlc   !< local array for dcww profile (0:kmax)
+    real(fp)         , dimension(:)      , pointer :: epsclc   !< local array for epsc profile (0:kmax)
+    real(fp)         , dimension(:)      , pointer :: epswlc   !< local array for epsw profile (0:kmax)
+    real(fp)         , dimension(:)      , pointer :: rsdqlc   !< local array for equilibrium sediment profile (1:kmax)
+    real(fp)         , dimension(:)      , pointer :: sddflc   !< local array for vertical sediment diffusion profile (0:kmax)
+    real(fp)         , dimension(:)      , pointer :: wslc     !< local array for settling velocity profile (0:kmax)
     !
-    real(fp)         , dimension(:)      , pointer :: e_dzdn   !(nu1:nu2)         dzduu in structured Delft3D-FLOW
-    real(fp)         , dimension(:)      , pointer :: e_dzdt   !(nu1:nu2)         dzdvv in structured Delft3D-FLOW
+    real(fp)         , dimension(:)      , pointer :: e_dzdn   !< bed slope normal to edge (nu1:nu2) - dzduu in structured Delft3D-FLOW
+    real(fp)         , dimension(:)      , pointer :: e_dzdt   !< bed slope tangential to edge (nu1:nu2) - dzdvv in structured Delft3D-FLOW
     !
-    real(fp)         , dimension(:,:)    , pointer :: e_sbcn   !(nu1:nu2,lsedtot) sbcuu in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sbct   !(nu1:nu2,lsedtot) sbcvv in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sbwn   !(nu1:nu2,lsedtot) sbwuu in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sbwt   !(nu1:nu2,lsedtot) sbwvv in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sswn   !(nu1:nu2,lsedtot) sswuu in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sswt   !(nu1:nu2,lsedtot) sswvv in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_scrn   !(nu1:nu2,lsedtot) sucor in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_scrt   !(nu1:nu2,lsedtot) svcor in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbcn   !< bed load due to currents normal to edge (nu1:nu2,lsedtot) - sbcuu in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbct   !< bed load due to currents tangential to edge (nu1:nu2,lsedtot) - sbcvv in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbwn   !< bed load due to waves normal to edge (nu1:nu2,lsedtot) - sbwuu in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbwt   !< bed load due to waves tangential to edge (nu1:nu2,lsedtot) - sbwvv in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sswn   !< suspended load due to waves normal to edge (nu1:nu2,lsedtot) - sswuu in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sswt   !< suspended load due to waves tangential to edge (nu1:nu2,lsedtot) - sswvv in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_scrn   !< near bed corrective load due to currents normal to edge (nu1:nu2,lsedtot) - sucor in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_scrt   !< near bed corrective load due to currents tangential to edge (nu1:nu2,lsedtot) - svcor in structured Delft3D-FLOW
     !
-    real(fp)         , dimension(:,:)    , pointer :: e_sbn    !(nu1:nu2,lsed)    equivalent sbuu allocated via esm/fsm in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sbt    !(nu1:nu2,lsed)    equivalent sbvv allocated via esm/fsm in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sbnc   !(nu1:nu2,lsedtot) sbuuc in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sbtc   !(nu1:nu2,lsedtot) sbvvc in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_ssn    !(nu1:nu2,lsed)    ssuu  in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sst    !(nu1:nu2,lsed)    ssvv  in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_ssnc   !(nu1:nu2,lsed)    ssuuc in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: e_sstc   !(nu1:nu2,lsed)    ssvvc in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbn    !< total bed load normal to edge (nu1:nu2,lsed) - equivalent sbuu allocated via esm/fsm in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbt    !< total bed load tangential to edge (nu1:nu2,lsed) - equivalent sbvv allocated via esm/fsm in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbnc   !< cumulative total bed load normal to edge (nu1:nu2,lsedtot) - sbuuc in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sbtc   !< cumulative total bed load tangential to edge (nu1:nu2,lsedtot) - sbvvc in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_ssn    !< suspended load normal to edge (nu1:nu2,lsed) - ssuu  in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sst    !< suspended load tangential to edge (nu1:nu2,lsed) - ssvv  in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_ssnc   !< cumulative suspended load normal to edge (nu1:nu2,lsed) - ssuuc in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: e_sstc   !< cumulative suspended load tangential to edge (nu1:nu2,lsed) - ssvvc in structured Delft3D-FLOW
     !
-    real(fp)         , dimension(:,:)    , pointer :: frac     !< (nc1:nc2,lsedtot) effective fraction of sediment in bed available for transport
-    real(fp)         , dimension(:)      , pointer :: mudfrac  !< (nc1:nc2)         effective mud fraction in the part of the bed exposed to transport
-    real(fp)         , dimension(:)      , pointer :: sandfrac !< (nc1:nc2)         effective sand fraction in the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dm       !< (nc1:nc2)         arithmetic mean sediment diameter of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dg       !< (nc1:nc2)         geometric mean sediment diameter of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dgsd     !< (nc1:nc2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: dxx      !< (nc1:nc2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: hidexp   !< (nc1:nc2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
+    real(fp)         , dimension(:,:)    , pointer :: frac     !< effective fraction of sediment in bed available for transport (nc1:nc2,lsedtot)
+    real(fp)         , dimension(:)      , pointer :: mudfrac  !< effective mud fraction in the part of the bed exposed to transport (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: poros    !< effective porosity in the part of the bed exposed to transport (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: sandfrac !< effective sand (non mud) fraction in the part of the bed exposed to transport (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: dm       !< arithmetic mean sediment diameter of the part of the bed exposed to transport (excluding mud fractions without diameter) (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: dg       !< geometric mean sediment diameter of the part of the bed exposed to transport (excluding mud fractions without diameter) (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: dgsd     !< geometric standard deviation of particle size mix of the part of the bed exposed to transport (excluding mud fractions without diameter) (nc1:nc2)
+    real(fp)         , dimension(:,:)    , pointer :: dxx      !< sediment diameter corresponding to percentile xx (excluding mud fraction without diameter) (nc1:nc2,nxx)
+    real(fp)         , dimension(:,:)    , pointer :: hidexp   !< hiding-exposure factor correcting the shear stress (nc1:nc2,lsedtot)
+    real(fp)         , dimension(:)      , pointer :: tcrero_bed !< effective crtitical shear stress for erosion in the part of the bed exposed to transport (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: eropar_bed !< effective erosion parameter in the part of the bed exposed to transport (nc1:nc2)
     !
-    real(fp)         , dimension(:)      , pointer :: uuu      !(nc1:nc2)
-    real(fp)         , dimension(:)      , pointer :: vvv      !(nc1:nc2)
-    real(fp)         , dimension(:)      , pointer :: umod     !(nc1:nc2)
-    real(fp)         , dimension(:)      , pointer :: zumod    !(nc1:nc2)
-    real(fp)         , dimension(:)      , pointer :: ust2     !(nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: uuu      !< characteristic u velocity (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: vvv      !< characteristic v velocity (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: umod     !< characteristic velocity magnitude (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: zumod    !< height of characteristic velocity above bed (nc1:nc2)
+    real(fp)         , dimension(:)      , pointer :: ust2     !< squared critical shear velocity (nc1:nc2)
     !
-    real(fp)         , dimension(:,:)    , pointer :: aks      !(nc1:nc2,lsed)
-    real(fp)         , dimension(:,:)    , pointer :: rca      !(nc1:nc2,lsed)
-    real(fp)         , dimension(:,:)    , pointer :: rsedeq   !(nc1:nc2,lsed)
-    real(fp)         , dimension(:,:)    , pointer :: sinkse   !(nc1:nc2,lsed)
-    real(fp)         , dimension(:,:)    , pointer :: sourse   !(nc1:nc2,lsed)
-    real(fp)         , dimension(:,:)    , pointer :: sour_im  !(nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: aks      !< Van Rijn reference height - boundary between bedload and suspended load (nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: rca      !< (nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: rsedeq   !< equilibrium sediment concentration (nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: sinkse   !< deposition term (nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: sourse   !< erosion term (nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: sour_im  !< implicit part of erosion term (nc1:nc2,lsed)
     !
-    real(fp)         , dimension(:,:)    , pointer :: dbodsd   !(lsedtot,nc1:nc2)
+    real(fp)         , dimension(:,:)    , pointer :: dbodsd   !< change in bed mass (lsedtot,nc1:nc2)
     !
-    real(fp)         , dimension(:,:)    , pointer :: sbcx     !(nc1:nc2,lsedtot) sbcu in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sbcy     !(nc1:nc2,lsedtot) sbcv in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sbwx     !(nc1:nc2,lsedtot) sbwu in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sbwy     !(nc1:nc2,lsedtot) sbwv in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sswx     !(nc1:nc2,lsedtot) sswu in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sswy     !(nc1:nc2,lsedtot) sswv in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sxtot    !(nc1:nc2,lsedtot) sutot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sytot    !(nc1:nc2,lsedtot) svtot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sscx     !(nc1:nc2,lsedtot) svtot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sscy     !(nc1:nc2,lsedtot) svtot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sbxcum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta
-    real(fp)         , dimension(:,:)    , pointer :: sbycum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta
-    real(fp)         , dimension(:,:)    , pointer :: ssxcum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta
-    real(fp)         , dimension(:,:)    , pointer :: ssycum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta    
+    real(fp)         , dimension(:,:)    , pointer :: sbcx     !< x component of bed load due to currents (nc1:nc2,lsedtot) - sbcu in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sbcy     !< y component of bed load due to currents (nc1:nc2,lsedtot) - sbcv in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sbwx     !< x component of bed load due to waves (nc1:nc2,lsedtot) - sbwu in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sbwy     !< y component of bed load due to waves (nc1:nc2,lsedtot) - sbwv in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sswx     !< x component of suspended load due to waves (nc1:nc2,lsedtot) - sswu in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sswy     !< y component of suspended load due to waves (nc1:nc2,lsedtot) - sswv in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sxtot    !< x component of total transport excluding suspended load due to currents (nc1:nc2,lsedtot) - sutot in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sytot    !< y component of total transport excluding suspended load due to currents (nc1:nc2,lsedtot) - svtot in structured Delft3D-FLOW
+    real(fp)         , dimension(:,:)    , pointer :: sscx     !< x component of suspended load due to currents (nc1:nc2,lsedtot)
+    real(fp)         , dimension(:,:)    , pointer :: sscy     !< y component of suspended load due to currents (nc1:nc2,lsedtot)
+    real(fp)         , dimension(:,:)    , pointer :: sbxcum   !< cumulative x component of bed load (nc1:nc2,lsedtot) - Cumulative transports in FM in zeta
+    real(fp)         , dimension(:,:)    , pointer :: sbycum   !< cumulative y component of bed load (nc1:nc2,lsedtot) - Cumulative transports in FM in zeta
+    real(fp)         , dimension(:,:)    , pointer :: ssxcum   !< cumulative x component of suspended load (nc1:nc2,lsedtot) - Cumulative transports in FM in zeta
+    real(fp)         , dimension(:,:)    , pointer :: ssycum   !< cumulative y component of suspended load (nc1:nc2,lsedtot) - Cumulative transports in FM in zeta
     !
-    real(fp)         , dimension(:,:)    , pointer :: srcmax   !(nc1:nc2,lsedtot)
-    real(fp)         , dimension(:,:)    , pointer :: fixfac   !(nc1:nc2,lsedtot)
+    real(fp)         , dimension(:,:)    , pointer :: srcmax   !< (nc1:nc2,lsedtot)
+    real(fp)         , dimension(:,:)    , pointer :: fixfac   !< sediment transport correction factor for limited sediment availability - presence of non-erdible layer (nc1:nc2,lsedtot)
     real(fp)         , dimension(:)      , pointer :: taub     !(nc1:nc2)
-    real(fp)         , dimension(:,:)    , pointer :: taurat   !(nc1:nc2,lsedtot)
+    real(fp)         , dimension(:,:)    , pointer :: taurat   !< shear stress ratio (nc1:nc2,lsedtot)
     !
     real(fp)         , dimension(:,:)    , pointer :: statqnt  !(nc1:nc2,nstatistics)
 end type sedtra_type
@@ -826,12 +852,15 @@ subroutine nullsedtra(sedtra)
     !
     nullify(sedtra%frac)
     nullify(sedtra%mudfrac)
+    nullify(sedtra%poros)
     nullify(sedtra%sandfrac)
     nullify(sedtra%dm)
     nullify(sedtra%dg)
     nullify(sedtra%dgsd)
     nullify(sedtra%dxx)
     nullify(sedtra%hidexp)
+    nullify(sedtra%tcrero_bed)
+    nullify(sedtra%eropar_bed)
     !
     nullify(sedtra%uuu)
     nullify(sedtra%vvv)
@@ -945,12 +974,15 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     !
     if (istat==0) allocate(sedtra%frac    (nc1:nc2,lsedtot), STAT = istat)
     if (istat==0) allocate(sedtra%mudfrac (nc1:nc2), STAT = istat)
+    if (istat==0) allocate(sedtra%poros   (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%sandfrac(nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%dm      (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%dg      (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%dgsd    (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%dxx     (nc1:nc2,nxx), STAT = istat)
     if (istat==0) allocate(sedtra%hidexp  (nc1:nc2,lsedtot), STAT = istat)
+    if (istat==0) allocate(sedtra%tcrero_bed(nc1:nc2), STAT = istat)
+    if (istat==0) allocate(sedtra%eropar_bed(nc1:nc2), STAT = istat)
     !
     if (istat==0) allocate(sedtra%uuu     (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%vvv     (nc1:nc2), STAT = istat)
@@ -1033,12 +1065,15 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     !
     sedtra%frac     = 0.0_fp
     sedtra%mudfrac  = 0.0_fp
+    sedtra%poros    = 0.0_fp
     sedtra%sandfrac = 0.0_fp
     sedtra%dm       = 0.0_fp
     sedtra%dg       = 0.0_fp
     sedtra%dgsd     = 0.0_fp
     sedtra%dxx      = 0.0_fp
     sedtra%hidexp   = 1.0_fp
+    sedtra%tcrero_bed = 1.0_fp
+    sedtra%eropar_bed = 1.0_fp
     !
     sedtra%ust2     = 0.0_fp
     sedtra%uuu      = 0.0_fp
@@ -1142,12 +1177,15 @@ subroutine clrsedtra(istat, sedtra)
     !
     if (associated(sedtra%frac    ))   deallocate(sedtra%frac    , STAT = istat)
     if (associated(sedtra%mudfrac ))   deallocate(sedtra%mudfrac , STAT = istat)
+    if (associated(sedtra%poros   ))   deallocate(sedtra%poros   , STAT = istat)
     if (associated(sedtra%sandfrac))   deallocate(sedtra%sandfrac, STAT = istat)
     if (associated(sedtra%dm      ))   deallocate(sedtra%dm      , STAT = istat)
     if (associated(sedtra%dg      ))   deallocate(sedtra%dg      , STAT = istat)
     if (associated(sedtra%dgsd    ))   deallocate(sedtra%dgsd    , STAT = istat)
     if (associated(sedtra%dxx     ))   deallocate(sedtra%dxx     , STAT = istat)
     if (associated(sedtra%hidexp  ))   deallocate(sedtra%hidexp  , STAT = istat)
+    if (associated(sedtra%tcrero_bed)) deallocate(sedtra%tcrero_bed, STAT = istat)
+    if (associated(sedtra%eropar_bed)) deallocate(sedtra%eropar_bed, STAT = istat)
     !
     if (associated(sedtra%uuu     ))   deallocate(sedtra%uuu     , STAT = istat)
     if (associated(sedtra%vvv     ))   deallocate(sedtra%vvv     , STAT = istat)
@@ -1224,6 +1262,7 @@ subroutine nullsedpar(sedpar)
     sedpar%sc_mudfac      = SC_MUDTHC
     sedpar%max_mud_sedtyp = SEDTYP_SILT
     sedpar%min_dxx_sedtyp = SEDTYP_SAND
+    !sedpar%peatfrac  = 0
     !
     sedpar%anymud    = .false.
     sedpar%bsskin    = .false.
@@ -1246,6 +1285,7 @@ subroutine nullsedpar(sedpar)
     nullify(sedpar%sedd90)
     !
     nullify(sedpar%cdryb)
+    !nullify(sedpar%peatflag)
     nullify(sedpar%dstar)
     nullify(sedpar%taucr)
     nullify(sedpar%tetacr)
@@ -1300,6 +1340,7 @@ subroutine clrsedpar(istat     ,sedpar  )
     if (associated(sedpar%sedd90))     deallocate(sedpar%sedd90,     STAT = istat)
     !
     if (associated(sedpar%cdryb))      deallocate(sedpar%cdryb,      STAT = istat)
+    !if (associated(sedpar%peatflag))   deallocate(sedpar%peatflag,   STAT = istat)
     if (associated(sedpar%dstar))      deallocate(sedpar%dstar,      STAT = istat)
     if (associated(sedpar%taucr))      deallocate(sedpar%taucr,      STAT = istat)
     if (associated(sedpar%tetacr))     deallocate(sedpar%tetacr,     STAT = istat)
@@ -1692,12 +1733,16 @@ subroutine initmoroutput(moroutput, def)
     moroutput%dmsedcum      = no
     moroutput%dpbedlyr      = yes
     moroutput%dzduuvv       = no
+    moroutput%eropar        = no
     moroutput%fixfac        = no
     moroutput%hidexp        = no
     moroutput%frac          = no
     moroutput%lyrfrac       = yes
     moroutput%msed          = yes
+    moroutput%td            = no
+    moroutput%preload       = no
     moroutput%mudfrac       = no
+    moroutput%orbvel        = no
     moroutput%percentiles   = no
     moroutput%poros         = yes
     moroutput%rca           = yes
@@ -1718,6 +1763,7 @@ subroutine initmoroutput(moroutput, def)
     moroutput%sourcesink    = no
     moroutput%taub          = no
     moroutput%taurat        = no
+    moroutput%tcrero        = no
     moroutput%umod          = no
     moroutput%ustar         = no
     moroutput%uuuvvv        = no
@@ -1727,6 +1773,14 @@ subroutine initmoroutput(moroutput, def)
     moroutput%blave         = no
     moroutput%bamor         = no
     moroutput%wumor         = no
+    !
+    moroutput%cmudlyr       = no
+    moroutput%csandlyr      = no
+    moroutput%conclyr       = no
+    !
+    moroutput%burflxf       = no
+    moroutput%depflxf       = no
+    moroutput%eroflxf       = no
 end subroutine initmoroutput
 
 
@@ -1745,6 +1799,10 @@ subroutine initfluffy(flufflyr)
 !! executable statements -------------------------------------------------------
 !
     flufflyr%iflufflyr = 0
+    flufflyr%iburtype  = 1 ! set to 2 in case of consolidation
+    flufflyr%cmfluff  = 40.0_fp
+    flufflyr%kkfluff  = 8.0E-12_fp
+    flufflyr%acalbur0 = 1.0_fp
     !
     nullify(flufflyr%mfluni)
     nullify(flufflyr%mfluff)
@@ -1753,6 +1811,9 @@ subroutine initfluffy(flufflyr)
     nullify(flufflyr%depfac)
     nullify(flufflyr%sinkf)
     nullify(flufflyr%sourf)
+    nullify(flufflyr%burflxf)
+    nullify(flufflyr%depflxf)
+    nullify(flufflyr%eroflxf)
     nullify(flufflyr%mflfil)
     !
     flufflyr%bfluff0_fil = ' '
@@ -1783,6 +1844,9 @@ function allocfluffy(flufflyr, lsed, nmlb, nmub) result(istat)
     if (istat==0) allocate(flufflyr%mfluff(lsed,nmlb:nmub), STAT = istat)
     if (istat==0) allocate(flufflyr%sinkf(lsed,nmlb:nmub), STAT = istat)
     if (istat==0) allocate(flufflyr%sourf(lsed,nmlb:nmub), STAT = istat)
+    if (istat==0) allocate(flufflyr%burflxf(lsed,nmlb:nmub), STAT = istat)
+    if (istat==0) allocate(flufflyr%depflxf(lsed,nmlb:nmub), STAT = istat)
+    if (istat==0) allocate(flufflyr%eroflxf(lsed,nmlb:nmub), STAT = istat)
     if (istat==0) allocate(flufflyr%mflfil(lsed), STAT = istat)
     !
     select case (flufflyr%iflufflyr)
@@ -1819,6 +1883,9 @@ subroutine clrfluffy(istat, flufflyr)
     if (associated(flufflyr%depfac))      deallocate(flufflyr%depfac,      STAT = istat)
     if (associated(flufflyr%sinkf))       deallocate(flufflyr%sinkf,       STAT = istat)
     if (associated(flufflyr%sourf))       deallocate(flufflyr%sourf,       STAT = istat)
+    if (associated(flufflyr%burflxf))     deallocate(flufflyr%burflxf,     STAT = istat)
+    if (associated(flufflyr%depflxf))     deallocate(flufflyr%depflxf,     STAT = istat)
+    if (associated(flufflyr%eroflxf))     deallocate(flufflyr%eroflxf,     STAT = istat)
     if (associated(flufflyr%mflfil))      deallocate(flufflyr%mflfil,      STAT = istat)
 end subroutine clrfluffy
 

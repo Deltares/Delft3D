@@ -428,12 +428,16 @@ type t_unc_mapids
    integer :: id_dg(MAX_ID_VAR)         = -1 !
    integer :: id_dgsd(MAX_ID_VAR)       = -1 !
    integer, allocatable, dimension(:,:) :: id_dxx
+   integer, allocatable, dimension(:,:,:) :: id_sedpar
    integer :: id_frac(MAX_ID_VAR)       = -1
    integer :: id_mudfrac(MAX_ID_VAR)    = -1
    integer :: id_sandfrac(MAX_ID_VAR)   = -1
    integer :: id_fixfac(MAX_ID_VAR)     = -1
    integer :: id_hidexp(MAX_ID_VAR)     = -1
    integer :: id_mfluff(MAX_ID_VAR)     = -1
+   integer :: id_depflxf(MAX_ID_VAR)    = -1
+   integer :: id_eroflxf(MAX_ID_VAR)    = -1
+   integer :: id_burflxf(MAX_ID_VAR)    = -1
    integer :: id_sxwav  (MAX_ID_VAR)    = -1
    integer :: id_sywav  (MAX_ID_VAR)    = -1
    integer :: id_sxbwav (MAX_ID_VAR)    = -1
@@ -4979,6 +4983,9 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
    integer, save                                 :: jmax, nCrs
    double precision, dimension(:,:), allocatable :: work1d_z, work1d_n
    double precision, dimension(:,:,:), allocatable :: work3d, work3d2
+   character(3)                                  :: sednr
+   character(256)                                :: varname
+   character(1024)                               :: longname
    
    integer            :: nc_precision
    integer, parameter :: SINGLE_PRECISION = 1
@@ -5567,11 +5574,23 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
             !
          endif
 
+         ! intermediate output for sediment formulas
+         if (stmpar%morpar%moroutput%sedpar) then
+            call realloc(mapids%id_sedpar, (/3, stmpar%trapar%npar, stmpar%lsedtot/), keepExisting=.false.)
+            do l = 1, stmpar%lsedtot
+               write(sednr,'(I3.3)') l
+               do k = 1, stmpar%trapar%noutpar(l)
+                  varname = trim(stmpar%trapar%outpar_name(k,l))//trim(sednr)
+                  longname = trim(stmpar%trapar%outpar_longname(k,l))//' for '//trim(stmpar%sedpar%namsed(l))
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedpar(:,k,l), nf90_double, UNC_LOC_S, trim(varname), '', trim(longname) , '', dimids = (/ -2, -1 /), jabndnd=jabndnd_)
+               enddo
+            enddo
+         endif
+
          ! default sediment transport output (suspended and bedload) on flow links
          if (stmpar%lsedsus > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_ssn   , nc_precision, UNC_LOC_U, 'ssn'  , '', 'Suspended load transport, n-component'   , transpunit, dimids = (/ -2, mapids%id_tsp%id_sedsusdim, -1 /), jabndnd=jabndnd_)
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sst   , nc_precision, UNC_LOC_U, 'sst'  , '', 'Suspended load transport, t-component'   , transpunit, dimids = (/ -2, mapids%id_tsp%id_sedsusdim, -1 /), jabndnd=jabndnd_)
-
          endif
 
          if (stmpar%lsedtot > 0) then
@@ -5708,6 +5727,15 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
          !
          if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_mfluff  , nc_precision, UNC_LOC_S, 'mfluff'  , '', 'Sediment mass in fluff layer', 'kg m-2', dimids = (/ -2, mapids%id_tsp%id_sedsusdim, -1 /), jabndnd=jabndnd_)
+            if (stmpar%morpar%moroutput%depflxf) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_depflxf , nc_precision, UNC_LOC_S, 'depflxf'  , '', 'Deposition flux to fluff layer', 'kg m-2 s-1', dimids = (/ -2, mapids%id_tsp%id_sedsusdim, -1 /), jabndnd=jabndnd_)
+            endif
+            if (stmpar%morpar%moroutput%eroflxf) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_eroflxf , nc_precision, UNC_LOC_S, 'eroflxf'  , '', 'Erosion flux from fluff layer', 'kg m-2 s-1', dimids = (/ -2, mapids%id_tsp%id_sedsusdim, -1 /), jabndnd=jabndnd_)
+            endif
+            if (stmpar%morpar%moroutput%burflxf) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_burflxf , nc_precision, UNC_LOC_S, 'burflxf'  , '', 'Burial flux from fluff layer', 'kg m-2 s-1', dimids = (/ -2, mapids%id_tsp%id_sedsusdim, -1 /), jabndnd=jabndnd_)
+            endif
          endif
          !
          ! 1D cross sections
@@ -6442,6 +6470,18 @@ endif
 
 if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
 
+   ! intermediate output for sediment formulas
+   if (stmpar%morpar%moroutput%sedpar) then
+      call realloc(toutput, ndx)
+      do l = 1, stmpar%lsedtot
+         do k = 1, stmpar%trapar%noutpar(l)
+            i = stmpar%trapar%ioutpar(k,l)
+            toutput = stmpar%trapar%outpar(i,:)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedpar(:,k,l), UNC_LOC_S, toutput, jabndnd=jabndnd_)
+         enddo
+      enddo
+   endif
+
    if (stmpar%lsedsus > 0) then
       if (kmx>0) then
          call realloc(toutputx, (/ndx, stmpar%lsedsus /), keepExisting=.false., fill = -999d0)
@@ -6955,12 +6995,35 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
       endif
       !
       if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
+         call realloc(toutput, ndx)
+         ! the toutput assignments below overwrite the whole array, so no need to pre-fill
+         !
          do l = 1, stmpar%lsedsus
-            call realloc(toutput, ndx, keepExisting=.false., fill = -999d0)
             toutput = stmpar%morpar%flufflyr%mfluff(l,1:ndx)
             ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_mfluff , UNC_LOC_S, stmpar%morpar%flufflyr%mfluff)
             ierr = nf90_put_var(mapids%ncid, mapids%id_mfluff(2)   , toutput(1:ndxndxi) , start = (/ 1, l, itim /), count = (/ ndxndxi, 1, 1 /))
          enddo
+         !
+         if (stmpar%morpar%moroutput%depflxf) then
+            do l = 1, stmpar%lsedsus
+               toutput = stmpar%morpar%flufflyr%depflxf(l,1:ndx)
+               ierr = nf90_put_var(mapids%ncid, mapids%id_depflxf(2)   , toutput(1:ndxndxi) , start = (/ 1, l, itim /), count = (/ ndxndxi, 1, 1 /))
+            enddo
+         endif
+         !
+         if (stmpar%morpar%moroutput%eroflxf) then
+            do l = 1, stmpar%lsedsus
+               toutput = stmpar%morpar%flufflyr%eroflxf(l,1:ndx)
+               ierr = nf90_put_var(mapids%ncid, mapids%id_eroflxf(2)   , toutput(1:ndxndxi) , start = (/ 1, l, itim /), count = (/ ndxndxi, 1, 1 /))
+            enddo
+         endif
+         !
+         if (stmpar%morpar%moroutput%burflxf) then
+            do l = 1, stmpar%lsedsus
+               toutput = stmpar%morpar%flufflyr%burflxf(l,1:ndx)
+               ierr = nf90_put_var(mapids%ncid, mapids%id_burflxf(2)   , toutput(1:ndxndxi) , start = (/ 1, l, itim /), count = (/ ndxndxi, 1, 1 /))
+            enddo
+         endif
       endif
       !
       if (ndx1d > 0 .and. stm_included) then

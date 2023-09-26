@@ -56,6 +56,10 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
     integer                              , pointer :: nmaxgl
     integer                              , pointer :: mmaxgl
     integer                              , pointer :: io_prec
+    real(fp)        , dimension(:,:)     , pointer :: depflxf
+    real(fp)        , dimension(:,:)     , pointer :: eroflxf
+    real(fp)        , dimension(:,:)     , pointer :: burflxf
+    type (moroutputtype)                 , pointer :: moroutput
 !
 ! Global variables
 !
@@ -78,6 +82,7 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
 !
 ! Local variables
 !
+    logical                                       :: mem_alloc
     integer                                       :: iddim_n
     integer                                       :: iddim_m
     integer                                       :: iddim_lsed
@@ -100,6 +105,7 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
     celidt              => group%celidt
     mmaxgl              => gdp%gdparall%mmaxgl
     nmaxgl              => gdp%gdparall%nmaxgl
+    moroutput           => gdp%gdmorpar%moroutput
     io_prec             => gdp%gdpostpr%io_prec
     !
     select case (irequest)
@@ -117,6 +123,15 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
        ! Define elements
        !
        call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MFLUFF', ' ', io_prec , 3, longname='Sediment mass in fluff layer (kg/m2)', unit='kg/m2', dimids=(/iddim_n, iddim_m, iddim_lsed/), acl='z')
+       if (moroutput%depflxf) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DEPFLXF', ' ', io_prec , 3, longname='Deposition flux to fluff layer', unit='kg/m2/s', dimids=(/iddim_n, iddim_m, iddim_lsed/), acl='z')
+       endif
+       if (moroutput%eroflxf) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'EROFLXF', ' ', io_prec , 3, longname='Erosion flux from fluff layer', unit='kg/m2/s', dimids=(/iddim_n, iddim_m, iddim_lsed/), acl='z')
+       endif
+       if (moroutput%burflxf) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'BURFLXF', ' ', io_prec , 3, longname='Burial flux from fluff layer', unit='kg/m2/s', dimids=(/iddim_n, iddim_m, iddim_lsed/), acl='z')
+       endif
        ierror = 0
     case (REQUESTTYPE_WRITE)
        !
@@ -138,11 +153,70 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
        call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
                      & nf, nl, mf, ml, iarrc, gdp, lsed, &
                      & ierror, lundia, rbuff3, 'MFLUFF')
-       deallocate(rbuff3)
        if (ierror /= 0) goto 9999
        !
+       ! element 'DEPFLXF'
+       !
+       if (moroutput%depflxf) then
+          depflxf => gdp%gdmorpar%flufflyr%depflxf
+          rbuff3(:, :, :) = -999.0_fp
+          do l = 1, lsed
+             do m = 1, mmax
+                do n = 1, nmaxus
+                   call n_and_m_to_nm(n, m, nm, gdp)
+                   rbuff3(n, m, l) = depflxf(l, nm)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, lsed, &
+                        & ierror, lundia, rbuff3, 'DEPFLXF')
+          if (ierror /= 0) goto 9999
+       endif
+       !
+       ! element 'EROFLXF'
+       !
+       if (moroutput%eroflxf) then
+          eroflxf => gdp%gdmorpar%flufflyr%eroflxf
+          rbuff3(:, :, :) = -999.0_fp
+          do l = 1, lsed
+             do m = 1, mmax
+                do n = 1, nmaxus
+                   call n_and_m_to_nm(n, m, nm, gdp)
+                   rbuff3(n, m, l) = eroflxf(l, nm)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, lsed, &
+                        & ierror, lundia, rbuff3, 'EROFLXF')
+          if (ierror /= 0) goto 9999
+       endif
+       !
+       ! element 'BURFLXF'
+       !
+       if (moroutput%burflxf) then
+          burflxf => gdp%gdmorpar%flufflyr%burflxf
+          rbuff3(:, :, :) = -999.0_fp
+          do l = 1, lsed
+             do m = 1, mmax
+                do n = 1, nmaxus
+                   call n_and_m_to_nm(n, m, nm, gdp)
+                   rbuff3(n, m, l) = burflxf(l, nm)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, lsed, &
+                        & ierror, lundia, rbuff3, 'BURFLXF')
+          if (ierror /= 0) goto 9999
+       endif
+
     endselect
     !
 9999 continue
+    if (allocated(rbuff3)) then
+       deallocate(rbuff3)
+    endif
     if (ierror/= 0) error = .true.
 end subroutine wrmfluff

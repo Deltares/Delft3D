@@ -1020,7 +1020,7 @@ subroutine echotrafrm(lundia    ,trapar      ,ifrac     )
        if (nparreq>0 .or. nparopt>0) then
           do i = 1, nparreq+nparopt
              if (trapar%iparfld(10+i,ifrac)==0) then
-                write (lundia, '(3a,e12.4)') '    ',parkeyw(i),' :',trapar%par(10+i,ifrac)
+                write (lundia, '(3a,es14.4)') '    ',parkeyw(i),' :',trapar%par(10+i,ifrac)
              else
                 write (lundia, '(4a)') '    ',parkeyw(i),' : ',trim(trapar%parfil(10+i,ifrac))
              endif
@@ -1150,8 +1150,12 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
           outpar_name(24)     = 'ak'
           outpar_longname(24) = 'asymmetry' ! -
        endif
-    elseif (iform == -3) then
-       name       = 'Partheniades-Krone'
+    elseif (iform == -3 .or. iform == -5) then
+       if (iform == -3) then
+          name       = 'Partheniades-Krone (t/tcr-1)'
+       else
+          name       = 'Partheniades-Krone (t-tcr)'
+       endif
        nparreq    = 3
        parkeyw(1) = 'EroPar'
        pardef(1)  = 0.0_fp
@@ -1170,6 +1174,13 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(7)  = -1.0_fp
        parkeyw(8) = 'PowerN'
        pardef(8)  = 1.0_fp
+       if (present(noutpar)) then
+          noutpar = 2
+          outpar_name( 1)     = 'EroPar'
+          outpar_longname( 1) = 'erosion parameter' ! -
+          outpar_name( 2)     = 'TcrEro'
+          outpar_longname( 2) = 'critical shear stress for erosion' ! N/m2
+       endif
     elseif (iform == -2) then
        name       = 'Van Rijn (2007): TRANSPOR2004'
        nparopt    = 9

@@ -28,22 +28,15 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!
-!
-!!--description-----------------------------------------------------------------
-!
-! Function: Determines the characteristic diameters of the sediment mixtures
-!           (mud fractions excluded)
-!
+
 !!--pseudo code and references--------------------------------------------------
 !
-! Calculate arithmetic mean diameter by a weighted average of the diameters
-! of the non-mud sediments. Divide by the total percentage of
-! non-mud sediments to exclude the mud fractions from the computation.
+! Calculate arithmetic mean diameter by a weighted average of the sediment
+! fractions that have a specified diameter.
 ! D_m = sum[f(i) * D_50(i)]
 !
-! Calculate geometric mean diameter by a weighted average of the
-! diameters of the non-mud sediments in log-space.
+! Calculate geometric mean diameter by a weighted average of the sediment
+! fractions that have a specified diameter in log-space.
 ! D_g = sum[D_50(i)^f(i)]
 !
 ! Calculate the Dxx diameter by scanning the cdf of all
@@ -95,7 +88,7 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
     real(fp)                    :: dens
     real(fp)                    :: logdiam
     real(fp)                    :: logdprev
-    real(fp)                    :: fracnonmud
+    real(fp)                    :: fracdiam
     real(fp)                    :: fraccum
     real(fp)                    :: fracfac
     real(fp)                    :: fracreq
@@ -159,21 +152,21 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
           !
           ! Compute Dm and Dg values
           !
-          fracnonmud = 0.0_fp
+          fracdiam   = 0.0_fp
           dm(nm)     = 0.0_fp
           dg(nm)     = 1.0_fp
           dgsd(nm)   = 0.0_fp
           !
           do l = 1, lsedtot
              if (sedtyp(l) >= min_dxx_sedtyp) then
-                fracnonmud = fracnonmud + frac(nm,l)
+                fracdiam = fracdiam + frac(nm,l)
              endif
           enddo
-          if (fracnonmud > 0.0_fp) then
+          if (fracdiam > 0.0_fp) then
              do l = 1, lsedtot
                 if (sedtyp(l) >= min_dxx_sedtyp) then
-                   dm(nm)     = dm(nm) + (frac(nm,l) / fracnonmud) * seddm(l)
-                   dg(nm)     = dg(nm) * (sedd50(l)**(frac(nm,l)/fracnonmud))
+                   dm(nm)     = dm(nm) + (frac(nm,l) / fracdiam) * seddm(l)
+                   dg(nm)     = dg(nm) * (sedd50(l)**(frac(nm,l)/fracdiam))
                 endif
              enddo
              !
@@ -185,7 +178,7 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
              !
              do l = 1, lsedtot
                 if ((sedtyp(l) >= min_dxx_sedtyp) .and. (comparereal(frac(nm,l),0.0_fp) == 1)) then
-                   dgsd(nm) = dgsd(nm) + (frac(nm,l)/fracnonmud)*(log(sedd50(l))-log(dg(nm)))**2
+                   dgsd(nm) = dgsd(nm) + (frac(nm,l)/fracdiam)*(log(sedd50(l))-log(dg(nm)))**2
                 endif
              enddo
              dgsd(nm) = exp(sqrt(dgsd(nm)))
@@ -225,8 +218,8 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
                 s = stage(l)
                 if (s<nseddia(l)) then
                    if (s>0) then
-                      if (fracnonmud > 0.0_fp) then
-                         fracfac = frac(nm,l) / fracnonmud
+                      if (fracdiam > 0.0_fp) then
+                         fracfac = frac(nm,l) / fracdiam
                       else
                          fracfac = 1.0_fp
                       endif
@@ -243,8 +236,8 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
              !
              ! Check if we have not reached the end of the composition, due to
              ! some numerical roundoff errors we might not have determined the
-             ! diameter of fractions equal (or close) to 100%. Finish them off
-             ! now! (This may also happen if we have only mud fractions in the
+             ! diameter of fractions equal (or close) to 100%. Finish them now!
+             ! (This may also happen if we have only mud fractions in the
              ! simulation.)
              !
              if (ltrigger < 0) then

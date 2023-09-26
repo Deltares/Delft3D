@@ -59,6 +59,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     use MessageHandling, only: mess, LEVEL_ERROR
     use message_module
     use morphology_data_module
+    !use bedcomposition_module
     use sediment_basics_module
     use flocculation, only: FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL
     use system_utils, only:SHARED_LIB_PREFIX, SHARED_LIB_EXTENSION
@@ -76,6 +77,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                           , pointer :: sc_cmf2
     real(fp)                           , pointer :: sc_flcf
     integer                            , pointer :: nmudfrac
+    !integer                            , pointer :: peatfrac
+    !real(fp)         , dimension(:)    , pointer :: peatflag
     integer                            , pointer :: sc_mudfac
     logical          , dimension(:)    , pointer :: cmpupdfrac
     real(fp)         , dimension(:)    , pointer :: tpsnumber
@@ -126,6 +129,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     integer          , dimension(:,:)  , pointer :: floclist
     character(20)    , dimension(:)    , pointer :: namclay
     character(20)    , dimension(:)    , pointer :: namflocpop
+    !character(40)                                :: txtput1
 !
 ! Arguments
 !
@@ -146,6 +150,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
     type(griddimtype)             , target   , intent(in)  :: griddim
+    !type(bedcomp_data)                       , pointer     :: work
 !
 ! Local variables
 !
@@ -200,6 +205,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     nflocpop             => sedpar%nflocpop
     nflocsizes           => sedpar%nflocsizes
     nmudfrac             => sedpar%nmudfrac
+    !peatfrac             => sedpar%peatfrac
+    !peatflag             => sedpar%peatflag
     sc_mudfac            => sedpar%sc_mudfac
     flocsize             => sedpar%flocsize
     floclist             => sedpar%floclist
@@ -263,6 +270,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        if (istat==0) allocate (sedpar%sedd90    (                          lsedtot), stat = istat)
        !
        if (istat==0) allocate (sedpar%cdryb     (                          lsedtot), stat = istat)
+       !if (istat==0) allocate (sedpar%peatflag  (                          lsedtot), stat = istat)
        if (istat==0) allocate (sedpar%dstar     (                          lsedtot), stat = istat)
        if (istat==0) allocate (sedpar%taucr     (                          lsedtot), stat = istat)
        if (istat==0) allocate (sedpar%tetacr    (                          lsedtot), stat = istat)
@@ -306,6 +314,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        sedd90        => sedpar%sedd90
        !
        cdryb         => sedpar%cdryb
+       !peatflag      => sedpar%peatflag
        dstar         => sedpar%dstar
        taucr         => sedpar%taucr
        tetacr        => sedpar%tetacr
@@ -831,6 +840,17 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           cdryb(l) = rmissval
           call prop_get(sedblock_ptr, '*', 'CDryB', cdryb(l))
           !
+          !call prop_get(mor_ptr, 'sediment peat', 'peatfrac', sedpar%peatfrac)
+          !txtput1 = 'peat fraction'       
+          !write (lundia, '(2a,i2)') txtput1, ':', sedpar%peatfrac
+          !sedpar%peatfrac = rmissval
+          !call prop_get(sedblock_ptr, 'sediment', 'peatfrac', sedpar%peatfrac)
+          
+          !peatflag(l) = rmissval
+          !call prop_get(sedblock_ptr, '*', 'peatflag', peatflag(l))
+          !txtput1 = 'peatflag'       
+          !write (lundia, '(2a,e12.4)') txtput1, ':', peatflag(l)
+          !
           ! First assume that 'IniSedThick'/'SdBUni' contains a filename
           ! If the file does not exist, assume that 'SdBUni' contains a uniform value (real)
           !
@@ -1218,6 +1238,7 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     logical                                  , intent(out) :: error   !< Flag=TRUE if an error is encountered
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
+    !type(bedcomp_data)                       , pointer     :: peatpar
 !
 ! Local variables
 !
@@ -1241,6 +1262,7 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)        , dimension(:)    , pointer :: seddm
     real(fp)        , dimension(:)    , pointer :: sedd90
     real(fp)        , dimension(:)    , pointer :: cdryb
+    !real(fp)        , dimension(:)    , pointer :: peatflag
     real(fp)        , dimension(:,:)  , pointer :: dss
     real(fp)        , dimension(:)    , pointer :: facdss
     real(fp)        , dimension(:)    , pointer :: sdbuni
@@ -1303,6 +1325,7 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     seddm                => sedpar%seddm
     sedd90               => sedpar%sedd90
     cdryb                => sedpar%cdryb
+    !peatflag             => peatpar%work%peatflag
     dss                  => sedpar%dss
     facdss               => sedpar%facdss
     sdbuni               => sedpar%sdbuni
@@ -1492,13 +1515,18 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
           write (lundia, '(2a,e12.4)') txtput1, ':', exp(logsedsig(l))
           txtput1 = '  SedD50'
           write (lundia, '(3a)') txtput1, ':  ', trim(flsdia)
-       elseif (nseddia(l) > 0) then
+       else
           !
           ! Determine various sediment diameters in case of
           ! sand or bedload.
           !
           txtput1 = '  sed. distribution'
-          if (nseddia(l) == 0) then
+          if (nseddia(l) == 0 .and. sedtyp(l) <= sedpar%max_mud_sedtyp) then
+             !
+             ! originally no D50 was specified for mud fractions
+             ! the code accepts this as backward compatibility
+             !
+          elseif (nseddia(l) == 0) then
              !
              ! error: no sediment diameter specified!
              !
@@ -1782,23 +1810,33 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
              seddm(l) = seddm(l) / 100.0_fp
           endif
           !
-          ! convert percentages to fractions
-          !
-          do n = 1, nseddia(l)
-             logseddia(1,n,l) = logseddia(1,n,l) / 100.0_fp
-          enddo
-          !
-          txtput1 = '  SedD10'
-          write (lundia, '(2a,e12.4)') txtput1, ':', sedd10(l)
-          txtput1 = '  SedD50'
-          write (lundia, '(2a,e12.4)') txtput1, ':', sedd50(l)
-          txtput1 = '  SedDM'
-          write (lundia, '(2a,e12.4)') txtput1, ':', seddm(l)
-          txtput1 = '  SedD90'
-          write (lundia, '(2a,e12.4)') txtput1, ':', sedd90(l)
-       endif
+          if (nseddia(l)>0) then
+             !
+             ! convert percentages to fractions
+             !
+             do n = 1, nseddia(l)
+                logseddia(1,n,l) = logseddia(1,n,l) / 100.0_fp
+             enddo
+             !
+             txtput1 = '  SedD10'
+             write (lundia, '(2a,e12.4)') txtput1, ':', sedd10(l)
+             txtput1 = '  SedD50'
+             write (lundia, '(2a,e12.4)') txtput1, ':', sedd50(l)
+             txtput1 = '  SedDM'
+             write (lundia, '(2a,e12.4)') txtput1, ':', seddm(l)
+             txtput1 = '  SedD90'
+             write (lundia, '(2a,e12.4)') txtput1, ':', sedd90(l)
+          end if
+       end if
        txtput1 = '  Dry bed (bulk) density (CDRYB)'
        write (lundia, '(2a,e12.4)') txtput1, ':', cdryb(l)
+       
+       !txtput1 = 'peatfrac'       
+       !write (lundia, '(2a,i2)') txtput1, ':', sedpar%peatfrac
+       
+      ! txtput1 = '  peatflag'
+      ! write (lundia, '(2a,e12.4)') txtput1, ':', peatflag(l)
+       
        if (flsdbd(l) /= ' ') then
           if (inisedunit(l) == 'kg/m2') then
              txtput1 = '  File IniCon'
