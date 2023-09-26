@@ -2142,7 +2142,7 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
                 thick = max(1e-10_fp, thlyr(1,nm))
                 do l = 1, this%settings%nfrac
                     totmass = totmass + msed(l,1,nm)
-                    if (this%settings%sedtyp(l) == SEDTYP_COHESIVE) then
+                    if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
                         phi_mud   = phi_mud + (msed(l,1,nm)/rhofrac(l)/thick)
                     else
                         phi_sand  = phi_sand + (msed(l,1,nm)/rhofrac(l)/thick)
