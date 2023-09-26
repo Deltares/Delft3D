@@ -74,6 +74,7 @@
    nseddia             => stmpar%sedpar%nseddia
    sedtyp              => stmpar%sedpar%sedtyp
    anymud              => stmpar%sedpar%anymud
+   used50fld           => stmpar%sedpar%used50fld
    sedtrcfac           => stmpar%sedpar%sedtrcfac
    bsskin              => stmpar%sedpar%bsskin
    thcmud              => stmpar%sedpar%thcmud
@@ -179,6 +180,7 @@
    mudfrac             => sedtra%mudfrac
    sandfrac            => sedtra%sandfrac
    hidexp              => sedtra%hidexp
+   poros               => sedtra%poros
    rsdqlc              => sedtra%rsdqlc
    rsedeq              => sedtra%rsedeq
    sbcx                => sedtra%sbcx
@@ -217,6 +219,8 @@
    srcmax              => sedtra%srcmax
    taub                => sedtra%taub
    taurat              => sedtra%taurat
+   tcrero_bed          => sedtra%tcrero_bed
+   eropar_bed          => sedtra%eropar_bed
    ust2                => sedtra%ust2
    umod                => sedtra%umod
    uuu                 => sedtra%uuu
@@ -225,6 +229,9 @@
    zumod               => sedtra%zumod
    rca                 => sedtra%rca
    statqnt             => sedtra%statqnt
+
+   ! morlyr
+   iconsolidate        => stmpar%morlyr%settings%iconsolidate
 
    allocate(q_zeta(2,lnx), stat=ierr)
    q_zeta = 0d0

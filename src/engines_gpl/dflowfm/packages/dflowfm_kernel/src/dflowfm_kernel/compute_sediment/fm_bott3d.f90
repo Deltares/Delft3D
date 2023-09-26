@@ -56,6 +56,7 @@
    use m_sediment,  only: stmpar, sedtra, mtd, m_sediment_sed=>sed, avalflux, botcrit, kcsmor, jamormergedtuser, mergebodsed
    use m_flowtimes, only: dts, tstart_user, time1, dnt, julrefdat, tfac, ti_sed, ti_seds, time_user
    use m_transport, only: fluxhortot, ised1, constituents, sinksetot, sinkftot, itra1, itran, numconst, isalt
+   use m_turbulence, only: rhowat
    use unstruc_files, only: mdia, close_all_files
    use m_fm_erosed
    use Messagehandling
@@ -107,6 +108,7 @@
    integer                                     :: nxmx
    integer                                     :: lm
    integer                                     :: jawaveswartdelwaq_local
+   double precision, dimension(:)   , allocatable  :: rhowat2d
    double precision                            :: aksu
    double precision                            :: apower
    double precision                            :: cavg
@@ -664,7 +666,17 @@
          write (mdia,'(12x,2(a,i0))') 'Total number of Bed change messages for timestep ', int(dnt), ' : ',bedchangemesscount
       endif
       !
-      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
+      allocate(rhowat2d(ndxi))
+      do nm = 1, ndxi
+         if (kmx>0) then ! 3D case
+            call getkbotktop(nm, kb, kt)
+         else ! 2D case
+            kb = nm
+         endif
+         rhowat2d(nm) = rhowat(kb)
+      enddo
+      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac, iconsolidate, rhosol, rhowat2d)
+      deallocate(rhowat2d)
       !
       ! Re-distribute erosion near dry and shallow points to allow erosion
       ! of dry banks
@@ -853,7 +865,7 @@
          !
          ! Update layers and obtain the depth change
          !
-         if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
+         if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages, morft, dtmor) /= 0) then
             call writemessages(mtd%messages, mdia)
             !            to replace by "nice" exit
             write(errmsg,'(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'

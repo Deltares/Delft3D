@@ -68,6 +68,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     ! Local variables
     !
     logical                                , pointer :: anymud
+    logical                                , pointer :: used50fld
     !
     integer              , dimension(:)    , pointer :: iform
     integer                                , pointer :: ihidexp
@@ -113,6 +114,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     mudfrac   => sedtra%mudfrac
     sandfrac  => sedtra%sandfrac
     anymud    => sedpar%anymud
+    used50fld => sedpar%used50fld
     logsedsig => sedpar%logsedsig
     logseddia => sedpar%logseddia
     mudcnt    => sedpar%mudcnt
@@ -141,7 +143,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     if (lsedtot/=1 .or. sedpar%flsdia==' ') then
        do ll = 1, lsedtot
-          if (sedpar%sedtyp(ll) /= SEDTYP_COHESIVE) then
+          if (sedd50(ll) > 0.0_fp) then
               drho      = (sedpar%rhosol(ll)-rhow) / rhow
               dstar(ll) = sedd50(ll) * (drho*ag/vicmol**2)**0.3333_fp
               if (dstar(ll) < 1.0_fp) then
@@ -183,10 +185,10 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     ! Calculate geometric mean sediment diameter Dg
     ! Calculate percentiles Dxx
     !
-    call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+    call compdiam(frac      ,sedd50    ,sedd50    ,lsedtot   , &
                 & logsedsig ,nseddia   ,logseddia ,nmmax     ,nmlb      , &
-                & nmub      ,xx        ,nxx       ,sedd50fld ,dm        , &
-                & dg        ,dxx       ,dgsd      )
+                & nmub      ,xx        ,nxx       ,sedd50fld ,used50fld , &
+                & dm        ,dg        ,dxx       ,dgsd      )
     !
     ! Determine hiding & exposure factors
     !

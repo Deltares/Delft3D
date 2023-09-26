@@ -1745,9 +1745,9 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icx = nmaxddb
           icy = 1
           call timer_start(timer_bott3d, gdp)
-          call z_bott3d(nmmax     ,kmax      ,lsed      , &
-                      & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                      & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                      & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                      & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                       & d(dps)    ,r(gsqs)   ,r(guu)    , &
                       & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
                       & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
@@ -2673,9 +2673,9 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icx = nmaxddb
           icy = 1
           call timer_start(timer_bott3d, gdp)
-          call z_bott3d(nmmax     ,kmax      ,lsed      , &
-                      & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                      & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                      & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                      & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                       & d(dps)    ,r(gsqs)   ,r(guu)    , &
                       & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
                       & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &

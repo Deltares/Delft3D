@@ -2160,9 +2160,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
-          call bott3d(nmmax     ,kmax      ,lsed      , &
-                    & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                    & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                    & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                    & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                     & d(dps)    ,r(gsqs)   ,r(guu)    , &
                     & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
@@ -3228,9 +3228,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
-          call bott3d(nmmax     ,kmax      ,lsed      , &
-                    & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                    & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                    & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                    & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                     & d(dps)    ,r(gsqs)   ,r(guu)    , &
                     & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &

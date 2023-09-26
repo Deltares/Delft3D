@@ -178,7 +178,7 @@
    real(fp)                      :: vmean
    real(fp)                      :: z0rou
    real(fp)                      :: zvelb
-   real(fp)                      :: poros
+   real(fp)                      :: tporos
    real(fp)                      :: wstau                 ! dummy for erosilt
    real(fp), dimension(:), allocatable :: evel            ! erosion velocity [m/s]
    real(fp), dimension(0:kmax2d) :: dcww2d
@@ -378,6 +378,7 @@
       call getfrac(stmpar%morlyr,frac      ,anymud    ,mudcnt    , &
          & mudfrac      ,1         ,ndx)
    endif
+   call getbedprop(stmpar%morlyr, 1, ndx, poros, tcrero_bed, eropar_bed)
 
    ! 3D:
    ! Calculate cell centre velocity components and magnitude
@@ -548,10 +549,10 @@
       ! calculate geometric mean sediment diameter Dg
       ! calculate percentiles Dxx
       !
-      call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+      call compdiam(frac      ,sedd50    ,sedd50    ,lsedtot   , &
          & logsedsig ,nseddia   ,logseddia ,ndx       ,1         , &
-         & ndx       ,xx        ,nxx       ,sedd50fld ,dm        , &
-         & dg        ,dxx       ,dgsd      )
+         & ndx       ,xx        ,nxx       ,sedd50fld ,used50fld , &
+         & dm        ,dg        ,dxx       ,dgsd      )
       !
       ! determine hiding & exposure factors
       !
@@ -853,6 +854,11 @@
       dll_reals(RP_VMEAN) = real(vmean     ,hp)
       dll_reals(RP_VELMN) = real(velm      ,hp)
       dll_reals(RP_USTAR) = real(ustarc    ,hp)
+      if (iconsolidate > 0) then
+         dll_reals(RP_POROS) = real(poros(nm) ,hp)
+      else
+         dll_reals(RP_POROS) = 0d0 ! RP_POROS will be set later
+      endif
       dll_reals(RP_BLCHG) = real(dzbdt(nm) ,hp)   ! for dilatancy
       dll_reals(RP_DZDX)  = real(dzdx(nm)  ,hp)   ! for dilatancy
       dll_reals(RP_DZDY)  = real(dzdy(nm)  ,hp)   ! for dilatancy
@@ -947,12 +953,19 @@
                        & npar           ,localpar     ,max_integers , max_reals     , &
                        & max_strings    ,dll_function(l),dll_handle(l), dll_integers, &
                        & dll_reals      ,dll_strings  ,iflufflyr    , mfltot        , &
-                       & fracf          ,maxslope     ,wetslope     , &
+                       & fracf          ,tcrero_bed(nm) ,eropar_bed(nm),maxslope     ,wetslope     , &
                        & error          ,wstau        , sinktot     , sourse(nm,l)  , sourfluff)
             if (error) then
                write(errmsg,'(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
                call mess(LEVEL_FATAL, errmsg)
             end if
+            !
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
             !
             if (iflufflyr>0) then
                if (iflufflyr==2) then
@@ -1048,10 +1061,12 @@
          dll_reals(RP_DSTAR) = real(dstar(l),hp)
          dll_reals(RP_SETVL) = real(twsk    ,hp) ! Settling velocity near bedlevel
          !
-         ! Calculate bed porosity for dilatancy
+         ! Calculate bed porosity for dilatancy when consolidation is not dynamically modelled
          !
-         poros = 1d0-cdryb(l)/rhosol(l)
-         dll_reals(RP_POROS) = real(poros   ,hp)
+         if (iconsolidate == 0) then
+            tporos = 1d0 - cdryb(l)/rhosol(l)
+            dll_reals(RP_POROS) = real(tporos  ,hp)
+         endif
          !
          localpar(1) = ag
          localpar(2) = rhowat(kbed) ! rhow
@@ -1115,6 +1130,13 @@
                write(errmsg,'(a)') 'fm_erosed::eqtran in 3D returned an error. Check your inputs.'
                call mess(LEVEL_FATAL, errmsg)
             end if
+            !
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
             !
             if (suspfrac) then
                aks(nm, l) = taks
@@ -1199,6 +1221,13 @@
                write(errmsg,'(a)') 'fm_erosed::eqtran in 2D returned an error. Check your inputs.'
                call mess(LEVEL_FATAL, errmsg)
             end if
+
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
 
             if (suspfrac) then
                aks   (nm, l)       = taks

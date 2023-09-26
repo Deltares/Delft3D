@@ -100,6 +100,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer          , dimension(:)      , pointer :: nseddia
     integer          , dimension(:)      , pointer :: sedtyp
     logical                              , pointer :: anymud
+    logical                              , pointer :: used50fld
     real(fp)                             , pointer :: thresh
     real(fp)                             , pointer :: bed
     real(fp)                             , pointer :: susw
@@ -132,6 +133,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer          , dimension(:)      , pointer :: kfsed
     integer          , dimension(:,:)    , pointer :: kmxsed
     real(fp)         , dimension(:)      , pointer :: mudfrac
+    real(fp)         , dimension(:)      , pointer :: poros
     real(fp)         , dimension(:)      , pointer :: sandfrac
     real(fp)         , dimension(:,:)    , pointer :: hidexp
     real(fp)         , dimension(:)      , pointer :: rsdqlc
@@ -161,6 +163,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: sourf
     real(fp)         , dimension(:)      , pointer :: taub
     real(fp)         , dimension(:,:)    , pointer :: taurat
+    real(fp)         , dimension(:)      , pointer :: tcrero_bed
+    real(fp)         , dimension(:)      , pointer :: eropar_bed
     real(fp)         , dimension(:)      , pointer :: ust2
     real(fp)         , dimension(:)      , pointer :: umod
     real(fp)         , dimension(:)      , pointer :: uuu
@@ -415,6 +419,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     nseddia             => gdp%gdsedpar%nseddia
     sedtyp              => gdp%gdsedpar%sedtyp
     anymud              => gdp%gdsedpar%anymud
+    used50fld           => gdp%gdsedpar%used50fld
     sedtrcfac           => gdp%gdsedpar%sedtrcfac
     thresh              => gdp%gdmorpar%thresh
     sedthr              => gdp%gdmorpar%sedthr
@@ -452,6 +457,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
+    poros               => gdp%gderosed%poros
     sandfrac            => gdp%gderosed%sandfrac
     hidexp              => gdp%gderosed%hidexp
     rsdqlc              => gdp%gderosed%rsdqlc
@@ -482,6 +488,8 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     srcmax              => gdp%gderosed%srcmax
     taub                => gdp%gderosed%taub
     taurat              => gdp%gderosed%taurat
+    tcrero_bed          => gdp%gderosed%tcrero_bed
+    eropar_bed          => gdp%gderosed%eropar_bed
     ust2                => gdp%gderosed%ust2
     umod                => gdp%gderosed%umod
     uuu                 => gdp%gderosed%uuu
@@ -607,10 +615,10 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     ! Determine fractions of all sediments the top layer and
     ! compute the mud fraction.
     !
-    if (lsedtot > 1) then
-       call getfrac(gdp%gdmorlyr,frac      ,anymud    ,mudcnt    , &
-                  & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
-    endif
+    call getfrac(gdp%gdmorlyr,frac      ,anymud    ,mudcnt    , &
+               & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
+    call getbedprop(gdp%gdmorlyr, gdp%d%nmlb, gdp%d%nmub, &
+               & poros, tcrero_bed, eropar_bed)
     !
     ! Calculate velocity components and magnitude at the zeta points
     ! based on velocity in the bottom computational layer
@@ -679,10 +687,10 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! calculate geometric mean sediment diameter Dg
        ! calculate percentiles Dxx
        !
-       call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+       call compdiam(frac      ,sedd50    ,sedd50    ,lsedtot   , &
                    & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
-                   & gdp%d%nmub,xx        ,nxx       ,sedd50fld ,dm        , &
-                   & dg        ,dxx       ,dgsd      )
+                   & gdp%d%nmub,xx        ,nxx       ,sedd50fld ,used50fld , &
+                   & dm        ,dg        ,dxx       ,dgsd      )
        !
        ! determine hiding & exposure factors
        !
@@ -971,6 +979,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        dll_reals(RP_VMEAN) = real(vmean     ,hp)
        dll_reals(RP_VELMN) = real(velm      ,hp)
        dll_reals(RP_USTAR) = real(ustarc         ,hp)
+       dll_reals(RP_POROS) = real(poros(nm)      ,hp)
        !
        if (max_integers < MAX_IP) then
           write(errmsg,'(a)') 'Insufficient space to pass integer values to transport routine.'
@@ -1062,10 +1071,16 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                         & npar        ,localpar    ,max_integers,max_reals    , &
                         & max_strings ,dll_function(l),dll_handle(l),dll_integers, &
                         & dll_reals   ,dll_strings ,iflufflyr   ,mfltot       , &
-                        & fracf       ,maxslope    ,wetslope    , &
+                        & fracf       ,tcrero_bed(nm), eropar_bed(nm),maxslope    ,wetslope    , &
                         & error       ,wstau(nm)   ,sinktot     ,sourse(nm,l) , &
                         & sourfluff   )
              if (error) call d3stop(1, gdp)
+             if (gdp%gdmorpar%moroutput%sedpar) then
+                 do i = 1,gdp%gdtrapar%noutpar(l)
+                     j = gdp%gdtrapar%ioutpar(i,l)
+                     gdp%gdtrapar%outpar(j, nm) = localpar(i)
+                 enddo
+             endif
              !
              if (iflufflyr>0) then
                 if (iflufflyr==2) then
