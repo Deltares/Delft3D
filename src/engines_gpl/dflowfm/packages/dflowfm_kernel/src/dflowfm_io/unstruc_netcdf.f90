@@ -17369,20 +17369,23 @@ function write_array_with_dmiss_for_dry_cells_into_netcdf_file(ncid, id_tsp, id_
    type(t_unc_timespace_id),      intent(in)       :: id_tsp                 !< Map file and other NetCDF ids.
    integer,                       intent(in)       :: id_var(:)              !< Variable ID 
    integer,                       intent(in)       :: data_location          !< Data location
-   double precision, allocatable, intent(in)       :: array(:)               !< array to be written
+   double precision, allocatable, intent(in)       :: array(:)               !< 2D case array to be written
    integer, optional,             intent(in)       :: jabndnd                !< Flag specifying whether boundary nodes are to be written.
    
    integer                                         :: ierr                   !< Result status
+   integer                                         :: cell
    double precision, allocatable                   :: temp_array(:)
 
    allocate(temp_array(size(array)), stat=ierr)
    if (ierr /= 0) call aerr( 'temp_array', ierr, size(array))
    
-   where (kfs==0)
-       temp_array = dmiss
-   elsewhere
-       temp_array = array
-   end where
+   do cell = 1, size(kfs)
+      if ( kfs(cell) == 0 ) then 
+         temp_array(cell) = dmiss
+      else
+         temp_array(cell) = array(cell)
+      end if
+   end do
    ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_array, jabndnd=jabndnd)
     
    deallocate(temp_array)
