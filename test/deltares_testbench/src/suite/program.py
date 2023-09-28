@@ -421,37 +421,8 @@ class Program:
                 retval = os.path.join(outstr, retval)
             else:
                 logger.warning(f"Could not match {original} as [programpath(var)]")
-        if "[programGlobals(" in retval:
-            sr = re.search(r"(?<=(\[programGlobals\())(.*?)(?=\)\])", retval, flags=re.IGNORECASE)
-            if sr and len(sr.groups()) > 0:
-                k = retval.find("[programGlobals(")
-                outstr = os.path.normpath(Globals().get(sr.group(0)))
-                logger.debug(f"substituted: {outstr}")
-                # retval = re.sub(r"\[programGlobals\((.*?)\)\]", outstr.encode('string_escape'), retval)
-                outstr = retval[:k] + outstr
-                retval = retval[k:]
-                for i in range(0, len(sr.groups())):
-                    retval = retval[len(sr.groups()[i]):]
-                retval = retval[3:] # ')]/'
-                retval = os.path.join(outstr, retval)
-            else:
-                logger.warning(f"Could not match {original} as [programGlobals(var)]")
-        if "[environment(" in retval:
-            sr = re.search(r"(?<=(\[environment\())(.*?)(?=\)\])", retval, flags=re.IGNORECASE)
-            if sr and len(sr.groups()) > 0:
-                k = retval.find("[environment(")
-                outstr = os.environ[sr.groups()[1]]
-                logger.debug(f"substituted: {outstr}")
-                outstr = retval[:k] + outstr
-                retval = retval[k:]
-                for i in range(0, len(sr.groups())):
-                    retval = retval[len(sr.groups()[i]):]
-                retval = retval[2:] # ')]'
-                retval = outstr + retval
-            else:
-                logger.warning(f"Could not match {original} as [environment(var)]")
 
         # call this routine again if there is still something to replace
-        if "[output(" in retval or "[programpath(" in retval or "[programGlobals(" in retval or "[environment(" in retval:
+        if "[programpath(" in retval:
             retval = self.__insertOutputVariable__(retval, logger)
         return retval
