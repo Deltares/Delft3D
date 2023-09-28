@@ -23,8 +23,8 @@ class RunData:
         self.__process_name: str = "Unknown"
         self.__test_number: int = test_number
         self.__number_of_tests: int = number_of_tests
-        self.__prepare_ended: Optional[datetime]
-        self.__run_ended: Optional[datetime]
+        self.__prepare_ended: Optional[datetime] = None
+        self.__run_ended: Optional[datetime] = None
 
     @property
     def creation_time(self) -> datetime:
