@@ -1349,7 +1349,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
     else if (strstr(libNameLowercase, "rr_dll") != NULL) {
         newComp->type = COMP_TYPE_RR;
     }
-    else if (strstr(libNameLowercase, "wandaengine_native") != NULL) {
+    else if (strstr(libNameLowercase, "wanda") != NULL) {
         newComp->type = COMP_TYPE_WANDA;
     }
     else if (strstr(libNameLowercase, "flow2d3d") != NULL) {

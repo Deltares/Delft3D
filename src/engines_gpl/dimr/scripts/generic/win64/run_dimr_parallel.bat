@@ -111,6 +111,7 @@ set swanexedir=%D3D_HOME%\%ARCH%\swan\bin
 set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
 set sharedir=%D3D_HOME%\%ARCH%\share\bin
 set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
+set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
 
 
     rem
@@ -118,7 +119,7 @@ set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
     rem
 
     rem Run
-set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%sharedir%;%PATH%
+set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
 if exist %sharedir%\vars.bat (
     echo executing: "%sharedir%\vars.bat"
         call "%sharedir%\vars.bat"
