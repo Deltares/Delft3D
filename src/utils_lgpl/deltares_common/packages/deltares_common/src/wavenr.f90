@@ -25,7 +25,7 @@
    !                                                                               
    !-------------------------------------------------------------------------------
     
-subroutine wavenr(water_height, period, wave_number, local_gravity)
+subroutine wavenr(water_depth, period, wave_number, local_gravity)
     !!--description-----------------------------------------------------------------
     !
     !    Function: Approximation of the dispersion, original sub-
