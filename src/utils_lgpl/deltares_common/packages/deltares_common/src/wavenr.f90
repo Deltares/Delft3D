@@ -56,7 +56,7 @@ subroutine wavenr(water_height, period, wave_number, local_gravity)
     !
     ! Global variables
     !
-    real(fp), intent(in   )              :: water_height    !< Water height
+    real(fp), intent(in   )              :: water_depth     !< Water depth
     real(fp), intent(  out)              :: wave_number     !< Approximation of wave number
     real(fp), intent(in   )              :: period          !< Period
     real(fp), intent(in   )              :: local_gravity   !< Gravitational acceleration
