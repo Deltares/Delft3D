@@ -1180,6 +1180,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
     call prop_get_double(md_ptr, 'numerics', 'MaxSSC', sscmax)
     call prop_get_double(md_ptr, 'numerics', 'Epshu' , epshu)
+    call prop_get_double(md_ptr, 'numerics', 'Dzuminturb' , dzuminturb)
     call prop_get_double(md_ptr, 'numerics', 'Epsz0' , epsz0)
     epshs = .2d0*epshu ! minimum waterdepth for setting cfu
 
@@ -3237,6 +3238,7 @@ endif
     end if
 
     call prop_set(prop_ptr, 'numerics', 'Epshu' , epshu, 'Threshold water depth for wet and dry cells')
+    call prop_set(prop_ptr, 'numerics', 'Dzuminturb' , Dzuminturb, 'Minimum layer thickness in Trubulence model')
 
     if (writeall .or. (sbkdfm_umin > 0d0)) then
         call prop_set(prop_ptr, 'numerics', 'SobekDFM_umin', sbkdfm_umin, 'Minimal velocity treshold for weir losses in Sobek-DFM coupling.')

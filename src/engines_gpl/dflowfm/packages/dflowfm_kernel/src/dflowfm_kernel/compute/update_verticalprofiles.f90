@@ -308,7 +308,8 @@ double precision, external :: setrhofixedp
         k    = L  - Lb + 1
         !k1   = ln(1,L)  ; k2  = ln(2,L)
         !dzu(k) = acl(LL)*(zws(k1)-zws(k1-1)) + (1d0-acl(LL))*(zws(k2)-zws(k2-1))
-        dzu(k) = max(eps4, hu(L) - hu(L-1) )
+        !dzu(k) = max(eps4, hu(L) - hu(L-1) )
+        dzu(k) = max(dzuminturb, hu(L) - hu(L-1) )
 
         ! if (dzu(k) < 1d-10) then
         !   call qnerror('dzu(k) < 1d-10',' ',' ')
@@ -736,7 +737,7 @@ double precision, external :: setrhofixedp
                  k1 = ln(1,L) ; k2 = ln(2,L) 
                  if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
                     faclax = facLaxturb*zf
-                    faclax = faclax* min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                    faclax = faclax*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
                     dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
                  endif
               endif
@@ -745,7 +746,7 @@ double precision, external :: setrhofixedp
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                 faclax = faclaxturb* min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                 faclax = faclaxturb*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
                  dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
               endif
            enddo
@@ -855,7 +856,7 @@ double precision, external :: setrhofixedp
        ak(kxL) = -1.d0                    ! Flux at the free surface:
        bk(kxL) =  1.d0
        ck(kxL) =  0.d0
-       dk(kxL) =  4d0*abs(ustw(LL))**3/ (vonkar*dzu(Lt-Lb+1))
+       dk(kxL) =  4d0*abs(ustw(LL))**3/(vonkar*dzu(Lt-Lb+1))
        if (jawave>0) then                 ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
           dk(kxL) = dk(kxL) + dzu(Lt-Lb+1)*pkwmag/(fwavpendep*hrmsLL)
        endif
