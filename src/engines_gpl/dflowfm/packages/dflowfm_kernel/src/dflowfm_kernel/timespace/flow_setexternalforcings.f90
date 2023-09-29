@@ -473,7 +473,7 @@ end subroutine get_timespace_value_by_item_and_consider_success_value
 !> set_wave_parameters
 subroutine set_wave_parameters()
 
-   if (jawave == 3 .or. jawave == 6) then
+   if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
       !
       ! This part must be skipped during initialization
       if (.not. initialization) then
@@ -541,19 +541,22 @@ subroutine set_wave_parameters()
       ! For badly converged SWAN sums, dwcap and dsurf can be NaN. Put these to 0d0, 
       ! as they cause saad errors as a result of NaNs in the turbulence model
       if (.not. flowwithoutwaves) then
-         if (any(isnan(dsurf)) .or. any(isnan(dwcap))) then
-            write (msgbuf, '(a)') 'Surface dissipation fields from SWAN contain NaN values, which have been converted to 0d0. &
-                                 & Check the correctness of the wave results before running the coupling.'
-            call warn_flush() ! No error, just warning and continue
-            !
-            where (isnan(dsurf))
-               dsurf = 0d0
-            end where
-            !
-            where (isnan(dwcap))
-               dwcap = 0d0
-            end where
-         end if
+          !BS if jawave==7, these are only allocated if waveforcing==3
+          if(allocated(dsurf) .and. allocated(dwcap)) then
+              if (any(isnan(dsurf)) .or. any(isnan(dwcap))) then
+                  write (msgbuf, '(a)') 'Surface dissipation fields from SWAN contain NaN values, which have been converted to 0d0. &
+                                       & Check the correctness of the wave results before running the coupling.'
+                  call warn_flush() ! No error, just warning and continue
+                  !
+                  where (isnan(dsurf))
+                      dsurf = 0d0
+                  end where
+                  !
+                  where (isnan(dwcap))
+                      dwcap = 0d0
+                  end where
+              end if
+          end if
          
          ! In MPI case, partition ghost cells are filled properly already, open boundaires are not
          call fill_open_boundary_cells_with_innner_values(nbndu, kbndu)

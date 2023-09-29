@@ -1926,7 +1926,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif    
            else if (trim(qid) == "freesurfacedissipation") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
+               ! wave forces based on dissipation at free surface and water column
+               if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1934,7 +1935,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "whitecappingdissipation") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
+               ! wave forces based on dissipation at free surface and water column
+               if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1942,7 +1944,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "xwaveforce") then
-               if (jawave == 7 .and. waveforcing == 1) then
+               if (jawave == 7 .and. waveforcing == 1 .or. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1950,7 +1952,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "ywaveforce") then
-               if (jawave == 7 .and. waveforcing == 1) then
+               if (jawave == 7 .and. waveforcing == 1 .or. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
