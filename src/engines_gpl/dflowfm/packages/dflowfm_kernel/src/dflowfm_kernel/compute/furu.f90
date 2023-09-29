@@ -43,6 +43,8 @@
  use unstruc_channel_flow
  use m_sferic
  use m_trachy, only: trachy_resistance
+ use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
+ use m_flowparameters, only: ifixedWeirScheme1d2d
 
  implicit none
 
@@ -388,6 +390,9 @@
  endif
 ! END DEBUG
 
+ if (ifixedWeirScheme1d2d ==1) then
+    call compfuru_1d2d_fixedweirs()
+ endif
  call timstop(handle_furu)
 
  end subroutine furu
