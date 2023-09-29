@@ -1,9 +1,3 @@
-# Set path for include files
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waq_memory_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-include_directories(${waq_memory_include_path})
-
-
 # Define library
 set(library_name waq_memory)
 create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
