@@ -31,8 +31,6 @@
 
       implicit none
       
-      integer  ( 4) :: iwar          !< cumulative warning count
-
       contains
 
 
