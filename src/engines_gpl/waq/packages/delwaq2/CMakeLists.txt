@@ -6,7 +6,7 @@ set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the WAQ pa
 set(waq_version_path ${waq_root_path}/version)
 set(waq_data_path ${waq_root_path}/include)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_delwaq2.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -30,45 +30,25 @@ set_source_files_properties(${fortran_version_file} ${fortran_version_file_delwa
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Add dependencies
-set(oss_dependencies_general deltares_common
-                             deltares_common_c
-                             io_netcdf
-                             nefis
-                             delwaq_lib
-                             waq_io
-                             waq_data
-                             waq_kernel
-                             waq_plugin_wasteload
-                             waq_process
-                             waq_utils_c
-                             waq_utils_f)
-
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     io_netcdf
+                     nefis
+                     delwaq_lib
+                     waq_io
+                     waq_data
+                     waq_kernel
+                     waq_process
+                     waq_utils_c
+                     waq_utils_f)
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
-    set(oss_dependencies ${oss_dependencies_general})
-
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
          uuid)
 endif(UNIX)
 
-if(WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    target_link_libraries(${executable_name} ${oss_dependencies})
-endif(WIN32)
-
+target_link_libraries(${executable_name} ${oss_dependencies})
 oss_include_libraries(${executable_name} oss_dependencies)
 
 

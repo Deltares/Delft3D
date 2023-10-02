@@ -16,7 +16,5 @@ install_*/**
 /src/**/obj/**
 
 # ignore files created by updating process definition files
-src/engines_gpl/waq/default/csvFiles/coefedit.dat
-src/engines_gpl/waq/default/csvFiles/*.pptex
-src/engines_gpl/waq/default/csvFiles/*.asc
-src/engines_gpl/waq/default/csvFiles/*.log
+src/engines_gpl/waq/resources/csvFiles/*
+!src/engines_gpl/waq/resources/csvFiles/*.csv

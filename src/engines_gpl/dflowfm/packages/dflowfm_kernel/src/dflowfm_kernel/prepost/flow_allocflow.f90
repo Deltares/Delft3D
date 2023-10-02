@@ -1086,7 +1086,7 @@ endif
 
     if (allocated (sam0) ) deallocate (sam0, sam1, same)
     allocate (sam0(ndkx), sam1(ndkx), same(ndkx) )  ; sam0 = 0 ; sam1 = 0 ; same = 0
-    endif
+ endif
 
  if (jatem > 0) then
     if ( allocated (tem1) ) deallocate (tem1)

@@ -85,10 +85,8 @@
       integer         nsubs                             ! nr of substances for array space declaration
       logical         fluxco                            ! if .true. then flux correction
       logical         steady                            ! if .true. then steady state computation
-      logical         iterat                            ! if .true. then iterative solution
       logical         delmat                            ! if .true. then direct Gauss solver
       logical         f_solv                            ! if .true. then GMRES Krilov solver
-      logical         triadi                            ! if .true. then ADI like Delft3d-Flow
       logical         balans                            ! if .true. then balances to be computed
       character*20    namarr                            ! help variable for array name
       integer         iartyp                            ! help variable for array type
@@ -152,11 +150,9 @@
      &         intsrt .eq. 24
       steady = intsrt .eq.  6 .or. intsrt .eq.  7 .or. intsrt .eq.  8 .or.
      &         intsrt .eq.  9 .or. intsrt .eq. 17 .or. intsrt .eq. 18
-      iterat = intsrt .eq.  8 .or. intsrt .eq.  9
-      delmat = intsrt .eq.  6 .or. intsrt .eq.  7 .or. intsrt .eq. 10
+      delmat = intsrt .eq.  6 .or. intsrt .eq.  7
       f_solv = intsrt .eq. 15 .or. intsrt .eq. 16 .or. intsrt .eq. 17 .or.
      &         intsrt .eq. 18 .or. intsrt .eq. 21 .or. intsrt .eq. 22
-      triadi = intsrt .eq. 19 .or. intsrt .eq. 20
       balans = btest(intopt,3)
 
 !     Set defaults, no name no length
@@ -211,7 +207,7 @@
 
       arrnam(iiconc) = 'CONC  '
       arrknd(iiconc) = 2
-      if ( steady .and. .not. iterat ) then
+      if ( steady ) then
          arrdm1(iiconc) = notot
          arrdm2(iiconc) = noseg+nseg2
          arrdm3(iiconc) = nogrid
@@ -348,11 +344,6 @@
          arrdm1(iitimr) = noseg+nseg2
          arrdm2(iitimr) = jtrack*2+1
          arrdm3(iitimr) = 1
-      elseif ( iterat ) then
-         arrknd(iitimr) = 2
-         arrdm1(iitimr) = notot
-         arrdm2(iitimr) = noseg+nseg2
-         arrdm3(iitimr) = 1
       elseif ( f_solv ) then
          arrknd(iitimr) = 1
          arrdm1(iitimr) = nomat
@@ -487,168 +478,6 @@
       arrdm2(iivoll) = 1
       arrdm3(iivoll) = 1
 
-!     The next array's only for TRIADI solvers
-
-      if ( triadi ) then
-         nohor = nmax * (mmax+4)
-
-         arrnam(iir1  ) = 'R1    '
-         arrknd(iir1  ) = 4
-         arrdm1(iir1  ) = nohor*kmax
-         arrdm2(iir1  ) = notot
-         arrdm3(iir1  ) = 1
-
-         arrnam(iiqxk ) = 'QXK   '
-         arrknd(iiqxk ) = 3
-         arrdm1(iiqxk ) = nohor*kmax
-         arrdm2(iiqxk ) = 1
-         arrdm3(iiqxk ) = 1
-
-         arrnam(iiqyk ) = 'QYK   '
-         arrknd(iiqyk ) = 3
-         arrdm1(iiqyk ) = nohor*kmax
-         arrdm2(iiqyk ) = 1
-         arrdm3(iiqyk ) = 1
-
-         arrnam(iiqzk ) = 'QZK   '
-         arrknd(iiqzk ) = 3
-         arrdm1(iiqzk ) = nohor*(kmax+1)
-         arrdm2(iiqzk ) = 1
-         arrdm3(iiqzk ) = 1
-
-         arrnam(iidifx) = 'DIFX  '
-         arrknd(iidifx) = 3
-         arrdm1(iidifx) = nohor*kmax
-         arrdm2(iidifx) = 1
-         arrdm3(iidifx) = 1
-
-         arrnam(iidify) = 'DIFY  '
-         arrknd(iidify) = 3
-         arrdm1(iidify) = nohor*kmax
-         arrdm2(iidify) = 1
-         arrdm3(iidify) = 1
-
-         arrnam(iidifz) = 'DIFZ  '
-         arrknd(iidifz) = 3
-         arrdm1(iidifz) = nohor*(kmax+1)
-         arrdm2(iidifz) = 1
-         arrdm3(iidifz) = 1
-
-         arrnam(iivola) = 'VOL0  '
-         arrknd(iivola) = 3
-         arrdm1(iivola) = nohor*kmax
-         arrdm2(iivola) = 1
-         arrdm3(iivola) = 1
-
-         arrnam(iivolb) = 'VOL1  '
-         arrknd(iivolb) = 3
-         arrdm1(iivolb) = nohor*kmax
-         arrdm2(iivolb) = 1
-         arrdm3(iivolb) = 1
-
-         arrnam(iiguv ) = 'GUV   '
-         arrknd(iiguv ) = 3
-         arrdm1(iiguv ) = nohor
-         arrdm2(iiguv ) = 1
-         arrdm3(iiguv ) = 1
-
-         arrnam(iigvu ) = 'GVU   '
-         arrknd(iigvu ) = 3
-         arrdm1(iigvu ) = nohor
-         arrdm2(iigvu ) = 1
-         arrdm3(iigvu ) = 1
-
-         arrnam(iiaak ) = 'AAK   '
-         arrknd(iiaak ) = 3
-         arrdm1(iiaak ) = nohor*kmax
-         arrdm2(iiaak ) = 1
-         arrdm3(iiaak ) = 1
-
-         arrnam(iibbk ) = 'BBK   '
-         arrknd(iibbk ) = 3
-         arrdm1(iibbk ) = nohor*kmax
-         arrdm2(iibbk ) = 1
-         arrdm3(iibbk ) = 1
-
-         arrnam(iicck ) = 'CCK   '
-         arrknd(iicck ) = 3
-         arrdm1(iicck ) = nohor*kmax
-         arrdm2(iicck ) = 1
-         arrdm3(iicck ) = 1
-
-         arrnam(iibd3x) = 'BD3X  '
-         arrknd(iibd3x) = 3
-         arrdm1(iibd3x) = nohor*kmax
-         arrdm2(iibd3x) = 1
-         arrdm3(iibd3x) = 1
-
-         arrnam(iibddx) = 'BDDX  '
-         arrknd(iibddx) = 3
-         arrdm1(iibddx) = nohor*kmax
-         arrdm2(iibddx) = 1
-         arrdm3(iibddx) = 1
-
-         arrnam(iibdx ) = 'BDX   '
-         arrknd(iibdx ) = 3
-         arrdm1(iibdx ) = nohor*kmax
-         arrdm2(iibdx ) = 1
-         arrdm3(iibdx ) = 1
-
-         arrnam(iibu3x) = 'BU3X  '
-         arrknd(iibu3x) = 3
-         arrdm1(iibu3x) = nohor*kmax
-         arrdm2(iibu3x) = 1
-         arrdm3(iibu3x) = 1
-
-         arrnam(iibuux) = 'BUUX  '
-         arrknd(iibuux) = 3
-         arrdm1(iibuux) = nohor*kmax
-         arrdm2(iibuux) = 1
-         arrdm3(iibuux) = 1
-
-         arrnam(iibux ) = 'BUX   '
-         arrknd(iibux ) = 3
-         arrdm1(iibux ) = nohor*kmax
-         arrdm2(iibux ) = 1
-         arrdm3(iibux ) = 1
-
-         arrnam(iiwrk1) = 'WRK1  '
-         arrknd(iiwrk1) = 3
-         arrdm1(iiwrk1) = nohor*kmax
-         arrdm2(iiwrk1) = 1
-         arrdm3(iiwrk1) = 1
-
-         arrnam(iiwrk2) = 'WRK2  '
-         arrknd(iiwrk2) = 3
-         arrdm1(iiwrk2) = nohor*kmax
-         arrdm2(iiwrk2) = 1
-         arrdm3(iiwrk2) = 1
-
-         arrnam(iiaakl) = 'AAKL  '
-         arrknd(iiaakl) = 4
-         arrdm1(iiaakl) = nohor*kmax
-         arrdm2(iiaakl) = nosys
-         arrdm3(iiaakl) = 1
-
-         arrnam(iibbkl) = 'BBKL  '
-         arrknd(iibbkl) = 4
-         arrdm1(iibbkl) = nohor*kmax
-         arrdm2(iibbkl) = nosys
-         arrdm3(iibbkl) = 1
-
-         arrnam(iicckl) = 'CCKL  '
-         arrknd(iicckl) = 4
-         arrdm1(iicckl) = nohor*kmax
-         arrdm2(iicckl) = nosys
-         arrdm3(iicckl) = 1
-
-         arrnam(iiddkl) = 'DDKL  '
-         arrknd(iiddkl) = 4
-         arrdm1(iiddkl) = nohor*kmax
-         arrdm2(iiddkl) = nosys
-         arrdm3(iiddkl) = 1
-      endif
-
       arrnam(iiwdmp) = 'WSTDMP'
       arrknd(iiwdmp) = 4
       arrdm1(iiwdmp) = notot
@@ -738,28 +567,6 @@
           if ( allocated( adiag )    ) deallocate( adiag )
           if ( allocated( acodia )   ) deallocate( acodia )
           if ( allocated( bcodia )   ) deallocate( bcodia )
-          if ( allocated( r11 )      ) deallocate( r11 )
-          if ( allocated( dfluxx )   ) deallocate( dfluxx )
-          if ( allocated( dfluxy )   ) deallocate( dfluxy )
-          if ( allocated( s0 )       ) deallocate( s0 )
-          if ( allocated( s1 )       ) deallocate( s1 )
-          if ( allocated( dps )      ) deallocate( dps )
-          if ( allocated( gsqs )     ) deallocate( gsqs )
-          if ( allocated( sigdif )   ) deallocate( sigdif )
-          if ( allocated( sigmol )   ) deallocate( sigmol )
-          if ( allocated( guu    )   ) deallocate( guu    )
-          if ( allocated( gvv    )   ) deallocate( gvv    )
-          if ( allocated( hu     )   ) deallocate( hu     )
-          if ( allocated( hv     )   ) deallocate( hv     )
-          if ( allocated( thick  )   ) deallocate( thick  )
-          if ( allocated( sig    )   ) deallocate( sig    )
-          if ( allocated( dicuv  )   ) deallocate( dicuv  )
-          if ( allocated( dicww  )   ) deallocate( dicww  )
-          if ( allocated( sour   )   ) deallocate( sour   )
-          if ( allocated( sink   )   ) deallocate( sink   )
-          if ( allocated( areau  )   ) deallocate( areau  )
-          if ( allocated( areav  )   ) deallocate( areav  )
-          if ( allocated( rscale )   ) deallocate( rscale )
           if ( allocated( cell_x )   ) deallocate( cell_x )
           if ( allocated( cell_y )   ) deallocate( cell_y )
           if ( allocated( mixlen )   ) deallocate( mixlen )
@@ -834,143 +641,6 @@
          if ( l_decl ) allocate ( bcodia  ( notot,max(noq3+noq4,1)), stat=ierr )
          if ( ierr .ne. 0 ) then ; write(lunrep,2010) "bcodia              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "bcodia              ", notot*max((noq3+noq4),1)*2
-      endif
-
-      if ( triadi ) then
-         jstart = 1 - 2 * nmax
-         nmmaxj = ( 2 + mmax ) * nmax
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax*nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( r11   ( jstart:nmmaxj , kmax , nosys ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "r11                 " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "r11                 ", (nmmaxj-jstart+1)*kmax*nosys
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax*nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( dfluxx( jstart:nmmaxj , kmax , nosys ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dfluxx              " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dfluxx              ", (nmmaxj-jstart+1)*kmax*nosys
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax*nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( dfluxy( jstart:nmmaxj , kmax , nosys ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dfluxy              " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dfluxy              ", (nmmaxj-jstart+1)*kmax*nosys
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( s0    ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "s0                  " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "s0                  ", (nmmaxj-jstart+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( s1    ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "s1                  " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "s1                  ", (nmmaxj-jstart+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( dps   ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dps                 " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dps                 ", (nmmaxj-jstart+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( gsqs  ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gsqs                " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gsqs                ", (nmmaxj-jstart+1)
-
-         itota  = itota  +  nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( sigdif( nosys         )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "sigdif              " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "sigdif              ",  nosys
-
-         itota  = itota  +  nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( sigmol( nosys         )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "sigmol              " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "sigmol              ",  nosys
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( guu   ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "guu                 " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "guu                 ",  (nmmaxj-jstart+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( gvv   ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gvv                 " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gvv                 ",  (nmmaxj-jstart+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( hu    ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "hu                  " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "hu                  ",  (nmmaxj-jstart+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( hv    ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "hv                  " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "hv                  ",  (nmmaxj-jstart+1)
-
-         itota  = itota  +  nolay
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( thick ( nolay         )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "thick               " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "thick               ",  nolay
-
-         itota  = itota  +  nolay
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( sig   ( nolay         )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "sig                 " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "sig                 ",  nolay
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( dicuv ( jstart:nmmaxj , kmax  )       , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dicuv               " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dicuv               ", (nmmaxj-jstart+1)*kmax
-
-         itota  = itota  +  (nmmaxj-jstart+1)*(kmax+1)
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( dicww ( jstart:nmmaxj , 0:kmax  )     , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dicww               " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dicww               ", (nmmaxj-jstart+1)*(kmax+1)
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax*nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( sour  ( jstart:nmmaxj, kmax, nosys )  , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "sour                " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "sour                ", (nmmaxj-jstart+1)*kmax*nosys
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax*nosys
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( sink  ( jstart:nmmaxj, kmax, nosys )  , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "sink                " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "sink                ", (nmmaxj-jstart+1)*kmax*nosys
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( areau ( jstart:nmmaxj, kmax )         , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "areau               " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "areau               ", (nmmaxj-jstart+1)*kmax
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( areav ( jstart:nmmaxj, kmax )         , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "areav               " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "areav               ", (nmmaxj-jstart+1)*kmax
-
-         itota  = itota  +  (nmmaxj-jstart+1)*kmax
-         nr_rar = nr_rar + 1
-         if ( l_decl ) allocate ( rscale( jstart:nmmaxj, kmax )         , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "rscale              " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "rscale              ", (nmmaxj-jstart+1)*kmax
       endif
 
       if ( nmax*mmax .gt. 0 ) then

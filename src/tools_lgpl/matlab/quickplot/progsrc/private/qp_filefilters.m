@@ -54,6 +54,7 @@ filtertbl={...
     '*.am?;*.spw;*.wnd'                                    'Delft3D/SOBEK Meteo Files'         'asciiwind'          0
     'gcmplt.*;gcmtsr.*'                                    'ECOMSED Binary Files'              'ecomsed-binary'     0
     '*.stu;*.pst'                                          'JSPost Files'                      'JSPost'             0
+    '*.csv'                                                'CSV Files (Exported from QP)'      'samples'            0
     '*.xyz'                                                'Sample Files'                      'samples'            0
     '*.grb;*.grib;*.grib1;*.grib2'                         'GRIB Files'                        'grib'               0
     '*.nc'                                                 'NetCDF Files'                      'NetCDF'             0

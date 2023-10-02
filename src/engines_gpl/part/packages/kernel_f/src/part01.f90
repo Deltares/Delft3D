@@ -119,16 +119,8 @@ contains
             dxb = 0.5*(xp(n0) - xp(n1) + xp(n2) - xp(n3))
             dyb = 0.5*(yp(n0) - yp(n1) + yp(n2) - yp(n3))
             dy1 = sqrt(dxb**2 + dyb**2)
-!
-!            if (dxa  /=  0.0) then
-!              a1 = atan(dya / dxa)
-!              if (dxa  < 0.0) then
-!                a1 = a1 + sign(pi, dya)
-!              endif
-!            else
-!              a1 = 0.5*sign(pi, dya)
-!            endif
-!
+
+            !
 !           supposed unit for angle (see part10) is degrees.
 !
             if (dxa  /=  0.0) then

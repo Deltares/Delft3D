@@ -31,7 +31,7 @@
       use m_monsys
       use m_evaluate_waq_attribute
       use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_ddhyd                   ! module contains everything for the hydrodynamic description
       implicit none
 
       ! declaration of the arguments

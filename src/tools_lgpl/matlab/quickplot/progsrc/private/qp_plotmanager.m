@@ -32,9 +32,18 @@ function outdata = qp_plotmanager(cmd,UD,logfile,logtype,cmdargs)
 %   $Id$
 
 mfig = findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
-UD=getappdata(mfig,'QPHandles');
-Inactive = UD.Inactive;
-Active = UD.Active;
+if nargin<2 || isempty(UD)
+    if ~isempty(mfig)
+        UD = getappdata(mfig,'QPHandles');
+    else
+        UD = [];
+    end
+end
+if ~isempty(UD)
+    Inactive=UD.Inactive;
+    Active=UD.Active;
+end
+
 if nargin<3
     logfile=0;
     logtype=0;
@@ -1703,10 +1712,7 @@ switch cmd
             das = get(ax,'dataaspectratio');
             das = das/das(1);
             dasmode = get(ax,'dataaspectratiomode');
-            hda_forced = getappdata(ax,'haspectenforced');
-            if isempty(hda_forced)
-                hda_forced = false;
-            end
+            hordasdefaultvalue = getappdata(ax,'haspectdefaultvalue');
             %
             XYZ = 'XYZ';
             for d = 1:3
@@ -1743,30 +1749,28 @@ switch cmd
                 else
                     set(PM.(X).All,'enable','on')
                     set(PM.(X).AxisName,'string',axesNames{d})
-                    if X~='X'
-                        if X=='Y' && hda_forced
-                            set([PM.(X).AspectAuto], ...
-                                'enable','off', ...
-                                'value',0)
-                            set([PM.(X).AspectValue], ...
-                                'string',num2str(1/das(d)), ...
-                                'userdata',1/das(d), ...
-                                'enable','off', ...
-                                'backgroundcolor',Inactive)
-                        elseif isequal(dasmode,'auto')
+                    if ~strcmp(X,'X')
+                        if isequal(dasmode,'auto')
                             set([PM.(X).AspectAuto], ...
                                 'value',1)
                             set([PM.(X).AspectValue], ...
-                                'string',num2str(1/das(d)), ...
+                                'string','', ...
                                 'userdata',1/das(d), ...
                                 'enable','off', ...
+                                'uicontextmenu',[], ...
                                 'backgroundcolor',Inactive)
                         else
+                            if strcmp(X,'Y') && ~isempty(hordasdefaultvalue)
+                                useUCM = {'UIContextMenu',PM.YAspectContextMenu};
+                            else
+                                useUCM = {};
+                            end
                             set([PM.(X).AspectAuto], ...
                                 'value',0)
                             set([PM.(X).AspectValue], ...
                                 'string',num2str(1/das(d)), ...
                                 'userdata',1/das(d), ...
+                                useUCM{:}, ...
                                 'backgroundcolor',Active)
                         end
                     end

@@ -90,7 +90,6 @@
       logical         iterat                            ! if .true. then iterative solution
       logical         delmat                            ! if .true. then direct Gauss solver
       logical         f_solv                            ! if .true. then GMRES Krilov solver
-      logical         triadi                            ! if .true. then ADI like Delft3d-Flow
       logical         balans                            ! if .true. then balances to be computed
       character*20    namarr                            ! help variable for array name
       integer         noth                              ! number of available thread for parallel processing
@@ -176,10 +175,9 @@
       steady = intsrt .eq.  6 .or. intsrt .eq.  7 .or. intsrt .eq.  8 .or.
      &         intsrt .eq.  9 .or. intsrt .eq. 17 .or. intsrt .eq. 18
       iterat = intsrt .eq.  8 .or. intsrt .eq.  9
-      delmat = intsrt .eq.  6 .or. intsrt .eq.  7 .or. intsrt .eq. 10
+      delmat = intsrt .eq.  6 .or. intsrt .eq.  7
       f_solv = intsrt .eq. 15 .or. intsrt .eq. 16 .or. intsrt .eq. 17 .or.
      &         intsrt .eq. 18 .or. intsrt .eq. 21 .or. intsrt .eq. 22
-      triadi = intsrt .eq. 19 .or. intsrt .eq. 20
       balans = btest(intopt,3)
 
 !     Set defaults, no name no length
@@ -433,45 +431,7 @@
       ARRDM2(IISYSI) = 1
       ARRDM3(IISYSI) = 1
 !
-      IF ( TRIADI ) THEN
-         NOHOR = NMAX * (MMAX+4)
-         ARRNAM(IIKFU ) = 'KFU   '
-         ARRKND(IIKFU ) = 1
-         ARRDM1(IIKFU ) = NOHOR*KMAX
-         ARRDM2(IIKFU ) = 1
-         ARRDM3(IIKFU ) = 1
-!
-         ARRNAM(IIKFV ) = 'KFV   '
-         ARRKND(IIKFV ) = 1
-         ARRDM1(IIKFV ) = NOHOR*KMAX
-         ARRDM2(IIKFV ) = 1
-         ARRDM3(IIKFV ) = 1
-!
-         ARRNAM(IIKCS ) = 'KCS   '
-         ARRKND(IIKCS ) = 1
-         ARRDM1(IIKCS ) = NOHOR*KMAX
-         ARRDM2(IIKCS ) = 1
-         ARRDM3(IIKCS ) = 1
-!
-         ARRNAM(IIKFS ) = 'KFS   '
-         ARRKND(IIKFS ) = 1
-         ARRDM1(IIKFS ) = NOHOR*KMAX
-         ARRDM2(IIKFS ) = 1
-         ARRDM3(IIKFS ) = 1
-!
-         ARRNAM(IILGRA) = 'LGRACT'
-         ARRKND(IILGRA) = 1
-         ARRDM1(IILGRA) = MMAX*NMAX
-         ARRDM2(IILGRA) = 1
-         ARRDM3(IILGRA) = 1
-!
-         ARRNAM(IIKBND) = 'IKBND '
-         ARRKND(IIKBND) = 1
-         ARRDM1(IIKBND) = NOBND
-         ARRDM2(IIKBND) = 1
-         ARRDM3(IIKBND) = 1
-
-      elseif ( nmax*mmax .gt. 0 ) then
+      if ( nmax*mmax .gt. 0 ) then
 
          ARRNAM(IILGRA) = 'LGRACT'
          ARRKND(IILGRA) = 1
@@ -666,28 +626,6 @@
       if ( l_decl ) allocate ( iwstkind(nowst) , stat=ierr )
       if ( ierr .ne. 0 ) then ; write(lunrep,2010) "iwstkind            " ; call srstop(1) ; endif
       if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "iwstkind            ", nowst
-      if ( triadi ) then
-         jstart = 1 - 2 * nmax
-         nmmaxj = ( 2 + mmax ) * nmax
-
-         itoti = itoti +  (nmmaxj-jstart+1)*kmax
-         nr_jar_new = nr_jar_new+1                 ! kadu
-         if ( l_decl ) allocate ( kadu  ( jstart:nmmaxj , kmax )        , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "kadu                " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "kadu                ", (nmmaxj-jstart+1)*kmax
-
-         itoti = itoti +  (nmmaxj-jstart+1)*kmax
-         nr_jar_new = nr_jar_new+1                 ! kadv
-         if ( l_decl ) allocate ( kadv  ( jstart:nmmaxj , kmax )        , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "kadv                " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "kadv                ", (nmmaxj-jstart+1)*kmax
-
-         itoti = itoti +  (nmmaxj-jstart+1)
-         nr_jar_new = nr_jar_new+1                 ! kcu
-         if ( l_decl ) allocate ( kcu   ( jstart:nmmaxj )               , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "kcu                 " ; call srstop(1) ; endif
-         if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "kcu                 ", (nmmaxj-jstart+1)
-      endif
       if ( nmax*mmax .gt. 0 ) then
          itoti = itoti +   noseg
          nr_jar_new = nr_jar_new+1                 ! kcu

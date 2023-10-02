@@ -27,11 +27,11 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
+subroutine transform_wave_physics(    hs        ,dir       ,period    ,depth     , &
                                     & fx        ,fy        ,mx        ,my        , &
-                                    & distot    ,dissurf   ,diswcap   , &
+                                    & distot    ,dissurf   ,diswcap              , &
                                     & m         ,n         ,hrms      ,tp        , &
-                                    & grav      ,swflux    ,swdis     , &
+                                    & grav      ,swflux    ,swdis                , &
                                     & gamma0    ,wsbodyu   ,wsbodyv   ,ierr          )
 
     !!--description-----------------------------------------------------------------
@@ -40,6 +40,7 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     ! NONE
     !!--declarations----------------------------------------------------------------
     use mathconsts, only: pi_sp, sqrt2_sp, degrad_sp
+    use precision
     implicit none
     !
     ! Global variables
@@ -69,31 +70,26 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     !
     ! Local variables
     !
-    integer                        :: l
+    integer                        :: lcount
     integer                        :: npnt
-    logical                        :: corht
-    logical                        :: ldep
+    logical                        :: water_is_too_shallow_or_waves_are_too_small
     real                           :: deph
     real                           :: dirh
     real                           :: dish
     real                           :: diss
-    real                           :: dismax
     real                           :: fxhis
     real                           :: fxx
     real                           :: fyhis
     real                           :: fyy
     real                           :: hrm
     real                           :: perfac
-    real                           :: qbsli
     real                           :: tpp
-    real                           :: wavek
     real                           :: wavel
     real                           :: wsbodyuu
     real                           :: wsbodyvv
     !
     !! executable statements -------------------------------------------------------
     !
-    corht  = .false.
     perfac = 1.
     call jonswap_mean2peak_period_factor(gamma0, perfac, ierr)
     if (ierr < 0) then
@@ -104,47 +100,46 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     ! Start loop
     !
     npnt  = m*n
-    do l = 1,npnt
-        hrm   = hs(l)/sqrt2_sp
-        dirh  = dir(l)
-        deph  = depth(l)
-        tpp   = period(l)*perfac
-        fxhis = fx(l)
-        fyhis = fy(l)
-        dish  = distot(l)
-        diss  = dissurf(l) + diswcap(l)
+    do lcount = 1,npnt
+        hrm   = hs(lcount)/sqrt2_sp
+        dirh  = dir(lcount)
+        deph  = depth(lcount)
+        tpp   = period(lcount)*perfac
+        fxhis = fx(lcount)
+        fyhis = fy(lcount)
+        dish  = distot(lcount)
+        diss  = dissurf(lcount) + diswcap(lcount)
         !
-        call wave_length(  hrm, deph, tpp, wavel, wavek, ldep, grav  )
+        call wave_length(  hrm, deph, tpp, wavel, water_is_too_shallow_or_waves_are_too_small, grav  )
         !
         ! If .not. swdis use fx, fy from SWAN
         ! else compute forces based on dissipation and celerity
         !
         wsbodyuu = 0.0
         wsbodyvv = 0.0
-        call wave_forces(dirh      ,deph      ,tpp       ,fxhis     , &
+        call wave_forces(dirh      ,tpp       ,fxhis                , &
                        & fyhis     ,dish      ,diss      ,wavel     , &
-                       & ldep      ,fxx       ,fyy       ,dismax    , &
-                       & corht     ,swdis     ,grav      ,wsbodyuu  , wsbodyvv  )
-        hrms(l)    = hrm
-        dir(l)     = dirh
-        depth(l)   = deph
-        tp(l)      = tpp
-        fx(l)      = fxx
-        fy(l)      = fyy
-        wsbodyu(l) = wsbodyuu
-        wsbodyv(l) = wsbodyvv
-        distot(l)  = dish
-        if (.not.ldep) then
+                       & water_is_too_shallow_or_waves_are_too_small, &
+                       & fxx       ,fyy                             , &
+                       & swdis     ,grav      ,wsbodyuu  , wsbodyvv  )
+        hrms(lcount)    = hrm
+        tp(lcount)      = tpp
+        fx(lcount)      = fxx
+        fy(lcount)      = fyy
+        wsbodyu(lcount) = wsbodyuu
+        wsbodyv(lcount) = wsbodyvv
+        
+        if (.not.water_is_too_shallow_or_waves_are_too_small) then
             if (wavel>1.0E-6 .and. swflux) then
-                mx(l) = .125*grav*hrm*hrm*tpp/wavel*cos(dirh*degrad_sp)
-                my(l) = .125*grav*hrm*hrm*tpp/wavel*sin(dirh*degrad_sp)
+                mx(lcount) = .125*grav*hrm*hrm*tpp/wavel*cos(dirh*degrad_sp)
+                my(lcount) = .125*grav*hrm*hrm*tpp/wavel*sin(dirh*degrad_sp)
             else
-                mx(l) = 0.
-                my(l) = 0.
+                mx(lcount) = 0.
+                my(lcount) = 0.
             endif
         else
-            mx(l) = 0.
-            my(l) = 0.
+            mx(lcount) = 0.
+            my(lcount) = 0.
         endif
         !
         ! End loop

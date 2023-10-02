@@ -21,15 +21,15 @@ if %toolFound%==true (
     echo.
     pause
     call ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\scripts\run_waqpb_export.bat -version%version% -serial%serial% %procDefLoc%
-    
+
     rem copy files to installation directory
-    if exist ..\..\..\..\%cmakeConfiguration%\x64\dwaq\default\ (
-        copy ..\default\proc_def.* ..\..\..\..\..\..\..\%cmakeConfiguration%\x64\dwaq\default\
-        copy ..\default\csvFiles\*.csv ..\..\..\..\..\..\..\%cmakeConfiguration%\x64\dwaq\default\csvFiles
+    if exist ..\..\..\..\%cmakeConfiguration%\x64\dwaq\resources\ (
+        copy ..\default\proc_def.* ..\..\..\..\..\..\..\%cmakeConfiguration%\x64\dwaq\resources\
+        copy ..\default\csvFiles\*.csv ..\..\..\..\..\..\..\%cmakeConfiguration%\x64\dwaq\resources\csvFiles
     )
-    if exist ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\default\ (
-        copy ..\default\proc_def.* ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\default\
-        copy ..\default\csvFiles\*.csv ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\default\csvFiles
+    if exist ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\resources\ (
+        copy ..\default\proc_def.* ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\resources\
+        copy ..\default\csvFiles\*.csv ..\..\..\..\%cmakeConfiguration%\x64\Release\dwaq\resources\csvFiles
     )
     echo.
     pause

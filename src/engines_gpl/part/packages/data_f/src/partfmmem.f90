@@ -72,10 +72,10 @@
    ! flow arrays
 
    ! node related, dim = ndx
-   double precision, allocatable :: h0(:)       !< [m] waterdepth    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: h1(:)       !< [m] waterdepth    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: s0(:)       !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: s1(:)       !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: h0(:)       !< [m] layer thickness at start of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: h1(:)       !< [m] layer thickness at end   of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: s0(:)       !< [m] waterlevel    at start of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: s1(:)       !< [m] waterlevel    at end   of timestep {"location": "face", "shape": ["ndx"]}
    double precision, allocatable :: vol0(:)     !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
    double precision, allocatable :: vol1(:)     !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
 
@@ -186,7 +186,8 @@
    integer,           dimension(:),   allocatable :: qbnd           !< edges where there is no discharge
    integer,           dimension(:),   allocatable :: cell_closed_edge ! cells that have a closed edge (may be temporary eg dry due to dry cells)
    double precision,  dimension(:),   allocatable :: u0x, u0y, alphafm !< reconstruction of velocity fiels in cells, dim(numcells)
-   double precision,  dimension(:),   allocatable :: u0z          !< reconstruction of velocity fiels in cells, dim(numcells), for spherical models
+   double precision,  dimension(:),   allocatable :: u0z          !< reconstruction of velocity field in cells, dim(numcells), for spherical models
+   double precision,  dimension(:),   allocatable :: u0w          !< reconstruction of velocity field in cells, dim(numcells), for 3D models (represents vertical motion in water column)
    double precision                               :: xref, yref ! reference point around cartesian area if model is sferical
 
    integer,           dimension(:),   allocatable :: ireconst    !< sparse storage of velocity reconstructin, edges,        dim(jreconst(numcells+1)-1)

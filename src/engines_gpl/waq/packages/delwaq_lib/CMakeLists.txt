@@ -21,28 +21,21 @@ set(library_name delwaq_lib)
 add_library(${library_name} SHARED ${source_files}
                                    ${rc_version_file})
 
-set(oss_dependencies_general deltares_common
-                             deltares_common_c
-                             io_netcdf
-                             nefis
-                             waq_data
-                             waq_io
-                             waq_memory
-                             waq_kernel
-                             waq_plugin_wasteload
-                             waq_process
-                             waq_validation
-                             waq_utils_c
-                             waq_utils_f
-                             part_utils_f)
+# Set dependencies
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     waq_data
+                     waq_io
+                     waq_memory
+                     waq_kernel
+                     waq_process
+                     waq_validation
+                     waq_utils_c
+                     waq_utils_f)
 
+oss_include_libraries(${library_name} oss_dependencies)
 
 if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies})
     target_include_directories(${library_name} PRIVATE ${mpi_include_path})
 
@@ -76,23 +69,9 @@ if (WIN32)
     target_link_options(${library_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
-# Set dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
-    set(oss_dependencies ${oss_dependencies_general})
-
-    oss_include_libraries(${library_name} oss_dependencies)
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
-         uuid)
+    target_link_libraries(${library_name} ${oss_dependencies}
+                                          uuid)
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio
@@ -126,9 +105,9 @@ post_build_target (${library_name}
 
 install(TARGETS ${library_name} DESTINATION lib)
 if (UNIX)
-    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/bloom.spe          DESTINATION share/delft3d)
-    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.dat       DESTINATION share/delft3d)
-    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/proc_def.def       DESTINATION share/delft3d)
-    install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/csvFiles      DESTINATION share/delft3d)
-    install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/default/subFiles      DESTINATION share/delft3d)
+    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/bloom.spe          DESTINATION share/delft3d)
+    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/proc_def.dat       DESTINATION share/delft3d)
+    install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/proc_def.def       DESTINATION share/delft3d)
+    install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/csvFiles      DESTINATION share/delft3d)
+    install(DIRECTORY  ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/subFiles      DESTINATION share/delft3d)
 endif(UNIX)

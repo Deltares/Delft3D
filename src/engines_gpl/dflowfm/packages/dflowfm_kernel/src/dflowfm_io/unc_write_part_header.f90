@@ -78,8 +78,8 @@ subroutine unc_write_part_header(ifile,id_timedim,id_partdim,id_parttime,id_part
 
 
    if ( kmx.gt.0 ) then
-      ierr = nf90_def_var(ifile, 'particle_z_coordinate', nf90_double, (/ id_partdim, id_timedim /), id_partz)
-      ierr = nf90_put_att(ifile, id_partz, 'long_name', 'z-coordinate of particle')
+      ierr = nf90_def_var(ifile, 'particles_z_coordinate', nf90_double, (/ id_partdim, id_timedim /), id_partz)
+      ierr = nf90_put_att(ifile, id_partz, 'long_name', 'z-coordinate of particles')
    end if
 
    ! Leave the dataset in the same mode as we got it.

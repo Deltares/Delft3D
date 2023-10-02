@@ -24,16 +24,12 @@ set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set dependencies
-set(oss_dependencies    deltares_common
-                        deltares_common_c
-                        waq_utils_f)
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     waq_utils_f)
 
 oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
-
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")

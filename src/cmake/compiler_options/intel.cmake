@@ -1,5 +1,6 @@
 # Set Intel compiler specific flags:
 enable_language (Fortran)
+set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
 if (WIN32)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
@@ -22,7 +23,7 @@ if (WIN32)
     set(check_nobounds_flag                   /check:nobounds)
     set(check_pointers_flag                   /check:pointers)
     set(check_nopointers_flag                 /check:nopointers)
-	set(check_uninit_flag                     /check:uninit)
+    set(check_uninit_flag                     /check:uninit)
     set(check_stack_flag                      /check:stack)	
     set(openmp_flag                           /Qopenmp)
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
@@ -30,6 +31,9 @@ if (WIN32)
     set(traceback_flag                        /traceback)
     
     set(codecov_flag                          /Qcov-gen)
+    set(profiling_flag                        /Qprof-gen:srcpos)
+    set(srcrootdir_code_cov                   /Qprof-src-root ${src_root_dir})
+    
 
     if (CMAKE_GENERATOR MATCHES "Visual Studio") # for visual studio
         # To prevent Visual Studio compilation failures when trying to write the manifest file
@@ -76,8 +80,8 @@ set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag} ${trace
 
 
 # Define the custom flag about code coverage with a default value of OFF
-option(ENABLE_CODE_COVERAGE "Enable the code coverage" OFF)
+option(ENABLE_CODE_COVERAGE "Enable the code and profiling coverage" OFF)
 if(ENABLE_CODE_COVERAGE)
-    message("Code coverage analysis is enabled")
-    set(waq_default_flags ${waq_default_flags} ${codecov_flag})
+    message("Code coverage and profiling analysis is enabled")
+    set(waq_default_flags ${waq_default_flags} ${codecov_flag} ${profiling_flag} ${srcrootdir_code_cov})
 endif(ENABLE_CODE_COVERAGE)

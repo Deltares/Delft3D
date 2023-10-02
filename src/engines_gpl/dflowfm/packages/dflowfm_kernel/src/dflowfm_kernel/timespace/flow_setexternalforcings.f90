@@ -62,6 +62,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 2
    integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS = 3
    integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 4
+   integer, parameter              :: DEWPOINT = 5
   
    double precision, parameter     :: SEA_LEVEL_PRESSURE = 101325d0
 
@@ -84,6 +85,10 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
       ! To prevent any pressure jumps at the boundary, set (initial) patm in interior to PavBnd.
       ! May of course be overridden later by spatially varying patm values.
       patm = PavBnd
+   end if
+
+   if (ja_airdensity > 0) then
+      call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
    end if
 
    if (jawind == 1 .or. japatm > 0) then
@@ -250,13 +255,16 @@ subroutine set_wind_data()
             else
                call get_timespace_value_by_name('airpressure_windx_windy')
             end if
+        ! Retrieve wind's charnock-component for ext-file quantity 'charnock'.
+        else if (ec_item_id == item_charnock) then
+            call get_timespace_value_by_item(item_charnock)
         ! Retrieve wind's x-component for ext-file quantity 'windx'.
         else if (ec_item_id == item_windx) then
             call get_timespace_value_by_item(item_windx)
-         ! Retrieve wind's y-component for ext-file quantity 'windy'.
-         else if (ec_item_id == item_windy) then
+        ! Retrieve wind's y-component for ext-file quantity 'windy'.
+        else if (ec_item_id == item_windy) then
             call get_timespace_value_by_item(item_windy)
-         ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
+        ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
         else if (ec_item_id == item_atmosphericpressure) then
             call get_timespace_value_by_item(item_atmosphericpressure)
         else
@@ -289,7 +297,12 @@ subroutine set_wind_data()
             end do
         end if
     end if
-
+    if (allocated(ec_charnock)) then
+        do link  = 1, lnx
+            wcharnock(link) = wcharnock(link) + 0.5d0*( ec_charnock(ln(1,link)) + ec_charnock(ln(2,link)) )
+        end do
+    end if
+        
     if (item_atmosphericpressure /= ec_undef_int) then
         where (patm == dmiss)
             patm = SEA_LEVEL_PRESSURE
@@ -397,6 +410,8 @@ subroutine set_temperature_models()
         call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness')
     case (DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION)
         call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness_solarradiation')
+    case (DEWPOINT)
+        call get_timespace_value_by_name_and_consider_success_value('dewpoint')
     end select
 
     foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)

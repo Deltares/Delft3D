@@ -6,7 +6,7 @@ set(waq_root_path ${agrhyd_root_path}/../../engines_gpl/waq) # Trace back to the
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_agrhyd.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -112,4 +112,3 @@ if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/agrhyd/scripts/run_agrhyd.sh  DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/agrhyd/default/agrhyd.ini  DESTINATION share/delft3d)
 endif(UNIX)
-

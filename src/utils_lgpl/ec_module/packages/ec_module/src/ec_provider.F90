@@ -370,12 +370,13 @@ module m_ec_provider
                      case ("rainfall",                                                    &
                            "rainfall_rate",                                               &
                            "airpressure_windx_windy", "airpressure_windx_windy_charnock", &
-                           "airpressure_stressx_stressy",                                 &
+                           "airpressure_stressx_stressy", "charnock",                     &
                            "windxy", "stressxy", "windx", "windy", "stressx", "stressy",  &
                            "nudge_salinity_temperature",                                  &
                            "airpressure","atmosphericpressure",                           &
-                           "airtemperature", "humidity", "cloudiness",                    &
+                           "airtemperature", "humidity", "dewpoint", "cloudiness",        &
                            "wind_speed", "wind_from_direction",                           &
+                           "airdensity",                                                  & 
                            "humidity_airtemperature_cloudiness",                          &
                            "humidity_airtemperature_cloudiness_solarradiation",           &
                            "dewpoint_airtemperature_cloudiness",                          &
@@ -2530,6 +2531,10 @@ module m_ec_provider
          case ('airpressure','atmosphericpressure') 
             ncvarnames(1) = 'msl'                            ! mean sea-level pressure
             ncstdnames(1) = 'air_pressure'
+         case ('airdensity') 
+            ! UNST-6593: airdensity has variable name p140209 and no standard_name, will be changed in the future according to ECMWF. 
+            ncvarnames(1) = 'p140209'                        ! air density above sea
+            ncstdnames(1) = 'air_density'
          case ('airpressure_windx_windy') 
             ncvarnames(1) = 'msl'                            ! mean sea-level pressure
             ncstdnames(1) = 'air_pressure'
@@ -2553,15 +2558,21 @@ module m_ec_provider
             ncstdnames(3) = 'northward_wind'
             ncvarnames(4) = 'c'                              ! space varying Charnock coefficients
             ncstdnames(4) = 'charnock'
+         case ('charnock')
+            ncvarnames(1) = 'c'                              ! space varying Charnock coefficients
+            ncstdnames(1) = 'charnock'
          case ('airtemperature')
             ncvarnames(1) = 't2m'                            ! 2-meter air temperature
             ncstdnames(1) = 'air_temperature'
          case ('cloudiness')
-            ncvarnames(3) = 'tcc'                            ! cloud cover (fraction)
-            ncstdnames(3) = 'cloud_area_fraction'
+            ncvarnames(1) = 'tcc'                            ! cloud cover (fraction)
+            ncstdnames(1) = 'cloud_area_fraction'
          case ('humidity')
             ncstdnames(1) = 'humidity'
             ncstdnames_fallback(1) = 'relative_humidity'
+         case ('dewpoint')
+            ncvarnames(1) = 'd2m'                            ! dew-point temperature
+            ncstdnames(1) = 'dew_point_temperature'
          case ('wind_speed')
             ncstdnames(1) = 'wind_speed'
          case ('wind_from_direction')

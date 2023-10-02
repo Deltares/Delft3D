@@ -48,9 +48,10 @@ subroutine update_particles(q,h0,h1,Dt)
    implicit none
 
    double precision, dimension(Lnx), intent(in) :: q  !< fluxes
-   double precision, dimension(Ndx), intent(in) :: h0 !< water deoths at start of time interval
-   double precision, dimension(Ndx), intent(in) :: h1 !< water deoths at end of time interval
+   double precision, dimension(Ndx), intent(in) :: h0 !< layer thickness (m) at start of time interval
+   double precision, dimension(Ndx), intent(in) :: h1 !< layer thickness (m) at end of time interval
    double precision,                 intent(in) :: Dt !< time interval
+   integer, parameter                           :: wp = kind(q)
 
    integer, dimension(1) :: numremaining ! number of remaining particles to be updated
 
@@ -62,14 +63,13 @@ subroutine update_particles(q,h0,h1,Dt)
 
    integer, parameter :: MAXITER = 1000 ! maximum number of substeps
 
-   integer(4) ithndl              ! handle to time this subroutine
-   data ithndl / 0 /
+   integer(4), save   :: ithndl  = 0    ! handle to time this subroutine
    if ( timon ) call timstrt( "update_particles", ithndl )
 
    ! reconstruct velocity field
    call reconst_vel(q, h0, h1)
 
-   if ( Nopart.gt.0 ) then
+   if ( Nopart > 0 ) then
       ! set remaining time to time step
       dtremaining = Dt
       numzero = 0
@@ -78,24 +78,24 @@ subroutine update_particles(q,h0,h1,Dt)
    do iter=1,MAXITER
       ! update particles in cells
       call update_particles_in_cells(numremaining(1), ierror)
-      if ( ierror.ne.0 ) then
+      if ( ierror /= 0 ) then
           if ( timon ) call timstop ( ithndl )
           return
       endif
 
       write(*,*) 'iter=', iter, 'numremaining=', numremaining(1)
-      if ( numremaining(1).eq.0 ) then
+      if ( numremaining(1) == 0 ) then
          write(*,*) 'iter=', iter
          exit
       end if
    end do
 
    ! check for remaining particles
-   if ( numremaining(1).gt.0 ) then
+   if ( numremaining(1) > 0 ) then
       ! plot remaining particles
       do i=1,Nopart
-         if ( dtremaining(i).gt.0d0 .and. mpart(i).gt.0 ) then
-            if ( jsferic.eq.0 ) then
+         if ( dtremaining(i) > 0.0_wp .and. mpart(i) > 0 ) then
+            if ( jsferic == 0 ) then
                xx = xpart(i)
                yy = ypart(i)
             else
@@ -115,8 +115,8 @@ end subroutine update_particles
 
 !> update positions of particles within triangles
 subroutine update_particles_in_cells(numremaining, ierror)
+   use partmem, only: nopart, mpart, hyd
    use m_fm_aux_routines
-   use partmem, only: nopart, mpart
    use m_particles, laypart => kpart
    use m_partrecons
    use m_partmesh
@@ -151,9 +151,14 @@ subroutine update_particles_in_cells(numremaining, ierror)
    double precision, parameter :: DTOLun = 1e-14
 
    integer,          parameter :: MAXNUMZERO = 10
+   integer,          parameter :: wp = kind(dtol)
 
-   integer(4) ithndl              ! handle to time this subroutine
-   data ithndl / 0 /
+   double precision            :: uw0up, uw0low
+   double precision            :: alpha, beta, beta1, beta2
+   double precision            :: time_low, time_up
+   integer                     :: new_layer
+
+   integer(4), save            :: ithndl = 0             ! handle to time this subroutine
    if ( timon ) call timstrt( "update_particles_in_cells", ithndl )
 
    ierror = 0
@@ -163,13 +168,14 @@ subroutine update_particles_in_cells(numremaining, ierror)
 
 !$OMP PARALLEL DO PRIVATE (i, k, k1, k2, L, ja, Lexit, d, un, t, tex, dt,          &
 !$OMP                      ux0, uy0, uz0, cs, sn, xn, yn, zn, rl, dvar, dis, dn,   &
-!$OMP                      ddn, isboundary),                                       &
+!$OMP                      ddn, isboundary, alpha, beta, uw0low, uw0up, time_low, time_up, &
+!$OMP                      beta1, beta2, new_layer),                               &
 !$OMP           REDUCTION ( +   : numremaining) ,                                  &
 !$OMP           REDUCTION ( MAX : ierror ),                                        &
 !$OMP           SCHEDULE  ( DYNAMIC, max(Nopart/100,1)           )
    do ipart=1,Nopart
       ! check if this particle needs to be updated
-      if ( dtremaining(ipart).eq.0d0 .or. mpart(ipart).lt.1 ) cycle
+      if ( dtremaining(ipart) == 0.0_wp .or. mpart(ipart) < 1 ) cycle
       ! get cell (flownode) particle in in
       k = mpart(ipart)
       kl = k + (laypart(ipart) - 1) * numcells
@@ -182,7 +188,66 @@ subroutine update_particles_in_cells(numremaining, ierror)
       ! compute velocity at current position
       ux0 = u0x(kl) + alphafm(kl)*(xpart(ipart)-xzwcell(k))
       uy0 = u0y(kl) + alphafm(kl)*(ypart(ipart)-yzwcell(k))
-      if ( jsferic.ne.0 ) then
+
+      !
+      ! First determine at what time the particle may leave
+      ! the layer it is in
+      !
+      new_layer = 0
+      uw0low    = 0.0d0
+      if ( laypart(ipart) > 1 ) then
+         uw0low = u0w(kl-numcells)
+      endif
+
+      uw0up = 0.0d0
+      if ( laypart(ipart) < hyd%nolay ) then
+         uw0up = u0w(kl)
+      endif
+
+      time_up  = huge(time_up)
+      time_low = huge(time_low)
+      alpha    = uw0up - uw0low
+      beta     = 0.0d0
+
+      if ( abs(alpha) > dtol ) then
+         beta = uw0low / alpha
+
+         beta1 = beta / (hpart(ipart) + beta)
+         if ( beta1 > 0.0_wp ) then
+            time_low = log(beta1) / alpha
+         endif
+
+         beta2 = (1.0_wp + beta) / (hpart(ipart) - beta )
+         if ( beta2 > 0.0_wp ) then
+            time_up = log(beta2) / alpha
+         endif
+      else
+         if ( uw0low > 0.0_wp ) then
+            time_up  = (1.0_wp - hpart(ipart)) / uw0low
+         else
+            time_low = -hpart(ipart) / uw0low
+         endif
+      endif
+
+      !
+      ! If the time left in the time step is larger than the time
+      ! required to pass through either the interface aobve or below,
+      ! then adjust the exit time.
+      !
+      if ( tex > time_low .and. time_low > 0.0_wp ) then
+          tex = time_low
+          new_layer = -1
+      endif
+
+      if ( tex > time_up .and. time_up > 0.0_wp ) then
+          tex = time_up
+          new_layer = +1
+      endif
+
+      !
+      ! Now compute the same for the horizontal motion
+      !
+      if ( jsferic /= 0 ) then
          uz0 = u0z(kl) + alphafm(kl)*(zpart(ipart)-zzwcell(k))
       end if
 
@@ -193,15 +258,15 @@ subroutine update_particles_in_cells(numremaining, ierror)
          k1 = edge2node(1,L)
          k2 = edge2node(2,L)
 
-         if ( jsferic.eq.0 ) then
+         if ( jsferic == 0 ) then
             cs = dnx(1,L)
             sn = dny(1,L)
-            if ( edge2cell(2,L).eq.k ) then
+            if ( edge2cell(2,L) == k ) then
                cs = -cs
                sn = -sn
             end if
          else
-            if ( edge2cell(1,L).eq.k ) then
+            if ( edge2cell(1,L) == k ) then
                ddn = (/ dnx(1,L), dny(1,L), dnz(1,L) /)
             else
                ddn = (/ dnx(2,L), dny(2,L), dnz(2,L) /)
@@ -209,10 +274,10 @@ subroutine update_particles_in_cells(numremaining, ierror)
          end if
 
          ! check for boundary edge
-         isboundary = ( edge2cell(1,L).eq.0 .or. edge2cell(2,L).eq.0 )
+         isboundary = ( edge2cell(1,L) == 0 .or. edge2cell(2,L) == 0 )
 
          ! compute normal distance to edge
-         if ( jsferic.eq.0 ) then
+         if ( jsferic == 0 ) then
             if ( isboundary ) then ! boundary: add tolerance
                call dlinedis2(xpart(ipart),ypart(ipart),xnode(k1)+cs*DTOLd,ynode(k1)+sn*DTOLd,xnode(k2)+cs*DTOLd,ynode(k2)+sn*DTOLd,ja,d,xn,yn,rl)
             else
@@ -236,25 +301,25 @@ subroutine update_particles_in_cells(numremaining, ierror)
          end if
 
          ! check inside or outside triangle
-         if ( dis.lt.-DTOLd .and. .not.isboundary ) then
+         if ( dis < -DTOLd .and. .not.isboundary ) then
             ! outside triangle
             Lexit = L
             exit
          else
             ! inside triangle
             ! compute normal velocity to edge (outward positive)
-            if ( jsferic.eq.0 ) then
+            if ( jsferic == 0 ) then
                un =  ux0*cs + uy0*sn
             else
                un =  ux0*ddn(1) + uy0*ddn(2) + uz0*ddn(3)
             end if
 
-            if ( un.gt.max(DTOLun_rel*d,DTOLun) ) then   ! normal velocity does not change sign: sufficient to look at u0.n
+            if ( un > max(DTOLun_rel*d,DTOLun) ) then   ! normal velocity does not change sign: sufficient to look at u0.n
                ! compute exit time for this edge: ln(1+ d/un alpha) / alpha
                dvar = alphafm(kl)*dis/un
-               if ( dvar.gt.-1d0) then
+               if ( dvar > -1.0_wp ) then
                   t = dis/un
-                  if ( abs(dvar).ge.DTOL ) then
+                  if ( abs(dvar) >= DTOL ) then
                      t = t * log(1d0+dvar)/dvar
                   end if
                else
@@ -262,7 +327,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
                end if
 
                ! update exit time/edge (flowlink)
-               if ( t.le.tex ) then
+               if ( t <= tex ) then
 
                   tex = t
                   Lexit = L
@@ -272,7 +337,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
          end if
       end do
 
-      if ( dtremaining(ipart).eq.0d0 ) then
+      if ( dtremaining(ipart) == 0.0_wp ) then
          !continue
          cycle
       end if
@@ -281,7 +346,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
       dt = min(dtremaining(ipart), tex)
 
       ! update particle
-      if ( abs(alphafm(kl)).lt.DTOL ) then
+      if ( abs(alphafm(kl)) < DTOL ) then
          dvar = dt
       else
          dvar = (exp(alphafm(kl)*dt)-1d0)/alphafm(kl)
@@ -290,32 +355,51 @@ subroutine update_particles_in_cells(numremaining, ierror)
       xpart(ipart) = xpart(ipart) + dvar * ux0
       ypart(ipart) = ypart(ipart) + dvar * uy0
 
-      if ( jsferic.ne.0 ) then
+      if ( jsferic /= 0 ) then
          zpart(ipart) = zpart(ipart) + dvar * uz0
       end if
 
+      ! if the particle does not move to another layer, update
+      ! the relative position, otherwise we know exactly where
+      ! it ends up.
+      if ( new_layer == 0 ) then
+         if ( abs(alpha) > dtol ) then
+            hpart(ipart) = (hpart(ipart) + beta) * exp(alpha*dt) - beta
+         else
+            hpart(ipart) = hpart(ipart) + uw0low * dt
+         endif
+      else
+          laypart(ipart) = laypart(ipart) + new_layer
+          hpart(ipart)   = merge( 0.0d0, 1.0d0, new_layer > 0 )
+          numremaining   = numremaining + 1  ! number of remaining particles for next substep
+      endif
+
+      ! handle spurious errors - they should not occur, of course
+      laypart(ipart) = min( max( laypart(ipart), 1 ), hyd%nolay )
+
+      ! update the time that is left within this time step
       dtremaining(ipart) = dtremaining(ipart) - dt
 
-      if ( dt.eq.0d0 ) then
+      if ( dt == 0.0_wp ) then
          numzero(ipart) = numzero(ipart) + 1
       end if
 
-      if ( numzero(ipart).gt.MAXNUMZERO ) then
+      if ( numzero(ipart) > MAXNUMZERO ) then
          ! disable particle that is not moving
          mpart(ipart) = 0
-         dtremaining(ipart) = 0d0
+         dtremaining(ipart) = 0.0_wp
 
          ! proceed to neighboring cell (if applicable)
-      else if ( Lexit.gt.0 ) then
+      else if ( Lexit > 0 ) then
          numremaining = numremaining + 1  ! number of remaining particles for next substep
-         if ( edge2cell(1,Lexit).gt.0 .and. edge2cell(2,Lexit).gt.0 ) then   ! internal edge (netlink)
+         if ( edge2cell(1,Lexit) > 0 .and. edge2cell(2,Lexit) > 0 ) then   ! internal edge (netlink)
             mpart(ipart) = edge2cell(1,Lexit) + edge2cell(2,Lexit) - k
 
 
-            if ( mpart(ipart).eq.0 ) then
+            if ( mpart(ipart) == 0 ) then
                continue
             else
-               if ( jsferic.eq.1 ) then
+               if ( jsferic == 1 ) then
                   ! project node on triangle
                   k = mpart(ipart)
                   k1 = edge2node(1,Lexit)
@@ -334,9 +418,9 @@ subroutine update_particles_in_cells(numremaining, ierror)
          else  ! on boundary
             mpart(ipart) = 0
          end if
-      else
-         ! safety check
-         if ( dtremaining(ipart).ne.0d0 ) then
+      elseif ( new_layer == 0 ) then
+         ! safety check - new_layer /= 0 has already been taken care of
+         if ( dtremaining(ipart) /= 0.0_wp ) then
             ierror = 1
          end if
       end if

@@ -1,5 +1,3 @@
-subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
-               & xcor      ,ycor      ,sferic    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -26,96 +24,69 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!!--description----------------------------------------------------------------- 
-! 
-!    Function: Reads the coordinates of the depth points from the 
-!              grid file 
-! Method used: 
-! 
-!!--pseudo code and references-------------------------------------------------- 
-! NONE 
-!!--declarations---------------------------------------------------------------- 
+module m_rdrgf
+
+private
+
+!
+! functions and subroutines
+!
+public rdrgf
+
+contains
+
+!> Read the grid point coordinates from a curvi-linear grd-file.
+subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
+               & xcor      ,ycor      ,sferic    )
     use precision
-    use globaldata
     use string_module, only: remove_leading_spaces
-    use dfparall
     use system_utils, only: exifil
     ! 
     implicit none 
     ! 
-    type(globdat),target :: gdp 
-    ! 
-    ! The following list of pointer parameters is used to point inside the gdp structure 
-    ! 
-    integer, pointer :: mfg 
-    integer, pointer :: mlg 
-    integer, pointer :: nfg 
-    integer, pointer :: nlg 
-    integer, pointer :: mmaxgl 
-    integer, pointer :: nmaxgl 
 ! 
-! Global variables 
+! Subroutine arguments
 ! 
-    integer                                                                                                             :: lundia !  Description and declaration in inout.igs 
-    integer                                                                                               , intent(in)  :: mmax   !  Description and declaration in esm_alloc_int.f90 
-    integer                                                                                               , intent(in)  :: nmax   !  Description and declaration in esm_alloc_int.f90 
-    logical                                                                                                             :: error  !!  Flag=TRUE if an error is encountered 
-    logical                                                                                               , intent(out) :: sferic !  Description and declaration in tricom.igs 
-    real(fp)    , dimension(1 - gdp%d%ddbound:nmax + gdp%d%ddbound,1 - gdp%d%ddbound:mmax + gdp%d%ddbound)              :: xcor   !  Description and declaration in esm_alloc_real.f90 
-    real(fp)    , dimension(1 - gdp%d%ddbound:nmax + gdp%d%ddbound,1 - gdp%d%ddbound:mmax + gdp%d%ddbound)              :: ycor   !  Description and declaration in esm_alloc_real.f90 
-    character(*)                                                                                                        :: filrgf !!  File name for the curvi-linear grid file (telmcrgf.xxx) 
+    integer                                         :: lundia !< unit number for diagnostic output
+    integer                           , intent(in)  :: mmax   !< number of grid points in the M-dir. specified in the mdf file  
+    integer                           , intent(in)  :: nmax   !< number of grid points in the N-dir. specified in the mdf file  
+    logical                                         :: error  !< flag=TRUE if an error is encountered 
+    logical                           , intent(out) :: sferic !< flag=TRUE if grid in spherical coordinates
+    real(fp)    , dimension(nmax,mmax)              :: xcor   !< x-coordinates of the grid points
+    real(fp)    , dimension(nmax,mmax)              :: ycor   !< y-coordinates of the grid points
+    character(*)                                    :: filrgf !< name of the grid file
 ! 
 ! Local variables 
 ! 
-    integer                               :: isfer
-    integer, dimension(3)                 :: ival
-    integer                               :: i        ! Complete integer array  
-    integer                               :: ilen     ! Help var.  
-    integer                               :: lenrec   ! Help var. 
-    integer                               :: j        ! Begin pointer for arrays which have been transformed into 1D arrays. Due to the shift in the 2nd (M-) index, J = -2*NMAX + 1  
-    integer                               :: lunrgf   ! Unit nr. for the curvi-linear grid file (telmcrgf.xxx)  
-    integer                               :: mc       ! Number of grid points in the M-dir. specified in the curvi linear grid file  
-    integer                               :: nc       ! Number of grid points in the N-dir. specified in the curvi linear grid file  
-    integer                    , external :: newlun 
-    integer                               :: pos 
-    logical                               :: kw_found 
-    real(fp)                              :: xymiss 
-    real(fp), dimension(:,:), allocatable :: xtmp     ! temporary array containing xcor of entire domain 
-    real(fp), dimension(:,:), allocatable :: ytmp     ! temporary array containing ycor of entire domain 
-    character(256)                        :: errmsg   ! Character var. containing the errormessage to be written to file. The message depends on the error.  
-    character(256)                        :: rec 
-    character(4)                          :: errornr  ! Number of the errormessage which will be printed in case of error 
-    character(10)                         :: dum 
+    integer                               :: ilen     !< length of grid file name
+    integer                               :: lunrgf   !< unit number for the grid file
+    integer                               :: m        !< loop index
+    integer                               :: mc       !< number of grid points in the M-dir. specified in the grid file  
+    integer                               :: n        !< loop index
+    integer                               :: nc       !< number of grid points in the N-dir. specified in the grid file  
+    integer                               :: pos      !< index of substring in another string
+    logical                               :: kw_found !< flag indicating whether a keyword has been found
+    real(fp)                              :: xymiss   !< missing value as read from file 
+    character(256)                        :: rec      !< character var. containing one line
+    character(10)                         :: dum      !< place holder for characters read from file that are not used/checked 
+    character(2048)                       :: msg      !< character var. for longer error message
 ! 
 !! executable statements ------------------------------------------------------- 
 ! 
-    mfg    => gdp%gdparall%mfg 
-    mlg    => gdp%gdparall%mlg 
-    nfg    => gdp%gdparall%nfg 
-    nlg    => gdp%gdparall%nlg 
-    nmaxgl => gdp%gdparall%nmaxgl 
-    mmaxgl => gdp%gdparall%mmaxgl
-    !
     ! initialize local parameters 
-    ! 
     nc     = 0 
     mc     = 0 
-    errornr = 'G004' 
-    errmsg = 'grid file ' // filrgf 
-    sferic = .false. 
-    ! 
+    sferic = .false.
+    error  = .false.
+
     ! check file existence 
-    ! 
     call remove_leading_spaces(filrgf    ,ilen      ) 
     error = .not.exifil(filrgf, lundia) 
-    if (error) goto 9999 
-    ! 
-    ! the master opens and reads the grid file 
-    ! 
-    if ( inode /= master ) goto 50 
-    ! 
+    if (error) then
+        call prterr(lundia, 'G004', 'grid file ' // filrgf)
+        return
+    endif
+
     open (newunit=lunrgf, file = filrgf(:ilen), form = 'formatted', status = 'old') 
     ! 
     ! Read file, check for end of file or error in file: 
@@ -133,14 +104,16 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
     ! - Read x coordinates 
     ! - Read y coordinates 
     ! 
-    read (lunrgf, '(a)', end = 7777, err = 8888) rec 
+    read (lunrgf, '(a)', end=7777, err=8888) rec 
     if (index(rec, 'Spherical')>=1 .or. index(rec, 'SPHERICAL')>=1) then 
        sferic = .true. 
-    endif 
-10  continue 
+    endif
+    
+    kw_found = .true.
+    do while (kw_found)
+       read(lunrgf,'(a)', end=7777, err=8888) rec 
+       if (rec(1:1) == '*') cycle
        kw_found = .false. 
-       read(lunrgf,'(a)',end = 7777,err=8888) rec 
-       if (rec(1:1) == '*') goto 10 
        ! 
        pos = index(rec,'Coordinate System') 
        if (pos >= 1) then 
@@ -158,128 +131,76 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
        if (pos >= 1) then 
           kw_found = .true. 
           pos      = index(rec,'=') + 1 
-          read(rec(pos:),*,err=8888) xymiss 
+          read(rec(pos:), *, err=8888) xymiss 
        endif 
-    if (kw_found) goto 10 
+    enddo
     ! 
-    if (sferic) then 
-       write (lundia, *) 
-       write (lundia, '(a)') 'Coordinate System: Spherical' 
-       write (lundia, *) 
-    endif 
     read(rec,*,err=8888)  mc,nc 
-    ! 
-    ! nc > 9999 can not be handled by Delft3D-FLOW 
-    ! causes problem in reading format  
-    ! file must be in netcdf format in this case 
-    ! 
+    if (mc /= mmax-1 .or. nc /= nmax-1) then
+       error = .true.
+       write(msg,'(A,I0,A,I0,3A,I0,A,I0,A)') 'Grid size (',mc,',',nc,') in file "',trim(filrgf), &
+           & '" does not match the expected size (',mmax-1,',',nmax-1, &
+           & ') based on the dimensions specified in the mdf-file'
+       call prterr(lundia, 'P004', trim(msg)) 
+       close (lunrgf) 
+       return 
+    endif
+
+    ! nc > 9999 causes problem in reading format since the string "ETA=" and number will
+    ! connect to one string whereas two strings are expected (see the two "dum" arguments
+    ! in the read statements below)
     if (nc > 9999) then 
        error = .true. 
-       call prterr(lundia, 'P004', 'in grid file: Nmax larger than 9999 is not allowed ' // & 
-                        & 'supply grid in Netcdf format') 
+       call prterr(lundia, 'P004', 'in grid file: nmax larger than 9999 is not allowed') 
        close (lunrgf) 
        return 
     endif 
-    ! 
-    ! allocate temporary arrays to store coordinates read from grid file 
-    ! 
-    allocate (xtmp(nmaxgl,mmaxgl)) 
-    allocate (ytmp(nmaxgl,mmaxgl)) 
-    xtmp = 0. 
-    ytmp = 0. 
-    ! 
+    
     ! read three zero's 
-    ! 
-    read(lunrgf, '(a)', end = 7777, err=8888) rec 
-    ! 
-    ! read XD 
-    ! read unformatted: The number of digits of xcor may vary 
-    ! 
-    do j = 1, nc 
-        read (lunrgf, *, end = 7777, err = 8888) dum, dum, (xtmp(j,i), i=1,mc) 
-        do i = 1, mc 
-            if (isnan(xtmp(j,i))) goto 6666 
+    read(lunrgf, '(a)', end=7777, err=8888) rec 
+
+    ! unformatted read; the number of digits of xcor may vary 
+    !  ETA=    N ...values...
+    do n = 1, nc 
+        read(lunrgf, *, end=7777, err=8888) dum, dum, (xcor(n,m), m=1,mc) 
+        do m = 1, mc 
+            if (isnan(xcor(n,m))) then
+                error = .true.
+                call prterr(lundia, 'G004', 'Grid file contains x-coordinate equal to NaN')
+                close (lunrgf)
+                return
+            endif
         enddo 
     enddo 
-    ! 
-    ! read YD 
-    ! read unformatted: The number of digits of ycor may vary 
-    ! 
-    do j = 1, nc 
-       read (lunrgf, *, end = 7777, err = 8888) dum, dum, (ytmp(j, i), i=1,mc) 
-       do i = 1, mc 
-            if (isnan(ytmp(j,i))) goto 6666 
-       enddo 
+
+    ! unformatted read; the number of digits of ycor may vary 
+    do n = 1, nc 
+        read(lunrgf, *, end=7777, err=8888) dum, dum, (ycor(n,m), m=1,mc) 
+        do m = 1, mc 
+            if (isnan(ycor(n,m))) then
+                error = .true.
+                call prterr(lundia, 'G004', 'Grid file contains y-coordinate equal to NaN')
+                close (lunrgf)
+                return
+            endif
+        enddo 
     enddo 
-    close (lunrgf) 
-    ! 
-    if (sferic) then 
-       isfer = 1 
-    else 
-       isfer = 0 
-    endif 
-    ival(1) = isfer 
-    ival(2) = mc 
-    ival(3) = nc 
- 50 continue 
-    ! 
-    ! scatter integer array to all nodes and determine sferic and dimensions 
-    ! 
-    call dfbroadc_gdp ( ival, 3, dfint, gdp ) 
-    !   isfer = ival(1) 
-    mc    = ival(2) 
-    nc    = ival(3) 
-    ! 
-    sferic = (ival(1) == 1) 
-    ! 
-    if (sferic) then 
-       write (lundia, *) 
-       write (lundia, '(a)') 'Coordinate System: Spherical' 
-       write (lundia, *) 
-    endif 
-    ! 
-    ! allocate temporary arrays to store coordinates (at all nodes except master) 
-    ! 
-    if ( inode /= master ) then 
-       allocate (xtmp(nmaxgl,mmaxgl)) 
-       allocate (ytmp(nmaxgl,mmaxgl)) 
-       xtmp = 0. 
-       ytmp = 0. 
-    endif 
-    ! 
-    ! scatter arrays xtmp and ytmp to all nodes 
-    ! 
-    call dfbroadc_gdp ( xtmp, nmaxgl*mmaxgl, dfloat, gdp ) 
-    call dfbroadc_gdp ( ytmp, nmaxgl*mmaxgl, dfloat, gdp ) 
-    ! 
-    ! put copies of parts of xcor, ycor for each subdomain 
-    ! 
-    call dfsync ( gdp ) 
-    do j = mfg, mlg 
-       do i = nfg, nlg 
-          xcor(i-nfg+1,j-mfg+1) = xtmp(i,j) 
-          ycor(i-nfg+1,j-mfg+1) = ytmp(i,j) 
-       enddo 
-    enddo 
-    deallocate(xtmp,ytmp) 
-    goto 9999 
-    ! 
-    ! test for reading error: label 7777 end of file 
-    !                                8888 error while reading 
-    ! 
- 6666 continue 
+    close (lunrgf)
+    return
+    
+    ! end of file while reading
+ 7777 continue
     error = .true. 
-    errornr = 'P004' 
-    errmsg = 'Grid file contains NaN' 
-    goto 9999 
- 7777 continue 
+    call prterr(lundia, 'G006', 'grid file ' // filrgf)
+    close (lunrgf)
+    return
+    
+    ! error while reading
+ 8888 continue
     error = .true. 
-    errornr = 'G006' 
-    goto 9999 
- 8888 continue 
-    error = .true. 
-    errornr = 'G007' 
-    ! 
- 9999 continue 
-    if (error) call prterr(lundia, errornr, errmsg)
+    call prterr(lundia, 'G007', 'grid file ' // filrgf)
+    close (lunrgf)
+    return
 end subroutine rdrgf 
+
+end module m_rdrgf

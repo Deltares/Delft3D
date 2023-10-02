@@ -1,4 +1,4 @@
-function [OutTxt,OutFig]=simsteps(C,i)
+function [OutTxt, OutFig] = simsteps(comFile, i)
 %SIMSTEPS Performs an timestep analysis.
 %   SIMSTEPS(NfsTrimFile,i)
 %   analyses the i-th dataset written to the
@@ -39,117 +39,152 @@ function [OutTxt,OutFig]=simsteps(C,i)
 Txt={'NOTE: This function provides only indicative values.'
     'For theory see chapter 10 (in particular sections 10.4 and 10.6) of the'
     sprintf('Delft3D-FLOW manual.\n')};
-if nargin==0
-    C=vs_use;
+
+if nargin == 0
+    comFile = vs_use;
 end
 
-switch lower(vs_type(C))
+lastFile = vs_use('lastread');
+switch lower(vs_type(comFile))
     case 'delft3d-trim'
-        T=C;
-        Cfile = strrep([C.FileName C.DatExt],'trim-','com-');
-        if isempty(Cfile)
-            C=[];
-        else
-            try
-                C=vs_use(Cfile,'quiet');
-            catch
-                C=[];
-            end
+        trimFile = comFile;
+        comName = strrep([comFile.FileName comFile.DatExt],'trim-','com-');
+        if ~exist(comName,'file')
+            % comName doesn't exist ... try looking for a partition
+            comName = [comName(1:end-4) '-001.dat'];
         end
-        vs_use(T)
+        if ~exist(comName,'file')
+            % comName still doesn't exist ... give up
+            comName = [];
+        end
+        comFile = [];
+        try
+            comFile = qpfopen(comName);
+        catch
+        end
     case 'delft3d-com'
-        T=vs_use(strrep(C.FileName,'com-','trim-'),'quiet');
-        vs_use(C)
+        trimName = strrep([comFile.FileName comFile.DatExt],'com-','trim-');
+        if ~exist(trimName,'file')
+            % trimName doesn't exist ... remove partition info
+            trimName = [trimName(1:end-8) trimName(end-4:end)];
+        end
+        if ~exist(trimName,'file')
+            % trimName still doesn't exist ... give up
+            trimName = [];
+        end
+        trimFile = [];
+        try
+            trimFile = qpfopen(trimName);
+        catch
+        end
 end
+vs_use(lastFile)
+
+if isfield(trimFile,'NEFIS')
+    trimDomain = length(trimFile.NEFIS)+2;
+else
+    trimDomain = 1;
+end
+if isfield(comFile,'NEFIS')
+    comDomain = length(comFile.NEFIS)+2;
+else
+    comDomain = 1;
+end
+
 if nargin<2
-    if isstruct(T)
-        Info=vs_disp(T,'map-series',[]);
-        i=Info.SizeDim;
+    if isstruct(trimFile)
+        Info = vs_disp(trimFile,'map-series',[]);
+        i = Info.SizeDim;
     else
-        Info=vs_disp(C,'CURTIM',[]);
-        i=Info.SizeDim;
+        Info = vs_disp(comFile,'CURTIM',[]);
+        i = Info.SizeDim;
     end
 end
-if isstruct(T)
-    ms=vs_get(T,'map-series',{i},'*','nowarn','quiet');
-else
-    ms=vs_get(C,'CURTIM',{i},'*','nowarn','quiet');
-end
-ms.U1=max(ms.U1,[],3);
-ms.V1=max(ms.V1,[],3);
-magU=sqrt(ms.U1.^2+ms.V1.^2);
-magU(magU==0)=eps;
 
-if isstruct(T)
-    mc=vs_get(T,'map-const','*','quiet');
-    mmc=mc;
-else
-    mc=vs_get(C,'GRID','*','quiet');
-    mmc=vs_get(C,'KENMCNST','*','quiet');
+if isstruct(trimFile)
+    trimFields = qpread(trimFile,trimDomain);
 end
-X=mc.XCOR;
-Y=mc.YCOR;
-if isstruct(T)
-    DP0=mc.DP0;
-else
-    Info=vs_disp(C,'BOTTIM',[]);
-    DP0=vs_get(C,'BOTTIM',{Info.SizeDim},'DP','quiet');
+if isstruct(comFile)
+    comFields = qpread(comFile,comDomain);
 end
-DPZ=corner2center(DP0,'same');
-H=ms.S1+DPZ;
 
-I=vs_disp(T,'map-const','XZ');
-if strcmp(I.ElmUnits,'[  DEG  ]')
+% read data ...
+if isstruct(trimFile)
+    % TODO: maximum over depth of horizontal velocity
+    if ismember('horizontal velocity',{trimFields.Name})
+        velocity = qpread(trimFile,trimDomain,'horizontal velocity','gridcelldata',i);
+        magnitude = sqrt(velocity.XComp.^2 + velocity.YComp.^2);
+        velocity.magnitude = max(magnitude,[],3);
+        velocity.X = velocity.X(:,:,1);
+        velocity.Y = velocity.Y(:,:,1);
+    else
+        velocity = qpread(trimFile,trimDomain,'depth averaged velocity','gridcelldata',i);
+        velocity.magnitude = sqrt(velocity.XComp.^2 + velocity.YComp.^2);
+    end
+    waterdepth = qpread(trimFile,trimDomain,'water depth','celldata',i);
+    viscosity = qpread(trimFile,trimDomain,'horizontal viscosity','celldata',i);
+else
+    velocity = qpread(comFile,comDomain,'depth averaged velocity','gridcelldata',i);
+    velocity.magnitude = sqrt(velocity.XComp.^2 + velocity.YComp.^2);
+    waterlevel = qpread(comFile,comDomain,'water level','gridcelldata',i);
+    bedlevel = qpread(comFile,comDomain,'time-varying bed level','celldata',i);
+    waterdepth.Val = waterlevel.Val - bedlevel.Val;
+    viscosity = [];
+end
+
+mesh.X = velocity.X;
+mesh.Y = velocity.Y;
+if strcmp(velocity.XUnits,'deg')
     spherical = 1;
 else
     spherical = 0;
 end
-distU=[];
-distV=[];
 if spherical
-    distU(2:size(X,1),:)=geodist(X(1:end-1,:),Y(1:end-1,:),X(2:end,:),Y(2:end,:));
+    mesh.distN = geodist(mesh.X(:,1:end-1),mesh.Y(:,1:end-1),mesh.X(:,2:end),mesh.Y(:,2:end));
 else
-    distU(2:size(X,1),:)=sqrt(diff(X).^2+diff(Y).^2);
+    mesh.distN = sqrt(diff(mesh.X,1,2).^2+diff(mesh.Y,1,2).^2);
 end
+mesh.distN = (mesh.distN(1:end-1,:) + mesh.distN(2:end,:))/2;
+
 if spherical
-    distV(:,2:size(X,2))=geodist(X(:,1:end-1),Y(:,1:end-1),X(:,2:end),Y(:,2:end));
+    mesh.distM = geodist(mesh.X(1:end-1,:),mesh.Y(1:end-1,:),mesh.X(2:end,:),mesh.Y(2:end,:));
 else
-    distV(:,2:size(X,2))=sqrt(diff(X,1,2).^2+diff(Y,1,2).^2);
+    mesh.distM = sqrt(diff(mesh.X,1,1).^2+diff(mesh.Y,1,1).^2);
 end
+mesh.distM = (mesh.distM(:,1:end-1) + mesh.distM(:,2:end))/2;
 
-distU=distU.*mmc.KCU;
-distU(mmc.KCU~=1)=NaN;
-distV=distV.*mmc.KCV;
-distV(mmc.KCV~=1)=NaN;
+mesh.distN(isnan(waterdepth.Val)) = NaN;
+mesh.distM(isnan(waterdepth.Val)) = NaN;
 
-dist=min(distU,distV);
-isqdist=sqrt(distU.^(-2)+distV.^(-2));
+dist = min(mesh.distN, mesh.distM);
+inverseSquaredDist = mesh.distN.^(-2) + mesh.distM.^(-2);
 
-if isstruct(T)
-    dtused=mc.DT*mc.TUNIT;
+if isstruct(trimFile)
+    dtused = vs_get(trimFile,'map-const','DT','quiet') * ...
+        vs_get(trimFile,'map-const','TUNIT','quiet');
 else
-    dtused=vs_get(C,'PARAMS','DT','quiet')*60;
+    dtused = vs_get(comFile,'PARAMS','DT','quiet') * 60;
 end
 
 %
 % Horizontal viscosity
 %
-if isfield(ms,'VICUV') & ~isempty(ms.VICUV) & ~isequal(size(ms.VICUV),[1 1])
-    VICUV=max(ms.VICUV,[],3);
-    VICUV(VICUV==0)=NaN;
-    Dt1=1./(VICUV.*(isqdist.^2));
-    Dt1(Dt1==0)=NaN;
+if ~isempty(viscosity)
+    viscosity.MaxVal = max(viscosity.Val,[],3);
+    viscosity.MaxVal(viscosity.MaxVal==0) = NaN;
+    Dt1 = 1./(viscosity.MaxVal.*inverseSquaredDist);
+    Dt1(Dt1==0) = NaN;
 
-    createplot(jet(64),X,Y,spherical,dtused./Dt1, ...
+    createplot(jet(64),mesh.X,mesh.Y,spherical,dtused./Dt1, ...
         'Courant number for viscosity', ...
         [0 2],'Courant number');
 
     dt1=min(Dt1(:));
     Txt{end+1}=sprintf('The maximum allowed timestep based on Reynolds stresses is %f seconds.\n',dt1);
 else
-    Dt1=1./(isqdist.^2);
+    Dt1=1./inverseSquaredDist;
     dt1=min(Dt1(:));
-    Txt{end+1}=sprintf('The maximum allowed timestep based on Reynolds stresses cannot be determined.',dt1);
+    Txt{end+1}=sprintf('The maximum allowed timestep based on Reynolds stresses cannot be determined.');
     Txt{end+1}=sprintf('Use as an estimate %f/[horizontal viscosity] seconds.\n',dt1);
     dt1=[];
 end
@@ -157,12 +192,12 @@ end
 %
 % Barotropic mode (wave propagation)
 %
-AG=9.83;
-vK=0.41;
-maxCFLwav=10;
-Ct2=(2*sqrt(AG*max(eps,H)).*isqdist);
+gravity = 9.83;
+vKarman = 0.41;
+maxCFLwav = 10;
+Ct2 = 2 * sqrt(gravity * max(eps,waterdepth.Val) .* inverseSquaredDist);
 
-createplot(jet(64),X,Y,spherical,Ct2*dtused, ...
+createplot(jet(64),mesh.X,mesh.Y,spherical,Ct2*dtused, ...
     'Courant number for barotropic mode (wave propagation)', ...
     [0 10],'Courant number');
 
@@ -175,9 +210,9 @@ Txt{end+1}=sprintf('waves of 10.\n');
 %
 % Advection (explicit drying flooding: Cmax=2, transport: 1)
 %
-Dt3=dist./magU;
+Dt3=dist./velocity.magnitude;
 
-createplot(jet(64),X,Y,spherical,dtused./Dt3, ...
+createplot(jet(64),mesh.X,mesh.Y,spherical,dtused./Dt3, ...
     'Courant number for advection (drying/flooding, transport)', ...
     [0 2],'Courant number');
 
@@ -187,43 +222,54 @@ Txt{end+1}=sprintf('The maximum allowed timestep for horizontal advection is %f 
 %
 % Secondary flow
 %
-if isstruct(T)
-    rsp=strmatch('Secondary flow',mc.NAMCON,'exact');
-else
-    rsp=1;
+secflow = [];
+try
+    if ismember('secondary flow',{trimFields.Name})
+        secflow = qpread(trimFile,trimDomain,'secondary flow','celldata',i);
+    end
+catch
 end
-if ~isempty(rsp) & ~isempty(C)
-    RGH=vs_get(C,'ROUGHNESS','*','quiet');
-    rgh=RGH.ROUFLO;
-    RGH=(RGH.CFUROU+RGH.CFVROU)/2;
-    switch rgh
+
+roughnessM = [];
+roughnessN = [];
+try
+    if ustrcmpi('u roughness',{comFields.Name})
+        roughnessM = qpread(comFile,comDomain,'u roughness','celldata');
+        roughnessN = qpread(comFile,comDomain,'v roughness','celldata');
+    end
+catch
+end
+
+if ~isempty(secflow) && ~isempty(roughnessM)
+    RGH = (roughnessM.Val + roughnessN.Val)/2;
+    switch roughnessM.Name
         case 'WHIT'
             RGH(RGH<=0)=NaN;
-            RGH=18*log10(12*H./RGH);
+            RGH=18*log10(12*waterdepth./RGH);
         case 'MANN'
             RGH(RGH<=0)=NaN;
-            RGH=H.^(1/6)./RGH;
+            RGH=waterdepth.^(1/6)./RGH;
         case 'Z   '
             RGH(RGH<=0)=NaN;
-            RGH=18*log10(12*H./(30*RGH));
+            RGH=18*log10(12*waterdepth./(30*RGH));
     end
-    if isstruct(T)
+    if isstruct(trimFile)
         RSP=ms.R1(:,:,1,rsp);
     else
         RSP=ms.RSP;
     end
-    alpha=sqrt(AG)./(vK.*RGH);
+    alpha=sqrt(gravity)./(vKarman.*RGH);
     denom=2*RSP.*(5*alpha-15.6*alpha.^2+37.5*alpha.^3);
     denom(denom==0)=NaN;
     Dt4=dist./abs(denom);
 
-    createplot(jet(64),X,Y,spherical,dtused./Dt4, ...
+    createplot(jet(64),mesh.X,mesh.Y,spherical,dtused./Dt4, ...
         'Courant number for spiral flow', ...
         [0 2],'Courant number');
 
     dt4=min(Dt4(:));
     Txt{end+1}=sprintf('The maximum allowed value of Betac * Dt for spiral flow is %f seconds.',dt4);
-elseif ~isempty(rsp)
+else
     Txt{end+1}=sprintf('The maximum allowed value of Betac * Dt for spiral flow');
     Txt{end+1}=sprintf('is not applicable or it cannot be determined.\n');
 end
@@ -231,13 +277,16 @@ end
 Txt{end+1}=sprintf('The flow timestep used in the simulation equals %f seconds.',dtused);
 
 if ~isempty(dt1)
-    Dt=min(Dt1,Dt2); dt=min(dt1,dt2);
+    Dt=min(Dt1,Dt2);
+    dt=min(dt1,dt2);
 else
-    Dt=Dt2; dt=dt2;
+    Dt=Dt2;
+    dt=dt2;
 end
-Dt=min(Dt,Dt3); dt=min(dt,dt3);
+Dt=min(Dt,Dt3);
+dt=min(dt,dt3);
 
-Fig=createplot(flipud(jet(64)),X,Y,spherical,Dt, ...
+Fig=createplot(flipud(jet(64)),mesh.X,mesh.Y,spherical,Dt, ...
     'Spatial variation of the maximum allowed timestep', ...
     [min(dt,dtused) max(1e-10,min(4*dt,4*dtused))],'seconds');
 
@@ -252,13 +301,11 @@ end
 
 function Fig = createplot(cmap,X,Y,spherical,V,ttl,clm,val)
 X(X==0 & Y==0) = NaN;
-X(isnan(V)) = NaN;
-Y(isnan(X)) = NaN;
 Fig = qp_createfig('quick',ttl);
 set(Fig,'colormap',cmap);
 Ax = qp_createaxes(Fig,'oneplot');
-surf(Ax,X,Y,V);
-shading interp
+surf(Ax,X,Y,0*Y,V);
+shading flat
 title(ttl)
 if spherical
     setaxesprops(Ax,'Lon-Lat')

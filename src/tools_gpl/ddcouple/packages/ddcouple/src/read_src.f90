@@ -30,7 +30,7 @@
       use m_srstop
       use m_monsys
       use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_ddhyd                   ! module contains everything for the hydrodynamic description
       implicit none
 
       ! declaration of the arguments

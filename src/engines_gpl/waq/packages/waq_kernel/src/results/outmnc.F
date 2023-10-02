@@ -23,6 +23,7 @@
 
       module m_outmnc
       use m_srstop
+      use m_universally_unique_id_generator
 
       contains
 
@@ -291,7 +292,7 @@
          endif
 
          ! Generate the UUID and store it as an attibute
-         call getuuid( uuid )
+         call generate_uuid( uuid )
          inc_error = nf90_put_att( ncidmap, nf90_global, "uuid", uuid )
          if ( inc_error /= nf90_noerr ) then
              write ( lunut , 2571 )

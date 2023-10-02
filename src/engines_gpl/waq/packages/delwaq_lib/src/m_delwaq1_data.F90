@@ -43,6 +43,7 @@ module m_delwaq1_data
     use m_sysa          ! Pointers in real array workspace
     use m_sysj          ! Pointers in integer array workspace
     use m_sysc          ! Pointers in character array workspace
+    use m_waq_data_buffer
 
     implicit none
     integer, parameter             :: nlun   = 50              ! number of input / output files
@@ -65,9 +66,7 @@ module m_delwaq1_data
     real             , allocatable :: rar(:)                  ! real work array
     character(len=20), allocatable :: car(:)                  ! character work array
 
-    real,              dimension(:), pointer :: abuf  => null()
-    integer,           dimension(:), pointer :: ibuf  => null()
-    character(len=20), dimension(:), pointer :: chbuf => null()
+    type(waq_data_buffer)          :: buffer
 
     !
     !     files, unit numbers, include file stack, input file settings

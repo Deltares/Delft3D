@@ -327,10 +327,6 @@
  call ini_transport()
  call timstop(handle_extra(19)) ! end transport module
 
-! initialize part
- call timstrt('Part init           ', handle_extra(20)) ! part init
- call ini_part(1, md_partfile, md_partrelfile, md_partjatracer, md_partstarttime, md_parttimestep, md_part3Dtype)
- call timstop(handle_extra(20)) ! end part init
 
  call timstrt('Observations init   ', handle_extra(21)) ! observations init
  call flow_obsinit()                                 ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)

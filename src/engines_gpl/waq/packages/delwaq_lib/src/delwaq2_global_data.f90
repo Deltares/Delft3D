@@ -223,7 +223,7 @@ subroutine delwaq2_global_data_copy( dlwqd )
 
     use m_sysn
     use m_sysc
-  
+
     type(delwaq_data) :: dlwqd
 
     character(len=20), dimension(1) :: dlwqname ! Template for entity names
@@ -243,9 +243,9 @@ subroutine delwaq2_global_data_copy( dlwqd )
     allocate( procparam_const(1:nocons) )
     allocate( procparam_param(1:nopa) )
 
-    substance_name  = transfer( dlwqd%chbuf(isnam:isnam+20*notot-1),  dlwqname )
-    procparam_const = transfer( dlwqd%chbuf(icnam:icnam+20*nocons-1), dlwqname )
-    procparam_param = transfer( dlwqd%chbuf(ipnam:ipnam+20*nopa-1),   dlwqname )
+    substance_name  = transfer( dlwqd%buffer%chbuf(isnam:isnam+20*notot-1),  dlwqname )
+    procparam_const = transfer( dlwqd%buffer%chbuf(icnam:icnam+20*nocons-1), dlwqname )
+    procparam_param = transfer( dlwqd%buffer%chbuf(ipnam:ipnam+20*nopa-1),   dlwqname )
 
 !   administrate state sizes for OpenDA use
     size_dlwq_state%notot = notot
@@ -254,7 +254,7 @@ subroutine delwaq2_global_data_copy( dlwqd )
     size_dlwq_state%other = 1 ! todo: set this to zero?
     size_dlwq_state%core  = size_dlwq_state%conc + size_dlwq_state%other
 
-    size_dlwq_state%rbuf  = size(dlwqd%rbuf)
+    size_dlwq_state%rbuf  = size(dlwqd%buffer%rbuf)
 
     size_dlwq_state%mass  = notot*noseg
     size_dlwq_state%names = notot
@@ -268,4 +268,3 @@ subroutine delwaq2_global_data_copy( dlwqd )
 end subroutine delwaq2_global_data_copy
 
 end module delwaq2_global_data
-

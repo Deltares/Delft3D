@@ -223,7 +223,7 @@
 
 !        These 2 options use a regular grid with full matrix.
 
-      if ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. regular ) then
+      if ( regular ) then
          nmax = noq1
          mmax = noq2
          kmax = noq3
@@ -369,7 +369,7 @@
          if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 100
          write ( lunut , 2180 )  iopt1
 
-         if ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. regular ) then  !        Regular grid
+         if ( regular ) then  !        Regular grid
             call opt1 ( iopt1   , lun     , 8      , lchar  ,  filtype ,
      &                  dtflg1  , dtflg3  , 0      , ierr2  ,  iwar    ,
      &                  .false. )
@@ -382,8 +382,7 @@
      &                    flowpnt, ierr   , iwar    )
          endif
       endif
-      if ( has_hydfile .or.
-     &     .not. ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. regular ) ) then  ! Irregular grid/hyd-file
+      if ( has_hydfile .or. .not. ( regular ) ) then  ! Irregular grid/hyd-file
          call opt1 ( iopt1   , lun     , 44     , lchar  ,  filtype ,
      &               dtflg1  , dtflg3  , 0      , ierr2  ,  iwar    ,
      &               has_hydfile       )
@@ -528,11 +527,7 @@
            ierr2 = 1
            goto 100
       endif
-      if ( intsrt .eq. 19 .or. intsrt .eq. 20 ) then
-           write ( lun(29) , 2300 ) intsrt
-           ierr2 = 1
-           goto 100
-      endif
+
       allocate ( rwork(5,noq) , stat = ierr2 )
       if ( ierr2 .ne. 0 ) then
          write ( lunut , 2310 ) ierr2, 5*noq

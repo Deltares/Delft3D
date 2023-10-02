@@ -76,7 +76,7 @@ if(NOT TARGET dhydrology_kernel)
     add_subdirectory(${checkout_src_root}/${hydrology_kernel_module} dhydrology_kernel)
 endif()
 
-# Dflowfm modules 
+# Dflowfm modules
 add_subdirectory(${checkout_src_root}/${dflowfm_kernel_module} dflowfm_kernel)
 add_subdirectory(${checkout_src_root}/${dflowfm_cli_exe_module} dflowfm_cli_exe)
 # dflowfm_lib: only when without interacter

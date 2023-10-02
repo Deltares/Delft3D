@@ -38,6 +38,7 @@
 
 !     Function            : Writes history output to NetCDF
 
+      use m_universally_unique_id_generator
       use m_srstop
       use timers
       use dlwq_netcdf  !   read/write grid in netcdf
@@ -159,7 +160,7 @@
          endif
 
          ! Generate the UUID and store it as an attibute
-         call getuuid( uuid )
+         call generate_uuid( uuid )
          inc_error = nf90_put_att( ncidhis, nf90_global, "uuid", uuid )
          if ( inc_error /= nf90_noerr ) then
              write ( lunut , 2571 )

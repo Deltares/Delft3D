@@ -79,10 +79,14 @@ subroutine dlwqmain(action, argc, argv, dlwqd)
       integer, save                                 :: itoti
       integer, save                                 :: itotc
 
+      init = action == action_initialisation .or. &
+             action == action_fullcomputation
 
+      if (init) then
+            call delwaq2_main_init(dlwqd, itota, itoti, itotc, argc, argv)
+      endif
 
-      call delwaq2_main_init(dlwqd, itota, itoti, itotc, init, action, argc, argv)
-      call delwq2(dlwqd%rbuf, dlwqd%ibuf, dlwqd%chbuf, itota, itoti, itotc, init, action, dlwqd)
+      call delwq2(dlwqd%buffer, itota, itoti, itotc, init, action, dlwqd)
       call delwaq2_main_finalise(action, lunrep, rundat)
 
 end subroutine dlwqmain

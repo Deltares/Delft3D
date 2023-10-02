@@ -69,6 +69,7 @@ contains
    use timers,           only : timstrt, timstop
    use m_sethu
    use m_external_forcings
+   use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
    
    implicit none
 
@@ -513,6 +514,7 @@ end subroutine redimension_summ_arrays_in_crs
 !> set fixed weirs
 subroutine set_fixed_weirs()
    use m_flowparameters, only : isimplefixedweirs
+   use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
    
    implicit none
 
@@ -522,6 +524,10 @@ subroutine set_fixed_weirs()
       call setbobs_fixedweirs()
    else
       call setfixedweirs()
+      if (n_1d2d_fixedweirs > 0) then
+         call realloc_1d2d_fixedweirs()
+         call initialise_1d2d_fixedweirs()
+      endif
    end if
  
 end subroutine set_fixed_weirs
@@ -1000,8 +1006,8 @@ subroutine correction_s1_for_atmospheric_pressure()
        end do
     end if
     
-end subroutine correction_s1_for_atmospheric_pressure
 
+end subroutine correction_s1_for_atmospheric_pressure
 
 !> correction_s1_for_atmospheric_pressure
 subroutine correction_s1init_for_self_attraction()
