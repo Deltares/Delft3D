@@ -1184,7 +1184,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double(md_ptr, 'numerics', 'Epsz0' , epsz0)
     epshs = .2d0*epshu ! minimum waterdepth for setting cfu
 
-    call prop_get_double(md_ptr, 'numerics', 'SobekDFM_umin', sbkdfm_umin)
+    call prop_get_double (md_ptr, 'numerics', 'SobekDFM_umin', sbkdfm_umin)
     call prop_get_integer(md_ptr, 'numerics', 'SobekDFM_umin_method', sbkdfm_umin_method)
     call prop_get_double (md_ptr, 'numerics', 'SobekDFM_Minimal_1d2d_Embankment', minimal_1d2d_embankment)
     call prop_get_double (md_ptr, 'numerics', 'sobekDFM_relax', sbkdfm_relax)
