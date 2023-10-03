@@ -210,7 +210,6 @@ void Dimr::deleteControlBlock(dimr_control_block cb) {
 // tStep is not used in runControlBlock
 //------------------------------------------------------------------------------
 void Dimr::runControlBlock(dimr_control_block* cb, double tStep, int phase) {
-    log->Write(ALL, my_rank, "\n\n\n WARNING: this is a test version for UNST-7294. Do not distribute/use for official projects.\n\n\n");
     if (cb->type == CT_PARALLEL) {
         log->Write(INFO, my_rank, "PARALLEL:");
         //
@@ -472,6 +471,124 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
             for (int j = 0; j < cb->subBlocks[i].numSubBlocks; j++) {
                 if (cb->subBlocks[i].subBlocks[j].type != CT_START) {
                     dimr_coupler* thisCoupler = cb->subBlocks[i].subBlocks[j].unit.coupler;
+                    for (int k = 0; k < thisCoupler->numItems; k++) {
+                        if (thisCoupler->sourceComponent->type == COMP_TYPE_RTC ||
+                            thisCoupler->sourceComponent->type == COMP_TYPE_WANDA ||
+                            thisCoupler->sourceComponent->type == COMP_TYPE_FLOW1D2D) {
+                            // RTCTools/Wanda: impossible to autodetect which partition will deliver this source var
+                            // Assumption: there is only one RTC-partition
+                            thisCoupler->items[k].sourceProcess = thisCoupler->sourceComponent->processes[0];
+                        }
+                        else {
+                            // For each item: get the pointers to the variables inside the dlls to be exchanged
+                            // Currently this does not work for RTC-Tools
+                            //
+                            // Source variable
+                            // autodetect which (single!) partition will deliver this source var
+                            int* sources = (int*)malloc(thisCoupler->sourceComponent->numProcesses * sizeof(int));
+                            int* gsources = (int*)malloc(thisCoupler->sourceComponent->numProcesses * sizeof(int));
+                            for (int m = 0; m < thisCoupler->sourceComponent->numProcesses; m++) {
+                                sources[m] = 0;
+                                if (my_rank == thisCoupler->sourceComponent->processes[m]) {
+                                    // Also for RTCTools_BMI: this is a dummy getvar call, just to check whether it works for this partition
+                                    log->Write(DEBUG, my_rank, "%s.getVar(%s)", thisCoupler->sourceComponentName, thisCoupler->items[k].sourceName);
+                                    (thisCoupler->sourceComponent->dllGetVar) (thisCoupler->items[k].sourceName, (void**)(&thisCoupler->items[k].sourceVarPtr));
+                                    if (thisCoupler->items[k].sourceVarPtr != NULL) {
+                                        // Yes, this partition can deliver the source var
+                                        sources[m] = 1;
+                                    }
+                                }
+                            }
+                            // Do not call MPI_Allreduce when the number of partitions is 1. It will cause a crash on free(gsources)
+                            if (numranks > 1) {
+                                int ierr = MPI_Allreduce(sources, gsources, thisCoupler->sourceComponent->numProcesses, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+                            }
+                            else {
+                                for (int m = 0; m < thisCoupler->sourceComponent->numProcesses; m++) {
+                                    gsources[m] = sources[m];
+                                }
+                            }
+                            thisCoupler->items[k].sourceProcess = -1;
+                            for (int m = 0; m < thisCoupler->sourceComponent->numProcesses; m++) {
+                                if (gsources[m] == 1) {
+                                    if (thisCoupler->items[k].sourceProcess == -1) {
+                                        // First partition that can deliver the source var
+                                        thisCoupler->items[k].sourceProcess = m;
+                                    }
+                                    else {
+                                        // Second/Third/... partition that can deliver the source var
+                                        // Produce a warning
+                                        // The "if (my_rank == m)" avoids multiple identical messages
+                                        if (my_rank == m) {
+                                            log->Write(WARNING, my_rank, "WARNING: coupler %s: item %d: \"%s\" will be delivered by partition %d. Ignoring deliverance by partition %d",
+                                                thisCoupler->name, k, thisCoupler->items[k].sourceName, thisCoupler->items[k].sourceProcess, m);
+                                        }
+                                    }
+                                }
+                            }
+                            free(sources);
+                            free(gsources);
+                        }
+
+                        // Target variable
+
+                        if (thisCoupler->targetComponent->type == COMP_TYPE_RTC ||
+                            thisCoupler->targetComponent->type == COMP_TYPE_WANDA ||
+                            thisCoupler->targetComponent->type == COMP_TYPE_FLOW1D2D) {
+                            // nothing
+                        }
+                        else {
+                            // Target variable
+                            // autodetect which (possibly multiple!) partition(s) will accept this target var
+                            int* targets = (int*)malloc(thisCoupler->targetComponent->numProcesses * sizeof(int));
+                            int* gtargets = (int*)malloc(thisCoupler->targetComponent->numProcesses * sizeof(int));
+                            for (int m = 0; m < thisCoupler->targetComponent->numProcesses; m++) {
+                                targets[m] = 0;
+                                if (my_rank == thisCoupler->targetComponent->processes[m]) {
+                                    log->Write(DEBUG, my_rank, "%s.getVar(%s)", thisCoupler->targetComponentName, thisCoupler->items[k].targetName);
+                                    (thisCoupler->targetComponent->dllGetVar) (thisCoupler->items[k].targetName, (void**)(&thisCoupler->items[k].targetVarPtr));
+                                    if (thisCoupler->items[k].targetVarPtr != NULL) {
+                                        // Yes, this partition can accept the target var
+                                        targets[m] = 1;
+                                    }
+                                }
+                            }
+                            // Do not call MPI_Allreduce when the number of partitions is 1. It will cause a crash on free(gtargets)
+                            if (numranks > 1) {
+                                int ierr = MPI_Allreduce(targets, gtargets, thisCoupler->targetComponent->numProcesses, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+                            }
+                            else {
+                                for (int m = 0; m < thisCoupler->targetComponent->numProcesses; m++) {
+                                    gtargets[m] = targets[m];
+                                }
+                            }
+                            thisCoupler->items[k].targetProcess = -1;
+                            for (int m = 0; m < thisCoupler->targetComponent->numProcesses; m++) {
+                                if (gtargets[m] == 1) {
+                                    if (thisCoupler->items[k].targetProcess == -1) {
+                                        // First partition that can accept the target var
+                                        thisCoupler->items[k].targetProcess = m;
+                                    }
+                                    else {
+                                        // Second/Third/... partition that can accept the target var
+                                        // Produce a warning
+                                        // The "if (my_rank == m)" avoids multiple identical messages
+                                        if (my_rank == m) {
+                                            log->Write(WARNING, my_rank, "WARNING: coupler %s: item %d: \"%s\" will be delivered to multiple partitions: %d and %d.",
+                                                thisCoupler->name, k, thisCoupler->items[k].targetName, thisCoupler->items[k].targetProcess, m);
+                                        }
+                                    }
+                                }
+                            }
+                            if (thisCoupler->items[k].targetProcess == -1) {
+                                throw Exception(true, Exception::ERR_MPI, "Coupler %s: item %d: \"%s\" is not accepted by any of the partitions.",
+                                    thisCoupler->name, k, thisCoupler->items[k].targetName);
+                            }
+                            free(targets);
+                            free(gtargets);
+                        }
+                    }
+
                     // create netcdf logfiles
                     if (thisCoupler->logger != NULL && my_rank == 0)
                     {
