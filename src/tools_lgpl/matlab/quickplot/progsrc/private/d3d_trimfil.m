@@ -151,7 +151,8 @@ elseif strcmp(Props.Name,'grid')
     DataInCell = 1;
 end
 
-[Ans,OrigFI] = merge_trim_com(OrigFI,domain,Props,XYRead,DataRead,DataInCell,@get_single_partition,nPartitions,mergeParts,mergeDim,varargin{:});
+hasSubfields = ~isempty(getsubfields(OrigFI,Props));
+[Ans,OrigFI] = merge_trim_com(OrigFI,domain,Props,XYRead,DataRead,DataInCell,@get_single_partition,nPartitions,mergeParts,mergeDim,hasSubfields,varargin{:});
 
 varargout{2} = OrigFI;
 varargout{1} = Ans;
@@ -165,7 +166,7 @@ else
     Domains = {};
 end
 
-function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,var_arg_in)
+function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,varargin)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
 DimFlag=Props.DimFlag;
@@ -178,12 +179,12 @@ subf=getsubfields(FI,Props);
 subforig = [];
 if isempty(subf)
     % initialize and read indices ...
-    idx(fidx(1:length(var_arg_in)))=var_arg_in;
+    idx(fidx(1:length(varargin)))=varargin;
 else
     % initialize and read indices ...
     subforig = Props.SubFld;
-    Props.SubFld=var_arg_in{1};
-    idx(fidx(1:(length(var_arg_in)-1)))=var_arg_in(2:end);
+    Props.SubFld=varargin{1};
+    idx(fidx(1:(length(varargin)-1)))=varargin(2:end);
 end
 
 % select appropriate timestep ...
@@ -514,9 +515,23 @@ if DataRead
         case {'velocity in depth averaged flow direction','velocity normal to depth averaged flow direction'}
             % always load 3D field to determine depth averaged flow direction
             elidx{K_-1}=0;
-        case {'thin dams','temporarily inactive velocity points','domain decomposition boundaries','open boundaries','closed boundaries','partition boundaries'}
+        case {'thin dams','temporarily inactive velocity points'}
             Props.NVal=2;
             ThinDam=1;
+        case {'domain decomposition boundaries','open boundaries','closed boundaries','partition boundaries'}
+            Props.NVal=2;
+            ThinDam=1;
+            % These quantities are determined by comparing a cell value
+            % with a neighbouring cell value. To make sure that this works
+            % properly for the high M/N boundary, we need to make sure that
+            % the neighbour on those sides is included when requesting the
+            % data.
+            if elidx{2}(end)<sz(3) % M_
+                elidx{2}(end+1) = elidx{2}(end)+1;
+            end
+            if elidx{3}(end)<sz(4) % N_
+                elidx{3}(end+1) = elidx{3}(end)+1;
+            end
         case {'sediment thickness','base level of sediment layer'}
             switch Props.Val1
                 case 'THLYR'
@@ -865,37 +880,6 @@ if DataRead
             val1(val1==0)=NaN;
             val2(val2==0)=NaN;
         end
-        if 0 && isstruct(vs_disp(FI,'map-series','KFU'))
-            if size(elidx,2) ==3 %added because in 3D it wanted a cell with 2 components not 3. 
-                elidx2D = elidx;
-                elidx2D(end)=[]; 
-            else
-                elidx2D = elidx;
-            end
-            kfu=vs_let(FI,'map-series',idx(T_),'KFU',elidx2D,'quiet!');
-            kfv=vs_let(FI,'map-series',idx(T_),'KFV',elidx2D,'quiet!');
-            % remove the following lines when kfu/kfv correct
-            if isstruct(vs_disp(FI,'map-series','aguu'))
-                aguu=vs_let(FI,Props.Group,idx(T_),'aguu',elidx2D,'quiet!');
-                agvv=vs_let(FI,Props.Group,idx(T_),'agvv',elidx2D,'quiet!');
-                kfsc=vs_let(FI,Props.Group,idx(T_),'kfs_cc',elidx2D,'quiet!');
-                kfu = kfu; %| (aguu>0 & kfsc>=0);
-                kfv = kfv; %| (agvv>0 & kfsc>=0);
-            end
-            % remove until here
-            if size(elidx,2)==3 & length(elidx{3})~=1 % maybe there is a better way to do this. For section of 3D velocity field the old version was setting to NaN only
-                                        % the velocity point in the upper layer
-                for k=1:size(val1,ndims(val1))
-                    kfu_3d(:,:,:,k) = kfu(:,:,:);
-                    kfv_3d(:,:,:,k) = kfv(:,:,:);
-                end
-            else
-                kfu_3d = kfu;
-                kfv_3d = kfv;
-            end
-            val1(kfu_3d==0) = NaN;
-            val2(kfv_3d==0) = NaN;
-        end
         [val1,val2]=uv2cen(val1,val2);
     end
 
@@ -1041,38 +1025,36 @@ if DataInCell
         end
     end
 end
-if 1%~all(allidx(DimMask & DimFlag))
-    if XYRead
-        if DataInCell
-            if DimFlag(M_) && DimFlag(N_) && DimFlag(K_)
+if XYRead
+    if DataInCell
+        if DimFlag(M_) && DimFlag(N_) && DimFlag(K_)
+            z=z(:,ind{[M_ N_]},:);
+        end
+    else
+        if DimFlag(M_) && DimFlag(N_)
+            if DimFlag(K_)
+                x=x(:,ind{[M_ N_]},:);
+                y=y(:,ind{[M_ N_]},:);
                 z=z(:,ind{[M_ N_]},:);
-            end
-        else
-            if DimFlag(M_) && DimFlag(N_)
-                if DimFlag(K_)
-                    x=x(:,ind{[M_ N_]},:);
-                    y=y(:,ind{[M_ N_]},:);
-                    z=z(:,ind{[M_ N_]},:);
-                else
-                    x=x(ind{[M_ N_]});
-                    y=y(ind{[M_ N_]});
-                end
+            else
+                x=x(ind{[M_ N_]});
+                y=y(ind{[M_ N_]});
             end
         end
     end
-    DimMask=[0 1 1 1 1];
-    ind=ind(DimMask & DimFlag);
-    switch Props.NVal
-        case {1,5,6}
-            val1=val1(:,ind{:});
-        case 2
-            val1=val1(:,ind{:});
-            val2=val2(:,ind{:});
-        case 3
-            val1=val1(:,ind{:});
-            val2=val2(:,ind{:});
-            val3=val3(:,ind{:});
-    end
+end
+DimMask=[0 1 1 1 1];
+ind=ind(DimMask & DimFlag);
+switch Props.NVal
+    case {1,5,6}
+        val1=val1(:,ind{:});
+    case 2
+        val1=val1(:,ind{:});
+        val2=val2(:,ind{:});
+    case 3
+        val1=val1(:,ind{:});
+        val2=val2(:,ind{:});
+        val3=val3(:,ind{:});
 end
 
 % permute n and m dimensions into m and n if necessary
@@ -1304,8 +1286,6 @@ end
 if DimFlag(T_)
     Ans.Time=readtim(FI,Props,idx{T_});
 end
-
-varargout={Ans FI};
 % -------------------------------------------------------------------------
 
 % -------------------------------------------------------------------------

@@ -33,6 +33,7 @@ function varargout = d3d_qp(cmd,varargin)
 %   http://www.deltaressystems.com
 %   $HeadURL$
 %   $Id$
+
 try
     if nargin==0
         cmd='initialize';
