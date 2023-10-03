@@ -38,7 +38,6 @@ list(REMOVE_ITEM dflowfm_io ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/io_op
 set(dflowfm_kernel_path ${src_path}/dflowfm_kernel)
 set(dflowfm_kernel_compute_path ${dflowfm_kernel_path}/compute)
 set(dflowfm_kernel_compute_hydrology_path ${dflowfm_kernel_path}/compute_hydrology)
-set(dflowfm_kernel_compute_particles_path ${dflowfm_kernel_path}/compute_particles)
 set(dflowfm_kernel_compute_sediment_path ${dflowfm_kernel_path}/compute_sediment)
 set(dflowfm_kernel_compute_sediment_netnode_based_path ${dflowfm_kernel_path}/compute_sediment/netnode_based)
 set(dflowfm_kernel_compute_transport_path ${dflowfm_kernel_path}/compute_transport)
@@ -55,7 +54,6 @@ set(dflowfm_kernel_timespace_path ${dflowfm_kernel_path}/timespace)
 get_fortran_source_files(${dflowfm_kernel_path} dflowfm_kernel)
 get_fortran_source_files(${dflowfm_kernel_compute_path} dflowfm_kernel_compute)
 get_fortran_source_files(${dflowfm_kernel_compute_hydrology_path} dflowfm_kernel_compute_hydrology)
-get_fortran_source_files(${dflowfm_kernel_compute_particles_path} dflowfm_kernel_compute_particles)
 get_fortran_source_files(${dflowfm_kernel_compute_sediment_path} dflowfm_kernel_compute_sediment)
 get_fortran_source_files(${dflowfm_kernel_compute_sediment_netnode_based_path} dflowfm_kernel_compute_sediment_netnode_based)
 get_fortran_source_files(${dflowfm_kernel_compute_transport_path} dflowfm_kernel_compute_transport)
@@ -99,7 +97,6 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_kernel}
                             ${dflowfm_kernel_compute}
                             ${dflowfm_kernel_compute_hydrology}
-                            ${dflowfm_kernel_compute_particles}
                             ${dflowfm_kernel_compute_sediment}
                             ${dflowfm_kernel_compute_sediment_netnode_based}
                             ${dflowfm_kernel_compute_transport}
@@ -157,10 +154,10 @@ if (UNIX)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            wq_processes
                             waq_process
                             waq_utils_c
                             waq_utils_f
-                            wq_processes
                             interacter_stub)
 
     oss_include_libraries(${library_name} oss_dependencies)
@@ -240,8 +237,6 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_his.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_shp.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_path}/filter.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_particles_path}/sendrecv_particledata.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_particles_path}/update_particles.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_surfbeat_path}/xbeach_filefunctions.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/flow_modelinit.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/inidat.F90

@@ -1,0 +1,62 @@
+configuration 'ECO' serial 2015061701
+substance 'OXY' active 
+   description        'Dissolved Oxygen'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'CBOD5' active 
+   description        'carbonaceous BOD (first pool) at 5 days'
+   concentration-unit '(gO2/m3)'
+   waste-load-unit    '-'
+end-substance
+parameter 'Salinity'
+   description   'Salinity'
+   unit          '(g/kg)'
+   value         3.500e+001
+end-parameter
+parameter 'Temp'
+   description   'ambient water temperature'
+   unit          '(oC)'
+   value         1.500e+001
+end-parameter
+parameter 'VWind'
+   description   'wind speed'
+   unit          '(m/s)'
+   value         3.000e+000
+end-parameter
+parameter 'SWRear'
+   description   'switch for oxygen reaeration formulation (1-13)'
+   unit          '(-)'
+   value         1.000e+000
+end-parameter
+parameter 'KLRear'
+   description   'reaeration transfer coefficient'
+   unit          '(m/d)'
+   value         1.000e+000
+end-parameter
+parameter 'RcBOD'
+   description   'decay rate BOD (first pool) at 20 oC'
+   unit          '(1/d)'
+   value         3.000e-001
+end-parameter
+parameter 'Phyt'
+   description   'total carbon in phytoplankton'
+   unit          '(gC/m3)'
+   value         0.000e+000
+end-parameter
+output 'SaturOXY'
+   description   'saturation concentration'
+end-output
+output 'SatPercOXY'
+   description   'Actual saturation percentage O2'
+end-output
+output 'BOD5'
+   description   'BOD5'
+end-output
+active-processes
+     name  'RearOXY' 'Reaeration of oxygen'
+     name  'BODCOD' 'Mineralisation BOD and COD'
+     name  'DynDepth' 'dynamic calculation of the depth'
+     name  'SaturOXY' 'Saturation concentration oxygen'
+     name  'TotDepth' 'depth water column'
+end-active-processes

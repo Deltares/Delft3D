@@ -45,8 +45,6 @@
    COMMON /MODENOW/ MODE,NFLD
    COMMON /DEMO/ JDEMO
 
-   logical, external :: get_japart
-
    IF (NUM .EQ. 1) THEN
       EXP(1)    = 'MENU 1                                  '
       EXP(2)    = 'FILES                                   '
@@ -188,10 +186,6 @@
 
       MAXOPT    = 40
 
-      if ( get_japart() ) then
-         MAXOPT = MAXOPT+1
-         OPTION(MAXOPT) = 'particles                               '
-      end if
 
    ELSE IF (NUM .EQ. 4) THEN
       EXP(1)    = 'MENU 4                                  '

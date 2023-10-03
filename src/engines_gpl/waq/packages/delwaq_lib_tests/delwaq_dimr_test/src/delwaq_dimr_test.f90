@@ -97,8 +97,8 @@
     value = ' '
     dummy = set_var( key, value)
     key = '-p'
-    !   value = 'c:\Program Files\Deltares\Delft3D 4.02.00.01\win64\waq\default\proc_def.dat'
-    value = '..\..\bin\win64\waq\default\proc_def.dat'
+    !   value = 'c:\Program Files\Deltares\Delft3D 4.02.00.01\win64\waq\resources\proc_def.dat'
+    value = '..\..\bin\win64\waq\resources\proc_def.dat'
     dummy = set_var( key, value)
 
     runid = ' '

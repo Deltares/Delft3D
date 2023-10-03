@@ -100,10 +100,10 @@ endif()
 # Flow2d3d
 # Include the flow2d3d components as last as it depends on the properties set in the other components
 # Data needs to be loaded prior before the other flow2d3d modules as its include directory needs to be set
-add_subdirectory(${checkout_src_root}/${flow2d3d_data_module} flow2d3d_data) 
-add_subdirectory(${checkout_src_root}/${flow2d3d_plugin_culvert_c_module} flow2d3d_plugin_culvert_c) 
-add_subdirectory(${checkout_src_root}/${flow2d3d_plugin_user_module} flow2d3d_plugin_user) 
-add_subdirectory(${checkout_src_root}/${flow2d3d_io_dol_f_module} flow2d3d_io_dol_f) 
+add_subdirectory(${checkout_src_root}/${flow2d3d_data_module} flow2d3d_data)
+add_subdirectory(${checkout_src_root}/${flow2d3d_plugin_culvert_c_module} flow2d3d_plugin_culvert_c)
+add_subdirectory(${checkout_src_root}/${flow2d3d_plugin_user_module} flow2d3d_plugin_user)
+add_subdirectory(${checkout_src_root}/${flow2d3d_io_dol_f_module} flow2d3d_io_dol_f)
 add_subdirectory(${checkout_src_root}/${flow2d3d_io_module} flow2d3d_io)
 add_subdirectory(${checkout_src_root}/${flow2d3d_kernel_dd_f_module} flow2d3d_kernel_dd_f)
 add_subdirectory(${checkout_src_root}/${flow2d3d_kernel_module} flow2d3d_kernel)

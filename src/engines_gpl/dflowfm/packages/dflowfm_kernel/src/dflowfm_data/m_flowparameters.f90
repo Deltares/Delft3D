@@ -282,6 +282,7 @@
  integer                           :: limtypw           !< 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC, 21=central voor wave action transport
 
  integer                           :: ifixedweirscheme       !< 0 = no, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
+ integer                           :: ifixedweirscheme1D2D   !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
  integer                           :: ifxedweirfrictscheme   !< 0 = friction based on hu, 1 = friction based on subgrid weirfriction scheme
  integer                           :: jasetadjacentbobs = 0  !< also lift adjacent bobs and bl of kadecel
  double precision                  :: fixedweircontraction   !< flow width = flow width*fixedweircontraction
@@ -467,6 +468,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahisheatflux             !< Write heatfluxes to his file, 0: no, 1: yes
  integer                           :: jahissal                  !< Write salinity to his file, 0: no, 1: yes
  integer                           :: jahisrho                  !< Write density  to his file, 0: no, 1: yes
+ integer                           :: jahis_airdensity          !< Write air density  to his file, 0: no, 1: yes
  integer                           :: jahiswatlev               !< Write water level to his file, 0: no, 1: yes
  integer                           :: jahisbedlev               !< Write bed level to his file, 0: no, 1: yes
  integer                           :: jahiswatdep               !< Write waterd epth to his file, 0: no, 1: yes
@@ -513,6 +515,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jamapicept                !< Interception layer to map file, 0: no, 1: yes
  integer                           :: jamapwind                 !< wind velocities to map file, 0: no, 1: yes
  integer                           :: jamapwindstress           !< wind stress to map file, 0: no, 1: yes
+ integer                           :: jamap_airdensity          !< air density to mao file, 0: no, 1: yes
  integer                           :: jamapviu                  !< horizontal viscosity to map file, 0: no, 1: yes
  integer                           :: jamapdiu                  !< horizontal diffusity to map file, 0: no, 1: yes
  integer                           :: jamaprho                  !< flow density to map file, 0: no, 1: yes
@@ -823,6 +826,7 @@ subroutine default_flowparameters()
     limtypw    = 4
 
     ifixedweirscheme      = 6      !< 0 = no special treatment, setbobs only, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
+    ifixedweirscheme1D2D  = 0      !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
     fixedweircontraction  = 1d0    !< flow width = flow width*fixedweircontraction
     fixedweirtopwidth     = 3d0    !< e.g. 4.00 (m)
     fixedweirtopfrictcoef = -999d0 !< if .ne. dmiss, use this friction coefficient on top width
@@ -950,6 +954,7 @@ subroutine default_flowparameters()
     jahisheatflux = 1
     jahissal = 1
     jahisrho = 1
+    jahis_airdensity = 0
     jahiswatlev = 1
     jahisbedlev = 1
     jahiswatdep = 0
@@ -995,6 +1000,7 @@ subroutine default_flowparameters()
     jamapicept = 0
     jamapwind = 1
     jamapwindstress = 0
+    jamap_airdensity = 0
     jamapviu = 1
     jamapdiu = 1
     jamaprho = 1

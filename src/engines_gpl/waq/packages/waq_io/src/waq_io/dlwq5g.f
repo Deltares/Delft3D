@@ -27,57 +27,61 @@
       contains
 
 
-      SUBROUTINE DLWQ5G ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
-     *                    NODIM  , IORDER , IIMAX  , CNAMES , IPOSR  ,
-     *                    NPOS   , ILUN   , LCH    , LSTACK , CCHAR  ,
-     *                    CHULP  , NOCOL  , DTFLG1 , DTFLG3 , ITFACT ,
-     *                    ITYPE  , IHULP  , RHULP  , IERR   , iwar   )
+      subroutine dlwq5g ( lunut, i_array, count_items_assign , count_items_comp_rule  , count_subs_assign,
+     *                    count_subs_comp_rule, index_first, i_max , names_to_check , start_in_line,
+     *                    npos , ilun  , lch   , lstack , cchar,
+     *                    chulp, nocol , dtflg1, dtflg3 , itfact,
+     *                    itype, ihulp , rhulp , error_idx, iwar)
 !
 !
-!     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
+!     Deltares        Sector Waterresources And Environment
 !
-!     CREATED            : March '00  by L. Postma
+!     Created            : March '00  by L. Postma
 !
-!     MODIFIED           :
+!     Modified           :
 !
-!     FUNCTION           : Checks if column header exists
+!     Function           : Checks if column header exists
 !
-!     SUBROUTINES CALLED : none
+!     Subroutines Called : none
 !
-!     LOGICAL UNITS      : LUN(27) = unit stripped DELWAQ input file
+!     Logical Units      : LUN(27) = unit stripped DELWAQ input file
 !                          LUN(29) = unit formatted output file
 !
-!     PARAMETERS    :
+!     Parameters    :
 !
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ---------------------------------------------------------
-!     LUNUT   INTEGER    1         INPUT   unit number for ASCII output
-!     IAR     INTEGER  IIMAX       IN/OUT  integer   workspace
-!     ITMNR   INTEGER    1         IN/OUT  nr of items for assignment
-!     NOITM   INTEGER    1         IN      nr of items in computational rule
-!     NOITS   INTEGER    1         IN      nr of items entries to be filled
-!     IDMNR   INTEGER    1         IN/OUT  nr of subst for assignment
-!     NODIM   INTEGER    1         IN      nr of subst in computational rule
-!     NODIS   INTEGER    1         IN      nr of subst entries to be filled
-!     IORDER  INTEGER    1         IN      1 = items first, 2 is subst first
-!     IIMAX   INTEGER    1         INPUT   max. int. workspace dimension
-!     CNAMES  CHAR*(*)  NITM       INPUT   Items to check for presence
-!     IPOSR   INTEGER    1         IN/OUT  Start position on input line
-!     NPOS    INTEGER    1         INPUT   nr of significant characters
-!     ILUN    INTEGER   LSTACK     INPUT   unitnumb include stack
-!     LCH     CHAR*(*)  LSTACK     INPUT   file name stack, 4 deep
-!     LSTACK  INTEGER    1         INPUT   include file stack size
-!     CCHAR   CHAR*1     1         INPUT   comment character
-!     CHULP   CHAR*(*)   1         OUTPUT  space for limiting token
-!     NOCOL   INTEGER    1         OUTPUT  number of collums in matrix
-!     DTFLG1  LOGICAL    1         INPUT   True if time in 'date' format
-!     DTFLG3  LOGICAL    1         INPUT   True if YYetc instead of DDetc
-!     ITFACT  INTEGER    1         INPUT   factor between clocks
-!     ITYPE   INTEGER    1         OUTPUT  type of info at end
-!     IHULP   INTEGER    1         OUTPUT  parameter read to be transferred
-!     RHULP   REAL       1         OUTPUT  parameter read to be transferred
-!     IERR    INTEGER    1         OUTPUT  actual error indicator
-!     Iwar    INTEGER    1         OUTPUT  cumulative warning count
+!     Name                    Kind         Length     Funct.  Description
+!     ------------------------------------------------------------------------------------
+!     lunut                  integer        1            input   unit number for ascii output
+!     i_array                integer      i_max          in/out  integer workspace array
+!     i_max                  integer        1            input   max. integer workspace dimension
+!     count_items_assign     integer        1            in/out  number of items for assignment
+!     count_items_comp_rule  integer        1            in      number of items in computational rule
+!     count_items_entries    integer        1            in      number of items entries to be filled
+!     count_subs_assign      integer        1            in/out  number of subst for assignment
+!     count_subs_comp_rule   integer        1            in      number of subst in computational rule
+!     count_subs_entries     integer        1            in      number of subst entries to be filled
+!     index_first            integer        1            in      1 = items first, 2 = substances first
+!     names_to_check         char*(*)      count_names   input   names of items to check for presence
+!     count_names            integer        1            in/out  start position on input line
+!     start_in_line          integer        1            in/out  start position on input line
+!     npos                   integer        1            input   number of significant characters
+!     ilun                   integer       lstack        input   unitnumb include stack
+!     lch                    char*(*)      lstack        input   file name stack, 4 deep
+!     lstack                 integer        1            input   include file stack size
+!     cchar                  char*1         1            input   comment character
+!     chulp                  char*(*)       1            output  space for limiting token
+!     nocol                  integer        1            output  number of collums in matrix
+!     dtflg1                 logical        1            input   true if time in 'date' format
+!     dtflg3                 logical        1            input   true if yyetc instead of ddetc
+!     itfact                 integer        1            input   factor between clocks
+!     itype                  integer        1            output  type of info at end
+!     ihulp                  integer        1            output  parameter read to be transferred
+!     rhulp                  real           1            output  parameter read to be transferred
+!     error_idx              integer        1            output  error index within current subroutine
+!     iwar                   integer        1            output  cumulative warning count
+!     offset_i_array         integer        1            output  offset  in i_array
+!     offset_names           integer        1            output  offset in names_to_check
+!     offset_common          integer        1            output  comon offset in i_array and names_to_check
 !
 !
       use m_dlwq5h
@@ -85,17 +89,17 @@
       use timers       !   performance timers
       use m_cnvtim
 
-      INTEGER       IIMAX
-      CHARACTER*(*) LCH   (LSTACK) , CHULP , CNAMES(*)
-      CHARACTER     CCHAR*1 , STRNG*8
-      DIMENSION     IAR(*) , ILUN( LSTACK )
-      LOGICAL       DTFLG1 , DTFLG3 , FIRST
+      integer       i_max
+      character*(*) lch   (lstack) , chulp , names_to_check(*)
+      character     cchar*1 , strng*8
+      dimension     i_array(*) , ilun( lstack )
+      logical       dtflg1 , dtflg3 , first, must_read_more
       integer ( 8)  ihulp8
       integer(4) :: ithndl = 0
-      integer    :: I, noitm, idmnr, nodim, iorder, ioffc, ioffd, notim
-      integer    :: itype, lunut, ilun, iposr, nopos, ihulp, ierr
-      integer    :: iar, nocol, ifound, itfact, icnt, iods, k, iwar
-      integer    :: ioffi, itmnr, nitm, npos, lstack
+      integer    :: i, count_items_comp_rule, count_subs_assign, count_subs_comp_rule, index_first, offset_names, offset_common, notim
+      integer    :: itype, lunut, ilun, start_in_line, nopos, ihulp, error_idx
+      integer    :: i_array, nocol, ifound, itfact, icnt, iods, k, iwar
+      integer    :: offset_i_array, count_items_assign, count_names, npos, lstack
       real       :: rhulp
       
       
@@ -103,84 +107,95 @@
 !
 !     Array offsets
 !
-      IOFFI = ITMNR + NOITM + IDMNR + NODIM
-      IF ( IORDER .EQ. 1 ) THEN
-         IOFFC = ITMNR + NOITM + IDMNR
-         IOFFD = ITMNR + NOITM
-         NITM  = NODIM
-      ENDIF
-      IF ( IORDER .EQ. 2 ) THEN
-         IOFFC = IDMNR + NODIM + ITMNR
-         IOFFD = IDMNR + NODIM
-         NITM  = NOITM
-      ENDIF
+      offset_i_array = count_items_assign + count_items_comp_rule + 
+     +                 count_subs_assign  + count_subs_comp_rule
+      if ( index_first .eq. 1 ) then ! items first
+         offset_names  = count_items_assign + count_items_comp_rule + count_subs_assign
+         offset_common = count_items_assign + count_items_comp_rule
+         count_names   = count_subs_comp_rule
+      else if ( index_first .eq. 2 ) then !substances first
+         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign 
+         offset_common = count_subs_comp_rule + count_subs_assign
+         count_names   = count_items_comp_rule
+      endif
 !
-!     Read loop
+!     read loop
 !
-      FIRST = .TRUE.
-   20 ITYPE = 0
-      CALL RDTOK1 ( LUNUT  , ILUN   , LCH    , LSTACK , CCHAR  ,
-     *              IPOSR  , NPOS   , CHULP  , IHULP  , RHULP  ,
-     *                                         ITYPE  , IERR   )
-!          A read error
-      IF ( IERR  .NE. 0 ) goto 9999
-!          A string has arrived
-      IF ( ITYPE .EQ. 1 ) THEN
-         CALL DLWQ0T ( CHULP , ihulp, .FALSE., .FALSE., IERR )
-         IF ( IERR .EQ. 0 ) THEN
-            IERR = -2
-            IF ( FIRST ) THEN
-               goto 9999
-            ELSE
-               GOTO 50
-            ENDIF
-         ENDIF
-         IF ( FIRST ) THEN
-            FIRST = .FALSE.
-            DO 10 I = 1 , NITM
-               IAR(I+IOFFI) = 0
-   10       CONTINUE
-            NOCOL = 0
-            WRITE ( LUNUT ,   *  )
-         ENDIF
-         NOCOL = NOCOL + 1
-         STRNG = 'NOT used'
-         DO 30 I = 1 , NITM
-            CALL ZOEK(CHULP,1,CNAMES(IOFFC+I),20,IFOUND)
-            IF ( IFOUND .GE. 1 ) THEN
-               STRNG = 'used'
-               IAR(I+IOFFI) = NOCOL
-            ENDIF
-   30    CONTINUE
-   40    WRITE ( LUNUT , 1000 ) NOCOL, CHULP, STRNG
-         GOTO 20
-      ELSE
-         IF ( ITYPE .EQ. 2 ) THEN
-            CALL CNVTIM ( ihulp  , ITFACT, DTFLG1 , DTFLG3 )
-         ENDIF
-         IERR = -1
-         IF ( FIRST ) goto 9999
-      ENDIF
+      first = .true.
+      must_read_more = .true.
+      do while (must_read_more)
+          itype = 0
+          call rdtok1 ( lunut, ilun, lch, lstack, cchar,
+     *              start_in_line, npos, chulp, ihulp, rhulp,
+     *              itype  , error_idx)
+         
+          if ( error_idx  .ne. 0 ) then ! error occurred when reading
+              if (timon) call timstop( ithndl )
+              return !exit subroutine
+          end if
+         
+!         no error
+          if ( itype .eq. 1 ) then ! a string has arrived
+             ! get time (ihulp) from string (chulp)
+             call dlwq0t ( chulp , ihulp, .false., .false., error_idx )
+             if ( error_idx .eq. 0 ) then
+                error_idx = -2
+                if ( first ) then
+                   if (timon) call timstop( ithndl )
+                   return  !exit subroutine
+                else
+                   exit
+                endif
+             endif
+             if ( first ) then
+                first = .false.
+                do i = 1 , count_names
+                   i_array(offset_i_array + i) = 0
+                end do
+                nocol = 0
+                write ( lunut ,   *  )
+             endif
+             nocol = nocol + 1
+             strng = 'NOT used'
+             do i = 1 , count_names
+                call zoek(chulp,1,names_to_check(offset_names+i),20,ifound)
+                if ( ifound >= 1 ) then
+                   strng = 'used'
+                   i_array(i+offset_i_array) = nocol
+                endif
+             end do
+             write ( lunut , 1000 ) nocol, chulp, strng
+          else
+             if ( itype .eq. 2 ) then ! an integer has arrived
+                call cnvtim ( ihulp  , itfact, dtflg1 , dtflg3 )
+             endif
+             error_idx = -1
+             must_read_more = .false.
+             if ( first ) then
+                 if (timon) call timstop( ithndl )
+                 return !exit subroutine
+             end if
+          endif
+      end do
 !
-!       Is everything resolved ?
-!
-   50 ICNT = 0
-      IODS = 0
-      DO  70 I = 1 , NITM
-         K = I - ICNT
-         IF ( CNAMES(K+IOFFC) .EQ. '&$&$SYSTEM_NAME&$&$!') GOTO 70
-         IF ( IAR(K+IOFFI) .GT. 0 ) GOTO 70
-         CALL DLWQ5H ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
-     *                 NODIM  , IORDER , CNAMES , IOFFI  , IOFFC  ,
-     *                          IODS   , IOFFD  , K      , ICNT   )
-         iwar = iwar + 1
-   70 CONTINUE
-!
- 9999 if (timon) call timstop( ithndl )
-      RETURN
+!     is everything resolved ?
+      icnt = 0
+      iods = 0
+      
+      do i = 1, count_names
+         k = i - icnt
+         if ( (names_to_check(offset_names + k) /= '&$&$SYSTEM_NAME&$&$!')
+     *       .and.  (i_array(offset_i_array + k) <= 0) ) then
+            call compact_usefor_list (lunut, i_array, count_items_assign,
+     *                count_items_comp_rule, count_subs_assign,
+     *                count_subs_comp_rule, index_first, names_to_check,
+     *                offset_i_array, offset_names,
+     *                iods, offset_common, k, icnt, error_idx, iwar)
+         end if
+      end do
 !
  1000 FORMAT ( ' Column:',I3,' contains: ',A40,' Status: ',A8)
 !
-      END
+      end subroutine dlwq5g
 
       end module m_dlwq5g

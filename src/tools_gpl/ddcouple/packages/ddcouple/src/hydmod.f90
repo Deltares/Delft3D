@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      module hydmod
+      module m_ddhyd
 
       ! module contains everything for the hydrodynamic discription
       ! created June 2004 by Jan van Beek
@@ -167,4 +167,4 @@
          integer                                :: cursize                ! filled up to this size
       end type t_hyd_coll
 
-      end module hydmod
+      end module m_ddhyd

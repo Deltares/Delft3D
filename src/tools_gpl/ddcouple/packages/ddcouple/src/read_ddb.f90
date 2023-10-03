@@ -28,7 +28,7 @@
       ! global declarations
 
       use m_monsys
-      use hydmod
+      use m_ddhyd
       use m_write_error_message
       use m_dhfext
 

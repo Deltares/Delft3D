@@ -342,6 +342,7 @@ type t_unc_mapids
    integer :: id_windyu(MAX_ID_VAR)      = -1 !< Variable ID for wind on flow links, y-component
    integer :: id_windstressx(MAX_ID_VAR) = -1  !< Variable ID for wind stress, on cell center, x-component
    integer :: id_windstressy(MAX_ID_VAR) = -1  !< Variable ID for wind stress, on cell center, y-component
+   integer :: id_airdensity(MAX_ID_VAR)  = -1 !< Variable ID for air density 
    integer :: id_turkin1(MAX_ID_VAR)     = -1 !< Variable ID for
    integer :: id_vicwwu(MAX_ID_VAR)      = -1 !< Variable ID for
    integer :: id_tureps1(MAX_ID_VAR)     = -1 !< Variable ID for
@@ -593,7 +594,7 @@ end subroutine unc_set_ncformat
 
 
 function unc_add_uuid(ncid) result (ierr)
-   use dlwq_netcdf, only: getuuid
+   use m_universally_unique_id_generator
    use dfm_error
    integer,          intent(in   ) :: ncid            !< NetCDF dataset id
    integer                         :: ierr            !< Result status, DFM_NOERR if successful.
@@ -603,7 +604,7 @@ function unc_add_uuid(ncid) result (ierr)
    ierr = DFM_NOERR
 
    ! Generate the UUID and store it as an attibute
-   call getuuid(uuid)
+   call generate_uuid(uuid)
    ierr = nf90_put_att(ncid, nf90_global, "uuid", uuid)
 end function unc_add_uuid
 
@@ -2981,7 +2982,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
 
-    integer :: i, itim, k, kb, kt, k1, k2, kk, LL, Lb, iconst, L, j, nv, nv1, nm, ndxbnd, nlayb, nrlay, LTX, nlaybL, nrlaylx, maxNumLinks, numLinks, L0, nlen, istru, maxNumStages, numStages, nfuru
+    integer :: i, itim, k, kb, kt, kk, LL, Lb, iconst, L, j, nv, nv1, nm, ndxbnd, nlayb, nrlay, LTX, nlaybL, nrlaylx, maxNumLinks, numLinks, L0, nlen, istru, maxNumStages, numStages, nfuru
     double precision              :: dens
     double precision, allocatable :: max_threttim(:)
     double precision, dimension(:), allocatable       :: dum
@@ -4960,7 +4961,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
 !    Secondary Flow
 !        id_rsi, id_rsiexact, id_dudx, id_dudy, id_dvdx, id_dvdy, id_dsdx, id_dsdy
 
-   integer :: i, j, jj, itim, n, LL, L, Lb, Lt, LLL, k, k1, k2, k3
+   integer :: i, j, jj, itim, n, LL, L, Lb, Lt, k, k1, k2
    integer :: id_twodim
    integer :: kk, kb, kt, kkk, found, iloc
    integer :: nlayb, nrlay
@@ -5438,6 +5439,10 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
          endif
       endif
 
+      if (ja_airdensity > 0 .and. jamap_airdensity > 0) then
+         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_airdensity   , nc_precision, UNC_LOC_S, 'rhoair' , 'air_density'      , 'Air density'     , 'kg m-3', jabndnd=jabndnd_)         
+      endif
+      
       ! Heat fluxes
       if (jamapheatflux > 0 .and. jatem > 1) then ! here less verbose
 
@@ -6185,8 +6190,10 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
    endif
 
    ! Velocities
-   if (jamapu1 == 1) then
+   if (jamapu1 > 0) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u1, iLocU, u1, 0d0, jabndnd=jabndnd_)
+   end if
+   if (jamaphu > 0) then
       ierr = write_array_with_dmiss_for_dry_faces_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, hu, jabndnd=jabndnd_)
    end if
    if (jamapu0 == 1) then
@@ -7055,6 +7062,10 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
       deallocate(windx, windy, stat=ierr)
   
    endif
+   
+   if (ja_airdensity > 0 .and. jamap_airdensity /= 0) then 
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_airdensity  , UNC_LOC_S, airdensity, jabndnd=jabndnd_)
+   endif
 
    ! Rain
    if (jamaprain > 0 .and. jarain /= 0) then
@@ -7628,7 +7639,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
     id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
     id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
     id_patm, id_tair, id_rhum, id_clou, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
-    id_cwav, id_cgwav, id_sigmwav, id_SwE, id_SwT, &
+    id_cwav, id_cgwav, id_sigmwav, &
     id_ust, id_vst, id_windx, id_windy, id_windxu, id_windyu, id_numlimdt, id_hs, id_bl, id_zk, &
     id_1d2d_edges, id_1d2d_zeta1d, id_1d2d_crest_level, id_1d2d_b_2di, id_1d2d_b_2dv, id_1d2d_d_2dv, id_1d2d_q_zeta, id_1d2d_q_lat, &
     id_1d2d_cfl, id_1d2d_flow_cond, id_1d2d_sb, id_1d2d_s1_2d, id_1d2d_s0_2d, id_tidep, id_salp, id_inttidesdiss, &
@@ -11599,7 +11610,6 @@ subroutine unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_re
    integer                                   :: ncontacts, ncontactmeshes, koffset1dmesh
    integer, allocatable                      :: mesh1indexes(:),mesh2indexes(:), contacttype(:)
    character(len=80), allocatable            :: contactslongnames(:)
-   character(len=40)                         :: currentNodeId
    logical                                   :: includeArrays
    logical                                   :: do_edgelengths, need_edgelengths
    double precision, allocatable             :: xface(:), yface(:)
@@ -12550,13 +12560,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
     integer :: id_tmp
     integer :: layerfrac, layerthk
-    integer, allocatable :: id_tr1(:), id_ttrabnd(:), id_ztrabnd(:)
+    integer, allocatable :: id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable :: id_sf1(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
-    integer, allocatable :: id_rwqb(:)
 
     integer :: it_read, nt_read, ndxi_read, lnx_read, L
     integer :: sedtot_read, sedsus_read, nlyr_read
-    integer :: kloc,kk, kb, kt, itmp, i, iconst, iwqbot, nm, Lf, j, k, nlayb, nrlay
+    integer :: kloc,kk, kb, kt, itmp, i, iconst, iwqbot, nm, Lf, j, k
     integer :: iostat
     logical :: fname_has_date, mdu_has_date
     integer, allocatable :: maptimes(:)
@@ -14464,7 +14473,6 @@ subroutine unc_write_flowgeom_filepointer_ugrid(ncid,id_tsp, jabndnd,jafou, ja2D
    integer                         :: jabndnd_      !< Flag specifying whether boundary nodes are to be written.
    integer                         :: ndxndxi       !< Last 2/3D node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
    integer                         :: last_1d       !< Last 1D node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-   integer                         :: n1d_write     !< Number of 1D nodes to write.
    integer                         :: ndx1d         !< Number of internal 1D nodes.
 
    integer :: nn
@@ -14482,22 +14490,13 @@ subroutine unc_write_flowgeom_filepointer_ugrid(ncid,id_tsp, jabndnd,jafou, ja2D
 !   type(t_crs) :: pj
 
    integer :: ierr
-   integer :: i, numContPts, numNodes, n, numl2d, L, k1, L1
-   integer                         :: Li            !< Index of 1D link (can be internal or boundary)
-   integer :: id_flowelemcontourptsdim, id_flowelemcontourx, id_flowelemcontoury
+   integer :: i, numContPts, numNodes, n, numl2d, L
    integer :: jaInDefine
-   double precision, allocatable :: work2(:,:)
    integer                       :: n1dedges, n1d2dcontacts, numk2d, start_index
    integer, allocatable          :: contacttype(:)
 
    ! re-mapping of 1d mesh coordinates for UGrid
-   double precision, allocatable                 :: x1dn(:), y1dn(:), xue(:), yue(:), x1du(:), y1du(:)
-   integer,                            pointer   :: nodebranchidx_remap(:)
-   double precision,                   pointer   :: nodeoffsets_remap(:)
-   integer,                            pointer   :: edgebranchidx_remap(:)
-   double precision,                   pointer   :: edgeoffsets_remap(:)
-   character(len=ug_idsLen),           allocatable :: nodeids_remap(:)
-   character(len=ug_idsLongNamesLen),  allocatable :: nodelongnames_remap(:)
+   double precision, allocatable                 :: xue(:), yue(:)
    ! re-mapping of 2d mesh coordinates for UGrid
    double precision, allocatable                 :: x2dn(:), y2dn(:), z2dn(:)
    integer                                       :: netNodeReMappedIndex, nnSize
@@ -14806,12 +14805,10 @@ subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid,jabndnd,jafou, ja2D, contact
    use m_missing
    use netcdf
    use m_partitioninfo
-   use m_flow, only: kmx, mxlaydefs, laymx, numtopsig, s1max
    use m_alloc
    use dfm_error
    use m_save_ugrid_state !stores the contactname and other saved ugrid names
    use m_CrossSections
-   use m_flowparameters, only: jafullgridoutput
    use m_flowtimes, only: handle_extra
    use Timers
    use m_modelbounds
@@ -14835,20 +14832,18 @@ subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid,jabndnd,jafou, ja2D, contact
    
    integer :: nn
    integer, allocatable :: edge_nodes(:,:), face_nodes(:,:), edge_type(:), contacts(:,:)
-   integer, dimension(:,:), pointer :: edge_faces => null()
    integer :: layer_count, layer_type
    !! Geometry options
    integer, parameter :: LAYERTYPE_OCEAN_SIGMA   = 1 !< Dimensionless vertical ocean sigma coordinate.
    integer, parameter :: LAYERTYPE_Z             = 2 !< Vertical coordinate for fixed z-layers.
    integer, parameter :: LAYERTYPE_OCEAN_SIGMA_Z = 3 !< Combined Z-Sigma layers
    real(kind=dp), dimension(:), pointer :: layer_zs => null(), interface_zs => null()
-   character(len=10) :: waterlevelname , bldepthname
    logical :: jafou_
    logical :: ja2D_
 !   type(t_crs) :: pj
 
    integer :: ierr
-   integer :: i, numContPts, numNodes, n, numl2d, L, k1, L1
+   integer :: i, numContPts, numNodes, n, L, k1, L1
    integer                         :: Li            !< Index of 1D link (can be internal or boundary)
    integer :: id_flowelemcontourptsdim, id_flowelemcontourx, id_flowelemcontoury
    integer :: jaInDefine
@@ -14857,16 +14852,13 @@ subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid,jabndnd,jafou, ja2D, contact
    integer, allocatable          :: contacttype(:)
 
    ! re-mapping of 1d mesh coordinates for UGrid
-   double precision, allocatable                 :: x1dn(:), y1dn(:), xue(:), yue(:), x1du(:), y1du(:)
+   double precision, allocatable                 :: x1dn(:), y1dn(:), x1du(:), y1du(:)
    integer,                            pointer   :: nodebranchidx_remap(:)
    double precision,                   pointer   :: nodeoffsets_remap(:)
    integer,                            pointer   :: edgebranchidx_remap(:)
    double precision,                   pointer   :: edgeoffsets_remap(:)
    character(len=ug_idsLen),           allocatable :: nodeids_remap(:)
    character(len=ug_idsLongNamesLen),  allocatable :: nodelongnames_remap(:)
-   ! re-mapping of 2d mesh coordinates for UGrid
-   double precision, allocatable                 :: x2dn(:), y2dn(:), z2dn(:)
-   integer                                       :: netNodeReMappedIndex, nnSize
         
    jaInDefine    = 0
    n1d2dcontacts = 0
@@ -17352,7 +17344,7 @@ implicit none
 double precision :: u_x(:),  u_y(:), s_x(:),  s_y(:) 
 integer :: ndxndxi
 
-integer :: n, L, LL, LLL, k1, k2, k3
+integer :: n, LL, LLL, k1, k2, k3
 
 s_x = 0.0d0
 s_y = 0.0d0
@@ -17379,20 +17371,35 @@ function write_array_with_dmiss_for_dry_cells_into_netcdf_file(ncid, id_tsp, id_
    type(t_unc_timespace_id),      intent(in)       :: id_tsp                 !< Map file and other NetCDF ids.
    integer,                       intent(in)       :: id_var(:)              !< Variable ID 
    integer,                       intent(in)       :: data_location          !< Data location
-   double precision, allocatable, intent(in)       :: array(:)               !< array to be written
+   double precision, allocatable, intent(in)       :: array(:)               !< 2D case array to be written
    integer, optional,             intent(in)       :: jabndnd                !< Flag specifying whether boundary nodes are to be written.
    
    integer                                         :: ierr                   !< Result status
+   integer                                         :: cell
    double precision, allocatable                   :: temp_array(:)
 
+   if ( .not. allocated(kfs) ) then
+       call mess(LEVEL_INFO, 'Dry cells are not "removed" in a map file due to the current implementation. Please contact DFM developers.')
+       ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, array, jabndnd=jabndnd)
+       return
+   end if
+      
+   if ( size(array) /= size(kfs) ) then
+       call mess(LEVEL_INFO, 'Dry cells are not "removed" in a map file due to the current implementation. Please contact DFM developers.')
+       ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, array, jabndnd=jabndnd)
+       return
+   end if
+   
    allocate(temp_array(size(array)), stat=ierr)
    if (ierr /= 0) call aerr( 'temp_array', ierr, size(array))
-   
-   where (kfs==0)
-       temp_array = dmiss
-   elsewhere
-       temp_array = array
-   end where
+
+   do cell = 1, size(kfs)
+      if ( kfs(cell) == 0 ) then 
+         temp_array(cell) = dmiss
+      else
+         temp_array(cell) = array(cell)
+      end if
+   end do
    ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_array, jabndnd=jabndnd)
     
    deallocate(temp_array)
@@ -17415,16 +17422,32 @@ function write_array_with_dmiss_for_dry_faces_into_netcdf_file(ncid, id_tsp, id_
    integer, optional,             intent(in)       :: jabndnd                !< Flag specifying whether boundary nodes are to be written.
    
    integer                                         :: ierr                   !< Result status
+   integer                                         :: face
    double precision, allocatable                   :: temp_array(:)
 
+   
+   if ( .not. allocated(hu) ) then
+       call mess(LEVEL_INFO, 'Dry faces are not "removed" in a map file due to the current implementation. Please contact DFM developers.')
+       ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, array, jabndnd=jabndnd)
+       return
+   end if
+      
+   if ( size(array) /= size(hu) ) then
+       call mess(LEVEL_INFO, 'Dry faces are not "removed" in a map file due to the current implementation. Please contact DFM developers.')
+       ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, array, jabndnd=jabndnd)
+       return
+   end if
+   
    allocate(temp_array(size(array)), stat=ierr)
    if (ierr /= 0) call aerr( 'temp_array', ierr, size(array))
 
-   where (hu > 0d0) ! taken from setkfs.f90
-       temp_array = array
-   elsewhere
-       temp_array = dmiss
-   end where
+   do face = 1, size(hu)
+      if ( hu(face) == 0 ) then 
+         temp_array(face) = dmiss
+      else
+         temp_array(face) = array(face)
+      end if
+   end do
    ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_array, jabndnd=jabndnd)
     
    deallocate(temp_array)

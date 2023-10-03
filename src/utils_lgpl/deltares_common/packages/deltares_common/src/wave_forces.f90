@@ -26,23 +26,24 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-subroutine wave_forces(dir       ,deph      ,tp        ,fxhis     , &
+subroutine wave_forces(    dir       ,tp        ,fxhis                , &
                          & fyhis     ,dish      ,diss      ,wavel     , &
-                         & ldep      ,fx        ,fy        ,dismax    , &
-                         & corht     ,swdis     ,grav      ,wsbodyu   , wsbodyv   )
+                         & water_is_too_shallow_or_waves_are_too_small, &
+                         & fx        ,fy                              , &
+                         & swdis     ,grav      ,wsbodyu   , wsbodyv   )
     !!--description-----------------------------------------------------------------
     !
     !     Input:
     !     -------
-    !     DIR,DEPH,TP,FXHIS,FYHIS,DISH,DISS,QBH,WAVEL,LDEP,SWDIS
-    !     LDEP   : logical variable, .true. when depth or waveheight is too small
+    !     DIR,TP,FXHIS,FYHIS,DISH,DISS,WAVEL,water_is_too_shallow_or_waves_are_too_small,SWDIS,grav
+    !     water_is_too_shallow_or_waves_are_too_small   : logical variable, .true. when depth or waveheight is too small
     !     SWDIS  : 1: wave forces based on gradients,
     !              2: from total dissipation,
     !              3: using the 3D dissipation profile
     !
     !     Output:
     !     --------
-    !     FX,FY
+    !     FX,FY,wsbodyu,wsbodyv
     !     FX,FY : wave forces based on gradients(1) or total dissipation(2) or 3d dissipation(3)
     !             Unit: N/m2
     !
@@ -53,40 +54,29 @@ subroutine wave_forces(dir       ,deph      ,tp        ,fxhis     , &
     !
     ! Global variables
     !
-    logical, intent(in)            :: corht
-    logical, intent(in)            :: ldep
-    integer, intent(in)            :: swdis
-    real   , intent(in)            :: deph
-    real   , intent(in)            :: dir
-    real   , intent(in)            :: dish
-    real   , intent(in)            :: diss
-    real   , intent(in)            :: dismax
-    real                           :: fx
-    real   , intent(in)            :: fxhis
-    real                           :: fy
-    real   , intent(in)            :: fyhis
-    real                           :: grav
-    real   , intent(in)            :: tp
-    real   , intent(in)            :: wavel
-    real                           :: wsbodyu
-    real                           :: wsbodyv
+    logical, intent(in   )  :: water_is_too_shallow_or_waves_are_too_small
+    integer, intent(in   )  :: swdis
+    real   , intent(in   )  :: dir
+    real   , intent(in   )  :: dish
+    real   , intent(in   )  :: diss
+    real   , intent(  out)  :: fx
+    real   , intent(in   )  :: fxhis
+    real   , intent(  out)  :: fy
+    real   , intent(in   )  :: fyhis
+    real   , intent(in   )  :: grav
+    real   , intent(in   )  :: tp
+    real   , intent(in   )  :: wavel
+    real   , intent(  out)  :: wsbodyu
+    real   , intent(  out)  :: wsbodyv
     !
     ! Local variables
     !
-    integer :: choice
-    real    :: factor
-    real    :: fmax
     real    :: frc
-    real    :: ftot
     real    :: tr_angle
     !
     !! executable statements -------------------------------------------------------
     !
-    choice = 0
-    if (corht) then
-        choice = 1
-    endif
-    if (ldep) then
+    if (water_is_too_shallow_or_waves_are_too_small) then
         fx    = 0.0
         fy    = 0.0
     else
@@ -109,16 +99,6 @@ subroutine wave_forces(dir       ,deph      ,tp        ,fxhis     , &
             fy       = sin(tr_angle)*frc
             wsbodyu  = 0.0
             wsbodyv  = 0.0
-            if (choice == 1) then
-                ftot = fx*fx + fy*fy
-                if (ftot > 0.0) then
-                    ftot   = sqrt(ftot)
-                    fmax   = dismax/sqrt(grav*deph)
-                    factor = min(fmax/ftot, 1.E0)
-                    fx     = factor*fx
-                    fy     = factor*fy
-                endif
-            endif
         elseif (swdis == 3) then
             !
             ! Determine wave forces based on dissipation at the free surface
@@ -130,16 +110,6 @@ subroutine wave_forces(dir       ,deph      ,tp        ,fxhis     , &
             tr_angle = 0.0174533*dir
             fx       = cos(tr_angle)*frc
             fy       = sin(tr_angle)*frc
-            if (choice == 1) then
-                ftot = fx*fx + fy*fy
-                if (ftot > 0.0) then
-                    ftot   = sqrt(ftot)
-                    fmax   = dismax/sqrt(grav*deph)
-                    factor = min(fmax/ftot, 1.E0)
-                    fx     = factor*fx
-                    fy     = factor*fy
-                endif
-            endif
             wsbodyu = fxhis - fx
             wsbodyv = fyhis - fy
         else

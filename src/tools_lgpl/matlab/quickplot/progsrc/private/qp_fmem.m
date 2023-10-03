@@ -184,7 +184,7 @@ switch cmd
                     try_next='AutoCAD DXF';
                 case {'.geojson'}
                     try_next='GeoJSON';
-                case {'.xyz'}
+                case {'.xyz','.csv'}
                     try_next='samples';
                 case {'.seq'}
                     try_next='aukepc';
@@ -343,18 +343,11 @@ switch cmd
                                     FI = qp_option(FI,'morstt',0);
                                     FI = qp_option(FI,'dps','');
                                     FI = qp_option(FI,'displaytime','hydrodynamic time');
+                                    FI = detect_partitions(FI);
                                 case {'delft3d-trih'}
                                     FI = qp_option(FI,'displaytime','hydrodynamic time');
                                 case {'delft3d-com'}
-                                    Opt = get_matching_names(FileName,'-',-1);
-                                    if ~isempty(Opt)
-                                        FI.Partitions = Opt;
-                                        for d = Opt{1}:-1:1
-                                            FN = FileName;
-                                            FN(Opt{2}+(1:Opt{3})) = sprintf('%3.3i',d);
-                                            FI.NEFIS(d) = vs_use(FN,'quiet');
-                                        end
-                                    end
+                                    FI = detect_partitions(FI);
                             end
                             if isfield(FI,'SubType')
                                 Tp=FI.SubType;
@@ -376,7 +369,7 @@ switch cmd
                             FI=load('-mat',FileName);
                         end
                         if strcmpi(en,'.fig')
-                            qp_plotmanager('openfigure',[],0,0,{FileName});
+                            d3d_qp('openfigure',FileName);
                             FI=[];
                             break
                         end
@@ -1280,5 +1273,44 @@ if nDigits>0 && all(ismember(n(iOffset+(1:nDigits)),'0123456789'))
     %
     if isequal(N,0:length(N)-1) || isequal(N,1:length(N))
         Opt = {length(N) iPOffset nDigits N(1)};
+    end
+end
+
+
+function FI = detect_partitions(FI)
+FileName = [FI.FileName FI.DatExt];
+Opt = get_matching_names(FileName,'-',-1);
+if ~isempty(Opt)
+    FI.Partitions = Opt;
+    nParts = Opt{1};
+    for d = nParts:-1:1
+        FN = FileName;
+        FN(Opt{2}+(1:Opt{3})) = sprintf('%3.3i',d);
+        FI.NEFIS(d) = vs_use(FN,'quiet');
+    end
+    FI.Merge.Length = 0;
+    FI.Merge.Indices = cell(1,nParts);
+    for d = 1:nParts
+        switch FI.SubType
+            case 'Delft3D-trim'
+                KCS = vs_get(FI.NEFIS(d),'map-const','KCS','quiet');
+            case 'Delft3D-com'
+                KCS = vs_get(FI.NEFIS(d),'KENMCNST','KCS','quiet');
+        end
+        if d == 1
+            if KCS(end,2) == -1
+                FI.Merge.Dimension = 'N';
+            else
+                FI.Merge.Dimension = 'M';
+            end
+        end
+        switch FI.Merge.Dimension
+            case 'M'
+                IPart = sum(not(any(KCS==-1,1)));
+            case 'N'
+                IPart = sum(not(any(KCS==-1,2)));
+        end
+        FI.Merge.Indices{d} = FI.Merge.Length + (1:IPart);
+        FI.Merge.Length = FI.Merge.Length + IPart;
     end
 end

@@ -48,6 +48,7 @@ subroutine setfixedweirs()
  use string_module,      only: strsplit, get_dirsep
  use geometry_module,    only: dbdistance, CROSSinbox, dcosphi, duitpl, normalout
  use unstruc_caching
+ use m_1d2d_fixedweirs, only : find_1d2d_fixedweirs
 
  implicit none
 
@@ -616,6 +617,9 @@ subroutine setfixedweirs()
 
  call readyy(' ', -1d0 )
 
+ if (ifixedweirscheme1D2D > 0) then
+    call find_1d2d_fixedweirs(iLink, numcrossedLinks)
+ endif
 
 1234 continue
 

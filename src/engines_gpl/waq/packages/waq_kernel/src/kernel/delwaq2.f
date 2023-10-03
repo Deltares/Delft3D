@@ -26,31 +26,23 @@
 !       A, J and C are now pointers to arrays
 !
       MODULE DELWAQ2
-      use m_dlwqnq
-      use m_dlwqnp
-      use m_dlwqno
-      use m_dlwqnm
-      use m_dlwqnj
-      use m_dlwqni
-      use m_dlwqnh
-      use m_dlwqng
-      use m_dlwqnf
-      use m_dlwqne
-      use m_dlwqnd
-      use m_dlwqnc
-      use m_dlwqnb
-      use m_dlwqna
-      use m_dlwqn9
-      use m_dlwqn8
-      use m_dlwqn7
-      use m_dlwqn6
-      use m_dlwqn5
-      use m_dlwqn4
-      use m_dlwqn3
-      use m_dlwqn3
-      use m_dlwqn2
-      use m_dlwqn1
-      use m_dlwqn0
+      use m_integration_scheme_25
+      use m_integration_scheme_24
+      use m_integration_scheme_23
+      use m_integration_scheme_21_22
+      use m_integration_scheme_18
+      use m_integration_scheme_17
+      use m_integration_scheme_16
+      use m_integration_scheme_15
+      use m_integration_scheme_13
+      use m_integration_scheme_12
+      use m_integration_scheme_11
+      use m_integration_scheme_14
+      use m_integration_scheme_7
+      use m_integration_scheme_6
+      use m_integration_scheme_5
+      use m_integration_scheme_1
+      use m_integration_scheme_0
       use m_startup_screen
       use m_srstop
       use m_monsys
@@ -61,7 +53,7 @@
 
       CONTAINS
 
-      SUBROUTINE DELWQ2 ( A, J, C, IMAXA, IMAXI, IMAXC, INIT,
+      SUBROUTINE DELWQ2 ( buffer, IMAXA, IMAXI, IMAXC, INIT,
      &                    ACTION, DLWQD                     )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -75,25 +67,18 @@
 !                       *    , output, user console file
 !
 !     SUBROUTINES CALLED : DLWQI0, initialises the system
-!                          DLWQN1, first   integration procedure
-!                          DLWQN2, second  integration procedure
-!                          DLWQN3, third   integration procedure
-!                          DLWQN4, fourth  integration procedure
-!                          DLWQN5, fifth   integration procedure
-!                          DLWQN6, sixth   integration procedure
-!                          DLWQN7, seventh integration procedure
-!                          DLWQN8, eighth  integration procedure
-!                          DLWQN9, nineth  integration procedure
-!                          DLWQNB, tenth   integration procedure
-!                          DLWQNC, 11th    integration procedure
-!                          DLWQND, 12th    integration procedure
-!                          DLWQNE, 13th    integration procedure
-!                          DLWQNA, 14th    integration procedure
-!                          DLWQNF, 15th    integration procedure
-!                          DLWQNG, 16th    integration procedure
-!                          DLWQNH, 17th    integration procedure
-!                          DLWQNI, 18th    integration procedure
-!                          DLWQNJ, 19+20   integration procedure
+!                          integration_scheme_1, first   integration procedure
+!                          integration_scheme_5, fifth   integration procedure
+!                          integration_scheme_6, sixth   integration procedure
+!                          integration_scheme_7, seventh integration procedure
+!                          integration_scheme_11, 11th    integration procedure
+!                          integration_scheme_12, 12th    integration procedure
+!                          integration_scheme_13, 13th    integration procedure
+!                          integration_scheme_14, 14th    integration procedure
+!                          integration_scheme_15, 15th    integration procedure
+!                          integration_scheme_16, 16th    integration procedure
+!                          integration_scheme_17, 17th    integration procedure
+!                          integration_scheme_18, 18th    integration procedure
 !                          SRSTOP, stops execution
 !                          open_waq_files, opens files
 !
@@ -115,6 +100,7 @@
       USE DLWQI0_MOD
       USE Timers
       use delwaq2_data
+      use m_waq_data_buffer
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -128,10 +114,8 @@
 !
 !     Declaration of arguments
 !
+      type(waq_data_buffer), target             :: buffer
       INTEGER       IMAXA , IMAXI , IMAXC
-      INTEGER, DIMENSION(:), POINTER          :: J
-      REAL, DIMENSION(:), POINTER             :: A
-      CHARACTER(LEN=*), DIMENSION(:), POINTER :: C
       LOGICAL                                 :: INIT
       LOGICAL                                 :: exists
       INTEGER                                 :: ACTION
@@ -249,7 +233,7 @@
 !
          IERR = 0
          gridps => dlwqd%gridps
-         call dlwqi0 ( nlun   , a      , j      , c      , imaxa  ,
+         call dlwqi0 ( buffer, nlun   , imaxa  ,
      &                 imaxi  , imaxc  , ipage  , lun    , lchar  ,
      &                 filtype, gridps , dlwqd  , ierr   )
 !
@@ -278,82 +262,67 @@
       select case ( intsrt )
 
          case (  0 )     !      not transport, just processes
-            call dlwqn0 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_0 (buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  1 )     !      backward in space and time
-            call dlwqn1 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_1 (buffer, lun , lchar, action, dlwqd, gridps )
 
-         case (  2 )     !      modified 2nd order Runge Kutta
-            call dlwqn2 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  3 )     !      2nd order Lax Wendroff
-            call dlwqn3 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  4 )     !      Aternating direction implicit
-            call dlwqn4 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+         case (  2, 3, 4 ) ! deprecated
+            goto 991
 
          case (  5 )     !      Flux corrected transport
-            call dlwqn5 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_5 (buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  6 )     !      Direct steady state, backward differences in space
-            call dlwqn6 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_6 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case (  7 )     !      Direct steady state, central differences in space
-            call dlwqn7 ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_7 ( buffer, lun , lchar, action, dlwqd, gridps )
 
-         case (  8 )     !      Iteratively steady state, backward differences in space
-            call dlwqn8 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  9 )     !      Iteratively steady state, central differences in space
-            call dlwqn9 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case ( 10 )     !      Fully implicit, direct method, upwind
-            call dlwqnb ( a , j , c , lun , lchar, action, dlwqd, gridps )
+         case (  8, 9, 10 ) ! deprecated
+            goto 991
 
          case ( 11 )     !      Horizontal explicit upwind, vertical implicit central
-            call dlwqnc ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_11 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 12 )     !      Horizontal explicit FCT   , vertical implicit central
-            call dlwqnd ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_12 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 13 )     !      Horizontal explicit upwind, vertical implicit upwind
-            call dlwqne ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_13 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 14 )     !      Horizontal explicit FCT   , vertical implicit upwind
-            call dlwqna ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_14 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 15 )     !      GMRES, horizontal upwind, vertical upwind
-            call dlwqnf ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_15 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 16 )     !      GMRES, horizontal upwind, vertical central
-            call dlwqng ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_16 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 17 )     !      stationary GMRES, horizontal upwind, vertical upwind
-            call dlwqnh ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_17 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 18 )     !      stationary GMRES, horizontal upwind, vertical central
-            call dlwqni ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_18 ( buffer, lun , lchar, action, dlwqd, gridps )
 
-         case ( 19 )     !      TRISULA-ADI 1 (vertically upwind)
-            call dlwqnj ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case ( 20 )     !      TRISULA-ADI 2 (vertically central)
-            call dlwqnj ( a , j , c , lun , lchar, action, dlwqd, gridps )
+         case (  19, 20 ) ! deprecated
+            goto 991
 
          case ( 21 )     !      Self adjusting teta method (limiter Salezac)
-            call dlwqnm ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_21_22 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 22 )     !      Self adjusting teta method (limiter Boris and Book)
-            call dlwqnm ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_21_22 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 23 )     !      Leonards QUICKEST
-            call dlwqno ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_23 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 24 )     !      Local flexible time step method by Leonard Postma
-            call dlwqnp ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_24 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case ( 25 )     !      Special for emission module
-            call dlwqnq ( a , j , c , lun , lchar, action, dlwqd, gridps )
+            call integration_scheme_25 ( buffer, lun , lchar, action, dlwqd, gridps )
 
          case default
             goto 990
@@ -364,7 +333,6 @@
      &     ACTION == ACTION_FULLCOMPUTATION        ) THEN
 
 !     print timer-results
-!     Note: removed printing of timers to monitoring file
 
 
 
@@ -380,7 +348,7 @@
 
   990 WRITE ( * , * ) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
       CALL SRSTOP(1)
-  991 WRITE ( * , * ) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED in online mode'
+  991 WRITE ( * , * ) ' ERROR: INTEGRATION OPTION DEPRECATED'
       CALL SRSTOP(1)
   992 WRITE ( * , * ) ' ERROR : INITIALISATION FAILED'
       CALL SRSTOP(1)

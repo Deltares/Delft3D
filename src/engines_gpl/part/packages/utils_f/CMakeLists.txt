@@ -3,7 +3,7 @@ set(src_path src)
 
 # Set version file variables
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(fortran_version_file ${part_root_path}/../waq/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file ${part_root_path}/../waq/packages/waq_utils_f/src/delwaq_version.F90)
 
 
 # Gather source files
@@ -13,37 +13,14 @@ get_fortran_source_files(${src_path} source_files)
 set(library_name part_utils_f)
 add_library(${library_name} ${source_files})
 
-
-set(oss_dependencies_general deltares_common
-                             part_data_f
-                             io_netcdf
-                             io_hyd
-                             waq_utils_f)
 # Add dependencies
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
+set(oss_dependencies deltares_common
+                     part_data_f
+                     io_netcdf
+                     io_hyd
+                     waq_utils_f)
 
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
-    set(oss_dependencies ${oss_dependencies_general})
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
-endif(UNIX)
-
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-
-endif(WIN32)
+target_link_libraries(${library_name} ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)
 
 # Define additional compilation flags
@@ -58,4 +35,3 @@ set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/part)
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
 target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
-

@@ -6,7 +6,7 @@ set(waq_root_path ${maptonetcdf_root_path}/../../engines_gpl/waq) # Trace back t
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_maptonetcdf.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -28,7 +28,11 @@ add_executable(${executable_name} ${source_files}
 set_source_files_properties(${fortran_version_file_delwaq}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
+set(oss_dependencies_general deltares_common
+                             deltares_common_c
+                             io_netcdf
+                             waq_kernel
+                             waq_utils_f)
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
@@ -40,12 +44,7 @@ if (UNIX)
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_hyd
-                         waq_kernel
-                         waq_utils_f)
+    set(oss_dependencies ${oss_dependencies_general})
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
@@ -57,14 +56,9 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_hyd
+    set(oss_dependencies ${oss_dependencies_general}
                          netcdf4
-                         netcdff
-                         waq_kernel
-                         waq_utils_f)
+                         netcdff)
 
     oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
@@ -115,4 +109,3 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/maptonetcdf/scripts/run_maptonetcdf.sh  DESTINATION bin)
 endif(UNIX)
-

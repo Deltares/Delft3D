@@ -82,7 +82,6 @@
 
       use m_conver
       use m_check
-      use m_part01
       use m_report_date_time
       use m_rdpart
       use m_rdlgri
@@ -283,8 +282,7 @@
             call rdlgri ( nfilesp  , lunitp   , fnamep   )
             call rdccol ( nmaxp    , mmaxp    , lunitp(5), fnamep(5),
      &                    lgrid2   , xb       , yb       , lunitp(2))
-            call part01 ( lgrid    , lgrid2   , xb       , yb       , dx      ,
-     &                    dy       , area     , angle    , nmaxp    , mmaxp   )
+
             nolayp = layt
             call rdpart ( lunitp(1), lunitp(2), fnamep(1))
             write ( lunut, 2470 ) nosubs

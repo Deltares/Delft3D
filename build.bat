@@ -89,7 +89,7 @@ rem =================================
 :GetArguments
     echo.
     echo "Get command line arguments ..."
-    
+
     if [%1] EQU [] (
         rem No arguments: continue with defaults
         goto :endproc
@@ -159,9 +159,9 @@ rem =================================
             echo Found: Intel Fortran 2023
         )
         goto :endfun
-    )     
-        
-        
+    )
+
+
     if NOT "%VS2017INSTALLDIR%" == "" (
         set vs=2017
         echo Found: VisualStudio 15 2017
@@ -334,7 +334,7 @@ rem =================
         echo "Calling vcvarsall.bat for VisualStudio 2022 ..."
         call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" amd64
     )
-    
+
     rem # Execution of vcvarsall results in a jump to the C-drive. Jump back to the script directory
     cd /d "%root%\"
     if !ERRORLEVEL! NEQ 0 call :errorMessage
@@ -451,7 +451,7 @@ rem =======================
         xcopy %root%\build_all\x64\Release\dwaq\bin\waqpb_export.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\bin\waqpb_import.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\bin\waq_plugin*.dll %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\default             %root%\build_all\x64\dwaq\default\    /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_all\x64\Release\dwaq\resources             %root%\build_all\x64\dwaq\resources\    /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\installation_default    %root%\build_all\x64\dwaq\installation_default\    /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\scripts             %root%\build_all\x64\dwaq\scripts\    /E /C /Y /Q > del.log 2>&1
 
@@ -574,5 +574,3 @@ rem =======================
 :endproc
    rem # No exit  here, otherwise the script exits directly at the first missing artefact
    rem # No pause here, otherwise a pause will appear after each procedure execution
-
-

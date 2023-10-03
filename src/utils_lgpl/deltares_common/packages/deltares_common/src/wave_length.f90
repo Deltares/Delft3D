@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-    subroutine wave_length(  hrm, deph, tp, wavel, wavek, ldep, grav  )
+    subroutine wave_length(  hrm, deph, tp, wavel, water_is_too_shallow_or_waves_are_too_small, grav  )
     !!--description-----------------------------------------------------------------
     !
     !
@@ -36,8 +36,8 @@
     !
     !     Output:
     !     --------
-    !     wavel, wavek, ldep
-    !     LDEP  : logical variable, .true. when depth or wave height too small
+    !     wavel                                        : wave length
+    !     water_is_too_shallow_or_waves_are_too_small  : logical variable, .true. when depth or wave height too small
     !
     !     Compute wave lenght (for high enough waves and for deep enough water)
     !
@@ -45,35 +45,33 @@
     ! NONE
     !!--declarations----------------------------------------------------------------
     use mathconsts, only: twopi_sp, sqrt2_sp
+    use precision
+    
     implicit none
     !
     ! Global variables
     !
-    logical, intent(out)           :: ldep
-    real                           :: deph
-    real                           :: grav
-    real                           :: hrm
-    real                           :: tp
-    real                           :: wavek
-    real   , intent(out)           :: wavel
+    logical, intent(  out)  :: water_is_too_shallow_or_waves_are_too_small
+    real   , intent(in   )  :: deph
+    real   , intent(in   )  :: grav
+    real   , intent(in   )  :: hrm
+    real   , intent(in   )  :: tp
+    real   , intent(  out)  :: wavel
     !
     ! Local variables
     !
-    real :: hmax
-    real :: hs
-    real :: tpmin
+    real     :: wavek
     !
     !! executable statements -------------------------------------------------------
     !
-    ldep   = .false.
+    
+    water_is_too_shallow_or_waves_are_too_small   = .false.
+    
     if (deph>0.05 .and. hrm>=0.01 .and. tp>0.0) then
-        call wavenr(deph, tp, wavek, grav)
-        !
+        call compute_wave_number_in_single_precision(deph, tp, wavek)
         wavel = twopi_sp/wavek
     else
-        !
-        ! Too shallow water or waves too small
-        !
-        ldep = .true.
+        water_is_too_shallow_or_waves_are_too_small = .true.
     endif
+    
     end subroutine wave_length

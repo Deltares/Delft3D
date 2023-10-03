@@ -13,6 +13,10 @@ if(NOT TARGET waq_utils_f)
     add_subdirectory(${checkout_src_root}/${waq_utils_f_module} waq_utils_f)
 endif()
 
+if(NOT TARGET waq_netcdf)
+    add_subdirectory(${checkout_src_root}/${waq_netcdf_module} waq_netcdf)
+endif()
+
 if(NOT TARGET waq_validation)
     add_subdirectory(${checkout_src_root}/${waq_validation_module} waq_validation)
 endif()

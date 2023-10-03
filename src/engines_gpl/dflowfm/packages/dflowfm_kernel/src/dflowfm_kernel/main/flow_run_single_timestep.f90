@@ -60,7 +60,6 @@ integer :: N, L
  else
     call velocities_explicit()                       ! progress without pressure coupling
     call transport()                                 ! progress without pressure coupling
-    call update_part()
     time1  = time0 + dts                             ! progress without pressure coupling
  endif
 

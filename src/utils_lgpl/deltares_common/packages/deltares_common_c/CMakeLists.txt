@@ -11,8 +11,8 @@ if (UNIX)
     include(FortranCInterface)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
     add_definitions(-DHAVE_FSEEKO64)
 endif(UNIX)
 
@@ -35,7 +35,8 @@ set(source  src/bmi_shared_lib_fortran_api.c
             src/sems.cpp
             src/shared_library_fortran_api.c
             src/stream.cpp
-            src/throwexception.cpp)
+            src/throwexception.cpp
+            src/universally_unique_id_generator.c)
 
 set(library_name deltares_common_c)
 add_library(${library_name} ${source} ${headers})
@@ -46,4 +47,3 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_com
 
 #Set preprocessor definitions
 target_compile_definitions(${library_name} PRIVATE _LIB;_CRT_SECURE_NO_DEPRECATE)
- 

@@ -46,25 +46,6 @@
       use delwaq_user_wasteloads
       use timers
       implicit none
-!     interface
-!     subroutine delwaq_user_wasteload ( nowst , wasteloads, notot , nosys , noseg ,
-!    +                                   itime , conc      , syname)
-!
-!     use delwaq_loads
-!
-!     ! arguments declarations
-!
-!     integer                             :: nowst
-!     type(wasteload), pointer            :: wasteloads(:)
-!     integer                             :: notot
-!     integer                             :: nosys
-!     integer                             :: noseg
-!     integer                             :: itime
-!     real                                :: conc(notot,noseg)
-!     character(len=*)                    :: syname(notot)
-!
-!     end subroutine delwaq_user_wasteload
-!     end interface
 
       ! arguments declarations
 

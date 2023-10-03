@@ -25,8 +25,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -199,12 +199,12 @@ enumerator mid_facelon                     !< Coordinate variable ID for face lo
 enumerator mid_facelat                     !< Coordinate variable ID for face latitude coordinate.
 enumerator mid_facelonbnd                  !< Coordinate variable ID for face boundaries' longitude coordinate.
 enumerator mid_facelatbnd                  !< Coordinate variable ID for face boundaries' latitude coordinate.
-enumerator mid_layerzs                     !< Coordinate variable ID for fixed z/sigma layer center vertical coordinate 
+enumerator mid_layerzs                     !< Coordinate variable ID for fixed z/sigma layer center vertical coordinate
 enumerator mid_layerz                      !< Coordinate variable ID for fixed z layer center vertical coordinate
-enumerator mid_layersigma                  !< Coordinate variable ID for fixed sigma layer center vertical coordinate 
-enumerator mid_interfacezs                 !< Coordinate variable ID for fixed z/sigma layer interface vertical coordinate 
-enumerator mid_interfacez                  !< Coordinate variable ID for fixed z layer interface vertical coordinate 
-enumerator mid_interfacesigma              !< Coordinate variable ID for fixed sigma layer interface vertical coordinate 
+enumerator mid_layersigma                  !< Coordinate variable ID for fixed sigma layer center vertical coordinate
+enumerator mid_interfacezs                 !< Coordinate variable ID for fixed z/sigma layer interface vertical coordinate
+enumerator mid_interfacez                  !< Coordinate variable ID for fixed z layer interface vertical coordinate
+enumerator mid_interfacesigma              !< Coordinate variable ID for fixed sigma layer interface vertical coordinate
 enumerator mid_sigmazdepth                 !< Coordinate variable ID for transition depth from sigma above to z below
 enumerator mid_node_ids_original           !< Variable storing the original ids
 enumerator mid_node_mapping_original       !< Variable storing the ids - current nodes mapping
@@ -229,8 +229,8 @@ enumerator cid_contactids                 !< Variable ID for contacts ids
 enumerator cid_contactlongnames           !< Variable ID for contacts longnames
 enumerator cid_contacttype                !< Variable ID for contact types
 enumerator cid_compositemesh             !< Top-level variable ID for composite mesh
-enumerator cid_meshes                    
-enumerator cid_mesh_contact       
+enumerator cid_meshes
+enumerator cid_mesh_contact
 enumerator cid_end
 end enum
 
@@ -565,7 +565,7 @@ end function ug_addlonlatcoordatts
 !! Attributes are put in a scalar integer variable.
 function ug_add_coordmapping(ncid, crs) result(ierr)
    use netcdf_utils, only: ncu_put_var_attset
-   
+
    integer,      intent(in) :: ncid   !< NetCDF dataset id
    type(t_crs), intent(in)  :: crs   !< Coordinate reference system that was used for the coordinate mapping.
    integer                  :: ierr   !< Result status (UG_NOERR==NF90_NOERR) if successful.
@@ -1020,11 +1020,11 @@ function ug_write_mesh_struct(ncid, meshids, networkids, crs, meshgeom, nnodeids
    type(t_ug_meshgeom), intent(in   ) :: meshgeom !< The complete mesh geometry in a single struct.
    type(t_crs),           intent(in)  :: crs      !< Optional crs containing metadata of unsupported coordinate reference systems
    integer                            :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
-!   integer, optional, intent(in)      :: nsigma_opt !< Number of 
+!   integer, optional, intent(in)      :: nsigma_opt !< Number of
    character(len=ug_idsLen), optional, allocatable           :: nnodeids(:), nbranchids(:), nodeids(:)
    character(len=ug_idsLongNamesLen), optional, allocatable  :: nnodelongnames(:), nbranchlongnames(:), nodelongnames(:)
    character(len=*), optional                                :: network1dname
-   
+
    ierr = ug_write_mesh_arrays(ncid, meshids, meshgeom%meshName, meshgeom%dim, UG_LOC_ALL2D, meshgeom%numNode, meshgeom%numEdge, meshgeom%numFace, meshgeom%maxNumFaceNodes, &
                                meshgeom%edge_nodes, meshgeom%face_nodes, meshgeom%edge_faces, meshgeom%face_edges, meshgeom%face_links, meshgeom%nodex, meshgeom%nodey, & ! meshgeom%nodez, &
                                meshgeom%edgex, meshgeom%edgey, meshgeom%facex, meshgeom%facey, &
@@ -1372,7 +1372,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
 
    ! Layers
    if (add_layer_var) then
-       
+
       if (present(waterlevelname)) then
          waterlevelname_ = waterlevelname
       else
@@ -1383,8 +1383,8 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
       else
          bldepthname_ = 'bldepth' !default value
       end if
-          
-          
+
+
       ! Write mesh layer distribution (mesh-global, not per face)
 !      select case(layerType)
       if (layerType == LAYERTYPE_OCEANSIGMA .or. layertype == LAYERTYPE_OCEAN_SIGMA_Z ) then
@@ -1396,15 +1396,15 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'long_name',     'Sigma coordinate of layer interfaces')
          ! See http://cfconventions.org/cf-conventions/cf-conventions.html#dimensionless-vertical-coordinate
          ! and http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_coordinate for info about formula_terms attribute for sigma coordinates.
-      
+
          if (layerType == LAYERTYPE_OCEANSIGMA) then
             ! Only for pure sigma coordinates: these vars contain the formula terms, for ocean_sigma_z, see further below.
-            
+
             ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma),     'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?
-            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?   
+            ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_waterdepth') ! TODO: AvD: do we define this only on faces?
             ! TODO: UNST-5711, Wrong waterdepth above to be replaced by correct bldepth variable, but then also taking time dependency of bldepth into account.
             !ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma),     'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?
-            !ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?   
+            !ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'/trim(bldepthname_)) ! TODO: AvD: do we define this only on faces?
             ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma)    , 'computed_standard_name', 'altitude')
             ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'computed_standard_name', 'altitude')
          end if
@@ -1433,16 +1433,16 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'standard_name', 'ocean_sigma_z_coordinate')
          ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs),     'long_name',     'Sigma/Z coordinate of layer centres')
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'long_name',     'Sigma/Z coordinate of layer interfaces')
-  
+
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'formula_terms', 'sigma: '//prefix//'_interface_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'//trim(bldepthname_)//' depth_c: '//prefix//'_sigmazdepth zlev: '//prefix//'_interface_z ') ! TODO: AvD: do we define this only on faces?
          ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs),     'formula_terms', 'sigma: '//prefix//'_layer_sigma eta: '//prefix//'_'//trim(waterlevelname_)//' depth: '//prefix//'_'//trim(bldepthname_)//' depth_c: '//prefix//'_sigmazdepth zlev: '//prefix//'_layer_z ') ! TODO: AvD: do we define this only on faces?
          ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs),     'units',         'm')
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'units',         'm')
          ierr = nf90_put_att(ncid, meshids%varids(mid_layerzs)    , 'computed_standard_name', 'altitude')
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacezs), 'computed_standard_name', 'altitude')
-         
-         
-         
+
+
+
       endif
       if (layertype /= LAYERTYPE_OCEAN_SIGMA_Z .and. layertype /= LAYERTYPE_Z .and. layerType /= LAYERTYPE_OCEANSIGMA) then
          ierr = UG_INVALID_LAYERS
@@ -1684,7 +1684,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
 
    ! Layers
    if (add_layer_var) then
-      
+
       if (associated(interface_zs) .and. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          depth_c = -interface_zs(numLayer + 1 - nsigma) ! z pos -> depth pos down
       end if
@@ -1697,7 +1697,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
       ! "[zs] variable should contain sigma(k)*depth_c for the layers where sigma is defined and zlev(k) for the other layers"
       ! "zlev(k) is defined for the nlayer - nsigma deeper layers"
       ! "The parameter sigma(k) is defined only for the nsigma layers nearest the ocean surface"
-      
+
       if (numLayer > 0) then
          if (associated(layer_zs)) then
             if (meshids%varids(mid_layerzs) > 0) then
@@ -1724,7 +1724,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
             endif
             if (meshids%varids(mid_interfacesigma) > 0) then
                ! sigma-layers (also partly, when in combined ocean_sigma_z)
-               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(numLayer + 2-nsigma:numlayer+1),start=(/numLayer + 2-nsigma/))               
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(numLayer + 2-nsigma:numlayer+1),start=(/numLayer + 2-nsigma/))
             endif
          endif ! interface_zs
       endif ! numLayer
@@ -2015,7 +2015,7 @@ function ug_init_link_topology(ncid, varid, contactids) result(ierr)
    contactids%varids(cid_contacttopo) = varid
 
    ierr = nf90_inquire_variable(ncid, varid, dimids=tabledims)
-   
+
    ierr = ncu_att_to_dimid(ncid, varid, 'link_dimension'   , contactids%dimids(cdim_ncontacts))
    if (ierr /= UG_NOERR) then
       ! The optional link_dimension attribute was not found, so auto-detect it from this contact variable directly.
@@ -2073,7 +2073,7 @@ function ug_init_link_topology(ncid, varid, contactids) result(ierr)
 
 function ug_init_network_topology(ncid, varid, netids) result(ierr)
    use netcdf_utils, only: ncu_att_to_dimid, ncu_att_to_varid
-   
+
    integer,            intent(in)    :: ncid          !< ID of already opened data set.
    integer,            intent(in)    :: varid         !< NetCDF variable ID that contains the network topology information (1-based).
    type(t_ug_network), intent(inout) :: netids        !< vector in which all mesh topology dimension and variables ids will be stored.
@@ -2213,7 +2213,7 @@ function ug_init_mesh_topology(ncid, varid, meshids) result(ierr)
 
    !check here if this is a mapped mesh
    coordspaceind = ''
-   isMappedMesh = ncu_get_att(ncid, varid, 'coordinate_space', coordspaceind)  
+   isMappedMesh = ncu_get_att(ncid, varid, 'coordinate_space', coordspaceind)
    deallocate(coordspaceind)  ! not used anymore
    if (isMappedMesh == nf90_noerr) then
       !inquire the variable with that name
@@ -2385,7 +2385,7 @@ function att_to_coordvarids(ncid, varid, attname, idx, idy, idz, idw) result(ier
       ierr = nf90_inq_varid(ncid, varname(i1:i2-1), idw)
       i1 = i2 + 1
    end if
-   
+
    deallocate(varname)
 
    return
@@ -2495,12 +2495,12 @@ function ug_is_network_topology(ncid, varid) result(is_mesh_topo)
 
    is_mesh_topo = .false.
    allocate( character(len=0) :: buffer )
-   
+
    buffer = ''
-   mesh_topo = ncu_get_att(ncid, varid, 'cf_role', buffer);   
+   mesh_topo = ncu_get_att(ncid, varid, 'cf_role', buffer);
    if (mesh_topo == nf90_noerr) then
       buffer = ''
-      edge_geom = ncu_get_att(ncid, varid, 'edge_geometry', buffer);   
+      edge_geom = ncu_get_att(ncid, varid, 'edge_geometry', buffer);
       if (edge_geom == nf90_noerr) then
          is_mesh_topo = .true. ! new ugrid format detected
       end if
@@ -2874,7 +2874,7 @@ function ug_get_meshgeom(ncid, meshgeom, start_index, meshids, netid, includeArr
 
          ! Get the node coordinates
          if (meshgeom%dim == 2 .or. .not. present(netid)) then
-            ierr = ug_get_node_coordinates(ncid, meshids, meshgeom%nodex, meshgeom%nodey)
+            ierr = ug_get_node_coordinates(ncid, meshids, meshgeom%nodex, meshgeom%nodey, meshgeom%nodez)
             ! TODO: AvD: include zk coordinates
          end if
          if (meshgeom%dim == 2) then
@@ -2923,20 +2923,46 @@ end function ug_get_meshgeom
 
 
 !> Gets the x,y-coordinates for all nodes in the specified mesh.
-!! The output x,y arrays are supposed to be of exact correct length already.
-function ug_get_node_coordinates(ncid, meshids, xn, yn) result(ierr)
-   integer,            intent(in)  :: ncid    !< NetCDF dataset id, should be already open.
-   type(t_ug_mesh),    intent(in)  :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
-   real(kind=dp),      intent(out) :: xn(:), yn(:) !< Arrays to store x,y-coordinates of the mesh nodes.
-   integer                         :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
+!! The output x,y,z arrays are supposed to be of exact correct length already.
+function ug_get_node_coordinates(ncid, meshids, xn, yn, zn) result(ierr)
+   integer,            intent(in)            :: ncid         !< NetCDF dataset id, should be already open.
+   type(t_ug_mesh),    intent(in)            :: meshids      !< Set of NetCDF-ids for all mesh geometry arrays.
+   real(kind=dp),      intent(out)           :: xn(:), yn(:) !< Arrays to store x,y-coordinates of the mesh nodes.
+   real(kind=dp),      intent(out), optional :: zn(:)        !< Array to store z-coordinates of the mesh nodes.
+                                                             !  (AM: Optional to make sure other using code needs no update)
+   integer                                   :: ierr         !< Result status (UG_NOERR==NF90_NOERR if successful).
+
+   character(len=NF90_MAX_NAME)              :: nodecrdname
+   integer                                   :: k, vid
 
    ierr = nf90_get_var(ncid, meshids%varids(mid_nodex), xn)
    if(ierr /= UG_NOERR) then
       call SetMessage(LEVEL_WARN, 'Could not read mesh node x-coordinates. Check any previous warnings.') ! low level lib may not throw fatal errors
    end if
    ierr = nf90_get_var(ncid, meshids%varids(mid_nodey), yn)
-   ! TODO: AvD: some more careful error handling
+   if(ierr /= UG_NOERR) then
+      call SetMessage(LEVEL_WARN, 'Could not read mesh node y-coordinates. Check any previous warnings.') ! low level lib may not throw fatal errors
+   end if
 
+   !
+   ! AM: Terrible hack, but not all waqgeom files refer to the node_z element
+   !
+   if ( present(zn) ) then
+      vid = meshids%varids(mid_nodez)
+      if ( vid == -1 ) then
+         ierr = nf90_inquire_variable(ncid, meshids%varids(mid_nodex), name = nodecrdname )
+         k    = len_trim(nodecrdname)
+         nodecrdname(k:k) = 'z'
+         ierr = nf90_inq_varid(ncid, nodecrdname, vid)
+      endif
+
+      ierr = nf90_get_var(ncid, vid, zn)
+      if(ierr /= UG_NOERR) then
+         call SetMessage(LEVEL_WARN, 'Could not read mesh node z-coordinates. Check any previous warnings.') ! low level lib may not throw fatal errors
+      end if
+   end if
+
+   ! TODO: AvD: some more careful error handling
 end function ug_get_node_coordinates
 
 
@@ -3145,7 +3171,7 @@ function ug_get_face_nodes(ncid, meshids, face_nodes, ifill, startIndex) result(
    integer                        :: ierr            !< Result status (UG_NOERR==NF90_NOERRif successful).
 
    integer :: ifill_, no_fill
-   
+
    ierr = nf90_get_var(ncid, meshids%varids(mid_facenodes), face_nodes)
    if (ierr /= nf90_noerr) then
       goto 999
@@ -4297,7 +4323,7 @@ function ug_write_mesh_1d_edge_nodes (ncid, meshids, meshName, numEdge, mesh_1d_
    ! Edges:
   ! always write edge nodes
   if (meshids%varids(mdim_1dedgenodes).ne.-1) then
-	 ierr = nf90_put_var(ncid, meshids%varids(mdim_1dedgenodes), mesh_1d_edge_nodes, count=(/ 2, numEdge /))
+         ierr = nf90_put_var(ncid, meshids%varids(mdim_1dedgenodes), mesh_1d_edge_nodes, count=(/ 2, numEdge /))
   endif
 
   ! Check for any remaining native NetCDF errors
@@ -4399,7 +4425,7 @@ function ug_get_mesh_contact(ncid, contactids, mesh1indexes, mesh2indexes, conta
    integer                           :: ncontacts_file
    integer :: idstrlen_file, idstrlen_local, longnamestrlen_file, longnamestrlen_local
    character(len=:), allocatable :: tmpstring(:)
-   
+
 
    allocate(contacts(2,size(mesh1indexes)))
 
@@ -4410,7 +4436,7 @@ function ug_get_mesh_contact(ncid, contactids, mesh1indexes, mesh2indexes, conta
    ierr = nf90_inquire_dimension(ncid, contactids%dimids(cdim_ncontacts), len = ncontacts_file)
    ierr = nf90_inquire_dimension(ncid, contactids%dimids(cdim_idstring), len = idstrlen_file)
    ierr = nf90_inquire_dimension(ncid, contactids%dimids(cdim_longnamestring), len = longnamestrlen_file)
-   
+
    if (ncontacts_file /= size(contactsids) ) then
       call setmessage(LEVEL_ERROR, 'The number of contacts in the network file is different from the number of contacts in the kernel')
    endif
@@ -4424,12 +4450,12 @@ function ug_get_mesh_contact(ncid, contactids, mesh1indexes, mesh2indexes, conta
       write(msgbuf, '(''The number of characters in the id string for the contacts (= '', i0,''), exceeds the maximum string length (= '', i0,'')'')') idstrlen_file, idstrlen_local
       call err_flush()
    endif
-   
+
 
    ! Use a temporary array for reading the id's
    allocate(character(len=idstrlen_file)::tmpstring(ncontacts_file))
    ierr = nf90_get_var(ncid, contactids%varids(cid_contactids), tmpstring)
-   
+
    do i=1,ncontacts_file
       contactsids(i) = tmpstring(i)
    end do
@@ -5232,7 +5258,7 @@ end function ug_clone_mesh_data
 !! The cloning of the actual data must be done later, using ug_clone_network_data().
 function ug_clone_network_definition( ncidin, ncidout, netidsin, netidsout) result(ierr)
     use netcdf_utils, only: ncu_copy_atts
-    
+
     integer,            intent(in   ) :: ncidin    !< NetCDF id of input dataset
     integer,            intent(in   ) :: ncidout   !< NetCDF id of output dataset
     type(t_ug_network), intent(in   ) :: netidsin  !< network struct with dim+varids in input dataset
@@ -5874,7 +5900,7 @@ function ug_get_contact_id_from_meshcontactname(ncid, ug_file, meshContactName, 
    character(len=*), intent(in   )      :: meshContactName      !< the contact name associated with the mesh
    integer,          intent(inout)      :: contactid            !< the requrestd contact id
    character(len=nf90_max_name)         :: contactname          !< the contact name
-   
+
    integer                           :: i, ierr
 
    ierr = UG_NOERR

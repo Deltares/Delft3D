@@ -15,39 +15,13 @@ add_library(${library_name} ${source_files})
 
 
 # Set dependencies
-set(oss_dependencies_general deltares_common
-                             waq_utils_f
-                             waq_data
-                             )
+set(oss_dependencies deltares_common
+                     waq_utils_f
+                     waq_data
+                     )
 
-if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
-    set(oss_dependencies ${oss_dependencies_general})
-
-    oss_include_libraries(${library_name} oss_dependencies)
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
-endif(UNIX)
-
-if(WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    oss_include_libraries(${library_name} oss_dependencies)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(WIN32)
-
+oss_include_libraries(${library_name} oss_dependencies)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
