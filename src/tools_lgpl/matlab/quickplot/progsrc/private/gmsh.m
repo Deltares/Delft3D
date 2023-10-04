@@ -104,6 +104,7 @@ while ~feof(fid)
         keywords = {'$ElementData', ...
             '$ElementNodeData', ...
             '$Elements', ...
+            '$ELM', ...
             '$Entities', ...
             '$GhostElements', ...
             '$NodeData', ...
@@ -158,6 +159,7 @@ while ~feof(fid)
         case {'$ElementData', '$ElementNodeData', '$NodeData'}
             Line = fgetl(fid);
             nStringTags = sscanf(Line,'%i',1);
+            strings = cell(1,nStringTags);
             for i = 1:nStringTags
                 strings{i} = deblank(fgetl(fid));
                 if strings{i}(1)=='"' && strings{i}(end)=='"'
@@ -211,10 +213,10 @@ while ~feof(fid)
                 else
                     data = fscanf(fid,'%i',4);
                 end
-                nEntityBlocks = data(1);
+                %nEntityBlocks = data(1);
                 nElements = data(2);
-                minElementNr = data(3);
-                maxNElementNr = data(4);
+                %minElementNr = data(3);
+                %maxNElementNr = data(4);
             else
                 data = fscanf(fid,'%i',1);
                 nEntities = 1;
@@ -223,33 +225,40 @@ while ~feof(fid)
             end
 
             for iEntity = 1:nEntities
+                Nr = zeros(1,nElements);
+                elementType = zeros(1,nElements);
+                Nodes = zeros(1,nElements);
+                
                 if S.Version >= 3
-                    if S.Binary
-                        data = fread(fid,3,'uint32',0,S.ByteOrder);
-                        data(4) = fread(fid,1,'uint64',0,S.ByteOrder);
-                    else
-                        data = fscanf(fid,'%i',4);
+                    nElementCount = 0;
+                    while nElementCount < nElements
+                        if S.Binary
+                            data = fread(fid,3,'uint32',0,S.ByteOrder);
+                            data(4) = fread(fid,1,'uint64',0,S.ByteOrder);
+                        else
+                            data = fscanf(fid,'%i',4);
+                        end
+                        %nEntityDims = data(1);
+                        %entityNr = data(2);
+                        eType = data(3);
+                        nElem = data(4);
+                        
+                        element = getElementProps(eType);
+                        
+                        if S.Binary
+                            data = fread(fid,[1+element.nNodes,nElem],'uint64',0,S.ByteOrder);
+                        else
+                            data = fscanf(fid,'%f',[1+element.nNodes,nElem]);
+                        end
+                        
+                        j = nElementCount + (1:nElem);
+                        elementType(j) = eType;
+                        Nr(j) = data(1,:);
+                        Nodes(1:element.nNodes,j) = data(2:end,:);
+                        
+                        nElementCount = nElementCount + nElem;
                     end
-                    nEntityDims = data(1);
-                    entityNr = data(2);
-                    elementType = data(3);
-                    nElementsInBlock = data(4);
-                    
-                    element = getElementProps(elementType);
-                    
-                    if S.Binary
-                        data = fread(fid,[1+element.nNodes,nElementsInBlock],'uint64',0,S.ByteOrder);
-                    else
-                        data = fscanf(fid,'%f',[1+element.nNodes,nElementsInBlock]);
-                    end
-                    
-                    Nr = data(1,:);
-                    Nodes = data(2:end,:);
-                elseif S.Binary
-                    Nr = zeros(1,nElements);
-                    elementType = zeros(1,nElements);
-                    Nodes = zeros(1,nElements);
-                    
+                elseif S.Binary % version 2.2 binary
                     nElementCount = 0;
                     while nElementCount < nElements
                         data = fread(fid,3,'uint32',0,S.ByteOrder);
@@ -267,7 +276,23 @@ while ~feof(fid)
                         
                         nElementCount = nElementCount + nElem;
                     end
-                else
+                elseif S.Version == 1 % version 1 (always ascii)
+                    for i = 1:nElements
+                        data = fscanf(fid,'%i',5);
+                        Nr(i) = data(1);
+                        elementType(i) = data(2);
+                        %physEntity(i) = data(3);
+                        %elemEntity(i) = data(4);
+                        
+                        element = getElementProps(elementType(i));
+                        nNodes = element.nNodes;
+                        if nNodes ~= data(5)
+                            error('Element %i: number of nodes %i does not agree with element type %i.',Nr(i),data(5),elementType(i))
+                        end
+                        Nodes(1:nNodes,i) = fscanf(fid,'%i',nNodes);
+                    end
+                    
+                else % version 2.2 ascii
                     Nr = zeros(1,nElements);
                     elementType = zeros(1,nElements);
                     Nodes = zeros(1,nElements);
@@ -307,8 +332,8 @@ while ~feof(fid)
                 end
                 nEntities = data(1);
                 nNodes = data(2);
-                minNodeNr = data(3);
-                maxNodeNr = data(4);
+                %minNodeNr = data(3);
+                %maxNodeNr = data(4);
             else
                 data = fscanf(fid,'%i',1);
                 nEntities = 1;
@@ -325,7 +350,7 @@ while ~feof(fid)
                         data = fscanf(fid,'%i',4);
                     end
                     nEntityDims = data(1);
-                    entityNr = data(2);
+                    %entityNr = data(2);
                     isParametric = data(3);
                     nNodesInBlock = data(4);
                     

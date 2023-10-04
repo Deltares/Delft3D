@@ -220,7 +220,7 @@ if strcmp(FI.FileType,'Gmsh')
         case 'UGRID2D-NODE'
             sz(M_) = size(FI.Node.Coords,2);
         case 'UGRID2D-FACE'
-            sz(M_) = size(FI.Element.Node,2);
+            sz(M_) = size(FI.Element.Nodes,2);
     end
 else
     switch Props.Geom
