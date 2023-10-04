@@ -101,6 +101,10 @@ if isempty(PL)
     end
     Remove = ~bitget(cat(1,PL{:,3}),log2(code)+1);
     PL(Remove,:)=[];
+    %
+    if ~exist(qp_settings('ghostscript',''),'file')
+        PL(strcmp(PL(:,2),'Multi page PDF file'),:)=[];
+    end
 end
 
 getSettings = 0;
@@ -620,9 +624,6 @@ set(gcbf,'userdata',UD);
 
 function [Settings,FigID] = print_dialog(PL,CanApplyAll,Settings,SelectFrom,FigID)
 persistent PrtID Method DPI Clr InvertHardcopy PageLabels
-if ~exist(qp_settings('ghostscript',''),'file')
-    PL(strcmp(PL(:,2),'Multi page PDF file'),:)=[];
-end
 if isempty(PrtID)
     PrtID=1;
     Method=2;

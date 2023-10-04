@@ -1807,6 +1807,7 @@ if nval>=0
     if strncmp(geometry,'UGRID',5) && multiple(M_) && (~multiple(K_) || hslice) && ~multiple(T_)
         ExpTypes{end+1}='netCDF3 file';
         ExpTypes{end+1}='netCDF4 file';
+        ExpTypes{end+1}='Gmsh file';
     end
     if sum(multiple)==1 && sum(multiple([M_ N_]))==1 && nval==0
         ExpTypes{end+1}='spline';
