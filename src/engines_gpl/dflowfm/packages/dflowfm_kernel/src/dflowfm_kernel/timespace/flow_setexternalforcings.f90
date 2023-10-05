@@ -541,7 +541,6 @@ subroutine set_wave_parameters()
       ! For badly converged SWAN sums, dwcap and dsurf can be NaN. Put these to 0d0, 
       ! as they cause saad errors as a result of NaNs in the turbulence model
       if (.not. flowwithoutwaves) then
-          !BS if jawave==7, these are only allocated if waveforcing==3
           if(allocated(dsurf) .and. allocated(dwcap)) then
               if (any(isnan(dsurf)) .or. any(isnan(dwcap))) then
                   write (msgbuf, '(a)') 'Surface dissipation fields from SWAN contain NaN values, which have been converted to 0d0. &

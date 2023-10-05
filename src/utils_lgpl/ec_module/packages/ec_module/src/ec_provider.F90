@@ -2622,7 +2622,7 @@ module m_ec_provider
              ncvarnames(1) = varname                          ! wave period
              ncstdnames(1) = varname
          case ('wavedirection')
-             ncvarnames(1) = 'theta0'                           !BS keep an eye on the expected variable names
+             ncvarnames(1) = 'theta0'
              ncstdnames(1) = 'sea_surface_wave_from_direction'
          case ('xwaveforce')
              ncvarnames(1) = 'xfor'
@@ -2683,7 +2683,7 @@ module m_ec_provider
             if (lon_dimid>0 .and. lon_dimid==lat_dimid) nod_dimid = lon_dimid    ! stations with lon/lat
             if (x_dimid>0 .and. x_dimid==y_dimid)       nod_dimid = x_dimid      ! stations with x/y
          end if
-        !BS some errors around here. Keep on looking.
+
          expectedLength = count(ncstdnames>' ')
 
          ! Fill a string array with user-defined variable names

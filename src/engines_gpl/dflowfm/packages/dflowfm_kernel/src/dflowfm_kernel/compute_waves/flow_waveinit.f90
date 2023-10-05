@@ -76,44 +76,44 @@
    call aerr('usty_cc  (ndkx)', ierr, ndkx)
 
    if (jawave == 3 .or. jawave == 4 .or. jawave == 6 .or. jawave == 7) then
-      call realloc(wavfu, lnkx, stat=ierr, keepExisting = .false., fill = 0d0) !BS dont know what this is, allocate for now
+      call realloc(wavfu, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavfu  (lnkx)', ierr, lnkx)
-      call realloc(wavfv, lnkx, stat=ierr, keepExisting = .false., fill = 0d0) !BS dont know what this is, allocate for now
+      call realloc(wavfv, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavfv  (lnkx)', ierr, lnkx)
-      call realloc(sxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0) !BS 1,3, 2o(utput)
+      call realloc(sxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('sxwav  (ndx)', ierr, ndx)
-      call realloc(sywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0) !BS 1,3, 2o
+      call realloc(sywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('sywav  (ndx)', ierr, ndx)
       if(jawave /= 7 .or. waveforcing == 3) then
-          call realloc(sbxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0) !BS to be computed for waveforcing=3 this is wsbu of com file
+          call realloc(sbxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
           call aerr('sbxwav  (ndx)', ierr, ndx)
-          call realloc(sbywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0) !BS to be computed for waveforcing=3 this is wsbv of com file
+          call realloc(sbywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
           call aerr('sbywav  (ndx)', ierr, ndx)
       endif
    endif
 
    if (jawave == 3 .or. jawave == 7) then
-      call realloc(wavmubnd, lnkx, stat=ierr, keepExisting = .false., fill = 0d0) !BS dont know what this is, allocate for now
+      call realloc(wavmubnd, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavmubnd  (lnkx)', ierr, lnkx)
-      call realloc(uorbwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)   !BS this is uorb of com file, don't know if it is needed, not sure it is present in the netcdf test or read from it currently
+      call realloc(uorbwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('uorbwav  (ndx)', ierr, ndx)
-      call realloc(wlenwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)   !BS dont know what this is, allocate for now
+      call realloc(wlenwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wlenwav  (ndx)', ierr, ndx)
 
-      call realloc(mxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)       !BS to be computed for waveforcing=1o,2o,3o
+      call realloc(mxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('mxwav(ndx)', ierr, ndx)
-      call realloc(mywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)       !BS to be computed for waveforcing=1o,2o,3o
+      call realloc(mywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('mywav(ndx)', ierr, ndx)
       if(jawave /= 7 .or. waveforcing == 3) then
-          call realloc(dsurf, ndx, stat=ierr, keepExisting = .false., fill = 0d0)       !BS to be computed for waveforcing=3 
+          call realloc(dsurf, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
           call aerr('dsurf(ndx)', ierr, ndx)
-          call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)       !BS 3to be computed for waveforcing=3
+          call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
           call aerr('dwcap(ndx)', ierr, ndx)
       endif
    endif
    !
    if  (jawave > 0) then
-      call realloc( hwavcom,   ndx, stat=ierr, keepExisting = .false., fill = hwavuni) !BS might only be needed for 2,3. Need to check.
+      call realloc( hwavcom,   ndx, stat=ierr, keepExisting = .false., fill = hwavuni)
       call aerr   ('hwavcom   (ndx)', ierr, ndx)
    endif
    !
