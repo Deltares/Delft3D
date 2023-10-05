@@ -600,38 +600,19 @@ subroutine fill_open_boundary_cells_with_inner_values(number_of_points, referenc
     
     integer             :: point, kb, ki 
 
-    if(jawave == 7) then
-        if(waveforcing /= 3) then
-            do point = 1, number_of_points
-                kb   = references(1,point)
-                ki   = references(2,point)
-                hwavcom(kb) = hwavcom(ki)
-                twav(kb)    = twav(ki)
-                phiwav(kb)  = phiwav(ki)
-                uorbwav(kb) = uorbwav(ki)
-                sxwav(kb)   = sxwav(ki)
-                sywav(kb)   = sywav(ki)
-                mxwav(kb)   = mxwav(ki)
-                mywav(kb)   = mywav(ki)
-            end do
-        else
-            do point = 1, number_of_points
-                kb   = references(1,point)
-                ki   = references(2,point)
-                hwavcom(kb) = hwavcom(ki)
-                twav(kb)    = twav(ki)
-                phiwav(kb)  = phiwav(ki)
-                uorbwav(kb) = uorbwav(ki)
-                sxwav(kb)   = sxwav(ki)
-                sywav(kb)   = sywav(ki)
-                mxwav(kb)   = mxwav(ki)
-                mywav(kb)   = mywav(ki)
-                sbxwav(kb)  = sbxwav(ki)
-                sbywav(kb)  = sbywav(ki)
-                dsurf(kb)   = dsurf(ki)
-                dwcap(kb)   = dwcap(ki)
-            end do
-        end if
+    if(jawave == 7 .and. waveforcing /= 3) then
+        do point = 1, number_of_points
+            kb   = references(1,point)
+            ki   = references(2,point)
+            hwavcom(kb) = hwavcom(ki)
+            twav(kb)    = twav(ki)
+            phiwav(kb)  = phiwav(ki)
+            uorbwav(kb) = uorbwav(ki)
+            sxwav(kb)   = sxwav(ki)
+            sywav(kb)   = sywav(ki)
+            mxwav(kb)   = mxwav(ki)
+            mywav(kb)   = mywav(ki)
+        end do
     else
         do point = 1, number_of_points
             kb   = references(1,point)
