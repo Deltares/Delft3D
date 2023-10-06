@@ -736,7 +736,7 @@ double precision, external :: setrhofixedp
            do L  = Lb,Lt-1
               zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
               if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
-                 k1 = ln(1,L) ; k2 = ln(2,L) 
+               k1 = ln(1,L) ; k2 = ln(2,L) 
                  if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
                     faclax = facLaxturb*zf
                     faclax = faclax*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
