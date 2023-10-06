@@ -27,8 +27,15 @@
 module dlwq_netcdf
     use netcdf
     use output, only: ncopt
+    use ISO_FORTRAN_ENV, only: int64
 
     implicit none
+
+    interface
+          subroutine getuuid( guid_string ) bind(c,name='getuuid')
+              character(len=1), dimension(*) :: guid_string
+          end subroutine getuuid
+    end interface
 
     interface dlwqnc_write_wqvariable
         module procedure dlwqnc_write_wqvariable_3d
@@ -751,6 +758,8 @@ recursive function dlwqnc_copy_associated( ncidin, ncidout, meshidin, meshidout,
         select case ( xtype )
             case( nf90_int )
                 ierror = dlwqnc_copy_int_var( ncidin,  ncidout, oldvarid, newvarid, ndims, dimids, dimsizes )
+            case( nf90_int64 )
+                ierror = dlwqnc_copy_int64_var( ncidin,  ncidout, oldvarid, newvarid, ndims, dimids, dimsizes )
             case( nf90_real )
                 ierror = dlwqnc_copy_real_var( ncidin,  ncidout, oldvarid, newvarid, ndims, dimids, dimsizes )
             case( nf90_double )
@@ -834,11 +843,55 @@ integer function dlwqnc_copy_int_var( ncidin, ncidout, varin, varout, ndims, dim
 
     if ( ierror /= nf90_noerr ) then
         dlwqnc_copy_int_var = ierror
+        if (dlwqnc_debug) write(*,*) 'Error retrieving int values: ', ierror, ' -- size: ', sz
         return
     endif
 
     dlwqnc_copy_int_var = nf90_noerr
 end function dlwqnc_copy_int_var
+
+integer function dlwqnc_copy_int64_var( ncidin, ncidout, varin, varout, ndims, dimids, dimsizes )
+!   use ISO_C_BINDING
+
+    integer, intent(in)                   :: ncidin, ncidout, varin, varout, ndims
+    integer, intent(in), dimension(:)     :: dimids, dimsizes
+
+    integer                               :: sz, sz1
+    integer                               :: ierror
+    integer                               :: ierr
+    integer                               :: i
+
+    integer(kind = int64), dimension(:)  , allocatable    :: value
+    integer(kind = int64), dimension(:,:), allocatable  :: value2d
+
+    dlwqnc_copy_int64_var = -1
+
+    if ( ndims /= 2 ) then
+        sz = 1
+        do i = 1,ndims
+            sz = sz * dimsizes(dimids(i))
+        enddo
+        allocate( value(sz), stat = ierr )
+        ierror = nf90_get_var( ncidin, varin, value )
+    else
+        allocate( value2d(dimsizes(dimids(1)),dimsizes(dimids(2))), stat = ierr )
+        ierror = nf90_get_var( ncidin, varin, value2d )
+    endif
+
+    if ( ndims /= 2 ) then
+        ierror = nf90_put_var( ncidout, varout, value )
+    else
+        ierror = nf90_put_var( ncidout, varout, value2d )
+    endif
+
+    if ( ierror /= nf90_noerr ) then
+        dlwqnc_copy_int64_var = ierror
+        if (dlwqnc_debug) write(*,*) 'Error retrieving int64 values: ', ierror, ' -- size: ', sz
+        return
+    endif
+
+    dlwqnc_copy_int64_var = nf90_noerr
+end function dlwqnc_copy_int64_var
 
 integer function dlwqnc_copy_real_var( ncidin, ncidout, varin, varout, ndims, dimids, dimsizes )
     integer, intent(in)                   :: ncidin, ncidout, varin, varout, ndims
