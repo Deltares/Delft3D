@@ -359,6 +359,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: s1
     integer(pntrsize)                    , pointer :: sbuu
     integer(pntrsize)                    , pointer :: sbvv
+    integer(pntrsize)                    , pointer :: sbuube
+    integer(pntrsize)                    , pointer :: sbvvbe
     integer(pntrsize)                    , pointer :: seddif
     integer(pntrsize)                    , pointer :: sepsus
     integer(pntrsize)                    , pointer :: sig
@@ -906,6 +908,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     s1                  => gdp%gdr_i_ch%s1
     sbuu                => gdp%gdr_i_ch%sbuu
     sbvv                => gdp%gdr_i_ch%sbvv
+    sbuube              => gdp%gdr_i_ch%sbuube
+    sbvvbe              => gdp%gdr_i_ch%sbvvbe
     seddif              => gdp%gdr_i_ch%seddif
     sepsus              => gdp%gdr_i_ch%sepsus
     sig                 => gdp%gdr_i_ch%sig
@@ -2208,7 +2212,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                     & r(depchg) ,nst       ,r(hu)     , &
                     & r(hv)     ,r(sig)    ,r(umor)   ,r(vmor)   , &
-                    & sscomp    ,i(iwrk1)  , &
+                    & sscomp    ,i(iwrk1)  ,r(sbuube) ,r(sbvvbe) , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
                     & nto       ,r(volum0) ,r(volum1) ,hdt       , gdp       )
@@ -3281,7 +3285,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                     & r(depchg) ,nst       ,r(hu)     , &
                     & r(hv)     ,r(sig)    ,r(umor)   ,r(vmor)   , &
-                    & sscomp    ,i(iwrk1)  , &
+                    & sscomp    ,i(iwrk1)  ,r(sbuube) ,r(sbvvbe) , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
                     & nto       ,r(volum0) ,r(volum1) ,hdt       ,gdp       )

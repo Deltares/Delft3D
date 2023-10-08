@@ -236,6 +236,8 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: sbtrc
     integer(pntrsize), pointer :: sbuu
     integer(pntrsize), pointer :: sbvv
+    integer(pntrsize), pointer :: sbuube
+    integer(pntrsize), pointer :: sbvvbe
     integer(pntrsize), pointer :: seddif
     integer(pntrsize), pointer :: sepsus
     integer(pntrsize), pointer :: sig
@@ -719,6 +721,8 @@ subroutine gtptrs(gdp)
     sbtrc      => gdp%gdr_i_ch%sbtrc
     sbuu       => gdp%gdr_i_ch%sbuu
     sbvv       => gdp%gdr_i_ch%sbvv
+    sbuube     => gdp%gdr_i_ch%sbuube
+    sbvvbe     => gdp%gdr_i_ch%sbvvbe
     seddif     => gdp%gdr_i_ch%seddif
     sepsus     => gdp%gdr_i_ch%sepsus
     sig        => gdp%gdr_i_ch%sig
@@ -1276,6 +1280,8 @@ subroutine gtptrs(gdp)
     sbtrc      = gtrpnt('sbtrc' , gdp)
     sbuu       = gtrpnt('sbuu'  , gdp)
     sbvv       = gtrpnt('sbvv'  , gdp)
+    sbuube     = gtrpnt('sbuube', gdp)
+    sbvvbe     = gtrpnt('sbvvbe', gdp)
     seddif     = gtrpnt('seddif', gdp)
     sepsus     = gtrpnt('sepsus', gdp)
     sig        = gtrpnt('sig'   , gdp)

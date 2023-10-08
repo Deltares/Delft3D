@@ -6,7 +6,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 & umean     ,vmean     ,sbuu      ,sbvv      , &
                 & depchg    ,nst       ,hu        , &
                 & hv        ,sig       ,u1        ,v1        , &
-                & sscomp    ,kcsbot    , &
+                & sscomp    ,kcsbot    ,sbuube    ,sbvvbe    , &
                 & guv       ,gvu       ,kcu       , &
                 & kcv       ,icx       ,icy       ,timhr     , &
                 & nto       ,volum0    ,volum1    ,dt        ,gdp       )
@@ -52,6 +52,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
 !              in bottom sediment.
 !              Includes erosion of dry points and associated
 !              bathymetry changes
+!              Includes slope failure erosion routine
 ! Method used: Attention: pointer ll for 'standard' FLOW
 !              arrays is shifted with lstart
 !
@@ -84,6 +85,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp)              , dimension(:) , pointer :: thetsd
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
+    real(fp)                             , pointer :: repose
     integer                              , pointer :: mergehandle
     integer                              , pointer :: itcmp
     integer                              , pointer :: itmor
@@ -140,6 +142,10 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(:,:)             , pointer :: mfluff
     real(fp), dimension(:,:)             , pointer :: sinkf
     real(fp), dimension(:,:)             , pointer :: sourf
+    real(fp), dimension(:)               , pointer :: dzduu     ! local slope in u direction at u velocity point 
+                                                                ! (positive slope = downwards) [m/m]
+    real(fp), dimension(:)               , pointer :: dzdvv     ! local slope in v direction at v velocity point
+                                                                ! (positive slope = downwards) [m/m]
 !
 ! Local parameters
 !
@@ -188,6 +194,8 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, *), intent(in)  :: r1     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, lsedtot)              :: sbuu   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, lsedtot)              :: sbvv   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, lsedtot)              :: sbuube !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, lsedtot)              :: sbvvbe !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                          , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                          , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
 !
@@ -253,6 +261,11 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: trndiv
     real(fp) :: z
     real(hp) :: dim_real
+    real(fp) :: localslope ! magnitude of local slope vector out of cell nm [m/m]
+    real(fp) :: dslopefac  ! reduction factor required to reduce slope to repose
+                           ! (dslopefac = (slope-repose) / slope)
+    real(fp) :: dvolu      ! sediment volume flux in x direction [m3]
+    real(fp) :: dvolv      ! sediment volume flux in y direction [m3]
 !
 !! executable statements -------------------------------------------------------
 !
@@ -266,6 +279,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     thetsd              => gdp%gdmorpar%thetsd
     sedthr              => gdp%gdmorpar%sedthr
     hmaxth              => gdp%gdmorpar%hmaxth
+    repose              => gdp%gdmorpar%repose
     mergehandle         => gdp%gdmorpar%mergehandle
     itcmp               => gdp%gdmorpar%itcmp
     itmor               => gdp%gdmorpar%itmor
@@ -322,11 +336,13 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     sinkf               => gdp%gdmorpar%flufflyr%sinkf
     sourf               => gdp%gdmorpar%flufflyr%sourf
+    dzduu               => gdp%gderosed%e_dzdn
+    dzdvv               => gdp%gderosed%e_dzdt
     !
     lstart   = max(lsal, ltem)
     bedload  = .false.
     dtmor    = dt*morfac
-    nm_pos   = 1
+    nm_pos   = 2
     dim_real = real(nmmax*lsedtot,hp)
     !
     !   Calculate suspended sediment transport correction vector (for SAND)
@@ -958,9 +974,145 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           endif       ! totdbodsd < 0.0
        enddo          ! nm
        !
-       nm_pos = 2
+      ! ---------------START OF SLOPE FAILURE EROSION MECHANISM-------------
+       ! Implementation of slope failure bank erosion mechanism.
+       !
+       ! Notes:
+       !
+       ! probably only valid for single layer model or fixed thickness transport 
+       ! layer otherwise layer thickness = 0 in dry areas? doesn't seem to be 
+       ! highlighted as a problem for ThetSD approach to bank erosion though so 
+       ! might be ok...?
+       !
+       ! possible issue if initial bed topography does not satisfy repose
+       ! slope in areas where there is a non-zero sediment thickness
+       ! i.e. areas where the bed is not set inerodible) - if slopes are 
+       ! too severe algorithm could go through active layer in first
+       ! timestep - this could potentially cause sediment shortage issues
+       ! if composition of underlayers is significantly different to surface
+       !
+       IF (repose > 0.0_fp) then !if slope erosion turned on
+          !
+          ! Calculate sediment flux due to slope failure
+          !
+          DO nm = 1, nmmax
+          
+             nmu = nm + icx
+             num = nm + icy
+             nmd = nm - icx
+             ndm = nm - icy
+             
+             totfixfrac = 0.0_fp
+             do l = 1, lsedtot
+                totfixfrac = totfixfrac + fixfac(nm, l) * frac(nm, l)
+             enddo
+             !
+             ! only calculate slope erosion if sediment available to erode out of cell nm 
+             ! and cell nm is active for sediment transport
+             IF (totfixfrac > 1.0E-7 .and. kcs(nm) /= 0 .and. kcs(nm)<3) THEN 
+                !
+                ! calculate flux out of nm to nmu & num
+                localslope = SQRT(dzduu(nm)*dzduu(nm) + dzdvv(nm)*dzdvv(nm))
+                IF (localslope > repose .AND. (dzduu(nm) > 0.0_fp .OR. dzdvv(nm) > 0.0_fp)) THEN !active slope erosion occuring out of nm
+                   dslopefac = (localslope - repose) / localslope
+                   IF (kcu(nm) > 0 .and. kfs(nmu) == 1) THEN
+                      dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                   ELSE 
+                      dvolu = 0.0_fp
+                   ENDIF
+                   IF (kcv(nm) > 0  .and. kfs(num) == 1) THEN 
+                      dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                   ELSE 
+                      dvolv = 0.0_fp
+                   ENDIF
+                   ! incorporate flux into dbodsd, sbuu and sbvv
+                   DO l = 1, lsedtot
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
+                      dbodsd(l,nmu) = dbodsd(l,nmu) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmu)
+                      dbodsd(l,num) = dbodsd(l,num) + dvolv * frac(nm,l) * cdryb(l) / gsqs(num)
+                      sbuu(nm, l) = sbuu(nm, l) + dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nm)) ! dtmor = dt * morfac
+                      sbvv(nm, l) = sbvv(nm, l) + dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(nm))
+                   ENDDO
+                ENDIF !localslope > repose
+                
+                ! calculate flux out of nm to num & nmd
+                localslope = SQRT(dzduu(nmd)*dzduu(nmd) + dzdvv(nm)*dzdvv(nm))
+                IF (localslope > repose .AND. (dzduu(nmd) < 0.0_fp .OR. dzdvv(nm) > 0.0_fp)) THEN !active slope erosion occuring out of nm
+                   dslopefac = (localslope - repose) / localslope
+                   IF (kcu(nmd) > 0  .and. kfs(nmd) == 1) THEN 
+                      dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
+                   ELSE 
+                      dvolu = 0.0_fp
+                   ENDIF
+                   IF (kcv(nm) > 0 .and. kfs(num) == 1) THEN 
+                      dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                   ELSE 
+                      dvolv = 0.0_fp
+                   ENDIF
+                   ! incorporate flux into dbodsd, sbuu and sbvv
+                   DO l = 1, lsedtot
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
+                      dbodsd(l,nmd) = dbodsd(l,nmd) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmd)
+                      dbodsd(l,num) = dbodsd(l,num) + dvolv * frac(nm,l) * cdryb(l) / gsqs(num)
+                      sbuu(nmd, l) = sbuu(nmd, l) - dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nmd))
+                      sbvv(nm, l) = sbvv(nm, l) + dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(nm))
+                   ENDDO
+                ENDIF !localslope > repose
+                
+                !calculate flux out of nm to nmd & ndm
+                localslope = SQRT(dzduu(nmd)*dzduu(nmd) + dzdvv(ndm)*dzdvv(ndm))
+                IF (localslope > repose .AND. (dzduu(nmd) < 0.0_fp .OR. dzdvv(ndm) < 0.0_fp)) THEN !active slope erosion occuring out of nm
+                   dslopefac = (localslope - repose) / localslope
+                   IF (kcu(nmd) > 0 .and. kfs(nmd) == 1) THEN 
+                      dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
+                   ELSE 
+                      dvolu = 0.0_fp
+                   ENDIF
+                   IF (kcv(ndm) > 0 .and. kfs(ndm) == 1) THEN 
+                      dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                   ELSE 
+                      dvolv = 0.0_fp
+                   ENDIF
+                   ! incorporate flux into dbodsd, sbuu and sbvv
+                   DO l = 1, lsedtot
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
+                      dbodsd(l,nmd) = dbodsd(l,nmd) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmd)
+                      dbodsd(l,ndm) = dbodsd(l,ndm) + dvolv * frac(nm,l) * cdryb(l) / gsqs(ndm)
+                      sbuu(nmd, l) = sbuu(nmd, l) - dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nmd))
+                      sbvv(ndm, l) = sbvv(ndm, l) - dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(ndm))
+                   ENDDO
+                ENDIF !localslope > repose
+                
+                !calculate flux out of nm to ndm & nmu
+                localslope = SQRT(dzduu(nmd)*dzduu(nmd) + dzdvv(nm)*dzdvv(nm))
+                IF (localslope > repose .AND. (dzduu(nm) > 0.0_fp .OR. dzdvv(ndm) < 0.0_fp)) THEN !active slope erosion occuring out of nm
+                   dslopefac = (localslope - repose) / localslope
+                   IF (kcu(nm) > 0 .and. kfs(nmu) == 1) THEN 
+                      dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                   ELSE 
+                      dvolu = 0.0_fp
+                   ENDIF
+                   IF (kcv(ndm) > 0 .and. kfs(ndm) == 1) THEN 
+                      dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                   ELSE 
+                      dvolv = 0.0_fp
+                   ENDIF
+                   ! incorporate flux into dbodsd, sbuu and sbvv
+                   DO l = 1, lsedtot
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
+                      dbodsd(l,nmu) = dbodsd(l,nmu) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmu)
+                      dbodsd(l,ndm) = dbodsd(l,ndm) + dvolv * frac(nm,l) * cdryb(l) / gsqs(ndm)
+                      sbuu(nm, l) = sbuu(nm, l) + dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nm))
+                      sbvv(ndm, l) = sbvv(ndm, l) - dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(ndm))
+                   ENDDO
+                ENDIF !localslope > repose
+             ENDIF !cell nm is active for sediment transport and has available sediment
+             
+          ENDDO ! nm
+       ENDIF !repose > 0
+       ! --------------------------END OF SLOPE FAILURE EROSION MECHANISM----------------
+       !
        call dfexchg(dbodsd, 1, lsedtot, dfloat, nm_pos, gdp)
-       nm_pos = 1
        !
        ! Modifications for running parallel conditions
        !

@@ -233,6 +233,8 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: s1
     integer(pntrsize) , pointer :: sbuu
     integer(pntrsize) , pointer :: sbvv
+    integer(pntrsize) , pointer :: sbuube
+    integer(pntrsize) , pointer :: sbvvbe
     integer(pntrsize) , pointer :: seddif
     integer(pntrsize) , pointer :: sepsus
     integer(pntrsize) , pointer :: sig
@@ -588,6 +590,8 @@ function getpointer(pntnam, gdp)
     s1         => gdp%gdr_i_ch%s1
     sbuu       => gdp%gdr_i_ch%sbuu
     sbvv       => gdp%gdr_i_ch%sbvv
+    sbuube     => gdp%gdr_i_ch%sbuube
+    sbvvbe     => gdp%gdr_i_ch%sbvvbe
     seddif     => gdp%gdr_i_ch%seddif
     sepsus     => gdp%gdr_i_ch%sepsus
     sig        => gdp%gdr_i_ch%sig
@@ -1125,6 +1129,10 @@ function getpointer(pntnam, gdp)
        returnval = sbuu
     case ('sbvv')
        returnval = sbvv
+    case ('sbuube')
+       returnval = sbuube
+    case ('sbvvbe')
+       returnval = sbvvbe
     case ('seddif')
        returnval = seddif
     case ('sepsus')

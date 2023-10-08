@@ -399,6 +399,7 @@ type morpar_type
     real(fp):: tmor       !  time where calculation for morphological changes start (tunit relative to ITDATE,00:00:00)
     real(fp):: tcmp       !  time where calculation for bed composition changes start (tunit relative to ITDATE,00:00:00)
     real(fp):: thetsduni  !  uniform value for dry cell erosion factor
+    real(fp):: repose     !  global repose slope for slope based bank erosion
     real(fp):: susw       !  calibration factor for wave-related suspended sand transport (included in bed-load)
     real(fp):: sedthr     !  minimum depth for sediment calculations
     real(fp):: hmaxth     !  maximum depth for setting theta for erosion of dry bank
@@ -1372,6 +1373,7 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: tcmp
     real(fp)              , dimension(:) , pointer :: thetsd
     real(fp)                             , pointer :: thetsduni
+    real(fp)                             , pointer :: repose
     real(fp)                             , pointer :: susw
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
@@ -1460,6 +1462,7 @@ subroutine nullmorpar(morpar)
     tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
     thetsduni           => morpar%thetsduni
+    repose              => morpar%repose
     susw                => morpar%susw
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
@@ -1580,6 +1583,7 @@ subroutine nullmorpar(morpar)
     tmor               = 0.0_fp
     tcmp               = 0.0_fp
     thetsduni          = 0.0_fp
+    repose             = -1.0_fp
     susw               = 1.0_fp
     sedthr             = 0.5_fp
     hmaxth             = 1.0_fp

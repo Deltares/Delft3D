@@ -512,6 +512,10 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'HMaxTH', morpar%hmaxth)
     !
+    ! === repose slope for slope failure bank erosion (m/m)
+    !
+    call prop_get(mor_ptr, 'Morphology', 'Repose', morpar%repose)
+    !
     ! === factor for adjusting intensity of energy dissipation in wave boundary layer
     ! fwfac should be read from mdf-file (see rdnum)
     ! The reading of fwfac is left here for backwards compatibility
@@ -1339,6 +1343,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: tcmp
     real(fp)              , dimension(:)   , pointer :: thetsd
     real(fp)                               , pointer :: thetsduni
+    real(fp)                               , pointer :: repose
     real(fp)                               , pointer :: susw
     real(fp)                               , pointer :: sedthr
     real(fp)                               , pointer :: hmaxth
@@ -1447,6 +1452,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     tmor                => morpar%tmor
     tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
+    repose              => morpar%repose
     susw                => morpar%susw
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
@@ -1669,6 +1675,15 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput1 = 'Computing THETSD for dry bank erosion'
     end if
     write (lundia, '(a)') txtput1
+    if (repose > 0) then
+       txtput1 = 'Slope failure erosion mechanism active'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'Repose slope for slope erosion (Repose)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', repose
+    else
+       txtput1 = 'Slope failure erosion mechanism off'
+       write (lundia, '(a)') txtput1
+    end if
     txtput1 = 'Tuning param. Shields Taucr (FACTCR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', factcr
     txtput3 = 'Eulerian velocities i.s.o GLM velocities for' //       &
@@ -1906,6 +1921,14 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     if (any(thetsd < 0.0_fp) .or. any(thetsd > 1.0_fp)) then
        error  = .true.
        errmsg = 'THETSD must be in range 0 - 1'
+       call write_error(errmsg, unit=lundia)
+    end if
+    !
+    ! errortrap using THETSD and REPOSE
+    !
+    if (repose > 0.0_fp .and. thetsd > 0.0_fp) then
+       error  = .true.
+       errmsg = 'THETSD and REPOSE should not be used simultaneously'
        call write_error(errmsg, unit=lundia)
     end if
     !

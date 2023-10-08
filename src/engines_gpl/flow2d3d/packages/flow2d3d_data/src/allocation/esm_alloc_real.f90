@@ -1062,8 +1062,10 @@ subroutine esm_alloc_real(lundia, error, gdp)
     !                           sbv   (nmaxddb  ,mmaxddb,lsedtot)
     !                           epscur(0:kmax)
     !                           epswav(0:kmax)
-    !                          sbuu  (nmaxddb  ,mmaxddb,lsedtot)
-    !                          sbvv  (nmaxddb  ,mmaxddb,lsedtot)
+    !                           sbuu  (nmaxddb  ,mmaxddb,lsedtot)
+    !                           sbvv  (nmaxddb  ,mmaxddb,lsedtot)
+    !                           sbuube(nmaxddb  ,mmaxddb,lsedtot)
+    !                           sbvvbe(nmaxddb  ,mmaxddb,lsedtot)
     !
     pntnam = 'ws'            !  Settling/fall velocity
     ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*(kmax + 1)*lsed, gdp)
@@ -1089,11 +1091,19 @@ subroutine esm_alloc_real(lundia, error, gdp)
     ierr = mkfpnt(pntnam, kmax + 1, gdp)
     if (ierr <= -9) goto 9999
     !
-    pntnam = 'sbuu'          !  no description (yet)
+    pntnam = 'sbuu'          !  Bed load transport flux in U-direction, in a U-velocity point (unit ?)
     ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*lsedtot, gdp)
     if (ierr <= -9) goto 9999
     !
-    pntnam = 'sbvv'          !  no description (yet)
+    pntnam = 'sbvv'          !  Bed load transport flux in V-direction, in a V-velocity point (unit ?)
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*lsedtot, gdp)
+    if (ierr <= -9) goto 9999
+    !
+    pntnam = 'sbuube'        !  Bed load transport flux due to bank erosion in U-direction, in a U-velocity point (unit ?)
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*lsedtot, gdp)
+    if (ierr <= -9) goto 9999
+    !
+    pntnam = 'sbvvbe'        !  Bed load transport flux due to bank erosion in V-direction, in a V-velocity point (unit ?)
     ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*lsedtot, gdp)
     if (ierr <= -9) goto 9999
     !
