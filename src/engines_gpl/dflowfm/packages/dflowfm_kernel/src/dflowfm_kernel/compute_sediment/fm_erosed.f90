@@ -834,6 +834,7 @@
       dll_reals(RP_BLCHG) = real(dzbdt(nm) ,hp)   ! for dilatancy
       dll_reals(RP_DZDX)  = real(dzdx(nm)  ,hp)   ! for dilatancy
       dll_reals(RP_DZDY)  = real(dzdy(nm)  ,hp)   ! for dilatancy
+      dll_reals(RP_ZB   ) = real(bl(nm)    ,hp)
       !
       if (max_integers < MAX_IP) then
          write(errmsg,'(a)') 'fm_erosed::Insufficient space to pass integer values to transport routine.'

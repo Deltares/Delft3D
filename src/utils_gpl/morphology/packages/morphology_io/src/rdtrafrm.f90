@@ -1494,6 +1494,16 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(13)  = 0.1_fp 
        parkeyw(14) = 'z0'
        pardef(14)  = 0.006_fp
+    elseif (iform == 21) then
+       name       = 'ASMITA'
+       nparreq    = 2
+       parkeyw(1) = 'CEqui'
+       parkeyw(2) = 'HEqui'
+       nparopt    = 2
+       parkeyw(3) = 'N'
+       pardef(3)  = 3.0_fp
+       parkeyw(4) = 'MaxHH'
+       pardef(4)  = 10.0_fp
     endif
 end subroutine traparams
 

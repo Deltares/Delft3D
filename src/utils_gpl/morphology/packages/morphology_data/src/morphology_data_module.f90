@@ -131,8 +131,9 @@ integer, parameter, public :: RP_POROS = 51     ! porosity of particle size mix 
 integer, parameter, public :: RP_DZDX  = 52     ! U component of bed slope [-]
 integer, parameter, public :: RP_DZDY  = 53     ! V component of bed slope [-]
 integer, parameter, public :: RP_DM    = 54     ! median sediment diameter of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_DBG   = 55     ! debug array value from eqtran [-]
-integer, parameter, public :: MAX_RP   = 55     ! mmaximum number of real parameters
+integer, parameter, public :: RP_ZB    = 55     ! bed level (positive up) [m]
+integer, parameter, public :: RP_DBG   = 56     ! debug array value from eqtran [-]
+integer, parameter, public :: MAX_RP   = 56     ! maximum number of real parameters
 !
 integer, parameter, public :: IP_NM    =  1     ! local (i.e. within partition) cell index
 integer, parameter, public :: IP_N     =  2     ! local (i.e. within partition) fastest dimension index -- only for structured mesh models
