@@ -266,6 +266,10 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                            ! (dslopefac = (slope-repose) / slope)
     real(fp) :: dvolu      ! sediment volume flux in x direction [m3]
     real(fp) :: dvolv      ! sediment volume flux in y direction [m3]
+    real(fp) :: totfixfrac1
+    real(fp) :: totfixfrac2
+    real(fp) :: totfixfrac3
+    real(fp) :: alfa
 !
 !! executable statements -------------------------------------------------------
 !
@@ -992,6 +996,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
        ! if composition of underlayers is significantly different to surface
        !
        IF (repose > 0.0_fp) then !if slope erosion turned on
+          alfa=0.1_fp
           !
           ! Calculate sediment flux due to slope failure
           !
@@ -1002,7 +1007,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
              nmd = nm - icx
              ndm = nm - icy
              
-             totfixfrac = 0.0_fp
+             totfixfrac = 10.0_fp
              do l = 1, lsedtot
                 totfixfrac = totfixfrac + fixfac(nm, l) * frac(nm, l)
              enddo
@@ -1015,23 +1020,53 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 localslope = SQRT(dzduu(nm)*dzduu(nm) + dzdvv(nm)*dzdvv(nm))
                 IF (localslope > repose .AND. (dzduu(nm) > 0.0_fp .OR. dzdvv(nm) > 0.0_fp)) THEN !active slope erosion occuring out of nm
                    dslopefac = (localslope - repose) / localslope
-                   IF (kcu(nm) > 0 .and. kfs(nmu) == 1) THEN
-                      dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                   IF (kcu(nm) > 0 .and. kfs(nmu) == 1.and. dzduu(nm)>0) THEN
+                       !dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                       dvolu = 0.0_fp
+                     DO l = 1,lsedtot
+                         !dvolu=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                         !dvolu=dvolu+SQRT(sbuu(nmu,l)*sbuu(nmu,l)+sbvv(nmu,l)*sbvv(nmu,l))*(dtmor * guu(nmu))/cdryb(l)
+                         dvolu=dvolu+(abs(sbvv(nmu,l))*gvv(nmu))*dtmor/cdryb(l)
+                     ENDDO
+                     dvolu=alfa*dvolu 
+                    !PPM dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
                    ELSE 
                       dvolu = 0.0_fp
                    ENDIF
-                   IF (kcv(nm) > 0  .and. kfs(num) == 1) THEN 
-                      dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                   IF (kcv(nm) > 0  .and. kfs(num) == 1.and.dzdvv(nm)>0) THEN 
+                      !dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                       !dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                    dvolv=0.0_fp
+                     DO l = 1,lsedtot
+                     !    dvolv=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                        ! dvolv=dvolv+SQRT(sbuu(num,l)*sbuu(num,l)+sbvv(num,l)*sbvv(num,l))*(dtmor * gvv(num))/ cdryb(l)
+                        dvolv=dvolv+(abs(sbuu(num,l))*guu(num))*dtmor/cdryb(l)
+
+                     ENDDO
+                     dvolv=alfa*dvolv
                    ELSE 
                       dvolv = 0.0_fp
                    ENDIF
                    ! incorporate flux into dbodsd, sbuu and sbvv
+                      totfixfrac1 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac1 = totfixfrac1 + fixfac(nm, l) * frac(nm, l)
+                      enddo
+                      totfixfrac2 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac2 = totfixfrac2 + fixfac(nmu, l) * frac(nmu, l)
+                      enddo
+                      totfixfrac3 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac3 = totfixfrac3 + fixfac(num, l) * frac(num, l)
+                      enddo
                    DO l = 1, lsedtot
-                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
-                      dbodsd(l,nmu) = dbodsd(l,nmu) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmu)
-                      dbodsd(l,num) = dbodsd(l,num) + dvolv * frac(nm,l) * cdryb(l) / gsqs(num)
-                      sbuu(nm, l) = sbuu(nm, l) + dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nm)) ! dtmor = dt * morfac
-                      sbvv(nm, l) = sbvv(nm, l) + dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(nm))
+                      
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)/totfixfrac1
+                      dbodsd(l,nmu) = dbodsd(l,nmu) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmu)/totfixfrac1
+                      dbodsd(l,num) = dbodsd(l,num) + dvolv * frac(nm,l) * cdryb(l) / gsqs(num)/totfixfrac1
+                      sbuube(nm, l) = sbuube(nm, l) + dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nm))/totfixfrac1 ! dtmor = dt * morfac
+                      sbvvbe(nm, l) = sbvvbe(nm, l) + dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(nm))/totfixfrac1
                    ENDDO
                 ENDIF !localslope > repose
                 
@@ -1039,23 +1074,54 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 localslope = SQRT(dzduu(nmd)*dzduu(nmd) + dzdvv(nm)*dzdvv(nm))
                 IF (localslope > repose .AND. (dzduu(nmd) < 0.0_fp .OR. dzdvv(nm) > 0.0_fp)) THEN !active slope erosion occuring out of nm
                    dslopefac = (localslope - repose) / localslope
-                   IF (kcu(nmd) > 0  .and. kfs(nmd) == 1) THEN 
-                      dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
-                   ELSE 
+                   IF (kcu(nmd) > 0  .and. kfs(nmd) == 1.and.-dzduu(nmd)>0) THEN 
+                    !   dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
+                    dvolu = 0.0_fp
+                     DO l = 1, lsedtot
+                     !dvolu=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                     !dvolu=dvolu+SQRT(sbuu(nmd,l)*sbuu(nmd,l)+sbvv(nmd,l)*sbvv(nmd,l))*(dtmor * guu(nmd))/ cdryb(l)
+                    dvolu=dvolu+(abs(sbvv(nmd,l))*gvv(nmd))*dtmor/ cdryb(l)
+
+                      ENDDO
+                     dvolu=alfa*dvolu  
+                      ELSE 
                       dvolu = 0.0_fp
                    ENDIF
-                   IF (kcv(nm) > 0 .and. kfs(num) == 1) THEN 
-                      dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                   IF (kcv(nm) > 0 .and. kfs(num) == 1.and.dzdvv(nm)>0) THEN 
+                       !dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
+                       
+                       dvolv=0.0_fp
+                     DO l = 1, lsedtot
+                      !dvolv=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                     !dvolv=dvolv+SQRT(sbuu(num,l)*sbuu(num,l)+sbvv(num,l)*sbvv(num,l))*(dtmor * gvv(num))/cdryb(l)
+                     dvolv=dvolv+(abs(sbuu(num,l))*guu(num))*dtmor/cdryb(l)
+
+                      ENDDO
+                     dvolv=alfa*dvolv 
                    ELSE 
+                      ! PPM dvolv = totfixfrac * MAX(dzdvv(nm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(num) / (8 * (gsqs(nm) + gsqs(num)))
                       dvolv = 0.0_fp
                    ENDIF
                    ! incorporate flux into dbodsd, sbuu and sbvv
+                   totfixfrac1 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac1 = totfixfrac1 + fixfac(nm, l) * frac(nm, l)
+                      enddo
+                      totfixfrac2 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac2 = totfixfrac2 + fixfac(nmd, l) * frac(nmd, l)
+                      enddo
+                      totfixfrac3 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac3 = totfixfrac3 + fixfac(num, l) * frac(num, l)
+                      enddo
+                      
                    DO l = 1, lsedtot
-                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
-                      dbodsd(l,nmd) = dbodsd(l,nmd) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmd)
-                      dbodsd(l,num) = dbodsd(l,num) + dvolv * frac(nm,l) * cdryb(l) / gsqs(num)
-                      sbuu(nmd, l) = sbuu(nmd, l) - dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nmd))
-                      sbvv(nm, l) = sbvv(nm, l) + dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(nm))
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)/totfixfrac1
+                      dbodsd(l,nmd) = dbodsd(l,nmd) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmd)/totfixfrac1
+                      dbodsd(l,num) = dbodsd(l,num) + dvolv * frac(nm,l) * cdryb(l) / gsqs(num)/totfixfrac1
+                      sbuube(nmd, l) = sbuube(nmd, l) - dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nmd))/totfixfrac1
+                      sbvvbe(nm, l) = sbvvbe(nm, l) + dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(nm))/totfixfrac1
                    ENDDO
                 ENDIF !localslope > repose
                 
@@ -1063,23 +1129,50 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 localslope = SQRT(dzduu(nmd)*dzduu(nmd) + dzdvv(ndm)*dzdvv(ndm))
                 IF (localslope > repose .AND. (dzduu(nmd) < 0.0_fp .OR. dzdvv(ndm) < 0.0_fp)) THEN !active slope erosion occuring out of nm
                    dslopefac = (localslope - repose) / localslope
-                   IF (kcu(nmd) > 0 .and. kfs(nmd) == 1) THEN 
-                      dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
+                   IF (kcu(nmd) > 0 .and. kfs(nmd) == 1.and.-dzduu(nmd)>0) THEN 
+                       !dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
+                       dvolu = 0.0_fp
+                     DO l = 1, lsedtot
+                     !dvolu=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                     dvolu=dvolu+(abs(sbvv(nmd,l))*gvv(nmd))*dtmor/cdryb(l)
+                      ENDDO
+                     dvolu=alfa*dvolu 
+                      ! PPM dvolu = totfixfrac * MAX(-dzduu(nmd),0.0_fp) * dslopefac * gvu(nmd) * gsqs(nm) * gsqs(nmd) / (8 * (gsqs(nm) + gsqs(nmd)))
                    ELSE 
                       dvolu = 0.0_fp
                    ENDIF
-                   IF (kcv(ndm) > 0 .and. kfs(ndm) == 1) THEN 
-                      dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                   IF (kcv(ndm) > 0 .and. kfs(ndm) == 1.and.-dzdvv(ndm)>0) THEN 
+                       !dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                      ! PPM dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                    dvolv = 0.0_fp
+                     DO l = 1, lsedtot
+                      !dvolv=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                     dvolv=dvolv+(abs(sbuu(ndm,l))*guu(ndm))*dtmor/cdryb(l)
+                      ENDDO
+                     dvolv=alfa*dvolv 
                    ELSE 
                       dvolv = 0.0_fp
                    ENDIF
                    ! incorporate flux into dbodsd, sbuu and sbvv
+                   
+                   totfixfrac1 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac1 = totfixfrac1 + fixfac(nm, l) * frac(nm, l)
+                      enddo
+                      totfixfrac2 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac2 = totfixfrac2 + fixfac(nmd, l) * frac(nmd, l)
+                      enddo
+                      totfixfrac3 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac3 = totfixfrac3 + fixfac(ndm, l) * frac(ndm, l)
+                      enddo
                    DO l = 1, lsedtot
-                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
-                      dbodsd(l,nmd) = dbodsd(l,nmd) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmd)
-                      dbodsd(l,ndm) = dbodsd(l,ndm) + dvolv * frac(nm,l) * cdryb(l) / gsqs(ndm)
-                      sbuu(nmd, l) = sbuu(nmd, l) - dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nmd))
-                      sbvv(ndm, l) = sbvv(ndm, l) - dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(ndm))
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)/totfixfrac1
+                      dbodsd(l,nmd) = dbodsd(l,nmd) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmd)/totfixfrac1
+                      dbodsd(l,ndm) = dbodsd(l,ndm) + dvolv * frac(nm,l) * cdryb(l) / gsqs(ndm)/totfixfrac1
+                      sbuube(nmd, l) = sbuube(nmd, l) - dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nmd))/totfixfrac1
+                      sbvvbe(ndm, l) = sbvvbe(ndm, l) - dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(ndm))/totfixfrac1
                    ENDDO
                 ENDIF !localslope > repose
                 
@@ -1087,29 +1180,63 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 localslope = SQRT(dzduu(nmd)*dzduu(nmd) + dzdvv(nm)*dzdvv(nm))
                 IF (localslope > repose .AND. (dzduu(nm) > 0.0_fp .OR. dzdvv(ndm) < 0.0_fp)) THEN !active slope erosion occuring out of nm
                    dslopefac = (localslope - repose) / localslope
-                   IF (kcu(nm) > 0 .and. kfs(nmu) == 1) THEN 
-                      dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                   IF (kcu(nm) > 0 .and. kfs(nmu) == 1.and.dzduu(nm)>0) THEN 
+                       !dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                      !PPM dvolu = totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                    dvolu = 0.0_fp
+                     DO l = 1, lsedtot
+                      !dvolu=totfixfrac * MAX(dzduu(nm),0.0_fp) * dslopefac * gvu(nm) * gsqs(nm) * gsqs(nmu) / (8 * (gsqs(nm) + gsqs(nmu)))
+                     !dvolu=dvolu+SQRT(sbuu(nmu,l)*sbuu(nmu,l)+sbvv(nmu,l)*sbvv(nmu,l))*(dtmor * guu(nmu)) /cdryb(l)
+                     dvolu=dvolu+(abs(sbvv(nmu,l))*gvv(nmu))*dtmor/cdryb(l)
+                      ENDDO
+                     dvolu=alfa*dvolu
                    ELSE 
                       dvolu = 0.0_fp
                    ENDIF
-                   IF (kcv(ndm) > 0 .and. kfs(ndm) == 1) THEN 
-                      dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                   IF (kcv(ndm) > 0 .and. kfs(ndm) == 1.and.-dzdvv(ndm)>0) THEN 
+                       !dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                      ! PPM dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                   dvolv = 0.0_fp
+                     DO l = 1, lsedtot
+                      !dvolv = totfixfrac * MAX(-dzdvv(ndm),0.0_fp) * dslopefac * guv(nm) * gsqs(nm) * gsqs(ndm) / (8 * (gsqs(nm) + gsqs(ndm)))
+                     !dvolv=dvolv+SQRT(sbuu(ndm,l)*sbuu(ndm,l)+sbvv(ndm,l)*sbvv(ndm,l))*(dtmor * gvv(ndm))/cdryb(l)
+                     dvolv=dvolv+(abs(sbuu(ndm,l))*guu(ndm))*gvv(ndm))*dtmor/cdryb(l)
+                      ENDDO
+                     dvolv=alfa*dvolv 
                    ELSE 
                       dvolv = 0.0_fp
                    ENDIF
                    ! incorporate flux into dbodsd, sbuu and sbvv
+                   totfixfrac1 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac1 = totfixfrac1 + fixfac(nm, l) * frac(nm, l)
+                      enddo
+                      totfixfrac2 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac2 = totfixfrac2 + fixfac(nmu, l) * frac(nmu, l)
+                      enddo
+                      totfixfrac3 = 0.0_fp
+                      do l = 1, lsedtot
+                        totfixfrac3 = totfixfrac3 + fixfac(ndm, l) * frac(ndm, l)
+                      enddo
                    DO l = 1, lsedtot
-                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)
-                      dbodsd(l,nmu) = dbodsd(l,nmu) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmu)
-                      dbodsd(l,ndm) = dbodsd(l,ndm) + dvolv * frac(nm,l) * cdryb(l) / gsqs(ndm)
-                      sbuu(nm, l) = sbuu(nm, l) + dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nm))
-                      sbvv(ndm, l) = sbvv(ndm, l) - dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(ndm))
+                      dbodsd(l,nm) = dbodsd(l,nm) - (dvolu + dvolv) * frac(nm,l) * cdryb(l) / gsqs(nm)/totfixfrac1
+                      dbodsd(l,nmu) = dbodsd(l,nmu) + dvolu * frac(nm,l) * cdryb(l) / gsqs(nmu)/totfixfrac1
+                      dbodsd(l,ndm) = dbodsd(l,ndm) + dvolv * frac(nm,l) * cdryb(l) / gsqs(ndm)/totfixfrac1
+                      sbuube(nm, l) = sbuube(nm, l) + dvolu * frac(nm,l) * cdryb(l) / (dtmor * guu(nm))/totfixfrac1
+                      sbvvbe(ndm, l) = sbvvbe(ndm, l) - dvolv * frac(nm,l) * cdryb(l) / (dtmor * gvv(ndm))/totfixfrac1
                    ENDDO
                 ENDIF !localslope > repose
              ENDIF !cell nm is active for sediment transport and has available sediment
              
           ENDDO ! nm
        ENDIF !repose > 0
+       DO nm = 1, nmmax
+          DO l = 1, lsedtot
+             sbuu(nm, l) = sbuu(nm, l) +sbuube(nm,l)
+             sbvv(nm, l) = sbvv(nm, l) +sbvvbe(nm,l)
+          ENDDO
+       ENDDO
        ! --------------------------END OF SLOPE FAILURE EROSION MECHANISM----------------
        !
        call dfexchg(dbodsd, 1, lsedtot, dfloat, nm_pos, gdp)
