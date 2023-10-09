@@ -35,7 +35,7 @@
 !! When running in MPI-mode, OpenMP is switched off, unless (i.e., 1 OpenMP thread max).
 integer function init_openmp(maxnumthreads, mpion) result(iresult)
 #ifdef _OPENMP
-   use omp_lib
+   include "omp_lib.h"
 #endif
    use dfm_error
    implicit none
