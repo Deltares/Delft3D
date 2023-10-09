@@ -62,6 +62,7 @@ if(UNIX)
          PkgConfig::PETSC
          "metis")
 
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
