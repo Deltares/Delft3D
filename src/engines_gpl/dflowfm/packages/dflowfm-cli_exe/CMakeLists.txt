@@ -152,7 +152,9 @@ endif(UNIX)
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 
-set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)   
+if(WIN32)
+    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)   
+endif(WIN32)
 
 
 # Define additional compilation flags
