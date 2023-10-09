@@ -263,6 +263,7 @@ set_source_files_properties(${fortran_version_files}
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
+target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")

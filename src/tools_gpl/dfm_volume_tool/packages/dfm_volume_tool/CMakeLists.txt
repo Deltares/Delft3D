@@ -73,6 +73,9 @@ if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
 endif(WIN32)
 
+# Set additional compilation properties
+set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
 target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
