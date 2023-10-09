@@ -248,6 +248,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_manager_path}/dfm_signals.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_manager_path}/flow_externaloutput.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/filez.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/init_openmp.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_petsc.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_guus.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/saadf.F90
