@@ -149,8 +149,9 @@ if(UNIX)
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
+# Set additional compilation properties
+target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 
-set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)   
 
 
@@ -162,9 +163,12 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
 
 target_link_libraries(${executable_name} netcdf)
 
-# if(UNIX)
-#     target_link_options(${library_name} PRIVATE ${openmp_flag})
-# endif(UNIX)
+if (UNIX)
+    # Set linker options
+    message(STATUS "Setting target_link_options in linux")
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
+    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
+endif(UNIX)
 
 if (WIN32)
     include_directories(${mpi_include_path}
