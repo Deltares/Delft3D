@@ -121,7 +121,7 @@ public :: fm_bott3d
 
    if (.not. allocated(bl_ave0)) then
       allocate(bl_ave0(1:ndx),stat=ierror)
-      bl_ave0 = 0d0
+      bl_ave0(:) = 0d0
    endif
 
    dtmor   = dts*morfac
@@ -581,7 +581,7 @@ public :: fm_bott3d
    if (istat == 0) allocate(sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat = istat)
    if (istat == 0) allocate(branInIDLn(network%nds%Count), stat = istat)
    
-   qb_out(:) = 0d0; width_out(:) = 0d0; sb_in(:,:) = 0d0; sb_dir(:,:,:) = -1
+   qb_out(:) = 0d0; width_out(:) = 0d0; sb_in(:,:) = 0d0; sb_dir(:,:,:) = 1
    BranInIDLn(:) = 0
    
    !!
@@ -591,8 +591,6 @@ public :: fm_bott3d
    !
    ! Determine incoming discharge and transport at nodes
    !
-   qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = 1
-   BranInIDLn = 0
    do inod = 1, network%nds%Count
       pnod => network%nds%node(inod)
       if (pnod%numberofconnections > 1) then
@@ -1031,7 +1029,7 @@ public :: fm_bott3d
    !
    ! Update quantity of bottom sediment
    !
-   dbodsd = 0d0
+   dbodsd(:,:) = 0d0
    !
    ! compute change in bodsed (dbodsd)
    !
@@ -1357,13 +1355,13 @@ public :: fm_bott3d
       jamerge = .false.
       if (jamormergedtuser>0) then
          mergebodsed = mergebodsed + dbodsd
-         dbodsd = 0d0
+         dbodsd(:,:) = 0d0
          if (comparereal(time1, time_user, eps10)>= 0) then
             jamerge = .true.
          endif
       else
          mergebodsed = dbodsd
-         dbodsd = 0d0
+         dbodsd(:,:) = 0d0
          jamerge = .true.
       endif
       if (jamerge) then
@@ -1384,7 +1382,7 @@ public :: fm_bott3d
                dbodsd(ll, nm) = real(stmpar%morpar%mergebuf(ii),fp)
             enddo
          enddo
-         mergebodsed = 0d0
+         mergebodsed(:,:) = 0d0
       endif
    endif
           
@@ -1713,8 +1711,8 @@ public :: fm_bott3d
    !! Execute
    !!
    
-   e_sbn = 0d0
-   e_sbt = 0d0
+   e_sbn(:,:) = 0d0
+   e_sbt(:,:) = 0d0
    do l = 1,lsedtot
       if (has_bedload(tratyp(l))) then
          do nm = 1, lnx
@@ -1796,7 +1794,7 @@ public :: fm_bott3d
    !!
 
    if (.not. cmpupd) then    
-      blchg = 0d0
+      blchg(:) = 0d0
       do ll = 1, lsedtot
          do nm = 1, ndx
             blchg(nm) = blchg(nm) + dbodsd(ll, nm)/cdryb(ll)
@@ -2010,7 +2008,7 @@ public :: fm_bott3d
          dzbdt(nm) = blchg(nm)/dtmor
       enddo
    else
-      dzbdt=0d0
+      dzbdt(:)=0d0
    endif
 
    end subroutine fm_erosion_velocity
