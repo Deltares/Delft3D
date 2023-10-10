@@ -144,16 +144,13 @@ public :: fm_bott3d
       end if
    endif
    !
-   !   Moved parts from fm_erosed() here   --------|
-   !                                              \ /
-   !                                               v
+   ! BEGIN: Moved parts from `fm_erosed`
    !
    if (bed > 0.0_fp) then
       aval=.true.
       call fm_adjust_bedload(e_sbcn, e_sbct, aval)
    endif
    !
-   !2DO: consider moving call to `apply_nodal_point_relation` after all the calls to `fm_adjust_bedload`
    call apply_nodal_point_relation()
    !
    ! Bed-slope and sediment availability effects for
@@ -182,8 +179,7 @@ public :: fm_bott3d
    !
    call sum_current_wave_transport_links()
    !
-   !
-   !    EROSED CODE MOVED UNTIL THIS POINT ------------------------------------
+   ! END: Moved parts from `fm_erosed`
    !
    !
    ! if bed composition computations have started
@@ -199,7 +195,7 @@ public :: fm_bott3d
        call fm_dry_bed_erosion(dtmor)
             
       !check whether it is really needed to update ghosts here. Should be applied before `dbodsd` is used
-      if ( jampi.gt.0 ) then
+      if ( jampi > 0 ) then
          call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
       end if
       
@@ -269,9 +265,8 @@ public :: fm_bott3d
       !
       ! if morphological computations haven't started yet
       !
-      do nm = 1, ndx
-         blchg(nm) = 0d0
-      enddo
+	  blchg(1:ndx)=0d0
+
    endif       ! time1<tmor
    
    call fm_update_bed_level(dtmor)
