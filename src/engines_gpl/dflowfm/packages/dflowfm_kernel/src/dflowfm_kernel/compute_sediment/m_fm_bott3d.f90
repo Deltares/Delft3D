@@ -929,9 +929,7 @@ public :: fm_bott3d
                li = li + 1
                !
                if (morbnd(jb)%ibcmt(3) == lsedbed) then
-                  !rate = bc_mor_array(li)
                   call gettau( ln(2,lm), taucurc, czc, jawaveswartdelwaq_local )
-                  !if ( tausum2(1) > 0d0 ) then
                   if ( tausum2(1) > 0d0 .and. wu_mor(lm)>0d0) then    ! fix cutcell
                      rate = bc_sed_distribution(li) * taucurc**2 / wu_mor(lm) / tausum2(1)
                   else
