@@ -372,6 +372,7 @@ public :: fm_bott3d
                      cumflux = 0.0_fp
                      !
                      ! Determine reference height aks in vel. pt.
+					 !
                      if (Lx>lnxi) then ! boundary link, take inner point value
                         aksu = aks(k2,l)
                      else
@@ -505,13 +506,7 @@ public :: fm_bott3d
             endif    ! tratyp == TRA_COMBINE
          enddo       ! l
       endif          ! kmx>0; end of correction for bed/total load
-      !       !
-      !if (kmx>0 .and. jampi>0) then
-      !   if (lsed > 0) then
-      !      call update_ghosts(ITYPE_U, lsed, lnx, e_scrn, ierror)
-      !   endif
-      !end if
-   endif           ! sus /= 0.0
+   endif             ! sus /= 0.0
 
    end subroutine fm_suspended_sand_correction
 
