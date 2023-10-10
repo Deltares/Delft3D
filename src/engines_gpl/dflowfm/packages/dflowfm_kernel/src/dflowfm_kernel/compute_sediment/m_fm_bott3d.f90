@@ -224,7 +224,6 @@ public :: fm_bott3d
          !
          if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
-            !            to replace by "nice" exit
             write(errmsg,'(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
             call write_error(errmsg, unit=mdia)
             error = .true.
