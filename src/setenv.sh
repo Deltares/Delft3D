@@ -26,6 +26,21 @@ if [ "$1" == "intel21" ]; then
   
      module load    cmake/3.19.3_intel21.2.0 
      module display cmake/3.19.3_intel21.2.0 
+     
+     module load    gcc/7.3.0
+     module display gcc/7.3.0
+     
+     module load    proj/7.1.0_gcc7.3.0
+     module display proj/7.1.0_gcc7.3.0
+     
+     module load    gdal/3.1.2_gcc7.3.0
+     module display gdal/3.1.2_gcc7.3.0
+     
+     module load    svn/1.9.12serf_gcc7.3.0
+     module display svn/1.9.12serf_gcc7.3.0
+     
+     module load    patchelf/0.12
+     module display patchelf/0.12
 else 
      echo "Loading Intel23 compiled modules"
   
