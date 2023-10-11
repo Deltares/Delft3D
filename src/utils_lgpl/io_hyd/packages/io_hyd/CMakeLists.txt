@@ -14,10 +14,17 @@ endif(UNIX)
 
 
 # Set dependencies
-set(oss_dependencies deltares_common
-                     io_netcdf)
-
-target_link_libraries(${library_name} ${oss_dependencies})
+set(oss_dependencies    deltares_common
+                        io_netcdf
+                        netcdf4
+                        netcdff)
+                        
 oss_include_libraries(${library_name} oss_dependencies)
+
+if(UNIX)
+    target_compile_definitions(${library_name} PRIVATE LINUX64)
+
+    target_link_libraries(${library_name} ${oss_dependencies})
+endif(UNIX)
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/io_hyd)

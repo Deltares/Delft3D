@@ -8,6 +8,7 @@ set(oss_dependencies deltares_common
                      part_data_f
                      part_utils_f
                      waq_utils_f
+                     netcdff
                      io_netcdf
                      io_hyd)
 

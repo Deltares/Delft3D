@@ -121,10 +121,10 @@ add_library(${library_name} ${library_source_list})
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
+  #  find_package(MPI REQUIRED)
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+   # pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+   # pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
 
@@ -145,11 +145,14 @@ if (UNIX)
                             libsigwatch
                             md5digest
                             md5
+                            metis
                             metisoptions
                             morphology_data
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
+                            netcdf4
+                            netcdff
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -162,8 +165,8 @@ if (UNIX)
 
     oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
+         #PkgConfig::NETCDF
+         #PkgConfig::NETCDF_FTN
          PkgConfig::PETSC
          uuid)
 

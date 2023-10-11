@@ -142,11 +142,10 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-if(WIN32)
-    if(NOT TARGET proj)
-        add_subdirectory(${checkout_src_root}/${proj_module} proj)
-    endif()
-endif(WIN32)
+
+if(NOT TARGET proj)
+    add_subdirectory(${checkout_src_root}/${proj_module} proj)
+endif()
 
 #
 # Utils
@@ -160,10 +159,8 @@ if(NOT TARGET deltares_common_c)
 endif()
 
 # netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
+if(NOT TARGET netcdff)
+    add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
 endif()
 
 # io_netcdf

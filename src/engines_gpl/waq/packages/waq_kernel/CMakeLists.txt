@@ -21,6 +21,7 @@ set(oss_dependencies deltares_common
                      waq_utils_c
                      waq_utils_f
                      waq_netcdf
+                     netcdff
                      io_netcdf
                      io_hyd)
 

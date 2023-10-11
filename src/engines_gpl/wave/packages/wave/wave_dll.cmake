@@ -59,7 +59,7 @@ if(UNIX)
 
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    #pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(library_dependencies    wave_data
                                 delftio
@@ -76,6 +76,7 @@ if(UNIX)
                                 triangle_c
                                 swan
                                 esmfsm
+                                netcdff
                                 )
                                 
     oss_include_libraries(${library_name} library_dependencies)
@@ -83,7 +84,7 @@ if(UNIX)
     target_link_libraries(${library_name}
          ${library_dependencies}
          PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         )
 
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})

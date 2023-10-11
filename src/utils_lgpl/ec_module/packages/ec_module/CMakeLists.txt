@@ -17,14 +17,8 @@ set(library_name ec_module)
 add_library(${library_name} ${meteo_sources} ${sources})
 
 # Add dependencies
-if (UNIX)
-    set(oss_dependencies deltares_common
-                         gridgeom
-                         kdtree2
-                         kdtree_wrapper
-                         io_netcdf)
-endif(UNIX)
-if (WIN32)
+
+
     set(oss_dependencies deltares_common
                          gridgeom
                          kdtree2
@@ -32,7 +26,7 @@ if (WIN32)
                          io_netcdf
                          netcdf4
                          netcdff)
-endif(WIN32)
+
 oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)
