@@ -4417,13 +4417,16 @@ end subroutine check_time_interval
 
 !> Check if time interval is not multiple of DtUser
 logical function is_not_multiple(time_interval, user_time_step)
+    use precision_basics, only: comparereal
+    implicit none
 
     real(kind=hp),    intent(in) :: time_interval        !< Time interval to be checked. 
     double precision, intent(in) :: user_time_step       !< User specified time step (s) for external forcing update
 
-    double precision, parameter :: TIME_INTERVAL_TOLERANCE = 1d-7
+    double precision :: nearest_user_time_step
     
-    if (modulo(time_interval, user_time_step) > TIME_INTERVAL_TOLERANCE) then
+    nearest_user_time_step = nint(time_interval/user_time_step)*user_time_step
+    if (comparereal(nearest_user_time_step, time_interval) /= 0) then
         is_not_multiple = .true.
     else
         is_not_multiple = .false.
