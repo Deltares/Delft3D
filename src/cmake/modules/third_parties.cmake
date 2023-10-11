@@ -33,9 +33,7 @@ set(proj_module ${third_party_open_path}/proj4/${cmake_directory})
 
 # netcdf
 set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
-if(WIN32)
-    set(netcdf_version "netCDF 4.6.1")
-endif()
+set(netcdf_version "netCDF 4.6.1")
 
 # polypack
 set(polypack_module ${third_party_open_path}/polypack/${cmake_directory})
