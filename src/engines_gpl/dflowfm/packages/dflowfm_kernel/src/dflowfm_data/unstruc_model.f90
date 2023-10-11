@@ -1242,6 +1242,7 @@ subroutine readMDUFile(filename, istat)
     endif
     
     call prop_get_integer(md_ptr, 'numerics', 'PerotType', iperot)
+    call prop_get_integer(md_ptr, 'numerics', 'Wind_eachstep', update_wind_stress_each_time_step)
 
     call prop_get(md_ptr, 'numerics', 'Oceaneddysizefrac'   , Oceaneddysizefrac)
     call prop_get(md_ptr, 'numerics', 'Oceaneddysize'       , Oceaneddysize)
@@ -1329,7 +1330,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'physics', 'Surftempsmofac'    , Surftempsmofac)
     call prop_get_integer(md_ptr, 'physics', 'RhoairRhowater'    , jaroro)
     call prop_get_integer(md_ptr, 'physics', 'Heat_eachstep'     , jaheat_eachstep)
-    call prop_get_integer(md_ptr, 'physics', 'Wind_eachstep'     , jawind_eachstep)
     call prop_get_double (md_ptr, 'physics', 'Soiltempthick'     , Soiltempthick)
     if (soiltempthick > 0d0) then
        jaheat_eachstep = 1
@@ -3336,10 +3336,13 @@ endif
     endif
 
     if (writeall .or. epsmaxlev .ne. 1d-8) then
-    call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
     endif
     if (writeall .or. epsmaxlevm .ne. 1d-8) then
-    call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
+    endif
+    if (writeall .or. update_wind_stress_each_time_step > 0) then
+       call prop_set(prop_ptr, 'numerics', 'Wind_eachstep' , update_wind_stress_each_time_step,  '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
     endif
 
     if (Oceaneddyamp > 0d0) then 
@@ -3452,9 +3455,6 @@ endif
        endif
        if (writeall .or. jaheat_eachstep > 0) then
           call prop_set(prop_ptr, 'physics', 'Heat_eachstep' , jaheat_eachstep,  '1=heat each timestep, 0=heat each usertimestep')
-       endif
-       if (writeall .or. jawind_eachstep > 0) then
-          call prop_set(prop_ptr, 'physics', 'Wind_eachstep' , jawind_eachstep,  '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
        endif
        if (writeall .or. jaroro > 0) then
           call prop_set(prop_ptr, 'physics', 'RhoairRhowater' , jaroro        ,  'windstress rhoa/rhow: 0=Rhoair/Rhomean, 1=Rhoair/rhow(), 2=rhoa0()/rhow(), 3=rhoa10()/Rhow()')

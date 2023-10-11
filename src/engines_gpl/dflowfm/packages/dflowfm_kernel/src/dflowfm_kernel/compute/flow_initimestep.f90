@@ -44,8 +44,8 @@
  use m_partitioninfo
  use m_sediment, only: stm_included
  use m_sethu
- use m_external_forcings, only: get_and_apply_windstress
- use m_wind, only: jawind_eachstep
+ use m_external_forcings, only: calculate_wind_stresses
+ use m_wind, only: update_wind_stress_each_time_step
  implicit none
 
  integer              :: jazws0
@@ -120,8 +120,8 @@
     call setumod(jazws0)                             ! set cell center velocities, should be here as prior to 2012 orso
  call timstop(handle_extra(43)) ! End setumod
 
- if (jawind_eachstep > 0) then ! Update wind (and air pressure) in each computational timestep
-    call get_and_apply_windstress(time0)
+ if (update_wind_stress_each_time_step > 0) then ! Update wind (and air pressure) in each computational timestep
+    call calculate_wind_stresses(time0)
  end if
 
 
