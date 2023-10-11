@@ -38,9 +38,9 @@
    use m_flowgeom
    implicit none
 
-   integer, parameter     :: jacstot = 0 !< 0 for computing the total area
-   integer, parameter     :: jacsflw = 1 !< 1 for computing the flow area
-   integer, parameter     :: calcConv = 0 !< don't update wu, cfuhi, etc inside getprof_1D
+   integer, parameter     :: JACSTOT = 0 !< 0 for computing the total area
+   integer, parameter     :: JACSFLW = 1 !< 1 for computing the flow area
+   integer, parameter     :: CALCCONV = 0 !< don't update wu, cfuhi, etc inside getprof_1D
 
    integer :: L, LL, La, n, nx, ip, i12, k2, ja1D
 
@@ -187,8 +187,8 @@
              endif
              
              h = max(0d0, s1(n)-bob(k,La)) ! cross sectional area
-             call getprof_1D(La, h, sxar, swi, jacstot, calcConv, perim)
-             call getprof_1D(La, h, fxar, fwi, jacsflw, calcConv, perim)
+             call getprof_1D(La, h, sxar, swi, JACSTOT, CALCCONV, perim)
+             call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
              sar = swi * hdx
              wu1D(k,La) = swi
              au1D(k,La) = fxar
@@ -224,14 +224,14 @@
                  q = qa(La) - sar * dzwdt
                  q1D(2,La) = q
                  h = max(0d0, s1(n)-bob(2,La)) ! cross sectional area
-                 call getprof_1D(La, h, fxar, fwi, jacsflw, calcConv, perim)
+                 call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
                  au1D(2,La) = fxar
              else ! link points from node: increase by the storage on the first part of the link
                  sar = sar1D(1,La)
                  q = qa(La) + sar * dzwdt
                  q1D(1,La) = q
                  h = max(0d0, s1(n)-bob(1,La)) ! cross sectional area
-                 call getprof_1D(La, h, fxar, fwi, jacsflw, calcConv, perim)
+                 call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
                  au1D(1,La) = fxar
              endif
              
@@ -329,7 +329,7 @@
                 ds1u(k,La) = a(LL) + b(LL)*dz1
                 
                 h = max(0d0, s1(n)+ds1u(k,La)-bob(k,La)) ! cross sectional area
-                call getprof_1D(La, h, fxar, fwi, jacsflw, calcConv, perim)
+                call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
                 au1D(k,La) = fxar
                 
                 !if (n == 578) then
