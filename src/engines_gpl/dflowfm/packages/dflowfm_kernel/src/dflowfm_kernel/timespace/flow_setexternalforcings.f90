@@ -542,9 +542,8 @@ subroutine set_wave_parameters()
          success = .true.
       end if
       
-      ! convert wave direction from nautical to cartesian convention
       if(jawave == 7) then
-          phiwav = modulo(270d0 - phiwav,360d0)
+          call nautical_to_cartesian(phiwav)
       end if
       
       all_wave_variables = .not.(jawave == 7 .and. waveforcing /=3)
@@ -678,6 +677,20 @@ subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_points, re
     end do
  
 end subroutine fill_open_boundary_cells_with_inner_values_fewer
+
+!> nautical_to_cartesian
+!! convert wave direction from nautical to cartesian convention
+subroutine nautical_to_cartesian(wave_direction)
+    
+    implicit none
+    
+    double precision, intent(inout) :: wave_direction(:)
+    double precision, parameter     :: DEGREES   = 360d0
+    double precision, parameter     :: DUE_NORTH = 270d0
+    
+    wave_direction = modulo(DUE_NORTH - wave_direction, DEGREES)
+
+end subroutine nautical_to_cartesian
 
 !> retrive_rainfall
 subroutine retrive_rainfall()
