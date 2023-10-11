@@ -35,6 +35,7 @@ set(esmfsm_module ${utils_lgpl_esmfsm_path}/esmfsm)
 
 # gridgeom
 set(gridgeom_module ${utils_lgpl_path}/gridgeom/packages/gridgeom)
+set(gridgeom_dll_module ${utils_lgpl_path}/gridgeom/packages/gridgeom_dll)
 
 # Nefis
 set(nefis_module ${utils_lgpl_path}/nefis/packages/nefis)

@@ -27,57 +27,57 @@
       contains
 
 
-      SUBROUTINE DLWQ5C ( FNAME  , LUNUT  , CAR    , IAR    , RAR    ,
-     *                    ICMAX  , IIMAX  , IRMAX  , DRAR   , NOITM  ,
-     *                    NODIM  , IORDER , SCALE  , ITMNR  , IDMNR  ,
-     *                             AMISS  , NOBRK  , IERR   , iwar   )
+      subroutine dlwq5c ( fname  , lunut  , car    , iar    , rar    ,
+     *                    icmax  , iimax  , irmax  , drar   , noitm  ,
+     *                    nodim  , iorder , scale  , itmnr  , idmnr  ,
+     *                             amiss  , nobrk  , ierr   , iwar   )
 !
 !
-!     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
+!     Deltares        Sector Waterresources And Environment
 !
-!     CREATED            : May '97  by L. Postma
+!     Created            : May '97  by L. Postma
 !
-!     MODIFIED           :
+!     Modified           :
 !
-!     FUNCTION           : Boundary and waste data new style
+!     Function           : Boundary and waste data new style
 !                          Data retrieval from an ODS file
 !
-!     SUBROUTINES CALLED : CONVER - converting times of breakpoints
+!     Subroutines called : conver - converting times of breakpoints
 !
-!     LOGICAL UNITS      : LUNUT   = report file
+!     Logical units      : lunut   = report file
 !
-!     PARAMETERS    :
+!     Parameters    :
 !
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+!     Name    Kind     Length     Funct.  Description
 !     ---------------------------------------------------------
-!     FNAME   CHAR*(*)   1         INPUT   filename of the ODS file
-!     CAR     CHARACTER  *         LOCAL   character workspace
-!     IAR     INTEGER  IIMAX       LOCAL   integer   workspace
-!     RAR     REAL     IRMAX       LOCAL   real      workspace
-!     ICMAX   INTEGER    1         INPUT   max. char workspace dimension
-!     IIMAX   INTEGER    1         INPUT   max. int. workspace dimension
-!     IRMAX   INTEGER    1         INPUT   max. real workspace dimension
-!     DRAR    REAL*8     1         IN/OUT  Double precision workspace
-!     NOITM   INTEGER    1         INPUT   number of bounds/wastes
-!     NODIM   INTEGER    1         INPUT   number of concentrations
-!     IORDER  INTEGER    1         INPUT   Order of the input
-!     SCALE   LOGICAL    1         INPUT   True if scale values are stored
-!     IOFFC   INTEGER    1         INPUT   Offset of the concentrations    IOFFI   INTEGER    1         INPUT   Offset in the integer array
-!     IOFFI   INTEGER    1         INPUT   Offset of the items             IOFFI   INTEGER    1         INPUT   Offset in the integer array
-!     AMISS   REAL       1         INPUT   Missing value indicator
-!     NOBRK   INTEGER    1         OUTPUT  Number of time steps found
-!     IERR    INTEGER    1         OUTPUT  error flag
-!     Iwar    INTEGER    1         in/out  cumulative warning count
+!     fname   char*(*)   1         input   filename of the ods file
+!     car     character  *         local   character workspace
+!     iar     integer  iimax       local   integer   workspace
+!     rar     real     irmax       local   real      workspace
+!     icmax   integer    1         input   max. char workspace dimension
+!     iimax   integer    1         input   max. int. workspace dimension
+!     irmax   integer    1         input   max. real workspace dimension
+!     drar    real*8     1         in/out  double precision workspace
+!     noitm   integer    1         input   number of bounds/wastes
+!     nodim   integer    1         input   number of concentrations
+!     iorder  integer    1         input   order of the input
+!     scale   logical    1         input   true if scale values are stored
+!     ioffc   integer    1         input   offset of the concentrations    ioffi   integer    1         input   offset in the integer array
+!     ioffi   integer    1         input   offset of the items             ioffi   integer    1         input   offset in the integer array
+!     amiss   real       1         input   missing value indicator
+!     nobrk   integer    1         output  number of time steps found
+!     ierr    integer    1         output  error flag
+!     iwar    integer    1         in/out  cumulative warning count
 !
-!     IN THE COMMON BLOCK:
+!     in the common block:
 !
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+!     Name    Kind     Length     Funct.  Description
 !     ---------------------------------------------------------
 !     block sysi.inc
-!     ITSTRT  INTEGER    1         INPUT   Simulation start time ( scu )
-!     ITSTOP  INTEGER    1         INPUT   Simulation stop time ( scu )
-!     ISFACT  INTEGER    1         INPUT   system clock in seconds
-!     OTIME   REAL*8     1         INPUT   Julian offset of the real time
+!     itstrt  integer    1         input   simulation start time ( scu )
+!     itstop  integer    1         input   simulation stop time ( scu )
+!     isfact  integer    1         input   system clock in seconds
+!     otime   real*8     1         input   julian offset of the real time
 !
 !     The map of the Character array is:
 !     First NOITM + NODIM entries the names of ITEMS and SUBSTANCES
@@ -117,24 +117,23 @@
       use time_module
 
 
-      INTEGER       ICMAX  , IIMAX  , IRMAX
-      CHARACTER*(*) CAR(*) , FNAME
-      integer       IAR(*)
-      real          RAR(*)
-      LOGICAL       SCALE
-      REAL*8        DRAR(*)
-      CHARACTER     CFILE(3)*256
+      integer       icmax  , iimax  , irmax
+      character*(*) car(*) , fname
+      integer       iar(*)
+      real          rar(*)
+      logical       scale
+      real*8        drar(*)
+      character     cfile(3)*256
       real amiss
 !
-!     Local declarations
-!
-      DIMENSION     LOC(3)
-      REAL*8        AFACT    , A1    , A2    , D_BEG    , D_END , DUMMY
-      CHARACTER*3   CDUMMY
+!     local declarations
+      dimension     loc(3)
+      real*8        afact    , a1    , a2    , d_beg    , d_end , dummy
+      character*3   cdummy
       integer :: nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
       integer :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
       integer :: ierr, noloc, noit2, noitv, j
-      integer :: nottt, itmnr, notim, idmnr, I, iwar, ishft, ltot
+      integer :: nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot
       integer :: noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
       integer :: iy1, im1, id1, ih1, in1, is1
       integer :: iy2, im2, id2, ih2, in12 is2
@@ -144,338 +143,325 @@
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dlwq5c", ithndl )
 !
-!     Array offsets
+!     array offsets
+      nottt = itmnr + noitm + idmnr + nodim
+      if ( iorder == 1 ) then
+         ioffa = itmnr
+         ioffb = itmnr + noitm + idmnr
+         ioffc = 0
+         ioffd = itmnr + noitm
+         nscle = nodim
+      else if ( iorder == 2 ) then
+         ioffa = idmnr + nodim + itmnr
+         ioffb = idmnr
+         ioffc = idmnr + nodim
+         ioffd = 0
+         nscle = noitm
+      end if
 !
-      NOTTT = ITMNR + NOITM + IDMNR + NODIM
-      IF ( IORDER .EQ. 1 ) THEN
-         IOFFA = ITMNR
-         IOFFB = ITMNR + NOITM + IDMNR
-         IOFFC = 0
-         IOFFD = ITMNR + NOITM
-         NSCLE = NODIM
-      ENDIF
-      IF ( IORDER .EQ. 2 ) THEN
-         IOFFA = IDMNR + NODIM + ITMNR
-         IOFFB = IDMNR
-         IOFFC = IDMNR + NODIM
-         IOFFD = 0
-         NSCLE = NOITM
-      ENDIF
+!     write the ods file name
+      write ( lunut , 1000 ) fname
 !
-!        write the ODS file name
+!     get the dimensions of the ods file
+      cfile(1) = fname
+      cfile(3) = ' '
+      k1   = nottt + 1
+      call getdim ( cfile  , 0      , cdummy , 0      , 0       ,
+     *                       0      , iar(k1), ierror , cfile(3))
+      nsubs = iar(k1)
+      nlocs = iar(k1+1)
+      ntims = iar(k1+2)
 !
-      WRITE ( LUNUT , 1000 ) FNAME
+!     deal with locations ( j for characters, k for integers )
+      j1 = nottt + 1
+      j2 = j1    + 1
+      k1 = nottt + noitm + 1
+      j3 = j2 + nlocs
+      k2 = k1 + nlocs
 !
-!        get the dimensions of the ODS file
+!     see if storage is available
+      k3 = min ( (iimax-k2) , (icmax-j3) )
+      if ( k3 < nlocs ) then
+         write ( lunut , 1010 ) k3, nlocs
+         ierr = 1
+         if (timon) call timstop( ithndl )
+         return
+      end if
 !
-      CFILE(1) = FNAME
-      CFILE(3) = ' '
-      K1   = NOTTT + 1
-      CALL GETDIM ( CFILE  , 0      , CDUMMY , 0      , 0       ,
-     *                       0      , IAR(K1), IERROR , CFILE(3))
-      NSUBS = IAR(K1)
-      NLOCS = IAR(K1+1)
-      NTIMS = IAR(K1+2)
+!    get the available locations
+      car(j1)  = '*'
+      call getloc ( cfile  , 0  , car(j1), 1      , 0       ,
+     *              0      , k3 , car(j2), iar(k1), iar(k2) ,
+     *                            noloc  , ierror , cfile(3))
 !
-!             Deal with locations ( J for characters, K for integers )
-!
-      J1 = NOTTT + 1
-      J2 = J1    + 1
-      K1 = NOTTT + NOITM + 1
-      J3 = J2 + NLOCS
-      K2 = K1 + NLOCS
-!
-!             See if storage is available
-!
-      K3 = MIN ( (IIMAX-K2) , (ICMAX-J3) )
-      IF ( K3 .LT. NLOCS ) THEN
-         WRITE ( LUNUT , 1010 ) K3, NLOCS
-         IERR = 1
-         GOTO 510
-      ENDIF
-!
-!             Get the available locations
-!
-      CAR(J1)  = '*'
-      CALL GETLOC ( CFILE  , 0  , CAR(J1), 1      , 0       ,
-     *              0      , K3 , CAR(J2), IAR(K1), IAR(K2) ,
-     *                            NOLOC  , IERROR , CFILE(3))
-!
-!             Fill an array with wanted locations
-!
-      NOIT2 = 0
-      NOITV = 0
-      DO 20 J = 1 , NOITM
-         IF ( CAR(IOFFA+J) .EQ. '&$&$SYSTEM_NAME&$&$!' ) THEN
-            NOIT2 = NOIT2 + 1
-            NOITV = NOITV + 1
-            CAR(IOFFA+NOIT2) = CAR(IOFFA+J)
-            CAR(IOFFC+NOIT2) = CAR(IOFFC+J)
-            IAR(IOFFA+NOIT2) = IAR(IOFFA+J)
-            IAR(IOFFC+NOIT2) = IAR(IOFFC+J)
-            IAR(NOTTT+NOIT2) = -1
-            IF ( SCALE .AND. IORDER .EQ. 2 ) RAR(NOIT2) = RAR(J)
-            GOTO 20
-         ENDIF
-         CALL ZOEK(CAR(IOFFA+J),NOLOC,CAR(J1+1),20,I)
-         IF ( I .GE. 1 ) THEN
-            NOIT2 = NOIT2 + 1
-            CAR(IOFFA+NOIT2) = CAR(IOFFA+J)
-            CAR(IOFFC+NOIT2) = CAR(IOFFC+J)
-            IAR(IOFFA+NOIT2) = IAR(IOFFA+J)
-            IAR(IOFFC+NOIT2) = IAR(IOFFC+J)
-            IAR(NOTTT+NOIT2) = I
-            GOTO 20
-         ENDIF
-         WRITE ( LUNUT , 1070 ) IAR(IOFFA+J), CAR(IOFFA+J)
+!    fill an array with wanted locations
+      noit2 = 0
+      noitv = 0
+      do j = 1 , noitm
+         if ( car(ioffa+j) == '&$&$SYSTEM_NAME&$&$!' ) then
+            noit2 = noit2 + 1
+            noitv = noitv + 1
+            car(ioffa+noit2) = car(ioffa+j)
+            car(ioffc+noit2) = car(ioffc+j)
+            iar(ioffa+noit2) = iar(ioffa+j)
+            iar(ioffc+noit2) = iar(ioffc+j)
+            iar(nottt+noit2) = -1
+            if ( scale .and. iorder == 2 ) rar(noit2) = rar(j)
+            cycle
+         end if
+         call zoek(car(ioffa+j),noloc,car(j1+1),20,i)
+         if ( i .ge. 1 ) then
+            noit2 = noit2 + 1
+            car(ioffa+noit2) = car(ioffa+j)
+            car(ioffc+noit2) = car(ioffc+j)
+            iar(ioffa+noit2) = iar(ioffa+j)
+            iar(ioffc+noit2) = iar(ioffc+j)
+            iar(nottt+noit2) = i
+            cycle
+         end if
+         write ( lunut , 1070 ) iar(ioffa+j), car(ioffa+j)
          iwar = iwar + 1
-         IF (   IAR(IOFFA+J  ) .LT. 0 .OR.
-     *        ( IAR(IOFFA+J+1) .LT. 0 .AND. J .NE. NOITM ) ) THEN
-            WRITE ( LUNUT , 1080 )
-            IERR = 2
-            GOTO 510
-         ENDIF
-   20 CONTINUE
+         if (   iar(ioffa+j  ) < 0 .or.
+     *        ( iar(ioffa+j+1) < 0 .and. j /= noitm ) ) then
+            write ( lunut , 1080 )
+            ierr = 2
+            if (timon) call timstop( ithndl )
+            return
+         end if
+      end do
 !
-!  Compact the pointers for unresolved externals
+!     compact the pointers for unresolved externals
+      ishft = noitm - noit2
+      if ( iorder == 1 ) then
+         ltot = idmnr + nodim
+      else
+         ltot = 0
+      end if
+      do i = ioffa+noit2+1,ioffa+noit2+ltot+noit2
+         car(i) = car(i+ishft)
+         iar(i) = iar(i+ishft)
+      end do
+      do i = ioffc+noit2+1,ioffc+noit2+ltot+noit2*2
+         car(i) = car(i+ishft)
+         iar(i) = iar(i+ishft)
+      end do
+      nottt = nottt - ishft*2
+      itmnr = itmnr - ishft
+      noitm = noitm - ishft
+      if ( iorder == 1 ) then
+         ioffb = itmnr + noitm + idmnr
+         ioffd = itmnr + noitm
+         nshft = 0
+      else
+         nshft = itmnr + noitm
+      end if
 !
-      ISHFT = NOITM - NOIT2
-      IF ( IORDER .EQ. 1 ) THEN
-         LTOT = IDMNR + NODIM
-      ELSE
-         LTOT = 0
-      ENDIF
-      DO 30 I = IOFFA+NOIT2+1,IOFFA+NOIT2+LTOT+NOIT2
-         CAR(I) = CAR(I+ISHFT)
-         IAR(I) = IAR(I+ISHFT)
-   30 CONTINUE
-      DO 40 I = IOFFC+NOIT2+1,IOFFC+NOIT2+LTOT+NOIT2*2
-         CAR(I) = CAR(I+ISHFT)
-         IAR(I) = IAR(I+ISHFT)
-   40 CONTINUE
-      NOTTT = NOTTT - ISHFT*2
-      ITMNR = ITMNR - ISHFT
-      NOITM = NOITM - ISHFT
-      IF ( IORDER .EQ. 1 ) THEN
-         IOFFB = ITMNR + NOITM + IDMNR
-         IOFFD = ITMNR + NOITM
-         NSHFT = 0
-      ELSE
-         NSHFT = ITMNR + NOITM
-      ENDIF
+!     deal with substances
+      j1 = nottt + 1
+      j2 = j1    + 1
+      k1 = nottt + noitm + 1
+      j3 = j2 + nsubs
+      k2 = k1 + nsubs
 !
-!             Deal with substances
+!     see if storage is available
+      k3 = min ( (iimax-k2) , (icmax-j3) )
+      if ( k3 < nsubs ) then
+         write ( lunut , 1010 ) k3, nsubs
+         ierr = 1
+         if (timon) call timstop( ithndl )
+         return
+      end if
 !
-      J1 = NOTTT + 1
-      J2 = J1    + 1
-      K1 = NOTTT + NOITM + 1
-      J3 = J2 + NSUBS
-      K2 = K1 + NSUBS
+!    get the available substances
+      call getpar ( cfile  , 0      , car(j1), 1      , 0       ,
+     *              0      , k3     , 0      , car(j2), car(j3) ,
+     *              iar(k1), iar(k2), nopar  , ierror , cfile(3))
 !
-!             See if storage is available
+!     fill an array with wanted substances
+      icnt = 0
+      k5   = nottt + noitm
+      nitm = nodim
+      do j = 1 , nitm
+         k = j - icnt
+         iar(k5+k) = 0
+         if ( car(ioffb+j) == '&$&$SYSTEM_NAME&$&$!' ) cycle
+         call zoek(car(ioffb+k),nopar,car(j1+1),20,i)
+         if ( i >= 1 ) then
+            iar(k5+k) = i
+            cycle
+         end if
+         call compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  ,
+     *                             nodim  , iorder , car    , k5     , ioffb  ,
+     *                             nshft  , ioffd  , k      , icnt   , ierr, iwar)
+         if (timon) call timstop( ithndl )
+         return
+      end do
+      k1 = k1 + nodim
 !
-      K3 = MIN ( (IIMAX-K2) , (ICMAX-J3) )
-      IF ( K3 .LT. NSUBS ) THEN
-         WRITE ( LUNUT , 1010 ) K3, NSUBS
-         IERR = 1
-         GOTO 510
-      ENDIF
+!     get the time values
+      k3 = iimax-k1
+!     first nodim real*4 can be scale values
+      k2 = 1
+      if ( scale ) k2 = nscle/2 + 2
+      k5 = k2 + 3
+      k4 =  ( irmax - k5*2 ) / 2
+!     see if there is space enough
+      k4 = min ( k3 , k4 )
 !
-!             Get the available substances
+!     see if storage is available
+      if ( k4 .lt. ntims ) then
+         write ( lunut , 1010 ) k4, ntims
+         ierr = 1
+         if (timon) call timstop( ithndl )
+         return
+      end if
+      afact = isfact/864.0d+02
+      if ( isfact < 0 ) afact = -1.0d+00/isfact/864.0d+02
 !
-      CALL GETPAR ( CFILE  , 0      , CAR(J1), 1      , 0       ,
-     *              0      , K3     , 0      , CAR(J2), CAR(J3) ,
-     *              IAR(K1), IAR(K2), NOPAR  , IERROR , CFILE(3))
+!     get the available time values
+      drar(k2  ) = 0
+      call gettme ( cfile  , 0      , drar(k2), 1      , 0       ,
+     *              0      , k4     , drar(k5), iar(k1), nobrk   ,
+     *                                          ierror , cfile(3))
 !
-!             Fill an array with wanted substances
-!
-      ICNT = 0
-      K5   = NOTTT + NOITM
-      NITM = NODIM
-      DO 60 J = 1 , NITM
-         K = J - ICNT
-         IAR(K5+K) = 0
-         IF ( CAR(IOFFB+J) .EQ. '&$&$SYSTEM_NAME&$&$!' ) GOTO 60
-         CALL ZOEK(CAR(IOFFB+K),NOPAR,CAR(J1+1),20,I)
-         IF ( I .GE. 1 ) THEN
-            IAR(K5+K) = I
-            GOTO 60
-         ENDIF
-         CALL DLWQ5H ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
-     *                 NODIM  , IORDER , CAR    , K5     , IOFFB  ,
-     *                          NSHFT  , IOFFD  , K      , ICNT   )
-         iwar = iwar + 1
-         IF ( J + ICNT .GE. NITM ) GOTO 70
-   60 CONTINUE
-   70 K1 = K1 + NODIM
-!
-!             Get the time values
-!
-      K3 = IIMAX-K1
-!  first NODIM real*4 can be scale values
-      K2 = 1
-      IF ( SCALE ) K2 = NSCLE/2 + 2
-      K5 = K2 + 3
-      K4 =  ( IRMAX - K5*2 ) / 2
-!  see if there is space enough
-      K4 = MIN ( K3 , K4 )
-!
-!             See if storage is available
-!
-      IF ( K4 .LT. NTIMS ) THEN
-         WRITE ( LUNUT , 1010 ) K4, NTIMS
-         IERR = 1
-         GOTO 510
-      ENDIF
-      AFACT = ISFACT/864.0D+02
-      IF ( ISFACT .LT. 0 ) AFACT = -1.0D+00/ISFACT/864.0D+02
-!
-!             Get the available time values
-!
-      DRAR(K2  ) = 0
-      CALL GETTME ( CFILE  , 0      , DRAR(K2), 1      , 0       ,
-     *              0      , K4     , DRAR(K5), IAR(K1), NOBRK   ,
-     *                                          IERROR , CFILE(3))
-!
-!  see if the found time values are within the range
-!
-      IF ( NOBRK .GE. 1 ) THEN
-         WRITE ( LUNUT , 1020 )
-         A1 = DELTIM + ITSTRT*AFACT
-         A2 = DELTIM + ITSTOP*AFACT
-         I1 = 1
-         I2 = 1
-         DO 80 I = 1 , NOBRK
-            IF ( DRAR(K5+I-1) .LE. A1 ) I1 = I
-            IF ( DRAR(K5+I-1) .LT. A2 ) I2 = I
-   80    CONTINUE
-         IF ( I2 .NE. NOBRK ) I2 = I2 + 1
-         K6 = K5+NOBRK-1
-         IF ( DRAR(K6) .LT. A1 ) I2 = 1
-!  errors and warnings
-         IF ( DRAR(K5) .GT. A1 ) THEN
-            CALL GREGOR ( DRAR(K5), IY1, IM1, ID1, IH1, IN1, IS1, DUMMY)
-            CALL GREGOR ( A1      , IY2, IM2, ID2, IH2, IN2, IS2, DUMMY)
-            WRITE ( LUNUT , 1030 )  IY1, IM1, ID1, IH1, IN1, IS1,
-     *                              IY2, IM2, ID2, IH2, IN2, IS2
+!     see if the found time values are within the range
+      if ( nobrk >= 1 ) then
+         write ( lunut , 1020 )
+         a1 = deltim + itstrt*afact
+         a2 = deltim + itstop*afact
+         i1 = 1
+         i2 = 1
+         do i = 1 , nobrk
+            if ( drar(k5+i-1) .le. a1 ) i1 = i
+            if ( drar(k5+i-1) .lt. a2 ) i2 = i
+         end do
+         if ( i2 /= nobrk ) i2 = i2 + 1
+         k6 = k5+nobrk-1
+         if ( drar(k6) < a1 ) i2 = 1
+!        errors and warnings
+         if ( drar(k5) > a1 ) then
+            call gregor ( drar(k5), iy1, im1, id1, ih1, in1, is1, dummy)
+            call gregor ( a1      , iy2, im2, id2, ih2, in2, is2, dummy)
+            write ( lunut , 1030 )  iy1, im1, id1, ih1, in1, is1,
+     *                              iy2, im2, id2, ih2, in2, is2
             iwar = iwar + 1
-         ENDIF
-         IF ( DRAR(K6) .LT. A2 ) THEN
-            CALL GREGOR ( DRAR(K6), IY1, IM1, ID1, IH1, IN1, IS1, DUMMY)
-            CALL GREGOR ( A2      , IY2, IM2, ID2, IH2, IN2, IS2, DUMMY)
-            WRITE ( LUNUT , 1040 )  IY1, IM1, ID1, IH1, IN1, IS1,
-     *                              IY2, IM2, ID2, IH2, IN2, IS2
+         end if
+         if ( drar(k6) < a2 ) then
+            call gregor ( drar(k6), iy1, im1, id1, ih1, in1, is1, dummy)
+            call gregor ( a2      , iy2, im2, id2, ih2, in2, is2, dummy)
+            write ( lunut , 1040 )  iy1, im1, id1, ih1, in1, is1,
+     *                              iy2, im2, id2, ih2, in2, is2
             iwar = iwar + 1
-         ENDIF
-         NOBRK = I2-I1+1
-      ENDIF
-      WRITE ( LUNUT , 1050 ) NOBRK
-      IF ( NOBRK .EQ. 1 )    WRITE ( LUNUT , 1060 )
-!      times are converted to DELWAQ times
-      DO 90 I = I1,I2
-         A2 = DRAR(K5+I-1) - DELTIM
-         IAR(K1+I-I1) = A2/AFACT + 0.5
-   90 CONTINUE
-!      See if enough space is available
+         end if
+         nobrk = i2-i1+1
+      end if
+      write ( lunut , 1050 ) nobrk
+      if ( nobrk == 1 )    write ( lunut , 1060 )
+!     times are converted to delwaq times
+      do i = i1,i2
+         a2 = drar(k5+i-1) - deltim
+         iar(k1+i-i1) = a2/afact + 0.5
+      end do
+!      see if enough space is available
 !           nr substances  nr locations for retrieval
-      NT1 = NODIM*NOITM
+      nt1 = nodim*noitm
 !           nr substances  nr locations for storage
-      NT2 = NODIM+NOITM
+      nt2 = nodim+noitm
 !           real retrieval space + 1
-      IS  =  NT1*NOBRK + 1
-      IF ( SCALE ) IS = IS + NSCLE
+      is  =  nt1*nobrk + 1
+      if ( scale ) is = is + nscle
 !           convert for double precission,
-!           NOBRK is max number of retrievals per invocation
-      IS2 = (IS + NOBRK+1)/2+1
+!           nobrk is max number of retrievals per invocation
+      is2 = (is + nobrk+1)/2+1
 !           then the offset increases
-      MAXD   = IRMAX - IS
-      IF ( MAXD .LT. NOBRK ) THEN
-         WRITE ( LUNUT , 1010 ) IS + NOBRK, IRMAX
-         IERR = 1
-         GOTO 510
-      ENDIF
+      maxd   = irmax - is
+      if ( maxd < nobrk ) then
+         write ( lunut , 1010 ) is + nobrk, irmax
+         ierr = 1
+         if (timon) call timstop( ithndl )
+         return
+      end if
 !     set the time margins for retrieval
 !
 !     JVB, the endtime can be overwritten here
 !
-!      DRAR(IS2  ) = DRAR(K5+I1-1) - AFACT/2.0
-!      DRAR(IS2+1) = DRAR(K5+I2-1) + AFACT/2.0
-      D_BEG = DRAR(K5+I1-1) - AFACT/2.0
-      D_END = DRAR(K5+I2-1) + AFACT/2.0
-      DRAR(IS2  ) = D_BEG
-      DRAR(IS2+1) = D_END
+!      drar(is2  ) = drar(k5+i1-1) - afact/2.0
+!      drar(is2+1) = drar(k5+i2-1) + afact/2.0
+      d_beg = drar(k5+i1-1) - afact/2.0
+      d_end = drar(k5+i2-1) + afact/2.0
+      drar(is2  ) = d_beg
+      drar(is2+1) = d_end
 CJVB
 !
-!             Get the data themselves
+!             get the data themselves
 !
-      LOC(3) =  1
-      IGS = 1
-      IG  = 1
-      IF ( SCALE ) IG = IG + NSCLE
-      DO 120 I = 1 , NODIM
+      loc(3) =  1
+      igs = 1
+      ig  = 1
+      if ( scale ) ig = ig + nscle
+      do i = 1 , nodim
 ! this should correspond with the found substance numbers
-         KP = IAR(NOTTT+NOITM+I)
-         IF ( KP .LT. 0 ) GOTO 120
-         IF ( IORDER .EQ. 1 ) THEN
-            IG  = IGS
-            IGS = IGS + 1
-            IF ( SCALE ) IG = IG + NSCLE
-         ENDIF
-         DO 110 J = 1 , NOITM
+         kp = iar(nottt+noitm+i)
+         if ( kp < 0 ) cycle
+         if ( iorder .eq. 1 ) then
+            ig  = igs
+            igs = igs + 1
+            if ( scale ) ig = ig + nscle
+         end if
+         do j = 1 , noitm
 ! this should correspond with the found location numbers
-            KL = IAR(NOTTT+J)
-            IF ( KL .LE. 0 ) GOTO 95
-            LOC(1) = KL
-            LOC(2) = KL
-            CALL GETMAT ( CFILE , 0 , KP   , LOC     , DRAR(IS2),
-     *                    AMISS , MAXD , RAR(IS) , IERROR   ,
-     *                                                 CFILE(3) )
-   95       IG2 = IG
-! this loop is per location, so skip the amount of substances if IORDER is 1
-            IF ( IORDER .EQ. 1 ) THEN
-               IG = IG + NODIM
-            ELSE
-               IG = IG + 1
-            ENDIF
-            DO 100 K = 0 , NOBRK-1
-               RAR(IG2) = RAR(IS+K)
-! skip a full matrix further, because this is this substance for all
-!                                                        breakpoints
-               IG2 = IG2 + NT1
-  100       CONTINUE
-  110    CONTINUE
-  120 CONTINUE
-      DO 130 I = 1,NSCLE
-         IAR(NOTTT+I) = I
-  130 CONTINUE
-      DO 140 I = 1,NOBRK
-         IAR(NOTTT+NSCLE+I) = IAR(K1+I-1)
-  140 CONTINUE
-!
-  510 CONTINUE
+            kl = iar(nottt+j)
+            if ( kl > 0 ) then
+                loc(1) = kl
+                loc(2) = kl
+                call getmat ( cfile, 0, kp, loc, drar(is2),
+     *                        amiss, maxd, rar(is), ierror,
+     *                                         cfile(3) )
+            end if
+            ig2 = ig
+!           this loop is per location, so skip the amount of substances if iorder is 1
+            if ( iorder == 1 ) then
+               ig = ig + nodim
+            else
+               ig = ig + 1
+            end if
+            do k = 0 , nobrk-1
+               rar(ig2) = rar(is+k)
+!              skip a full matrix further, because this is this substance for all
+!              breakpoints
+               ig2 = ig2 + nt1
+            end do ! k = 0 , nobrk-1
+         end do ! do j = 1 , noitm
+      end do ! do i = 1 , nodim
+      do i = 1,nscle
+         iar(nottt+i) = i
+      end do
+      do i = 1,nobrk
+         iar(nottt+nscle+i) = iar(k1+i-1)
+      end do
       if (timon) call timstop( ithndl )
-      RETURN
+      return
 !
 !      formats
 !
- 1000 FORMAT (  ' DATA will be retrieved from ODS-file: ',A )
- 1010 FORMAT (  ' ERROR: Insufficient memory ! Available:',I10,
-     *                                            ', needed:',I10,' !' )
- 1020 FORMAT (  ' This block consists of a time function.' )
- 1030 FORMAT (  ' WARNING: file start time   : ',
-     *                      I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/
-     *          ' after simulation start time: ',
-     *                      I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
- 1040 FORMAT (  ' WARNING: file stop  time   : ',
-     *                      I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/
-     *          ' before simulation stop time: ',
-     *                      I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
- 1050 FORMAT (  ' Number of valid time steps found: ',I6 )
- 1060 FORMAT (  ' This block consists of constant data.' )
- 1070 FORMAT (  ' WARNING: location : ',I8,' not found. Name is: ',A )
- 1080 FORMAT (  ' ERROR  : location is used in a computation',
+ 1000 format(' DATA will be retrieved from ODS-file: ',A )
+ 1010 format(' ERROR: Insufficient memory ! Available:',I10,
+     *                                         ', needed:',I10,' !' )
+ 1020 format(' This block consists of a time function.' )
+ 1030 format(' WARNING: file start time   : ',
+     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/
+     *       ' after simulation start time: ',
+     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
+ 1040 format(' WARNING: file stop  time   : ',
+     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/
+     *       ' before simulation stop time: ',
+     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
+ 1050 format(' Number of valid time steps found: ',I6 )
+ 1060 format(' This block consists of constant data.' )
+ 1070 format(' WARNING: location : ',I8,' not found. Name is: ',A )
+ 1080 format(' ERROR  : location is used in a computation',
      *          ' that will become corrupted !' )
 !
-      END
+      END SUBROUTINE DLWQ5C
 
       end module m_dlwq5c

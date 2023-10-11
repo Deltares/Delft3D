@@ -3,17 +3,10 @@
 set(waq_io_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 include_directories(${waq_io_include_path})
 
-# Set directory which contains all source files
-set(src_path src)
-
-# Gather source files
-get_fortran_source_files(${src_path}/ods ods_files)
-get_fortran_source_files(${src_path}/waq_io waq_io_files)
-
 # Define the library
 set(library_name waq_io)
-add_library(${library_name} ${ods_files}
-                            ${waq_io_files})
+
+create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Set dependencies
 set(oss_dependencies deltares_common
@@ -34,8 +27,4 @@ oss_include_libraries(${library_name} oss_dependencies)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
-
-# Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ods_files}
-                                                    ${waq_io_files})
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

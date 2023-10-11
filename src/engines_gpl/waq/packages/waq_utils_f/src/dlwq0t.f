@@ -107,7 +107,7 @@
          goto 9999
       endif
 
-      ierr = 1
+      ierr = 1 ! string is no timer
       if ( chulp( 5: 5) .ne. '/' .or. chulp( 8: 8) .ne. '/' .or.
      &     chulp(11:11) .ne. '-' .or. chulp(14:14) .ne. ':' .or.
      &     chulp(17:17) .ne. ':' ) goto 9999           ! the date string is VERY strict

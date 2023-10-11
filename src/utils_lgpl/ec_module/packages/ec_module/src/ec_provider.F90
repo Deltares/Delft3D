@@ -2626,18 +2626,25 @@ module m_ec_provider
              ncstdnames(1) = 'sea_surface_wave_from_direction'
          case ('xwaveforce')
              ncvarnames(1) = 'xfor'
+             ncstdnames(1) = 'xfor'
          case ('ywaveforce')
              ncvarnames(1) = 'yfor'
+             ncstdnames(1) = 'yfor'
          case ('xwaveinducedvolumeflux')
              ncvarnames(1) = 'xtrsp'
+             ncstdnames(1) = 'xtrsp'
          case ('ywaveinducedvolumeflux')
              ncvarnames(1) = 'ytrsp'
+             ncstdnames(1) = 'ytrsp'
          case ('freesurfacedissipation')
              ncvarnames(1) = 'ssurf'
+             ncstdnames(1) = 'ssurf'
          case ('whitecappingdissipation')
              ncvarnames(1) = 'swcap'
+             ncstdnames(1) = 'swcap'
          case ('bottomorbitalvelocity')
              ncvarnames(1) = 'ubot'
+             ncstdnames(1) = 'ubot'
              case default                                        ! experiment: gather miscellaneous variables from an NC-file,
              if (index(quantityName,'waqsegmentfunction')==1) then
                  ncvarnames(1) = quantityName

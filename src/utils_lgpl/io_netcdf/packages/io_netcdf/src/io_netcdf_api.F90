@@ -164,6 +164,23 @@ function ionc_close_dll(ioncid) result(ierr) bind(C, name="ionc_close")
    ierr = ionc_close(ioncid)
 end function ionc_close_dll
 
+!> Tries to end define mode of an open io_netcdf data set so we can start putting data in the file.
+function ionc_end_define_mode_dll(ioncid) result(ierr) bind(C, name="ionc_end_define_mode")
+!DEC$ ATTRIBUTES DLLEXPORT :: ionc_end_define_mode_dll
+   integer(kind=c_int),           intent(in   ) :: ioncid    !< The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.
+   integer(kind=c_int)                          :: ierr      !< Result status (IONC_NOERR if successful).
+
+   ierr = ionc_enddef(ioncid)
+end function ionc_end_define_mode_dll
+
+!> Tries to start define mode of an open io_netcdf data set to define new variables or dimensions, etc.
+function ionc_start_define_mode_dll(ioncid) result(ierr) bind(C, name="ionc_start_define_mode")
+!DEC$ ATTRIBUTES DLLEXPORT :: ionc_start_define_mode_dll
+   integer(kind=c_int),           intent(in   ) :: ioncid    !< The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.
+   integer(kind=c_int)                          :: ierr      !< Result status (IONC_NOERR if successful).
+
+   ierr = ionc_redef(ioncid)
+end function ionc_start_define_mode_dll
 
 !> Gets the number of mesh from a data set.
 function ionc_get_mesh_count_dll(ioncid, nmesh) result(ierr) bind(C, name="ionc_get_mesh_count")

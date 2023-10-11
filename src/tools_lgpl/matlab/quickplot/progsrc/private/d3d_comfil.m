@@ -139,7 +139,8 @@ if strcmp(Props.Name,'grid')
     DataInCell = 1;
 end
 
-[Ans,OrigFI] = merge_trim_com(OrigFI,domain,Props,XYRead,DataRead,DataInCell,@get_single_partition,nPartitions,mergeParts,mergeDim,varargin{:});
+hasSubfields = ~isempty(getsubfields(OrigFI,Props));
+[Ans,OrigFI] = merge_trim_com(OrigFI,domain,Props,XYRead,DataRead,DataInCell,@get_single_partition,nPartitions,mergeParts,mergeDim,hasSubfields,varargin{:});
 
 varargout{2} = OrigFI;
 varargout{1} = Ans;
@@ -153,7 +154,7 @@ else
     Domains = {};
 end
 
-function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,var_arg_in)
+function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,varargin)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
 DimFlag=Props.DimFlag;
@@ -163,11 +164,11 @@ fidx=find(DimFlag);
 subf=getsubfields(FI,Props);
 if isempty(subf)
     % initialize and read indices ...
-    idx(fidx(1:length(var_arg_in)))=var_arg_in;
+    idx(fidx(1:length(varargin)))=varargin;
 else
     % initialize and read indices ...
-    Props.SubFld=cat(2,var_arg_in{1},Props.SubFld);
-    idx(fidx(1:(length(var_arg_in)-1)))=var_arg_in(2:end);
+    Props.SubFld=cat(2,varargin{1},Props.SubFld);
+    idx(fidx(1:(length(varargin)-1)))=varargin(2:end);
 end
 
 % select appropriate timestep ...

@@ -23,170 +23,173 @@
       module m_dlwq5h
 
       implicit none
-
+      
       contains
 
 
-      SUBROUTINE DLWQ5H ( LUNUT  , IAR    , ITMNR  , NOITM  , IDMNR  ,
-     *                    NODIM  , IORDER , CNAMES , IOFFI  , IOFFC  ,
-     *                             IODS   , IOFFD  , I      , ICNT   )
+      subroutine compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  ,
+     *                    nodim  , iorder , cnames , ioffi  , ioffc  ,
+     *                             iods   , ioffd, i , icnt, ierr, iwar)
 !
 !
-!     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
+!     Deltares        Sector Waterresources And Environment
 !
-!     CREATED            : October '00  by L. Postma
+!     Created            : October '00  by L. Postma
 !
-!     MODIFIED           :
+!     Modified           :
 !
-!     FUNCTION           : Compacts USEFOR lists if unresolved externals
+!     Function           : Compacts USEFOR lists if unresolved externals
 !
-!     SUBROUTINES CALLED : none
+!     Subroutines Called : none
 !
-!     LOGICAL UNITS      : LUN(27) = unit stripped DELWAQ input file
+!     Logical Units      : LUN(27) = unit stripped DELWAQ input file
 !                          LUN(29) = unit formatted output file
 !
-!     PARAMETERS    :
+!     Parameters    :
 !
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+!     Name    Kind     Length     Funct.  Description
 !     ---------------------------------------------------------
-!     LUNUT   INTEGER    1         INPUT   unit number for ASCII output
-!     IAR     INTEGER  IIMAX       IN/OUT  integer   workspace
-!     ITMNR   INTEGER    1         IN/OUT  nr of items for assignment
-!     NOITM   INTEGER    1         IN      nr of items in computational rule
-!     IDMNR   INTEGER    1         IN/OUT  nr of subst for assignment
-!     NODIM   INTEGER    1         IN      nr of subst in computational rule
-!     IORDER  INTEGER    1         IN      1 = items first, 2 is subst first
-!     CNAMES  CHAR*(*)  NITM       INPUT   Items to check for presence
-!     IOFFI   INTEGER    1         IN/OUT  Offset in input array
-!     IOFFC   INTEGER    1         IN/OUT  Offset in character array
-!     IOFFD   INTEGER    1         IN/OUT  Base offset in both arrays
-!     IODS    INTEGER    1         INPUT   Shift counter ODS files
-!     I       INTEGER    1         INPUT   loop counter
-!     ICNT    INTEGER    1         IN/OUT  counter
+!     lunut   integer    1         input   unit number for ascii output
+!     iar     integer  iimax       in/out  integer   workspace
+!     itmnr   integer    1         in/out  nr of items for assignment
+!     noitm   integer    1         in      nr of items in computational rule
+!     idmnr   integer    1         in/out  nr of subst for assignment
+!     nodim   integer    1         in      nr of subst in computational rule
+!     iorder  integer    1         in      1 = items first, 2 is subst first
+!     cnames  char*(*)  nitm       input   items to check for presence
+!     ioffi   integer    1         in/out  offset in input array
+!     ioffc   integer    1         in/out  offset in character array
+!     ioffd   integer    1         in/out  base offset in both arrays
+!     iods    integer    1         input   shift counter ods files
+!     i       integer    1         input   loop counter
+!     icnt    integer    1         in/out  counter
 !
 !
       use timers       !   performance timers
 
-      CHARACTER*(*) CNAMES(*)
-      DIMENSION     IAR(*)
-      CHARACTER*20  CHULP
+      character*(*) cnames(*)
+      dimension     iar(*)
+      character*20  chulp,  message_type
       integer(4) :: ithndl = 0
-      integer    :: I1, I3, I4, I5
-      integer    :: lunut, I, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
-      integer    :: itmnr, noitm, I2, iar, ioffd, ishft, ioffi, iods
-      if (timon) call timstrt( "dlwq5h", ithndl )
+      integer    :: i1, i3, i4, i5
+      integer    :: lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
+      integer    :: itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
+      
+      integer :: ierr, iwar
+      
+      
+      ierr = -1
+      if (timon) call timstrt( "compact_usefor_list", ithndl )
 !
 !       Write message
 !
-      WRITE ( LUNUT ,   *  )
-      WRITE ( LUNUT , 1010 ) I+ICNT, CNAMES(I+IOFFC)
-      IF ( IORDER .EQ. 1 ) THEN
-          NTT  = IDMNR
-          NITM = NODIM
-      ELSE
-          NTT  = ITMNR
-          NITM = NOITM
-      ENDIF
+      write ( lunut ,   *  )
+
+      if ( iorder == 1 ) then ! items first
+          ntt  = idmnr
+          nitm = nodim
+      else ! subst first
+          ntt  = itmnr
+          nitm = noitm
+      endif
 !
-!       Look backwards
+!       look backwards
 !
-      I4 = 0
-      DO 10 I1 = I,1,-1
-         I2 = IAR(I1+IOFFC)
-         IF ( I2 .GT. -100000 ) GOTO 20
-   10 CONTINUE
+      i4 = 0
+      do i1 = i,1,-1
+         i2 = iar(i1+ioffc)
+         if ( i2 > -100000 ) exit
+      end do
 !
-!       Additional messages for this sequence
+!       additional messages for this sequence
+      if ( i2 <= 0 .and. i2 > -100000 ) then
+!       try to find the reference
+         do i3 = 1 , i
+            i5 = iar(i3+ioffc)
+            if ( i5 > 0 )   i4 = iar(i3+ioffc)
+            if ( i5 <= 0 .and. i5 > -100000 )   i4 = i4 + 1
+         end do
+         chulp = cnames(i4+ioffd)
+         if ( cnames(i+ioffc) /= chulp ) then
+            if ( iorder == 2 ) then
+               write (lunut,1030) i4,chulp
+            else
+               write (lunut,1040) i4,chulp
+            end if
+         end if
+      else if ( i2 > 0 .and. i2 <  100000 ) then
+         i4 = i2
+         chulp = cnames( i2+ioffd)
+         if ( cnames(i+ioffc) == chulp ) then
+             iwar = iwar + 1
+             message_type = "WARNING"
+             write ( lunut , 1010 ) message_type, i+icnt, cnames(i+ioffc)
+         else
+             message_type = "ERROR"
+             write ( lunut , 1010 ) message_type, i+icnt, cnames(i+ioffc)
+             ierr = 1
+             if ( iorder == 2 ) then
+               write (lunut,1030)  message_type, i2, chulp
+            else
+               write (lunut,1040)  message_type, i2, chulp
+            end if
+         end if
+      endif
+      i2 = i4
 !
-      I4 = 0
-   20 IF ( I2 .LE. 0 .AND. I2 .GT. -100000 ) THEN
-!       Try to find the reference
-         DO 25 I3 = 1 , I
-            I5 = IAR(I3+IOFFC)
-            IF ( I5 .GT. 0 ) I4 = IAR(I3+IOFFC)
-            IF ( I5 .LE. 0 .AND. I5 .GT. -100000 ) I4 = I4 + 1
-   25    CONTINUE
-         CHULP = CNAMES(I4+IOFFD)
-         IF ( CNAMES(I+IOFFC) .NE. CHULP ) THEN
-            IF ( IORDER .EQ. 2 ) THEN
-               WRITE (LUNUT,1030) I4,CHULP
-            ELSE
-               WRITE (LUNUT,1040) I4,CHULP
-            ENDIF
-         ENDIF
-      ENDIF
-      IF ( I2 .GT. 0 .AND. I2 .LT.  100000 ) THEN
-         I4 = I2
-         CHULP = CNAMES( I2+IOFFD)
-         IF ( CNAMES(I+IOFFC) .NE. CHULP ) THEN
-            IF ( IORDER .EQ. 2 ) THEN
-               WRITE (LUNUT,1030)  I2,CHULP
-            ELSE
-               WRITE (LUNUT,1040)  I2,CHULP
-            ENDIF
-         ENDIF
-      ENDIF
-      I2 = I4
+!     determine the shift in locations
+      ishft = 1
+      do i4 = i1+1,nitm
+         i3 = iar(i4+ioffc)
+         if ( i3 > -1000000 ) exit
+         ishft = ishft + 1
+      end do
 !
-!       Determine the shift in locations
+!     shift the third array heap
+      do i4 = i1, nitm
+         iar   (i4+ioffi) = iar(i4+ioffi+ishft)
+      end do
 !
-      ISHFT = 1
-      DO 30 I4 = I1+1,NITM
-         I3 = IAR(I4+IOFFC)
-         IF ( I3 .GT. -1000000 ) GOTO 40
-         ISHFT = ISHFT + 1
-   30 CONTINUE
+!     shift the second array heap
+      do i4 = i1, nitm*2+iods
+         iar   (i4+ioffc) = iar   (i4+ioffc+ishft)
+         cnames(i4+ioffc) = cnames(i4+ioffc+ishft)
+      end do
+      nitm  = nitm  - ishft
+      ioffi = ioffi - ishft
+      ioffc = ioffc - 1
+      ioffi = ioffi - 1
+      icnt  = icnt  + ishft
 !
-!      Shift the third array heap
+!     shift the base array heap
+      do i5 = i2+ioffd , ntt+ioffd+nitm*2+iods
+         iar   (i5) = iar   (i5+1)
+         cnames(i5) = cnames(i5+1)
+      end do
 !
-   40 DO 50 I4 = I1, NITM
-         IAR   (I4+IOFFI) = IAR(I4+IOFFI+ISHFT)
-   50 CONTINUE
+!      renumber the second array heap
+      do i4 = i1 , nitm
+         if ( iar(i4+ioffc) > i2 ) then
+             iar(i4+ioffc) = iar(i4+ioffc) -1
+         end if
+      end do
 !
-!      Shift the second array heap
-!
-      DO 60 I4 = I1, NITM*2+IODS
-         IAR   (I4+IOFFC) = IAR   (I4+IOFFC+ISHFT)
-         CNAMES(I4+IOFFC) = CNAMES(I4+IOFFC+ISHFT)
-   60 CONTINUE
-      NITM  = NITM  - ISHFT
-      IOFFI = IOFFI - ISHFT
-      IOFFC = IOFFC - 1
-      IOFFI = IOFFI - 1
-      ICNT  = ICNT  + ISHFT
-!
-!      Shift the base array heap
-!
-      DO 70 I5 = I2+IOFFD , NTT+IOFFD+NITM*2+IODS
-         IAR   (I5) = IAR   (I5+1)
-         CNAMES(I5) = CNAMES(I5+1)
-   70 CONTINUE
-!
-!      Renumber the second array heap
-!
-      DO 80 I4 = I1 , NITM
-         IF ( IAR(I4+IOFFC) .GT. I2 ) IAR(I4+IOFFC) = IAR(I4+IOFFC) -1
-   80 CONTINUE
-!
-!      Update totals
-!
-      IF ( IORDER .EQ. 1 .OR.  IODS .GT. 0 ) THEN
-         IDMNR = IDMNR-1
-         NODIM = NODIM-ISHFT
-      ENDIF
-      IF ( IORDER .EQ. 2 .AND. IODS .EQ. 0 ) THEN
-         ITMNR = ITMNR-1
-         NOITM = NOITM-ISHFT
-      ENDIF
+!      update totals
+      if ( iorder == 1 .or.  iods > 0 ) then
+         idmnr = idmnr-1
+         nodim = nodim-ishft
+      else if ( iorder == 2 .and. iods == 0 ) then
+         itmnr = itmnr-1
+         noitm = noitm-ishft
+      endif
 !
       if (timon) call timstop( ithndl )
-      RETURN
+      return
 !
- 1010 FORMAT ( ' WARNING: Input item : ',I3,' not resolved: ',A)
- 1020 FORMAT ( ' WARNING: also not resolved: ',A)
- 1030 FORMAT ( ' WARNING: Item number: ',I3,' also not resolved: ',A)
- 1040 FORMAT ( ' WARNING: Substance  : ',I3,' also not resolved: ',A)
+ 1010 format ( ' ', A, ': Input item : ',I3,' not resolved: ',A)
+ 1030 format ( ' ', A, ': Item number: ',I3,' also not resolved: ',A)
+ 1040 format ( ' ', A, ': Substance  : ',I3,' also not resolved: ',A)
 !
-      END
+      end subroutine compact_usefor_list
 
       end module m_dlwq5h

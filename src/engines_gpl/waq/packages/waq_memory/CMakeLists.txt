@@ -1,18 +1,6 @@
-# Set path for include files
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waq_memory_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-include_directories(${waq_memory_include_path})
-
-# Set directory which contains all source files
-set(src_path src)
-
-# Gather source files
-get_fortran_source_files(${src_path} source_files)
-
 # Define library
 set(library_name waq_memory)
-add_library(${library_name} ${source_files})
-
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Set dependencies
 set(oss_dependencies deltares_common
@@ -28,10 +16,4 @@ target_compile_options(${library_name} PRIVATE "${openmp_flag}")
 target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 
-
-# Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files}
-                                                    ${preproccessor_files}
-                                                    ${openmq_files}
-                                                    ${proces_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/waq)

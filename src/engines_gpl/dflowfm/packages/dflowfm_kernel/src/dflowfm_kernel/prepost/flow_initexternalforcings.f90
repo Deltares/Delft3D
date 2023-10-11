@@ -657,9 +657,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       end if
    endif
 
-   if (allocated   (kbnduxy) ) deallocate(  xbnduxy,ybnduxy,xy2bnduxy,zbnduxy,kbnduxy)
+   if (allocated   (kbnduxy) )     deallocate(xbnduxy,ybnduxy,xy2bnduxy,zbnduxy,kbnduxy)
    if (allocated   (sigmabnduxy) ) deallocate(sigmabnduxy)
-   if (allocated   (zminmaxuxy) ) deallocate(zminmaxuxy)
+   if (allocated   (zminmaxuxy) )  deallocate(zminmaxuxy)
    if (nbnduxy > 0) then                                 ! Tangential velocity boundaries as u bnds
       numnos = 0
       allocate ( xbnduxy(nbnduxy), ybnduxy(nbnduxy), xy2bnduxy(2,nbnduxy), zbnduxy(2*kmxd*nbnduxy), kbnduxy(4,nbnduxy), kduxy(nbnduxy) , stat=ierr     )
@@ -670,25 +670,27 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       allocate ( zminmaxuxy(2*nbnduxy) , stat=ierr )
       call aerr('zminmaxuxy(2*nbnduxy)', ierr, 2*nbnduxy )
 
-      kbnduxy= 0 ; kduxy= 1
-      do k = 1, nbnduxy
-         L          = keuxy(k)
-         Lf         = lne2ln(L)
+      zbnduxy(:) = 0
+      kbnduxy    = 0
+      kduxy      = 1
+      do k  = 1, nbnduxy
+         L  = keuxy(k)
+         Lf = lne2ln(L)
          if (Lf <= 0 .or. Lf > lnx) then
             numnos = numnos + 1
             cycle
          end if
-         kb         = ln(1,Lf)
-         kbi        = ln(2,Lf)
-         if (kcs(kb)   < 0 ) then                      ! if already opened by flow bnd's
-            xbnduxy(k)   = xe(L) ! xz(kb)
-            ybnduxy(k)   = ye(L) ! yz(kb)
+         kb  = ln(1,Lf)
+         kbi = ln(2,Lf)
+         if (kcs(kb) < 0 ) then                      ! if already opened by flow bnd's
+            xbnduxy(k)     = xe(L)
+            ybnduxy(k)     = ye(L)
             xy2bnduxy(:,k) = xyen(:,L)
-            kbnduxy(1,k) = kb
-            kbnduxy(2,k) = kbi
-            kbnduxy(3,k) = Lf
-         endif
-      enddo
+            kbnduxy(1,k)   = kb
+            kbnduxy(2,k)   = kbi
+            kbnduxy(3,k)   = Lf
+         end if
+      end do
       if (numnos > 0) then
          rec = ' '
          write (rec, '(a,i6,a)') '(', numnos, ' points)'
@@ -1938,7 +1940,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif    
            else if (trim(qid) == "freesurfacedissipation") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
+               ! wave forces based on dissipation at free surface and water column
+               if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1946,7 +1949,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "whitecappingdissipation") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
+               ! wave forces based on dissipation at free surface and water column
+               if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1954,7 +1958,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "xwaveforce") then
-               if (jawave == 7 .and. waveforcing == 1) then
+               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1962,7 +1966,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "ywaveforce") then
-               if (jawave == 7 .and. waveforcing == 1) then
+               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')

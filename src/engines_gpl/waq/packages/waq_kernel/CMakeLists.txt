@@ -3,16 +3,9 @@
 set(waq_kernel_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 include_directories(${waq_kernel_include_path})
 
-# Set directory which contains all source files
-set(src_path src)
-
-# Gather source files
-get_fortran_source_files_recusive(${src_path}, kernel_files)
-
 # Define library
 set(library_name waq_kernel)
-add_library(${library_name} ${kernel_files})
-
+create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Set dependencies
 set(oss_dependencies deltares_common
@@ -39,15 +32,4 @@ target_compile_options(${library_name} PRIVATE "${openmp_flag}")
 target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 
-
-# Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${kernel_files}
-                                                    ${integration_files}
-                                                    ${calculation_files}
-                                                    ${reactions_files}
-                                                    ${read_wrk_files}
-                                                    ${result_files}
-                                                    ${preproccessor_files}
-                                                    ${openmq_files}
-                                                    ${proces_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/waq)

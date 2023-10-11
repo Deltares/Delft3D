@@ -376,5 +376,4 @@
  endif
 
  jaupdbndbl = 0    ! after first run of setbobs set to 0 = no update
-
  end subroutine setbobs

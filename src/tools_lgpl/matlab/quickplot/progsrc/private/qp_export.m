@@ -85,6 +85,11 @@ switch expType
     case {'netcdf4 file'}
         ext={'*.nc' 'Generic netCDF file (*.nc)'
             '*_net.nc' 'D-Flow FM grid file (*_net.nc)'};
+    case 'gmsh file'
+        ext={'*.msh' 'Gmsh 4.1 ascii file (*.msh)'
+            '*.msh' 'Gmsh 4.1 binary file (*.msh)'
+            '*.msh' 'Gmsh 2.2 ascii file (*.msh)'
+            '*.msh' 'Gmsh 2.2 binary file (*.msh)'};
     case {'quickin file','morsys field file','delft3d-mor field file','box file','simona box file'}
         % assumptions: 2D, one timestep
         % morsys field file: NVal=1
@@ -558,6 +563,18 @@ for f=1:ntim
             end
         case {'netcdf3 file','netcdf4 file'}
             export_netcdf(expType,data,cmdargs{:})
+        case {'gmsh file'}
+            switch cmdargs{2}
+                case 'Gmsh 4.1 ascii file (*.msh)'
+                    options = {'version',4.1};
+                case 'Gmsh 4.1 binary file (*.msh)'
+                    options = {'version',4.1,'binary','l'};
+                case 'Gmsh 2.2 ascii file (*.msh)'
+                    options = {'version',2.2};
+                case 'Gmsh 2.2 binary file (*.msh)'
+                    options = {'version',2.2,'binary','l'};
+            end
+            gmsh('write',cmdargs{1},data,options{:})
         case {'quickin file','morsys field file','delft3d-mor field file','box file','simona box file'}
             for fld=1:length(flds)
                 Temp=getfield(data,flds{fld});

@@ -180,6 +180,8 @@ class Dimr {
 
         dimr_coupler *   getCoupler       (const char *);
 
+        bool           IsCouplerItemTypePTR(int couplerItem);
+
         void           char_to_ints       (char *, int **, int *);
 
         map<string, int> ncfiles;

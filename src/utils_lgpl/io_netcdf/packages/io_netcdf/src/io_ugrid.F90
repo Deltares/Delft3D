@@ -344,6 +344,8 @@ function ug_strerror(ugerr) result(str)
    case (UG_VAR_TOOMANYFOUND);      str = 'Too many matching variables found in dataset'
    case (UG_INVALID_LAYERS);        str = 'Invalid layer type'
    case (UG_INVALID_CRS);           str = 'Invalid coordinate reference system'
+   case (UG_INVALID_NETNAME);       str = 'Invalid network name'
+   case (UG_INVALID_CONTACTNAME);   str = 'Invalid contact name'
    case (UG_NOTIMPLEMENTED);        str = 'Functionality not available yet (not implemented)'
    case default
       str = 'Unknown error'

@@ -721,7 +721,7 @@ subroutine readMDUFile(filename, istat)
     use m_reduce,                only : maxdge
     use m_structures
     use m_grw
-    use m_sobekdfm,              only : sbkdfm_umin,sbkdfm_umin_method,minimal_1d2d_embankment, sbkdfm_relax
+    use m_1d2d_fixedweirs,   only : lat_fix_weir_umin,lat_fix_weir_umin_method,lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
     use string_module
     use m_heatfluxes
     use m_fm_wq_processes
@@ -1111,6 +1111,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'jposhchk'       , jposhchk)
     call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme'  , ifixedweirscheme, success)
     ifixedweirscheme_input = ifixedweirscheme
+    call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme1d2d'  , ifixedweirscheme1D2D, success)
+    call prop_get_double(md_ptr, 'numerics', 'FixedWeir1d2d_dx'     , lat_fix_weir_dx )
     call prop_get_double( md_ptr, 'numerics', 'FixedWeirContraction' , Fixedweircontraction, success)
 
     call prop_get_integer(md_ptr, 'numerics', 'Fixedweirfrictscheme'  , ifxedweirfrictscheme)
@@ -1193,10 +1195,10 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double(md_ptr, 'numerics', 'Epsz0' , epsz0)
     epshs = .2d0*epshu ! minimum waterdepth for setting cfu
 
-    call prop_get_double(md_ptr, 'numerics', 'SobekDFM_umin', sbkdfm_umin)
-    call prop_get_integer(md_ptr, 'numerics', 'SobekDFM_umin_method', sbkdfm_umin_method)
-    call prop_get_double (md_ptr, 'numerics', 'SobekDFM_Minimal_1d2d_Embankment', minimal_1d2d_embankment)
-    call prop_get_double (md_ptr, 'numerics', 'sobekDFM_relax', sbkdfm_relax)
+    call prop_get_double(md_ptr, 'numerics', 'Lateral_fixedweir_umin', lat_fix_weir_umin)
+    call prop_get_integer(md_ptr, 'numerics', 'Lateral_fixedweir_umin_method', lat_fix_weir_umin_method)
+    call prop_get_double (md_ptr, 'numerics', 'Lateral_fixedweir_Minimal_1d2d_Embankment', lat_fix_weir_minimal_1d2d_embankment)
+    call prop_get_double (md_ptr, 'numerics', 'Lateral_fixedweir_relax', lat_fix_weir_relax)
 
     call prop_get_integer(md_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc)
 
@@ -2674,7 +2676,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use m_trachy
     use m_transport, only: ITRA1
     use m_structures, only: jahiscgen, jahiscdam, jahispump, jahisgate, jahisweir, jahisorif, jahisbridge, jahisculv, jahisdambreak, jahisuniweir, jahiscmpstru, jahislongculv
-    use m_sobekdfm,              only : sbkdfm_umin, sbkdfm_umin_method, minimal_1d2d_embankment, sbkdfm_relax
+    use m_1d2d_fixedweirs,              only : lat_fix_weir_umin, lat_fix_weir_umin_method, lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
     use m_subsidence, only: sdu_update_s1
     use m_xbeach_data, only: swave
     use unstruc_channel_flow
@@ -2974,6 +2976,8 @@ endif
          call prop_set(prop_ptr, 'geometry', 'Zlayeratubybob', JaZlayeratubybob, 'Lowest connected cells governed by bob instead of by bL L/R' )
        endif
     endif
+    
+    call prop_set(prop_ptr, 'geometry', 'Dpuopt', jadpuopt, 'Bed level interpolation at velocity point in case of tile approach bed level: 1 = max (default); 2 = mean' )    
 
     ! 1D Volume tables
     if (writeall .or. useVolumeTables) then
@@ -3093,6 +3097,8 @@ endif
 
     if (writeall .or. (len_trim(md_fixedweirfile) > 0)) then
        call prop_set(prop_ptr, 'numerics', 'FixedWeirScheme', ifixedweirscheme_input,      'Fixed weir scheme (0: none, 1: compact stencil, 2: whole tile lifted, full subgrid weir + factor)')
+       call prop_set(prop_ptr, 'numerics', 'FixedWeirScheme1d2d'  , iFixedWeirScheme1d2d,  'Fixed weir scheme for 1d2d links (0: same as fixedweirscheme, 1: lateral iterative fixed weir scheme)')
+       call prop_set(prop_ptr, 'numerics', 'FixedWeir1d2d_dx'     , lat_fix_weir_dx,       'Extra delta x for lateral 1d2d fixed weirs'   )
        call prop_set(prop_ptr, 'numerics', 'FixedWeirContraction', Fixedweircontraction,   'Fixed weir flow width contraction factor')
        call prop_set(prop_ptr, 'numerics', 'Fixedweirfrictscheme' , ifxedweirfrictscheme,  'Fixed weir friction scheme (0: friction based on hu, 1: friction based on subgrid weir friction scheme)')
        call prop_set(prop_ptr, 'numerics', 'Fixedweirtopwidth' , fixedweirtopwidth,        'Uniform width of the groyne part of fixed weirs')
@@ -3287,16 +3293,16 @@ endif
 
     call prop_set(prop_ptr, 'numerics', 'Epshu' , epshu, 'Threshold water depth for wet and dry cells')
 
-    if (writeall .or. (sbkdfm_umin > 0d0)) then
-        call prop_set(prop_ptr, 'numerics', 'SobekDFM_umin', sbkdfm_umin, 'Minimal velocity treshold for weir losses in Sobek-DFM coupling.')
-        call prop_set(prop_ptr, 'numerics', 'SobekDFM_umin_method', sbkdfm_umin_method, 'Method for minimal velocity treshold for weir losses in Sobek-DFM coupling.')
+    if (writeall .or. (lat_fix_weir_umin > 0d0)) then
+        call prop_set(prop_ptr, 'numerics', 'Lateral_fixedweir_umin', lat_fix_weir_umin, 'Minimal velocity treshold for weir losses in iterative lateral 1d2d weir coupling.')
+        call prop_set(prop_ptr, 'numerics', 'Lateral_fixedweir_umin_method', lat_fix_weir_umin_method, 'Method for minimal velocity treshold for weir losses in iterative lateral 1d2d weir coupling.')
     end if
-    if (writeall .or. (minimal_1d2d_embankment > 0.01d0)) then
-       call prop_set(prop_ptr, 'numerics', 'SobekDFM_Minimal_1d2d_Embankment', minimal_1d2d_embankment, 'Minimal crest height of 1D2D SOBEK-DFM embankments.')
+    if (writeall .or. (lat_fix_weir_minimal_1d2d_embankment > 0.0d0)) then
+       call prop_set(prop_ptr, 'numerics', 'Lateral_fixedweir_Minimal_1d2d_Embankment', lat_fix_weir_minimal_1d2d_embankment, 'Minimal crest height of 1D2D SOBEK-DFM embankments.')
     end if
 
-    if (writeall .or. (sbkdfm_relax /= 0.1d0)) then
-       call prop_set(prop_ptr, 'numerics', 'sobekDFM_relax', sbkdfm_relax, 'Relaxation factor for SOBEK-DFM coupling algorithm.')
+    if (writeall .or. (lat_fix_weir_relax /= 0.1d0)) then
+       call prop_set(prop_ptr, 'numerics', 'Lateral_fixedweir_relax', lat_fix_weir_relax, 'Relaxation factor for iterative lateral 1d2d weir coupling algorithm.')
     endif
 
 
@@ -4396,22 +4402,43 @@ end if
 
 end subroutine getOutputTimeArrays
 
-!> check if time interval is multiple of DtUser
-subroutine check_time_interval(time_interval,user_time_step,time_interval_name)
+!> Check time interval:
+!! If time interval is smaller than DtUser, time interval will be set equal to DtUser.
+!! If time interval is not multiple of DtUser, error will be raised.
+subroutine check_time_interval(time_interval, user_time_step, time_interval_name)
 
     real(kind=hp),    intent(inout) :: time_interval(3)     !< Array of time interval to be checked. It contains 3 elements: interval, start_time, stop_time
     double precision, intent(in   ) :: user_time_step       !< User specified time step (s) for external forcing update
     character(*),     intent(in   ) :: time_interval_name   !< Name of the time interval parameter to check, to be used in the log message.
 
     if (time_interval(1) > 0d0) then
-        time_interval(1) = max(time_interval(1) , user_time_step)
-        if ((modulo(time_interval(1),user_time_step) /= 0d0) .or. (modulo(time_interval(2),user_time_step) /= 0d0) .or. (modulo(time_interval(3),user_time_step) /= 0d0)) then
+        time_interval(1) = max(time_interval(1), user_time_step)
+        if (is_not_multiple(time_interval(1), user_time_step) .or. is_not_multiple(time_interval(2), user_time_step) .or. is_not_multiple(time_interval(3), user_time_step)) then
             write(msgbuf, *) time_interval_name,' = ', time_interval,' should be multiple of DtUser = ', user_time_step, ' s'
             call mess(LEVEL_ERROR, msgbuf)
         end if
     end if
 
 end subroutine check_time_interval
+
+!> Check if time interval is not multiple of DtUser
+logical function is_not_multiple(time_interval, user_time_step)
+    use precision_basics, only: comparereal
+    implicit none
+
+    real(kind=hp),    intent(in) :: time_interval        !< Time interval to be checked. 
+    double precision, intent(in) :: user_time_step       !< User specified time step (s) for external forcing update
+
+    double precision :: nearest_user_time_step
+    
+    nearest_user_time_step = nint(time_interval/user_time_step)*user_time_step
+    if (comparereal(nearest_user_time_step, time_interval) /= 0) then
+        is_not_multiple = .true.
+    else
+        is_not_multiple = .false.
+    end if
+
+end function is_not_multiple
 
    end module unstruc_model
 

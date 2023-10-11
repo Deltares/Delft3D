@@ -25,6 +25,10 @@ if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
 endif()
 
+if(NOT TARGET gridgeom_dll)
+    add_subdirectory(${checkout_src_root}/${gridgeom_dll_module} gridgeom_dll)
+endif()
+
 # Third party libraries
 # kdtree2
 if(NOT TARGET kdtree2)

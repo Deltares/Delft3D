@@ -12,13 +12,9 @@ set(public_include_path ${deltares_common_include_path})
 # Set the directory of where the source code is located
 set(src_path src) 
 
-# Set the source files
-file(GLOB rd_token_source   ${src_path}/rd_token/*.f90
-                            ${src_path}/rd_token/*.f)
+get_fortran_source_files(${src_path}/rd_token rd_token_source)
 
-file(GLOB source    ${src_path}/*.f90
-                    ${src_path}/*.f
-                    ${src_path}/*.F90)
+get_fortran_source_files(${src_path} source)
 
 set(library_name deltares_common)
 add_library(${library_name} ${source} 

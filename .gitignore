@@ -5,6 +5,7 @@ install_*/**
 
 # editor files
 .vscode/**
+.idea/*
 
 # files extensions to exclude
 *.i90
