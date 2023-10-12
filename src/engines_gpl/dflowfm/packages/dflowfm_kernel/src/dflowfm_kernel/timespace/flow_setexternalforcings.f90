@@ -682,8 +682,6 @@ end subroutine fill_open_boundary_cells_with_inner_values_fewer
 !! convert wave direction from nautical to cartesian convention
 subroutine nautical_to_cartesian(wave_direction)
     
-    implicit none
-    
     double precision, intent(inout) :: wave_direction(:)
     double precision, parameter     :: DEGREES   = 360d0
     double precision, parameter     :: DUE_NORTH = 270d0
