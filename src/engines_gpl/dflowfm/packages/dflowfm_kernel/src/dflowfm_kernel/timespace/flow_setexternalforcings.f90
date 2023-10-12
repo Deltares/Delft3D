@@ -484,7 +484,6 @@ subroutine set_wave_parameters()
    
    ! local variables
    logical :: all_wave_variables !< true: jawave==3 or jawave==7 + waveforcing==1,2; false: jawave==7 + waveforcing==3
-   integer :: iloop
 
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
       !
