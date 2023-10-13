@@ -56,12 +56,12 @@ if (UNIX)
                             ec_module
                             gridgeom
                             io_netcdf
-                            nefis)
+                            nefis
+                            netcdf4
+                            netcdff)
 
     oss_include_libraries(${library_name} oss_dependencies)
-    target_link_libraries(${library_name} ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+    target_link_libraries(${library_name} ${oss_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_include_path}

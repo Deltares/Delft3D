@@ -11,8 +11,11 @@ set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq
 set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/../../version/version_number.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-
-
+# Set dependencies
+set(oss_dependencies_general deltares_common
+                             waq_process
+                             waq_utils_c
+                             waq_utils_f)
 # Gather source files
 get_fortran_source_files(${src_path} source)
 

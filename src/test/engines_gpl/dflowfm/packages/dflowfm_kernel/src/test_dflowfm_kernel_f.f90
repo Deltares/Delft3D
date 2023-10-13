@@ -32,6 +32,7 @@ program test_dflowfm_kernel
     use test_storage_nodes
     use test_1d_grid
     use test_read_property
+    use test_airdensity
     
     implicit none
     
@@ -47,6 +48,7 @@ program test_dflowfm_kernel
     call tests_storageNodes
     !call tests_iniField_1dField
     call tests_read_property
+    call tests_compute_airdensity
     !
     ! Done - properly finalize
     !

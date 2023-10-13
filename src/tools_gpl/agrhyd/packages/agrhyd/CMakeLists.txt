@@ -27,44 +27,19 @@ add_executable(${executable_name} ${source_files}
 set_source_files_properties(${fortran_version_file_delwaq}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
-
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
 
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     io_netcdf
+                     io_hyd
+                     netcdf4
+                     netcdff
+                     waq_utils_f)
 
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_hyd
-                         waq_utils_f)
-
-    oss_include_libraries(${executable_name} oss_dependencies)
-
-    target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
-endif(UNIX)
-
-if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_hyd
-                         netcdf4
-                         netcdff
-                         waq_utils_f)
-
-    oss_include_libraries(${executable_name} oss_dependencies)
-    target_link_libraries(${executable_name} ${oss_dependencies})
-endif(WIN32)
+oss_include_libraries(${executable_name} oss_dependencies)
+target_link_libraries(${executable_name} ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")

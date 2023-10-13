@@ -1506,9 +1506,13 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'wind' , 'PavIni'                   , PavIni )
     call prop_get_double (md_ptr, 'wind' , 'PavBnd'                   , PavBnd )
     call prop_get_integer(md_ptr, 'wind' , 'Stresstowind'             , jastresstowind )
-
+    call prop_get_integer(md_ptr, 'wind' , 'varyingAirdensity'        , ja_varying_airdensity)
+   
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
+    if (jawave /= 7 .and. waveforcing /= 0) then
+        call mess(LEVEL_ERROR, 'Waveforcing = 1, 2 or 3 is only supported for Wavemodelnr = 7.')
+    end if
     call prop_get_double (md_ptr, 'waves', 'Tifetchcomp'              , Tifetch)
     call prop_get_string (md_ptr, 'waves', 'SurfbeatInput'            , md_surfbeatfile)
     if (jawave==4) then
@@ -3007,7 +3011,7 @@ endif
     call prop_set(prop_ptr, 'numerics', 'Newcorio',      newcorio,  '0=prior to 27-11-2019, 1=no normal forcing on open bnds, plus 12 variants )')
 
     if (writeall .or. jacorioconstant .ne. 0) then  
-        call prop_set(prop_ptr, 'numerics', 'Corioconstant', '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
+        call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
     endif
     if (writeall .or. Corioadamsbashfordfac .ne. 0.5d0) then
        call prop_set(prop_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac,    '0=No, 0.5d0=AdamsBashford, only for Newcorio=1)')
@@ -3578,9 +3582,11 @@ endif
     call prop_set(prop_ptr, 'wind', 'PavBnd',               PavBnd, 'Average air pressure on open boundaries (N/m2) (only applied if > 0)')
     call prop_set(prop_ptr, 'wind', 'Pavini',               PavIni, 'Average air pressure for initial water level correction (N/m2) (only applied if > 0)')
     if (writeall .or. jastresstowind == 1) then
-    call prop_set(prop_ptr, 'wind', 'Stresstowind', jastresstowind, 'Convert EC windstress to wind yes/no (),  1/0, default 0')
+       call prop_set(prop_ptr, 'wind', 'Stresstowind', jastresstowind, 'Convert EC windstress to wind yes/no (),  1/0, default 0')
     endif
-
+    if (writeall .or. ja_varying_airdensity == 1) then
+       call prop_set(prop_ptr, 'wind', 'varyingAirdensity', ja_varying_airdensity, 'Compute air density yes/no (),  1/0, default 0')
+    endif
    
     if (writeall .or. jagrw > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT) then
        call prop_set(prop_ptr, 'grw', 'groundwater'        , jagrw,             '0=No (horizontal) groundwater flow, 1=With groundwater flow')
@@ -3637,8 +3643,8 @@ endif
           call prop_set(prop_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming ,'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
           call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta     ,'Boundary layer formulation. 1: Sana                                                                                  ')
        endif
-       if(jawave == 7) then
-           call prop_set(prop_ptr, 'waves', 'Waveforcing'        , waveforcing     ,'Wave forcing. 1: based on gradients radiation stresse, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
+       if (jawave == 7) then
+           call prop_set(prop_ptr, 'waves', 'Waveforcing'        , waveforcing     ,'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
        endif
        
     endif
@@ -4419,13 +4425,16 @@ end subroutine check_time_interval
 
 !> Check if time interval is not multiple of DtUser
 logical function is_not_multiple(time_interval, user_time_step)
+    use precision_basics, only: comparereal
+    implicit none
 
     real(kind=hp),    intent(in) :: time_interval        !< Time interval to be checked. 
     double precision, intent(in) :: user_time_step       !< User specified time step (s) for external forcing update
 
-    double precision, parameter :: TIME_INTERVAL_TOLERANCE = 1d-7
+    double precision :: nearest_user_time_step
     
-    if (modulo(time_interval, user_time_step) > TIME_INTERVAL_TOLERANCE) then
+    nearest_user_time_step = nint(time_interval/user_time_step)*user_time_step
+    if (comparereal(nearest_user_time_step, time_interval) /= 0) then
         is_not_multiple = .true.
     else
         is_not_multiple = .false.

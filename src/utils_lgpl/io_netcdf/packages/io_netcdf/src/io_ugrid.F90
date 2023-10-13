@@ -5882,9 +5882,12 @@ function ug_get_network_id_from_mesh_id(ncid, meshids, ug_file, networkid) resul
    ierr = UG_NOERR
    networkid = -1
 
-   if(ierr == 0) then
+   if (ierr == 0 .and. len_trim(networkmeshname) > 0 ) then
       do i = 1 , size(ug_file%netids)
          ierr = ug_get_network_name(ncid, ug_file%netids(i), networkname)
+         if (ierr /= nf90_noerr) then
+             exit
+         end if
          if (trim(networkmeshname) == trim(networkname) ) then
             networkid = i
             exit
