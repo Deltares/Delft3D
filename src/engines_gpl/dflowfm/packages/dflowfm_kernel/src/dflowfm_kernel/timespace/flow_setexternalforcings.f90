@@ -684,13 +684,13 @@ end subroutine fill_open_boundary_cells_with_inner_values_fewer
 !! convert wave direction from nautical to cartesian meteorological convention
 elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
     
-    double precision, intent(in) :: nautical_wave_direction
-    double precision             :: cartesian_wave_direction
+    double precision, intent(in) :: nautical_wave_direction  !< wave direction [degrees] in nautical  convention
+    double precision             :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
     
-    double precision, parameter  :: NORMALIZATION_PARAMETER_IN_DEGREES = 360d0
-    double precision, parameter  :: CONVERSION_PARAMETER_IN_DEGREES    = 270d0
+    double precision, parameter  :: DEGREES_IN_A_CIRCLE             = 360d0
+    double precision, parameter  :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
     
-    cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, NORMALIZATION_PARAMETER_IN_DEGREES)
+    cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, DEGREES_IN_A_CIRCLE)
     
 end function convert_wave_direction_from_nautical_to_cartesian
 
