@@ -326,7 +326,12 @@ subroutine addbarocLorg(LL,Lb,Lt)
     if (L == Lt) then
        k1t = ktop(ln(1,LL)) ; k2t = ktop(ln(2,LL))
     endif
+
     rhovol(L-Lb+1) = 0.5d0*( zws(k1t) - zws(k1-1) + zws(k2t) - zws(k2-1) )*dx(LL)*0.5d0*(rho(k1) + rho(k2)) ! write in rvdn
+    if (jarhoxu > 0) then
+       rhou(L) = 0.5d0*(rho(k1) + rho(k2))
+    endif
+
     gr3            = 0.5d0*( rvdn(k1) + rvdn(k2) )*(zws(k1-1) - zws(k2-1))
     gradpu(L-Lb+1) = grn(k1) - grn(k2) + gr3
     if (L > Lb ) then
@@ -337,7 +342,6 @@ subroutine addbarocLorg(LL,Lb,Lt)
  call barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
 
  end subroutine addbarocLorg
-
 
  subroutine barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
  use m_flow
