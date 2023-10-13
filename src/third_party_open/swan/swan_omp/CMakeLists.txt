@@ -55,14 +55,14 @@ if(UNIX)
 
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
+    
     target_link_libraries(${executable_name}
          PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
-
+         netcdff)
+         
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
-                        ${version_include_dir})
+                        ${version_include_dir}
+                        ${CMAKE_BINARY_DIR}/netcdff)
 
     add_definitions(-DHAVE_CONFIG_H=1)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
@@ -88,9 +88,6 @@ endif(WIN32)
 if (UNIX)
     target_compile_definitions(${executable_name} PRIVATE "SWANEXE")
 endif(UNIX)
-
-
-
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_files})

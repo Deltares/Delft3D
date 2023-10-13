@@ -101,11 +101,9 @@ if(NOT TARGET md5)
 endif()
 
 # metis
-if(WIN32)
-    if(NOT TARGET metis)
-        add_subdirectory(${checkout_src_root}/${metis_module} metis)
-    endif()
-endif(WIN32)
+if(NOT TARGET metis)
+    add_subdirectory(${checkout_src_root}/${metis_module} metis)
+endif()
 
 if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
@@ -142,18 +140,14 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-if(WIN32)
-    if(NOT TARGET proj)
-        add_subdirectory(${checkout_src_root}/${proj_module} proj)
-    endif()
-endif(WIN32)
+if(NOT TARGET proj)
+    add_subdirectory(${checkout_src_root}/${proj_module} proj)
+endif()
 
 # netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif(WIN32)
+if(NOT TARGET netcdff)
+    add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
+endif()
 
 # io_netcdf
 if(NOT TARGET io_netcdf)

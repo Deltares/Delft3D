@@ -35,10 +35,6 @@ add_library(${library_name} SHARED  ${source}
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
     set(oss_dependencies    deltares_common
@@ -58,12 +54,15 @@ if (UNIX)
                             libsigwatch
                             md5digest
                             md5
+                            metis
                             metisoptions
                             morphology_data
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
                             nefis
+                            netcdf4
+                            netcdff
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -78,10 +77,7 @@ if (UNIX)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
-         PkgConfig::PETSC
-         "metis")
+         PkgConfig::PETSC)
 endif(UNIX)
 
 if (WIN32)

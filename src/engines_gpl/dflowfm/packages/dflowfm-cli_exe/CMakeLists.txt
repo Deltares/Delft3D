@@ -43,10 +43,6 @@ add_executable(${executable_name}   ${source}
 if(UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     pkg_check_modules(PETSC      REQUIRED IMPORTED_TARGET PETSc)
 
     set(oss_dependencies    deltares_common
@@ -66,12 +62,15 @@ if(UNIX)
                             libsigwatch
                             md5digest
                             md5
+                            metis
                             metisoptions
                             morphology_data
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
                             nefis
+                            netcdf4
+                            netcdff
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -84,10 +83,8 @@ if(UNIX)
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
          PkgConfig::PETSC
-         "metis")
+)
 endif(UNIX)
 
 if(WIN32)
@@ -210,6 +207,11 @@ if (WIN32)
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 endif(WIN32)
+
+target_link_directories(${executable_name} PRIVATE
+                        "${mpi_library_path}")
+                        
+target_link_libraries(${executable_name} "${mpi_fortran_library}")
 
 # Create the folder structure in Visual Studio
 source_group("Resources" FILES  ${icon_file}

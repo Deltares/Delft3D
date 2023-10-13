@@ -58,6 +58,7 @@ if (UNIX)
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0 -fPIC")
 
     set(cpp_compiler_flags                       "-std=c++11")
+    set(cxx_compiler_flags......................."-lstdc++")
     set(automatic_local_variable_storage_flag    -auto)
     set(extend_source132_flag                    -extend-source 132)
     set(real_size_64_flag                        -r8)

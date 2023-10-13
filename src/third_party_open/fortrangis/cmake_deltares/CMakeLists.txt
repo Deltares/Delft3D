@@ -55,10 +55,9 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
     pkg_check_modules(GDAL REQUIRED IMPORTED_TARGET gdal)
 
-    target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
+    target_link_libraries(${fortrangis_library_name} INTERFACE proj PkgConfig::GDAL)
 endif(UNIX)
 if (WIN32)
     target_link_libraries(${fortrangis_library_name} INTERFACE proj)

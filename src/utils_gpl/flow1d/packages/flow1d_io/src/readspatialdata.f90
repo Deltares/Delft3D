@@ -174,7 +174,7 @@ contains
                call prop_get_doubles(md_ptr%child_nodes(i)%node_ptr, '', 'values', rough, numLevs, success)
                if (success) then
                   call settable(tbls(ind)%p, 0, levels(1:numLevs,ibr), rough, numlevs)
-                  pspData%valuesOnLocation(ind) = rough(1)  ! fill with roughness from roughness table - to be updated later with waterlevel and discharge dependent rouhgness
+                  pspData%valuesOnLocation(ind) = rough(1)  ! fill with roughness from roughness table - to be updated later with waterlevel and discharge dependent roughness
                else
                   call SetMessage(LEVEL_ERROR, 'Inconsistent input found. On branch '//trim(branchid)//' key value and values is missing.')
                endif

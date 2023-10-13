@@ -22,20 +22,16 @@ if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
 
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies deltares_common 
                          io_netcdf 
-                         FLAP)
+                         FLAP
+                         netcdf4
+                         netcdff)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
     target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+                          ${oss_dependencies})
 endif(UNIX)
 
 if (WIN32)
@@ -51,7 +47,7 @@ endif(WIN32)
 
 if(UNIX)
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
     message(STATUS "Setting target_compile_definitions in Unix")    
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
@@ -71,7 +67,7 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-target_link_libraries(${executable_name} netcdf)
+#target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${mpi_include_path}

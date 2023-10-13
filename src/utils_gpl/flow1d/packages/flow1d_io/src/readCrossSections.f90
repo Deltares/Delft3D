@@ -309,7 +309,8 @@ module m_readCrossSections
       double precision              :: groundlayer
       double precision              :: height
       integer                       :: inext
-      logical                       :: plural                 !< indicates whether friction input is plural or not (e.g. frictionId or frictionIds)
+      logical                       :: multiple_friction_inputs !< frictionId or frictionIds
+      character(len=1)              :: plural_string
       type(t_CSType), pointer       :: pCS
       character(len=IdLen), allocatable :: fricTypes(:)
       integer                       :: maxnumsections ! Max number of friction sections, to realloc some arrays
@@ -349,7 +350,7 @@ module m_readCrossSections
             call realloc(network%CSDefinitions)
          endif
          
-         plural = .false.
+         multiple_friction_inputs = .false.
 
          pCS => network%CSDefinitions%CS(inext)
          pCS%id = id
@@ -360,7 +361,7 @@ module m_readCrossSections
          case(CS_TABULATED)
             
             if (strcmpi(typestr, 'zwRiver')) then
-               plural = .true.
+               multiple_friction_inputs = .true.
             endif
             success = readTabulatedCS(pCS, md_ptr%child_nodes(i)%node_ptr) 
             
@@ -431,7 +432,7 @@ module m_readCrossSections
             inext = AddCrossSectionDefinition(network%CSDefinitions, id, diameter, crossType, groundlayerUsed, groundlayer)
             
          case(CS_YZ_PROF)
-            plural = .true.
+            multiple_friction_inputs = .true.
             success = readYZCS(pCS, md_ptr%child_nodes(i)%node_ptr, network%sferic) 
             
          case default
@@ -447,21 +448,18 @@ module m_readCrossSections
          call realloc(fricTypes, maxnumsections, keepExisting = .false.)
          allocate(pCS%frictionValue      (pCs%frictionSectionsCount))
 
-         if (plural) then
-            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionIds', pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+         if (multiple_friction_inputs) then
+            plural_string = 's'
          else
-            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionId', pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+            plural_string = ''
          end if
-         call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', plural, 'frictionIds', 'frictionId', success, trim(id))
-              
+         call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionId'//trim(plural_string), pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+         call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionIds', 'frictionId', success, trim(id))
+
 
          if (.not. success) then
-            if (plural) then
-               call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionTypes', pCs%frictionSectionsCount, fricTypes, success)
-            else
-               call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionType' , pCs%frictionSectionsCount, fricTypes, success)
-            end if
-            call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', plural, 'frictionTypes', 'frictionType', success, trim(id))
+            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionType'//trim(plural_string), pCs%frictionSectionsCount, fricTypes, success)
+            call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionTypes', 'frictionType', success, trim(id))
 
             if (success) then
                do j = 1, pCs%frictionSectionsCount
@@ -474,13 +472,8 @@ module m_readCrossSections
                   endif
                end do
                
-               if (plural) then
-                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionValues', pCS%frictionValue, pCs%frictionSectionsCount, success)
-               else
-                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionValue' , pCS%frictionValue, pCs%frictionSectionsCount, success)
-               end if
-               call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', plural, 'frictionValues', 'frictionValue', success, trim(id))
-
+               call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionValue'//trim(plural_string), pCS%frictionValue, pCs%frictionSectionsCount, success)
+               call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionValues', 'frictionValue', success, trim(id))
             endif
                
             if (.not. success) then
@@ -527,7 +520,7 @@ module m_readCrossSections
       if (anySummerDike) then 
           if (summerDikeTransitionHeight == 0.5) then 
               msgstr = '(default)'
-          endif 
+          endif
           write(msgbuf,'(a,F6.3,a,a)') 'Levee transition height (summerdike) = ', summerDikeTransitionHeight, ' m ', msgstr 
           call msg_flush()
       endif 
