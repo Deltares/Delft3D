@@ -119,6 +119,9 @@ implicit none
     integer :: nredp
     integer :: nreds
 
+    integer :: jascaleprofs=1
+
+
     character(len=255) :: coltabfile  = ' '
     character(len=255) :: coltabfile2 = ' '
 
@@ -391,6 +394,8 @@ subroutine load_displaysettings(filename)
 
     call prop_get_integer (dis_ptr, '*', 'kplotbedsur', kplotfrombedorsurface, success)
     call prop_get_integer (dis_ptr, '*', 'kplotordepthaveraged', kplotordepthaveraged, success)
+    call prop_get_integer (dis_ptr, '*', 'scaleprofs', jascaleprofs, success)
+
     call prop_get_integer (dis_ptr, '*', 'kplot', kplot, success)
     call prop_get_integer (dis_ptr, '*', 'nplot', nplot, success) 
     
@@ -631,6 +636,7 @@ subroutine save_displaysettings(filename)
 
     call prop_set(dis_ptr, '*', 'kplotbedsur', kplotfrombedorsurface)
     call prop_set(dis_ptr, '*', 'kplotordepthaveraged', kplotordepthaveraged)
+    call prop_set(dis_ptr, '*', 'scaleprofs', jascaleprofs)
     call prop_set(dis_ptr, '*', 'kplot', kplot)
     call prop_set(dis_ptr, '*', 'nplot', nplot)
     

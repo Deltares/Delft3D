@@ -53,7 +53,7 @@
   double precision :: vmin, vmax, ugem, viceld
   integer          :: n, kb, kbn, kbn1, km, km1, k, kk, ku, kd, kku, kkd, Lb0, Lb, Lt, Lm1, L, LL, La
   double precision :: zmin, zmax
-  double precision :: h0, b0, z00, zinc, cz, cf, ustbref, ustwref, zint, z1, dz2, zz
+  double precision :: h0, b0, z00, zinc, cz, cf, ustbref, ustwref, zint, z1, dz2, zz, ff
   double precision :: tkebot, tkesur, tkewin
   double precision :: epsbot, epssur, epswin, dzkap, sqcf, ulx, sg, drhodz, rhomea, rhop0, prsappr
   double precision, external :: densfm, setrhofixedp 
@@ -264,16 +264,23 @@
   call TEKFN(1, 2, 1, ucm(1:km)  , hcref   , km, vmin, vmax, zmin, zmax, KLPROF, 'vel. mag.' , 0, 2 , 0d0,kplot)
 
   if (LL > 0) then
-  vmin = 0d0
-  vmax = 0.0d0
-  vmax = max(vmax, maxval(vicwwu(Lb0:Lt)), vmin+1d-5 )
-  if (jaref> 0 ) then
-  call TEKFN(2, 3, 0, vicwref      , hwref   , km1,vmin, vmax, zmin, zmax,  31, 'vicww'      , 0, 1 , 0d0,0)   ! mid-layers
-  endif
+   ff   = 1d0
+   if (jascaleprofs >= 1) then 
+      ff  = ustb(LL)*hu(LL)
+      if (ff > 0) then 
+          ff = 1d0/ff
+      else
+          ff = 1d0 
+      endif 
+   endif 
+   vmin = 0d0 
+   vmax = maxval(ff*vicwwu(Lb0:Lt))
+   vmax = max(vmax, vmin+1d-5 )
+   if (jaref> 0 ) then
+    call TEKFN(2, 3, 0, ff*vicwref      , hwref   , km1,vmin, vmax, zmin, zmax,  31, 'vicww'      , 0, 1 , 0d0,0)   ! mid-layers
+   endif
 
-  if (LL > 0 ) then
-  call TEKFN(2, 4, 1, vicwwu(Lb0:)  , hwref   , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'vicww'      , 0, 2 , 0d0,kplot+1)
-  endif
+   call TEKFN(2, 4, 1, ff*vicwwu(Lb0:Lt), hwref   , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'vicww'  , 0, 2 , 0d0,kplot+1)
   endif
 
  ! vmax = 0.1d0  ; vmin = 0d0
@@ -293,9 +300,18 @@
   if (iturbulencemodel >= 3 .and. LL > 0) then
 
      if (frcuni > 0  .and. ndraw(35) == 1 ) then
-        vmin = 0d0 ; vmax = 0d0 ; vmax = max(vmax, maxval(turkin1(Lb0:Lt)), vmin+1d-5 )
-        if (jaref > 0) call TEKFN(4, 7, 0, tkin1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'tkin1'      , 0, 1 , 0d0,0)   ! interfaces
-        call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref  , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1'      , 0, 2 , 0d0,kplot+1)
+        ff   = 1d0
+        if (jascaleprofs >= 1) then 
+           ff  = ustb(LL)*ustb(LL)
+           if (ff > 0) then 
+               ff = 1d0/ff
+           else
+               ff = 1d0 
+           endif 
+        endif 
+        vmin = 0d0 ; vmax = 0d0 ; vmax = max(vmax, maxval(ff*turkin1(Lb0:Lt)), vmin+1d-5 )
+        if (jaref > 0) call TEKFN(4, 7, 0, ff*tkin1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'tkin1'      , 0, 1 , 0d0,0)   ! interfaces
+        call TEKFN(4, 8, 1, ff*turkin1(Lb0:Lt), hwref  , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1'      , 0, 2 , 0d0,kplot+1)
      endif
 
      if (jasal > 0 .and. jatem > 0 .and. idensform < 0)  then
@@ -312,9 +328,18 @@
         endif
      else
         if (frcuni > 0 .and. ndraw(35) == 1 ) then
-           vmin = 0d0 ; vmax = 0.d0 ; vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin+1d-5 )
-           if (jaref > 0)call TEKFN(5, 9, 0, teps1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'teps1'      , 0, 1 , 0d0,0)   ! interfaces
-           call TEKFN(5,10, 1, tureps1(Lb0:Lt), hwref  , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1'      , 0, 2 , 0d0,kplot+1)
+           ff   = 1d0
+           if (jascaleprofs >= 1) then 
+              ff  = ustb(LL)*ustb(LL)*ustb(LL)
+              if (ff > 0) then 
+                  ff = 1d0/ff
+              else
+                  ff = 1d0 
+              endif 
+           endif 
+           vmin = 0d0 ; vmax = 0.d0 ; vmax = max(vmax, maxval(ff*tureps1(Lb0:Lt)), vmin+1d-5 )
+           if (jaref > 0)call TEKFN(5, 9, 0, ff*teps1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'teps1'      , 0, 1 , 0d0,0)   ! interfaces
+           call TEKFN(5,10, 1, ff*tureps1(Lb0:Lt), hwref  , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1'      , 0, 2 , 0d0,kplot+1)
         endif
      endif
 

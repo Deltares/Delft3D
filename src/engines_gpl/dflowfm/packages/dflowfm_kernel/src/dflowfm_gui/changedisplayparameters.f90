@@ -87,7 +87,7 @@
    double precision :: tsize
    integer :: JQN
 
-   integer, parameter :: NUMPAR = 33, NUMFLD = 2*NUMPAR
+   integer, parameter :: NUMPAR = 34, NUMFLD = 2*NUMPAR
    INTEGER  IX(NUMFLD),IY(NUMFLD),IS(NUMFLD),IT(NUMFLD)
    CHARACTER WRDKEY*40, OPTION(NUMPAR)*40, HELPM(NUMPAR)*60
    COMMON /HELPNOW/ WRDKEY,NLEVEL
@@ -138,6 +138,8 @@
    OPTION(31)= 'show waterbal. on screen (0:no, 1:yes)  ' ; IT(2*31) = 2
    OPTION(32)= 'kplotfrombedorsurface (1:bed, 2:surf)   ' ; IT(2*32) = 2
    OPTION(33)= 'kplotordepthaveraged  (1:kplot, 2:averg)' ; IT(2*33) = 2
+   OPTION(34)= 'Scale vicwwu and turkin profiles)'        ; IT(2*34) = 2
+
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -174,6 +176,7 @@
    HELPM (31) = '1=yes , 0=no                                                '
    HELPM (32) = '1=bed ,-1=surf                                              '
    HELPM (33) = '1=kplot , 2=depth averaged                                  '
+   HELPM (34) = '1=scale vicwwu with h*ustb en turkin with ustb**2           '
 
 
    NUMPARACTUAL = NUMPAR
@@ -280,6 +283,7 @@
    CALL IFORMPUTINTEGER(2*31, ndraw(40)) ! show waterbal
    CALL IFORMPUTINTEGER(2*32, kplotfrombedorsurface) ! kplotupordown
    CALL IFORMPUTINTEGER(2*33, kplotordepthaveraged)  !
+   CALL IFORMPUTINTEGER(2*34, jascaleprofs)  !
 
    !  Display the form with numeric fields left justified
    !  and set the initial field to number 2
@@ -350,6 +354,7 @@
            CALL IFORMGETINTEGER(2*31, ndraw(40) )
            CALL IFORMGETINTEGER(2*32, kplotfrombedorsurface )
            CALL IFORMGETINTEGER(2*33, kplotordepthaveraged  )
+           CALL IFORMGETINTEGER(2*34, jascaleprofs  )
 
            VFAC  = MAX( 0d0, VFAC)
            VFACFORCE  = MAX( 0d0, VFACFORCE)

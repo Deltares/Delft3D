@@ -325,7 +325,7 @@ subroutine update_verticalprofiles()
      endif
  
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
-     tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
+     tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+shi%p contribution
 
      if (ieps == 3) then                                   ! as Delft3D
          vicwwu(Lb0) = vonkar*ustb(LL)*z00
