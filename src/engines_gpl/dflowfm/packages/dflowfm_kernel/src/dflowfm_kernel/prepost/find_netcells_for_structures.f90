@@ -62,6 +62,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    character(len=:), allocatable :: str_buf
    integer,          allocatable :: istrulinks(:), ipol_tmp(:)
    double precision, allocatable :: xpl_tmp(:), ypl_tmp(:), DSL_tmp(:)
+   character (len=256), allocatable :: id_tmp(:)
    integer                       :: i, L, k, ii, nstr, loc_spec_type, nstrulinks, &
                                     npl_tmp, minp_tmp, maxpol_tmp, ierror, nstru_read1, nstru_read2
 
@@ -127,7 +128,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
       ! Fill in arrays of polyline points coordinates
       if (loc_spec_type == LOCTP_POLYLINE_FILE) then
         call oldfil(minp_tmp, plifile)
-        call read1polylin(minp_tmp,xpl_tmp,ypl_tmp,npl_tmp)
+        call read1polylin(minp_tmp,xpl_tmp,ypl_tmp,id_tmp,npl_tmp)
       end if
       nstru_read2 = nstru_read2 + 1
 

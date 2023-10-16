@@ -33,8 +33,8 @@ libMorphologyIO_la_SOURCES = \
          rdtrafrm.f90 \
          rdsed.f90 \
          rdmorlyr.f90 \
-         rdmor.f90 \
          rdstm.f90 \
+         rdmor.f90 \
          rddredge.f90
 
 #-------------------------------------------------------------------------------

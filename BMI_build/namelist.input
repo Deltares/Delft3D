@@ -1,0 +1,8 @@
+&test                                               ! BMI configuration specs
+  model_start_time   = 0                            ! Time start of simulation in seconds
+  model_end_time     = 7200.0                       ! Time end of simulation in seconds
+  num_time_steps     = 2                            ! Number of time steps to run BMI model for
+  time_step_size     = 3600.0                       ! timestep [seconds]
+  DFLOWFM_dir        = "./"                         ! DFLOWFM directory for configuration and forcing files
+  DFLOWFM_mdu        = "FlowFM.mdu"                 ! DFLOWFM master mdu file to initialize model setup
+/

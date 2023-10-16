@@ -49,6 +49,7 @@ module m_ec_elementSet
    public :: ecElementSetSetXArray
    public :: ecElementSetSetYArray
    public :: ecElementSetSetZArray
+   public :: ecElementSetSetPliName
    public :: ecElementSetSetvptyp
    public :: ecElementSetSetX0Dx
    public :: ecElementSetSetY0Dy
@@ -415,7 +416,31 @@ module m_ec_elementSet
          end if
       end function ecElementSetSetZArray
 
-      
+      !> Create and fill the array of Pli names if available and infer nCoordinates.
+      function ecElementSetSetPliName(instancePtr, elementSetId, PliName) result(success)
+         logical                               :: success      !< function status
+         type(tEcInstance), pointer            :: instancePtr  !< intent(in)
+         integer,                   intent(in) :: elementSetId !< unique ElementSet id
+         character(*),    intent(in) :: PliName       !< new pli names of the ElementSet
+         !
+         type(tEcElementSet),    pointer :: elementSetPtr !< ElementSet corresponding to elementSetId
+         integer                         :: newSize       !< size of yArray
+         integer                         :: istat         !< reallocation status
+         integer                         :: i             !< loop counter
+         !
+         success = .false.
+         elementSetPtr => null()
+         !
+         elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
+         if (associated(elementSetPtr)) then
+            elementSetPtr%PliName = trim(PliName)
+            success = .true.
+         else
+            call setECMessage("ERROR: ec_elementset::ecElementSetSetName: Cannot find an ElementSet with the supplied id.")
+         end if
+
+      end function ecElementSetSetPliName
+
       function ecElementSetSetKbotKtop(instancePtr, elementSetId, kbot, ktop, Lpointer_) result(success)
          logical                               :: success      !< function status
          type(tEcInstance), pointer            :: instancePtr  !< intent(in)

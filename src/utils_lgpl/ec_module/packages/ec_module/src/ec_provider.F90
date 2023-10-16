@@ -1635,6 +1635,10 @@ module m_ec_provider
          if (.not. ecElementSetSetYArray(instancePtr, elementSetId, ys)) return
          if (.not. ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, n_points)) return
 
+         if (polyline_name .ne. '') then
+            if (.not. ecElementSetSetPliName(instancePtr, elementSetId, trim(polyline_name))) return
+         endif
+
          fieldId = ecInstanceCreateField(instancePtr)
          itemId = ecInstanceCreateItem(instancePtr)
          if (.not. ecItemSetRole(instancePtr, itemId, itemType_target)) return
@@ -1739,6 +1743,7 @@ module m_ec_provider
          !
          real(hp), dimension(:), allocatable :: xs    !< x-coordinates of support points
          real(hp), dimension(:), allocatable :: ys    !< y-coordinates of support points
+         character (len=maxnamelen), dimension(:), allocatable :: pli_ids !< pli names corresponding to polyline coordinates
          integer,  dimension(:), allocatable :: mask  !< support point mask array (for polytime ElementSet)
          integer                             :: n_points !< number of support points
          integer                             :: n_signals !< Number of forcing signals created (at most n_signals==n_points, but warn if n_signals==0)
@@ -1796,7 +1801,7 @@ module m_ec_provider
             return
          end if
          ! Read the support point coordinate pairs.
-         allocate(xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), plipointlbls(n_points), stat=istat)
+         allocate(xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), plipointlbls(n_points), pli_ids(n_points), stat=istat)
          if (istat /= 0) then
             call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
          end if
@@ -1818,6 +1823,7 @@ module m_ec_provider
             
             if (lblstart>0) then
                plipointlbls(i)%s = rec(lblstart+6:)
+               pli_ids(i) = trim(rec(lblstart+6:))
             endif
          enddo
 
@@ -1829,6 +1835,11 @@ module m_ec_provider
          if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_cartesian)) return
          if (.not. ecElementSetSetXArray(instancePtr, elementSetId, xs)) return
          if (.not. ecElementSetSetYArray(instancePtr, elementSetId, ys)) return
+
+         if (polyline_name .ne. '') then
+            if (.not. ecElementSetSetPliName(instancePtr, elementSetId, polyline_name)) return
+         endif
+
          if (.not. ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, n_points)) return
 
          fieldId = ecInstanceCreateField(instancePtr)

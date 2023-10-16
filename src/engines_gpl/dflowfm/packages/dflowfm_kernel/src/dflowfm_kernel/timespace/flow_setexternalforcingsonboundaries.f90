@@ -66,7 +66,8 @@ subroutine flow_setexternalforcingsonboundaries(tim, iresult)
    call setzminmax()                                   ! our side of preparation for 3D ec module
    call setsigmabnds()                                 ! our side of preparation for 3D ec module
 
-   if (nzbnd > nqhbnd) then
+   !if (nzbnd > nqhbnd) then
+   if (item_waterlevelbnd /= ec_undef_int) then
       success = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, irefdate, tzone, tunit, tim)
       if (.not. success) then
          goto 888
@@ -200,21 +201,24 @@ subroutine flow_setexternalforcingsonboundaries(tim, iresult)
       end do
    end if
 
-   if (nbndt > 0) then
+   !if (nbndt > 0) then
+   if(item_tangentialvelocitybnd /= ec_undef_int) then
       success = ec_gettimespacevalue(ecInstancePtr, item_tangentialvelocitybnd, irefdate, tzone, tunit, tim)
       if (.not. success) then
          goto 888
       end if
    end if
 
-   if (nbnduxy > 0) then
+   !if (nbnduxy > 0) then
+   if(item_uxuyadvectionvelocitybnd /= ec_undef_int) then
       success = ec_gettimespacevalue(ecInstancePtr, item_uxuyadvectionvelocitybnd, irefdate, tzone, tunit, tim)
       if (.not. success) then
          goto 888
       end if
    end if
 
-   if (nbndn > 0) then
+   !if (nbndn > 0) then
+   if(item_normalvelocitybnd /= ec_undef_int) then
       success = ec_gettimespacevalue(ecInstancePtr, item_normalvelocitybnd, irefdate, tzone, tunit, tim)
       if (.not. success) then
          goto 888

@@ -147,6 +147,11 @@ subroutine findexternalboundarypoints()             ! find external boundary poi
 ! endif
 
  if ( allocated (xe) ) deallocate(xe, ye, xyen)     ! centre points of all net links, also needed for opening closed boundaries
+ if ( allocated (q_ids) ) deallocate(q_ids)     ! centre points of all net links, also needed for opening closed boundaries
+ if ( allocated (q_ids_left) ) deallocate(q_ids_left)
+ if ( allocated (q_ids_right) ) deallocate(q_ids_right)
+ if ( allocated (q_wR) ) deallocate(q_wR)
+ if ( allocated (q_wL) ) deallocate(q_wL)
 
  !mx1Dend = 0                                        ! count MAX nr of 1D endpoints
  !do L = 1,numl1D
@@ -172,6 +177,34 @@ subroutine findexternalboundarypoints()             ! find external boundary poi
  call aerr('ye (nx)',     ierr, nx)
  allocate ( xyen(2, nx) , stat=ierr ) ; xyen = 0d0
  call aerr('xyen(2, nx)', ierr, nx)
+
+ allocate ( q_ids(nx) ,     stat=ierr ) ; q_ids = ''      ! used in findexternalboundarypoints
+ call aerr('q_idsnx)',     ierr, nx)
+ allocate ( q_ids_left(nx) ,     stat=ierr ) ; q_ids_left = ''
+ call aerr('q_ids_left(nx)',     ierr, nx)
+ allocate ( q_ids_right(nx) ,     stat=ierr ) ; q_ids_right = ''
+ call aerr('q_ids_right(nx)',     ierr, nx)
+ allocate ( q_wL(nx) ,     stat=ierr ) ; q_wL = 0d0
+ call aerr('q_wL(nx)',     ierr, nx)
+ allocate ( q_wR(nx) ,     stat=ierr ) ; q_wR = 0d0
+ call aerr('q_wR(nx)',     ierr, nx)
+
+ allocate ( z_ids_left(nx) ,     stat=ierr ) ; z_ids_left = ''
+ call aerr('z_ids_left(nx)',     ierr, nx)
+ allocate ( z_ids_right(nx) ,     stat=ierr ) ; z_ids_right = ''
+ call aerr('z_ids_right(nx)',     ierr, nx)
+ allocate ( z_wL(nx) ,     stat=ierr ) ; z_wL = 0d0
+ call aerr('z_wL(nx)',     ierr, nx)
+ allocate ( z_wR(nx) ,     stat=ierr ) ; z_wR = 0d0
+ call aerr('z_wR(nx)',     ierr, nx)
+ allocate ( xz_left(nx) ,     stat=ierr ) ; xz_left = 0d0
+ call aerr('xz_left(nx)',     ierr, nx)
+ allocate ( xz_right(nx) ,     stat=ierr ) ; xz_right = 0d0
+ call aerr('xz_right(nx)',     ierr, nx)
+ allocate ( yz_left(nx) ,     stat=ierr ) ; yz_left = 0d0
+ call aerr('yz_left(nx)',     ierr, nx)
+ allocate ( yz_right(nx) ,     stat=ierr ) ; yz_right = 0d0
+ call aerr('yz_right(nx)',     ierr, nx)
 
                                                     ! some temp arrays
 
@@ -303,6 +336,7 @@ subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blo
  use string_module, only: strcmpi
  use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
  use m_missing, only: dmiss
+ use m_flowtimes, only : BMI_flag
 
  implicit none
 
@@ -398,13 +432,17 @@ subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blo
        group_ok = group_ok .and. property_ok
 
        call prop_get_string(node_ptr, '', 'forcingFile ', forcingfile , property_ok)
+
        if (property_ok)  then
           call resolvePath(forcingfile, basedir, forcingfile)
+          group_ok = group_ok .and. property_ok
        else
-          call qnerror( 'Expected property' , 'forcingFile', ' for boundary definition' )
+          if(BMI_flag) then
+              call mess(LEVEL_WARN, 'One of the boundary blocks in file '''//trim(filename)//'''(QUANTITY = '''//trim(quantity)//''') is missing a property ''forcingfile''. Make sure forcing data is connected and coming from NUOPC cap or BMI.')
+          else
+              call qnerror( 'Expected property' , 'forcingFile', ' for boundarydefinition' )
+          endif
        end if
-
-       group_ok = group_ok .and. property_ok
 
        call prop_get_double(node_ptr, '', 'returnTime', return_time )
        call prop_get_double(node_ptr, '', 'return_time', return_time ) ! UNST-2386: Backwards compatibility reading.
@@ -533,7 +571,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
   if (qidfm == 'waterlevelbnd'    .or. qidfm == 'neumannbnd'  .or. qidfm == 'riemannbnd' .or. qidfm == 'outflowbnd' .or. qidfm == 'qhbnd') then
 
      if (allocated(pliname)) deallocate(pliname)
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kez(nbndz+1:nx), numz, usemask=.true., pliname=pliname) !numz=number cells found, plname=pliname
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kez(nbndz+1:nx), numz, qidfm, usemask=.true., pliname=pliname) !numz=number cells found, plname=pliname
      write(msgbuf,'(a,x,a,i8,a)') trim (qid), trim( filename), numz, ' nr of open bndcells' ; call msg_flush()
      nzbnd = nzbnd + 1
 
@@ -590,7 +628,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
 
   else if (qidfm == 'velocitybnd' .or. qidfm == 'dischargebnd' .or. qidfm == 'qhubnd'.or. &
            qidfm == 'criticaloutflowbnd' .or. qidfm == 'weiroutflowbnd' .or. qidfm == 'absgenbnd') then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, keu(nbndu+1:nx), numu, usemask=.true., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, keu(nbndu+1:nx), numu, qidfm, usemask=.true., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim (qid), trim( filename), numu, ' nr of open bndcells' ; call msg_flush()
      nubnd = nubnd + 1
 
@@ -636,7 +674,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      nbndu = nbndu + numu
 
   else if (qidfm == 'salinitybnd' .and. jasal>0 ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kes(nbnds+1:nx), nums, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kes(nbnds+1:nx), nums, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells' ; call msg_flush()
      if (nums>0) then
         call appendrettime(qidfm, nbnds + 1, return_time)
@@ -644,7 +682,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      end if
 
   else if (qidfm == 'waveenergybnd' ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kew(nbndw+1:nx), numw, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kew(nbndw+1:nx), numw, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells' ; call msg_flush()
 
      nwbnd = nwbnd + 1
@@ -657,7 +695,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      fnamwbnd(nwbnd) = trim(filename)
      
   else if (qidfm == 'temperaturebnd' .and. jatem > 0 ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm+1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm+1:nx), numtm, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells' ; call msg_flush()
      if (numtm>0) then
         call appendrettime(qidfm, nbndtm + 1, return_time)
@@ -665,7 +703,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      end if
 
   else if (qidfm == 'sedimentbnd' ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kesd(nbndsd+1:nx), numsd, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kesd(nbndsd+1:nx), numsd, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells' ; call msg_flush()
      if (numsd>0) then
         call appendrettime(qidfm, nbndsd + 1, return_time)
@@ -681,7 +719,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
 !       realloc ketr
         call realloc(ketr, (/ Nx, numtracers /), keepExisting=.true., fill=0 )
      end if
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac)+1:,itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac)+1:,itrac), numtr, qidfm,  usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numtr, ' nr of tracer bndcells' ; call msg_flush()
      if (numtr>0) then
         call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
@@ -716,7 +754,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
 
      end if
 
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kesf(nbndsf(isf)+1:,isf), numsf, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kesf(nbndsf(isf)+1:,isf), numsf, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(3a,i8,a)') trim(qid), ' ', trim(filename) , numsf, ' nr of sedfrac bndcells' ; call msg_flush()
      if (numsf > 0) then
         call appendrettime(qidfm, nbndsf(isf) + 1, return_time)
@@ -725,25 +763,25 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      endif
 
   else if (qidfm == 'tangentialvelocitybnd' ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ket(nbndt+1:nx), numt, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ket(nbndt+1:nx), numt, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numt, ' nr of tangentialvelocity bndcells' ; call msg_flush()
 
      nbndt = nbndt + numt
 
   else if (qidfm == 'uxuyadvectionvelocitybnd' ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, keuxy(nbnduxy+1:nx), numuxy, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, keuxy(nbnduxy+1:nx), numuxy, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numuxy, ' nr of uxuyadvectionvelocity bndcells' ; call msg_flush()
 
      nbnduxy = nbnduxy + numuxy
 
   else if (qidfm == 'normalvelocitybnd' ) then
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ken(nbndn+1:nx), numn, usemask=.false., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ken(nbndn+1:nx), numn, qidfm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numn, ' nr of normalvelocity bndcells' ; call msg_flush()
 
      nbndn = nbndn + numn
 
   else if (qidfm == '1d2dbnd' ) then ! SOBEK1D-FM2D
-     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ke1d2d(nbnd1d2d+1:nx), num1d2d, usemask=.true., rrtolrel=rrtolrel)
+     call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ke1d2d(nbnd1d2d+1:nx), num1d2d, qidfm, usemask=.true., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , num1d2d, ' nr of SOBEK1D-FM2D bndcells' ; call msg_flush()
 
      call addopenbndsection(num1d2d, ke1d2d(nbnd1d2d+1:nbnd1d2d+num1d2d), filename, IBNDTP_1D2D)
@@ -768,6 +806,7 @@ function addtimespacerelation_boundaries(qid, filename, filetype, method, operan
    use m_meteo, no5=>qid, no6=>filetype, no7=>operand, no8 => success
    use m_flowparameters, only: jawave
    use m_flowtimes, only: dt_nodal
+   use network_data, only : q_ids
 
    implicit none
 
@@ -808,8 +847,13 @@ function addtimespacerelation_boundaries(qid, filename, filetype, method, operan
    else if (nbndu > 0 .and. (qid == 'dischargebnd' .or. qid == 'criticaloutflowbnd' .or. qid == 'weiroutflowbnd' .or. qid == 'absgenbnd' ) ) then
       if ( qid.eq.'absgenbnd' ) then
          jawave = 4
-      end if
-      success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingfile, targetindex=targetindex)
+      endif
+     
+      if(qid == 'dischargebnd') then
+          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingfile, targetindex=targetindex, pli_ids=q_ids)
+      else
+          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingfile, targetindex=targetindex)
+      endif
 
    else if (nbndu > 0 .and. qid == 'velocitybnd' ) then
       pzmin => zminmaxu(1:nbndu)
@@ -910,6 +954,7 @@ logical function initboundaryblocksforcings(filename)
  use m_missing
  use m_ec_parameters, only: provFile_uniform
  use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
+ use m_flowtimes, only : BMI_flag
 
  implicit none
 
@@ -1058,10 +1103,17 @@ logical function initboundaryblocksforcings(filename)
        if (retVal) then
           call resolvePath(forcingfile, basedir, forcingfile)
        else
-          initboundaryblocksforcings = .false.
-          write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
-          call warn_flush()
-          cycle
+          if(BMI_flag) then
+              write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
+              write(msgbuf, '(5a)') 'Assuming forcing data is coming from BMI or NUOPC cap since ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
+              call warn_flush()
+              forcingfile = ''
+          else
+              initboundaryblocksforcings = .false.
+              write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''locationfile'' is missing.'
+              call warn_flush()
+              cycle
+          endif
        end if
 
        oper = '-'
@@ -1274,19 +1326,27 @@ logical function initboundaryblocksforcings(filename)
        if (.not. success .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
           call prop_get(node_ptr, '', 'flow', rec, success)
        end if
-       if (len_trim(rec) > 0) then
-          call resolvePath(rec, basedir, rec)
-       else
-          write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''.'
-          call warn_flush()
-          cycle
-       end if
 
        qid = 'lateral_discharge' ! New quantity name in .bc files
-       success = adduniformtimerelation_objects(qid, '', 'lateral', trim(locid), 'discharge', trim(rec), numlatsg, kx, qplat)
-       if (success) then
-          jaqin = 1
-          lat_ids(numlatsg) = locid
+
+       if (len_trim(rec) > 0) then
+          call resolvePath(rec, basedir, rec)
+          success = adduniformtimerelation_objects(qid, '', 'lateral', trim(locid), 'discharge', trim(rec), numlatsg, kx, qplat)
+          if (success) then
+             jaqin = 1
+             lat_ids(numlatsg) = locid
+          end if
+       else
+          if(BMI_flag) then
+              write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''. Make sure the forcing data is connected and coming from NUOPC cap or BMI.'
+              call warn_flush()
+              jaqin = 1
+              lat_ids(numlatsg) = locid
+          else
+              write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''.'
+              call warn_flush()
+              cycle
+          endif
        end if
 
     case ('meteo')
@@ -1349,6 +1409,12 @@ logical function initboundaryblocksforcings(filename)
                 allocate ( rain(ndx) , stat=ierr)
                 call aerr('rain(ndx)', ierr, ndx)
                 rain = 0d0
+                allocate ( rain_t0(ndx) , stat=ierr)
+                call aerr('rain_t0(ndx)', ierr, ndx)
+                rain_t0 = 0d0
+                allocate ( rain_t1(ndx) , stat=ierr)
+                call aerr('rain_t1(ndx)', ierr, ndx)
+                rain_t1 = 0d0
              endif
              kx = 1
           case ('qext')

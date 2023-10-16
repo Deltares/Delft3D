@@ -187,7 +187,7 @@ function InstallDimr () {
 ## Defaults
 prepareonly=0
 mode=quiet
-config=
+config="dflowfm"
 generator="Unix Makefiles"
 compiler=intel21
 buildtype=Release
@@ -306,6 +306,9 @@ else
     echo "    config          : $config" "${buildtype}"
     echo "    prepareonly     : $prepareonly"
     echo
+    # Yes, modules do exist: "Dot" setenv.sh to load the modules needed
+    echo ". $root/src/setenv.sh $compiler"
+          . $root/src/setenv.sh $compiler
 fi
 
 # check required utilities

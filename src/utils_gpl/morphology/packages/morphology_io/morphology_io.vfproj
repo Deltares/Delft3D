@@ -57,7 +57,7 @@
 		<File RelativePath=".\src\rddredge.f90"/>
 		<File RelativePath=".\src\rdmor.f90"/>
 		<File RelativePath=".\src\rdmorlyr.f90"/>
+                <File RelativePath=".\src\rdstm.f90"/>
 		<File RelativePath=".\src\rdsed.f90"/>
-		<File RelativePath=".\src\rdstm.f90"/>
 		<File RelativePath=".\src\rdtrafrm.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

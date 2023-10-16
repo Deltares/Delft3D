@@ -69,6 +69,8 @@
  integer                           :: idtwindow_start !< Current start index in tvalswindow(:) array. This array is filled in a cyclic order, with never more than NUMDTWINDOWSIZE time values.
  double precision                  :: time0       !< current   julian (s) of s0
  double precision                  :: time1       !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
+ double precision                  :: time_BMI_update       ! BMI time to update boundaries and forcings interval
+ logical                           :: BMI_flag = .false. !< BMI flag for turning EC-Module data allocation on or off
  double precision                  :: tim1bnd     !< last time boundary signals were given
  double precision                  :: tim1fld     !< last time field    signals were given
  integer                           :: jatimestepanalysis = 0

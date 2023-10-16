@@ -245,6 +245,7 @@ contains
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
      use m_strucs, only: generalkeywrd_old, numgeneralkeywrd
      use MessageHandling, only : LEVEL_INFO, mess
+     use m_flowtimes, only : BMI_flag
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
      integer,           intent(out)           :: filetype         !< File type of current quantity.
@@ -277,16 +278,22 @@ contains
      else
         return
      end if
-   
-     keywrd = 'FILENAME'
-     call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
-        l1 = index(rec,'=') + 1
-        call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
-        read(rec(l2:),'(a)',err=990) filename
-     else
-        return
-     end if
+    
+    if(BMI_flag .and. qid .ne. 'frictioncoefficient') then
+         filename = 'BMI application'
+         ja = 1
+    else 
+         keywrd = 'FILENAME'
+         call zoekja(minp,rec,keywrd, ja)
+         if (ja .eq. 1) then
+            l1 = index(rec,'=') + 1
+            call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
+            read(rec(l2:),'(a)',err=990) filename
+         else
+            return
+         end if
+     endif
+
 
      keywrd = 'VARNAME'
      call zoekopt(minp, rec, keywrd, jaopt)
@@ -305,27 +312,37 @@ contains
            smask = '' 
         end if
      endif 
-   
-     keywrd = 'FILETYPE'
-     call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
-        l1 = index(rec,'=') + 1
-        call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
-        read(rec(l2:),*,    err=990) filetype
-     else
-        return
-     end if
+
+    if(BMI_flag .and. qid .ne. 'frictioncoefficient') then
+         filetype = 'BMI model engine'
+         ja = 1
+    else
+         keywrd = 'FILETYPE'
+         call zoekja(minp,rec,keywrd, ja)
+         if (ja .eq. 1) then
+            l1 = index(rec,'=') + 1
+            call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
+            read(rec(l2:),*,    err=990) filetype
+         else
+            return
+         endif
+    end if
     
-     keywrd = 'METHOD'
-     method = spaceandtime  ! default : spaceandtime
-     call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1)      then
-        l1 = index(rec,'=') + 1
-        call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
-        read(rec(l2:),*,    err=990) method
-     else
-        return
-     end if
+    if(BMI_flag .and. qid .ne. 'frictioncoefficient') then
+         method = 1
+         ja = 1
+    else
+         keywrd = 'METHOD'
+         method = spaceandtime  ! default : spaceandtime
+         call zoekja(minp,rec,keywrd, ja)
+         if (ja .eq. 1)      then
+            l1 = index(rec,'=') + 1
+            call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
+            read(rec(l2:),*,    err=990) method
+         else
+            return
+         endif
+    end if
 
      if (method == 11) then
         if (.not. alreadyPrinted) then
@@ -352,18 +369,27 @@ contains
         end if
      end if
 
-     keywrd  = 'OPERAND'
-     OPERAND = 'O'  ! hk : default =O
-     call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
-        l1 = index(rec,'=') + 1
-        call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
-        read(rec(l2:l2),'(a1)',    err=990) operand
-     else
-        return
-     end if
+    if(BMI_flag .and. qid .ne. 'frictioncoefficient') then
+         operand = 'O'
+         ja = 1
+    else
+         keywrd  = 'OPERAND'
+         OPERAND = 'O'  ! hk : default =O
+         call zoekja(minp,rec,keywrd, ja)
+         if (ja .eq. 1) then
+            l1 = index(rec,'=') + 1
+            call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
+            read(rec(l2:l2),'(a1)',    err=990) operand
+         else
+            return
+         endif
+    end if
 
-     call readTransformcoefficients(minp, transformcoef)
+    if(BMI_flag .and. qid .ne. 'frictioncoefficient') then
+        transformcoef = -999d0
+    else
+        call readTransformcoefficients(minp, transformcoef)
+    endif
 
     if (qid == 'generalstructure') then 
         do k = 1,numgeneralkeywrd        ! generalstructure 
@@ -480,11 +506,12 @@ contains
    !
    ! ==========================================================================
    !> 
-   subroutine read1polylin(minp,xs,ys,ns,pliname)
+   subroutine read1polylin(minp,xs,ys,id,ns,pliname)
       use m_alloc
       integer          :: minp                          ! unit number of poly file
       double precision, allocatable :: xs(:)            ! x-coordinates read from file    
       double precision, allocatable :: ys(:)            ! y-coordinates read from file
+      character (len=maxnamelen), allocatable :: id(:)  ! id for polyline read from file
       integer                       :: ns               ! number of pli-points
       character(len=:),allocatable,optional :: pliname  ! Optional, name (identifier) of pli
    
@@ -514,9 +541,15 @@ contains
         call realloc(ys, ns, keepExisting=.false.)
       end if
 
+      if (.not. allocated(id)) then
+        allocate(id(ns))
+      else if (ns > size(id)) then
+        call realloc(id, ns, keepExisting=.false.)
+      end if
+
       do k = 1,ns
          read(minp,'(a)',end = 999) rec
-         read(rec ,*    ,err = 777) xs(k), ys(k)
+         read(rec ,*    ,err = 777) xs(k), ys(k), id(k)
       enddo
    
       call doclose(minp)
@@ -530,7 +563,7 @@ contains
    888   call readerror('reading nrows but getting ', rec, minp)
        return
    
-   777   call readerror('reading x, y  but getting ', rec, minp)
+   777   call readerror('reading x, y, id  but getting ', rec, minp)
        return
    
    end subroutine read1polylin
@@ -5608,7 +5641,7 @@ contains
    !! All points have an allowable 'search range', defined by a line from x,y
    !! to xyen(1,) to xyen(2,). Generally, the points in xyen are endpoints of
    !! rrtol times a perpendicular vector to edge links.
-   subroutine selectelset( filename, filetype, x, y, xyen, kc, mnx, ki, num, usemask, rrtolrel, pliname)
+   subroutine selectelset( filename, filetype, x, y, xyen, kc, mnx, ki, num, qidfm, usemask, rrtolrel, pliname)
      
      use MessageHandling
      use m_inquire_flowgeom
@@ -5616,6 +5649,7 @@ contains
      use m_missing, only: dmiss
      use m_sferic, only: jsferic
      use m_partitioninfo, only : jampi
+     use network_data, only : q_ids, q_ids_left, q_ids_right, z_ids_left, z_ids_right, z_wR, z_wL, q_wR, q_wL, xz_left, xz_right, yz_left, yz_right
 
      implicit none
 
@@ -5632,6 +5666,7 @@ contains
    
      character(*), intent(in)        :: filename   ! file name for meteo data file
      integer     , intent(in)        :: filetype   ! spw, arcinfo, uniuvp etc
+     character(len=256), intent(in)  :: qidfm
      logical,      intent(in)        :: usemask    !< Whether to use the mask array kc, or not (allows you to keep kc, but disable it for certain quantities, for example salinitybnd).
      double precision, intent(in), optional :: rrtolrel !< Optional, a more strict rrtolerance value than the global rrtol. selectelset will succeed if cross SL value <= rrtolrel
      character(len=:),allocatable, optional :: pliname  !< Optional, name (identifier) of pli
@@ -5639,6 +5674,7 @@ contains
      ! locals
      double precision, allocatable   :: xs (:)     ! temporary array to hold polygon
      double precision, allocatable   :: ys (:)     !
+     character (len=maxnamelen), allocatable :: id(:)
      integer , allocatable           :: kcs(:)     !
      double precision                :: wL, wR
      integer                         :: kL, kR, minp, ns, m
@@ -5653,7 +5689,7 @@ contains
      if (filetype == poly_tim) then
 
         call oldfil(minp, filename)
-        call read1polylin(minp,xs,ys,ns,pliname)
+        call read1polylin(minp,xs,ys,id,ns,pliname)
    
         if (.not. allocated(kcs)) then
           allocate(kcs(ns))
@@ -5687,13 +5723,34 @@ contains
                        kc(m)   = -1                ! this tells you this point is already claimed by some bnd
                     end if
                  end if
+                 if(trim(qidfm) == 'dischargebnd') then
+                    if(wL > wR) then
+                       q_ids(m) = trim(id(kL))
+                    else
+                       q_ids(m) = trim(id(kR))
+                    endif
+                    q_ids_left(m) = trim(id(kL))
+                    q_ids_right(m) = trim(id(kR))
+                    q_wR(m) = wR
+                    q_wL(m) = wL
+                 endif
+                 if(trim(qidfm) == 'waterlevelbnd') then
+                    z_ids_left(m) = trim(id(kL))
+                    z_ids_right(m) = trim(id(kR))
+                    z_wR(m) = wR
+                    z_wL(m) = wL
+                    xz_left(m) = xs(kL)
+                    xz_right(m) = xs(kR)
+                    yz_left(m) = ys(kL)
+                    yz_right(m) = ys(kR)
+                 endif
               end if
            end if
         enddo
         write(msgbuf,'(a,a,a,i0,a)') 'boundary: ''', trim(filename), ''' opened ', num, ' cells.'
         call msg_flush()
 
-        deallocate(xs, ys, kcs)
+        deallocate(xs, ys, id, kcs)
         
      elseif (filetype == node_id) then
         
@@ -5772,6 +5829,8 @@ contains
      integer,          optional, intent(inout) :: lftopol(:)  !< (Optional) Mapping array from flow links to the polyline index that intersected that flow link (only relevant when loc_spec_type==LOCTP_POLYLINE_FILE or LOCTP_POLYLINE_XY).
      integer,          optional, intent(in   ) :: sortLinks   !< (Optional) Whether or not to sort the found flow links along the polyline path. (only relevant when loc_spec_type==LOCTP_POLYGON_FILE or LOCTP_POLYGON_XY).
 
+     character (len=maxnamelen), allocatable :: id(:)
+
      !locals
      integer :: minp, L, Lstart, Lend, opts, ierr, inp
 
@@ -5792,7 +5851,7 @@ contains
      if (loc_spec_type == LOCTP_POLYLINE_FILE) then
         ! Single polyline only
         call oldfil(minp, loc_file)
-        call read1polylin(minp,xpl,ypl,npl)
+        call read1polylin(minp,xpl,ypl,id,npl)
      elseif (loc_spec_type == LOCTP_POLYGON_FILE) then
         ! Multiple polygons allowed
         call oldfil(minp, loc_file)
@@ -7280,7 +7339,7 @@ module m_meteo
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                             xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, maxSearchRadius, targetMaskSelect, &
+                                            dtnodal, quiet, varname,pli_ids, maxSearchRadius, targetMaskSelect, &
                                             tgt_data1, tgt_data2, tgt_data3, tgt_data4,  &
                                             tgt_item1, tgt_item2, tgt_item3, tgt_item4,  &
                                             multuni1,  multuni2,  multuni3,  multuni4)
@@ -7315,6 +7374,7 @@ module m_meteo
       real(hp),               optional, intent(in)            :: dtnodal         !< update interval for nodal factors
       logical,                optional, intent(in)            :: quiet           !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*),       optional, intent(in)            :: varname         !< variable name within filename
+      character (len=256), dimension(:), optional, intent(in) :: pli_ids !< pli identifiers for each model boundary condition if specified
       real(hp),               optional, intent(in)            :: maxSearchRadius !< max search radius in case method==11
       character(len=1),       optional, intent(in)            :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
       real(hp), dimension(:), optional, pointer               :: tgt_data1       !< optional pointer to the storage location for target data 1 field
@@ -7531,6 +7591,7 @@ module m_meteo
       if (success) success = ecSetElementSetYArray(ecInstancePtr, elementSetId, y)
       if (success) success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
       if (success) success = ecSetElementSetNumberOfCoordinates(ecInstancePtr, elementSetId, size(x))
+
       if (present(xyen)) then
          if (success) success = ecSetElementSetXyen(ecInstancePtr, elementSetId, xyen)
       end if

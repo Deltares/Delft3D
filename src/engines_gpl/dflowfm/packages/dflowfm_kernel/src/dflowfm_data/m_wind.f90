@@ -33,16 +33,16 @@
 module m_wind
 implicit none
 
-double precision, allocatable, target :: wx(:)    !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
-double precision, allocatable, target :: wy(:)    !< [m/s] wind y velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+double precision, allocatable, target :: wx(:), wx_t0(:), wx_t1(:)  !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+double precision, allocatable, target :: wy(:), wy_t0(:), wy_t1(:)  !< [m/s] wind y velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
 double precision, allocatable, target :: ec_pwxwy_x(:)  !< Temporary array, for comparing EC-module to Meteo1.
 double precision, allocatable, target :: ec_pwxwy_y(:)  !< Temporary array, for comparing EC-module to Meteo1.
 double precision, allocatable, target :: ec_pwxwy_c(:)  !< Temporary array, for comparing EC-module to Meteo1.
 double precision, allocatable, target :: wcharnock(:)   !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
 
-double precision, allocatable, target :: patm(:)     !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
+double precision, allocatable, target :: patm(:), patm_t0(:), patm_t1(:)     !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
                                                       !! so that it can be merged with tidep later and difpatm/dx = m/s2, saves 1 array , using mode = 'add'
-double precision, allocatable, target :: rain(:)     !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
+double precision, allocatable, target :: rain(:), rain_t0(:), rain_t1(:)     !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
 double precision, allocatable, target :: evap(:)     !< [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
 integer :: id_first_wind, id_last_wind  !< counters to avoid looping over all ec_etims when only interessed in wind
 
@@ -54,7 +54,7 @@ integer, parameter :: ILATTP_1D  = 1 !< Type code for laterals that only apply t
 integer, parameter :: ILATTP_2D  = 2 !< Type code for laterals that only apply to 2D nodes.
 
 integer                      , target :: numlatsg          !< [-] nr of lateral discharge providers  {"rank": 0}
-double precision, allocatable, target :: qplat(:)          !< [m3/s] Lateral discharge of provider {"shape": ["numlatsg"]}
+double precision, allocatable, target :: qplat(:), qplat_t0(:), qplat_t1(:)   !< [m3/s] Lateral discharge of provider {"shape": ["numlatsg"]}
 double precision, allocatable, target :: qqlat(:)          !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["ndx"]}
 double precision, allocatable, target :: balat(:)          !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
 character(len=128), allocatable       :: lat_ids(:)        !< id of laterals {"shape": ["numlatsg"]}

@@ -37,6 +37,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
     # To be implemented later on
 endif()
 
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 if (WIN32)
     message(STATUS "Setting compiler flags in windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
@@ -108,6 +111,13 @@ if (UNIX)
 
     # Proj
     pkg_check_modules(PROJ REQUIRED proj)
+
+    add_library(metis SHARED IMPORTED)
+    set_target_properties(metis PROPERTIES IMPORTED_LOCATION "/scratch2/NCEPDEV/ohd/Jason.Ducker/DFLOWFM_LIBS/metis-5.1.0/METIS_LIBS/lib/libmetis.so" INTERFACE_INCLUDE_DIRECTORIES "/scratch2/NCEPDEV/ohd/Jason.Ducker/DFLOWFM_LIBS/metis-5.1.0/METIS_LIBS/include/metis.h")
+    #add_library(proj SHARED IMPORTED)
+    #set_target_properties(proj PROPERTIES IMPORTED_LOCATION "/scratch2/STI/coastal/save/COASTAL_ACT_NWC/Libs/intel/proj_7.1.0/lib64/libproj.so" INTERFACE_INCLUDE_DIRECTORIES "/scratch2/STI/coastal/save/COASTAL_ACT_NWC/Libs/intel/proj_7.1.0/include/proj.h")
+    add_library(gdal SHARED IMPORTED)
+    set_target_properties(gdal PROPERTIES IMPORTED_LOCATION "/scratch2/NCEPDEV/ohd/Jason.Ducker/DFLOWFM_LIBS/gdal-master/GDAL_LIBS/lib64/libgdal.so" INTERFACE_INCLUDE_DIRECTORIES "/scratch2/NCEPDEV/ohd/Jason.Ducker/DFLOWFM_LIBS/gdal-master/GDAL_LIBS/include/gdal.h")
 
     # Version number
     message(STATUS "Configuring and building the version number executable under unix")

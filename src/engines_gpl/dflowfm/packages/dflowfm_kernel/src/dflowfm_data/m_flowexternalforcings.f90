@@ -109,7 +109,16 @@
  integer, target                   :: nbndz             !< waterlevel boundary points dimension
  double precision, allocatable     :: xbndz(:)          !< waterlevel boundary points xcor
  double precision, allocatable     :: ybndz(:)          !< waterlevel boundary points ycor
+ character(len=256), allocatable   :: idbndz_left(:)    !< waterlevel boundary points id left 
+ character(len=256), allocatable   :: idbndz_right(:)   !< waterlevel boundary points id right
+ double precision, allocatable     :: bndz_wR(:), bndz_wL(:) !< waterlevel boundary weights
+ double precision, allocatable     :: xbndz_left(:), xbndz_right(:)         !< waterlevel boundary points xcor
+ double precision, allocatable     :: ybndz_left(:), ybndz_right(:)          !< waterlevel boundary points ycor
+
+
  double precision, allocatable, target :: zbndz(:)      !< [m] waterlevel boundary points function  {"location": "edge", "shape": ["nbndz"]}
+ double precision, allocatable, target :: zbndz_left_t0(:), zbndz_right_t0(:), zbndz_left_t1(:), zbndz_right_t1(:)      !< left and right weights
+
  double precision, allocatable     :: zbndz0(:)         !< waterlevel boundary points function
  double precision, allocatable     :: xy2bndz(:,:)      !< waterlevel boundary 'external tolerance point'
  integer         , allocatable     :: kdz  (:)          !< waterlevel boundary points temp array
@@ -134,8 +143,14 @@
  integer                           :: nbndu             !< velocity   boundary points dimension
  double precision, allocatable     :: xbndu(:)          !< velocity   boundary points xcor
  double precision, allocatable     :: ybndu(:)          !< velocity   boundary points ycor
+ character(len=256), allocatable   :: idbndq_left(:)    !< discharge boundary points id left
+ character(len=256), allocatable   :: idbndq_right(:)   !< discharge boundary points id right
+ double precision, allocatable     :: bndq_wR(:), bndq_wL(:) !< discharge boundary weights
+
  double precision, allocatable, target :: zbndu(:)      !< [m/s] velocity   boundary points function   {"location": "edge", "shape": ["nbndu"]}
  double precision, allocatable, target :: zbndq(:)      !< [m3/s] discharge  boundary points function   {"location": "edge", "shape": ["nbndu"]}
+ double precision, allocatable, target :: zbndq_left_t0(:), zbndq_right_t0(:), zbndq_left_t1(:), zbndq_right_t1(:)      !< discharge boundary estimates
+
  double precision, allocatable     :: zbndu0(:)         !< velocity   boundary points function in start time
  double precision, allocatable     :: xy2bndu(:,:)      !< velocity   boundary 'external tolerance point'
  integer         , allocatable     :: kdu  (:)          !< velocity   boundary points temp array

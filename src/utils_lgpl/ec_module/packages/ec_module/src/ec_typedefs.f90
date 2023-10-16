@@ -272,6 +272,7 @@ module m_ec_typedefs
       real(hp), dimension(:), pointer     :: x    => null() !< array of x-coordinates
       real(hp), dimension(:), pointer     :: y    => null() !< array of y-coordinates
       real(hp), dimension(:), pointer     :: z    => null() !< array of z/sigma-coordinates
+      character(len=maxNameLen)           :: PliName = ' '  !< array of pli names associated with polylin coordinates
       !real(hp), dimension(:), pointer     :: lat  => null() !< array of latitude coordinates
       !real(hp), dimension(:), pointer     :: lon  => null() !< array of longitude coordinates
       real(hp), dimension(:), pointer     :: dir  => null() !< array of directions (angles) related to a poleshift coordinate transformation 

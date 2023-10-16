@@ -1245,6 +1245,8 @@ endif
 
  if (jarain > 0) then
     call realloc(rain, ndx, keepExisting = .false., fill = 0d0, stat = ierr)
+    call realloc(rain_t0, ndx, keepExisting = .false., fill = 0d0, stat = ierr)
+    call realloc(rain_t1, ndx, keepExisting = .false., fill = 0d0, stat = ierr)
  end if
 
  if (jaevap > 0) then

@@ -185,6 +185,10 @@ module m_ec_module
       module procedure ecElementSetSetZArray
    end interface ecSetElementSetZArray
 
+   interface ecSetElementSetPliName
+      module procedure ecElementSetSetPliName
+   end interface ecSetElementSetPliName
+
    interface ecSetElementSetvptyp
       module procedure ecElementSetSetvptyp
    end interface ecSetElementSetvptyp
@@ -405,7 +409,7 @@ module m_ec_module
                                             method, operand, tgt_refdate, tgt_tzone, tgt_tunit, &
                                             jsferic, missing_value, itemIDs, &
                                             mask, xyen, z, pzmin, pzmax, pkbot, pktop, &
-                                            targetIndex, forcingfile, srcmaskfile, dtnodal) &
+                                            targetIndex, forcingfile, srcmaskfile, pli_ids, dtnodal) &
                                             result (success)
    !     use m_ec_module, only: ecFindFileReader ! TODO: Refactor this private data access (UNST-703).
          use m_ec_filereader_read, only: ecParseARCinfoMask
@@ -438,6 +442,7 @@ module m_ec_module
          integer,                optional,         intent(in)    :: targetIndex  !< target position or rank of (complete!) vector in target array
          character(len=*),       optional,         intent(in)    :: forcingfile  !< file containing the forcing data for pli-file 'filename'
          character(len=*),       optional,         intent(in)    :: srcmaskfile  !< file containing mask applicable to the arcinfo source data 
+         character (len=256), dimension(:), optional             :: pli_ids      !< pli identifiers for each model boundary condition if specified
          real(hp),               optional,         intent(in)    :: dtnodal      !< update interval for nodal factors
          !
          integer :: convtype !< EC-module's convType_ enumeration.
@@ -521,7 +526,7 @@ module m_ec_module
          if (present(xyen)) then
             if (.not.ecElementSetSetXyen(instancePtr, elementSetId, xyen)) return
          end if
-         
+        
          if (present(z)) then ! 3D
             if (present(pzmin) .and. present(pzmax)) then        ! implicitly means: target elt z-type == SIGMA
                if (.not.ecElementSetSetZArray(instancePtr, elementSetId, z, pzmin=pzmin, pzmax=pzmax, Lpointer_=.true.)) return
@@ -581,6 +586,7 @@ module m_ec_module
          
          if (.not.ecSetElementSetXArray(instancePtr, elementSetId, x)) return
          if (.not.ecSetElementSetYArray(instancePtr, elementSetId, y)) return
+         !if (.not.ecSetElementSetYArray(instancePtr, elementSetId, y)) return
 !        if (.not.ecSetElementSetMaskArray(instancePtr, elementSetId, mask)) return
          if (.not.ecSetElementSetNumberOfCoordinates(instancePtr, elementSetId, size(x))) return
 

@@ -527,7 +527,8 @@ subroutine flow_setexternalforcings(tim, l_initPhase, iresult)
 
 !   !$OMP SECTION
 
-   if (numlatsg > 0) then
+   !if (numlatsg > 0) then
+   if(item_lateraldischarge /= ec_undef_int) then
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, irefdate, tzone, tunit, tim) ! 'lateral(_)discharge'
    endif
 

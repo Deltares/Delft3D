@@ -115,6 +115,13 @@ module network_data
   integer,  allocatable            :: LC0(:)          !< Backup for lc.
   real   , allocatable             :: RLIN(:)         !< (numl) Placeholder for link values to be displayed.
   double precision, allocatable    :: xe(:), ye(:)    !< (numl) Edge (link) center coordinates.
+  character (len=256), allocatable :: q_ids(:), z_ids(:)
+  character (len=256), allocatable :: q_ids_left(:), z_ids_left(:), q_ids_right(:), z_ids_right(:)
+  double precision, allocatable    :: q_wR(:), q_wL(:), z_wR(:), z_wL(:)    ! weights for open boundaries
+  double precision, allocatable    :: xz_left(:), yz_left(:)    !< (numl) Edge (link) center coordinates.
+  double precision, allocatable    :: xz_right(:), yz_right(:)    !< (numl) Edge (link) center coordinates.
+
+
   double precision, allocatable    :: dxe(:)          !< (numl) Edge (link) actual length. OPTIONAL. When unallocated, we default to Euclidean distance between the netnodes xk,yk.
   double precision, allocatable    :: dxe0(:)         !< Backup for dxe.
   integer,  allocatable            :: KTRI(:), KTON(:), KBT (:)
@@ -185,6 +192,8 @@ module network_data
   double precision                 :: Unidx1D = 100d0                   !< Uniform 1D dx in copylandboundaryto1Dnetw
 
   integer                          :: makeorthocenters = 0              !< shift from circumcentre to orthocentre (acts as a maxiter)
+
+  integer                          :: strip_mesh = 0                    !< Strip unused nodes and links from mesh after clipping
 
   integer, parameter               :: I1D2DTP_1TO1     = 0              !< 1D2D link generation algorithm for 1-to-1 mapping HK algorithm, depending on filetype.
   integer, parameter               :: I1D2DTP_1TON_EMB = 1              !< 1D2D link generation algorithm for 1-to-1 mapping, for embedded ('rural') links.
@@ -292,6 +301,20 @@ module network_data
    if(allocated(RLIN)) deallocate(RLIN)
    if(allocated(xe)) deallocate(xe)
    if(allocated(ye)) deallocate(ye)
+   if(allocated(q_ids)) deallocate(q_ids)
+   if(allocated(q_ids_right)) deallocate(q_ids_right)
+   if(allocated(q_ids_left)) deallocate(q_ids_left)
+   if(allocated(q_wR)) deallocate(q_wR)
+   if(allocated(q_wL)) deallocate(q_wL)
+   if(allocated(z_ids)) deallocate(z_ids)
+   if(allocated(z_ids_right)) deallocate(z_ids_right)
+   if(allocated(z_ids_left)) deallocate(z_ids_left)
+   if(allocated(xz_right)) deallocate(xz_right)
+   if(allocated(xz_left)) deallocate(xz_left)
+   if(allocated(yz_right)) deallocate(yz_right)
+   if(allocated(yz_left)) deallocate(yz_left)
+   if(allocated(z_wR)) deallocate(z_wR)
+   if(allocated(z_wL)) deallocate(z_wL)
    if(allocated(dxe)) deallocate(dxe)
    if(allocated(dxe0)) deallocate(dxe0)
    if(allocated(KTRI)) deallocate(KTRI)
@@ -358,6 +381,7 @@ module network_data
    CONNECT1DEND = 0d0              
    Unidx1D = 100d0                   
    makeorthocenters = 0             
+   strip_mesh = 0
    imake1d2dtype = I1D2DTP_1TO1 ! HK algorithm
    searchRadius1D2DLateral = defaultSearchRadius1D2DLateral
    xkmin = 0

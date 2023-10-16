@@ -200,8 +200,8 @@
  if (allocated(ec_pwxwy_x))   deallocate(ec_pwxwy_x)
  if (allocated(ec_pwxwy_y))   deallocate(ec_pwxwy_y)
  if (allocated(kcw))          deallocate(kcw)
- if (allocated(patm))         deallocate(patm)
- if (allocated(kbndz))        deallocate(xbndz,ybndz,xy2bndz,zbndz,kbndz,zbndz0)
+ if (allocated(patm))         deallocate(patm, patm_t0, patm_t1)
+ if (allocated(kbndz))        deallocate(xbndz,ybndz,xy2bndz,zbndz,kbndz,zbndz0, zbndz_left_t0, zbndz_right_t0, zbndz_left_t1, zbndz_right_t1, xbndz_left, xbndz_right, ybndz_left, ybndz_right, idbndz_left, idbndz_right, bndz_wR, bndz_wL)
  if (allocated(zkbndz))       deallocate(zkbndz)
  id_first_wind =  huge(id_first_wind)
  id_last_wind  = -huge(id_last_wind)
@@ -210,8 +210,8 @@
 
  n4 = 6
  if (nbndz > 0) then                                 ! now you know the elementsets for the waterlevel bnds
-    allocate ( xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
-    call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*10 )
+    allocate ( xbndz(nbndz), xbndz_left(nbndz), xbndz_right(nbndz), ybndz(nbndz), ybndz_left(nbndz), ybndz_right(nbndz), idbndz_left(nbndz), idbndz_right(nbndz), bndz_wR(nbndz), bndz_wL(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), zbndz_left_t0(nbndz), zbndz_right_t0(nbndz), zbndz_left_t1(nbndz), zbndz_right_t1(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
+    call aerr('xbndz(nbndz), xbndz_left(nbndz), xbndz_right(nbndz), ybndz(nbndz), ybndz_left(nbndz), ybndz_right(nbndz), idbndz_left(nbndz), idbndz_right(nbndz), bndz_wR(nbndz), bndz_wL(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), zbndz_left_t0(nbndz), zbndz_right_t0(nbndz), zbndz_left_t1(nbndz), zbndz_right_t1(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*10 )
     if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
        if (allocated(zkbndz) ) deallocate (zkbndz, kbanz)
        allocate ( zkbndz(2,nbndz) ,stat= ierr    )
@@ -231,6 +231,15 @@
 
        xbndz(k)     = xe(L) ! xz(kb)
        ybndz(k)     = ye(L) ! yz(kb)
+       xbndz_left(k)     = xz_left(L) ! xz(kb)
+       xbndz_right(k)     = xz_right(L) ! xz(kb)
+       ybndz_left(k)     = yz_left(L) ! xz(kb)
+       ybndz_right(k)     = yz_right(L) ! xz(kb)
+       idbndz_left(k) = z_ids_left(L) ! yz(kb)
+       idbndz_right(k) = z_ids_right(L) ! yz(kb)
+       bndz_wR(k) = z_wR(L)
+       bndz_wL(k) = z_wL(L)
+
        zbndz0(k)    = dmiss
        xy2bndz(:,k) = xyen(:,L)
 
@@ -294,12 +303,12 @@
 
  if (allocated(kbndu)) deallocate(  xbndu,ybndu,xy2bndu,zbndu,kbndu,zbndu0)
  if (allocated(zkbndu)) deallocate( zkbndu)
- if (allocated(zbndq)) deallocate(  zbndq)
+ if (allocated(zbndq)) deallocate(  zbndq, zbndq_left_t0, zbndq_right_t0, zbndq_left_t1, zbndq_right_t1)
  if (allocated(sigmabndu)) deallocate(sigmabndu)
  if (allocated(zminmaxu)) deallocate(zminmaxu)
  if (nbndu > 0) then                                 ! similar for u bnd's
-    allocate ( xbndu(nbndu), ybndu(nbndu), xy2bndu(2,nbndu), kbndu(n4,nbndu), kdu(nbndu) , stat=ierr)
-    call aerr('xbndu(nbndu), ybndu(nbndu), xy2bndu(2,nbndu), kbndu(n4,nbndu), kdu(nbndu)', ierr, nbndu*(n4+5) )
+    allocate ( xbndu(nbndu), ybndu(nbndu), idbndq_left(nbndu), idbndq_right(nbndu), bndq_wR(nbndu), bndq_wL(nbndu), xy2bndu(2,nbndu), kbndu(n4,nbndu), kdu(nbndu) , stat=ierr)
+    call aerr('xbndu(nbndu), ybndu(nbndu), idbndq_left(nbndu), idbndq_right(nbndu), bndq_wR(nbndu), bndq_wL(nbndu), xy2bndu(2,nbndu), kbndu(n4,nbndu), kdu(nbndu)', ierr, nbndu*(n4+5) )
     if (jased ==1 .or. jased == 2 .and. jaceneqtr == 2) then
        if (allocated (zkbndu) ) deallocate(zkbndu, kbanu)
        allocate ( zkbndu(2,nbndu) , stat= ierr    )
@@ -319,7 +328,16 @@
 
     allocate ( zbndq    (nbndu) , stat = ierr       )
     call aerr('zbndq    (nbndu)', ierr , nbndu      )
-    
+    allocate ( zbndq_left_t0    (nbndu) , stat = ierr       )
+    call aerr('zbndq_left_t0    (nbndu)', ierr , nbndu      )
+    allocate ( zbndq_right_t0    (nbndu) , stat = ierr       )
+    call aerr('zbndq_right_t0    (nbndu)', ierr , nbndu      )    
+    allocate ( zbndq_left_t1    (nbndu) , stat = ierr       )
+    call aerr('zbndq_left_t1    (nbndu)', ierr , nbndu      )
+    allocate ( zbndq_right_t1    (nbndu) , stat = ierr       )
+    call aerr('zbndq_right_t1    (nbndu)', ierr , nbndu      )
+
+
     allocate ( zminmaxu (nbndu*2  )  , stat = ierr       )
     call aerr('zminmaxu (nbndu*2  )' , ierr , nbndu*2    )
     if (kmx > 0) then                   ! only used in 3D:
@@ -335,6 +353,11 @@
        kbi        = ln(2,Lf)
        xbndu(k)   = xe(L) ! xz(kb)
        ybndu(k)   = ye(L) ! yz(kb)
+       idbndq_left(k) = q_ids_left(L) ! yz(kb)
+       idbndq_right(k) = q_ids_right(L) ! yz(kb)
+       bndq_wR(k) = q_wR(L)
+       bndq_wL(k) = q_wL(L)
+
        xy2bndu(:,k) = xyen(:,L)
 
        kbndu(1,k) = kb
@@ -1472,14 +1495,18 @@ if (mext /= 0) then
 
            jawindstressgiven = merge(1, 0, qid(1:6) == 'stress')    ! if (index(qid,'str') > 0) jawindstressgiven = 1
        
-           if (len_trim(sourcemask)>0)  then
-              success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
-           else
-              success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, varname=varname)
-           endif
-
-           if (success) then 
+           if(BMI_flag) then
+               success = .TRUE.
                jawind = 1
+           else
+              if (len_trim(sourcemask)>0)  then
+                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+              else
+                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, varname=varname)
+              endif
+              if (success) then 
+                  jawind = 1
+               endif
            endif
 
         else if (qid == 'airpressure_windx_windy' .or. &
@@ -1499,6 +1526,12 @@ if (mext /= 0) then
               allocate ( patm(ndx) , stat=ierr)
               call aerr('patm(ndx)', ierr, ndx)
               patm = 100000d0
+              allocate ( patm_t0(ndx) , stat=ierr)
+              call aerr('patm_t0(ndx)', ierr, ndx)
+              patm_t0 = 100000d0
+              allocate ( patm_t1(ndx) , stat=ierr)
+              call aerr('patm_t1(ndx)', ierr, ndx)
+              patm_t1 = 100000d0
            endif
     
            if (.not. allocated(ec_pwxwy_x) ) then
@@ -1609,10 +1642,22 @@ if (mext /= 0) then
               allocate ( patm(ndx) , stat=ierr)
               call aerr('patm(ndx)', ierr, ndx)
               patm = 0d0
+              allocate ( patm_t0(ndx) , stat=ierr)
+              call aerr('patm_t0(ndx)', ierr, ndx)
+              patm_t0 = 0d0
+              allocate ( patm_t1(ndx) , stat=ierr)
+              call aerr('patm_t1(ndx)', ierr, ndx)
+              patm_t1 = 0d0
            endif
-           success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-           if (success) then
-              japatm = 1
+           
+           if(BMI_flag) then
+               japatm = 1
+               success = .TRUE.
+           else
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  japatm = 1
+               endif
            endif
 
         else if (qid == 'air_temperature') then
@@ -1684,14 +1729,24 @@ if (mext /= 0) then
               allocate ( rain(ndx) , stat=ierr)
               call aerr('rain(ndx)', ierr, ndx)
               rain = 0d0
+              allocate ( rain_t0(ndx) , stat=ierr)
+              call aerr('rain_t0(ndx)', ierr, ndx)
+              rain_t0 = 0d0
+              allocate ( rain_t1(ndx) , stat=ierr)
+              call aerr('rain_t1(ndx)', ierr, ndx)
+              rain_t1 = 0d0
            endif
-
-           ! TODO: AvD: consider adding mask to all quantities.
-           success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-
-           if (success) then
+           if(BMI_flag) then
+               success = .TRUE.
                jarain = 1
                jaqin = 1
+           else
+               ! TODO: AvD: consider adding mask to all quantities.
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                   jarain = 1
+                   jaqin = 1
+               endif
            endif
 
         else if (num_lat_ini_blocks == 0 .and. qid(1:16) == 'lateraldischarge' ) then
@@ -2149,6 +2204,8 @@ if (mext /= 0) then
 
     call realloc(balat, numlatsg, keepExisting = .false., fill = 0d0)
     call realloc(qplat, numlatsg, keepExisting = .false., fill = 0d0)
+    call realloc(qplat_t0, numlatsg, keepExisting = .false., fill = 0d0)
+    call realloc(qplat_t1, numlatsg, keepExisting = .false., fill = 0d0)
     call realloc(lat_ids, numlatsg, keepExisting = .false., fill = '')
 
     do n = 1,numlatsg
@@ -2175,24 +2232,31 @@ if (mext /= 0) then
           numlatsg = numlatsg + 1
 
           L = index(filename,'.', back=.true.) - 1
-          success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat)
-          if (success) then
-             ! assign id derived from pol file
-             lat_ids(numlatsg) = filename(1:L)
-          endif
+          
+          if(BMI_flag) then
+              ! BMI addition
+              lat_ids(numlatsg) = filename(1:L)
+          else
+              success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat)
+              if (success) then
+                 ! assign id derived from pol file
+                 lat_ids(numlatsg) = filename(1:L)
+              endif
 
-          !! Check outside EC whether associated .tim file exists. should this check be inside addtimeetc
-          !L = index(filename,'.', back=.true.) - 1
-          !filename0 = filename(1:L)//'_0001.tim'
-          !inquire (file = trim(filename0), exist = exist)
-          !if (exist) then
-          !   filetype0 = uniform            ! uniform=single time series vectormax = 1
-          !   success  = ec_addtimespacerelation(qid(1:16), xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=numlatsg)
-          !else
-          !   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity lateraldischarge and file ''', trim(filename), '''. Keeping zero discharge (closed).'
-          !   call warn_flush()
-          !   success = .true.
-          !end if
+              ! Check outside EC whether associated .tim file exists. should this check be inside addtimeetc
+              L = index(filename,'.', back=.true.) - 1
+              filename0 = filename(1:L)//'_0001.tim'
+              inquire (file = trim(filename0), exist = exist)
+              if (exist) then
+                 filetype0 = uniform            ! uniform=single time series vectormax = 1
+                 success  = ec_addtimespacerelation(qid(1:16), xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=numlatsg)
+              else
+                 write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity lateraldischarge and file ''', trim(filename), '''. Keeping zero discharge (closed).'
+                 call warn_flush()
+                 success = .true.
+              end if
+           endif
+
        endif
     enddo
     if (allocated(kclat)) then
@@ -2799,11 +2863,15 @@ if (ti_mba>0) then
 
  if (.not. allocated (wx) ) then 
  
-    allocate  ( wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx) , stat=ierr)
-    call aerr ('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+    allocate  ( wx(lnx), wx_t0(lnx), wx_t1(lnx), wy(lnx), wy_t0(lnx), wy_t1(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx) , stat=ierr)
+    call aerr ('wx(lnx), wx_t0(lnx), wx_t1(lnx), wy(lnx), wy_t0(lnx), wy_t1(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
 
     wx     = 0d0
+    wx_t0  = 0d0
+    wx_t1  = 0d0
     wy     = 0d0
+    wy_t0  = 0d0
+    wy_t1  = 0d0
     wdsu   = 0d0
     wdsu_x = 0d0
     wdsu_y = 0d0
