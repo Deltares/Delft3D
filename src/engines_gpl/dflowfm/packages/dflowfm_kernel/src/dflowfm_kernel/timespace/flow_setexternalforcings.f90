@@ -35,7 +35,7 @@ module m_external_forcings
 implicit none
 
 public :: set_external_forcings
-
+  
   abstract interface
      subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
         integer, intent(in) :: number_of_links      !< number of links
@@ -81,7 +81,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    logical, external               :: flow_initwaveforcings_runtime, flow_trachy_needs_update
    character(len=255)              :: tmpstr
-   type(c_time)                    :: ecTime           !< Time in EC-module
+   type(c_time)                    :: ecTime         !< Time in EC-module
 
    ! variables for processing the pump with levels, SOBEK style
    logical                         :: success_copy
@@ -104,7 +104,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
       call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
       call get_airdensity(patm, tair, airdensity, ierr)
    end if
-   
+
    if (jawind == 1 .or. japatm > 0) then
       call set_wind_data()
    end if
@@ -119,12 +119,12 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
       call setwindstress()
    end if
 
-   if (jatem > 1) then
-      call set_temperature_models()
-   end if
+    if (jatem > 1) then
+       call set_temperature_models()
+    end if
 
-   if (ja_friction_coefficient_time_dependent > 0) then
-      call set_friction_coefficient()
+    if (ja_friction_coefficient_time_dependent > 0) then
+       call set_friction_coefficient()
    end if
         
    call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
@@ -547,6 +547,10 @@ subroutine set_wave_parameters()
          success = .true.
       end if
       
+      if(jawave == 7) then
+          phiwav = convert_wave_direction_from_nautical_to_cartesian(phiwav)
+      end if
+      
       ! SWAN data used via module m_waves
       !    Data from FLOW 2 SWAN: s1 (water level), bl (bottom level), ucx (vel. x), ucy (vel. y), FlowElem_xcc, FlowElem_ycc, wx, wy
       !          NOTE: all variables defined @ cell circumcentre of unstructured grid
@@ -573,7 +577,7 @@ subroutine set_wave_parameters()
                   end where
               end if
           end if
-      
+         
          all_wave_variables = .not.(jawave == 7 .and. waveforcing /= 3)
          call select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
          
@@ -683,6 +687,19 @@ subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, lin
  
 end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
+!> convert wave direction [degrees] from nautical to cartesian meteorological convention
+elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
+    
+    double precision, intent(in) :: nautical_wave_direction  !< wave direction [degrees] in nautical  convention
+    double precision             :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
+    
+    double precision, parameter  :: MAX_RANGE_IN_DEGREES            = 360d0
+    double precision, parameter  :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
+    
+    cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, MAX_RANGE_IN_DEGREES)
+    
+end function convert_wave_direction_from_nautical_to_cartesian
+
 !> retrieve_rainfall
 subroutine retrieve_rainfall()
 
@@ -734,19 +751,19 @@ end subroutine update_network_data
 !> update_subsidence_and_uplift_data
 subroutine update_subsidence_and_uplift_data()
 
-    if (.not. sdu_first) then
+ if (.not. sdu_first) then
          ! preserve the previous 'bedrock_surface_elevation' for computing the subsidence/uplift rate
          subsupl_tp = subsupl
-    end if
-    if (item_subsiduplift /= ec_undef_int) then
+      end if
+      if (item_subsiduplift /= ec_undef_int) then
          success = success .and. ec_gettimespacevalue(ecInstancePtr, 'bedrock_surface_elevation', time_in_seconds)
-    end if
-    if (sdu_first) then
+      end if
+      if (sdu_first) then
          ! preserve the first 'bedrock_surface_elevation' field as the initial field
          subsupl_tp = subsupl
          subsupl_t0 = subsupl
          sdu_first  = .false.
-    end if
+      end if
     
 end subroutine update_subsidence_and_uplift_data
 
