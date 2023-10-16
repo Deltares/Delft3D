@@ -60,6 +60,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use time_class
    use m_longculverts
    use m_nearfield,            only : nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
+   use m_airdensity,           only : get_airdensity
 
    double precision, intent(in)    :: time_in_seconds  !< Time in seconds
    logical,          intent(in)    :: initialization   !< initialization phase
@@ -74,6 +75,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    double precision, parameter     :: SEA_LEVEL_PRESSURE = 101325d0
 
    integer                         :: link, i, first, last
+   integer                         :: ierr             !< error flag
    logical                         :: l_set_frcu_mor = .false.
    logical                         :: first_time_wind
 
@@ -96,6 +98,11 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
+   end if
+   if (ja_varying_airdensity==1) then 
+      call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm)
+      call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
+      call get_airdensity(patm, tair, airdensity, ierr)
    end if
 
    if (jawind == 1 .or. japatm > 0) then
