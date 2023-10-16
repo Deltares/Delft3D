@@ -473,6 +473,7 @@ subroutine pronrs( pronam, imodul )
 !
 !   imodul = findloc( process_routine%pronam, pronam, 1 )
 !
+    imodul = 0
     do i = 1,size(process_routine)
         if ( process_routine(i)%pronam == pronam ) then
             imodul = i
@@ -526,20 +527,18 @@ subroutine procal (pmsa   , imodul , flux   , ipoint , increm , &
     integer             :: lunrep
     integer             :: ierror
 
-    integer, parameter  :: nomax = 500
-    integer(4), save    :: ithand(nomax) = 0 !  timer handles
+    integer(4), save    :: ithand(max_processes+10) = 0 !  timer handles, just a wee bit more than the number of "standard" routines
 
+    !
+    ! Only monitor the "standard" routines (otherwise we would have to
+    ! record the process routines loaded from the open processes library)
+    !
     if ( timon ) then
-        if ( imodul .eq. 0 ) then
-            write( lunrep, '(2a)' ) 'Unknown process module: ', pronam
-            write( lunrep, '(2a)' ) 'Program stopped!'
-            error stop
-        endif
-        if ( imodul .le. nomax ) call timstrt ( pronam, ithand(imodul) )
+        if ( imodul > 0 .and. imodul <= size(ithand) ) call timstrt ( pronam, ithand(imodul) )
     endif
 
 
-    if ( imodul <= max_processes ) then
+    if ( imodul > 0 .and. imodul <= max_processes ) then
         call process_routine(imodul)%procpnt ( pmsa   , flux   , ipoint , increm , noseg  ,  &
                                                noflux , iexpnt , iknmrk , noq1   , noq2   ,  &
                                                noq3   , noq4   )
@@ -548,10 +547,10 @@ subroutine procal (pmsa   , imodul , flux   , ipoint , increm , &
 !       assumed from dll
 
         call getmlu(lunrep)
-        if (dll_opb .ne. 0) then
+        if (dll_opb /= 0) then
             ierror = perf_function(dll_opb, pronam, pmsa   , flux   , ipoint , increm , noseg  , &
                                    noflux , iexpnt, iknmrk , noq1   , noq2   , noq3   , noq4   )
-            if ( ierror .ne. 0 ) then
+            if ( ierror /= 0 ) then
                 write(*,*) ' '
                 write(*,*) 'ERROR        : requested module not in open process library dll/so'
                 write(*,*) 'module       : ', pronam
@@ -574,7 +573,7 @@ subroutine procal (pmsa   , imodul , flux   , ipoint , increm , &
     endif
 
     if ( timon ) then
-        if ( imodul .le. nomax ) call timstop ( ithand(imodul) )
+        if ( imodul > 0 .and. imodul <= size(ithand) ) call timstop ( ithand(imodul) )
     endif
 
 end subroutine procal
