@@ -8,4 +8,4 @@ noinst_HEADERS = include/gdalproto_doxy.f90 include/gdalproto_interf.f90 \
 
 dist_pkgdoc_DATA = README.md COPYING
 
-EXTRA_DIST = fortrangis.spec
+EXTRA_DIST = fedora/SPECS/fortrangis.spec

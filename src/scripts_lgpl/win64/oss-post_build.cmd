@@ -2260,6 +2260,42 @@ goto :endproc
 
 
 
+rem ==================================
+rem === POST_BUILD_TEST_IO_NETCDF
+rem ==================================
+:test_io_netcdf
+    echo "postbuild test_io_netcdf . . ."
+
+    if "%configuration%" == "Debug" (
+
+    echo "Debug postbuild"
+    set dest_bin="!install_dir!\x64\Debug"
+
+    call :makeDir !dest_bin!
+
+    call :copyFile "!build_dir!\test_io_netcdf\!configuration!\test_io_netcdf.*"                              !dest_bin!
+
+    )
+
+    if "%configuration%" == "Release" (
+
+    echo "Release postbuild"
+
+    set dest_bin="!install_dir!\x64\Release\tests\bin"
+    set dest_default="!install_dir!\x64\Release\tests\default"
+    set dest_scripts="!install_dir!\x64\Release\tests\scripts"
+    set dest_plugins="!install_dir!\x64\Release\plugins\bin"
+    set dest_share="!install_dir!\x64\Release\share\bin"
+
+    call :makeAllDirs
+    call :copyFile "!build_dir!\test_io_netcdf\!configuration!\test_io_netcdf.*"                                !dest_bin!
+
+    )
+
+goto :endproc
+
+
+
 rem ===============================
 rem === POST_BUILD_WAQ_UTILS_F_TEST
 rem ===============================

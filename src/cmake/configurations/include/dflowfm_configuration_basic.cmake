@@ -190,7 +190,7 @@ if(NOT TARGET nefis)
 endif()
 
 
-# Unit tests for dflowfm
+# Unit tests for dflowfm and io_netcdf
 # Only for the version without interacter
 if(NOT WITH_INTERACTER)
     if(NOT TARGET ftnunit)
@@ -207,6 +207,9 @@ if(NOT WITH_INTERACTER)
     
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
+
+    if (NOT TARGET test_io_netcdf)
+        add_subdirectory(${checkout_src_root}/${test_io_netcdf} test_io_netcdf)
     endif()
 endif(NOT WITH_INTERACTER)
 

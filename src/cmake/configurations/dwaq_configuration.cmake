@@ -27,7 +27,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_third_party
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_utils.cmake)
 
 
-
 #
 # Linux installation
 #=============

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(FortranGIS, 2.6, [dcesari69@gmail.com])
+AC_INIT([FortranGIS],[3.0],[dcesari@arpae.it])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign])
@@ -15,8 +15,7 @@ dnl PKG_PROG_PKG_CONFIG()
 
 dnl capire perche' senza --enable-qualcosa objext='' e non va il compilatore
 
-AC_ARG_ENABLE(gdal, AC_HELP_STRING([--disable-gdal],
-[enable build of Fortran 2003 bindings for gdal]),,
+AC_ARG_ENABLE(gdal, AS_HELP_STRING([--disable-gdal],[enable build of Fortran 2003 bindings for gdal]),,
 [enableval=yes])dnl default enable
 AM_CONDITIONAL(GDAL, test "x$enableval" = "xyes")
 
@@ -51,22 +50,37 @@ fi
 fi
 fi
 
-AC_ARG_ENABLE(proj, AC_HELP_STRING([--disable-proj],
-[enable build of Fortran 2003 bindings for proj]),,
+AC_ARG_ENABLE(proj, AS_HELP_STRING([--disable-proj],[enable build of Fortran 2003 bindings for proj]),,
 [enableval=yes])dnl default enable
 AM_CONDITIONAL(PROJ, test "x$enableval" = "xyes")
 
+AM_CONDITIONAL(PROJ4, false)
+AM_CONDITIONAL(PROJ6, false)
 if test "x$enableval" = "xyes"; then
-AC_CHECK_LIB([proj], [pj_init],
- proj=yes
- PROJ_LIBS="-lproj"
- AC_SUBST(PROJ_LIBS)
- AC_DEFINE(HAVE_LIBPROJ, 1, [Enable proj]),
- AC_MSG_ERROR([proj library not found]), )
+    AC_CHECK_LIB([proj], [pj_init], [proj4=yes], [proj4=no])
+    AC_CHECK_LIB([proj], [proj_info], [proj6=yes], [proj6=no])
+    dnl AM_CONDITIONAL and AC_DEFINE for all 3 variants may be too much
+    dnl keep only what is really needed when closing issue15
+    AM_CONDITIONAL(PROJ4, test "x$proj4" = "xyes")
+    AM_CONDITIONAL(PROJ6, test "x$proj6" = "xyes")
+    if test x$proj4 = xyes; then
+        proj=yes
+        AC_DEFINE(HAVE_LIBPROJ4, 1, [Enable proj <=4])
+    fi
+    if test x$proj6 = xyes; then
+        proj=yes
+        AC_DEFINE(HAVE_LIBPROJ6, 1, [Enable proj >=6])
+    fi
+    if test x$proj = xyes; then
+        PROJ_LIBS="-lproj"
+        AC_SUBST(PROJ_LIBS)
+        AC_DEFINE(HAVE_LIBPROJ, 1, [Enable proj])
+    else
+        AC_MSG_ERROR([proj library not found])
+    fi
 fi
 
-AC_ARG_ENABLE(shapelib, AC_HELP_STRING([--disable-shapelib],
-[enable build of Fortran 2003 bindings for shapelib]),,
+AC_ARG_ENABLE(shapelib, AS_HELP_STRING([--disable-shapelib],[enable build of Fortran 2003 bindings for shapelib]),,
 [enableval=yes])dnl default enable
 AM_CONDITIONAL(SHP, test "x$enableval" = "xyes")
 
@@ -81,8 +95,7 @@ AC_CHECK_HEADER([shapefil.h],,
  AC_MSG_ERROR([you probably have to provide the correct CPPFLAGS=-I... option e.g. CPPFLAGS=-I/usr/include/libshp]))
 fi
 
-AC_ARG_ENABLE(readosm, AC_HELP_STRING([--enable-readosm],
-[enable build of Fortran 2003 bindings for readosm]),,
+AC_ARG_ENABLE(readosm, AS_HELP_STRING([--enable-readosm],[enable build of Fortran 2003 bindings for readosm]),,
 [enableval=no])dnl default disable
 AM_CONDITIONAL(READOSM, test "x$enableval" = "xyes")
 
@@ -114,12 +127,10 @@ with at least the ISO_C_BINDING module capabilities of Fortran 2003 standard]
 
 AC_LANG_POP()dnl back to C
 
-AC_ARG_ENABLE(versioninfo, AC_HELP_STRING([--disable-versioninfo],
-  [disable version information in shared libraries]),,[enableval=yes])dnl default enable
+AC_ARG_ENABLE(versioninfo, AS_HELP_STRING([--disable-versioninfo],[disable version information in shared libraries]),,[enableval=yes])dnl default enable
 AM_CONDITIONAL(VERSIONINFO, test "x$enableval" = "xyes")
 
-AC_ARG_ENABLE(doxydoc, AC_HELP_STRING([--disable-doxydoc],
-  [disable generation of doxygen documentation]),,[enableval=yes])dnl default enable
+AC_ARG_ENABLE(doxydoc, AS_HELP_STRING([--disable-doxydoc],[disable generation of doxygen documentation]),,[enableval=yes])dnl default enable
 
 DOXYBIN=
 if test "x$enableval" = "xyes"; then
@@ -132,8 +143,7 @@ AM_CONDITIONAL(DOXYDOC, test "x$DOXYBIN" = "xyes")
 
 
 dnl check for debug mode
-AC_ARG_ENABLE(debug-mode, AC_HELP_STRING([--enable-debug-mode],
-  [enable debug mode]), , [enableval=no])dnl default disable
+AC_ARG_ENABLE(debug-mode, AS_HELP_STRING([--enable-debug-mode],[enable debug mode]), , [enableval=no])dnl default disable
 if test "x$enableval" = "xyes"; then
 CFLAGS="$CFLAGS -g"
 CXXFLAGS="$CXXFLAGS -g"
@@ -150,7 +160,7 @@ FCFLAGS="$FCFLAGS -O"
 fi
 AM_CONDITIONAL(DEBUG, test "x$enableval" = "xyes")
 
-AC_PROG_LIBTOOL([win32-dll])
+LT_INIT([win32-dll])
 dnl if test "x$host" = "xi686-pc-mingw32"; then
 dnl   AM_LIBTOOLFLAGS=-no-undefined
 dnl   AC_SUBST(AM_LIBTOOLFLAGS)

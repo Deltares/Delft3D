@@ -93,11 +93,5 @@ ENDIF
 CALL pj_free(pj)
 CALL pj_free(pjll)
 
-!x(1) = coordg%u
-!y(1) = coordg%v
-!z(1) = 0.0D0
-!res = pj_transform(pjll, pj, x, y, z)
-!PRINT*,x,y,res
-
 END PROGRAM proj_test
 

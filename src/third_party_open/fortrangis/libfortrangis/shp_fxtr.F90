@@ -34,9 +34,9 @@ CHARACTER(len=lencharattr) :: charattrr
 INTEGER :: intattrr
 REAL(kind=c_double) :: doubleattrr
 
-CALL getarg(1,filein)
-CALL getarg(2,fileout)
-CALL getarg(3,filereg)
+CALL get_command_argument(1,filein)
+CALL get_command_argument(2,fileout)
+CALL get_command_argument(3,filereg)
 IF (filein == '' .OR. fileout == '' .OR. filereg == '') THEN
   PRINT'(A)','Convert a shapefile (with polygons) in the dump format required by'
   PRINT'(A)','the shape2fxtr.pl utilities of fieldextra and directly in the'

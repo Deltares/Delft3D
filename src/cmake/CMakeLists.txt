@@ -84,6 +84,8 @@ if (WIN32)
 
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
+    # Set the PROJ path
+    set(proj_path ${checkout_src_root}/third_party_open/proj/proj-9.3)
     
     add_definitions(-DHAVE_MPI=1)
 endif()

@@ -4,8 +4,12 @@ build_*/**
 install_*/**
 
 # editor files
+.vs
 .vscode/**
 .idea/*
+
+# python virtual environment
+.venv
 
 # files extensions to exclude
 *.i90
