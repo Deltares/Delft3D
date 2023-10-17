@@ -55,7 +55,7 @@
 
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
 
-      use grids
+      use dlwqgrid_mod
       use timers       !   performance timers
 
       implicit none

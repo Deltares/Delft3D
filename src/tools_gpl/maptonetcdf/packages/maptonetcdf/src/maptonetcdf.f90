@@ -27,24 +27,7 @@
 ! maptonetcdf.f90 --
 !      Program to convert a traditional binary map file into a NetCDF map file
 
-
-module dhnolay_dummy
-    implicit none
-
-    integer :: nolayers
-end module dhnolay_dummy
-
-subroutine dhnolay( nolay )
-    use dhnolay_dummy
-
-    implicit none
-    integer :: nolay
-
-    nolay = nolayers
-end subroutine dhnolay
-
 program maptonetcdf
-    use dhnolay_dummy
     use m_outmnc
 
     implicit none
@@ -66,7 +49,7 @@ program maptonetcdf
     character(len=255)                            :: ugridfile
 
     integer                                       :: ncidmap, timeid, bndtimeid, mncrec, lunut
-    integer                                       :: i, k, ierr, nosys, noseg, time
+    integer                                       :: i, k, ierr, nosys, noseg, time, nolayers
 
     lunut = 20
     open( 20, file = 'maptonetcdf.out' )
@@ -83,7 +66,7 @@ program maptonetcdf
             call print_usage
             stop
         end if
-        
+
         write(*,'(a)') 'No arguments or too few arguments given, using file "maptonetcdf.inp"'
                          read( 10, '(a)', iostat = ierr ) mapfile
         if ( ierr == 0 ) read( 10, '(a)', iostat = ierr ) ugridfile

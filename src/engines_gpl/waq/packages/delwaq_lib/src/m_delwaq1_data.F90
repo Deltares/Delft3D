@@ -28,8 +28,8 @@
 module m_delwaq1_data
 
 
-    use Grids        !   for the storage of contraction grids
-    use dlwq_data    !   for definition and storage of data
+    use dlwqgrid_mod        !   for the storage of contraction grids
+    use dlwq_hyd_data    !   for definition and storage of data
     use Output       !   for the output names and pointers
     use timers       !   performance timers
     use dhcommand

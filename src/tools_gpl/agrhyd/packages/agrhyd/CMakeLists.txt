@@ -33,9 +33,11 @@ target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version
 set(oss_dependencies deltares_common
                      deltares_common_c
                      io_netcdf
+                     io_netcdf_data
                      io_hyd
                      netcdf4
                      netcdff
+                     waq_hyd_data
                      waq_utils_f)
 
 oss_include_libraries(${executable_name} oss_dependencies)

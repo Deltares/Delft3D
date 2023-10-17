@@ -1759,7 +1759,7 @@ end subroutine write_delwaq03
 !     Write the second DELWAQ system intermediate file
 !
 subroutine write_delwaq04( name )
-    use Grids
+    use dlwqgrid_mod
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
 

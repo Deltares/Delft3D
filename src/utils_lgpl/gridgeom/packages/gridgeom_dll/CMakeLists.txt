@@ -24,6 +24,7 @@ include_directories(${version_include_dir} ${version_dir})
 set(oss_dependencies    deltares_common
                         ec_module
                         io_netcdf
+                        io_netcdf_data
                         kdtree_wrapper
                         kdtree2
                         triangle_c

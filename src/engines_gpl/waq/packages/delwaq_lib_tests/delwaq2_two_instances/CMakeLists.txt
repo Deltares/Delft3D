@@ -1,17 +1,18 @@
 # Include all directories
-set(src_path src) 
+set(src_path src)
 
 # Gather the source files
 get_fortran_source_files(${src_path} source_files)
 
 # Executable target
 set(executable_name delwaq2_two_instances)
-add_executable(${executable_name} ${source_files}) 
+add_executable(${executable_name} ${source_files})
 
 # Extra dependencies
 set(oss_dependencies deltares_common
                      waq_utils_f
                      delwaq_lib
+                     waq_hyd_data
                      waq_data
                      waq_kernel)
 oss_include_libraries(${executable_name} oss_dependencies)
@@ -34,6 +35,3 @@ set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/waq/delwa
 
 # Define how the files should be visualized in visual studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-
-
-

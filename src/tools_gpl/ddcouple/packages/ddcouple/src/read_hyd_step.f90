@@ -27,7 +27,7 @@
 
       use m_srstop
       use m_monsys
-      use m_ddhyd
+      use hydmod
       implicit none
 
       ! decalration of arguments

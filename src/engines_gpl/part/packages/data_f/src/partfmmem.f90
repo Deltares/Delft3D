@@ -253,7 +253,8 @@
 
    module m_partfm_map_netcdf
 
-   use io_ugrid
+   use m_ug_mesh
+   use m_ug_network
 
    character(len=255)   :: mapncfilename
    integer              :: imapfile

@@ -1,9 +1,9 @@
 # Set directories
 # Set the directory of where the source code is located.
-set(src_path src) 
+set(src_path src)
 set(include_path include)
 
-# Set the DFlow FM component path 
+# Set the DFlow FM component path
 set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
 # Set the directory referring to the ref folder
@@ -47,6 +47,7 @@ if (UNIX)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             interacter_stub
                             kdtree_wrapper
                             kdtree2
@@ -69,6 +70,7 @@ if (UNIX)
                             triangle_c
                             wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
                             dflowfm_kernel)
@@ -91,6 +93,7 @@ if (WIN32)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             interacter_stub
                             kdtree_wrapper
                             kdtree2
@@ -114,6 +117,7 @@ if (WIN32)
                             triangle_c
                             wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
                             dflowfm_kernel)
@@ -128,16 +132,16 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "Setting target_compile_definitions in Unix")    
+    message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${library_name} PRIVATE "HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
 endif(UNIX)
 
 if(WIN32)
     message(STATUS "Setting target_compile_definitions in windows")
-    target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL")  
+    target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL")
 endif(WIN32)
 
-    
+
 # Define additional compilation flags
 set_source_files_properties(${source}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
@@ -161,12 +165,12 @@ if (WIN32)
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
 
-    target_link_libraries(${library_name}   
+    target_link_libraries(${library_name}
                             "comctl32.lib"
                             "wsock32.lib"
                             "netapi32.lib"
                             "kernel32.lib"
-                            "user32.lib" 
+                            "user32.lib"
                             "Shlwapi.lib"
                             "Gdi32.lib"
                             "Winspool.lib"
@@ -195,10 +199,9 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${library_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${library_name})
 
 install(TARGETS ${library_name} DESTINATION lib)
-

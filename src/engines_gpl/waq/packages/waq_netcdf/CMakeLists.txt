@@ -7,7 +7,8 @@ create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 set(oss_dependencies deltares_common
                      waq_utils_f
                      netcdff
-                     io_netcdf)
+                     io_netcdf
+                     io_netcdf_data)
 
 target_link_libraries(${library_name} ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)

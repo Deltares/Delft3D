@@ -63,6 +63,10 @@ if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
 endif()
 
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
+endif()
+
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
@@ -102,6 +106,10 @@ endif()
 if(NOT TARGET io_hyd)
     add_subdirectory(${checkout_src_root}/${io_hyd_module} io_hyd)
 endif()
+if(NOT TARGET waq_hyd_data)
+    add_subdirectory(${checkout_src_root}/${waq_hyd_data_module} waq_hyd_data)
+endif()
+
 if(NOT TARGET waq_utils_f)
     add_subdirectory(${checkout_src_root}/${waq_utils_f_module} waq_utils_f)
 endif()

@@ -27,7 +27,7 @@
 
       ! global declarations
 
-      use m_ddhyd                   ! module contains everything for the hydrodynamic description
+      use hydmod                   ! module contains everything for the hydrodynamic description
       use m_dhfext
 
       implicit none

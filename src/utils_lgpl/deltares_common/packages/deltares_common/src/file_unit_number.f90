@@ -20,38 +20,34 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dhnlun
+      module m_file_unit_number
 
       implicit none
 
       contains
 
-
-      subroutine dhnlun(istart,lun)
-
-!     Deltares Software Centre
-
-!     function : gives next free unit number, starting at istart till istart + 98
+      subroutine create_new_file_unit_number(start_index, file_unit_number)
+!     function : sets next free unit number, starting at start_index till start_index + 98
 
 !     declaration of the arguments
 
-      integer               , intent(in)    :: istart       ! start looking from here
-      integer               , intent(out)   :: lun          ! next free unit number
+      integer, intent(in)    :: start_index        !< start looking from here
+      integer, intent(out)   :: file_unit_number   !< next free unit number
 
 !     local declaration
 
-      integer                               :: ilun         ! loop counter
-      logical                               :: lopen        ! opened indicator
+      integer :: ilun   !< loop counter
+      logical :: lopen  !< opened indicator
 
-      lun = 0
-      do ilun = istart, istart + 100000
+      file_unit_number = 0
+      do ilun = start_index, start_index + 100000
          inquire(ilun,opened=lopen)
          if ( .not. lopen ) then
-            lun = ilun
+            file_unit_number = ilun
             exit
          endif
       enddo
 
       return
       end
-      end module m_dhnlun
+      end module m_file_unit_number

@@ -21,10 +21,11 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      module dlwq_data
-       use m_zoek
-       use m_dhnlun
-       use m_srstop
+      module dlwq_hyd_data
+      use m_zoek
+      use m_srstop
+      use m_monsys
+      use m_open_waq_files
 
 !
 !          module contains everything for model data input and storage
@@ -394,7 +395,7 @@
 
       function dlwqdataEvaluate(dlwqdata,GridPs,itime,ndim1,ndim2,conc) result ( ierror )
 !
-         use grids
+         use dlwqgrid_mod
          use timers
 !
          type(t_dlwqdata)     , intent(in)       :: dlwqdata             ! data block to be used
@@ -457,8 +458,7 @@
                idt   = itim1+itim2
             else
                itimf = itime
-               if ( itime .ge. itim2 )
-     *                   itimf = itime - ( (itime-itim2)/idt + 1 ) * idt
+               if ( itime .ge. itim2 ) itimf = itime - ( (itime-itim2)/idt + 1 ) * idt
 
                ! make interpolation constants if iopt = 2
 
@@ -536,10 +536,11 @@
                it1c = itim1
                it2c = itim2
                idtc = idt
-               if ( aa .eq. amiss .or. ab .eq. amiss )
-     *               call dlwqdataGetValueMiss ( dlwqdata, ipar, iloc, ibrk , amiss,
-     *                                           itimf   , it1c, it2c, idtc , aa   ,
-     *                                           ab      )
+               if ( aa .eq. amiss .or. ab .eq. amiss ) then
+                     call dlwqdataGetValueMiss ( dlwqdata, ipar, iloc, ibrk , amiss, &
+                                                 itimf   , it1c, it2c, idtc , aa   , &
+                                                 ab      )
+               endif
 
                ! Make the wanted value
 
@@ -609,10 +610,11 @@
                   it1c = itim1
                   it2c = itim2
                   idtc = idt
-                  if ( aa .eq. amiss .or. ab .eq. amiss )
-     *                  call dlwqdataGetValueMiss ( dlwqdata, ipar, iloc, ibrk , amiss,
-     *                                              itimf   , it1c, it2c, idtc , aa   ,
-     *                                              ab      )
+                  if ( aa .eq. amiss .or. ab .eq. amiss ) then
+                        call dlwqdataGetValueMiss ( dlwqdata, ipar, iloc, ibrk , amiss, &
+                                                    itimf   , it1c, it2c, idtc , aa   , &
+                                                    ab      )
+                  endif
 
                   ! Make the wanted value
 
@@ -866,7 +868,7 @@
 
       function dlwqdataReadExtern(lunrep,dlwqdata) result ( ierror )
 
-         use grids
+         use m_file_unit_number
 
          integer              , intent(in)       :: lunrep               ! unit number report file
          type(t_dlwqdata)     , intent(inout)    :: dlwqdata             ! data block to be used
@@ -888,25 +890,13 @@
          noloc = dlwqdata%no_loc
          nobrk = max(dlwqdata%no_brk,1)
 
-         call dhnlun(701,lun)
+         call create_new_file_unit_number(701,lun)
+
          ftype = 2
          if ( mod(dlwqdata%filetype,10) .eq. FILE_UNFORMATTED ) ftype = ftype + 10
          if ( dlwqdata%filetype/10 .eq. 1 ) ftype = ftype + 20       ! I am in for a better solution (lp)
 
-         select case (ftype)
-             case ( 2 )
-                 open ( newunit = lun, file = dlwqdata%filename, iostat = ierror, form='unformatted', access='stream'  ,
-     &                  status = 'old' )
-             case ( 12 )
-                 open ( newunit = lun, file = dlwqdata%filename, iostat = ierror, form='unformatted' , status = 'old' )
-             case ( 32 )
-                 open ( newunit = lun, file = dlwqdata%filename, iostat = ierror, form='unformatted' , status = 'old',
-     &                  convert='big_endian' )
-             case default
-                 write(lunrep,'(a,a)')  'Error opening file: ', trim(dlwqdata%filename)
-                 write(lunrep,'(a,i5)') 'Impossible case in dlwq_data - ', ftype
-                 ierror = 1
-         end select
+         call open_waq_files( lun, dlwqdata%filename, 3  , ftype , ierror )
 
          if ( ierror .ne. 0 ) then
             write(lunrep,1000) trim(dlwqdata%filename)
@@ -932,9 +922,9 @@
 
       end function dlwqdataReadExtern
 
-      subroutine dlwqdataGetValueMiss ( dlwqdata, ipar, iloc, ibrk , amiss,
-     *                                  itimf   , it1c, it2c, idtc , aa   ,
-     *                                  ab      )
+      subroutine dlwqdataGetValueMiss ( dlwqdata, ipar, iloc, ibrk , amiss, &
+                                        itimf   , it1c, it2c, idtc , aa   , &
+                                        ab      )
 
 !     function : make function value in case of missing values
 
@@ -1016,4 +1006,113 @@
       return
       end subroutine dlwqdataGetValueMiss
 
-      end module dlwq_data
+      function dlwqdataCopy( data1, data2 ) result ( ierror )
+
+         type(t_dlwqdata), intent(in)       :: data1        ! data to be copied
+         type(t_dlwqdata), intent(out)      :: data2        ! copy of the data
+         integer                            :: ierror       !
+
+         ! local decalaration
+
+         integer                            :: nopar        ! local copy number of parameters
+         integer                            :: noloc        ! local copy number of locations
+         integer                            :: nobrk        ! local copy number of breakpoints
+         integer                            :: ipar         ! index paramaters
+         integer                            :: iloc         ! index locations
+         integer                            :: ibrk         ! index breakpoints
+         integer                            :: lunrep       ! unit number report file
+         integer                            :: ierr_alloc
+
+         call getmlu(lunrep)
+
+         ierror  = 0
+         nopar = data1%no_param
+         noloc = data1%no_loc
+         nobrk = data1%no_brk
+
+         data2%subject     = data1%subject
+         data2%no_param    = data1%no_param
+         data2%no_loc      = data1%no_loc
+         data2%no_brk      = data1%no_brk
+         data2%functype    = data1%functype
+         data2%igrid       = data1%igrid
+         data2%extern      = data1%extern
+         data2%filetype    = data1%filetype
+         data2%filename    = data1%filename
+         data2%iorder      = data1%iorder
+         data2%param_named = data1%param_named
+         if ( data2%param_named ) then
+            allocate(data2%param_name(nopar), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%param_name = data1%param_name
+         endif
+         data2%loc_named = data1%loc_named
+         if ( data2%loc_named ) then
+            allocate(data2%loc_name(noloc), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%loc_name = data1%loc_name
+         endif
+         data2%param_pointered = data1%param_pointered
+         if ( data2%param_pointered ) then
+            allocate(data2%param_pointers(nopar), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%param_pointers = data1%param_pointers
+         endif
+         data2%loc_defaults  = data1%loc_defaults
+         data2%loc_pointered = data1%loc_pointered
+         if ( data2%loc_pointered ) then
+            allocate(data2%loc_pointers(noloc), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%loc_pointers = data1%loc_pointers
+         endif
+         data2%scaled        = data1%scaled
+         data2%scale_factor  = data1%scale_factor
+         data2%param_scaled  = data1%param_scaled
+         if ( data2%param_scaled ) then
+            allocate(data2%factor_param(nopar), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%factor_param = data1%factor_param
+         endif
+         data2%loc_scaled    = data1%loc_scaled
+         if ( data2%loc_scaled ) then
+            allocate(data2%factor_loc(noloc), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%factor_loc = data1%factor_loc
+         endif
+         if ( data2%functype .ne. FUNCTYPE_CONSTANT .and. data2%no_brk .gt. 0 ) then
+            allocate(data2%times(nobrk), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%times = data1%times
+         endif
+         if ( data2%functype .eq. FUNCTYPE_HARMONIC .or. data2%functype .eq. FUNCTYPE_FOURIER ) then
+            allocate(data2%phase(nobrk), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            data2%phase = data1%phase
+         endif
+         if ( data2%iorder .eq. ORDER_PARAM_LOC ) then
+            allocate(data2%values(nopar,noloc,nobrk), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            do ibrk = 1, nobrk
+               do iloc = 1, noloc
+                  do ipar = 1, nopar
+                     data2%values(ipar,iloc,ibrk) = data1%values(ipar,iloc,ibrk)
+                  enddo
+               enddo
+            enddo
+         else
+            allocate(data2%values(noloc,nopar,nobrk), stat=ierr_alloc)
+            if ( ierr_alloc .ne. 0 ) then ; write(lunrep,*) ' error allocating memory' ; ierror = 1 ; return ; endif
+            do ibrk = 1, nobrk
+               do ipar = 1, nopar
+                  do iloc = 1, noloc
+                     data2%values(iloc,ipar,ibrk) = data1%values(iloc,ipar,ibrk)
+                  enddo
+               enddo
+            enddo
+         endif
+
+         return
+
+      end function dlwqdataCopy
+
+      end module dlwq_hyd_data

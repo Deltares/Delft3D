@@ -48,7 +48,7 @@
 
 !     global declarations
 
-      use grids
+      use dlwqgrid_mod
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
 

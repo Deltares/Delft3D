@@ -42,7 +42,7 @@
       use m_monsys
       use m_dhswtr
       use m_dhrmis
-      use dlwq_data
+      use dlwq_hyd_data
       use processet
       use timers       !   performance timers
 

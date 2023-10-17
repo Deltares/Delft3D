@@ -11,16 +11,16 @@ set(dd_iterators_path ${src_path}/dd/iterators)
 set(dd_mapper_path ${src_path}/dd/mapper)
 
 # Define include directories
-get_module_include_path(${checkout_src_root}/${d_hydro_lib_module} 
+get_module_include_path(${checkout_src_root}/${d_hydro_lib_module}
                         ${library_name}
                         d_hydro_lib_include_path)
 
-get_module_include_path(${checkout_src_root}/${deltares_common_c_module} 
+get_module_include_path(${checkout_src_root}/${deltares_common_c_module}
                         ${library_name}
                         deltares_common_c_include_path)
 
-get_module_include_path(${checkout_src_root}/${esmfsm_module} 
-                        ${library_name} 
+get_module_include_path(${checkout_src_root}/${esmfsm_module}
+                        ${library_name}
                         esmfsm_module_include_path)
 
 message(STATUS "Configuring '${library_name}' with the following deltares_common_c include path: '${deltares_common_c_include_path}'")
@@ -53,14 +53,14 @@ if (UNIX)
     include(FortranCInterface)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
+
+    include_directories(${NETCDF_INCLUDEDIR})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
-# Gather source files 
+# Gather source files
 file(GLOB header_files ${include_path}/*.h)
 file(GLOB header_dd_files ${dd_path}/*.h)
 file(GLOB header_dd_iterators_files ${dd_iterators_path}/*.h)
@@ -109,7 +109,9 @@ set(oss_dependencies_general flow2d3d_manager
                              esmfsm_c
                              esmfsm_version_number
                              io_netcdf
+                             io_netcdf_data
                              io_hyd
+                             waq_hyd_data
                              solvesaphe
                              waq_utils_f
                              waq_process
@@ -118,7 +120,7 @@ set(oss_dependencies_general flow2d3d_manager
                              deltares_common
                              deltares_common_c
                              kdtree_wrapper
-                             kdtree2) 
+                             kdtree2)
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
@@ -134,7 +136,7 @@ if (UNIX)
          ${oss_dependencies}
          PkgConfig::NETCDF
          PkgConfig::NETCDF_FTN)
-    
+
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
@@ -166,7 +168,7 @@ if (WIN32)
                             "advapi32.lib"
                             "comdlg32.lib"
                             "gdi32.lib"
-                            "winspool.lib" 
+                            "winspool.lib"
                             "netcdf.lib")
 
     # Set linker options
@@ -191,9 +193,9 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${library_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${library_name})
 
 install(TARGETS ${library_name} DESTINATION lib)

@@ -47,7 +47,7 @@
 !     Logical units      : lun(29) = unit formatted output file
 !                          lun( 2) = unit unformatted system file
 
-      use grids        !   for the storage of contraction grids
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use timers       !   performance timers
 
       implicit none

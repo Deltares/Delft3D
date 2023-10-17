@@ -31,6 +31,7 @@ set_source_files_properties(${fortran_version_file_delwaq}
 set(oss_dependencies_general deltares_common
                              deltares_common_c
                              io_netcdf
+                             io_netcdf_data
                              waq_kernel
                              waq_utils_f)
 

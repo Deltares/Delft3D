@@ -27,7 +27,7 @@
 
       ! global declarations
 
-      use m_ddhyd
+      use hydmod                   
       use m_dhfext
 
       implicit none

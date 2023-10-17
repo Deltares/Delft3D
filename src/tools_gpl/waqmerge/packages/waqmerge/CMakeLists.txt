@@ -30,9 +30,11 @@ if (UNIX)
     set(oss_dependencies deltares_common
                          deltares_common_c
                          io_netcdf
+                         io_netcdf_data
                          io_hyd
                          netcdf4
                          netcdff
+                         waq_hyd_data
                          waq_utils_f)
 
     oss_include_libraries(${executable_name} oss_dependencies)
@@ -47,7 +49,9 @@ if (WIN32)
     set(oss_dependencies deltares_common
                          deltares_common_c
                          io_netcdf
+                         io_netcdf_data
                          io_hyd
+                         waq_hyd_data
                          netcdf4
                          netcdff
                          waq_utils_f)

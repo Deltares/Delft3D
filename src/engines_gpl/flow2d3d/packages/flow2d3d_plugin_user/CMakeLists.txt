@@ -1,11 +1,11 @@
 set(library_name flow2d3d_plugin_user)
 
 # Define include directories
-get_module_include_path(${checkout_src_root}/${deltares_common_module} 
+get_module_include_path(${checkout_src_root}/${deltares_common_module}
                         ${library_name}
                         deltares_common_include_path)
-get_module_include_path(${checkout_src_root}/${esmfsm_module} 
-                        ${library_name} 
+get_module_include_path(${checkout_src_root}/${esmfsm_module}
+                        ${library_name}
                         esmfsm_module_include_path)
 
 message(STATUS "Configuring '${library_name}' with the following deltares_common include path: '${deltares_common_include_path}'")
@@ -38,9 +38,10 @@ set(oss_dependencies_general    delftio
                                 fortrangis
                                 gridgeom
                                 io_netcdf
+                                io_netcdf_data
                                 kdtree2
                                 kdtree_wrapper
-                                morphology_data 
+                                morphology_data
                                 morphology_kernel
                                 morphology_plugins_c)
 
@@ -54,11 +55,11 @@ if(UNIX)
 
     set(oss_dependencies ${oss_dependencies_general})
 
-    target_link_libraries(${library_name} 
+    target_link_libraries(${library_name}
         ${oss_dependencies}
         PkgConfig::NETCDF
         PkgConfig::NETCDF_FTN)
-    add_definitions(-DHAVE_CONFIG_H)    
+    add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}

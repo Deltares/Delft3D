@@ -168,6 +168,10 @@ if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
 endif()
 
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
+endif()
+
 # gridgeom
 if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
@@ -186,6 +190,11 @@ endif()
 # io_hyd
 if(NOT TARGET io_hyd)
     add_subdirectory(${checkout_src_root}/${io_hyd_module} io_hyd)
+endif()
+
+# waq_hyd_data
+if(NOT TARGET waq_hyd_data)
+    add_subdirectory(${checkout_src_root}/${waq_hyd_data_module} waq_hyd_data)
 endif()
 
 #

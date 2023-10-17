@@ -26,7 +26,6 @@
       use m_zoek
       use m_srstop
       use m_open_waq_files
-      use m_dhnolay
       use delwaq_loads
       use waq_plugin_wasteload_version_module
 
@@ -463,6 +462,15 @@
 
       end function find_string
 
+      integer function get_number_of_layers()
+         ! gets the number of layers (from m_sysn)
+
+         use m_sysn
+
+         get_number_of_layers = nolay
+
+      end function get_number_of_layers
+
       subroutine delwaq_user_walking_discharges ( nowst , wasteloads, notot , nosys , noseg ,
      +                                            itime , conc      , syname, lunrep)
 
@@ -474,26 +482,26 @@
 
       ! arguments declarations
 
-      integer                             :: nowst                  ! number of wasteloads
-      type(wasteload), pointer            :: wasteloads(:)          ! array of all wasteloads (structure)
-      integer                             :: notot                  ! total number of substances
-      integer                             :: nosys                  ! number of active substances
-      integer                             :: noseg                  ! number of segments
-      integer                             :: itime                  ! system time
-      real                                :: conc(notot,noseg)      ! concentration array
-      character(len=*)                    :: syname(notot)          ! substance names
+      integer                             :: nowst                  !< number of wasteloads
+      type(wasteload), pointer            :: wasteloads(:)          !< array of all wasteloads (structure)
+      integer                             :: notot                  !< total number of substances
+      integer                             :: nosys                  !< number of active substances
+      integer                             :: noseg                  !< number of segments
+      integer                             :: itime                  !< system time
+      real                                :: conc(notot,noseg)      !< concentration array
+      character(len=*)                    :: syname(notot)          !< substance names
 
       ! local variables
 
       logical, save                       :: first = .true.
-      integer, save                       :: nowalk                 ! number of walking discharges
-      integer, save                       :: next_time_in_file      ! next time to read the locations
-      integer, save                       :: time_offset            ! time offset because of rewinding
-      integer, save                       :: timestep               ! timestep, anticipate next time
-      integer, save                       :: period                 ! period covered in the file
-      integer, save                       :: nosegl                 ! number of segments per layer
-      integer, save                       :: nolay                  ! number of layers
-      integer, dimension(:,:), allocatable, save :: lgrid           ! matrix with segment numbers
+      integer, save                       :: nowalk                 !< number of walking discharges
+      integer, save                       :: next_time_in_file      !< next time to read the locations
+      integer, save                       :: time_offset            !< time offset because of rewinding
+      integer, save                       :: timestep               !< timestep, anticipate next time
+      integer, save                       :: period                 !< period covered in the file
+      integer, save                       :: nosegl                 !< number of segments per layer
+      integer, save                       :: nolay                  !< number of layers
+      integer, dimension(:,:), allocatable, save :: lgrid           !< matrix with segment numbers
 
       integer                             :: newsegment
       integer                             :: i
@@ -533,7 +541,7 @@
                    return
                endif
 
-               call dhnolay( nolay )
+               nolay = get_number_of_layers()
 
                allocate( lgrid(mmax,nmax) )
                read( lunlga ) lgrid

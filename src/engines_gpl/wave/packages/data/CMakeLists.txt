@@ -29,16 +29,17 @@ if (WIN32)
                             ec_module
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             nefis
                             netcdf4
-                            netcdff) 
+                            netcdff)
     oss_include_libraries(${library_name} oss_dependencies)
 
     include_directories(${mpi_include_path}
                         ${version_include_dir}
                         ${wave_version_path})
 
-    # Define preprocessor definitions     
+    # Define preprocessor definitions
     target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_MPI")
 
 endif(WIN32)
@@ -56,6 +57,7 @@ if (UNIX)
                             ec_module
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             nefis
                             netcdf4
                             netcdff)
@@ -68,7 +70,7 @@ if (UNIX)
                         ${version_include_dir}
                         ${wave_version_path})
 
-    # Define preprocessor definitions 
+    # Define preprocessor definitions
     target_compile_definitions(${library_name} PRIVATE "HAVE_MPI")
 
 endif(UNIX)

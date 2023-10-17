@@ -31,7 +31,7 @@
       use m_monsys
       use time_module
       use m_get_filepath_and_pathlen
-      use m_ddhyd
+      use hydmod
       use m_write_error_message
       use rd_token                    ! tokenized reading
       use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile

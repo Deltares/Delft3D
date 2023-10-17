@@ -7,7 +7,8 @@ set(oss_dependencies    deltares_common
                         flow1d_core
                         flow1d_io
                         gridgeom
-                        io_netcdf)
+                        io_netcdf
+                        io_netcdf_data)
 oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)

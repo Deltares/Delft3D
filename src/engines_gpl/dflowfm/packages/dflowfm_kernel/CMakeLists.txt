@@ -1,14 +1,14 @@
 # Set version file variables
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 
-# Set the DFlow FM component path 
+# Set the DFlow FM component path
 set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
 # Include directories that are required as references
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Set the directory of where the source code is located
-set(src_path src) 
+set(src_path src)
 
 # Gather the source files
 set(headers include/blasfm.h)
@@ -19,10 +19,10 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(dflowfm_version_path ${src_path}/dflowfm_version)
 set(fortran_version_files ${dflowfm_version_path}/dflowfm_version.F90
                           ${dflowfm_version_path}/static_version_info.F90)
-						  
+
 set_source_files_properties(${fortran_version_files}
-                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")						  
-						  
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+
 set(dflowfm_data_path ${src_path}/dflowfm_data)
 get_fortran_source_files(${dflowfm_data_path} dflowfm_data)
 
@@ -133,6 +133,7 @@ if (UNIX)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             kdtree_wrapper
                             kdtree2
                             fortrangis
@@ -153,6 +154,7 @@ if (UNIX)
                             triangle_c
                             wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
                             interacter_stub)
@@ -175,6 +177,7 @@ set(oss_dependencies    deltares_common
                         flow1d_io
                         gridgeom
                         io_netcdf
+                        io_netcdf_data
                         kdtree_wrapper
                         kdtree2
                         fortrangis
@@ -195,6 +198,7 @@ set(oss_dependencies    deltares_common
                         trachytopes_kernel
                         triangle_c
                         waq_process
+                        waq_hyd_data
                         waq_utils_c
                         waq_utils_f
                         wq_processes)
@@ -217,7 +221,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${version_include_dir}
                         ${dflowfm_version_path}
                         ${dflowfm_version_header_path})
-						
+
 # Define additional compilation flags
 
 set_source_files_properties(${fortran_version_files}
@@ -260,7 +264,7 @@ set_source_files_properties(${fortran_version_files}
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
-# Define preprocessor definitions 
+# Define preprocessor definitions
 if (WIN32)
     set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
@@ -279,4 +283,3 @@ endif(UNIX)
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_source_list})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
-

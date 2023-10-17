@@ -12,7 +12,9 @@ set(oss_dependencies deltares_common
                      kdtree2
                      netcdff
                      io_netcdf
-                     io_hyd)
+                     io_netcdf_data
+                     io_hyd
+                     waq_hyd_data)
 
 
 target_link_libraries(${library_name} ${oss_dependencies})
