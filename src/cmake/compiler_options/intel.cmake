@@ -73,6 +73,8 @@ if (UNIX)
     set(generate_reentrancy_threaded_flag        -reentrancy threaded)
     set(floating_point_exception_flag            -fpe0)
     set(traceback_flag                           -traceback)
+    
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
     set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
