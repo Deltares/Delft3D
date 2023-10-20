@@ -161,7 +161,7 @@
       num_decimals_version = obtain_num_decimals_version(version)
       write(num_decimals_version_char,'(I10)') num_decimals_version
       
-      write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x)') nproc,version,serial
+      write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') nproc,version,serial
 
       do 800 iproc=1,nproc
 
