@@ -2710,10 +2710,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       if (nstor > 0) then
          stors => network%stors%stor
          do i = 1, nstor
-            k1 = stors(i)%gridPoint
+            k1 = stors(i)%grid_point
             if (k1 > 0) then
                ! Add storage area to BARE by using a water depth of 1000 m
-               bare(k1)   = bare(k1)   + getSurface(stors(i), bl(k1) + 1d3) 
+               bare(k1)   = bare(k1)   + get_surface(stors(i), bl(k1) + 1d3)
             endif
          enddo
       endif
