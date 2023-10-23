@@ -319,16 +319,16 @@ module m_readStorageNodes
             endif
       
             pSto => network%storS%stor(network%storS%Count)
-            nullify(pSto%storageArea)
-            nullify(pSto%streetArea)
+            nullify(pSto%storage_area)
+            nullify(pSto%street_area)
 
-            pSto%id        = storgNodeId
-            pSto%name      = storgNodeName
-            pSto%node_index = -1
+            pSto%id           = storgNodeId
+            pSto%name         = storgNodeName
+            pSto%node_index   = -1
             pSto%branch_index = -1
             if (nodeIdx > 0) then
-               pSto%nodeId    = nodeId
-               pSto%node_index= nodeIdx
+               pSto%node_id    = nodeId
+               pSto%node_index = nodeIdx
             else if (branchIdx > 0) then
                psto%branch_index = branchIdx
                pSto%chainage = chainage
@@ -338,22 +338,22 @@ module m_readStorageNodes
                pSto%y         = y
                pSto%node_index = -1 ! node_index will be computed later when calling subroutine set_node_numbers_for_storage_nodes 
             end if
-            pSto%useStreetStorage = useStreetStorage
-            pSto%useTable         = useTable1
+            pSto%use_street_storage = useStreetStorage
+            pSto%use_table          = useTable1
             
             
             ! setTable
-            call setTable(pSto%storageArea, interpol, storageLevels, storageAreas, numLevels)
+            call setTable(pSto%storage_area, interpol, storageLevels, storageAreas, numLevels)
             if (.not. useTable1) then
-               pSto%storageType = storageType
+               pSto%storage_type = storageType
                if (storageType == nt_Closed) then
                   network%storS%Count_closed = network%storS%Count_closed + 1
                end if
                if (useStreetStorage) then
-                  call setTable(pSto%streetArea, interpol, streetLevel, streetStorageArea, numLevels)
+                  call setTable(pSto%street_area, interpol, streetLevel, streetStorageArea, numLevels)
                end if
             else
-               pSto%storageType = nt_Reservoir
+               pSto%storage_type = nt_Reservoir
             end if               
          endif
       end do
