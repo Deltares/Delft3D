@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqt2
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -46,22 +48,22 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUNIN   INTEGER       1     INPUT   unit number intermediate file
-!     LUNOUT  INTEGER       1     INPUT   unit number monitor file
-!     ITIME   INTEGER       1     INPUT   Model timer
-!     RESULT  REAL     NTOTAL     OUTPUT  result array at time ITIME
-!     NTOTAL  INTEGER       1     INPUT   number of items to be filled
+!     LUNIN   INTEGER(kind=int_32) ::1     INPUT   unit number intermediate file
+!     LUNOUT  INTEGER(kind=int_32) ::1     INPUT   unit number monitor file
+!     ITIME   INTEGER(kind=int_32) ::1     INPUT   Model timer
+!     RESULT  REAL(kind=sp) ::NTOTAL     OUTPUT  result array at time ITIME
+!     NTOTAL  INTEGER(kind=int_32) ::1     INPUT   number of items to be filled
 !     LUNTXT  CHAR*(*)      1     INPUT   text concerning unit numbers
-!     ISFLAG  INTEGER       1     INPUT   = 1 then 'ddhhmmss' format
-!     IFFLAG  INTEGER       1     INPUT   = 1 then first invocation
+!     ISFLAG  INTEGER(kind=int_32) ::1     INPUT   = 1 then 'ddhhmmss' format
+!     IFFLAG  INTEGER(kind=int_32) ::1     INPUT   = 1 then first invocation
 !
 !     DECLARATIONS        :
 !
       use m_srstop
       use timers
 
-      real          RESULT(NTOTAL)
-      integer       LUNIN  , LUNOUT , ITIME , NTOTAL, ISFLAG , IFFLAG
+      real(kind=sp) ::RESULT(NTOTAL)
+      integer(kind=int_32) ::LUNIN  , LUNOUT , ITIME , NTOTAL, ISFLAG , IFFLAG
       CHARACTER*10  MSGTXT(3)
       CHARACTER*(*) LUNTXT
       LOGICAL       ONLINE
@@ -69,8 +71,8 @@
       logical        stream_access                     ! help variable to detect the type of file access
       character(20)  access                            ! help variable to detect the type of file access
 
-      integer    ierr, itime1, messge
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ierr, itime1, messge
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqt2", ithandl )
 
       IF ( ONLINE ) THEN

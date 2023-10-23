@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqib
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -45,25 +47,25 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUN     INTEGER    1        INPUT   unit number input file
-!     A       REAL       ?        IN/OUT  Real      boundary workspace
-!     J       INTEGER    ?        IN/OUT  Integer   boundary workspace
-!     MODE    INTEGER    1        INPUT   File number involved
-!     IISP    INTEGER    1        IN/OUT  Integer array space pointer
-!     IRSP    INTEGER    1        IN/OUT  Real array space pointer
-!     IERR    INTEGER    1        IN/OUT  error count
+!     LUN     INTEGER(kind=int_32) ::1        INPUT   unit number input file
+!     A       REAL(kind=sp) ::?        IN/OUT  Real(kind=sp) ::boundary workspace
+!     J       INTEGER(kind=int_32) ::?        IN/OUT  Integer(kind=int_32) ::boundary workspace
+!     MODE    INTEGER(kind=int_32) ::1        INPUT   File number involved
+!     IISP    INTEGER(kind=int_32) ::1        IN/OUT  Integer(kind=int_32) ::array space pointer
+!     IRSP    INTEGER(kind=int_32) ::1        IN/OUT  Real(kind=sp) ::array space pointer
+!     IERR    INTEGER(kind=int_32) ::1        IN/OUT  error count
 !
 !     Declaration of arguments
 !
       use timers
 
-      real        A(*)
-      integer     J(*)
-      integer     IISP, IRSP, IERR, MODE, LUN, LUNUT
+      real(kind=sp) ::A(*)
+      integer(kind=int_32) ::J(*)
+      integer(kind=int_32) ::IISP, IRSP, IERR, MODE, LUN, LUNUT
 
-      integer     i, ia, ij, k, iopt
-      integer     noitm, nosys, npnt, ndim, ntal, nobrk
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::i, ia, ij, k, iopt
+      integer(kind=int_32) ::noitm, nosys, npnt, ndim, ntal, nobrk
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqib", ithandl )
 !
 !         initialise the system
