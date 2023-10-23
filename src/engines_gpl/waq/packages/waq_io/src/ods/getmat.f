@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getmat
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -66,23 +68,23 @@
       use m_dhfext
 
       CHARACTER*256 FNAME (3) , OPTION
-      REAL                  :: DATA(*)
-      INTEGER               :: LOC(*)
-      REAL*8        TIM(2)    , OTIME  , ATIME    , SECOND
-      real  amiss
+      REAL(kind=sp) ::  DATA(*) 
+      INTEGER(kind=int_32) ::  LOC(*) 
+      REAL(kind=dp)        ::TIM(2)    , OTIME  , ATIME    , SECOND
+      real(kind=sp) :: amiss 
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_32) ::  extpos   ! position of extension
+      integer(kind=int_32) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun
-      integer               :: I1
-      integer               :: NODUMP, NOTOT
-      integer               :: k, L, i2, i3, i4, ierror, iyear, imonth, iday
-      integer               :: ihour, iminut, isecnd, isfact, idummy, idate
-      integer               :: itime, ntt, iset, iprcod, maxdim
-      integer               :: adummy, itype
+      integer(kind=int_32) ::  lun 
+      integer(kind=int_32) ::  I1 
+      integer(kind=int_32) ::  NODUMP, NOTOT 
+      integer(kind=int_32) ::  k, L, i2, i3, i4, ierror, iyear, imonth, iday 
+      integer(kind=int_32) ::  ihour, iminut, isecnd, isfact, idummy, idate 
+      integer(kind=int_32) ::  itime, ntt, iset, iprcod, maxdim 
+      integer(kind=int_32) ::  adummy, itype
       
-!         Open the DELWAQ .HIS file if needed
+ !         Open the DELWAQ .HIS file if needed
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
       IF ( IERROR .NE. 0 ) RETURN
@@ -198,20 +200,20 @@
 !
 !
       CHARACTER*256 FNAME (3) , OPTION
-      REAL      DATA(*)
-      integer   LOC(*)
-      REAL*8        TIM(2)    , OTIME  , ATIME    , SECOND
-      real  amiss
+      REAL(kind=sp) :: DATA(*) 
+      integer(kind=int_32) :: LOC(*) 
+      REAL(kind=dp)        :: TIM(2)    , OTIME  , ATIME    , SECOND
+      real(kind=sp) :: amiss 
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_32) ::  extpos   ! position of extension
+      integer(kind=int_32) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun, NODUMP, NOTOT, k, NTT
-      integer               :: ierror, iyear, imonth, iday
-      integer               :: ihour, iminut, isecnd, isfact, idummy, idate
+      integer(kind=int_32) ::  lun, NODUMP, NOTOT, k, NTT 
+      integer(kind=int_32) ::  ierror, iyear, imonth, iday 
+      integer(kind=int_32) ::  ihour, iminut, isecnd, isfact, idummy, idate 
       integer               :: itime, iset, iprcod(:), maxdim
-      integer               :: adummy, itype
-!
+      integer(kind=int_32) ::  adummy, itype
+ !
 !         Open the DELWAQ .HIS file if needed
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )

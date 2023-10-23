@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_pointb
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -68,13 +70,13 @@
 
 !     kind           function         name                        Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun   ( * )        !< array with unit numbers
-      integer  ( 4), intent(in   ) :: ioutpt             !< how extensive is output ?
+      integer(kind=int_32), intent(in   ) ::  lun   ( * )         !< array with unit numbers
+      integer(kind=int_32), intent(in   ) ::  ioutpt              !< how extensive is output ?
       type(GridPointerColl)           GridPs             !< Collection of grid pointers
-      integer  ( 4), intent(in   ) :: ibnd  (nobnd, 2  ) !< normal boundary pointers
-      integer  ( 4), intent(in   ) :: noqt               !< total number of exchanges
-      integer  ( 4), intent(inout) :: ipoint(  4  ,noqt) !< exchange pointers
-      integer  ( 4), intent(inout) :: ierr               !< cumulative error   count
+      integer(kind=int_32), intent(in   ) ::  ibnd  (nobnd, 2  )  !< normal boundary pointers
+      integer(kind=int_32), intent(in   ) ::  noqt                !< total number of exchanges
+      integer(kind=int_32), intent(inout) ::  ipoint(  4  ,noqt)  !< exchange pointers
+      integer(kind=int_32), intent(inout) ::  ierr                !< cumulative error   count
 !
 !     COMMON BLOCK  / SYSN / :
 !
@@ -103,28 +105,28 @@
 
 !     local declarations
 
-      integer              :: lunut           ! output unit number (lun(29))
-      integer, allocatable :: IAbnd(:,:)      ! array with boundary information in the bed
-      integer              :: ilay            ! index layer number
-      integer              :: isegb           ! counter for bed volumes
-      integer              :: iq              ! loop counter for exchanges in one bed column
-      integer              :: ib              ! loop counter for bed volumes
-      integer              :: iqt             ! counter for exchanges in the bed
-      integer              :: jbott           ! grid number of the bottom_grid
-      integer              :: jbase           ! grid number of the base_grid
-      integer              :: nsegl           ! nr of volumes per water layer
-      integer              :: nlay            ! nr of layers in the water
-      integer              :: nsegb           ! nr of volumes per bed layer
-      integer              :: nlayb           ! nr of layers in the bed
-      integer, allocatable :: botmatrix(:,:)  ! matrix with bottom segment number in case of space varying number of layers
+      integer(kind=int_32) ::  lunut            ! output unit number (lun(29))
+      integer(kind=int_32), allocatable ::  IAbnd(:,:)       ! array with boundary information in the bed
+      integer(kind=int_32) ::  ilay             ! index layer number
+      integer(kind=int_32) ::  isegb            ! counter for bed volumes
+      integer(kind=int_32) ::  iq               ! loop counter for exchanges in one bed column
+      integer(kind=int_32) ::  ib               ! loop counter for bed volumes
+      integer(kind=int_32) ::  iqt              ! counter for exchanges in the bed
+      integer(kind=int_32) ::  jbott            ! grid number of the bottom_grid
+      integer(kind=int_32) ::  jbase            ! grid number of the base_grid
+      integer(kind=int_32) ::  nsegl            ! nr of volumes per water layer
+      integer(kind=int_32) ::  nlay             ! nr of layers in the water
+      integer(kind=int_32) ::  nsegb            ! nr of volumes per bed layer
+      integer(kind=int_32) ::  nlayb            ! nr of layers in the bed
+      integer(kind=int_32), allocatable ::  botmatrix(:,:)   ! matrix with bottom segment number in case of space varying number of layers
       logical              :: space_var_nolay ! space varying number of layers in the bed ?
-      integer              :: nolaymax        ! maximum number of bed layers in a bed column
-      integer              :: ioff1           ! offset volume nr's last water layer
-      integer              :: ioff2           ! offset volume nr's one but last water layer
-      integer              :: inaarplus       ! the 'to+1' exchange pointer
-      integer              :: i, k            ! loop counters
+      integer(kind=int_32) ::  nolaymax         ! maximum number of bed layers in a bed column
+      integer(kind=int_32) ::  ioff1            ! offset volume nr's last water layer
+      integer(kind=int_32) ::  ioff2            ! offset volume nr's one but last water layer
+      integer(kind=int_32) ::  inaarplus        ! the 'to+1' exchange pointer
+      integer(kind=int_32) ::  i, k             ! loop counters
       logical              :: odd             ! mention only the first boundary
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "pointb", ithndl )
 
       lunut = lun(29)

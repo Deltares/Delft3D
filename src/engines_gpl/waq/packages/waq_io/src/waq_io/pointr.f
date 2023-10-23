@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module pointr_mod
+      use m_waq_type_definitions
       use m_bound
       use m_makpnt
       use m_open_waq_files
@@ -71,48 +72,48 @@
 
 !     kind           function         name            Descriptipon
 
-      integer  ( 4), intent(inout) :: lun   (*)     !< array with unit numbers
+      integer(kind=int_32), intent(inout) ::  lun   (*)      !< array with unit numbers
       character( *), intent(inout) :: lchar (*)     !< array with file names of the files
-      integer  ( 4), intent(in   ) :: noseg         !< number of computational volumes
-      integer  ( 4), intent(in   ) :: nmax          !< dimension of first direction of grid
-      integer  ( 4), intent(in   ) :: mmax          !< dimension of second direction of grid
-      integer  ( 4), intent(in   ) :: kmax          !< dimension of third direction of grid
-      integer  ( 4), intent(  out) :: noq           !< noq1 + noq2 + noq3
-      integer  ( 4), intent(  out) :: noq1          !< number of exchanges 1st direction
-      integer  ( 4), intent(  out) :: noq2          !< number of exchanges 2nd direction
-      integer  ( 4), intent(  out) :: noq3          !< number of exchanges 3rd direction
-      integer  ( 4), intent(inout) :: noqt          !< total number of exchanges
-      integer  ( 4), intent(  out) :: nobnd         !< number of open boundaries
-      integer  ( 4), pointer       :: ipnt (:,:)    !< exchange pointer
-      integer  ( 4), intent(in   ) :: intsrt        !< integration number
-      integer  ( 4), intent(in   ) :: ipopt1        !< file option ( 0 = binary )
-      integer  ( 4), intent(  out) :: jtrack        !< number of codiagonals of matrix
-      integer  ( 4), intent(in   ) :: ioutpt        !< flag for more or less output
-      integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
+      integer(kind=int_32), intent(in   ) ::  noseg          !< number of computational volumes
+      integer(kind=int_32), intent(in   ) ::  nmax           !< dimension of first direction of grid
+      integer(kind=int_32), intent(in   ) ::  mmax           !< dimension of second direction of grid
+      integer(kind=int_32), intent(in   ) ::  kmax           !< dimension of third direction of grid
+      integer(kind=int_32), intent(  out) ::  noq            !< noq1 + noq2 + noq3
+      integer(kind=int_32), intent(  out) ::  noq1           !< number of exchanges 1st direction
+      integer(kind=int_32), intent(  out) ::  noq2           !< number of exchanges 2nd direction
+      integer(kind=int_32), intent(  out) ::  noq3           !< number of exchanges 3rd direction
+      integer(kind=int_32), intent(inout) ::  noqt           !< total number of exchanges
+      integer(kind=int_32), intent(  out) ::  nobnd          !< number of open boundaries
+      integer(kind=int_32), pointer ::  ipnt (:,:)     !< exchange pointer
+      integer(kind=int_32), intent(in   ) ::  intsrt         !< integration number
+      integer(kind=int_32), intent(in   ) ::  ipopt1         !< file option ( 0 = binary )
+      integer(kind=int_32), intent(  out) ::  jtrack         !< number of codiagonals of matrix
+      integer(kind=int_32), intent(in   ) ::  ioutpt         !< flag for more or less output
+      integer(kind=int_32), intent(in   ) ::  iwidth         !< width of the output file
       type(GridPointerColl)           GridPs        !< Collection of grid pointers
-      integer  ( 4), pointer       :: cellpnt(:)    !< backpointer noseg to mnmaxk
-      integer  ( 4), pointer       :: flowpnt(:)    !< backpointer noq to 3*mnmaxk-mnmax
-      integer  ( 4), intent(inout) :: ierr          !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
+      integer(kind=int_32), pointer ::  cellpnt(:)     !< backpointer noseg to mnmaxk
+      integer(kind=int_32), pointer ::  flowpnt(:)     !< backpointer noq to 3*mnmaxk-mnmax
+      integer(kind=int_32), intent(inout) ::  ierr           !< cumulative error   count
+      integer(kind=int_32), intent(inout) ::  iwar           !< cumulative warning count
 
 !     local declarations
 
-      integer, allocatable :: imat  (:)   ! regular grid matrix
-      integer                 ntot        ! nmax * mmax
-      integer                 ierr2       ! local error count
-      integer                 i1, i2, i3  ! loop counters
-      integer                 ist, k      ! help variable for loops
-      integer                 nobndl      ! number of boundaries per layer
-      integer                 nmax2       ! help variable to check nmax
-      integer                 mmax2       ! help variable to check mmax
-      integer                 nm          ! noseg from file
-      integer                 nlay        ! number of layers from file
-      real                    dummy       !
+      integer(kind=int_32), allocatable ::  imat  (:)    ! regular grid matrix
+      integer(kind=int_32) :: ntot         ! nmax * mmax
+      integer(kind=int_32) :: ierr2        ! local error count
+      integer(kind=int_32) :: i1, i2, i3   ! loop counters
+      integer(kind=int_32) :: ist, k       ! help variable for loops
+      integer(kind=int_32) :: nobndl       ! number of boundaries per layer
+      integer(kind=int_32) :: nmax2        ! help variable to check nmax
+      integer(kind=int_32) :: mmax2        ! help variable to check mmax
+      integer(kind=int_32) :: nm           ! noseg from file
+      integer(kind=int_32) :: nlay         ! number of layers from file
+      real(kind=sp) :: dummy        !
       character(256)          filename    ! to open more files
-      real                    x0, y0      ! zero point cco file
-      real                    alpha       ! help variables cco file
-      integer                 npart       ! help variables cco file
-      integer(4) :: ithndl = 0
+      real(kind=sp) :: x0, y0       ! zero point cco file
+      real(kind=sp) :: alpha        ! help variables cco file
+      integer(kind=int_32) :: npart        ! help variables cco file
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "pointr", ithndl )
 
 !        Read and check first line of matrix

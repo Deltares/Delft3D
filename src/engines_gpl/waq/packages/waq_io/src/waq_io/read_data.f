@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_data
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -45,33 +47,33 @@
 !     declaration of the arguments
 
       type(t_dlwqdata)      , intent(inout) :: data_block   ! data block
-      integer               , intent(in)    :: itfact       ! factor between clocks
+      integer(kind=int_32), intent(in) ::  itfact        ! factor between clocks
       logical               , intent(in)    :: dtflg1       ! true if time in 'date' format
       logical               , intent(in)    :: dtflg3       ! true if yyetc instead of ddetc
-      integer               , intent(inout) :: ierr         ! cummulative error count
+      integer(kind=int_32), intent(inout) ::  ierr          ! cummulative error count
 
 !     local declarations
 
-      integer                               :: ftype         ! function type (constant,block,linear,harmonic,fourier)
-      integer                               :: mxbrk         ! allocate dimension of third dimension
-      integer                               :: ndim1         ! first dimension
-      integer                               :: ndim2         ! second dimension
-      integer                               :: nobrk         ! third dimension
-      integer, pointer                      :: times2(:)     ! used to resize
-      real, pointer                         :: phase2(:)     ! used to resize
-      real, pointer                         :: values2(:,:,:)! used to resize
-      integer                               :: t_asked       ! type of token asked
-      integer                               :: t_token       ! type of token
+      integer(kind=int_32) ::  ftype          ! function type (constant,block,linear,harmonic,fourier)
+      integer(kind=int_32) ::  mxbrk          ! allocate dimension of third dimension
+      integer(kind=int_32) ::  ndim1          ! first dimension
+      integer(kind=int_32) ::  ndim2          ! second dimension
+      integer(kind=int_32) ::  nobrk          ! third dimension
+      integer(kind=int_32), pointer ::  times2(:)      ! used to resize
+      real(kind=sp), pointer ::  phase2(:)      ! used to resize
+      real(kind=sp), pointer ::  values2(:,:,:) ! used to resize
+      integer(kind=int_32) ::  t_asked        ! type of token asked
+      integer(kind=int_32) ::  t_token        ! type of token
       character(len=256)                    :: ctoken        ! character token
-      integer                               :: itoken        ! integer token
-      real                                  :: rtoken        ! real token
+      integer(kind=int_32) ::  itoken         ! integer token
+      real(kind=sp) ::  rtoken         ! real token
       character                             :: cdummy        ! dummy
-      integer                               :: idummy        ! dummy
-      real                                  :: rdummy        ! dummy
-      integer                               :: i1,i2,i3      ! indexes
-      integer                               :: ibrk          ! indexe
-      integer                               :: ierr_alloc    ! error status
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  idummy         ! dummy
+      real(kind=sp) ::  rdummy         ! dummy
+      integer(kind=int_32) ::  i1,i2,i3       ! indexes
+      integer(kind=int_32) ::  ibrk           ! indexe
+      integer(kind=int_32) ::  ierr_alloc     ! error status
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "read_data", ithndl )
 
       ! dimension according to order

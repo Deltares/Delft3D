@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5h
+      use m_waq_type_definitions
+
 
       implicit none
       
@@ -70,14 +72,14 @@
       character*(*) cnames(*)
       dimension     iar(*)
       character*20  chulp,  message_type
-      integer(4) :: ithndl = 0
-      integer    :: i1, i3, i4, i5
-      integer    :: lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
-      integer    :: itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
+      integer(kind=int_32) ::  ithndl = 0 
+      integer(kind=int_32) ::  i1, i3, i4, i5 
+      integer(kind=int_32) ::  lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim 
+      integer(kind=int_32) ::  itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
+       
+      integer(kind=int_32) ::  ierr, iwar
       
-      integer :: ierr, iwar
-      
-      
+       
       ierr = -1
       if (timon) call timstrt( "compact_usefor_list", ithndl )
 !

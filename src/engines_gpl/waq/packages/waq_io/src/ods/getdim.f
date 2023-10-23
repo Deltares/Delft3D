@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getdim
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -72,16 +74,16 @@
       CHARACTER*3   DIM
       DIMENSION     NDIM(3)
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_32) ::  extpos   ! position of extension
+      integer(kind=int_32) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun
-      integer               :: NODUMP, NOTOT
-      integer               :: k, NTT, ierror, idummy, notim, ndim, itype
-      real                  :: adummy
-      integer               :: iprdep, itmdep, locdep
+      integer(kind=int_32) ::  lun 
+      integer(kind=int_32) ::  NODUMP, NOTOT 
+      integer(kind=int_32) ::  k, NTT, ierror, idummy, notim, ndim, itype 
+      real(kind=sp) ::  adummy 
+      integer(kind=int_32) ::  iprdep, itmdep, locdep
 
-!
+ !
 !         Open the DELWAQ .HIS file
 !
       lun = 10

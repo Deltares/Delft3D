@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_interpol
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -54,22 +56,22 @@
 
 !     kind           function         name                   Descriptipon
 
-      integer  ( 4), intent(in   ) :: nvar                 !< number of variables
-      integer  ( 4), intent(in   ) :: ndim2                !< data per variable
-      integer  ( 4), intent(in   ) :: tset                 !< interpolation time
-      integer  ( 4), intent(in   ) :: thigh                !< time at end of interval
-      integer  ( 4), intent(in   ) :: tlow                 !< time at start of interval
-      real     ( 4), intent(  out) :: result(ndim2,nvar)   !< resulting array
-      real     ( 4), intent(in   ) :: lower (ndim2,nvar)   !< lower end array
-      real     ( 4), intent(in   ) :: higher(ndim2,nvar)   !< higher end array
-      integer  ( 4), intent(in   ) :: iftyp (nvar )        !< interpolation type per variable
+      integer(kind=int_32), intent(in   ) ::  nvar                  !< number of variables
+      integer(kind=int_32), intent(in   ) ::  ndim2                 !< data per variable
+      integer(kind=int_32), intent(in   ) ::  tset                  !< interpolation time
+      integer(kind=int_32), intent(in   ) ::  thigh                 !< time at end of interval
+      integer(kind=int_32), intent(in   ) ::  tlow                  !< time at start of interval
+      real(kind=sp), intent(  out) ::  result(ndim2,nvar)    !< resulting array
+      real(kind=sp), intent(in   ) ::  lower (ndim2,nvar)    !< lower end array
+      real(kind=sp), intent(in   ) ::  higher(ndim2,nvar)    !< higher end array
+      integer(kind=int_32), intent(in   ) ::  iftyp (nvar )         !< interpolation type per variable
 
 !     local decalations
 
-      real     ( 4)  factor1      ! weight of the higher end
-      real     ( 4)  factor2      ! weight of the lower end
-      integer  ( 4)  ivar         ! loop counter
-      integer(4) :: ithndl = 0
+      real(kind=sp) :: factor1       ! weight of the higher end
+      real(kind=sp) :: factor2       ! weight of the lower end
+      integer(kind=int_32) :: ivar          ! loop counter
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "interpol", ithndl )
 
 !        interpolate

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_opt1
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -65,38 +67,38 @@
 !     Parameters    :
 !     type     kind  function         name             description
 
-      integer   (4) , intent(in   ) :: iopt1          !< Input option
-      integer   (4) , intent(inout) :: lun  (*)       !< DELWAQ Unit number array
-      integer   (4) , intent(in   ) :: is             !< entry in LUN for item
+      integer(kind=int_32), intent(in   ) ::  iopt1           !< Input option
+      integer(kind=int_32), intent(inout) ::  lun  (*)        !< DELWAQ Unit number array
+      integer(kind=int_32), intent(in   ) ::  is              !< entry in LUN for item
       character*(*) , intent(inout) :: lchar(*)       !< IN/OUT  Filenames
       logical       , intent(in   ) :: dtflg1         !< 'date'-format 1st time scale
       logical       , intent(in   ) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer   (4) , intent(in   ) :: nitem          !< nr of input items expected
-      integer   (4) , intent(inout) :: filtype(*)     !< type of binary file
-      integer   (4) , intent(inout) :: ierr           !< Local error flag
-      integer   (4) , intent(inout) :: iwar           !< Cumulative warning count
+      integer(kind=int_32), intent(in   ) ::  nitem           !< nr of input items expected
+      integer(kind=int_32), intent(inout) ::  filtype(*)      !< type of binary file
+      integer(kind=int_32), intent(inout) ::  ierr            !< Local error flag
+      integer(kind=int_32), intent(inout) ::  iwar            !< Cumulative warning count
       logical       , intent(in)    :: dont_read      !< do not actually read tokens, if true, the information is already provided
 
 !     local
 
-      integer         extpos, extlen
+      integer(kind=int_32) :: extpos, extlen 
       character(255)  cdummy   ! Work string
       character(255)  sfile , filext
       character( 25)  sstring
-      integer   (4)   ifl      ! help variable for stack size
-      integer   (4)   ierr2    ! help variable for error handling
-      integer   (4)   lunin    ! help variable for opening external ASCII file
-      integer   (4)   nfil     ! nr of files in hydrodynamics steering file
-      integer   (4)   intopt   ! interpolation option in hydrodynamics steering file
-      integer   (4)   ifil     ! loop counter for number of files
-      real      (4)   fact     ! interpolation factor steering file
-      integer   (4)   it1 , it2 , it3   ! timer variables
-      integer   (4)   it1a, it2a, it3a  ! timer variables
-      integer   (4)   itype    ! returned type of input from gettoken
-      integer   (4)   ihyd     ! location of 'hyd' in the file name string
-      integer   (4)   k        ! implicit loop counter
-      real      (4)   adummy   ! dummy to read data from file
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) :: ifl       ! help variable for stack size
+      integer(kind=int_32) :: ierr2     ! help variable for error handling
+      integer(kind=int_32) :: lunin     ! help variable for opening external ASCII file
+      integer(kind=int_32) :: nfil      ! nr of files in hydrodynamics steering file
+      integer(kind=int_32) :: intopt    ! interpolation option in hydrodynamics steering file
+      integer(kind=int_32) :: ifil      ! loop counter for number of files
+      real(kind=sp) :: fact      ! interpolation factor steering file
+      integer(kind=int_32) :: it1 , it2 , it3    ! timer variables
+      integer(kind=int_32) :: it1a, it2a, it3a   ! timer variables
+      integer(kind=int_32) :: itype     ! returned type of input from gettoken
+      integer(kind=int_32) :: ihyd      ! location of 'hyd' in the file name string
+      integer(kind=int_32) :: k         ! implicit loop counter
+      real(kind=sp) :: adummy    ! dummy to read data from file
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "opt1", ithndl )
 
 !           See what type of file it is

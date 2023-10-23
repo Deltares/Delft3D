@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_conver
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -51,21 +53,21 @@
 
 !     kind           function         name             Descriptipon
 
-      integer   (4), intent(in   ) :: nobrk          !< number of breakpoints
-      integer   (4), intent(inout) :: ibrk (nobrk)   !< breakpoint to convert
-      integer   (4), intent(in   ) :: ifact          !< factor between time scales
+      integer(kind=int_32), intent(in   ) ::  nobrk           !< number of breakpoints
+      integer(kind=int_32), intent(inout) ::  ibrk (nobrk)    !< breakpoint to convert
+      integer(kind=int_32), intent(in   ) ::  ifact           !< factor between time scales
       logical      , intent(in   ) :: dtflg          !< if true then 'date'-format
       logical      , intent(in   ) :: dtflg3         !< if true then YYDDDHH
 
 !     Local
 
-      integer   (4) isec    ! seconds
-      integer   (4) imin    ! minutes
-      integer   (4) ihour   ! hours
-      integer   (4) iday    ! days
-      integer   (4) iyear   ! years
-      integer   (4) i       ! loop counter
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) :: isec     ! seconds
+      integer(kind=int_32) :: imin     ! minutes
+      integer(kind=int_32) :: ihour    ! hours
+      integer(kind=int_32) :: iday     ! days
+      integer(kind=int_32) :: iyear    ! years
+      integer(kind=int_32) :: i        ! loop counter
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "conver", ithndl )
 
       if ( dtflg ) then

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_time_delay
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -63,21 +65,21 @@
 
 !     kind           function         name       Descriptipon
 
-      integer  ( 4), intent(inout) :: ierr     !< Cumulative error count
+      integer(kind=int_32), intent(inout) ::  ierr      !< Cumulative error count
 
 !     local declarations
 
-      integer       idate   ! date integer from the input file
-      integer       itime   ! time integer from the input file
-      integer       ierr2   ! local error variable
-      integer       iyear   ! year of delayed reference time
-      integer       imonth  ! month of delayed reference time
-      integer       iday    ! day of delayed reference time
-      integer       ihour   ! hour of delayed reference time
-      integer       imin    ! minute of delayed reference time
-      integer       isec    ! second of delayed reference time
-      real(8)       dummy   ! second in double precision (not used)
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) :: idate    ! date integer from the input file
+      integer(kind=int_32) :: itime    ! time integer from the input file
+      integer(kind=int_32) :: ierr2    ! local error variable
+      integer(kind=int_32) :: iyear    ! year of delayed reference time
+      integer(kind=int_32) :: imonth   ! month of delayed reference time
+      integer(kind=int_32) :: iday     ! day of delayed reference time
+      integer(kind=int_32) :: ihour    ! hour of delayed reference time
+      integer(kind=int_32) :: imin     ! minute of delayed reference time
+      integer(kind=int_32) :: isec     ! second of delayed reference time
+      real(kind=dp) :: dummy    ! second in double precision (not used)
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "read_time_delay", ithndl )
 
 !     tell what you are doing here

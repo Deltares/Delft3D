@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getpar
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -71,12 +73,12 @@
       CHARACTER*20          :: PARDEF(MAXDEF) , PARLST(MAXLST) , PARUNI(MAXLST)
       DIMENSION             :: IPRTYP(MAXLST) , IPRCOD(MAXLST)
       LOGICAL               :: SETALL
-      integer               :: lun
-      integer               :: MAXK
-      integer               :: k, i1, i2, i3
-      integer               :: ierror, notot, nodump, nrlst, iprcod, iprtyp
-      integer               :: itype, maxdef, itmdep, locdep, maxlst, lang
-!
+      integer(kind=int_32) ::  lun 
+      integer(kind=int_32) ::  MAXK 
+      integer(kind=int_32) ::  k, i1, i2, i3 
+      integer(kind=int_32) ::  ierror, notot, nodump, nrlst, iprcod, iprtyp 
+      integer(kind=int_32) ::  itype, maxdef, itmdep, locdep, maxlst, lang
+ !
 !         Open the DELWAQ .HIS file
 !
       lun = 10

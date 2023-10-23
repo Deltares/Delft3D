@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_nobottomlay
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -57,33 +59,33 @@
 !     declaration of arguments
 
       type(GridPointerColl) , intent(inout) :: GridPs     !< collection off all grid definitions
-      integer               , intent(inout) :: ierr       !< cummulative error count
+      integer(kind=int_32), intent(inout) ::  ierr        !< cummulative error count
 
 !     local declarations
 
       type(GridPointer)      :: aGrid                ! a single grid
-      integer                :: itoken               ! integer token from input
-      integer                :: idummy               ! dummy which content is not used
-      real                   :: adummy               ! dummy which content is not used
+      integer(kind=int_32) ::  itoken                ! integer token from input
+      integer(kind=int_32) ::  idummy                ! dummy which content is not used
+      real(kind=sp) ::  adummy                ! dummy which content is not used
       character(len=255)     :: ctoken               ! character token from input
       character              :: cdummy               ! dummy which content is not used
-      integer                :: i_base_grid          ! index base grid in collection
-      integer                :: i_bottom_grid        ! index bottom grid in collection
-      integer                :: iseg                 ! segment index
-      integer                :: iseg2                ! segment index
-      integer                :: input_grid           ! index input grid in collection
-      integer                :: itype                ! type of input to be needded
-      integer                :: ierr2                ! local error indication
-      integer                :: iref                 ! index reference grid in collection
-      integer                :: noseg_lay            ! number of segments per layer
-      integer                :: noseg_input          ! number of segments in input
-      integer                :: noseg_grid           ! number of segments in all layers
-      integer                :: nolay                ! number of layers
-      integer                :: max_nolay            ! max number of layers in space_var_nolay
-      integer                :: ilay                 ! index layers
-      integer, pointer       :: new_pointer(:)       ! new grid pointer on expanded bottom grid
-      integer, allocatable   :: bottom_matrix(:,:)   ! new grid on expanded bottom grid
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  i_base_grid           ! index base grid in collection
+      integer(kind=int_32) ::  i_bottom_grid         ! index bottom grid in collection
+      integer(kind=int_32) ::  iseg                  ! segment index
+      integer(kind=int_32) ::  iseg2                 ! segment index
+      integer(kind=int_32) ::  input_grid            ! index input grid in collection
+      integer(kind=int_32) ::  itype                 ! type of input to be needded
+      integer(kind=int_32) ::  ierr2                 ! local error indication
+      integer(kind=int_32) ::  iref                  ! index reference grid in collection
+      integer(kind=int_32) ::  noseg_lay             ! number of segments per layer
+      integer(kind=int_32) ::  noseg_input           ! number of segments in input
+      integer(kind=int_32) ::  noseg_grid            ! number of segments in all layers
+      integer(kind=int_32) ::  nolay                 ! number of layers
+      integer(kind=int_32) ::  max_nolay             ! max number of layers in space_var_nolay
+      integer(kind=int_32) ::  ilay                  ! index layers
+      integer(kind=int_32), pointer ::  new_pointer(:)        ! new grid pointer on expanded bottom grid
+      integer(kind=int_32), allocatable ::  bottom_matrix(:,:)    ! new grid on expanded bottom grid
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "read_nobottomlay", ithndl )
 
 !     check bottom grid

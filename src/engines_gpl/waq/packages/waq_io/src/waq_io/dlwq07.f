@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq07
+      use m_waq_type_definitions
       use m_read_block
 
 
@@ -60,18 +61,18 @@
 
 !     kind                    function         name           Descriptipon
 
-      integer               , intent(inout) :: lun(*)       !< unit numbers used
+      integer(kind=int_32), intent(inout) ::  lun(*)        !< unit numbers used
       character(len=*)      , intent(inout) :: lchar(*)     !< filenames
-      integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
+      integer(kind=int_32), intent(inout) ::  filtype(*)    !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       !< input file structure with include stack and flags
       character(len=*)      , intent(in   ) :: syname(*)    !< substance names
-      integer               , intent(in   ) :: iwidth       !< width of output
-      integer               , intent(in   ) :: ioutpt       !< level of reporting to ascii output file
+      integer(kind=int_32), intent(in   ) ::  iwidth        !< width of output
+      integer(kind=int_32), intent(in   ) ::  ioutpt        !< level of reporting to ascii output file
       type(GridPointerColl) , intent(in   ) :: GridPs       !< collection off all grid definitions
       type(t_dlwq_item)     , intent(inout) :: constants    !< delwaq constants list
       logical               , intent(in)    :: chkpar(2)    !< check for SURF and LENGTH
-      integer               , intent(inout) :: ierr         !< cummulative error count
-      integer  ( 4)         , intent(inout) :: iwar         !< cumulative warning count
+      integer(kind=int_32), intent(inout) ::  ierr          !< cummulative error count
+      integer(kind=int_32), intent(inout) ::  iwar          !< cumulative warning count
 
 !     local declarations
 
@@ -84,19 +85,19 @@
       type(t_dlwq_item)                    :: segments             ! delwaq segments
       character(len=255)                   :: ctoken               ! token from input
       character(len=20)                    :: ch20                 ! name
-      integer                              :: itime                ! time in scu (dummy used for constants)
-      integer                              :: nosss                ! total number of segments (water and bottom)
-      integer                              :: ierr2                ! error indicator
-      integer                              :: ierr3                ! error indicator
-      integer                              :: ioerr                ! IO - error indicator
-      integer                              :: inovec               ! location of NOVEC
-      integer                              :: inothr               ! location of NOTHREADS
-      integer                              :: i                    ! loop counter
-      integer                              :: idata                ! help variable
+      integer(kind=int_32) ::  itime                 ! time in scu (dummy used for constants)
+      integer(kind=int_32) ::  nosss                 ! total number of segments (water and bottom)
+      integer(kind=int_32) ::  ierr2                 ! error indicator
+      integer(kind=int_32) ::  ierr3                 ! error indicator
+      integer(kind=int_32) ::  ioerr                 ! IO - error indicator
+      integer(kind=int_32) ::  inovec                ! location of NOVEC
+      integer(kind=int_32) ::  inothr                ! location of NOTHREADS
+      integer(kind=int_32) ::  i                     ! loop counter
+      integer(kind=int_32) ::  idata                 ! help variable
       logical                              :: taupart              ! is tau present?
       logical                              :: vdfpart              ! is vertical diffusion present
-      integer                              :: special              ! index of special parameters
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  special               ! index of special parameters
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "dlwq07", ithndl )
 
 !        Read initial conditions

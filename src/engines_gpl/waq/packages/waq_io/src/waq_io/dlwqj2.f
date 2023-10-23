@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqj2
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -59,11 +61,11 @@
 !
       use timers       !   performance timers
 
-      integer(4) :: ithndl = 0
-      integer    :: ITAL
-      integer    :: k, I, NOTOT
+      integer(kind=int_32) ::  ithndl = 0 
+      integer(kind=int_32) ::  ITAL 
+      integer(kind=int_32) ::  k, I, NOTOT 
       integer    :: lunwr, nobrk, itel, jtel, iar(:), ifilsz, jfilsz
-      real       :: rar(:)
+      real(kind=sp) ::  rar(:) 
       if (timon) call timstrt( "dlwqj2", ithndl )
 !
 !           Write nr of breakpoints first

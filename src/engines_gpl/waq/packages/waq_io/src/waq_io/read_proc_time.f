@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_proc_time
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -52,20 +54,20 @@
 
 !     declaration of arguments
 
-      integer               , intent(in   ) :: notot          !< nr of substances
+      integer(kind=int_32), intent(in   ) ::  notot           !< nr of substances
       character(20)         , intent(in   ) :: syname(notot)  !< substance names
-      integer               , intent(inout) :: isyst (notot)  !< process timestep multiplier
-      integer               , intent(inout) :: ierr           !< cummulative error count
+      integer(kind=int_32), intent(inout) ::  isyst (notot)   !< process timestep multiplier
+      integer(kind=int_32), intent(inout) ::  ierr            !< cummulative error count
 
 !     local declarations
 
       character(len=255)    :: ctoken           ! character token from input
-      integer               :: itype            ! type of input that was provided
-      integer               :: ierr2            ! local error indication
-      integer               :: sysused(notot)   ! work array substance selection
-      integer               :: isys             ! index substance
-      integer               :: idtmult          ! timestep multiplier
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  itype             ! type of input that was provided
+      integer(kind=int_32) ::  ierr2             ! local error indication
+      integer(kind=int_32) ::  sysused(notot)    ! work array substance selection
+      integer(kind=int_32) ::  isys              ! index substance
+      integer(kind=int_32) ::  idtmult           ! timestep multiplier
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "read_proc_time", ithndl )
 
 !     some init

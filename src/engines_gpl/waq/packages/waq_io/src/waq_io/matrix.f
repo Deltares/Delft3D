@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_matrix
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -82,28 +84,28 @@
 
 !     kind           function         name                          Description
 
-      integer  ( 4), intent(in   ) :: ntot                        !< first dimension of tab and tabnw
-      integer  ( 4), intent(in   ) :: nvals                       !< number of values per variable
-      integer  ( 4), intent(inout) :: nvarar                      !< number of existing variables in tab
-      integer  ( 4), intent(in   ) :: nvarnw                      !< number of variables to add to tab
-      integer  ( 4), intent(inout) :: nobrk1                      !< number of existing breakpoints
-      integer  ( 4), intent(in   ) :: nobrk2                      !< number of breakpoints to add
-      integer  ( 4), intent(inout) :: ibrk  (nobrk1+nobrk2)       !< values of existing breakpoints
-      integer  ( 4), intent(in   ) :: ibrknw(nobrk2)              !< values of breakpoints to add
-      real     ( 4), intent(inout) :: tab   (   ntot     ,nobrk1+nobrk2)  !< existing table
-      real     ( 4), intent(in   ) :: tabnw (nvarnw*nvals,nobrk2)         !< table to merge
-      integer  ( 4), intent(in   ) :: item  (ntot)                !< for type of interpolation per variable
+      integer(kind=int_32), intent(in   ) ::  ntot                         !< first dimension of tab and tabnw
+      integer(kind=int_32), intent(in   ) ::  nvals                        !< number of values per variable
+      integer(kind=int_32), intent(inout) ::  nvarar                       !< number of existing variables in tab
+      integer(kind=int_32), intent(in   ) ::  nvarnw                       !< number of variables to add to tab
+      integer(kind=int_32), intent(inout) ::  nobrk1                       !< number of existing breakpoints
+      integer(kind=int_32), intent(in   ) ::  nobrk2                       !< number of breakpoints to add
+      integer(kind=int_32), intent(inout) ::  ibrk  (nobrk1+nobrk2)        !< values of existing breakpoints
+      integer(kind=int_32), intent(in   ) ::  ibrknw(nobrk2)               !< values of breakpoints to add
+      real(kind=sp), intent(inout) ::  tab   (   ntot     ,nobrk1+nobrk2)   !< existing table
+      real(kind=sp), intent(in   ) ::  tabnw (nvarnw*nvals,nobrk2)          !< table to merge
+      integer(kind=int_32), intent(in   ) ::  item  (ntot)                 !< for type of interpolation per variable
 
 !     local decalations
 
-      integer  i        ! loop counter for position in array IBRKNW
-      integer  j        ! loop counter for position in array IBRK
-      integer  k        ! help counter breakpoints
-      integer  iv       ! help counter variables*values
-      integer  iset     ! help variable for breakpoint
-      integer  nposar   ! linear position first index for existing variables
-      integer  nposnw   ! amount of values first index of variables to add
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) :: i         ! loop counter for position in array IBRKNW
+      integer(kind=int_32) :: j         ! loop counter for position in array IBRK
+      integer(kind=int_32) :: k         ! help counter breakpoints
+      integer(kind=int_32) :: iv        ! help counter variables*values
+      integer(kind=int_32) :: iset      ! help variable for breakpoint
+      integer(kind=int_32) :: nposar    ! linear position first index for existing variables
+      integer(kind=int_32) :: nposnw    ! amount of values first index of variables to add
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "matrix", ithndl )
 
 !          If no breakpoints in IBRK/TAB then IBRK/ITAB==IBRKNW/TABNW

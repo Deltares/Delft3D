@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rearaa
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -74,34 +76,34 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(inout) :: lun     (*)       !< array with unit numbers
+      integer(kind=int_32), intent(inout) ::  lun     (*)        !< array with unit numbers
       character( *), intent(inout) :: lchar   (*)       !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype (*)       !< type of binary file
+      integer(kind=int_32), intent(inout) ::  filtype (*)        !< type of binary file
       character(20), pointer       :: raname  (:)       !< name of monitoring areas
-      integer  ( 4), pointer       :: nexcraai(:)       !< number of exchanges per monitoring transect
-      integer  ( 4), pointer       :: iexcraai(:)       !< exchange numbers per monitoring transect
-      integer  ( 4), pointer       :: ioptraai(:)       !< transport summation option for transects
-      integer  ( 4), intent(  out) :: noraai            !< number of monitoring transects
-      integer  ( 4), intent(  out) :: ntraaq            !< total number of exchanges in monitoring transects
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
-      integer  ( 4), intent(inout) :: ierr              !< error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_32), pointer ::  nexcraai(:)        !< number of exchanges per monitoring transect
+      integer(kind=int_32), pointer ::  iexcraai(:)        !< exchange numbers per monitoring transect
+      integer(kind=int_32), pointer ::  ioptraai(:)        !< transport summation option for transects
+      integer(kind=int_32), intent(  out) ::  noraai             !< number of monitoring transects
+      integer(kind=int_32), intent(  out) ::  ntraaq             !< total number of exchanges in monitoring transects
+      integer(kind=int_32), intent(in   ) ::  ioutpt             !< flag for more or less output
+      integer(kind=int_32), intent(inout) ::  ierr               !< error   count
+      integer(kind=int_32), intent(inout) ::  iwar               !< cumulative warning count
 
 !     local variables
 
-      integer             iropt1           ! First option number monitoring areas
-      integer             ierr2            ! Local error flag
-      integer             max_ntraaq       ! Size of isegdmp
-      integer, pointer :: iexcraai_2(:)    ! Help pointer for array expansion
-      integer             ierr_alloc       ! Error indicator for allocations
-      integer             nq               ! Number of exchanges per monitoring transect
+      integer(kind=int_32) :: iropt1            ! First option number monitoring areas
+      integer(kind=int_32) :: ierr2             ! Local error flag
+      integer(kind=int_32) :: max_ntraaq        ! Size of isegdmp
+      integer(kind=int_32), pointer ::  iexcraai_2(:)     ! Help pointer for array expansion
+      integer(kind=int_32) :: ierr_alloc        ! Error indicator for allocations
+      integer(kind=int_32) :: nq                ! Number of exchanges per monitoring transect
       logical             ldummy           ! Dummy logical
-      integer             ir               ! Loop variable over all monitoring transects
-      integer             k                ! General loop variable
-      integer             ifound           ! Help variable for string search
+      integer(kind=int_32) :: ir                ! Loop variable over all monitoring transects
+      integer(kind=int_32) :: k                 ! General loop variable
+      integer(kind=int_32) :: ifound            ! Help variable for string search
       character(len=256)::option           ! balance option
-      integer             itype            ! type of the returned token
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) :: itype             ! type of the returned token
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "rearaa", ithndl )
 
 !     Read file option

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_header
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -48,28 +50,28 @@
 
       type(t_dlwq_item)     , intent(inout) :: waq_param    ! list of param items to be set in this block ( substances etc )
       type(t_dlwq_item)     , intent(inout) :: data_param   ! list of param items in the data
-      integer               , intent(inout) :: nocol        ! number of columns in input
-      integer               , intent(in)    :: itfact       ! factor between clocks
+      integer(kind=int_32), intent(inout) ::  nocol         ! number of columns in input
+      integer(kind=int_32), intent(in) ::  itfact        ! factor between clocks
       logical               , intent(in)    :: dtflg1       ! true if time in 'date' format
       logical               , intent(in)    :: dtflg3       ! true if yyetc instead of ddetc
-      integer               , intent(out)   :: ierr         ! error indication
-      integer               , intent(inout) :: iwar         ! cumulative warning count
+      integer(kind=int_32), intent(out) ::  ierr          ! error indication
+      integer(kind=int_32), intent(inout) ::  iwar          ! cumulative warning count
 
       ! local declaration
 
-      integer                               :: itype         ! type of token
+      integer(kind=int_32) ::  itype          ! type of token
       character(len=256)                    :: ctoken        ! character token
-      integer                               :: itoken        ! integer token
-      real                                  :: rtoken        ! real token
+      integer(kind=int_32) ::  itoken         ! integer token
+      real(kind=sp) ::  rtoken         ! real token
       logical                               :: first         ! first loop indicator / .not. header exists
-      integer                               :: i             ! item index
-      integer                               :: k             ! shifted item index
-      integer                               :: icnt          ! shift in item index
+      integer(kind=int_32) ::  i              ! item index
+      integer(kind=int_32) ::  k              ! shifted item index
+      integer(kind=int_32) ::  icnt           ! shift in item index
       character(len=8)                      :: strng         ! string to be printed
-      integer                               :: ifound        ! index in list if found
-      integer                               :: nitm         ! number of items in data
-      integer                               :: ierr2        ! local error indication
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  ifound         ! index in list if found
+      integer(kind=int_32) ::  nitm          ! number of items in data
+      integer(kind=int_32) ::  ierr2         ! local error indication
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "read_header", ithndl )
 
       ! read loop

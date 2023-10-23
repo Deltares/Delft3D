@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_uniset
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -63,28 +65,28 @@
 
 !     kind           function         name            Descriptipon
 
-      integer  ( 4), intent(in   ) :: nolun         !< Amount of unit numbers
-      integer  ( 4), intent(inout) :: lun  (nolun)  !< Unit numbers
+      integer(kind=int_32), intent(in   ) ::  nolun          !< Amount of unit numbers
+      integer(kind=int_32), intent(inout) ::  lun  (nolun)   !< Unit numbers
       character( *), intent(inout) :: lchar(nolun)  !< File names
       character( *), intent(in   ) :: runid         !< Runid
 
 !     Local
 
-      integer         ilun
-      integer         ioerr
+      integer(kind=int_32) :: ilun
+      integer(kind=int_32) :: ioerr
       character*(93)  check
       logical         specout
-      integer         idummy
-      real            rdummy
+      integer(kind=int_32) :: idummy
+      real (kind=sp) :: rdummy
       character*(256) outputpath
       character*(256) outputpath2
       character*(256) runidpath
-      integer         pathlen
-      integer         outpathlen
+      integer(kind=int_32) :: pathlen
+      integer(kind=int_32) :: outpathlen
       character*(256) outid
-      integer         ierr2
-
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) :: ierr2
+ 
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "uniset", ithndl )
 
 !        Get filename  ( keyboard / command line )

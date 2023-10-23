@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5a
+      use m_waq_type_definitions
       use m_read_time_delay
       use m_dlwqj3
       use m_dlwq5g
@@ -102,29 +103,29 @@
 
       implicit none
 
-      integer  ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
+      integer(kind=int_32), intent(inout) ::  lun  (*)       !< array with unit numbers
       character( *), intent(inout) :: lchar(*)      !< filenames
-      integer  ( 4), intent(in   ) :: iu            !< index in LUN array of workfile
-      integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
-      integer  ( 4), intent(in   ) :: icmax         !< maximum size of character workspace
+      integer(kind=int_32), intent(in   ) ::  iu             !< index in LUN array of workfile
+      integer(kind=int_32), intent(in   ) ::  iwidth         !< width of the output file
+      integer(kind=int_32), intent(in   ) ::  icmax          !< maximum size of character workspace
       character( *), intent(inout) :: car  (icmax)  !< character workspace
-      integer  ( 4), intent(in   ) :: iimax         !< maximum size of integer workspace
-      integer  ( 4), intent(inout) :: iar  (iimax)  !< integer workspace
-      integer  ( 4), intent(in   ) :: irmax         !< maximum size of real workspace
-      real     ( 4), intent(inout) :: rar  (irmax)  !< real workspace
+      integer(kind=int_32), intent(in   ) ::  iimax          !< maximum size of integer workspace
+      integer(kind=int_32), intent(inout) ::  iar  (iimax)   !< integer workspace
+      integer(kind=int_32), intent(in   ) ::  irmax          !< maximum size of real workspace
+      real(kind=sp), intent(inout) ::  rar  (irmax)   !< real workspace
       character( *), intent(in   ) :: sname(*)      !< substances names
       character( *), intent(in   ) :: aname(*)      !< ID's of the boundaries/wastes
       character( *), intent(in   ) :: atype(*)      !< Types of the boundaries/wastes
-      integer  ( 4), intent(in   ) :: ntitm         !< number of bounds/wastes
-      integer  ( 4), intent(in   ) :: ntdim         !< number of substances
-      integer  ( 4), intent(in   ) :: nttype        !< number of boundary/waste types
-      real     ( 8), intent(inout) :: drar (*)      !< Double precision workspace
+      integer(kind=int_32), intent(in   ) ::  ntitm          !< number of bounds/wastes
+      integer(kind=int_32), intent(in   ) ::  ntdim          !< number of substances
+      integer(kind=int_32), intent(in   ) ::  nttype         !< number of boundary/waste types
+      real(kind=dp), intent(inout) ::  drar (*)       !< Double precision workspace
       logical      , intent(in   ) :: dtflg1        !< 'date'-format 1st time scale
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer  ( 4), intent(in   ) :: ioutpt        !< how extensive will the output be
-      integer  ( 4), intent(  out) :: ierr2         !< return code of this routine
-      integer  ( 4), intent(inout) :: ierr          !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
+      integer(kind=int_32), intent(in   ) ::  ioutpt         !< how extensive will the output be
+      integer(kind=int_32), intent(  out) ::  ierr2          !< return code of this routine
+      integer(kind=int_32), intent(inout) ::  ierr           !< cumulative error   count
+      integer(kind=int_32), intent(inout) ::  iwar           !< cumulative warning count
 
 
 
@@ -132,7 +133,7 @@
 
       character     callr*10, calit*10, caldit*10, strng1*10, strng2*10,
      *              strng3*10
-      integer       iorder   , noitm , nodim , iflag  , itype ,
+      integer(kind=int_32) :: iorder   , noitm , nodim , iflag  , itype , 
      +              ittim    , ident , nottc  , lunwr2,
      +              ifilsz   , jfilsz, ipro  , itfacw , iopt  ,
      +              nobrk    , itel  , ioerr , iblock , k     ,
@@ -141,20 +142,20 @@
      +              idmnr    , nodis , nitm , nti    , nti2  ,
      +              ntr      , irm   , nottt, ierr3  , nr2   ,
      +              nts      , ntc   , ntd
-      real          amiss    , rhulp
+      real(kind=sp) :: amiss    , rhulp 
       character     chulp*255
       logical       newrec   , scale , ods   , binfil , tdelay
-      integer(4) :: ithndl = 0
-
+      integer(kind=int_32) ::  ithndl = 0
+ 
       type(t_dlwq_data_items)          :: dlwq_data_items
       type(t_dlwq_item)                :: dlwq_foritem
       character(20)                    :: data_item_name
-      integer                          :: idata_item
-      integer                          :: ndata_items
-      integer                          :: iitem
-      integer                          :: nitems
+      integer(kind=int_32) ::  idata_item 
+      integer(kind=int_32) ::  ndata_items 
+      integer(kind=int_32) ::  iitem 
+      integer(kind=int_32) ::  nitems
 
-
+ 
       if (timon) call timstrt( "dlwq5a", ithndl )
 !
 !     Initialise a number of variables

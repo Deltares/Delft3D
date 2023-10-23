@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_grid
+      use m_waq_type_definitions
       use m_read_sub_procgrid
       use m_read_proc_time
       use m_read_nobottomlay
@@ -72,17 +73,17 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
-      integer  ( 4), intent(in   ) :: noseg             !< number of computational volumes
-      integer  ( 4), intent(in   ) :: notot             !< total number of substances
-      integer  ( 4), intent(in   ) :: nototp            !< total number of particle-substances
-      integer  ( 4), intent(  out) :: nolay             !< number of layers
+      integer(kind=int_32), intent(inout) ::  lun   (*)          !< array with unit numbers
+      integer(kind=int_32), intent(in   ) ::  noseg              !< number of computational volumes
+      integer(kind=int_32), intent(in   ) ::  notot              !< total number of substances
+      integer(kind=int_32), intent(in   ) ::  nototp             !< total number of particle-substances
+      integer(kind=int_32), intent(  out) ::  nolay              !< number of layers
       type(GridPointerColl)        :: GridPs            !< collection of grids
-      integer  ( 4), intent(  out) :: nseg2             !< number of additional bottom volumes
-      integer  ( 4), intent(  out) :: nogrid            !< number of grids
+      integer(kind=int_32), intent(  out) ::  nseg2              !< number of additional bottom volumes
+      integer(kind=int_32), intent(  out) ::  nogrid             !< number of grids
       character(20), intent(in   ) :: syname(notot)     !< names of the substances
-      integer  ( 4), intent(inout) :: ierr              !< error count of this routine
-      integer  ( 4), intent(inout) :: iwarn             !< cumulative warning count
+      integer(kind=int_32), intent(inout) ::  ierr               !< error count of this routine
+      integer(kind=int_32), intent(inout) ::  iwarn              !< cumulative warning count
 
 !     Local variables :
 
@@ -91,28 +92,28 @@
       logical             :: multigrid     ! is the multiple grid feature used ?
       type(GridPointer)   :: aGrid         ! a single grid
       character*255       :: ctoken        ! the character token that is read
-      integer             :: itoken        ! the integer token that is read
-      integer             :: isysg(notot)  ! grid number to be used per substance
-      integer             :: isyst(notot)  ! time step multiplier per substance
-      integer             :: iseg          ! loop counter computational volumes
-      integer             :: i_base_grid   ! the system base grid number (mostly 1)
-      integer             :: i_bottom_grid ! the system bed grid number
+      integer(kind=int_32) ::  itoken         ! the integer token that is read
+      integer(kind=int_32) ::  isysg(notot)   ! grid number to be used per substance
+      integer(kind=int_32) ::  isyst(notot)   ! time step multiplier per substance
+      integer(kind=int_32) ::  iseg           ! loop counter computational volumes
+      integer(kind=int_32) ::  i_base_grid    ! the system base grid number (mostly 1)
+      integer(kind=int_32) ::  i_bottom_grid  ! the system bed grid number
       logical             :: zmodel        ! if true, it is a z-layer model
-      integer             :: itype         ! returned type of input token
-      integer             :: ierr2         ! error count in this routine
-      integer             :: nosegl        ! number of computational volumes per layer
-      integer             :: nolay_tmp     ! temp number of layers
-      integer             :: nosegl_bottom ! number of segments per layer (required in read_grid)
-      integer             :: igrid         ! a grid number in the collection
-      integer             :: noseg2        ! number of additional bed cells
-      integer             :: kseg          ! volume number counter
-      integer             :: ilay          ! layer counter
-      integer             :: isys          ! substance number
-      integer             :: nosss         ! total number of volumes inclusive bed cells
-      integer             :: ioff          ! help variable for array offset
-      integer             :: iseg2         ! counter for bed cells
-      integer             :: iref          ! help variable to contain the reference grid
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  itype          ! returned type of input token
+      integer(kind=int_32) ::  ierr2          ! error count in this routine
+      integer(kind=int_32) ::  nosegl         ! number of computational volumes per layer
+      integer(kind=int_32) ::  nolay_tmp      ! temp number of layers
+      integer(kind=int_32) ::  nosegl_bottom  ! number of segments per layer (required in read_grid)
+      integer(kind=int_32) ::  igrid          ! a grid number in the collection
+      integer(kind=int_32) ::  noseg2         ! number of additional bed cells
+      integer(kind=int_32) ::  kseg           ! volume number counter
+      integer(kind=int_32) ::  ilay           ! layer counter
+      integer(kind=int_32) ::  isys           ! substance number
+      integer(kind=int_32) ::  nosss          ! total number of volumes inclusive bed cells
+      integer(kind=int_32) ::  ioff           ! help variable for array offset
+      integer(kind=int_32) ::  iseg2          ! counter for bed cells
+      integer(kind=int_32) ::  iref           ! help variable to contain the reference grid
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "grid", ithndl )
 
       nolay      = 1

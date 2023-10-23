@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getloc
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -72,14 +74,14 @@
       DIMENSION     LOCTYP(MAXLST) , LOCNR (MAXLST)
       LOGICAL       SETALL
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_32) ::  extpos   ! position of extension
+      integer(kind=int_32) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun
-      integer               :: k, i1, i2, i3, NOTOT, ierror, nodump, idummy
-      integer               :: itype, itmdep, iprdep, nrlst, maxk, nbase
-      integer               :: locnr, loctyp, maxdef, maxlst
-!
+      integer(kind=int_32) ::  lun 
+      integer(kind=int_32) ::  k, i1, i2, i3, NOTOT, ierror, nodump, idummy 
+      integer(kind=int_32) ::  itype, itmdep, iprdep, nrlst, maxk, nbase 
+      integer(kind=int_32) ::  locnr, loctyp, maxdef, maxlst
+ !
 !         Open the DELWAQ .HIS file
 !
       lun = 10

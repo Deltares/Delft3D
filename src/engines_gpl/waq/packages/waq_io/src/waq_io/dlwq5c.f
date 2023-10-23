@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5c
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -117,30 +119,30 @@
       use time_module
 
 
-      integer       icmax  , iimax  , irmax
+      integer(kind=int_32) :: icmax  , iimax  , irmax 
       character*(*) car(*) , fname
-      integer       iar(*)
-      real          rar(*)
+      integer(kind=int_32) :: iar(*) 
+      real(kind=sp) :: rar(*) 
       logical       scale
-      real*8        drar(*)
+      real(kind=dp) :: drar(*) 
       character     cfile(3)*256
-      real amiss
-!
+      real(kind=sp) :: amiss
+ !
 !     local declarations
       dimension     loc(3)
-      real*8        afact    , a1    , a2    , d_beg    , d_end , dummy
+      real(kind=dp) :: afact    , a1    , a2    , d_beg    , d_end , dummy 
       character*3   cdummy
-      integer :: nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
-      integer :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
-      integer :: ierr, noloc, noit2, noitv, j
-      integer :: nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot
-      integer :: noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
-      integer :: iy1, im1, id1, ih1, in1, is1
-      integer :: iy2, im2, id2, ih2, in12 is2
-      integer :: i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
-      integer :: kl, ig2
-!
-      integer(4) :: ithndl = 0
+      integer(kind=int_32) ::  nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut 
+      integer(kind=int_32) ::  k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3 
+      integer(kind=int_32) ::  ierr, noloc, noit2, noitv, j 
+      integer(kind=int_32) ::  nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot 
+      integer(kind=int_32) ::  noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6 
+      integer(kind=int_32) ::  iy1, im1, id1, ih1, in1, is1 
+      integer(kind=int_32) ::  iy2, im2, id2, ih2, in12 is2 
+      integer(kind=int_32) ::  i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp 
+      integer(kind=int_32) ::  kl, ig2
+ !
+      integer(kind=int_32) ::  ithndl = 0 
       if (timon) call timstrt( "dlwq5c", ithndl )
 !
 !     array offsets
