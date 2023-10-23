@@ -33,7 +33,7 @@
 module m_time_validation
     
   use static_version_info
-  use dlwq_data
+  use dlwq_hyd_data
   
   implicit none
   

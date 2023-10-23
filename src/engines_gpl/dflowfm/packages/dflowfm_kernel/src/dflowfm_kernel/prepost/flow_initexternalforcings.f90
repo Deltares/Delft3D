@@ -1588,6 +1588,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
+                  call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
                   ja_airdensity = 1
                endif
 
@@ -1940,7 +1941,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif    
            else if (trim(qid) == "freesurfacedissipation") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
+               ! wave forces based on dissipation at free surface and water column
+               if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1948,7 +1950,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "whitecappingdissipation") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
+               ! wave forces based on dissipation at free surface and water column
+               if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1956,7 +1959,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "xwaveforce") then
-               if (jawave == 7 .and. waveforcing == 1) then
+               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1964,7 +1967,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   success = .false.
                endif
            else if (trim(qid) == "ywaveforce") then
-               if (jawave == 7 .and. waveforcing == 1) then
+               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -2488,6 +2491,20 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       endif
    endif
 
+   if (ja_varying_airdensity == 1) then
+      if (japatm == 0 .or. jatair == 0) then
+         call mess(LEVEL_ERROR, 'Quantities airpressure and airtemperature in ext-file expected in combination keyword varyingAirdensity in MDU ')
+      else
+         if (ja_airdensity == 1) then
+            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword varyingAirdensity in MDU ')
+         else
+            allocate ( airdensity(ndx) , stat=ierr)
+            call aerr('airdensity(ndx)', ierr, ndx)
+            airdensity = 0d0
+         endif
+      endif
+   endif 
+   
    if (javiusp == 1) then
       do L = 1,lnx
          if (viusp(L) == dmiss) then

@@ -1030,16 +1030,11 @@ subroutine getRoughnessForProfile(network, crs)
         
       iRough = hashsearch(network%rgs%hashlist, crs%frictionSectionID(i))
       if (iRough <= 0) then
-         call SetMessage(LEVEL_ERROR, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
+         call SetMessage(LEVEL_FATAL, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
          cycle
       endif
       
       pRgs => network%rgs%rough(iRough)
-      if (len_trim(pRgs%frictionValuesFile)== 0) then
-         call SetMessage(LEVEL_ERROR, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
-         cycle
-      endif
-      
 
       if (network%rgs%version == network%rgs%roughnessFileMajorVersion) then
          frictionValue = crs%frictionValuePos(i)

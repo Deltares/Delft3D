@@ -26,13 +26,13 @@
 module m_dlwqdata_save_restore
 
     use delwaq2_data
-    use dlwq_data
+    use dlwq_hyd_data
     use waqmem
     use m_sysi
     use m_sysn
-    
+
     implicit none
-    
+
     !type(delwaq_data), target :: dlwqd                !< derived type for persistent storage
     integer   :: itime
     integer   :: ifflag
@@ -56,11 +56,11 @@ module m_dlwqdata_save_restore
     real(kind=kind(1.0d0))      :: tol
     logical   :: lstrec
     integer   :: itimel
-          
+
     contains
-  
+
     subroutine dlwqdata_save(dlwqd)
-    
+
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
 
         DLWQD%II        =  II
@@ -107,9 +107,9 @@ module m_dlwqdata_save_restore
 
 
     subroutine dlwqdata_restore(dlwqd)
-    
+
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
-        
+
         IN        =  DLWQD%IN
         II        =  DLWQD%II
         ITIME     =  DLWQD%ITIME

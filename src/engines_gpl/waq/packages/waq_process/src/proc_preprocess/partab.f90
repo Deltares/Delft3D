@@ -52,7 +52,7 @@
 
 !     Modified  :
 
-      use dlwq_data
+      use dlwq_hyd_data
       use ProcesSet
       use timers       !   performance timers
 
@@ -364,7 +364,7 @@
      &                          paname, nofun , funame, nosfun   , sfname,                &
      &                          valnam, input )
 
-      use dlwq_data
+      use dlwq_hyd_data
 
       character(20)       , intent(in   ) :: valnam
       character(20)       , intent(in   ) :: input

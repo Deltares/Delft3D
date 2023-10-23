@@ -45,6 +45,7 @@
  use MessageHandling
  use m_sobekdfm
  use m_subsidence
+ use m_fm_bott3d, only: fm_bott3d
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
 
  implicit none

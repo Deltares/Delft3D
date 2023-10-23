@@ -163,6 +163,13 @@ namespace Deltares.UGrid.Api
         /// </summary>
         /// <param name="epsgCode">EPSG code (coordinate system) to set</param>
         void SetCoordinateSystemCode(int epsgCode);
+
+        /// <summary>
+        /// Will retrieve from the io_netcdf library the error message which will match the error code.
+        /// </summary>
+        /// <param name="errorCode">Use error code when a previous function call has returned a nonzero error status.</param>
+        /// <returns>Given an error number, return an error message.</returns>
+        string GetReadableError(int errorCode);
         #endregion
 
         #region Network geometry

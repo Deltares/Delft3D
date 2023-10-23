@@ -95,7 +95,7 @@
       use m_open_waq_files
       use rd_token
       use timers       !   performance timers
-      use dlwq_data
+      use dlwq_hyd_data
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
 

@@ -44,8 +44,8 @@
       use m_zoek
       use m_srstop
       use m_open_waq_files
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use dlwqgrid_mod   ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token       ! tokenized reading
       use partmem, only: alone, lsettl, layt        ! for the interface with Delpar (Tau and VertDisp)
       use timers       !   performance timers

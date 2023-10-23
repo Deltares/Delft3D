@@ -96,7 +96,7 @@
 !     INIT    LOGICAL  1       if T boot the system if F no initialisation
 !     ACTION  INTEGER  1       indication of the action to be performed
 !
-      use grids
+      use dlwqgrid_mod
       USE DLWQI0_MOD
       USE Timers
       use delwaq2_data
@@ -120,7 +120,7 @@
       LOGICAL                                 :: exists
       INTEGER                                 :: ACTION
       TYPE(DELWAQ_DATA), TARGET               :: DLWQD
-      type(GridPointerColl), pointer          :: GridPs               ! collection of all grid definitions
+      type(GridPointerColl), pointer, save    :: GridPs               ! collection of all grid definitions
 
 
 !

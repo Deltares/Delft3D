@@ -276,6 +276,12 @@ namespace Deltares.UGrid.Api
             throw new NotImplementedException("This function is not yet implemented by io_NetCdf.");
         }
 
+        /// <inheritdoc />
+        public string GetReadableError(int errorCode)
+        {
+            return Marshal.PtrToStringAnsi(IoNetCfdImports.ionc_strerror_dll(ref errorCode));
+        }
+
         /// <inheritdoc/>
         public int[] GetNetworkIds()
         {
@@ -407,6 +413,9 @@ namespace Deltares.UGrid.Api
 
             DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_write_1d_network_branches_geometry_dll),
                 () => IoNetCfdImports.ionc_write_1d_network_branches_geometry_dll(ref dataSetId, ref networkId, ref geometry.BranchGeometryX, ref geometry.BranchGeometryY, ref geometryDimensions.NumberOfBranchGeometryPoints));
+            
+            DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_end_define_mode_dll),
+                () => IoNetCfdImports.ionc_end_define_mode_dll(ref dataSetId));
 
             return networkId;
         }
@@ -498,6 +507,9 @@ namespace Deltares.UGrid.Api
             DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_write_mesh_1d_edge_nodes_dll),
                 () => IoNetCfdImports.ionc_write_mesh_1d_edge_nodes_dll(ref dataSetId, ref meshId,  ref mesh1dDimensions.NumberOfEdges, 
                     ref mesh1d.EdgeNodes, ref startIndex));
+            
+            DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_end_define_mode_dll),
+                () => IoNetCfdImports.ionc_end_define_mode_dll(ref dataSetId));
 
             return meshId;
         }
@@ -552,6 +564,9 @@ namespace Deltares.UGrid.Api
 
             DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_put_meshgeom_dll),
                 () => IoNetCfdImports.ionc_put_meshgeom_dll(ref dataSetId, ref meshId, ref networkId, ref geometry, ref geometryDimensions, meshName, networkName, ref startIndex));
+
+            DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_end_define_mode_dll),
+                () => IoNetCfdImports.ionc_end_define_mode_dll(ref dataSetId));
 
             return meshId;
         }
@@ -617,6 +632,9 @@ namespace Deltares.UGrid.Api
                 () => IoNetCfdImports.ionc_put_mesh_contact_v1_dll(ref dataSetId, ref contactId, ref geometry.Mesh1DFrom,
                     ref geometry.Mesh2DTo, ref geometry.LinkType, ref geometry.LinkId, ref geometry.LinkLongName,
                     ref geometryDimensions.NumberOfLinks, ref startIndex));
+            
+            DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_end_define_mode_dll),
+                () => IoNetCfdImports.ionc_end_define_mode_dll(ref dataSetId));
 
             return contactId;
         }
@@ -750,7 +768,8 @@ namespace Deltares.UGrid.Api
             var errorCode = ioNetCdfCall();
             if (errorCode != IoNetCfdImports.NoErrorCode)
             {
-                throw new IoNetCdfNativeError(errorCode, ioNetCdfFunctionName, cSharpFunctionName);
+                string errorMessage = Marshal.PtrToStringAnsi(IoNetCfdImports.ionc_strerror_dll(ref errorCode));
+                throw new IoNetCdfNativeError(errorCode, errorMessage, ioNetCdfFunctionName, cSharpFunctionName);
             }
         }
 

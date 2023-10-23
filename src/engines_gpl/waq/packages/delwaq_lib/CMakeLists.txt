@@ -25,6 +25,7 @@ add_library(${library_name} SHARED ${source_files}
 set(oss_dependencies deltares_common
                      deltares_common_c
                      waq_data
+                     waq_hyd_data
                      waq_io
                      waq_memory
                      waq_kernel

@@ -109,13 +109,13 @@
 !     Shear stress by wind
       IF (VWIND .LT. 0.0001) GOTO 150
 
-!     dimensieloze strijklengte
+!     Dimensionless fetch length.
       FS   = G * FETCH / VWIND**2
 
-!     dimensieloze diepte
+!     Dimensionless depth.
       DS   = G * INIDEP / VWIND**2
 
-!     bepaal golfhoogte H
+!     Calculate wave height H.
       A1   = 0.710 *( DS**0.763 )
       A2   = 0.855 *( DS**0.365 )
       A3   = 0.0150*( FS**0.450 ) / TANH(A1)
@@ -125,22 +125,19 @@
 
       H    = HS * ( VWIND * VWIND) / G
 
-!     bepaal golfperiode T
+!     Calculate wave period T
       T    = TS * VWIND /G
 
-!     bepaling golflengte (iteratief hier niet opgenomen)
+!     Initialzie variables to calculate the wave length using iteration.
       RL0  = G * T * T / ( 2.0 * PI)
       A5   = 2.0 * PI * INIDEP / RL0
-
-!     afscherming voor te groot argument functie tanh
-!     voor diepe systemen tov golflengte
-!     A5 groot, tanh=1, rl=rl0, a5=a6,sinh(>9)->0,ubg->fwg->0
-      if (A5 .gt. 9.) then
-         RL  = RL0
-      else
-!     let op sommige documentatie stelt: RL = RL0*SQRT (TANH (A5))
-         RL  = RL0 * TANH(A5)
-      endif
+     
+!     Calculation of wave length RL. Iterate to find an accurate approximation.
+      RL = RL0
+      do i =1,15
+          RL  = RL0 * TANH(A5)
+          A5   = 2.0 * PI * INIDEP / RL
+      enddo
 
   150 CONTINUE
 !

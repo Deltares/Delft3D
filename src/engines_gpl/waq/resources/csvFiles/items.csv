@@ -13890,3 +13890,4 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "EstimAge  ","x"," ",   -999.000    ,"(d)                 ","Estimated age                                     ","volume    ","volume    "," ","                              "
 "AgeThresh ","x"," ",    0.00000    ,"(g/m3)              ","Threshold for age calculation                     ","volume    ","volume    "," ","                              "
 "SWTauMax  ","x"," ",    0.00000    ,"(-)                 ","switch to use TauMax instead of TauMean (default) ","volume    ","volume    "," ","                              "
+"MaxNelson ","x"," ",   0.550000    ,"(-)                 ","max ratio wave height wrt total depth             ","volume    ","volume    "," ","                              "

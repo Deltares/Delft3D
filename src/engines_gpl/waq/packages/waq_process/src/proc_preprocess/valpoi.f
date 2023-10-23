@@ -42,7 +42,7 @@
 !     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
       use m_zoek
-      use dlwq_data
+      use dlwq_hyd_data
 
 !     PARAMETERS          : 13
 !

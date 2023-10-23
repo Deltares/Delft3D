@@ -8366,6 +8366,14 @@ module m_meteo
                success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
                if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
+            elseif (ec_filetype == provFile_netcdf) then
+               sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
+               success              = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
+               if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
+               if (.not. success) then
+                  goto 1234
+               end if
             else
                sourceItemName = 'air_temperature'
             end if
@@ -8374,7 +8382,7 @@ module m_meteo
          case ('airdensity')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')
-               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
             else
                call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
                return

@@ -40,7 +40,7 @@
       use m_dhucas
       use m_dhslen
       use timers         !< performance timers
-      use dlwq_data      !< data definitions
+      use dlwq_hyd_data      !< data definitions
       use processet      !< use processet definitions
       implicit none
 

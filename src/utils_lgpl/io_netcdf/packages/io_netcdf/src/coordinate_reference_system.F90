@@ -25,8 +25,8 @@
 !
 !-------------------------------------------------------------------------------
 
-!  
-!  
+!
+!
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -34,6 +34,7 @@
 !> Module for utility types and functions for working with coordinates in different coordinate systems.
 module coordinate_reference_system
    use messagehandling
+   use m_ug_crs
    use netcdf
 
    implicit none
@@ -45,30 +46,6 @@ module coordinate_reference_system
       // ' +towgs84=565.4174,50.3319,465.5542,-0.398957388243134,0.343987817378283,-1.87740163998045,4.0725 +no_defs'
          !< Projection string for Dutch RijksDriehoek system. See https://publicwiki.deltares.nl/display/NETCDF/Coordinates :
          !! "note that the default proj4 (epsg) string for the Dutch RD system (EPSG:28992 & EPSG:7415) is wrong, it contains an erroneous ellipse reference, hence the full ellipse values need to be supplied."
-
-
-   !> Container for information for a NetCDF attribute. Used inside t_crs.
-   type nc_attribute
-      character(len=64)             :: attname     !< Name of the attribute.
-      integer                       :: xtype       !< Type: one of NF90_CHAR, NF90_INT, NF90_FLOAT, NF90_DOUBLE, NF90_BYTE, NF90_SHORT.
-      integer                       :: len         !< Length of the attribute value (string length/array length)
-      character(len=1), allocatable :: strvalue(:) !< Contains value if xtype==NF90_CHAR.
-      double precision, allocatable :: dblvalue(:) !< Contains value if xtype==NF90_DOUBLE.
-      real,             allocatable :: fltvalue(:) !< Contains value if xtype==NF90_FLOAT.
-      integer,          allocatable :: intvalue(:) !< Contains value if xtype==NF90_INT.
-      ! TODO: AvD: support BYTE/short as well?
-   end type nc_attribute
-
-   !> Container for information about coordinate reference system in a netCDF-file.
-   type t_crs
-      character(len=64)               :: varname = ' ' !< Name of the netCDF variable containing this CRS
-      character(len=64)               :: name = ' '    !< Name of the coordinate reference system, like "Amersfoort / RD New"
-      character(len=64)               :: grid_mapping_name = ' '    !< Name of the grid mapping
-      integer                         :: epsg_code     !< EPSG code (more info: http://spatialreference.org/)
-      character(len=1024)             :: proj_string = ' ' !< PROJ-string (more info: http://proj4.org)
-      character(len=1024)             :: wkt = ' '     !< Well Known Text
-      type(nc_attribute), allocatable :: attset(:)     !< General set with all/any attributes about this CRS.
-   end type t_crs
 
    contains
 
@@ -139,7 +116,7 @@ function find_grid_mapping_var(ncid, varid, preferred_name) result(ierr)
          return
       end if
    end do
-   
+
    ! X. Nothing found
    ierr = 123 ! TODO: AvD: make a separate ionc_constants.F90 for this
 
@@ -153,7 +130,7 @@ function is_grid_mapping(ncid, varid)
    integer,                    intent(in   ) :: ncid           !< NetCDF dataset id
    integer,                    intent(in   ) :: varid          !< NetCDF variable id
    logical :: is_grid_mapping !< Indicates whether the variable is a grid_mapping variable.
-   
+
    integer :: ierr
    integer :: attlen
 
@@ -183,7 +160,7 @@ function detect_proj_string(crs) result(ierr)
          found = .true.
       end if
    end do
-   
+
    if (.not. found) then
       ierr = get_proj_string_from_epsg(crs%epsg_code, crs%proj_string)
    end if
@@ -336,7 +313,7 @@ end function get_proj_string_from_epsg
       real(kind=kind(1.0d00)), dimension(:),           intent(in) :: src_y           !< y coordinates to transform in degrees/meters.
       integer,                 dimension(:), optional, intent(in) :: start           !< start index array for writing the lon/lat coordinates
       integer,                 dimension(:), optional, intent(in) :: count           !< count array for writing the lon/lat coordinates
-      
+
 
       real(kind=kind(1d0)), dimension(:), allocatable :: lon, lat
       integer :: ierr

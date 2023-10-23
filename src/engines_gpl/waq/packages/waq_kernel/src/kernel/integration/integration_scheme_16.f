@@ -123,7 +123,7 @@
       use m_delpar01
       use m_move
       use m_fileutils
-      use grids
+      use dlwqgrid_mod
       use timers
       use waqmem                         ! Global memory with allocatable GMRES arrays
       use delwaq2_data

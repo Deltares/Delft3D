@@ -309,7 +309,8 @@ module m_readCrossSections
       double precision              :: groundlayer
       double precision              :: height
       integer                       :: inext
-      logical                       :: plural                 !< indicates whether friction input is plural or not (e.g. frictionId or frictionIds)
+      logical                       :: multiple_friction_inputs !< frictionId or frictionIds
+      character(len=1)              :: plural_string
       type(t_CSType), pointer       :: pCS
       character(len=IdLen), allocatable :: fricTypes(:)
       integer                       :: maxnumsections ! Max number of friction sections, to realloc some arrays
@@ -349,7 +350,7 @@ module m_readCrossSections
             call realloc(network%CSDefinitions)
          endif
          
-         plural = .false.
+         multiple_friction_inputs = .false.
 
          pCS => network%CSDefinitions%CS(inext)
          pCS%id = id
@@ -360,7 +361,7 @@ module m_readCrossSections
          case(CS_TABULATED)
             
             if (strcmpi(typestr, 'zwRiver')) then
-               plural = .true.
+               multiple_friction_inputs = .true.
             endif
             success = readTabulatedCS(pCS, md_ptr%child_nodes(i)%node_ptr) 
             
@@ -431,7 +432,7 @@ module m_readCrossSections
             inext = AddCrossSectionDefinition(network%CSDefinitions, id, diameter, crossType, groundlayerUsed, groundlayer)
             
          case(CS_YZ_PROF)
-            plural = .true.
+            multiple_friction_inputs = .true.
             success = readYZCS(pCS, md_ptr%child_nodes(i)%node_ptr, network%sferic) 
             
          case default
@@ -447,21 +448,18 @@ module m_readCrossSections
          call realloc(fricTypes, maxnumsections, keepExisting = .false.)
          allocate(pCS%frictionValue      (pCs%frictionSectionsCount))
 
-         if (plural) then
-            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionIds', pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+         if (multiple_friction_inputs) then
+            plural_string = 's'
          else
-            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionId', pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+            plural_string = ''
          end if
-         call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', plural, 'frictionIds', 'frictionId', success, trim(id))
-              
+         call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionId'//trim(plural_string), pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+         call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionIds', 'frictionId', success, trim(id))
+
 
          if (.not. success) then
-            if (plural) then
-               call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionTypes', pCs%frictionSectionsCount, fricTypes, success)
-            else
-               call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionType' , pCs%frictionSectionsCount, fricTypes, success)
-            end if
-            call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', plural, 'frictionTypes', 'frictionType', success, trim(id))
+            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionType'//trim(plural_string), pCs%frictionSectionsCount, fricTypes, success)
+            call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionTypes', 'frictionType', success, trim(id))
 
             if (success) then
                do j = 1, pCs%frictionSectionsCount
@@ -474,13 +472,8 @@ module m_readCrossSections
                   endif
                end do
                
-               if (plural) then
-                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionValues', pCS%frictionValue, pCs%frictionSectionsCount, success)
-               else
-                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionValue' , pCS%frictionValue, pCs%frictionSectionsCount, success)
-               end if
-               call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', plural, 'frictionValues', 'frictionValue', success, trim(id))
-
+               call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionValue'//trim(plural_string), pCS%frictionValue, pCs%frictionSectionsCount, success)
+               call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionValues', 'frictionValue', success, trim(id))
             endif
                
             if (.not. success) then
@@ -527,7 +520,7 @@ module m_readCrossSections
       if (anySummerDike) then 
           if (summerDikeTransitionHeight == 0.5) then 
               msgstr = '(default)'
-          endif 
+          endif
           write(msgbuf,'(a,F6.3,a,a)') 'Levee transition height (summerdike) = ', summerDikeTransitionHeight, ' m ', msgstr 
           call msg_flush()
       endif 
@@ -577,6 +570,7 @@ module m_readCrossSections
    logical function readTabulatedCS(pCS, node_ptr)  
    
       use precision_basics
+      use m_array_predicates, only: is_monotonically_increasing
       
       type(t_CSType), pointer, intent(inout) :: pCS           !< cross section definition
       type(tree_data), pointer, intent(in)   :: node_ptr      !< treedata node pointer to current cross section definition
@@ -633,23 +627,16 @@ module m_readCrossSections
       endif
 
       call prop_get_string(node_ptr, '', 'type', typestr, success)
-      if (numlevels > 1) then
-         do i = 1, numlevels-1
-            if (height(i+1) < height(i) ) then
-               call SetMessage(LEVEL_WARN, 'Incorrect input for tabulated Cross-Section Definition id: '//trim(pCS%id)//'. Levels should be monotonically increasing!')
-               exit
-            endif
-            if (strcmpi(typestr, 'zwRiver')) then ! only for zwRiver does width need to be monotonically increasing
-               if (width(i+1) < width(i) ) then
-                  call SetMessage(LEVEL_WARN, 'Incorrect input for tabulated Cross-Section Definition id: '//trim(pCS%id)//'. flowWidths should be monotonically increasing!')
-                  exit
-               endif
-               if (totalWidth(i+1) < totalWidth(i) ) then
-                  call SetMessage(LEVEL_WARN, 'Incorrect input for tabulated Cross-Section Definition id: '//trim(pCS%id)//'. totalWidths should be monotonically increasing!')
-                  exit
-               endif
-            endif
-         enddo
+      if (.not. is_monotonically_increasing(height, numlevels)) then
+         call SetMessage(LEVEL_WARN, 'Incorrect input for tabulated Cross-Section Definition id: '//trim(pCS%id)//'. Levels should be monotonically increasing.')
+      endif
+      if (strcmpi(typestr, 'zwRiver')) then ! only for zwRiver does width need to be monotonically increasing
+         if (.not. is_monotonically_increasing(width, numlevels)) then
+            call SetMessage(LEVEL_WARN, 'Incorrect input for tabulated Cross-Section Definition id: '//trim(pCS%id)//'. flowWidths should be monotonically increasing.')
+         endif
+         if (.not. is_monotonically_increasing(totalWidth, numlevels)) then
+            call SetMessage(LEVEL_WARN, 'Incorrect input for tabulated Cross-Section Definition id: '//trim(pCS%id)//'. totalWidths should be monotonically increasing.')
+         endif
       endif
    
       ! summerdike
@@ -749,7 +736,7 @@ module m_readCrossSections
                   pCs%plainsLocation(i) = level_index_intersect
                   numlevels = numlevels+1
                endif
-            elseif (comparerealdouble(wintersect, width(numlevels), eps) == 0) then
+            elseif (comparereal(wintersect, width(numlevels), eps) == 0) then
                 pCs%plainsLocation(i) = numlevels
             endif
          
@@ -808,6 +795,7 @@ module m_readCrossSections
    logical function readYZCS(pCS, node_ptr, sferic) 
       use precision
       use physicalconsts, only: earth_radius
+      use m_array_predicates, only: is_monotonically_increasing
       
       type(t_CSType), pointer,  intent(inout) :: pCS             !< cross section item
       type(tree_data), pointer, intent(in)    :: node_ptr        !< treedata pointer to input for cross section
@@ -899,10 +887,13 @@ module m_readCrossSections
       call prop_get_doubles(node_ptr, '', 'frictionPositions', positions, frictionCount+1, success)
       
       if (success) then
-         
+         if (.not. is_monotonically_increasing(positions, frictionCount + 1)) then
+            write (msgbuf, '(a)') 'frictionPositions for (X)YZ-Cross-Section Definition ID: '//trim(pCS%id)// &
+               ' do not increase monotonically.'
+            call err_flush()
+         endif
          ! Check Consistency of Rougness Positions
-         if (positions(1) .ne. ycoordinates(1) .or. positions(frictionCount + 1) .ne. ycoordinates(numLevels)) then
-            
+         if (comparereal(positions(1), ycoordinates(1), 1d-6) /= 0 .or. comparereal(positions(frictionCount + 1), ycoordinates(numLevels), 1d-6) /= 0) then
             if (positions(1) == 0.0d0  .and. comparereal(positions(frictionCount+1), ycoordinates(numLevels) - ycoordinates(1), 1d-6) == 0) then
                ! Probably lined out wrong because of import from SOBEK2
                locShift = positions(frictionCount + 1) - ycoordinates(numLevels)
@@ -912,12 +903,11 @@ module m_readCrossSections
                !enddo
                call SetMessage(LEVEL_WARN, 'Friction sections corrected for YZ-Cross-Section Definition ID: '//trim(pCS%id))
             else
-               write (msgbuf, '(a,f16.10,a,f16.10,a)') 'Section data not consistent for (X)YZ-Cross-Section Definition ID: '//trim(pCS%id)// &
-                  ', friction section width (', (positions(frictionCount+1)-positions(1)), &
-                  ') differs from cross section width (', (ycoordinates(numLevels) - ycoordinates(1)), ').'
+               write (msgbuf, '(a,f16.10,a,f16.10,a,f16.10,a,f16.10,a)') 'Section data not consistent for (X)YZ-Cross-Section Definition ID: '//trim(pCS%id)// &
+                  ', friction section y-range (', positions(1), ', ', positions(frictionCount+1), &
+                  ') differs from cross section y-range (', ycoordinates(1), ', ', ycoordinates(numLevels), ').'
                call err_flush()
             endif
-         
          endif
          
       elseif (.not.success .and. frictionCount==1) then

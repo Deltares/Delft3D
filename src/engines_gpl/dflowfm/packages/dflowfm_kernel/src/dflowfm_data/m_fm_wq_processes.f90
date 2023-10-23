@@ -36,7 +36,7 @@ module m_fm_wq_processes
    use precision
    use processes_input
    use processes_pointers
-   use dlwq_data
+   use dlwq_hyd_data
    use processet
    use output
 
@@ -135,7 +135,7 @@ module m_fm_wq_processes
    integer                                   :: isffmktop                   !< pointer to fmktop          segment function
    integer                                   :: isffmkbot                   !< pointer to fmkbot          segment function
    integer                                   :: isfwaveheight               !< pointer to wave height     segment function
-   integer                                   :: isfwavelength               !< pointer to wave length     segment function 
+   integer                                   :: isfwavelength               !< pointer to wave length     segment function
    integer                                   :: isfwaveperiod               !< pointer to wave period     segment function
 !
 !     Balance output

@@ -81,7 +81,7 @@
 !
 !
       use m_srstop
-      use grids
+      use dlwqgrid_mod
       use timers
 
       INTEGER              LUN(*), IGREF(NOGRID), IGSEG(NOSEG,NOGRID),

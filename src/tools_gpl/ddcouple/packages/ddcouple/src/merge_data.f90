@@ -29,7 +29,8 @@
 
       use m_srstop
       use m_monsys
-      use dlwqdata_mod             ! module contains everything for the data
+      use dlwq_hyd_data             ! module contains everything for the data
+      
       implicit none
 
       ! declaration of the arguments

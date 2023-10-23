@@ -55,7 +55,7 @@
 
       use m_bound
       use m_open_waq_files
-      use grids          ! for the storage of contraction grids
+      use dlwqgrid_mod          ! for the storage of contraction grids
       use rd_token       ! for the reading of tokens
       use timers       !   performance timers
 

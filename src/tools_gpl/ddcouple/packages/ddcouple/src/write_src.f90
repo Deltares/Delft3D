@@ -29,7 +29,7 @@
 
       use m_srstop
       use m_monsys
-      use m_ddhyd                   ! module contains everything for the hydrodynamics
+      use hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
