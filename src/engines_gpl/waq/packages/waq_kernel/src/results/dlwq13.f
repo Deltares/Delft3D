@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq13
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -45,29 +47,29 @@
 !
 !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
 !     ---------------------------------------------------------
-!     LUN     INTEGER  *           INPUT   unit numbers output files
+!     LUN     INTEGER(kind=int_32) ::*           INPUT   unit numbers output files
 !     LCHAR   CHAR*(*) *           INPUT   names of output files
-!     CONC    REAL     NOTOT*?     INPUT   concentration values
-!     ITIME   INTEGER  1           INPUT   present time in clock units
+!     CONC    REAL(kind=sp) ::NOTOT*?     INPUT   concentration values
+!     ITIME   INTEGER(kind=int_32) ::1           INPUT   present time in clock units
 !     MNAME   CHAR*40  4           INPUT   model identhification
 !     SNAME   CHAR*20  NOTOT       INPUT   names of substances
-!     NOTOT   INTEGER  1           INPUT   total number of systems
-!     NOSEG   INTEGER  1           INPUT   total number of segments
+!     NOTOT   INTEGER(kind=int_32) ::1           INPUT   total number of systems
+!     NOSEG   INTEGER(kind=int_32) ::1           INPUT   total number of segments
 !
 !
       use m_open_waq_files
       use timers
 
-      real          CONC  ( NOTOT, NOSEG )
+      real(kind=sp) ::CONC  ( NOTOT, NOSEG )
       CHARACTER*20  SNAME ( * )
       CHARACTER*40  MNAME ( * )
       CHARACTER*(*) LCHAR ( * )
       CHARACTER*255 LCHARMAP
-      integer       lun(*)
+      integer(kind=int_32) ::lun(*)
       
-      integer    i, j, k, itime
-      integer    noseg, notot, nonan, ierr
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::i, j, k, itime
+      integer(kind=int_32) ::noseg, notot, nonan, ierr
+      integer(kind=int_32) ::ithandl = 0
       
             
       if ( timon ) call timstrt ( "dlwq13", ithandl )

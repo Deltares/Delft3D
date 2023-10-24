@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_sobbal
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -52,49 +54,49 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     NOTOT   INTEGER       1     INPUT   Total number of substances
-!     ITIME   INTEGER       1     INPUT   Time in system clock units
-!     ITSTOP  INTEGER       1     INPUT   Stop time of the simulation
-!     IMSTRT  INTEGER       1     INPUT   Start time of the output
-!     IMSTOP  INTEGER       1     INPUT   Stop time of the output
+!     NOTOT   INTEGER(kind=int_32) ::1     INPUT   Total number of substances
+!     ITIME   INTEGER(kind=int_32) ::1     INPUT   Time in system clock units
+!     ITSTOP  INTEGER(kind=int_32) ::1     INPUT   Stop time of the simulation
+!     IMSTRT  INTEGER(kind=int_32) ::1     INPUT   Start time of the output
+!     IMSTOP  INTEGER(kind=int_32) ::1     INPUT   Stop time of the output
 !     MONAME  CHAR*40       4     INPUT   Model and run names
 !     SYNAME  CHAR*20    NOTOT    INPUT   names of substances
-!     NOSYS   INTEGER       1     INPUT   Number of active substances
-!     ASMASS  REAL       NOTOT,*  IN/OUT  Cummulative balance per dump area
+!     NOSYS   INTEGER(kind=int_32) ::1     INPUT   Number of active substances
+!     ASMASS  REAL(kind=sp) ::NOTOT,*  IN/OUT  Cummulative balance per dump area
 !                                         1   = mass
 !                                         2   = processes
 !                                         3/4 = loads in/out
 !                                         5/6 = transport in/out
-!     NOFLUX  INTEGER       1     INPUT   Number of fluxes
-!     FLXINT  REAL          *     IN/OUT  Integrated fluxes in dump areas
-!     NDMPAR  INTEGER     1       INPUT   Number of dump areas
-!     NTDMPQ  INTEGER     1       INPUT
+!     NOFLUX  INTEGER(kind=int_32) ::1     INPUT   Number of fluxes
+!     FLXINT  REAL(kind=sp) ::*     IN/OUT  Integrated fluxes in dump areas
+!     NDMPAR  INTEGER(kind=int_32) ::1       INPUT   Number of dump areas
+!     NTDMPQ  INTEGER(kind=int_32) ::1       INPUT
 !     DANAM   CHAR*20  NDMPAR     INPUT   Dump area names
-!     NDMPQ   INTEGER     1       INPUT   Number of dumped exchanges
-!     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
-!     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-!     STOCHI  REAL   NOTOT*NOFLUX INPUT   Proces stochiometry
-!     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
-!     NOBND   INTEGER     1       INPUT   number of boundaries
-!     NOBTYP  INTEGER     1       INPUT   number of boundaries types
+!     NDMPQ   INTEGER(kind=int_32) ::1       INPUT   Number of dumped exchanges
+!     IQDMP   INTEGER(kind=int_32) ::*     INPUT   Exchange to dumped exchange pointer
+!     IPDMP   INTEGER(kind=int_32) ::*     INPUT   pointer structure dump area's
+!     STOCHI  REAL(kind=sp) ::NOTOT*NOFLUX INPUT   Proces stochiometry
+!     DMPQ    REAL(kind=sp) ::NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
+!     NOBND   INTEGER(kind=int_32) ::1       INPUT   number of boundaries
+!     NOBTYP  INTEGER(kind=int_32) ::1       INPUT   number of boundaries types
 !     BNDTYP  CHAR*20  NOBTYP     INPUT   boundary types names
-!     INBTYP  INTEGER  NOBND      INPUT   boundary type number (index in BNDTYP)
-!     NOCONS  INTEGER     1       INPUT   number of constants
+!     INBTYP  INTEGER(kind=int_32) ::NOBND      INPUT   boundary type number (index in BNDTYP)
+!     NOCONS  INTEGER(kind=int_32) ::1       INPUT   number of constants
 !     CONAME  CHAR*20  NOCONS     INPUT   constants names
-!     CONS    REAL     NOCONS     INPUT   constants array
-!     NOQ     INTEGER     1       INPUT   number of exchanges
-!     IPOINT  INTEGER   4,NOQ     INPUT   pointer array
-!     FLXNAM  INTEGER  NOFLUX     INPUT   flux names
-!     INTOPT  INTEGER     1       INPUT   Integration and balance suboptions
-!     VOLUME  REAL     NOSEG      INPUT   Volume
-!     SURF    REAL     NOSEG      INPUT   horizontal surface area
-!     DMPBAL  INTEGER  NDMPAR     INPUT   if dump area is included in balance
-!     NOWST   INTEGER     1       INPUT   number of wasteloads
-!     NOWTYP  INTEGER     1       INPUT   number of wasteload types
+!     CONS    REAL(kind=sp) ::NOCONS     INPUT   constants array
+!     NOQ     INTEGER(kind=int_32) ::1       INPUT   number of exchanges
+!     IPOINT  INTEGER(kind=int_32) ::4,NOQ     INPUT   pointer array
+!     FLXNAM  INTEGER(kind=int_32) ::NOFLUX     INPUT   flux names
+!     INTOPT  INTEGER(kind=int_32) ::1       INPUT   Integration and balance suboptions
+!     VOLUME  REAL(kind=sp) ::NOSEG      INPUT   Volume
+!     SURF    REAL(kind=sp) ::NOSEG      INPUT   horizontal surface area
+!     DMPBAL  INTEGER(kind=int_32) ::NDMPAR     INPUT   if dump area is included in balance
+!     NOWST   INTEGER(kind=int_32) ::1       INPUT   number of wasteloads
+!     NOWTYP  INTEGER(kind=int_32) ::1       INPUT   number of wasteload types
 !     WSTTYP  CHAR*20  NOWTYP     INPUT   wasteload types names
-!     IWASTE  INTEGER  NOWST      INPUT   segment number wasteloads
-!     INWTYP  INTEGER  NOWST      INPUT   wasteload type number (index in WSTTYP)
-!     WSTDMP  REAL     NOTOT,NOWST,2  I   accumulated wasteloads 1/2 in and out
+!     IWASTE  INTEGER(kind=int_32) ::NOWST      INPUT   segment number wasteloads
+!     INWTYP  INTEGER(kind=int_32) ::NOWST      INPUT   wasteload type number (index in WSTTYP)
+!     WSTDMP  REAL(kind=sp) ::NOTOT,NOWST,2  I   accumulated wasteloads 1/2 in and out
 !     ==================================================================
 !
       use m_outhis
@@ -106,13 +108,13 @@
       use m_getcom
       use m_open_waq_files
       use timers
-      INTEGER       NOTOT , ITIME , NOSYS , NOSEG , LUNOUT,
+      INTEGER(kind=int_32) ::NOTOT , ITIME , NOSYS , NOSEG , LUNOUT,
      +              NOFLUX, NDMPAR, NDMPQ , NTDMPQ,
      +              NOBND , ITSTOP, IMSTOP, IMSTRT, IMSTEP,
      +              NOBTYP, NOCONS, NOQ   , INIOUT, INTOPT
-      INTEGER       IQDMP(*)      , IPDMP(*)  ,
+      INTEGER(kind=int_32) ::IQDMP(*)      , IPDMP(*)  ,
      +              INBTYP(NOBND) , IPOINT( 4,NOQ )
-      REAL          DMPQ(NOSYS,NDMPQ,*),
+      REAL(kind=sp) ::DMPQ(NOSYS,NDMPQ,*),
      +              ASMASS(NOTOT,NDMPAR,*), FLXINT(NOFLUX,*),
      +              STOCHI(NOTOT,NOFLUX)  , CONS(NOCONS)     ,
      +              VOLUME(*)             , SURF(*)
@@ -121,52 +123,52 @@
      +              FLXNAM(NOFLUX)
       CHARACTER*40  MONAME(4)
       CHARACTER*255 LCHOUT
-      integer                    :: dmpbal(ndmpar)        ! indicates if dump area is included in the balance
-      integer                    :: nowst                 ! number of wasteloads
-      integer                    :: nowtyp                ! number of wasteload types
+      integer(kind=int_32) ::dmpbal(ndmpar)        ! indicates if dump area is included in the balance
+      integer(kind=int_32) ::nowst                 ! number of wasteloads
+      integer(kind=int_32) ::nowtyp                ! number of wasteload types
       character(len=20)          :: wsttyp(nowtyp)        ! wasteload types names
-      integer                    :: iwaste(nowst)         ! segment numbers of the wasteloads
-      integer                    :: inwtyp(nowst)         ! wasteload type number (index in wsttyp)
-      real                       :: wstdmp(notot,nowst,2) ! accumulated wasteloads 1/2 in and out
-      integer, intent(in   )     :: isegcol(*)            ! pointer from segment to top of column
+      integer(kind=int_32) ::iwaste(nowst)         ! segment numbers of the wasteloads
+      integer(kind=int_32) ::inwtyp(nowst)         ! wasteload type number (index in wsttyp)
+      real(kind=sp) ::wstdmp(notot,nowst,2) ! accumulated wasteloads 1/2 in and out
+      integer(kind=int_32), intent(in   )      ::isegcol(*)            ! pointer from segment to top of column
 
 !     Local declarations
 !
 !     NAME    KIND     LENGTH     DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     NOSUM   INTEGER     1       Nr of sum parameters
-!     SFACTO  REAL   NOSUM,NOTOT  Factor for substance in sum parameters
-!     STOCHL  REAL   NOSUM,NOFLUX Local STOCHI for sum parameters
-!     NOOUT   INTEGER     1       Nr of balance terms per dump segment
-!     IMASSA  INTEGER NOTOT+NOSUM Pointer to accumulation term in balance
-!     IEMISS  INTEGER NOTOT+NOSUM Pointer to boundary terms in balance
-!     NEMISS  INTEGER     1       Nr of boundary terms in balance
-!     ITRANS  INTEGER NOTOT+NOSUM Pointer to int. transport terms in balance
-!     IPROCS  INTEGER NOTOT+NOSUM Pointer to processes term(s) in balance
-!     NPROCS  INTEGER NOTOT+NOSUM Nr of processes terms in balance
-!     BALANS  REAL   NOOUT,*      Mass balances for current time
-!     BALTOT  REAL   NOOUT,*      Integrated mass balances
+!     NOSUM   INTEGER(kind=int_32) ::1       Nr of sum parameters
+!     SFACTO  REAL(kind=sp) ::NOSUM,NOTOT  Factor for substance in sum parameters
+!     STOCHL  REAL(kind=sp) ::NOSUM,NOFLUX Local STOCHI for sum parameters
+!     NOOUT   INTEGER(kind=int_32) ::1       Nr of balance terms per dump segment
+!     IMASSA  INTEGER(kind=int_32) ::NOTOT+NOSUM Pointer to accumulation term in balance
+!     IEMISS  INTEGER(kind=int_32) ::NOTOT+NOSUM Pointer to boundary terms in balance
+!     NEMISS  INTEGER(kind=int_32) ::1       Nr of boundary terms in balance
+!     ITRANS  INTEGER(kind=int_32) ::NOTOT+NOSUM Pointer to int. transport terms in balance
+!     IPROCS  INTEGER(kind=int_32) ::NOTOT+NOSUM Pointer to processes term(s) in balance
+!     NPROCS  INTEGER(kind=int_32) ::NOTOT+NOSUM Nr of processes terms in balance
+!     BALANS  REAL(kind=sp) ::NOOUT,*      Mass balances for current time
+!     BALTOT  REAL(kind=sp) ::NOOUT,*      Integrated mass balances
 !     OUNAME  C*20      NOOUT     Names of terms in balances
 !     FL2BAL  INT   NOTOT+NOSUM,* Pointer to relevant fluxes per substance
 !     DANAMP  C*20     NDMPAR+1   Copy of DANAM including sum segment
 !     SYNAMP  C*20  NOTOT+NOSUM   Copy of SYNAME including sum parameters
-!     IBSTRT  INTEGER     1       Proper start time of the balance period
-!     IBSTOP  INTEGER     1       Proper stop time of the balance period
+!     IBSTRT  INTEGER(kind=int_32) ::1       Proper start time of the balance period
+!     IBSTOP  INTEGER(kind=int_32) ::1       Proper stop time of the balance period
 
-      INTEGER       IOSOBH, IOBALI, ISYS  , IBOUN , NEMISS, IFRAC ,
+      INTEGER(kind=int_32) ::IOSOBH, IOBALI, ISYS  , IBOUN , NEMISS, IFRAC ,
      J              IFLUX , IDUMP , IPQ   , ISYS2 , ITEL  , IINIT ,
      J              ITEL1 , IP1   , ITEL2 , NQC   , IQC   , IQ    ,
      J              IPOIN , NOOUT , IERR  , IOUT  , ISUM  , NOSUM ,
      J              NSC   , ISC   , LUNREP, IBSTRT, IBSTOP
       PARAMETER    (NOSUM=2)
-      real   ,      allocatable : : SFACTO(:,:),
+      real(kind=sp),      allocatable   :: SFACTO(:,:),
      J                              STOCHL(:,:),
      J                              FLTRAN(:,:),
      J                              BALANS(:,:),
      J                              BALTOT(:,:),
      J                              DMP_SURF(:),
      J                              DMP_VOLU(:)
-      integer,      allocatable : : JDUMP(:),
+      integer(kind=int_32),      allocatable  :: JDUMP(:),
      J                              FL2BAL(:,:),
      J                              IMASSA(:),
      J                              IEMISS(:),
@@ -174,28 +176,28 @@
      J                              IPROCS(:),
      J                              NPROCS(:),
      J                              SEGDMP(:)
-      character*20, allocatable : : OUNAME(:),
+      character*20, allocatable :: OUNAME(:),
      J                              DANAMP(:),
      J                              SYNAMP(:)
-      logical, allocatable      : : IWDMP(:,:)
+      logical, allocatable      :: IWDMP(:,:)
 
       LOGICAL       LUMPEM, LUMPPR, IFIRST, SUPPFT, ONLYSM,
      J              INCLUD, BOUNDA, LUMPTR, B_AREA, B_VOLU
-      REAL          RDUM(1)
-      REAL          ST    , TFACTO(NOSUM)
+      REAL(kind=sp) ::RDUM(1)
+      REAL(kind=sp) ::ST    , TFACTO(NOSUM)
       CHARACTER*20  C20   , SYNAMS(NOSUM)
       CHARACTER*40  CDUM
       CHARACTER*255 FILNAM
       character*2   c2
       character*255 inifil
       logical       lfound
-      integer       idummy, ierr2
-      integer       lunini
-      real          rdummy
-      integer       iseg, iw, idum, ivan, ibal_off, idump_out
-      integer       ndmpar_out, ntrans, indx
-      integer       inaar, itstrt
-      real          tot_surf, tot_volu
+      integer(kind=int_32) ::idummy, ierr2
+      integer(kind=int_32) ::lunini
+      real(kind=sp) ::rdummy
+      integer(kind=int_32) ::iseg, iw, idum, ivan, ibal_off, idump_out
+      integer(kind=int_32) ::ndmpar_out, ntrans, indx
+      integer(kind=int_32) ::inaar, itstrt
+      real(kind=sp) ::tot_surf, tot_volu
       DATA          LUMPEM /.true./
       DATA          LUMPPR /.true./
       DATA          SUPPFT /.true./
@@ -209,7 +211,7 @@
 !    J              BALANS, FLTRAN, IMASSA, IEMISS, ITRANS, IPROCS,
 !    J              NPROCS, FL2BAL, LUMPTR, B_AREA, B_VOLU, SEGDMP
       SAVE
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
 
 !     Skip this routine when there are no balance area's
       IF (NDMPAR.EQ.0) RETURN
@@ -972,17 +974,17 @@
      J                   SFACTO, IUNIT , INIT  )
       use timers
 
-      INTEGER      IOBALI, IBSTRT, IBSTOP, NOOUT , NOTOT , NDMPAR,
+      INTEGER(kind=int_32) ::IOBALI, IBSTRT, IBSTOP, NOOUT , NOTOT , NDMPAR,
      J             IMASSA(*), IEMISS(*), NEMISS, ITRANS(*), NTRANS,
      J             IPROCS(*), NPROCS(*), NOSUM    , IUNIT , INIT
       CHARACTER*40 MONAME(4)
       CHARACTER*20 DANAMP(NDMPAR),OUNAME(*),SYNAME(*)
-      REAL         BALTOT(NOOUT,NDMPAR),SFACTO(NOSUM,*)
+      REAL(kind=sp) ::BALTOT(NOOUT,NDMPAR),SFACTO(NOSUM,*)
       LOGICAL      ONLYSM
 
-      REAL         VALUE , VALUE1, VALUE2, SUMPOS, SUMNEG
-      INTEGER      IDUMP , ISYS  , ITEL  , I     , ITEL2 , ISUM
-      integer(4) ithandl /0/
+      REAL(kind=sp) ::VALUE , VALUE1, VALUE2, SUMPOS, SUMNEG
+      INTEGER(kind=int_32) ::IDUMP , ISYS  , ITEL  , I     , ITEL2 , ISUM
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "outbai", ithandl )
 
 
@@ -1143,18 +1145,18 @@
 
       implicit none
 
-      integer            nosum , notot , nocons
+      integer(kind=int_32) ::nosum , notot , nocons
       character*20       syname(notot),  coname(nocons)
-      real               tfacto(nosum), sfacto(nosum,notot), cons(nocons)
+      real(kind=sp) ::tfacto(nosum), sfacto(nosum,notot), cons(nocons)
 
 !      INCLUDE 'cblbal.inc'
 
-      integer              isum, isys, icons, ires, nres1, nres2, ityp, lunrep
-      real                 factor
+      integer(kind=int_32) ::isum, isys, icons, ires, nres1, nres2, ityp, lunrep
+      real(kind=sp) ::factor
       parameter           (nres1 = 23, nres2 = 2)
       character*20         resna1(nres1),resna2(nres2)
       character*10         ratna2(2,nres2)
-      real                 facres(2,nres1),ratdef(2,nres2)
+      real(kind=sp) ::facres(2,nres1),ratdef(2,nres2)
 
       data resna1   / 'DetP                ',
      J                'OOP                 ',
@@ -1208,7 +1210,7 @@
      J                'NCRatGreen','PCRatGreen'/
       data ratdef   / 0.16,0.02,
      J                0.16,0.02/
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "consum", ithandl )
 
 !     Compose sum parameters
@@ -1300,15 +1302,15 @@
 !
 
       use timers
-      INTEGER             IDUMP , NOTOT , NOSUM , NOOUT , IOFFSE, NTEL ,
+      INTEGER(kind=int_32) ::IDUMP , NOTOT , NOSUM , NOOUT , IOFFSE, NTEL ,
      J                    NOLAST
-      INTEGER             IMASSA(*), ITERMS(*)
-      REAL                BALANS(NOOUT,*), DMASSA(NTEL,*),
+      INTEGER(kind=int_32) ::IMASSA(*), ITERMS(*)
+      REAL(kind=sp) ::BALANS(NOOUT,*), DMASSA(NTEL,*),
      J                    FACTOR, SFACTO(NOSUM,*)
 
-      INTEGER             ISYS  , IOUT  , ISYSS , IOUT2 , ISUM  ,
+      INTEGER(kind=int_32) ::ISYS  , IOUT  , ISYSS , IOUT2 , ISUM  ,
      J                    ITEST , ITEL  , ITEL2
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "updbal", ithandl )
 
       DO ISYS = 1 , NOTOT

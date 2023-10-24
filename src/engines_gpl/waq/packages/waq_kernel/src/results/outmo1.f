@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outmo1
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -45,23 +47,23 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     IOUT    INTEGER   1         INPUT   unit number output file
-!     IDUMP   INTEGER   NODUMP    INPUT   segment numbers for dump
-!     ARRA    REAL      *         INPUT   values to be printed
+!     IOUT    INTEGER(kind=int_32) ::1         INPUT   unit number output file
+!     IDUMP   INTEGER(kind=int_32) ::NODUMP    INPUT   segment numbers for dump
+!     ARRA    REAL(kind=sp) ::*         INPUT   values to be printed
 !     VNAME   CHAR*40   1         INPUT   name of printed value
 !     DNAME   CHAR*20   NODUMP    INPUT   names of monitoring stations
-!     NODUMP  INTEGER   1         INPUT   amount of dump segments
-!     ID      INTEGER   1         INPUT   index first system in this block
-!     NEND    INTEGER   1         INPUT   index last system in this block
-!     NOTOT   INTEGER   1         INPUT   total number of systems
+!     NODUMP  INTEGER(kind=int_32) ::1         INPUT   amount of dump segments
+!     ID      INTEGER(kind=int_32) ::1         INPUT   index first system in this block
+!     NEND    INTEGER(kind=int_32) ::1         INPUT   index last system in this block
+!     NOTOT   INTEGER(kind=int_32) ::1         INPUT   total number of systems
 !
 !     Declaration of arguments
 !
       use timers
 
-      INTEGER      IOUT  , NODUMP, ID    , NEND  , NOTOT
-      INTEGER      IDUMP(*)
-      REAL         ARRA(NOTOT,*)
+      INTEGER(kind=int_32) ::IOUT  , NODUMP, ID    , NEND  , NOTOT
+      INTEGER(kind=int_32) ::IDUMP(*)
+      REAL(kind=sp) ::ARRA(NOTOT,*)
       CHARACTER*40 VNAME
       CHARACTER*20 DNAME(*)
 !
@@ -69,8 +71,8 @@
 !
       CHARACTER*1  SPACE
       DATA         SPACE / ' ' /
-      integer      i, k, iseg
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::i, k, iseg
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "outmo1", ithandl )
 !
       WRITE (IOUT,2060) VNAME

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fiosub
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -46,7 +48,7 @@
 !
 !     FUNCTION            : Fills output buffer OUTVAL on sub grid.
 !
-!     SUBROUTINES CALLED  : ZERO  , zero's a real array
+!     SUBROUTINES CALLED  : ZERO  , zero's a real(kind=sp) ::array
 !
 !     FILES               : -
 !
@@ -54,41 +56,41 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     OUTVAL  REAL  NCOUT+NRVAR,* OUTPUT  Values for vars on output grid
-!     IOPOIN  INTEGER       *     INPUT   Pointers to arrays for vars
-!     NRVAR   INTEGER       1     INPUT   Number of extra output vars
-!     NOCONS  INTEGER       1     INPUT   Number of constants used
-!     NOPA    INTEGER       1     INPUT   Number of parameters
-!     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-!     NOSFUN  INTEGER       1     INPUT   Number of segment functions
-!     NOTOT   INTEGER       1     INPUT   Total number of substances
-!     CONC    REAL   NOTOT,NOSEG  INPUT   Model concentrations
-!     SEGFUN  REAL   NOSEG,NOSFUN INPUT   Segment functions at ITIME
-!     FUNC    REAL          *     INPUT   Model functions at ITIME
-!     PARAM   REAL    NOPA,NOSEG  INPUT   Model parameters
-!     CONS    REAL          *     INPUT   Model constants
-!     IDT     INTEGER       1     INPUT   Simulation timestep
-!     ITIME   INTEGER       1     INPUT   Time in system clock units
-!     VOLUME  REAL      NOSEG     INPUT   Segment volumes
-!     NOSEG   INTEGER       1     INPUT   Nr. of computational elements
-!     NOSYS   INTEGER       1     INPUT   Number of active substances
-!     NDMPAR  INTEGER       1     INPUT   number of dump locations
-!     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-!     BOUND   REAL     NOTOT*?    INPUT   boundary      values
-!     NOLOC   INTEGER       1     INPUT   Number of variables in PROLOC
-!     PARAM   REAL   NOLOC,NOSEG  INPUT   Parameters local in PROCES system
-!     NODEF   INTEGER       1     INPUT   Number of used defaults
-!     DEFAUL  REAL          *     INPUT   Default proces parameters
-!     NCOUT   INTEGER       1     INPUT   number of conc in output
-!     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
+!     OUTVAL  REAL(kind=sp) ::NCOUT+NRVAR,* OUTPUT  Values for vars on output grid
+!     IOPOIN  INTEGER(kind=int_32) ::*     INPUT   Pointers to arrays for vars
+!     NRVAR   INTEGER(kind=int_32) ::1     INPUT   Number of extra output vars
+!     NOCONS  INTEGER(kind=int_32) ::1     INPUT   Number of constants used
+!     NOPA    INTEGER(kind=int_32) ::1     INPUT   Number of parameters
+!     NOFUN   INTEGER(kind=int_32) ::1     INPUT   Number of functions ( user )
+!     NOSFUN  INTEGER(kind=int_32) ::1     INPUT   Number of segment functions
+!     NOTOT   INTEGER(kind=int_32) ::1     INPUT   Total number of substances
+!     CONC    REAL(kind=sp) ::NOTOT,NOSEG  INPUT   Model concentrations
+!     SEGFUN  REAL(kind=sp) ::NOSEG,NOSFUN INPUT   Segment functions at ITIME
+!     FUNC    REAL(kind=sp) ::*     INPUT   Model functions at ITIME
+!     PARAM   REAL(kind=sp) ::NOPA,NOSEG  INPUT   Model parameters
+!     CONS    REAL(kind=sp) ::*     INPUT   Model constants
+!     IDT     INTEGER(kind=int_32) ::1     INPUT   Simulation timestep
+!     ITIME   INTEGER(kind=int_32) ::1     INPUT   Time in system clock units
+!     VOLUME  REAL(kind=sp) ::NOSEG     INPUT   Segment volumes
+!     NOSEG   INTEGER(kind=int_32) ::1     INPUT   Nr. of computational elements
+!     NOSYS   INTEGER(kind=int_32) ::1     INPUT   Number of active substances
+!     NDMPAR  INTEGER(kind=int_32) ::1     INPUT   number of dump locations
+!     IPDMP   INTEGER(kind=int_32) ::*     INPUT   pointer structure dump area's
+!     BOUND   REAL(kind=sp) ::NOTOT*?    INPUT   boundary      values
+!     NOLOC   INTEGER(kind=int_32) ::1     INPUT   Number of variables in PROLOC
+!     PARAM   REAL(kind=sp) ::NOLOC,NOSEG  INPUT   Parameters local in PROCES system
+!     NODEF   INTEGER(kind=int_32) ::1     INPUT   Number of used defaults
+!     DEFAUL  REAL(kind=sp) ::*     INPUT   Default proces parameters
+!     NCOUT   INTEGER(kind=int_32) ::1     INPUT   number of conc in output
+!     NTDMPQ  INTEGER(kind=int_32) ::1     INPUT   total number exchanges in dump area
 !
 !     Declaration of arguments
 !
-      integer    nrvar , nocons, nopa  , nofun , nosfun,
+      integer(kind=int_32) ::nrvar , nocons, nopa  , nofun , nosfun,
      +           notot , idt   , itime , noseg , nosys ,
      +           ndmpar, noloc , nodef , ncout , ntdmpq
-      integer    iopoin(*)      , ipdmp(*)
-      real       outval(*)      , conc(notot,*),
+      integer(kind=int_32) ::iopoin(*)      , ipdmp(*)
+      real(kind=sp) ::outval(*)      , conc(notot,*),
      +           segfun(noseg,nosfun), func(*) ,
      +           param (nopa ,noseg ), cons(*) ,
      +           volume(*)      , bound(*)     ,
@@ -99,17 +101,17 @@
 !
 !     Local
 !
-      real, parameter    :: rmiss = -999.
-      integer, parameter :: nopred= 6     
-      integer     iopa  , iofunc, iosfun, ioconc, ioloc ,
+      real(kind=sp), parameter     ::rmiss = -999.
+      integer(kind=int_32), parameter  ::nopred= 6     
+      integer(kind=int_32) ::iopa  , iofunc, iosfun, ioconc, ioloc ,
      +            iodef , ip    , ip1   , ip2   , itel2 ,
      +            isys  , ivar  , idump , isc   , iseg  ,
      +            nsc   , iofdmp, iocons, iip   , iidump,
      +            indx 
-      integer  :: ifun   ! index in function arrays
-      real        hlpvar, hlpcum, valcum, valvar, srf, cumsrf
+      integer(kind=int_32) ::ifun   ! index in function arrays
+      real(kind=sp) ::hlpvar, hlpcum, valcum, valvar, srf, cumsrf
       logical     parm
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "fiosub", ithandl )
 !
 !     Pointer offsets

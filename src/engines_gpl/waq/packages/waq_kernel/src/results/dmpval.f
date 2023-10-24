@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dmpval
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -39,24 +41,24 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     NDMPAR  INTEGER       1     INPUT   Number of dump areas
-!     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-!     VALSEG  REAL          *     INPUT   values on segment grid
-!     VALDMP  REAL          *     INPUT   values on dump grid
+!     NDMPAR  INTEGER(kind=int_32) ::1     INPUT   Number of dump areas
+!     IPDMP   INTEGER(kind=int_32) ::*     INPUT   pointer structure dump area's
+!     VALSEG  REAL(kind=sp) ::*     INPUT   values on segment grid
+!     VALDMP  REAL(kind=sp) ::*     INPUT   values on dump grid
 !
 !     Declaration of arguments
 !
       use timers
 
-      INTEGER       NDMPAR
-      INTEGER       IPDMP(*)
-      REAL          VALSEG(*)
-      REAL          VALDMP(*)
+      INTEGER(kind=int_32) ::NDMPAR
+      INTEGER(kind=int_32) ::IPDMP(*)
+      REAL(kind=sp) ::VALSEG(*)
+      REAL(kind=sp) ::VALDMP(*)
 !
 !     Local declarations
 !
-      INTEGER       ITEL  , IDUMP , NSC   , ISC   , ISEG
-      integer(4) ithandl /0/
+      INTEGER(kind=int_32) ::ITEL  , IDUMP , NSC   , ISC   , ISEG
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dmpval", ithandl )
 
 !     Loop over the dump area's, sum value

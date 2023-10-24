@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outdmp
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -49,35 +51,35 @@
 !
 !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
 !     ---------------------------------------------------------
-!     IOUT    INTEGER  1           INPUT   unit number output file
+!     IOUT    INTEGER(kind=int_32) ::1           INPUT   unit number output file
 !     LCHOUT  CHAR*(*) 1           INPUT   name output file
-!     ITIME   INTEGER  1           INPUT   present time in clock units
+!     ITIME   INTEGER(kind=int_32) ::1           INPUT   present time in clock units
 !     MNAME   CHAR*40  4           INPUT   model identhification
-!     NX      INTEGER  1           INPUT   number of columns in grid
-!     NY      INTEGER  1           INPUT   number of rows in grid
-!     LGRID   INTEGER  NX*NY       INPUT   grid layout
+!     NX      INTEGER(kind=int_32) ::1           INPUT   number of columns in grid
+!     NY      INTEGER(kind=int_32) ::1           INPUT   number of rows in grid
+!     LGRID   INTEGER(kind=int_32) ::NX*NY       INPUT   grid layout
 !     CGRID   CHAR*6   20*NY       LOCAL   concentrations in grid layout
-!     NOTOT   INTEGER  1           INPUT   total number of systems
-!     NOSYS   INTEGER  1           INPUT   number of active systems
+!     NOTOT   INTEGER(kind=int_32) ::1           INPUT   total number of systems
+!     NOSYS   INTEGER(kind=int_32) ::1           INPUT   number of active systems
 !     SNAME   CHAR*20  NOTOT       INPUT   names of substances
-!     CONC    REAL     NOTOT*?     INPUT   concentration values
-!     BOUND   REAL     NOTOT*?     INPUT   boundary      values
-!     NOTOT2  INTEGER  1           INPUT   number of extra output vars
+!     CONC    REAL(kind=sp) ::NOTOT*?     INPUT   concentration values
+!     BOUND   REAL(kind=sp) ::NOTOT*?     INPUT   boundary      values
+!     NOTOT2  INTEGER(kind=int_32) ::1           INPUT   number of extra output vars
 !     SYNAM2  CHAR*20  NOTOT       INPUT   names of extra vars
-!     CONC2   REAL    NOTOT2,NX*NY INPUT   values for extra vars
-!     IP      INTEGER  6           IN/OUT  paging structure
-!     ISFLAG  INTEGER  1           INPUT   if 1 then dd-hh:mm'ss'
-!     INIOUT  INTEGER  1           IN/OUT  Initialize flag
+!     CONC2   REAL(kind=sp) ::NOTOT2,NX*NY INPUT   values for extra vars
+!     IP      INTEGER(kind=int_32) ::6           IN/OUT  paging structure
+!     ISFLAG  INTEGER(kind=int_32) ::1           INPUT   if 1 then dd-hh:mm'ss'
+!     INIOUT  INTEGER(kind=int_32) ::1           IN/OUT  Initialize flag
 !
 !     Declaration of arguments
 !
       use m_reptim
       use timers
 
-      INTEGER       IOUT  , ITIME , NX    , NY    , NOTOT ,
+      INTEGER(kind=int_32) ::IOUT  , ITIME , NX    , NY    , NOTOT ,
      +              NOSYS , ISFLAG, NOTOT2, INIOUT
-      INTEGER       LGRID(*)      , IP(*)
-      REAL          CONC(NOTOT,*) , BOUND(NOSYS,*),
+      INTEGER(kind=int_32) ::LGRID(*)      , IP(*)
+      REAL(kind=sp) ::CONC(NOTOT,*) , BOUND(NOSYS,*),
      +              CONC2 (*)
       CHARACTER*6   CGRID ( 20, * )
       CHARACTER*20  SNAME ( * )        , SYNAM2(*)
@@ -86,12 +88,12 @@
 !
 !     Local declaration
 !
-      integer  itot, i, i1, i2, i3, k, j, iscale, factor, nend
-      real     cmax, c
-      real, PARAMETER   :: RMISS = -999.
+      integer(kind=int_32) ::itot, i, i1, i2, i3, k, j, iscale, factor, nend
+      real(kind=sp) ::cmax, c
+      real(kind=sp), PARAMETER    ::RMISS = -999.
       CHARACTER*6   POINT , PADDER
       DATA          POINT / '  .   ' /
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "outdmp", ithandl )
 !
       IF ( NX*NY .EQ. 0 ) goto 9999  !   RETURN

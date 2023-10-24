@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outbal
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -48,28 +50,28 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUBAL   INTEGER       1     INPUT   Logical unit balance file
+!     LUBAL   INTEGER(kind=int_32) ::1     INPUT   Logical unit balance file
 !     FILBAL  CHAR*(*)      1     INPUT   Name balance file
-!     ITIME   INTEGER       1     INPUT   Simulation time ( scu )
+!     ITIME   INTEGER(kind=int_32) ::1     INPUT   Simulation time ( scu )
 !     MONAME  CHAR*40       4     INPUT   model identification
-!     NOTOT   INTEGER       1     INPUT   Total number of substances
-!     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes
+!     NOTOT   INTEGER(kind=int_32) ::1     INPUT   Total number of substances
+!     NOFLUX  INTEGER(kind=int_32) ::1     INPUT   Nr. of fluxes
 !     SYNAME  CHAR*20   NOTOT     INPUT   names of substances
-!     NDMPAR  INTEGER       1     INPUT   Number of dump segments
+!     NDMPAR  INTEGER(kind=int_32) ::1     INPUT   Number of dump segments
 !     DANAME  CHAR*20   NDMPAR    INPUT   names of monitoring stations
-!     ASMASS  REAL NOTOT*NDMPAR*6 INPUT   Mass balance terms
-!     FLXINT  REAL  NOFLUX*NDMPAR INPUT   Integrated fluxes
-!     NOTOT2  REAL          1     INPUT   Number of extra variables
-!     CONC2   REAL NOTOT2*NDMPAR  INPUT   Extra variables
-!     INIT    INTEGER       1     IN/OUT  Init flag (1=yes,!1=no)
+!     ASMASS  REAL(kind=sp) ::NOTOT*NDMPAR*6 INPUT   Mass balance terms
+!     FLXINT  REAL(kind=sp) ::NOFLUX*NDMPAR INPUT   Integrated fluxes
+!     NOTOT2  REAL(kind=sp) ::1     INPUT   Number of extra variables
+!     CONC2   REAL(kind=sp) ::NOTOT2*NDMPAR  INPUT   Extra variables
+!     INIT    INTEGER(kind=int_32) ::1     IN/OUT  Init flag (1=yes,!1=no)
 !
 !     Declaration of arguments
 !
       use timers
 
-      INTEGER       LUBAL , ITIME , INIT  , NOTOT , NOFLUX,
+      INTEGER(kind=int_32) ::LUBAL , ITIME , INIT  , NOTOT , NOFLUX,
      +              NDMPAR, NOTOT2, NOPOUT
-      REAL          ASMASS(NOTOT,NDMPAR,6), FLXINT(NOFLUX,NDMPAR),
+      REAL(kind=sp) ::ASMASS(NOTOT,NDMPAR,6), FLXINT(NOFLUX,NDMPAR),
      +              CONC2(NOTOT2,NDMPAR)
       CHARACTER*20  SYNAME(*)             , DANAME(*)
       CHARACTER*40  MONAME(4)
@@ -77,9 +79,9 @@
 !
 !     Local declarations
 !
-      INTEGER      J     , I     , K     , ISYS  , IFLX  ,
+      INTEGER(kind=int_32) ::J     , I     , K     , ISYS  , IFLX  ,
      +             IHLP
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl =0
       if ( timon ) call timstrt ( "outbal", ithandl )
 !
 !     Initialize file

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outhis
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -45,36 +47,36 @@
 !
 !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
 !     ---------------------------------------------------------
-!     IOHIS   INTEGER  1           INPUT   unit number output file
+!     IOHIS   INTEGER(kind=int_32) ::1           INPUT   unit number output file
 !     NAMFIH  CHAR*(*) 1           INPUT   name output file
-!     ITIME   INTEGER  1           INPUT   present time in clock units
+!     ITIME   INTEGER(kind=int_32) ::1           INPUT   present time in clock units
 !     MONAME  CHAR*40  4           INPUT   model identhification
-!     NODUMP  INTEGER  1           INPUT   number of dump locations
-!     IDUMP   INTEGER  NODUMP      INPUT   dump segment numbers
+!     NODUMP  INTEGER(kind=int_32) ::1           INPUT   number of dump locations
+!     IDUMP   INTEGER(kind=int_32) ::NODUMP      INPUT   dump segment numbers
 !     DUNAME  CHAR*20  NODUMP      INPUT   names of dump locations
-!     NOTOT1  INTEGER  1           INPUT   number of vars in CONC1
+!     NOTOT1  INTEGER(kind=int_32) ::1           INPUT   number of vars in CONC1
 !     SYNAM1  CHAR*20  NOTOT1      INPUT   names of vars in CONC1
-!     CONC1   REAL     NOTOT1*?    INPUT   values
-!     NOTOT2  INTEGER  1           INPUT   number of extra output vars
+!     CONC1   REAL(kind=sp) ::NOTOT1*?    INPUT   values
+!     NOTOT2  INTEGER(kind=int_32) ::1           INPUT   number of extra output vars
 !     SYNAM2  CHAR*20  NOTOT       INPUT   names of extra vars
-!     CONC2   REAL    NOTOT2,NX*NY INPUT   values for extra vars
-!     INIT    INTEGER  1           IN/OUT  Initialize flag
+!     CONC2   REAL(kind=sp) ::NOTOT2,NX*NY INPUT   values for extra vars
+!     INIT    INTEGER(kind=int_32) ::1           IN/OUT  Initialize flag
 !
 !     Declaration of arguments
 !
       use timers
 
-      INTEGER       IOHIS , ITIME , NODUMP, NOTOT1, NOTOT2,
+      INTEGER(kind=int_32) ::IOHIS , ITIME , NODUMP, NOTOT1, NOTOT2,
      +              INIT
-      INTEGER       IDUMP(*)
+      INTEGER(kind=int_32) ::IDUMP(*)
       CHARACTER*(*) MONAME(4), NAMFIH
       CHARACTER*(*) DUNAME(*), SYNAM1(*), SYNAM2(*)
-      REAL          CONC1(*) , CONC2(*)
+      REAL(kind=sp) ::CONC1(*) , CONC2(*)
       
 !     local
-      integer      i, k1, k2, j
+      integer(kind=int_32) ::i, k1, k2, j
       
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "outhis", ithandl )
 !
 !     Initialize file

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fioraa
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -43,24 +45,24 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     OUTVAL  REAL    NRVAR,*     OUTPUT  Values for vars on output grid
-!     NRVAR   INTEGER       1     INPUT   Number of output vars
-!     TRRAAI  REAL    NOSYS,*     INPUT   Tranport over raai for active substanc
-!     NORAAI  INTEGER       1     INPUT   Number of raaien
-!     NOSYS   INTEGER       1     INPUT   Number of parameters in TRRAAI
+!     OUTVAL  REAL(kind=sp) ::NRVAR,*     OUTPUT  Values for vars on output grid
+!     NRVAR   INTEGER(kind=int_32) ::1     INPUT   Number of output vars
+!     TRRAAI  REAL(kind=sp) ::NOSYS,*     INPUT   Tranport over raai for active substanc
+!     NORAAI  INTEGER(kind=int_32) ::1     INPUT   Number of raaien
+!     NOSYS   INTEGER(kind=int_32) ::1     INPUT   Number of parameters in TRRAAI
 !
 !     Declaration of arguments
 !
       use timers
 
-      INTEGER    NRVAR , NORAAI, NOSYS
-      REAL       OUTVAL(NRVAR,*), TRRAAI(NOSYS,*)
+      INTEGER(kind=int_32) ::NRVAR , NORAAI, NOSYS
+      REAL(kind=sp) ::OUTVAL(NRVAR,*), TRRAAI(NOSYS,*)
 !
 !     Local
 !
-      integer   iraai, isys
-      real, PARAMETER  :: RMISS = -999.
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::iraai, isys
+      real(kind=sp), PARAMETER   ::RMISS = -999.
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "fioraa", ithandl )
 !
 !     Copy values into output buffer

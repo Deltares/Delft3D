@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_stepyn
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -47,11 +49,11 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     ITIME   INTEGER       1     INPUT   Time in system clock units
-!     IDT     INTEGER       1     INPUT   Simulation timestep
-!     IMSTRT  INTEGER       1     INPUT   start time of timer
-!     IMSTOP  INTEGER       1     INPUT   stop time of timer
-!     IMSTEP  INTEGER       1     INPUT   time step of timer
+!     ITIME   INTEGER(kind=int_32) ::1     INPUT   Time in system clock units
+!     IDT     INTEGER(kind=int_32) ::1     INPUT   Simulation timestep
+!     IMSTRT  INTEGER(kind=int_32) ::1     INPUT   start time of timer
+!     IMSTOP  INTEGER(kind=int_32) ::1     INPUT   stop time of timer
+!     IMSTEP  INTEGER(kind=int_32) ::1     INPUT   time step of timer
 !     LFLAG   LOGICAL       1     OUTPUT  If .T. then action else not
 !     LFIRST  LOGICAL       1     OUTPUT  If .T. then first step
 !
@@ -59,9 +61,9 @@
 !
       use timers
 
-      INTEGER       ITIME , IDT   , ISTRT , ISTOP , ISTEP
+      INTEGER(kind=int_32) ::ITIME , IDT   , ISTRT , ISTOP , ISTEP
       LOGICAL       LFLAG , LFIRST
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "stepyn", ithandl )
 !
 !     Evaluate timer
