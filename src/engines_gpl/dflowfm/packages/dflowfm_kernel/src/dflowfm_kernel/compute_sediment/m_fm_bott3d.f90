@@ -86,8 +86,10 @@ public :: fm_bott3d
    
    double precision, parameter                 :: DAY2SEC = 86400.0d0 !< seconds in a day  
    double precision, parameter                 :: H2SEC   = 3600.0d0  !< seconds in an hour 
-   logical, parameter                          :: DO_AVALANCHE = .true.
-   logical, parameter                          :: NOT_AVALANCHE = .false.
+   logical, parameter                          :: AVALANCHE_ON  = .true.
+   logical, parameter                          :: AVALANCHE_OFF = .false.
+   logical, parameter                          :: SLOPECOR_ON  = .true.
+   logical, parameter                          :: SLOPECOR_OFF = .false.
    
    !!
    !! Local variables
@@ -144,7 +146,7 @@ public :: fm_bott3d
    ! BEGIN: Moved parts from `fm_erosed`
    !
    if (bed > 0.0_fp) then
-      call fm_adjust_bedload(e_sbcn, e_sbct, DO_AVALANCHE)
+      call fm_adjust_bedload(e_sbcn, e_sbct, AVALANCHE_ON, SLOPECOR_ON)
    endif
    !
    !See: UNST-7367
@@ -154,14 +156,14 @@ public :: fm_bott3d
    ! wave-related bed load transport
    !
    if (bedw>0.0_fp .and. jawave > 0) then
-      call fm_adjust_bedload(e_sbwn, e_sbwt, NOT_AVALANCHE)
+      call fm_adjust_bedload(e_sbwn, e_sbwt, AVALANCHE_OFF, SLOPECOR_ON)
    endif
    !
    ! Sediment availability effects for
    ! wave-related suspended load transport
    !
    if (susw>0.0_fp .and. jawave > 0) then
-      call fm_adjust_bedload(e_sswn, e_sswt, NOT_AVALANCHE)
+      call fm_adjust_bedload(e_sswn, e_sswt, AVALANCHE_OFF, SLOPECOR_OFF)
    endif
    !
    if (duneavalan) then
