@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_vxlpoi
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE VXLPOI ( NOCONS , NOFUN  , NODISP , NOVELO , constants,
      +                    FUNAME , DINAME , VENAME , VALNAM , IVALIP   ,
@@ -35,7 +41,8 @@
 !
 !     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
-      use dlwq_data
+      use m_zoek
+      use dlwq_hyd_data
 
 !     PARAMETERS          : 13
 !
@@ -63,8 +70,11 @@
 !
 !     Local
 !
-      PARAMETER   (NOPREF=4)
+      integer, PARAMETER  :: NOPREF=4
       CHARACTER*10 PREDEF(NOPREF)
+
+      INTEGER       ICO, IDSP, IVEL, IFUN
+
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "vxlpoi", ithndl )
 !
@@ -125,7 +135,6 @@
 !
 !     as constant ?
 !
-!jcb  call zoek ( valnam , nocons, coname , 10   , ico    )
       ico = dlwq_find(constants,valnam)
       if ( ico .gt. 0 ) then
          write(line,'(a,i3,a,g13.6)') '       Using constant nr',ico,' with value:',constants%constant(ico)
@@ -142,3 +151,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_vxlpoi

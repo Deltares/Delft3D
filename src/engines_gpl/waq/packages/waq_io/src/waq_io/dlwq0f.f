@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq0f
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq0f ( noq1   , noq2   , noq3   , noseg  , ipoint ,
      &                    nomat  )
@@ -82,3 +88,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_dlwq0f

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! $Id: volume_table.f90 142608 2023-03-01 15:48:13Z buwalda $
+! : https://svn.oss.deltares.nl/repos/delft3d/trunk/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/compute/volume_table.f90 $
 
 !> Module for using volume tables at 1d nodes for the computation of the total volume of water in a node.
 module m_VolumeTables
@@ -88,9 +88,9 @@ module m_VolumeTables
       procedure, pass :: computeSurface      => computeSurfaceVoltable       !< Computes the surface areas for the different levels
    end type
    
-   type(t_voltable), target,      public, allocatable, dimension(:)     :: vltb  !< 1D Volume tables
-   type(t_voltable), target,      public, allocatable, dimension(:,:)   :: vltbOnLinks  !< 1D Volume tables, used for storage table output on branches.
-                                                                               !< Only the entries VOL and SUR will be filled.
+   type(t_voltable), target,      public, allocatable, dimension(:)     :: vltb        !< [-] 1D Volume tables {"shape": ["ndx1d"]}
+   type(t_voltable), target,      public, allocatable, dimension(:,:)   :: vltbOnLinks !< [-] 1D Volume tables, used for storage table output on branches. {"shape": [2 ,"ndx1d"]}
+   integer, target, public                                              :: ndx1d       !< [-] volume table size {"rank": 0}
 
    contains
    
@@ -282,7 +282,6 @@ module m_VolumeTables
       logical, optional, intent(in   ) :: branchOutput   !< Flag indicates whether the volumes on flow links are required.
                                                          !< This option is used by the volume tool to aggregate volumes to branches.      
       
-      integer :: ndx1d
       integer :: nstor
       integer :: nod
       integer :: n
@@ -317,6 +316,8 @@ module m_VolumeTables
          generateVLTBOnLinks = .false.
       endif
 
+      ndx1d = ndx - ndx2d     ! include also the 2d boundary nodes.
+            
       if (useVolumeTableFile .and. .not. generateVLTBOnLinks) then
          ! Do not use the volumetable file for the storage tables.
          volumeTableFile = fileName
@@ -329,7 +330,6 @@ module m_VolumeTables
       cross => network%crs%cross
       stors => network%storS%stor
 
-      ndx1d = ndx - ndx2d     ! include also the 2d boundary nodes.
       if (allocated(vltb)) then
          call dealloc(vltb)
       end if
@@ -350,7 +350,7 @@ module m_VolumeTables
       ! determine the highest level for the storage nodes
       call calculateHighestLevelOnStorageNodes(vltb)
       
-      call initializeVltb(vltb, ndx1d)
+      call initializeVltb(vltb)
 
       call addStorageToVltb(vltb)
 
@@ -363,31 +363,39 @@ module m_VolumeTables
 
          nod = n+ndx2d
          summerDikeIndex = 0
-
-         ! compute volumes, NOTE the volume at the first level is 0 by design
-         do LL = 1, nd(nod)%lnx
-            L = iabs(nd(nod)%ln(LL))
-            if (L > lnxi) then
-               L = lbnd1d(L)
-            endif
-            if (line2cross(L, 2)%c1 > 0) then
-               if (cross(line2cross(L, 2)%c1)%hasSummerDike() .or. cross(line2cross(L, 2)%c2)%hasSummerDike()) then
-                  summerDikeIndex = summerDikeIndex+1
-               endif
-            endif
-            
-            ! Reset L to original value
-            L = iabs(nd(nod)%ln(LL))
-            if (generateVLTBOnLinks) then
-               call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb, vltbOnLinks)
-            else
-               call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb)
-            endif
-         enddo
          
-         if (vltb(n)%numberOfSummerDikes>0) then
-            vltb(n)%sdinArea(i, vltb(n)%count) = 0d0
-            vltb(n)%inundationPhase = .true.
+         ! Only generate volume tables for 1d nodes (so skip the 2d boundary points)
+         if (iabs(kcs(nod)) == 1) then
+
+            ! compute volumes, NOTE the volume at the first level is 0 by design
+            do LL = 1, nd(nod)%lnx
+               L = iabs(nd(nod)%ln(LL))
+               if (L > lnxi) then
+                  L = lbnd1d(L)
+               endif
+               if (kcu(L) /=1) then
+                  ! This is a 1d2d link and is not added to the volume tables
+                  cycle
+               endif
+            
+               if (line2cross(L, 2)%c1 > 0) then
+                  if (cross(line2cross(L, 2)%c1)%hasSummerDike() .or. cross(line2cross(L, 2)%c2)%hasSummerDike()) then
+                     summerDikeIndex = summerDikeIndex+1
+                  endif
+               endif
+               ! Reset L to original value
+               L = iabs(nd(nod)%ln(LL))
+               if (generateVLTBOnLinks) then
+                  call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb, vltbOnLinks)
+               else
+                  call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb)
+               endif
+            enddo
+         
+            if (vltb(n)%numberOfSummerDikes>0) then
+               vltb(n)%sdinArea(i, vltb(n)%count) = 0d0
+               vltb(n)%inundationPhase = .true.
+            endif
          endif
       enddo
       
@@ -414,14 +422,13 @@ module m_VolumeTables
    !> ** number of levels
    !> ** number of summerdikes
    !> * allocate the arrays in the volume tables.
-   subroutine initializeVltb(vltb, ndx1d)
+   subroutine initializeVltb(vltb)
       use m_flowparameters
       use m_flowgeom
       use unstruc_channel_flow
       
       type(t_voltable), dimension(:), intent(inout) :: vltb    !< Volume tables.
-      integer,                        intent(in   ) :: ndx1d   !< Number of 1d nodes.
-
+      
       integer :: n, nod
       integer :: LL, L
       integer :: index
@@ -567,10 +574,9 @@ module m_VolumeTables
       type(t_voltable), dimension(:),     intent(in   ) :: vltb         !< Volume tables on nodes.
       type(t_voltable), dimension(:, :),  intent(inout) :: vltbOnLinks  !< Volume tables on links.
 
-      integer :: n, ndx1d, nod, L, LL, numlinks
+      integer :: n, nod, L, LL, numlinks
       integer :: Lindex, dir
 
-      ndx1d = ndx - ndx2d
       do n = 1, ndx1d
          nod = n+ndx2d
          ! there is additional storage on this node, split this over the flow links
@@ -750,7 +756,18 @@ module m_VolumeTables
 
          ! water surface at the highest level is equal to the width*dx of the cross section at the highest level.
          vltb(n)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) + dxL*width
-         if (present(vltbOnLinks) .and. lorg <= lnxi) then
+         if (present(vltbOnLinks)) then
+            if (L > lnxi) then                      ! for 1D boundary links, refer to attached link
+               L = LBND1D(L)
+            endif
+            if (lorg > lnxi) then
+               nodintern = ln(2,Lorg)
+               if (ln(1, L) == nodintern) then
+                  lindex = 1
+               else
+                  lindex = 2
+               endif
+            endif
             vltbOnLinks(Lindex, L)%sur(vltb(n)%count) = vltbOnLinks(Lindex, L)%sur(vltb(n)%count) + dxL*width
          endif
          
@@ -784,7 +801,6 @@ module m_VolumeTables
 
       integer :: ibin
       integer :: i, n, istat, j
-      integer :: ndx1d
       integer :: count, numberOfSummerdikes
 
       open(newunit=ibin, file=volumeTableFile, form='unformatted', access='stream', iostat=istat)
@@ -796,7 +812,6 @@ module m_VolumeTables
       write(ibin) volumeTableFileType
       write(ibin) VolumeTableFileMajorVersion, VolumeTableFileMinorVersion
 
-      ndx1d = ndx - ndx2d
       write(ibin) ndx1d, nonlin1D
 
       do n = 1, ndx1d
@@ -838,7 +853,7 @@ module m_VolumeTables
 
       integer :: ibin
       integer :: i, j, n, istat
-      integer :: ndx1d
+      integer :: ndx1d_read
       integer :: count
       integer :: nonlin1D_file
       integer :: numberOfSummerdikes
@@ -876,9 +891,9 @@ module m_VolumeTables
          close(ibin)
          return
       endif
-      read(ibin) ndx1d, nonlin1D_file
+      read(ibin) ndx1d_read, nonlin1D_file
       
-      if (ndx1d /= ndx - ndx2d) then
+      if (ndx1d_read /= ndx1d) then
          call SetMessage(LEVEL_WARN, trim(volumeTableFile)//' is not compatible with the current model, the number of 1d cells are different.')
          return
       endif

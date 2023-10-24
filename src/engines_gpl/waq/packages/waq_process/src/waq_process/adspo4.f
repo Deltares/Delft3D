@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_adspo4
+
+      implicit none
+
+      contains
+
 
       subroutine adspo4 ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_monsys
+      use m_write_error_message
+
 !>\file
 !>       P-ad/desorption to particulate inorganic matter. 3 options for sorption formulation.
 
@@ -92,6 +101,7 @@
 !     ------   -----  ------------
 !
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (i)
 !
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -152,8 +162,6 @@
 !
       DO 9000 ISEG = 1 , NOSEG
 
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1.OR.IKMRK1.EQ.3) THEN
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       IF (IVERSN .EQ. 0) THEN
@@ -193,11 +201,11 @@
 !
 !------ Error messages
 !
-        IF (KD.LT.0.0) CALL ERRSYS ('KD in ADSPO4 lower then zero', 1 )
+        IF (KD.LT.0.0) CALL write_error_message ('KD in ADSPO4 lower then zero')
         IF (((ABS(KD) .LT. 1E-20) .OR. (ABS(PO4).LT.1E-20))
      &      .AND. (ABS(MAXADS) .LT. 1E-20) )
-     &     CALL ERRSYS
-     &              ('(KD or PO4) and MAXADS equal zero in ADSPO4', 1 )
+     &     CALL write_error_message
+     &              ('(KD or PO4) and MAXADS equal zero in ADSPO4')
 !
 !------ (1) Instantanaeous equilibrium partitioning
 !           SWAdsP = 0
@@ -318,11 +326,11 @@
 !
 !     Error messages
 !
-        IF (KDADS .LT. 0.0) CALL ERRSYS ('KDADS in ADSPO4 negative', 1 )
+        IF (KDADS .LT. 0.0) CALL write_error_message ('KDADS in ADSPO4 negative')
         IF (((ABS(KDADS) .LT. 1E-20) .OR. (ABS(PO4) .LT. 1E-20))
      +     .AND. (ABS(FCAP) .LT. 1E-20) )
-     +     CALL ERRSYS
-     +     ('(KDADS or PO4) and FCAP equal zero in ADSPO4', 1 )
+     +     CALL write_error_message
+     +     ('(KDADS or PO4) and FCAP equal zero in ADSPO4')
 !
 !     Start the calculation of the sorption flux
 !     Use one of three options
@@ -366,8 +374,8 @@
            TEMP     = PMSA(IP21)
            POROS    = PMSA(IP22)
 
-           IF (POROS .LT. 1E-10) CALL ERRSYS
-     +        ('POROS in ADSPO4 equals zero', 1 )
+           IF (POROS .LT. 1E-10) CALL write_error_message
+     +        ('POROS in ADSPO4 equals zero')
            IF ( TFE .LT. 1.E-10 ) THEN
               IF ( NR_MES .LT. 25 ) THEN
                  CALL GETMLU(ILUMON)
@@ -485,3 +493,5 @@
       RETURN
 !
       END
+
+      end module m_adspo4

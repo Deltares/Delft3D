@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,28 +27,28 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> find common neighboring cell of two links (0: no cell found)
-integer function icommon(L1, L2)
+integer function common_cell_for_two_net_links(L1, L2)
    use network_data, only: lnn, lne
    implicit none
 
-   integer, intent(in) :: L1, L2 !< link numbers
+   integer, intent(in) :: L1, L2 !< net link numbers
 
    integer :: icell, i, j, kk
 
-   icommon = 0
+   common_cell_for_two_net_links = 0
 
    do i=1,lnn(L1)
       do j=1,lnn(L2)
          if ( lne(i,L1).eq.lne(j,L2) ) then
-            icommon = lne(i,L1)
+            common_cell_for_two_net_links = lne(i,L1)
             exit
          end if
       end do
    end do
 
    return
-end function icommon
+end function common_cell_for_two_net_links

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,12 +20,23 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq02
+      use m_timer
+      use m_rearaa
+      use m_readmp
+      use m_dlwq0i
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq02 ( lun     , lchar   , filtype , nrftot  , nlines  ,
      &                    npoins  , dtflg1  , dtflg2  , nodump  , iopt    ,
      &                    noint   , iwidth  , dtflg3  , ndmpar  , ntdmps  ,
      &                    noraai  , ntraaq  , nosys   , notot   , nototp  ,
-     &                    vrsion  , ioutpt  , nsegdmp , isegdmp , nexcraai,
+     &                    ioutpt  , nsegdmp , isegdmp , nexcraai,
      &                    iexcraai, ioptraai, ierr    , iwar    )
 
 !       Deltares Software Centre
@@ -56,7 +67,7 @@
 !                           dlwq0t  converts an absolute time string to seconds
 !                           cnvtim  converts a 'DATE' integer to seconds
 !                           conver  converts an array of 'DATE' integers to seconds
-!                           dhopnf  opens files
+!                           open_waq_files  opens files
 !                           zoek    seaches a string in a set of strings
 !                           readmp  reads dump area's, new input style
 !                           rearaa  reads transects, new input style
@@ -69,14 +80,24 @@
 !                           LUN(4) = unit intermediate file (pointers)
 !                           LUN(5) = unit intermediate file (timesteps)
 
+      use m_conver
+      use m_check
+      use m_report_date_time
+      use m_rdpart
+      use m_rdlgri
+      use m_rdfnam
+      use m_rdccol
+      use m_zoek
+      use m_srstop
+      use m_open_waq_files
       use rd_token     !   for the reading of tokens
-      use subs02
       use partmem      !   for PARTicle tracking
       use fileinfo     !   a filename array in PART
       use alloc_mod
       use dlwq0t_data
       use timers       !   performance timers
       use m_sysi          ! Timer characteristics
+      use m_cnvtim
 
 
       implicit none
@@ -85,7 +106,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)        !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
@@ -105,7 +126,6 @@
       integer  ( 4), intent(in   ) :: nosys             !< number of transported substances
       integer  ( 4), intent(inout) :: notot             !< total number of substances
       integer  ( 4), intent(  out) :: nototp            !< notot inclusive of partcle substances
-      real     ( 4), intent(in   ) :: vrsion            !< version number of this input
       integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
       integer  ( 4), pointer       :: nsegdmp (:)       !< number of volumes in this monitoring area
       integer  ( 4), pointer       :: isegdmp (:)       !< computational volume numbers
@@ -260,10 +280,9 @@
      &                    1        , .false.  )
             call report_date_time  ( lunitp(2))
             call rdlgri ( nfilesp  , lunitp   , fnamep   )
-            call rdccol ( nmaxp    , mmaxp    , lunitp(5), fnamep(5), 
+            call rdccol ( nmaxp    , mmaxp    , lunitp(5), fnamep(5),
      &                    lgrid2   , xb       , yb       , lunitp(2))
-            call part01 ( lgrid    , lgrid2   , xb       , yb       , dx      ,
-     &                    dy       , area     , angle    , nmaxp    , mmaxp   )
+
             nolayp = layt
             call rdpart ( lunitp(1), lunitp(2), fnamep(1))
             write ( lunut, 2470 ) nosubs
@@ -373,6 +392,7 @@
             if ( idt .le. 0 ) then
                write ( lunut , 2230 ) idt
                ierr = ierr+1
+               call srstop(1)
             endif
             if ( .not. alone ) then
                if ( idt .ne. idelt ) then
@@ -424,12 +444,13 @@
                write ( lunut , 2300 ) iar(1) , itstrt
                ierr = ierr+1
             endif
-            call dhopnf  ( lun(5 ) , lchar(5 ) , 5      , 1     , ioerr )
+            call open_waq_files  ( lun(5 ) , lchar(5 ) , 5      , 1     , ioerr )
             do ibrk = 1,nobrk*2,2
                write ( lun(5) ) iar(ibrk), float (iar(ibrk+1))
                if ( iar(ibrk+1) .le. 0 ) then
                   write ( lunut , 2310 ) iar(ibrk+1)
                   ierr = ierr+1
+                  call srstop(1)
                endif
                if ( ibrk .eq. 1 ) cycle
                if ( iar(ibrk) .le. iar(ibrk-2) ) then
@@ -451,69 +472,13 @@
 
    20 nodump = 0
       nullify(duname)
-      if ( vrsion .le. 4.29 ) then
-
-!             allocate memory
-
-         if ( gettoken( ndmpar, ierr2 ) .gt. 0 ) goto 30
-         write ( lunut , 2340 ) ndmpar
-         allocate ( duname(ndmpar), stat=ierr2 )
-         if ( ierr2 .ne. 0 ) then
-            write ( lunut , 2350 ) ierr2
-            goto 30
-         endif
-         allocate ( nsegdmp(ndmpar),dmpbal(ndmpar),stat=ierr2 )
-         if ( ierr2 .ne. 0 ) then
-            write ( lunut , 2360 ) ierr2
-            goto 30
-         endif
-         ntdmps = ndmpar
-         allocate ( isegdmp(ntdmps),stat=ierr2 )
-         if ( ierr2 .ne. 0 ) then
-            write ( lunut , 2360 ) ierr2
-            goto 30
-         endif
-
-!             read the monitoring information
-
-         do k = 1 , ndmpar
-            dmpbal(k)  = 1
-            nsegdmp(k) = 1
-            if ( gettoken( isegdmp(k), ierr2 ) .gt. 0 ) goto 30
-            if ( gettoken( duname (k), ierr2 ) .gt. 0 ) goto 30
-         enddo
-
-!             check if name is unique
-
-         do i = 1 , ndmpar
-            if ( duname(i) .eq. ' ' ) write ( duname(i), 2370 ) isegdmp(i)
-            do i2 = 1 , i-1
-               call ZOEK( duname(i), 1, duname(i2:), 20, ifound )
-               if ( ifound .gt. 0 ) then
-                  write( lunut, 2380 ) duname(i)
-                  ierr = ierr + 1
-               endif
-            enddo
-         enddo
-
-!             write output
-
-         if ( ioutpt .ge. 3 ) then
-            write ( lunut , 2390 )
-            write ( lunut , 2400 ) ( isegdmp(k), duname(k), k=1, ndmpar)
-         else
-            write ( lunut , 2410 )   ndmpar
-         endif
-      else
-
 !             new input processssing
 
-         ierr2 = 0
-         call readmp ( lun    , lchar  , filtype, duname , nsegdmp,
-     &                 isegdmp, dmpbal , ndmpar , ntdmps , ioutpt ,
-     &                 ierr2  , iwar   )
-         if ( ierr2 .ne. 0 ) goto 30
-      endif
+      ierr2 = 0
+      call readmp ( lun    , lchar  , filtype, duname , nsegdmp,
+     &              isegdmp, dmpbal , ndmpar , ntdmps , ioutpt ,
+     &              ierr2  , iwar   )
+      if ( ierr2 .ne. 0 ) goto 30
 
       if ( ndmpar .gt. 0 ) then
          write ( lun(2) ) ( duname(k), k=1, ndmpar )
@@ -524,27 +489,23 @@
 
 !     Read transects
 
-      if ( vrsion .le. 4.29 ) then
-         noraai = 0
-         ntraaq = 0
-      else
-         ierr2 = 0
-         nullify(raname)
-         call rearaa ( lun     , lchar   , filtype , raname  , nexcraai,
-     &                 iexcraai, ioptraai, noraai  , ntraaq  , ioutpt  ,
-     &                 ierr2   , iwar    )
-         if ( ierr2 .ne. 0 ) goto 30
-         if ( noraai .gt. 0 .and. ibflag .eq. 0 ) then
-            write ( lunut,2420 )
-            iwar2 = iwar2 + 1
-            intopt = ibset(intopt,3)
-            intopt = ibset(intopt,4)
-         endif
-         if ( noraai .gt. 0 .and. ierr .eq. 0 ) then
-            write ( lun(2) ) ( raname(k), k=1, noraai )
-         endif
-         if ( associated(raname) ) deallocate(raname)
+      ierr2 = 0
+      nullify(raname)
+      call rearaa ( lun     , lchar   , filtype , raname  , nexcraai,
+     &              iexcraai, ioptraai, noraai  , ntraaq  , ioutpt  ,
+     &              ierr2   , iwar    )
+      if ( ierr2 .ne. 0 ) goto 30
+      if ( noraai .gt. 0 .and. ibflag .eq. 0 ) then
+         write ( lunut,2420 )
+         iwar2 = iwar2 + 1
+         intopt = ibset(intopt,3)
+         intopt = ibset(intopt,4)
       endif
+      if ( noraai .gt. 0 .and. ierr .eq. 0 ) then
+         write ( lun(2) ) ( raname(k), k=1, noraai )
+      endif
+      if ( associated(raname) ) deallocate(raname)
+
 
 !       Read timings
 
@@ -620,7 +581,7 @@
  2210 format (  ' Integration time stepsize is :',
      &            I2,'Y-',I3,'D-',I2,'H-',I2,'M-',I2,'S.')
  2220 format (  ' Integration time stepsize is :' ,I9 )
- 2230 format ( /' ERROR, invalid time step size:',I8 )
+ 2230 format ( /' ERROR, constant time step must be greater than 0:',I8 )
  2240 format (  ' Variable time step with number of breakpoints is ',i8 )
  2250 format (  /,' ERROR. allocating memory for variable timestep:',I4)
  2260 format (  ' Breakpoint          Timestep ',/)
@@ -630,7 +591,7 @@
      &                                   'output option 4 or higher !' )
  2290 format (    I10,10X,I10 )
  2300 format ( /' ERROR',I10,' larger than start time:',I10 )
- 2310 format ( /' ERROR invalid time step size:',I10)
+ 2310 format ( /' ERROR variable time step must not be smaller 0:',I10)
  2320 format ( /' ERROR',I10,' smaller than ',I10,' descending order !')
  2330 format (  ' ERROR !!!! This option is not implemented !!!')
  2340 format ( /  I4,' monitoring points specified:' )
@@ -652,3 +613,5 @@
  2470 format (  ' The following ',i3,' DELPAR substances are added as passive substances to DELWAQ.' )
 
       end
+
+      end module m_dlwq02

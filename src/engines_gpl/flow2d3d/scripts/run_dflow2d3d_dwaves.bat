@@ -8,12 +8,12 @@ title run_flow2d3d_dwaves
     rem Leave this script where it is.
     rem Call this script from within the working directory:
     rem path\to\delft3d\installation\x64\dflow2d3d\scripts\run_dflow2d3d_dwaves.bat
-    rem More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 setlocal enabledelayedexpansion
 
 set flowConfigFile=config_d_hydro.xml
-set mdwfile= 
+set mdwfile=
 set debugLevel=-1
 set forceExit=0
 set minDFound=0

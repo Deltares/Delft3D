@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine getwavenr(h, T, k)
  use m_sferic
@@ -56,13 +56,5 @@
  num  = 1.0D0 + ome2*(a1 + ome2*(a2 + ome2*(a3 + ome2*(a4 + ome2*(a5 + ome2*a6)))))
  den  = 1.0D0 + ome2*(b1 + ome2*(b2 + ome2*(b3 + ome2*(b4 + ome2*a6))))
  k    = sqrt(ome2*num/den)/ h
-
- return
-
- call getwavenrqn(h,T,RK)
- fac    = k/rk                    ! check
- rlabda = twopi / k
- rlab0  = T*sqrt(9.81*h)
- rn     = rlabda/rlab0
 
  end subroutine getwavenr

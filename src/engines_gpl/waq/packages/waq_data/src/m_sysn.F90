@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -62,9 +62,7 @@ module m_sysn
     integer :: nbufmx   !  Length output buffer
     integer :: ifiopk   !  File option kenmerk array
     integer :: ipbloo   !  Number of Bloom module (if >0)
-    integer :: ipchar   !  Number of Charon module (if >0)
     integer :: ioffbl   !  Offset in IPMSA for Bloom
-    integer :: ioffch   !  Offset in IPMSA for Charon
     integer :: ndspx    !  Number of extra dispersion array's
     integer :: nvelx    !  Number of extra velocity array's
     integer :: nlocx    !  Number of local variables on exch. level
@@ -91,8 +89,6 @@ module m_sysn
     integer :: noarr    !  Number of array's in workspace
     integer :: nogrid   !  Number of defined grids
     integer :: nufil    !  Number of extra unformatted files
-    integer :: npartp   !  number of parts/processors used in the computation
-    integer :: mypart   !  part-number of the current computing process
     integer :: nrref    !  Maximum nr of input references for processes
     integer :: nothrd   !  Nr of threads to be used for parallel processing
     integer :: nototp   !  Total number of substances inclusive of particle tracking
@@ -106,13 +102,13 @@ module m_sysn
                     niharm , nlines , npoins , nolun  , nx     ,         &
                     ny     , noitem , jtrack , nipmsa , nproc  ,         &
                     noloc  , nflux  , nodef  , noutp  , nrvart ,         &
-                    nbufmx , ifiopk , ipbloo , ipchar , ioffbl ,         &
-                    ioffch , ndspx  , nvelx  , nlocx  , ndspn  ,         &
+                    nbufmx , ifiopk , ipbloo , ioffbl ,                  &
+                    ndspx  , nvelx  , nlocx  , ndspn  ,                  &
                     nveln  , ndmpar , ndmpq  , ndmps  , ntdmpq ,         &
                     ntdmps , ncbufm , noraai , ntraaq , newrsp ,         &
                     newisp , nobtyp , nowtyp , nomat  , novec  ,         &
                     mmax   , nmax   , kmax   , novar  , noarr  ,         &
-                    nogrid , nufil  , npartp , mypart , nrref  ,         &
+                    nogrid , nufil  , nrref  ,         &
                     nothrd , nototp
 
     integer          ::  in(insize)   

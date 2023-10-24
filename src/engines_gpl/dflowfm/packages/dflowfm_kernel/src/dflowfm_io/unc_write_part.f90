@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> write particles to netcdf file
 subroutine unc_write_part(ifile,itime,id_parttime,id_partx,id_party,id_partz)
@@ -124,8 +124,6 @@ subroutine unc_write_part(ifile,itime,id_parttime,id_partx,id_party,id_partz)
    if ( kmx.gt.0 ) then
 !     particle vertical coordinate
    end if
-
-   if ( japart.eq.1 ) call restore_particles()
 
    ierror = 0
 1234 continue

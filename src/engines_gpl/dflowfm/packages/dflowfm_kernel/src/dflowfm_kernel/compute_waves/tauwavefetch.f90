@@ -27,301 +27,526 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
-subroutine tauwavefetch(tim)               ! fetchlength and fetchdepth based significant wave height and period
- use m_sediment                             ! based on Hurdle, Stive formulae
- use m_netw                                 ! tauwave based on Swart
- use m_flowgeom                             ! taus = taubmx = taucur + tauwave, as in Delwaq
+module m_fetch_local_data
+   logical,           allocatable   :: calculate_for(:)
+   integer,           allocatable   :: list_of_upwind_cells(:), number_of_upwind_cells(:)
+   double precision,  allocatable   :: data_at_upwind_cells(:,:)
+   double precision,  allocatable   :: fetch_temp(:,:) 
+end module m_fetch_local_data
+    
+!> calculates fetch length and depth based significant wave height and period
+!! based on Hurdle, Stive formulae, tauwave based on Swart, taus = taubmx = taucur + tauwave, as in Delwaq
+subroutine tauwavefetch(tim)
+ use m_sediment, only : rlabda
+ use m_flowgeom, only : ndx, ndxi, ndx2d
  use m_flow
- use m_waves, only: fetch, nwf, fetdp, uorb, twav, hwav
+ use m_waves,    only : fetch, nwf, fetdp, uorb, twav, hwav
  use m_flowtimes
  use m_partitioninfo
- use unstruc_display, only: jaGUI
- USE M_OBSERVATIONS
- use geometry_module, only: getdx, getdy, dbdistance, cross, normalout, normalin
- use m_missing, only: dmiss
- use m_sferic
- use m_plotdots
+ use timers
 
  implicit none
 
- double precision :: tim
+ double precision, intent (in) :: tim
 
- double precision :: U10, fetchL, fetchd, hsig, tsig, tlim, rl, rl0, sqrt2, rk, ust, xkk1, ykk1, xkk2, ykk2
- double precision :: dir, uwin, vwin, prin, cs, sn, fetc, fetd, xn, yn, sumw, www , dsk2, dum
- double precision :: SL,SM,XCR,YCR,CRP, alfa1, alfa2, wdep,  xzk, yzk, dist, distmin, celsiz
- double precision :: sind, cosd, ustx1, ustx2, usty1, usty2
- integer          :: k, L, kk, kkk, k1, k2, kup, n, ndone, ierr, nup, nupf, jacros, nw1, nw2, nodenum, LL, knw = 5, kb
- INTEGER          :: NDIR, NWND, NSTAT, MOUT, ndoneprevcycle, kkmin, ndoner, k12, ks, ke, ki, msam = 0, jaopen
- double precision, dimension(:), allocatable :: wxc, wyc
+ integer            :: error, cell, nr_cells_done_red
+ integer, save      :: total_nr_cells
+ integer, external  :: initialise_fetch_proc_data
+ logical, external  :: stop_fetch_computation
+ logical, parameter :: call_from_tauwavefetch=.true.
+ double precision   :: U10, fetchL, fetchd, hsig, tsig, rsqrt2, dum
 
  integer :: ndraw
  COMMON /DRAWTHIS/ ndraw(50)
-
+ 
  if ( .not. allocated (fetch) .or. size (fetch,2) .ne. ndx) then
       nwf = 13
-
+      call timstrt('Ext.forcings fetch', handle_fetch)
+      
       if (  allocated (fetch) )  deallocate (fetch)
-      allocate ( fetch(nwf, ndx) , stat = ierr)
-      call aerr('fetch(nwf, ndx)', ierr ,  ndx*nwf)
+      allocate ( fetch(nwf, ndx) , stat = error)
+      call aerr('fetch(nwf, ndx)', error ,  ndx*nwf)
       if (  allocated (fetdp) )  deallocate (fetdp)
-      allocate ( fetdp(nwf, ndx) , stat = ierr)
-      call aerr('fetdp(nwf, ndx)', ierr ,  ndx*nwf)
+      allocate ( fetdp(nwf, ndx) , stat = error)
+      call aerr('fetdp(nwf, ndx)', error ,  ndx*nwf)
 
-      ndx2dr = 0
-      if (jampi == 1) then
-         allocate ( fett(2, ndx) , stat = ierr)
-         call aerr('fett(2, ndx)', ierr ,  ndx*2)
-
-         do k = 1,ndxi
-            if (idomain(k) .ne. my_rank) cycle
-            if (kcs(k) == 2) ndx2dr = ndx2dr + 1
-         end do
-         call reduce_int_sum(ndx2dr,ndoner)
-         ndx2dr = ndoner
+      if (jampi == 1 .and. use_fetch_proc == 0 ) then
+         call reduce_int_sum(ndxi, total_nr_cells)
       else
-         do k = 1,ndxi
-             if (kcs(k) == 2) ndx2dr = ndx2dr + 1
-         end do
+         total_nr_cells = ndxi
       endif
-
+      
+      call timstop(handle_fetch)
+      if ( use_fetch_proc > 0 ) then
+         error = initialise_fetch_proc_data()
+      endif
  endif
 
  if (tim >= time_fetch) then
 
-      ! call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
-
-      time_fetch = max(tim, time_fetch + tifetch )
-      if (tifetch == 0d0) time_fetch = 1d30
-
-      fetch = dmiss ; fetdp = dmiss
-mainloop:do n  = 1, nwf
-         if (jagui > 0) then
-            call cls1()
-            call setcol(221)
-            ! numdots = 0
-         endif
-         dir   = twopi *real (n-1) / real(nwf-1)
-         uwin  = cos(dir) ; vwin = sin(dir)
-         ndone = 0
-
-         do k = 1,ndxi
-            if (kcs(k) .ne. 2) cycle
-            kkmin = 0 ; distmin = 1d10; celsiz = 0d0
-            if (jampi == 1) then
-               if (idomain(k) .ne. my_rank) cycle
+    do !  inifinite loop for the fetch proc
+        if ( use_fetch_proc > 0 ) then
+            if ( stop_fetch_computation(call_from_tauwavefetch) ) then
+                return
             endif
-            do kk = 1,netcell(k)%n
-               L  = netcell(k)%lin(kk)
-               k1 = netcell(k)%nod(kk)
-               if (kk == netcell(k)%n) then
-                  k2 = netcell(k)%nod(1)
-               else
-                  k2 = netcell(k)%nod(kk+1)
-               endif
-               celsiz = max(celsiz, dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss) )
-            enddo
-            if (jsferic == 1) celsiz=celsiz*rd2dg/ra
+        endif
+               
+        if ( use_fetch_proc == 1  ) then
+           call send_s1_to_fetch_proc()
+        endif
+     
+        time_fetch = max(tim, time_fetch + tifetch )
+        if (tifetch == 0d0) time_fetch = 1d30
+        
+        if (use_fetch_proc == 0 .or. my_rank == fetch_proc_rank ) then
+           call calculate_fetch_values_for_all_wind_directions(total_nr_cells)
+        endif
+      
+        if ( use_fetch_proc == 1  ) then
+           call get_fetch_values_from_fetch_proc()
+        endif
 
-            jaopen = 0
-            do kk = 1,nd(k)%lnx
-               L  = iabs( nd(k)%ln(kk) )
-               if (ln(1,L) > ndxi) then
-                  jaopen = 1
-               endif
-            enddo
-
-            do kk = 1,netcell(k)%n
-               L  = netcell(k)%lin(kk)
-               k1 = netcell(k)%nod(kk)
-               if (kk == netcell(k)%n) then
-                  k2 = netcell(k)%nod(1)
-               else
-                  k2 = netcell(k)%nod(kk+1)
-               endif
-
-               wdep   = s1(k) - min(zk(k1),zk(k2))
-               if (lnn(L) == 1 .or.  wdep < 0.5d0 .or. kn(3,L) == 0 .or. jaopen == 1) then    ! link shallow or closed => start fetch here
-                  call normalout(xk(k1), yk(k1), xk(k2), yk(k2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
-                  prin = uwin*xn + vwin*yn
-                  if ( prin < 0d0 ) then                   ! if upwind
-                     crp  = xn ; xn  = -yn ; yn = crp
-                     crp  = 0d0
-                     xkk1 = xk(k1) - 2*celsiz*xn
-                     ykk1 = yk(k1) - 2*celsiz*yn
-                     xkk2 = xk(k2) + 2*celsiz*xn
-                     ykk2 = yk(k2) + 2*celsiz*yn
-                     CALL CROSS(Xkk1,Ykk1,Xkk2,Ykk2,Xzw(k),Yzw(k),Xzw(k)-1d4*uwin,Yzw(k)-1d4*vwin, &
-                                JACROS,SL,SM,XCR,YCR,CRP,jsferic, dmiss)
-                     if (jacros == 1) then
-                        dist = dbdistance(xz(k), yz(k), xcr, ycr, jsferic, jasfer3D, dmiss)
-                        if (dist < distmin) then
-                           distmin = dist ; kkmin = kk        ! closest crossed upwind edge
-                        endif
-                     endif
-                  endif
-               endif
-            enddo
-            if (kkmin > 0) then
-                if (jaopen == 1) then
-                   fetch(n,k) = 1d5
-                else
-                   fetch(n,k) = min(distmin, celsiz)
-                endif
-                fetdp(n,k) = max( s1(k) - bl(k), .1d0)
-                if (jagui > 0) then
-                   !CALL rCIRc(Xz(k),Yz(k) ) !, fetch(n,k))
-                   !call adddot(Xz(k),Yz(k),1d0)
-                endif
-                ndone      = ndone + 1
-            endif
-
-         enddo
-
-         if (jampi == 1) then
-             call reducefett(n)
-             call reduce_int_sum(ndone,ndoner)
-             ndone = ndoner
-         endif
-
-         if (jagui > 0) call setcol(31)
-         do while ( ndone < ndx2dr )
-
-            ndoneprevcycle = ndone
-            ndone          = 0
-
-555         continue
-            do k = 1,ndxi
-               if (kcs(k) .ne. 2) cycle
-               if (jampi == 1) then
-                  if (idomain(k) .ne. my_rank) cycle
-               endif
-
-               if (fetch(n,k) .eq. dmiss) then
-                  kup = 0 ; fetc = 0; fetd = 0; sumw = 0; nup = 0; nupf = 0
-                  do kk = 1,nd(k)%lnx
-                     L  = iabs( nd(k)%ln(kk) )
-                     k2 = ln(1,L) ; if (k2 == k) k2 = ln(2,L)
-                     if ( kcs(k2) == 2 ) then  ! internal
-                        !prin = uwin*getdx(xz(k2),yz(k2),xz(k),yz(k), jsferic) + vwin*getdy( xz(k2),yz(k2),xz(k),yz(k), jsferic)
-                        !dsk2 = dbdistance(xz(k2),yz(k2),xz(k),yz(k), jsferic, jasfer3D, dmiss)
-                        !cs   = min(max(prin/dsk2,-1d0),1d0)
-
-                        cs   = uwin*csu(L) + vwin*snu(L)
-                        if (L .ne. nd(k)%ln(kk) ) cs = -1d0*cs
-                        dsk2 = dx(L)
-                        prin = dsk2*cs
-
-                        if (cs > 0) then ! internal upwind points
-                           nup = nup + 1
-                           if (fetch(n,k2) .ne. dmiss) then ! do not look at open boundaries
-                               nupf = nupf + 1
-                               sn   = sqrt( 1d0 - cs*cs)
-                               ! www  = (1d0-sn)/dsk2               ! first attempt
-                               www  = (cs   + 0.05d0*sn)*wu(L)/dsk2 ! some diffusion
-                               fetc = fetc  + www*(fetch(n,k2) + prin)
-                               fetd = fetd  + www*(fetch(n,k2) + prin)*max(.1d0, 0.8d0*fetdp(n,k2) + 0.2d0*(s1(k)-bl(k)) )
-                               sumw = sumw  + www
-                           endif
-                        endif
-                     endif
-                  enddo
-                  if ( nup == nupf .and. sumw > 0d0) then
-                     fetch(n,k) = fetc/sumw
-                     fetdp(n,k) = fetd/ ( sumw*fetch(n,k) )
-                     ndone      = ndone + 1
-                     if (jagui > 0) then
-                        !CALL rCIRc(Xz(k),Yz(k) )
-                        !call adddot(Xz(k),Yz(k),2d0)
-                         call KCIR(Xz(k),Yz(k),1d0)
-                     end if
-                  endif
-               else
-                  ndone = ndone + 1
-               endif
-            enddo ! k
-
-            if (jampi == 1) then
-               call reducefett(n)
-               call reduce_int_sum(ndone,ndoner)
-               ndone = ndoner
-            endif
-
-            if ( ndone.eq.ndoneprevcycle ) then
-               call QNERROR('connectivity issue in fetch', ' ', ' ')
-               exit mainloop
-            end if
-
-         enddo
-
-    enddo mainloop
-
+        if (use_fetch_proc == 0 .or. my_rank /= fetch_proc_rank) then
+           exit
+        endif
+      enddo
  endif
 
- sqrt2 = sqrt(2d0)
+ rsqrt2 = 1.0d0 / sqrt(2d0)
+ do cell = 1, ndx2d
+    Hwav(cell)   = 0d0
+    Twav(cell)   = 0d0
+    Uorb(cell)   = 0d0
+    rlabda(cell) = 0d0
 
- do k = 1,ndx2d
-    Hwav(k)   = 0d0
-    Twav(k)   = 0d0
-    Uorb(k)   = 0d0
-    rlabda(k) = 0d0
+    if ( hs(cell) > 0.01d0 ) then
 
-    if ( hs(k) > 0.01d0 ) then
-
-       call getfetch(k,U10,FetchL,FetchD)
+       call getfetch(cell, U10, FetchL, FetchD)
        if (FetchL > 0) then
 
-          if (jawave == 1) then
+          select case (jawave)
+             case (1)
+                call hurdlestive (U10, fetchL, fetchD, Hsig, Tsig)
+             case (2)
+                call ian_young_pt(U10, fetchL, fetchD, Hsig, Tsig)
+          end select
 
-             call hurdlestive (U10, fetchL, fetchD, Hsig, Tsig)
-
-          else if (jawave == 2) then
-
-             call ian_young_pt(U10, fetchL, fetchD, Hsig, Tsig)
-
-          endif
-
-          Hwav(k) = Hsig / sqrt2          ! Hwav === hrms
-          Twav(k) = Tsig
-          call tauwavehk(Hwav(k), Twav(k), hs(k), Uorb(k), rlabda(k), dum)      ! basically now just a dispersion function with 2DH stokes drift magnitude
+          Hwav(cell) = Hsig * rsqrt2          ! Hwav === hrms
+          Twav(cell) = Tsig
+          call tauwavehk(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum)      ! basically now just a dispersion function with 2DH stokes drift magnitude
        endif
     endif
 
-    if (NDRAW(28) == 35) then
-       plotlin(k) = fetchL
-    else if (NDRAW(28) == 36) then
-       plotlin(k) = fetchD
-    else if (NDRAW(28) == 37) then
-       plotlin(k) = Hsig
-    else if (NDRAW(28) == 38) then
-       plotlin(k) = Tsig
-    else if (NDRAW(28) == 39) then
+    select case (NDRAW(28)) 
+       case (35) 
+       plotlin(cell) = fetchL
+       case (36) 
+       plotlin(cell) = fetchD
+       case (37) 
+       plotlin(cell) = Hsig
+       case (38)
+       plotlin(cell) = Tsig
+       case (39)
        !  plotlin(k) = Taucur
-    else if (NDRAW(28) == 40) then
-       plotlin(k) = uorb(k)
-    endif
+       case (40)
+       plotlin(cell) = uorb(cell)
+    end select
 
  enddo
  
- ! get phiwav
- call realloc(wxc,ndx, keepExisting=.true.)
- call realloc(wyc,ndx, keepExisting=.true.)
- wxc = 0d0; wyc = 0d0
- do L = 1, lnx
-    k1 = ln(1,L); k2=ln(2,L)
-    wxc(k1) = wxc(k1) + wcL(1,L)*wx(L)
-    wxc(k2) = wxc(k2) + wcL(2,L)*wx(L)
-    wyc(k1) = wyc(k1) + wcL(1,L)*wy(L)
-    wyc(k2) = wyc(k2) + wcL(2,L)*wy(L)  
- enddo   
- phiwav = atan2(wyc,wxc)*180d0/pi
+call get_phiwav_values()
  
- ! Copy values to boundary nodes
- do n = 1, nbndz
-    kb = kbndz(1,n)
-    ki = kbndz(2,n)
+call copy_values_to_boundary_nodes()
+ 
+end subroutine tauwavefetch
+ 
+!> calculates fetch length and depth  
+subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)                      
+ use m_netw                                 
+ use m_flowgeom                             
+ use m_flow
+ use m_flowtimes
+ use timers
+ use m_waves,         only: nwf, fetch, fetdp
+ use m_partitioninfo
+ use unstruc_display, only: jagui
+ use m_missing,       only: dmiss
+ use m_sferic
+ use m_fetch_local_data
+
+ implicit none
+ 
+ integer, intent(in) :: total_nr_cells
+ 
+ integer          :: cell, index_wind_direction, error
+ integer          :: nr_cells_done, nr_cells_done_red
+ double precision :: wind_direction, u_wind, v_wind
+
+ call timstrt('Ext.forcings fetch', handle_fetch)
+ allocate ( fetch_temp(2, ndx) , stat = error)
+ call aerr('fetch_temp(2, ndx)', error ,  ndx*2)
+ 
+ allocate ( calculate_for(ndxi) , stat = error)
+ call aerr('calculate_for(ndxi)', error ,  ndxi)
+ 
+ allocate ( number_of_upwind_cells(0:ndxi) , stat = error)
+ call aerr('number_of_upwind_cells(0:ndxi)', error, ndxi+1)
+ allocate ( list_of_upwind_cells(1) , stat = error)
+ allocate ( data_at_upwind_cells(2,1) , stat = error)
+
+ do index_wind_direction  = 1, nwf
+    if (jagui > 0) then
+        call cls1()
+        call setcol(221)
+        ! numdots = 0
+    endif
+	fetch_temp    = dmiss
+    calculate_for = .true.
+    
+    wind_direction = twopi * (index_wind_direction - 1) / dble(nwf - 1)
+    u_wind    = cos(wind_direction)
+    v_wind    = sin(wind_direction)
+    
+    call search_starting_cells(u_wind, v_wind, nr_cells_done)
+
+    if ( jampi == 1 .and. use_fetch_proc == 0 ) then
+        call update_ghosts(ITYPE_SaLL, 2, ndx, fetch_temp, error)
+        call reduce_int_sum(nr_cells_done,nr_cells_done_red)
+        nr_cells_done = nr_cells_done_red
+    endif
+
+    if ( jagui > 0 ) call setcol(31)
+	
+    call make_list_of_upwind_cells(u_wind, v_wind)
+                    
+    call calculate_fetch_values(nr_cells_done, total_nr_cells)
+    
+    do cell = 1, ndxi
+        fetch(index_wind_direction,cell) = fetch_temp(1,cell)
+        fetdp(index_wind_direction,cell) = fetch_temp(2,cell)
+    enddo
+    
+ enddo
+ 
+ deallocate(fetch_temp)
+ deallocate(calculate_for)
+ deallocate(number_of_upwind_cells)
+ deallocate(list_of_upwind_cells)
+ deallocate(data_at_upwind_cells)
+    
+call timstop(handle_fetch)
+end subroutine calculate_fetch_values_for_all_wind_directions
+
+!< make a list of upwind cells for each cell for a given wind direction
+subroutine make_list_of_upwind_cells(u_wind, v_wind)
+use m_flowgeom
+use m_fetch_local_data
+use m_alloc
+
+implicit none
+
+double precision, intent(in) :: u_wind, v_wind
+
+character(1024)  :: message2, message3
+integer          :: cell, cell2, cell_link, index, link, error
+double precision :: cs, sn, prin, www
+
+number_of_upwind_cells = 0
+do cell = 1, ndxi
+    if ( calculate_for(cell) ) then
+        do cell_link = 1, nd(cell)%lnx
+            link  = iabs( nd(cell)%ln(cell_link) )
+            cell2 = ln(1,link) ; if (cell2 == cell) cell2 = ln(2,link)
+            if ( kcs(cell2) == 2 ) then  ! internal
+                cs   = u_wind*csu(link) + v_wind*snu(link)
+                if ( link /= nd(cell)%ln(cell_link) ) cs = -cs
+
+                if ( cs > 0 ) then ! internal upwind cell
+                    number_of_upwind_cells(cell) = number_of_upwind_cells(cell) + 1
+                endif
+             endif
+        enddo
+    endif
+enddo
+
+do cell = 1, ndxi
+    number_of_upwind_cells(cell) = number_of_upwind_cells(cell) + number_of_upwind_cells(cell - 1)
+enddo
+
+if ( size(list_of_upwind_cells) < number_of_upwind_cells(ndxi) ) then
+    deallocate(list_of_upwind_cells)
+    allocate ( list_of_upwind_cells(number_of_upwind_cells(ndxi)) , stat = error)
+    call aerr('list_of_upwind_cells(number_of_upwind_cells(ndxi))', error, number_of_upwind_cells(ndxi))
+endif
+if ( size(data_at_upwind_cells,2) < number_of_upwind_cells(ndxi) ) then
+    deallocate(data_at_upwind_cells)
+    allocate ( data_at_upwind_cells(2,number_of_upwind_cells(ndxi)) , stat = error)
+    call aerr('data_at_upwind_cells(2,number_of_upwind_cells(ndxi))', error, 2*number_of_upwind_cells(ndxi))
+endif
+list_of_upwind_cells = 0
+data_at_upwind_cells = 0d0
+
+do cell = 1, ndxi
+    if ( calculate_for(cell) ) then
+        index = 0
+        do cell_link = 1, nd(cell)%lnx
+            link  = iabs( nd(cell)%ln(cell_link) )
+            cell2 = ln(1,link) ; if (cell2 == cell) cell2 = ln(2,link)
+            if ( kcs(cell2) == 2 ) then  ! internal
+                cs   = u_wind*csu(link) + v_wind*snu(link)
+                if ( link /= nd(cell)%ln(cell_link) ) cs = -cs
+
+                if ( cs > 0 ) then ! internal upwind cell                               
+                    index = index + 1 
+                    if ( index > number_of_upwind_cells(cell) - number_of_upwind_cells(cell-1) ) then
+                        write(message2,*) 'cell=',cell,' cell_link=', cell_link
+                        write(message3,*) 'index=',index,' max=', number_of_upwind_cells(cell) - number_of_upwind_cells(cell-1)
+                        call qnerror('make_list_of_upwind_cells: error ', message2, message3)
+                        return
+                    endif
+                    list_of_upwind_cells(number_of_upwind_cells(cell-1)+index) = cell2
+                    sn   = sqrt( 1d0 - cs*cs)
+                    prin = dx(link)*cs
+                    www  = (cs   + 0.05d0*sn)*wu(link)/dx(link) ! some diffusion
+                    data_at_upwind_cells(1,number_of_upwind_cells(cell-1)+index)  = www
+                    data_at_upwind_cells(2,number_of_upwind_cells(cell-1)+index)  = prin
+                endif
+            endif
+        enddo
+    endif
+enddo
+             
+end subroutine make_list_of_upwind_cells
+
+!< search cells that are starting points for the fetch length calculations
+subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)                 
+use m_netw                                 
+use m_flowgeom                             
+use m_flow,          only : s1, dxymis
+use m_flowtimes
+use timers
+use m_waves,         only: nwf, fetch, fetdp
+use m_partitioninfo
+use unstruc_display, only: jagui
+use geometry_module, only: getdx, getdy, dbdistance, cross, normalout, normalin
+use m_missing,       only: dmiss
+use m_sferic
+use m_fetch_local_data
+use m_alloc
+
+implicit none
+
+double precision, intent(in)  :: u_wind, v_wind
+integer,          intent(out) :: nr_cells_done
+
+integer          :: jaopen, jacros
+integer          :: cell, cell_link, link, index_cell_node, node1, node2, min_distance_node
+double precision :: sl, sm, xcr, ycr
+double precision :: prin, dist, min_distance, max_cell_size, wdep, xn, yn, crp, xnode1, ynode1, xnode2, ynode2
+
+nr_cells_done = 0
+  do cell = 1,ndxi
+    if ( kcs(cell) /= 2 ) then
+        calculate_for(cell) = .false.
+        nr_cells_done = nr_cells_done + 1
+        cycle
+    endif
+    if ( jampi == 1  .and. use_fetch_proc == 0 ) then
+        if ( idomain(cell) /= my_rank) then
+            calculate_for(cell) = .false.
+            nr_cells_done = nr_cells_done + 1
+            cycle
+        endif
+    endif
+
+    node2 = netcell(cell)%nod(netcell(cell)%n)
+    max_cell_size = 0d0
+    do index_cell_node  = 1, netcell(cell)%n
+        node1 = netcell(cell)%nod(index_cell_node)
+        max_cell_size = max(max_cell_size, dbdistance(xk(node1), yk(node1), xk(node2), yk(node2), jsferic, jasfer3D, dmiss) )
+        node2 = node1
+    enddo
+    if (jsferic == 1) max_cell_size=max_cell_size*rd2dg/ra
+
+    jaopen = 0
+    do cell_link = 1, nd(cell)%lnx
+        link  = iabs( nd(cell)%ln(cell_link) )
+        if ( ln(1,link) > ndxi ) then
+            jaopen = 1
+            exit
+        endif
+    enddo
+        
+    min_distance_node = 0 ; min_distance = 1d10; 
+    do index_cell_node  = 1, netcell(cell)%n
+        link  = netcell(cell)%lin(index_cell_node)
+        node1 = netcell(cell)%nod(index_cell_node)
+        if (index_cell_node == netcell(cell)%n) then
+            node2 = netcell(cell)%nod(1)
+        else
+            node2 = netcell(cell)%nod(index_cell_node+1)
+        endif
+        wdep = s1(cell) - min(zk(node1),zk(node2))
+        if ( lnn(link) == 1 .or.  wdep < 0.5d0 .or. kn(3,link) == 0 .or. jaopen == 1 ) then    ! link shallow or closed => start fetch here
+            call normalout(xk(node1), yk(node1), xk(node2), yk(node2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
+            prin = u_wind*xn + v_wind*yn
+            if ( prin < 0d0 ) then                   ! if upwind
+                crp  = xn ; xn  = -yn ; yn = crp
+                crp  = 0d0
+                xnode1 = xk(node1) - 2*max_cell_size*xn
+                ynode1 = yk(node1) - 2*max_cell_size*yn
+                xnode2 = xk(node2) + 2*max_cell_size*xn
+                ynode2 = yk(node2) + 2*max_cell_size*yn
+                call cross(xnode1,ynode1,xnode2,ynode2,xzw(cell),yzw(cell),xzw(cell)-1d4*u_wind,yzw(cell)-1d4*v_wind, &
+                                jacros,sl,sm,xcr,ycr,crp,jsferic, dmiss)
+                if ( jacros == 1 ) then
+                    dist = dbdistance(xz(cell), yz(cell), xcr, ycr, jsferic, jasfer3D, dmiss)
+                    if ( dist < min_distance ) then
+                        min_distance = dist ; min_distance_node = index_cell_node        ! closest crossed upwind edge
+                    endif
+                endif
+            endif
+        endif
+    enddo
+		
+    if ( min_distance_node > 0 ) then
+        calculate_for(cell) = .false.
+        if ( jaopen == 1 ) then
+            fetch_temp(1,cell) = 1d5
+        else
+            fetch_temp(1,cell) = min(min_distance, max_cell_size)
+        endif
+        fetch_temp(2,cell) = max( s1(cell) - bl(cell), .1d0)
+        if ( jagui > 0 ) then
+                   !CALL rCIRc(xz(k),yz(k) ) !, fetch(n,k))
+                   !call adddot(xz(k),yz(k),1d0)
+        endif
+        nr_cells_done = nr_cells_done + 1
+    endif
+
+enddo
+end subroutine search_starting_cells
+    
+!< calculates fetch length and depth for a given wind direction    
+subroutine calculate_fetch_values(nr_cells_done, total_nr_cells)
+                               
+ use m_flowgeom,      only: ndxi, ndx, bl, xz, yz                            
+ use m_flow
+ use m_flowtimes
+ use timers
+ use m_partitioninfo
+ use unstruc_display, only: jagui
+ use m_missing,       only: dmiss
+ use m_fetch_local_data
+
+implicit none
+
+integer, intent(inout) :: nr_cells_done
+integer, intent(in)    :: total_nr_cells
+
+integer          :: cell, index_upwind_cell, upwind_cell, nr_cells_done_red, nr_cells_done_prev_cycle, error
+double precision :: prin, fetch_length, fetch_depthw, sumw, www
+
+do while ( nr_cells_done < total_nr_cells )
+        
+    nr_cells_done_prev_cycle     = nr_cells_done
+    nr_cells_done                = 0
+
+cell_loop: do cell = 1, ndxi
+        if ( calculate_for(cell) ) then
+            if ( fetch_temp(1,cell) /=dmiss ) then ! just in case, to be removed later
+                call qnerror('cell is marked as done', ' ', ' ')
+                calculate_for(cell) = .false.
+                cycle cell_loop
+            endif
+            fetch_length = 0
+            fetch_depthw = 0
+            sumw         = 0
+            do index_upwind_cell = number_of_upwind_cells(cell - 1) + 1, number_of_upwind_cells(cell)
+                upwind_cell = list_of_upwind_cells(index_upwind_cell)
+                if ( fetch_temp(1,upwind_cell) == dmiss ) then
+                    cycle cell_loop
+                endif
+                www  = data_at_upwind_cells(1,index_upwind_cell)
+                prin = data_at_upwind_cells(2,index_upwind_cell)
+                fetch_length = fetch_length + www*(fetch_temp(1,upwind_cell) + prin)
+                fetch_depthw = fetch_depthw + www*(fetch_temp(1,upwind_cell) + prin) * &
+                        max(.1d0, 0.8d0*fetch_temp(2,upwind_cell) + 0.2d0*(s1(cell)-bl(cell)) )
+                sumw = sumw  + www
+            enddo
+            if ( sumw > 0d0 ) then
+                calculate_for(cell) = .false.
+                fetch_temp(1, cell) = fetch_length / sumw
+                fetch_temp(2, cell) = fetch_depthw / fetch_length
+                nr_cells_done       = nr_cells_done + 1
+                if ( jagui > 0 ) then
+                    !CALL rCIRc(xz(k),yz(k) )
+                    !call adddot(xz(k),yz(k),2d0)
+                    call KCIR(xz(cell),yz(cell),1d0)
+                endif
+            endif
+        else
+            nr_cells_done = nr_cells_done + 1
+        endif
+         
+    enddo cell_loop
+
+    if ( jampi == 1 .and. use_fetch_proc == 0 ) then
+        call update_ghosts(ITYPE_SaLL, 2, ndx, fetch_temp, error)
+        call reduce_int_sum(nr_cells_done,nr_cells_done_red)
+        nr_cells_done = nr_cells_done_red
+    endif
+
+    if ( nr_cells_done == nr_cells_done_prev_cycle ) then
+        call qnerror('connectivity issue in fetch', ' ', ' ')
+        return
+    endif
+enddo
+    
+end subroutine calculate_fetch_values
+
+!> get phiwav values    
+subroutine get_phiwav_values()
+use m_sediment, only : phiwav
+use m_flowgeom
+use m_flow
+use m_sferic, only : pi 
+
+implicit none
+
+integer :: link, k1, k2
+double precision, dimension(:), allocatable :: wxc, wyc
+ 
+call realloc(wxc, ndx, keepExisting=.false.)
+call realloc(wyc, ndx, keepExisting=.false.)
+wxc = 0d0; wyc = 0d0
+do link = 1, lnx
+   k1 = ln(1,link); k2=ln(2,link)
+   wxc(k1) = wxc(k1) + wcL(1,link)*wx(link)
+   wxc(k2) = wxc(k2) + wcL(2,link)*wx(link)
+   wyc(k1) = wyc(k1) + wcL(1,link)*wy(link)
+   wyc(k2) = wyc(k2) + wcL(2,link)*wy(link)  
+enddo   
+phiwav = atan2(wyc,wxc)*180d0/pi    
+
+end subroutine get_phiwav_values
+
+!> copy values to boundary nodes     
+subroutine copy_values_to_boundary_nodes()
+use m_sediment, only : phiwav, rlabda
+use m_flowgeom
+use m_flow
+use m_waves, only: uorb, twav, hwav
+ 
+implicit none
+integer :: node, kb, ki
+
+do node = 1, nbndz
+    kb = kbndz(1,node)
+    ki = kbndz(2,node)
     hwav(kb) = hwav(ki)
     twav(kb) = twav(ki)
     Uorb(kb) = uorb(ki)
@@ -329,16 +554,14 @@ mainloop:do n  = 1, nwf
     phiwav(kb) = phiwav(ki)
  enddo
  
-  do n = 1, nbndu
-    kb = kbndu(1,n)
-    ki = kbndu(2,n)
+do node = 1, nbndu
+    kb = kbndu(1,node)
+    ki = kbndu(2,node)
     hwav(kb) = hwav(ki)
     twav(kb) = twav(ki)
     Uorb(kb) = uorb(ki)
     rlabda(kb) = rlabda(ki)
     phiwav(kb) = phiwav(ki)    
- enddo  
- 
-
-
-end subroutine tauwavefetch
+enddo  
+end subroutine copy_values_to_boundary_nodes
+    

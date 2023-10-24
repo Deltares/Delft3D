@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine tekrai(nsiz,ja)
 
@@ -44,6 +44,7 @@
  use m_sediment
  use m_strucs
  use m_flowexternalforcings
+ use kdtree2Factory
 
  implicit none
 
@@ -68,15 +69,35 @@
  double precision :: zz1, zz2, xz1, xz2
  double precision :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu
  double precision :: xp(4), yp(4), zp(4), xxmn, xxmx, zn, dlay, dl, xp1, yp1, qsrck
- integer          :: mx, kb, kt, Lb, Lt, LL, kplotfrombedorsurfacesav
+ integer          :: mx, kb, kt, Lb, Lt, LL, kplotfrombedorsurfacesav, ierror, numcrossedlinks, japol = 0
  double precision, external    :: znod, zlin
 
  double precision, allocatable ::   plotlin2(:)
  integer         , allocatable :: ip(:), ip2(:)
+ 
+ integer,          allocatable :: iLink(:), iPol(:)
+ double precision, allocatable :: dSL(:)
+
  logical inview
 
 
  if (ndx  < 1) return
+
+ if (npl > 1) then 
+    if (japol == 0) then 
+       kc = 0
+       allocate(iLink(Lnx),ipol(Lnx),dSL(Lnx))
+       call find_crossed_links_kdtree2(treeglob,NPL,XPL,YPL,4,Lnx,1,numcrossedLinks, iLink, iPol, dSL, ierror)
+       do LL = 1, numcrossedlinks
+          L = ilink(LL)
+          kc(ln(1,L)) = 1; kc(ln(2,L)) = 1
+       enddo 
+       deallocate(iLink, ipol,dSL)
+       japol = 1
+    endif
+ else 
+    japol = 0
+ endif
 
  kplotfrombedorsurfacesav = kplotfrombedorsurface
  kplotfrombedorsurface    = 1
@@ -93,6 +114,10 @@
  zmn = 1e4
  zmx = -zmn
  do k = 1,ndx
+    if (japol == 1) then 
+       if (kc(k) == 0) cycle
+    endif
+      
     xx = xz(k)
     yy = yz(k)
     if ( inview(xx,yy) ) then
@@ -211,6 +236,10 @@
             do LL = 1,lnx
                k1 = ln(1,LL)
                k2 = ln(2,LL)
+               if (japol == 1) then 
+                  if (kc(k1)*kc(k2) == 0 ) cycle
+               endif
+      
                call getLbotLtop(LL,Lb,Lt)
                do L = Lb, Lt
                   kplot         = L - Lb + 1
@@ -231,6 +260,10 @@
             enddo
 
             do LL = 1,lnx
+               if (japol == 1) then 
+                  k1 = ln(1,LL) ; k2 = ln(2,LL)
+                  if (kc(k1)*kc(k2) == 0 ) cycle
+               endif
 
                call getLbotLtop(LL,Lb,Lt)
                do L = Lb-1, Lt
@@ -246,6 +279,10 @@
             do LL = 1,lnx
                k1 = ln(1,LL)
                k2 = ln(2,LL)
+               if (japol == 1) then 
+                  if (kc(k1)*kc(k2) == 0 ) cycle
+               endif
+    
                xp(1) = xz(k1)
                xp(2) = xp(1)
                xp(3) = xz(k2)
@@ -271,6 +308,9 @@
         else
 
            do n = 1,ndxi
+              if (japol == 1) then 
+                 if (kc(n) == 0) cycle
+              endif
               xxmn = minval( nd(n)%x )
               xxmx = maxval( nd(n)%x )
               xp(1) = xxmn
@@ -306,6 +346,10 @@
         do LL = 1,Lnx
            n1 = ln(1,LL)
            n2 = ln(2,LL)
+           if (japol == 1) then 
+              if (kc(n1)*kc(n2) == 0 ) cycle
+           endif
+  
            xp(1) = xz(n1)
            xp(4) = xp(1)
            xp(2) = xz(n2)
@@ -342,6 +386,10 @@
         do LL  = 1,lnxi
            n1  = ln(1,LL)
            n2  = ln(2,LL)
+           if (japol == 1) then 
+              if (kc(n1)*kc(n2) == 0 ) cycle
+           endif
+  
            xx  = xz(n1)
            xx2 = xz(n2)
            xxu = xu(LL)
@@ -376,11 +424,14 @@
     xxmx  = maxval( nd(n)%x )
     xp(1) = 0.5d0*(xxmx + xxmn)
     yp(1) = 0.5d0*(zws(k) + zws(k-1))
-    call cirr(xp(1), yp(1), ncolblack)
-    !xp(1) = xxmn ; xp(2) = xxmx ; xp(3) = xxmx ; xp(4) = xxmn
-    !yp(1) = zws(k-1)  ; yp(2) = yp(1)
-    !yp(3) = zws(k)    ; yp(4) = yp(3)
-    !call PFILLER(xp,yp,4,ncol, ncol )
+    if (kmx == 0) then 
+       call cirr(xp(1), yp(1), ncolblack)
+    else
+       xp(1) = xxmn ; xp(2) = xxmx ; xp(3) = xxmx ; xp(4) = xxmn
+       yp(1) = zws(k-1)  ; yp(2) = yp(1)
+       yp(3) = zws(k)    ; yp(4) = yp(3)
+       call PFILLER(xp,yp,4,ncolblack, ncolblack )
+    endif
 
     if (jaanalytic == 0 ) then
 
@@ -390,6 +441,10 @@
           if (hu(LL) > 0) then
              n1  = ln(1,LL)
              n2  = ln(2,LL)
+             if (japol == 1) then 
+                if (kc(n1)*kc(n2) == 0 ) cycle
+             endif
+
              xx  = xz(n1)
              xx2 = xz(n2)
              call movabs(xx ,s1(n1))
@@ -403,6 +458,10 @@
        do LL  = 1, lnxi
           n1  = ln(1,LL)
           n2  = ln(2,LL)
+          if (japol == 1) then 
+              if (kc(n1)*kc(n2) == 0 ) cycle
+          endif
+
           xx  = xz(n1)
           xx2 = xz(n2)
           call movabs(xx ,bl(n1))
@@ -416,6 +475,10 @@
         call setcol(klvec)
         zfac = (zmx2-zmn)/(x2-x1)
         do n = 1,ndxi
+           if (japol == 1) then 
+              if (kc(n) == 0 ) cycle
+           endif
+  
            xp(1) = xz(n)
            do k = kbot(n),ktop(n)
 
@@ -465,6 +528,10 @@
     call setcol(2)
     do LL = 1,lnx
        n1  = ln(1,LL)  ; n2  = ln(2,LL)
+       if (japol == 1) then 
+          if (kc(n1)*kc(n2) == 0 ) cycle
+       endif
+  
        xz1 = xz(n1)    ; xz2 = xz(n2)
        do L = Lbot(LL) , Ltop(LL)
           k1 = ln(1,L) ; k2 = ln(2,L)
@@ -510,6 +577,10 @@
     zgaten = zgate(ng)
     do n   = L1gatesg(ng), L2gatesg(ng)
        L   = kgate(3,n) ; k1 = ln(1,L) ; k2 = ln(2,L)
+       if (japol == 1) then 
+          if (kc(k1)*kc(k2) == 0 ) cycle
+       endif
+  
        bup = min( bob(1,L), bob(2,L) )
        call fbox(xz(k1),zgaten,xz(k2),zgaten+20d0)
        ! call fbox(xz(k1),bup   ,xz(k2),bup-10d0)
@@ -522,6 +593,10 @@
        k1       = kcgen(1,n)
        k2       = kcgen(2,n)
        L        = kcgen(3,n)
+       if (japol == 1) then 
+          if (kc(k1)*kc(k2) == 0 ) cycle
+       endif
+  
 
        bup = min( bob(1,L), bob(2,L) )
        doorh = 10d0
@@ -537,6 +612,10 @@
  do ng = 1,ncdamsg  ! loop over gate signals, tekrai
     do n  = L1cdamsg(ng), L2cdamsg(ng)
        L  = kcdam(3,n) ; k1 = ln(1,L) ; k2 = ln(2,L)
+       if (japol == 1) then 
+          if (kc(k1)*kc(k2) == 0 ) cycle
+       endif
+  
        bup = bob(2,L)  ! min( bob(1,L), bob(2,L) )
        call fbox(xz(k1),bup   ,xz(k2),bup-10d0)
     enddo
@@ -547,6 +626,10 @@
    do n = 1,numsrc                            ! teksorsin rai
      qsrck  = qsrc(n)
      kk     = ksrc(1,n)                       ! 2D pressure cell nr from
+     if (japol == 1) then 
+        if (kc(kk) == 0 ) cycle
+     endif
+  
      if (kk .ne. 0 .and.  ksrc(2,n) > 0 ) then
         xp(1) = xz(kk)
         bup   = 0.1d0*sqrt(ba(kk))
@@ -558,6 +641,10 @@
      endif
 
      kk     = ksrc(4,n)                      ! 2D pressure cell nr to
+     if (japol == 1) then 
+        if (kc(kk) == 0 ) cycle
+     endif
+ 
      if (kk .ne. 0 .and.  ksrc(5,n) > 0) then
         xp(1) = xz(kk)
         bup   = 0.1d0*sqrt(ba(kk))
@@ -573,6 +660,10 @@
  if (javeg > 0 .and. kmx > 0) then
     call setcol(221)
     do k = 1,ndxi
+       if (japol == 1) then 
+          if (kc(kk) == 0 ) cycle
+       endif
+ 
        if (stemheight(k) > 0d0) then
           call movabs( xz(k), zws(kbot(k)-1) )
           xx = stemheight(k) * sin(phiv(k))

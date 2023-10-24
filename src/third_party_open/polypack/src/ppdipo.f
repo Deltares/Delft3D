@@ -1,5 +1,5 @@
 C
-C $Id$
+C 
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

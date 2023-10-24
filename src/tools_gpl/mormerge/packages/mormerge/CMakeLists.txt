@@ -4,18 +4,13 @@ set(src_path src)
 # Set version file variables
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(mormerge_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the Mormerge path
-set(res_path ${mormerge_root_path}/res)
+set(mormerge_version_path ${mormerge_root_path}/version)
+set(fortran_version_files ${mormerge_root_path}/packages/mormerge/src/mormerge_version.F90
+                          ${mormerge_root_path}/packages/mormerge/src/mormerge_static_version_info.F90)
 
-set(ini_version_file ${res_path}/version_number.ini)
-set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/mormerge_version.F90)
-set(rc_version_file ${res_path}/version_number.rc)
+set(rc_version_file ${mormerge_version_path}/mormerge_version.rc)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# Generate version files
-generate_version_files(${rc_version_file} 
-                       ${ini_version_file})
-
-generate_version_files(${fortran_version_file} 
-                       ${ini_version_file})
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
@@ -25,17 +20,9 @@ set(executable_name mormerge)
 add_executable(${executable_name}   ${source_files}
                                     ${rc_version_file})
 
-# Define prebuild events
-prebuild_version_number(${executable_name}  ${rc_version_file} 
-                                            ${mormerge_root_path}
-                                            ${ini_version_file})
-
-prebuild_version_number(${executable_name}  ${fortran_version_file} 
-                                            ${mormerge_root_path}
-                                            ${ini_version_file})
 
 # Define precompilation flags
-set_source_files_properties(${fortran_version_file}
+set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set dependencies
@@ -71,6 +58,8 @@ if(UNIX)
     target_link_libraries(${executable_name} ${oss_dependencies})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif()
+include_directories(${version_include_dir}
+                    ${mormerge_version_path})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_makbar
+      use m_vxlpoi
+      use m_valpoi
+
+
+      implicit none
+
+      contains
+
 
       subroutine makbar ( procesdef, notot , syname, nocons, constants,
      +                    nopa     , paname, nofun , funame, nosfun   ,
@@ -29,7 +38,11 @@
 
       ! Checks which processes can be activated
 
-      use dlwq_data
+      use m_zoek
+      use m_monsys
+      use m_dhswtr
+      use m_dhrmis
+      use dlwq_hyd_data
       use processet
       use timers       !   performance timers
 
@@ -81,7 +94,6 @@
       integer                   :: imis            ! index number of missing variables
       character(len=20)         :: misnam(mismax)  ! name missing variables
       character(len=50)         :: mistxt(mismax)  ! description missing variables
-      logical                   :: dhrmis          ! function checks on missing value
       logical                   :: iok             ! indicates if its ok
       integer                   :: i_star                ! index of * in name
       integer(4) :: ithndl = 0
@@ -334,3 +346,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_makbar

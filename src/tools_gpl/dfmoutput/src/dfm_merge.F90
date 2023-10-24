@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,8 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 module dfm_merge
 use netcdf
@@ -104,8 +104,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    integer :: ifacefile, ifacein, ifaceout, ifacec
    integer :: inodefile, netedgecount2
    integer :: id_nodex, id_nodey, id_edgex, id_edgey
-   integer :: intmiss = -2147483647 ! integer fillvalue
-   integer :: imiss = -999
+   integer :: intmiss = -999 ! integer fillvalue
    double precision :: dmiss = -999d0, intfillv
    integer :: ja1DCNVar = 0
 !netface_g2c(:)
@@ -1522,10 +1521,11 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
             do ii = 2, nfiles
                netedgecount = sum(numl(itopo,1:ii-1))
                nfacecount(itopo) = sum(nump(itopo,1:ii-1))
+               ierr = ncu_inq_var_fill(ncids(ii), id_netedgefaces, nofill, ifill_value)
                do ip = 1, numl(itopo,ii)
                    k1 = netedgefaces(1, netedgecount+ip)  ! flowelem that edge L connects
                    k2 = netedgefaces(2, netedgecount+ip)
-                   if (k1.ne.0 .and. k2.ne. 0 .and. k1.ne.imiss .and. k2.ne.imiss) then       ! When edge L is not on the boundary
+                   if (k1.ne.0 .and. k2.ne. 0 .and. k1.ne.ifill_value .and. k2.ne.ifill_value) then       ! When edge L is not on the boundary
                        g1 = face_domain(nfacecount(itopo)+k1,itopo)    ! domain number of this flownode
                        g2 = face_domain(nfacecount(itopo)+k2,itopo)
                        if (g1 .ne. g2) then               ! if edge L lies on the boundary of two different domains
@@ -2249,7 +2249,8 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                      else if (var_types(iv,itopo) == nf90_char) then
                            ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo), ctmpvar2D(:,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
                      end if
-                   else if (var_kxdimpos(iv,itopo) /= -1 .neqv. var_wdimpos(iv,itopo) /= -1) then ! Either a vectormax OR a wdim
+                  else if (var_kxdimpos(iv,itopo) /= -1 .neqv. (var_laydimpos(iv,itopo) /= -1 .or. var_wdimpos(iv,itopo) /= -1)) then
+                  ! Either a vectormax OR a wdim/laydim
                      if (var_types(iv,itopo) == nf90_double) then
                         ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo),  tmpvar2D(  :,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
                      else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
@@ -2548,7 +2549,8 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                   else if (var_types(iv,itopo) == nf90_char) then
                      ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), ctmpvar2D, count = count_write(is:ie), start = start_idx(is:ie))
                   end if
-               else if (var_kxdimpos(iv,itopo) /= -1 .neqv. var_wdimpos(iv,itopo) /= -1) then ! Either a vectormax OR a laydim
+               else if (var_kxdimpos(iv,itopo) /= -1 .neqv. (var_laydimpos(iv,itopo) /= -1 .or. var_wdimpos(iv,itopo) /= -1)) then
+                  ! Either a vectormax OR a wdim/laydim
                   if (var_types(iv,itopo) == nf90_double) then
                      ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar2D, count = count_write(is:ie), start = start_idx(is:ie))
                   else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_bound
+      use m_pointb
+
+
+      implicit none
+
+      contains
+
 
       subroutine bound  ( lun    , noseg  , noq    , noqt   , intsrt ,
      &                    ioutpt , GridPs , nobnd  , jtrack , ipoint ,
@@ -39,7 +47,7 @@
 !     Logical units      : lun(29) = unit formatted output file
 !                          lun( 2) = unit unformatted system file
 
-      use grids        !   for the storage of contraction grids
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use timers       !   performance timers
 
       implicit none
@@ -194,3 +202,5 @@
      &           ' are normally expected in models with z-layer hydrodynamics')
 
       end
+
+      end module m_bound

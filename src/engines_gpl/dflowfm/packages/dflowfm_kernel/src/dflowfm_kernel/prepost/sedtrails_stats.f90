@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 module m_sedtrails_stats
    use m_sedtrails_data
@@ -46,8 +46,10 @@ module m_sedtrails_stats
    integer, parameter                       :: IDX_SSX        = 9
    integer, parameter                       :: IDX_SSY        = 10
    integer, parameter                       :: IDX_SSC        = 11  !< Index for avg sediment concentration
+   integer, parameter                       :: IDX_UA         = 12  !< Index for avg x nonlin wave velocity
+   integer, parameter                       :: IDX_VA         = 13  !< Index for avg y nonlin wave velocity
    !
-   integer, parameter                       :: is_numndvals   = 11  !< Number of variables on flow nodes for which statistics are recorded.
+   integer, parameter                       :: is_numndvals   = 13  !< Number of variables on flow nodes for which statistics are recorded.
 
    
    double precision, allocatable, target    :: is_sumvalsnd(:,:,:)
@@ -63,17 +65,19 @@ module m_sedtrails_stats
       implicit none
       
       is_valnamesnd(:)  = ''
-      is_valnamesnd(1)  = 'bl'
-      is_valnamesnd(2)  = 'hs'
-      is_valnamesnd(3)  = 'ucx'
-      is_valnamesnd(4)  = 'ucy'
-      is_valnamesnd(5)  = 'taus'      ! change to vector comps after sedmor merge
-      is_valnamesnd(6)  = 'tausmax'
-      is_valnamesnd(7)  = 'sbx'
-      is_valnamesnd(8)  = 'sby'
-      is_valnamesnd(9)  = 'ssx'
-      is_valnamesnd(10) = 'ssy'
-      is_valnamesnd(11) = 'ssc'
+      is_valnamesnd(IDX_BL     )  = 'bl'
+      is_valnamesnd(IDX_HS     )  = 'hs'
+      is_valnamesnd(IDX_UCX    )  = 'ucx'
+      is_valnamesnd(IDX_UCY    )  = 'ucy'
+      is_valnamesnd(IDX_TAUS   )  = 'taus'      ! change to vector comps after sedmor merge
+      is_valnamesnd(IDX_TAUSMAX)  = 'tausmax'
+      is_valnamesnd(IDX_SBX    )  = 'sbx'
+      is_valnamesnd(IDX_SBY    )  = 'sby'
+      is_valnamesnd(IDX_SSX    )  = 'ssx'
+      is_valnamesnd(IDX_SSY    )  = 'ssy'
+      is_valnamesnd(IDX_SSC    )  = 'ssc'
+      is_valnamesnd(IDX_UA     )  = 'ua'
+      is_valnamesnd(IDX_VA     )  = 'va'
    
       ! Remaining of variables is handled in reset_integralstats()
       call reset_sedtrails_stats()
@@ -116,12 +120,31 @@ module m_sedtrails_stats
       use m_transport, only: constituents, ISED1
       use m_sediment, only: sedtot2sedsus, stm_included, sedtra
       use m_flowparameters, only: jawave, flowWithoutWaves, jawaveswartdelwaq,epshu
+      use sed_support_routines, only: ruessink_etal_2012
+      use m_waves, only: rlabda, hwav, uorb, phiwav
+      use m_sferic, only: pi
 
       implicit none
 
-      integer          :: k, l
-      integer          :: kk, kbot, ktop
-      double precision :: ssc
+      integer                     :: k, l
+      integer                     :: kk, kbot, ktop
+      double precision            :: ssc              !< sediment concentration [kg/m3]
+      double precision, parameter :: sqrttwo = sqrt(2d0)
+      double precision, parameter :: halfsqrttwo = 0.5*sqrttwo
+      double precision            :: twopi 
+      double precision, parameter :: facua = 0.1d0    !< scaling factor wave asymmetry/skewness [-]
+      double precision            :: kw               !< wave number [rad/m]
+      double precision            :: hw               !< sign wave height [m]
+      double precision            :: urms             !< rms orbital velocity [m/s]
+      double precision            :: h                !< water depth [m]
+      double precision            :: as               !< wave asymmetry [-]
+      double precision            :: sk               !< wave skewness [-]
+      double precision            :: urs              !< ursell number [-]
+      double precision            :: bm               !< total (non-dimensional) non-linearity (hypot(sk,as)) [-]
+      double precision            :: phi_phase        !< phase angle non-linearity [-]
+      double precision            :: ua               !< x component non-linear velocity waves [m/s]
+      double precision            :: va               !< y component non-linear velocity waves [m/s]
+      double precision            :: uamag            !< magnitude non-linear velocity waves [m/s]
 
       if (is_numndvals <= 0) then
          return
@@ -160,7 +183,7 @@ module m_sedtrails_stats
          if (kmx==0) then
             do l=1, lsed
                do k=1,ndx
-                  is_sumvalsnd(IDX_SSC , k, sedtot2sedsus(l)) = is_sumvalsnd(IDX_SSC  ,k, sedtot2sedsus(l)) + dts * constituents(ISED1+l-1,k)   ! this works just for 2D now
+                  is_sumvalsnd(IDX_SSC , k, sedtot2sedsus(l)) = is_sumvalsnd(IDX_SSC  ,k, sedtot2sedsus(l)) + dts * constituents(ISED1+l-1,k)
                enddo   
             enddo   
          else
@@ -176,6 +199,24 @@ module m_sedtrails_stats
                enddo   
             enddo              
          endif
+      endif
+
+      if (jawave > 0) then
+         twopi = 2d0*pi
+         do k = 1, ndx
+            h = hs(k)
+            if (h>epshu) then
+               kw = twopi/max(rlabda(k),1d-12)
+               hw = sqrttwo*hwav(k)
+               urms = uorb(k)*halfsqrttwo
+               call ruessink_etal_2012(kw, hw, h, sk, as, phi_phase, urs, bm)
+               uamag = facua*(sk-as)*urms
+               ua = uamag*cosd(phiwav(k))
+               va = uamag*sind(phiwav(k))
+               is_sumvalsnd(IDX_UA , k, 1) = is_sumvalsnd(IDX_UA,k, 1) + dts * ua
+               is_sumvalsnd(IDX_VA , k, 1) = is_sumvalsnd(IDX_VA,k, 1) + dts * va
+            endif
+         enddo
       endif
       
       is_dtint = is_dtint + dts

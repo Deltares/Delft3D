@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module part09_mod
+use m_stop_exit
+
 !
 contains
       subroutine part09 ( lun2   , itime  , nodye  , nwaste , mwaste ,  &

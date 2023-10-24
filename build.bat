@@ -2,34 +2,33 @@
 
 setlocal enabledelayedexpansion
 set prepareonly=0
-set mode=
-set config=
+set config=all
 set generator=
 set vs=
+set -vs=0
 set ifort=
+set -ifort=0
 set coverage=0
+set cmake=cmake
 
 rem # Jump to the directory where this build.bat script is
 cd %~dp0
 set root=%CD%
 
-
-call :CheckCMakeInstallation
-if !ERRORLEVEL! NEQ 0 exit /B %~1
 call :GetArguments %*
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 call :GetEnvironmentVars
 if !ERRORLEVEL! NEQ 0 exit /B %~1
-call :PrepareSln
-if !ERRORLEVEL! NEQ 0 exit /B %~1
 call :SetGenerator
 if !ERRORLEVEL! NEQ 0 exit /B %~1
+call :CheckCMakeInstallation
+if !ERRORLEVEL! NEQ 0 exit /B %~1
+
 
 echo.
 echo     config      : !config!
 echo     generator   : !generator!
 echo     ifort       : !ifort!
-echo     mode        : !mode!
 echo     prepareonly : !prepareonly!
 echo     coverage    : !coverage!
 echo     vs          : !vs!
@@ -64,6 +63,7 @@ echo DIMR      : %root%\build_dimr\dimr.sln
 echo DWAQ      : %root%\build_dwaq\dwaq.sln
 echo D-Waves   : %root%\build_dwaves\dwaves.sln
 echo Tests     : %root%\build_tests\tests.sln
+echo Delft3D4  : %root%\build_delft3d4\delft3d4.sln
 echo.
 echo Finished
 goto :end
@@ -89,76 +89,49 @@ rem =================================
 :GetArguments
     echo.
     echo "Get command line arguments ..."
-    set mode=quiet
-    set prepareonly=0
+
     if [%1] EQU [] (
-        set mode=interactive
-        set prepareonly=1
+        rem No arguments: continue with defaults
+        goto :endproc
     )
     if "%1" == "--help" (
         goto usage
     )
-    if "%1" == "all" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    if "%1" == "dimr" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    if "%1" == "dflowfm" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    if "%1" == "dflowfm_interacter" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    if "%1" == "dwaq" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    if "%1" == "swan" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    if "%1" == "tests" (
-        set prepareonly=0
-        set config=%1
-        set mode=quiet
-    )
-    
-  set "options=-vs:0 -ifort:0 -coverage: -prepareonly:"
+    rem First argument is the config
+    set "config=%1"
+    shift /1
 
-  rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
-  for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
-  :loop
-  if not "%~2"=="" (
-    set "test=!options:*%~2:=! "
-    if "!test!"=="!options! " (
-        echo Error: Invalid option %~2
-    ) else if "!test:~0,1!"==" " (
-        set "%~2=1"
-    ) else (
-        set "%~2=%~3"
-        shift /2
+    set configs="all delft3d4 delft3dfm dflowfm dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
+    set "modified=!configs:%config%=!"
+    if !modified!==%configs% (
+        echo ERROR: Configuration !config! not recognized
     )
-    shift /2
-    goto :loop
-  )
-  if !-coverage! == 1 (
-  set coverage=1
-  )
-  if !-prepareonly! == 1 (
-  set prepareonly=1
-  )
-  goto :endproc
+
+    rem Read other arguments
+    set "options=-vs:0 -ifort:0 -coverage: -prepareonly:"
+    rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
+    for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
+    :loop
+    if not "%~1"=="" (
+      set "test=!options:*%~1:=! "
+      if "!test!"=="!options! " (
+          echo Error: Invalid option %~1
+      ) else if "!test:~0,1!"==" " (
+          set "%~1=1"
+      ) else (
+          set "%~1=%~2"
+          shift /1
+      )
+      shift /1
+      goto :loop
+    )
+    if !-coverage! == 1 (
+    set coverage=1
+    )
+    if !-prepareonly! == 1 (
+    set prepareonly=1
+    )
+    goto :endproc
 
 
 
@@ -177,7 +150,18 @@ rem =================================
     rem # On TeamCity VS2019 is installed without IFORT
 
 
-    
+
+    if NOT "%VS2022INSTALLDIR%" == "" (
+        set vs=2022
+        echo Found: VisualStudio 17 2022
+        if NOT "%IFORT_COMPILER21%" == "" (
+            set ifort=23
+            echo Found: Intel Fortran 2023
+        )
+        goto :endfun
+    )
+
+
     if NOT "%VS2017INSTALLDIR%" == "" (
         set vs=2017
         echo Found: VisualStudio 15 2017
@@ -228,19 +212,19 @@ rem =================================
             echo Found: Intel Fortran 2016
         )
         goto :endfun
-    )   
+    )
     :endfun
     if NOT !-vs! == 0 (
-    set vs=!-vs!
-    echo overriding vs with !-vs!
+        set vs=!-vs!
+        echo overriding vs with !-vs!
     )
 
     if NOT !-ifort! == 0 (
-    set ifort=!-ifort!
-    echo overriding ifort with !-ifort!
+        set ifort=!-ifort!
+        echo overriding ifort with !-ifort!
     )
     goto :endproc
-   
+
 
 rem ================================
 rem === Check CMake installation ===
@@ -249,49 +233,36 @@ rem ================================
     echo.
     echo "Checking whether CMake is installed ..."
     set count=1
-    for /f "tokens=* usebackq" %%f in (`cmake --version`) do (
+    for /f "tokens=* usebackq" %%f in (`!cmake! --version`) do (
       if !count! LEQ 1 (
           set var!count!=%%f
           set /a count=!count!+1
       )
     )
     if "!var1:~0,13!" == "cmake version" (
-        echo cmake version: !var1:~13,20!
+        echo !cmake! version: !var1:~13,20!
     ) else (
-        echo ERROR: CMake not found.
-        echo        Download page: https://cmake.org/download/
-        echo        Be sure that the cmake directory is added to environment parameter PATH
-        goto :end
-    )
-    goto :endproc
 
-
-
-rem =======================
-rem === Prepare_sln    ====
-rem =======================
-:PrepareSln
-    if "!mode!" == "quiet" (
-        if "%config%" == "all" (
-            echo "Calling prepare_sln.py is not needed ..."
+        echo !cmake! not found, trying with default path ...
+        set cmake="c:/Program Files/CMake/bin/cmake"
+        set count=1
+        for /f "tokens=* usebackq" %%f in (`!cmake! --version`) do (
+          if !count! LEQ 1 (
+              set var!count!=%%f
+              set /a count=!count!+1
+          )
         )
-    ) else (
-        echo.
-        echo "Calling prepare_sln.py in interactive mode ..."
-        cd /d "%root%\src\"
-        rem # Catch stdout, each line in parameter var1, var2 etc.
-        for /f "tokens=* usebackq" %%f in (`python prepare_sln.py`) do (
-            set var=%%f
-            if "!var:~0,19!" == "CMake configuration"    (
-                set config=!var:~25,20!
-            )
-            if "!var:~0,22!" == "Visual Studio  Version" (
-                set vs=!var:~25,4!
-            )
-            if "!var:~0,16!" == "Preparation only"       (
-                set prepareonly=!var:~25,1!
-            )
+        if "!var1:~0,13!" == "cmake version" (
+            echo !cmake! version: !var1:~13,20!
+        ) else (
+            echo ERROR: CMake not found.
+            echo        Download page: https://cmake.org/download/
+            echo        Be sure that the cmake directory is added to environment parameter PATH
+            goto :end
         )
+
+
+
     )
     goto :endproc
 
@@ -309,6 +280,9 @@ rem =======================
     )
     if "!vs!" == "2019" (
         set generator="Visual Studio 16 2019"
+    )
+    if "!vs!" == "2022" (
+        set generator="Visual Studio 17 2022"
     )
     goto :endproc
 
@@ -342,7 +316,7 @@ rem =================
     rem # Execute vcvarsall.bat in case of compilation
     if %prepareonly% EQU 1 goto :endproc
     if !ERRORLEVEL! NEQ 0 goto :endproc
-    
+
     echo.
     if !generator! == "Visual Studio 14 2015" (
         echo "Calling vcvarsall.bat for VisualStudio 2015 ..."
@@ -356,7 +330,11 @@ rem =================
         echo "Calling vcvarsall.bat for VisualStudio 2019 ..."
         call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" amd64
     )
-    
+    if !generator! == "Visual Studio 17 2022" (
+        echo "Calling vcvarsall.bat for VisualStudio 2022 ..."
+        call "%VS2022INSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" amd64
+    )
+
     rem # Execution of vcvarsall results in a jump to the C-drive. Jump back to the script directory
     cd /d "%root%\"
     if !ERRORLEVEL! NEQ 0 call :errorMessage
@@ -373,7 +351,7 @@ rem =======================
     call :createCMakeDir build_%~1
     echo "Running CMake for %~1 ..."
     cd /d "%root%\build_%~1\"
-    cmake ..\src\cmake -G %generator% -A x64 -B "." -D CONFIGURATION_TYPE="%~1" 1>cmake_%~1.log 2>&1
+    !cmake! ..\src\cmake -G %generator% -A x64 -B "." -D CONFIGURATION_TYPE="%~1" 1>cmake_%~1.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :endproc
 
@@ -436,14 +414,12 @@ rem =======================
 :VSbuild
     echo.
     echo "Building with VisualStudio: %~1 ..."
-    
     set currentWorkDir=%CD%
-    devenv.com %~1.sln /Clean "Release|x64"
-    devenv.com %~1.sln /Build "Release|x64" 1>%currentWorkDir%\build_%~1.log 2>&1
+    devenv.com %~1.sln /Rebuild "Release|x64" 1>%currentWorkDir%\build_%~1.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
 
     rem # In build.log, replace "error" by TeamCity messages
-    %root%\src\third_party_open\commandline\bin\win32\sed.exe -e "/[Ee]rror[\:\ ]/s/^/\#\#teamcity\[buildStatus status\=\'FAILURE\' text\=\' /g;/buildStatus/s/$/\'\]/g" %currentWorkDir%\build_%~1.log 
+    %root%\src\third_party_open\commandline\bin\win32\sed.exe -e "/[Ee]rror[\:\ ]/s/^/\#\#teamcity\[buildStatus status\=\'FAILURE\' text\=\' /g;/buildStatus/s/$/\'\]/g" %currentWorkDir%\build_%~1.log
     goto :endproc
 
 
@@ -462,6 +438,7 @@ rem =======================
 
         xcopy %root%\build_all\x64\Release\dflowfm\bin\dflowfm*     %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dflowfm\bin\dfm*         %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_all\x64\Release\dflowfm\bin\cosumo_bmi*  %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dflowfm\default          %root%\build_all\x64\dflowfm\default\ /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dflowfm\scripts          %root%\build_all\x64\dflowfm\scripts\ /E /C /Y /Q > del.log 2>&1
 
@@ -474,7 +451,7 @@ rem =======================
         xcopy %root%\build_all\x64\Release\dwaq\bin\waqpb_export.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\bin\waqpb_import.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\bin\waq_plugin*.dll %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\default             %root%\build_all\x64\dwaq\default\    /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_all\x64\Release\dwaq\resources             %root%\build_all\x64\dwaq\resources\    /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\installation_default    %root%\build_all\x64\dwaq\installation_default\    /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_all\x64\Release\dwaq\scripts             %root%\build_all\x64\dwaq\scripts\    /E /C /Y /Q > del.log 2>&1
 
@@ -499,6 +476,22 @@ rem =======================
         rmdir /s /q %root%\build_all\x64\Release > del.log 2>&1
         del /f/q del.log
     )
+    if "!config!" == "delft3d4" (
+        echo.
+        echo "Installing in build_delft3d4 ..."
+        xcopy %root%\build_delft3d4\x64\Release\dflow2d3d                %root%\build_delft3d4\x64\dflow2d3d\       /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\dimr                     %root%\build_delft3d4\x64\dimr\            /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\dpart                    %root%\build_delft3d4\x64\dpart\           /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\dwaq                     %root%\build_delft3d4\x64\dwaq\            /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\dwaves                   %root%\build_delft3d4\x64\dwaves\          /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\share                    %root%\build_delft3d4\x64\share\           /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\swan                     %root%\build_delft3d4\x64\swan\            /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\d_hydro\bin\*.exe        %root%\build_delft3d4\x64\dflow2d3d\bin\   /E /C /Y /Q > del.log 2>&1
+        xcopy %root%\build_delft3d4\x64\Release\dmor                     %root%\build_delft3d4\x64\dmor\            /E /C /Y /Q > del.log 2>&1
+
+        rmdir /s /q %root%\build_delft3d4\x64\Release > del.log 2>&1
+        del /f/q del.log
+    )
     goto :endproc
 
 
@@ -513,25 +506,28 @@ rem =======================
     echo Usage:
     echo "build.bat"
     echo "build.bat <CONFIG> [OPTIONS]"
-    echo "  Without <CONFIG>:"
-    echo "    The prepare_sln.py window will pop-up. Related commands will be executed."
-    echo "  With    <CONFIG>:"
     echo "    The following actions will be executed:"
-    echo "    - Only when <CONFIG>=all: Execute prepare_sln.py in silent mode"
-    echo "    - Only when <CONFIG>=all: Compile all engines that are not CMaked yet in the traditional way"
     echo "    - Create directory 'build_<CONFIG>'"
-    echo "      Delete it when it already existed"
+    echo "      Delete it first when it already exists"
     echo "    - Execute 'CMake <CONFIG>' to create file '<CONFIG>.sln' inside 'build_<CONFIG>'"
     echo "    - Execute 'devenv.com <CONFIG>.sln /Build'"
     echo "    - Only when <CONFIG>=all: Combine all binaries in 'build_<CONFIG>\x64'"
     echo.
     echo "<CONFIG>:"
-    echo "- all: All CMaked projects, currently D-Flow FM, DWAQ and DIMR, and not-CMaked projects"
-    echo "- dflowfm"
-    echo "- dflowfm_interacter"
-    echo "- dwaq"
-    echo "- dimr"
+    echo "- all     (default) : D-Flow FM   , D-WAQ, D-Waves, DIMR"
+    echo "- delft3d4          : Delft3D-FLOW, D-WAQ, D-Waves"
+    echo "- delft3dfm         : D-Flow FM   , D-WAQ, D-Waves, DIMR"
+    echo "- dflowfm           : D-Flow FM"
+    echo "- dflowfm_interacter: D-Flow FM with Interacter"
+    echo "- dimr              : DIMR"
+    echo "- drr               : D-RR"
+    echo "- dwaq              : D-WAQ"
+    echo "- dwaves            : D-Waves"
+    echo "- flow2d3d          : Delft3D-FLOW"
+    echo "- swan              : SWAN"
     echo "- tests"
+    echo "- tools"
+    echo "- tools_gpl"
     echo.
     echo "[OPTIONS]: usage [OPTION], sometimes followed by a value, space separated, in any order"
     echo "-coverage: Instrument object files for code-coverage tool (codecov) Example: -coverage"
@@ -540,7 +536,7 @@ rem =======================
     echo "-ifort: desired intel fortran compiler version.                     Example: -ifort 21
     echo.
     echo "More info  : https://oss.deltares.nl/web/delft3d/source-code"
-    echo "About CMake: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/cmake/doc/README"
+    echo "About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README"
     echo.
     set ERRORLEVEL=1
     goto :end
@@ -565,9 +561,7 @@ rem === END TAG      ======
 rem =======================
 :end
     rem # To prevent the DOS box from disappearing immediately: remove the rem on the following line
-    if "!mode!" == "interactive" (
-        pause
-    )
+    rem pause
     if !ERRORLEVEL! NEQ 0 (
         exit /B %~1
     ) else (
@@ -580,5 +574,3 @@ rem =======================
 :endproc
    rem # No exit  here, otherwise the script exits directly at the first missing artefact
    rem # No pause here, otherwise a pause will appear after each procedure execution
-   
-

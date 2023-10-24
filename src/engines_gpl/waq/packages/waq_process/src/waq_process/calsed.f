@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_calsed
+
+      implicit none
+
+      contains
+
 
       subroutine calsed ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+
 !>\file
 !>       Sedimentation velocity IMx, DetC OOC, BODC, all algea = f (Temp SS Sal)
 
@@ -58,6 +66,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -83,12 +92,8 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
       IF (BTEST(IKNMRK(ISEG),0)) THEN
-!     CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
-!     IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
-!
+
       V0SED   = PMSA( IP1 )
       SUSP    = MAX (PMSA( IP2 ), 0.0)
       CRSUSP  = PMSA( IP3 )
@@ -99,7 +104,7 @@
       MAXSAL  = PMSA( IP8 )
       ENHFAC  = PMSA( IP9 )
 
-      IF (CRSUSP .LT. 1E-20 )  CALL ERRSYS ('CRSUSP in CALSED zero', 1 )
+      IF (CRSUSP .LT. 1E-20 )  CALL write_error_message ('CRSUSP in CALSED zero')
 
 !*******************************************************************************
 !**** Processes connected to the sedimentation VELOCITY
@@ -193,3 +198,5 @@
       RETURN
 !
       END
+
+      end module m_calsed

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_vbupt
+
+implicit none
+
+contains
+
 
       subroutine VBUPT      ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_write_error_message
+
 !
 !*******************************************************************************
 !
@@ -122,7 +130,7 @@
 !            make sure allocation factors for roots > 0
 
              if ( (F4VB + F5VB) - 1.E-10 .lt. 0.0 ) then
-                CALL ERRSYS ('(no valid values for F4VB and F5VB (alloction factors vegetation  roots)', 1 )
+                CALL write_error_message ('(no valid values for F4VB and F5VB (alloction factors vegetation  roots)')
              else
 !               average Nutrient content of cohort
                 weighCN = F1VB*CNf1VB + F2VB*CNf2VB + F3VB*CNf3VB + F4VB*CNf4VB + F5VB*CNf5VB
@@ -150,3 +158,5 @@
 !
       return
       end
+
+end module m_vbupt

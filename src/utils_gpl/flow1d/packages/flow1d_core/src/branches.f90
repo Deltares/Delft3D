@@ -2,7 +2,7 @@
 module m_branch
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -26,8 +26,8 @@ module m_branch
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -62,13 +62,8 @@ module m_branch
    type, public :: t_branch
       character(IdLen)               :: id                      !< unique identification
       integer                        :: index                   !< sequence number
-      character(IdLen)               :: name                    !< Name of the branch
       double precision               :: length                  !< length of branch
       integer                        :: orderNumber             !< order number to interpolate cross sections over branches
-
-      integer                        :: brType                  !< channel type of 1D channnel
-      integer                        :: flapGate = 0            !< 0 = None, 1 = Only Positive Flow, 2 = Only Negative Flow
-                                                                !< Not implemeted in Readers yet
 
       integer                        :: nextBranch(2)           !< neighbouring branch with same ordernumber at start or end of branch
       integer                        :: nodeIndex(2)            !< indexes of Begin Node and End Node
@@ -101,7 +96,8 @@ module m_branch
 
       integer                        :: StartPoint              !< Calculation Point at Start of Branch
       integer, allocatable           :: lin(:)                  !< link numbers for links in this channel
-      integer, allocatable           :: grd(:)                  !< gridpoint numbers for links in this channel
+      integer, allocatable           :: grd(:)                  !< gridpoint numbers pressure points in this channel, may include automatically-added grid points at start and/or end or branch
+      integer, allocatable           :: grd_input(:)            !< original input gridpoint numbers for pressure points in this channel, only set for any not-automatically-added grid points at start and/or end of branch,
    end type t_branch
 
    !> Set of branches in network
@@ -145,6 +141,7 @@ module m_branch
             if (allocated(brs%branch(i)%ys))                deallocate(brs%branch(i)%ys)
             if (allocated(brs%branch(i)%lin))               deallocate(brs%branch(i)%lin)
             if (allocated(brs%branch(i)%grd))               deallocate(brs%branch(i)%grd)
+            if (allocated(brs%branch(i)%grd_input))         deallocate(brs%branch(i)%grd_input)
          enddo   
          deallocate(brs%branch)
       endif
@@ -294,6 +291,7 @@ module m_branch
 
    !> Sets up the administration for all branches:
    !! * from/to topology and %grd and %lin discretization points.
+   !! * the gridPointsSequence administration per branch
    subroutine admin_branch(brs, nlink)
       use precision_basics, only: comparereal
       use m_GlobalParameters, only: flow1d_eps10
@@ -302,8 +300,17 @@ module m_branch
       integer,                    intent(inout) :: nlink !< Total number of links. (Upon input, any existing links from the call site.
                                                          !< Upon output: total number of links after administering all branches.)
 
-      integer                 :: ibr, i, ngrid, iUCandidate
+      integer                 :: ibr, i, ngrid, ngrid_input, iUCandidate
       type(t_branch), pointer :: pbr
+      logical                 :: newsequence
+      logical                 :: admin_input !< Whether or not to make administration for input grid points
+
+      if (brs%count > 0) then
+         admin_input = allocated(brs%branch(1)%grd_input)
+      else
+         admin_input = .false.
+      end if
+      ngrid_input = 0
 
       do ibr= 1, brs%count
          pbr => brs%branch(ibr)
@@ -314,6 +321,7 @@ module m_branch
          enddo
 
          ! NB: the values for pbr%...Node%gridNumber and pbr%grd(:) will be recalculated in set_linknumbers_in_branches
+         ! NB: the gridpointscount may included extra added grid points are start/end of branch, which were not in input (see construct_network_from_meshgeom())
          call realloc(pbr%grd, pbr%gridPointsCount, keepExisting = .false.)
          ngrid = pbr%StartPoint - 1
 
@@ -323,12 +331,13 @@ module m_branch
 
             pbr%isGPFirstAtBranchStart = .false.
             pbr%isGPLastAtBranchEnd    = .false.
+            cycle
          else
             pbr%gridPointsSeqCount = 1
             call realloc(pbr%k1gridPointsSeq, pbr%gridPointsSeqCount, keepExisting = .false., fill = 0)
             call realloc(pbr%k2gridPointsSeq, pbr%gridPointsSeqCount, keepExisting = .false., fill = 0)
             pbr%k1gridPointsSeq(pbr%gridPointsSeqCount) = 1
-            iUCandidate = 1 ! This is the first u-point to be checked for this sequence. ! TODO: AvD: is #upoints always >0  then if gridpointscount>0?
+            iUCandidate = 1 ! This is the first u-point to be checked for this sequence.
 
             pbr%isGPFirstAtBranchStart = (comparereal(pbr%gridPointsChainages(1), 0d0, flow1d_eps10) == 0)
             pbr%isGPLastAtBranchEnd    = (comparereal(pbr%gridPointsChainages(pbr%gridPointsCount), pbr%length, flow1d_eps10) == 0)
@@ -338,13 +347,35 @@ module m_branch
             pbr%FromNode%gridNumber = ngrid + 1
          endif
 
+         ! Loop over consecutive gridpoints and detect the gridpointssequence(s) it is composed of.
          do i = 1, pbr%gridPointsCount-1
             ngrid = ngrid + 1
             pbr%grd(i) = ngrid
 
+            if (admin_input) then
+               if (pbr%grd_input(i) /= 0) then
+                  ! Store the original input grid point number, without auto-added
+                  ! start/end points on branch.
+                  ngrid_input = ngrid_input+1
+                  pbr%grd_input(i) = ngrid_input
+               end if
+            end if
+
             ! Administer grid points sequences:
-            if (pbr%uPointsChainages(iUCandidate) > pbr%gridPointsChainages(i+1)) then
-               ! Next u-point does not lie between current gridpoint #i and next #i+1, so that must be a new gridpoints sequence
+            if (iUCandidate <= pbr%uPointsCount) then
+               ! When next u-point does not lie between current gridpoint #i and next #i+1,
+               ! then that must be a new gridpoints sequence
+               newsequence = (pbr%uPointsChainages(iUCandidate) > pbr%gridPointsChainages(i+1))
+            else
+               ! No more u-points, but still gridpoint(s) left, so all of these
+               ! remaining gridpoints must be singleton 1D points, each forming
+               ! a 1-points sequence on its own.
+               ! This is possible when 1D2D links near partition boundaries
+               ! have their 1D endpoints as loose ghost nodes in this partition.
+               newsequence = .true.
+            end if
+
+            if (newsequence) then
                if (pbr%gridPointsSeqCount > 0) then
                   ! Administer end point of current sequence.
                   pbr%k2gridPointsSeq(pbr%gridPointsSeqCount)   = i
@@ -370,6 +401,15 @@ module m_branch
 
          ngrid = ngrid + 1
          pbr%grd(i) = ngrid
+         if (admin_input) then
+            if (pbr%grd_input(i) /= 0) then
+               ! Store the original input grid point number, without auto-added
+               ! start/end points on branch.
+               ngrid_input = ngrid_input+1
+               pbr%grd_input(i) = ngrid_input
+            end if
+         end if
+
          if (pbr%ToNode%gridNumber == -1.and. pbr%isGPLastAtBranchEnd) then
             pbr%ToNode%gridNumber = ngrid
          endif

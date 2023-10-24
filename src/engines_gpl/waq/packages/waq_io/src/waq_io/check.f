@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_check
+
+      implicit none
+
+      contains
+
 
       subroutine check  ( cdummy , iwidth , iblock , ierr2  , ierr   )
 
@@ -38,6 +44,7 @@
 !     Logical units     : LUNUT = unitnumber output log-file
 !                         ILUN  = array with input unit nr's stack
 
+      use m_srstop
       use rd_token
       use timers       !   performance timers
 
@@ -135,3 +142,5 @@
  2060 format (/1X,109('*'),' B L O C K -',I2,' ',5('*')/)
 
       end
+
+      end module m_check

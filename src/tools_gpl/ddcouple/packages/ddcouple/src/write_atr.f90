@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,6 +27,7 @@
 
       ! global declarations
 
+      use m_evaluate_waq_attribute
       use hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
@@ -71,7 +72,7 @@
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
-                 call dhkmrk( 1, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk1 )
+                 call evaluate_waq_attribute( 1, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk1 )
                  write( kenout(is), '(I2)' ) ikmrk1
              enddo
              write ( lunatr, '(500a2)' ) kenout
@@ -85,14 +86,14 @@
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
-                 call dhkmrk( 2, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk2 )
+                 call evaluate_waq_attribute( 2, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk2 )
                  write( kenout(is), '(I2)' ) ikmrk2
              enddo
              write ( lunatr, '(500a2)' ) kenout
          enddo
          write ( lunatr , '(a)' )  '    0    ; no time dependent attributes'
 
-!         call dhkmrk( 2, iknmrk(i1), ikmrk2 )
+!         call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
       else
          write(lunatr,'(a)') '    1    ; Input option without defaults'
          if ( hyd%nolay .gt. 1 ) then

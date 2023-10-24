@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -58,6 +58,8 @@ module bmi
   use m_fm_erosed, only: taucr, tetacr
   use m_heatfluxes, only: Qsunmap
   use m_longculverts
+  use m_nearfield
+  use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
 
   implicit none
 
@@ -124,7 +126,7 @@ end subroutine get_output_var_names
 !! * step_method   (explicit, implicit, semi_implicit, iterative) 
 subroutine get_attribute(c_att_name, c_att_value) bind(C, name="get_attribute")
 !DEC$ ATTRIBUTES DLLEXPORT :: get_attribute
-use unstruc_version_module
+use dflowfm_version_module
    character(kind=c_char), intent(in)    :: c_att_name(MAXSTRLEN)  !< Attribute name as C-delimited character string.
    character(kind=c_char), intent(  out) :: c_att_value(MAXSTRLEN) !< Returned attribute value as C-delimited character string.
 
@@ -136,11 +138,11 @@ use unstruc_version_module
 
    select case (att_name)
    case ('model_name')
-      att_value = unstruc_program
+      att_value = product_name
    case ('version')
-      att_value = unstruc_version
+      att_value = dflowfm_version_full
    case ('author_name')
-      att_value = unstruc_company
+      att_value = company
    case ('grid_type')
       att_value = 'unstructured_grid'
    case ('time_step_type')
@@ -286,10 +288,10 @@ end subroutine set_logger_c_callback
 subroutine get_version_string(c_version_string) bind(C, name="get_version_string")
    !DEC$ ATTRIBUTES DLLEXPORT :: get_version_string
    use iso_c_binding, only: c_char
-   use unstruc_version_module, only: unstruc_version
+   use dflowfm_version_module, only: dflowfm_version_full
    character(kind=c_char), intent(out) :: c_version_string(MAXSTRLEN)
    character(len=MAXSTRLEN) :: name
-   name = unstruc_version
+   name = dflowfm_version_full
    c_version_string = string_to_char_array(trim(name), len(trim(name)))
 end subroutine get_version_string
 
@@ -774,6 +776,12 @@ subroutine get_var_type(c_var_name, c_type)  bind(C, name="get_var_type")
       type_name = "double"
    case("TcrEro", "TcrSed", "tem1Surf")
       type_name = "double"
+   case('vltb')
+      type_name = "type(t_voltable)"
+   case('vltbOnLinks')
+      type_name = "type(t_voltable)"
+   case('network')
+      type_name = "type(t_network)"
    end select
 
    if (numconst > 0) then
@@ -881,6 +889,7 @@ subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
    use m_monitoring_crosssections, only: ncrs, maxnval
    use m_wind
    use unstruc_channel_flow, only: network
+   use m_transport, only: NAMLEN, NUMCONST
 	
    character(kind=c_char), intent(in) :: c_var_name(*)
    integer(c_int), intent(inout) :: shape(MAXDIMS)
@@ -927,7 +936,7 @@ subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
       return
    case("orifices")
       shape(1) = network%sts%numOrifices
-      shape(2) = 1
+      shape(2) = 2
       return
    case("gates")
       shape(1) = ngategen
@@ -954,6 +963,34 @@ subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
    case("laterals")
 	   shape(1) = numlatsg
 	   shape(2) = 1
+       return
+   case('vltb')
+      shape(1) = ndx1d
+   case('vltbOnLinks')
+      shape(1) = 2
+      shape(2) = ndx1d
+   case('network')
+      shape(1) = 1 
+
+   ! Array pointers:
+   case("geometry/xcc", "geometry/ycc", "field/water_depth", "geometry/kbot", "geometry/ktop")
+      shape(1) = ndx
+      return
+   case("geometry/z_level", "field/velocity_x", "field/velocity_y", "field/rho")
+	   shape(1) = ndkx
+       return
+   case("field/constituents")
+	   shape(1) = numconst
+	   shape(2) = ndkx
+       return
+   case("constituents_names")
+	   shape(1) = NUMCONST
+	   shape(2) = NAMLEN
+       return
+   case("runid")
+	   shape(1) = 1
+	   shape(2) = len(md_ident)
+       return
    end select
 
    include "bmi_get_var_shape.inc"
@@ -1034,6 +1071,8 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
    use m_alloc
    use string_module
    use m_cell_geometry ! TODO: UNST-1705: temp, replace by m_flowgeom
+   use unstruc_model
+   use unstruc_channel_flow, only: network
 
    character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
    type(c_ptr), intent(inout) :: x
@@ -1165,6 +1204,22 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       x = c_loc(kn)
       return
       
+   case("isalt")
+      x = c_loc(isalt)
+      return
+      
+   case("itemp")
+      x = c_loc(itemp)
+      return
+      
+   case("constituents_names")
+      x = c_loc(const_names)
+      return
+      
+   case("runid")
+      x = c_loc(md_ident)
+      return
+      
    case("tem1Surf")
       if (.not. allocated(tem1Surf)) then
          allocate (tem1Surf(ndx))
@@ -1212,7 +1267,14 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
          endif
       enddo
       x = c_loc(TcrSed)
-
+   case('vltb')
+      x = c_loc(vltb)
+   case('vltbOnLinks')
+      x = c_loc(vltbOnLinks)
+   case('network')
+      x = c_loc(Network)
+   case('kbndz')
+      x = c_loc(kbndz)
    end select
 
    ! Try to parse variable name as slash-separated id (e.g., 'weirs/Lith/crest_level')
@@ -1220,21 +1282,19 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
    call str_token(tmp_var_name, varset_name, DELIMS='/')
    ! Check for valid group/set name (e.g. 'observations')
    select case(varset_name)
-   case ("pumps", "weirs", "orifices", "gates", "generalstructures", "culverts", "longculverts", "sourcesinks", "dambreak", "observations", "crosssections", "laterals")
+   case ("pumps", "weirs", "orifices", "gates", "generalstructures", "culverts", "longculverts", "sourcesinks", "dambreak", "observations", "crosssections", "laterals", "geometry", "field")
       ! A valid group name, now parse the location id first...
       call str_token(tmp_var_name, item_name, DELIMS='/')
       if (len_trim(item_name) > 0) then
          ! A valid item name, now parse the field name...
          call str_token(tmp_var_name, field_name, DELIMS='/')
 
-         if (len_trim(field_name) > 0) then
-            ! Finally, a field_name was found, call the compound getter and return directly.
-            call get_compound_field(string_to_char_array(varset_name), &
-                                    string_to_char_array(item_name), &
-                                    string_to_char_array(field_name), &
-                                    x)
-            return
-         end if
+         ! field_name is allowed to be empty, call the compound getter and return directly.
+         call get_compound_field(string_to_char_array(varset_name), &
+                                 string_to_char_array(item_name), &
+                                 string_to_char_array(field_name), &
+                                 x)
+         return
       end if
    case ("controllabledam")
       call str_token(tmp_var_name, field_name, DELIMS='/')
@@ -1275,7 +1335,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
    use unstruc_model
    use m_partitioninfo, only: jampi
    use MessageHandling
-   use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
+   use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
 
    character(kind=c_char), intent(in) :: c_var_name(*)
    type(c_ptr), value, intent(in) :: xptr
@@ -1283,19 +1343,20 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
    integer, external :: init_openmp
 
    character(kind=c_char), dimension(:), pointer :: x_0d_char_ptr => null()
-   real(c_double), pointer :: x_0d_double_ptr
-
-   real(c_double), pointer :: x_1d_double_ptr(:)
-   real(c_double), pointer :: x_2d_double_ptr(:,:)
-   real(c_double), pointer :: x_3d_double_ptr(:,:,:)
-   integer(c_int), pointer :: x_0d_int_ptr
-   integer(c_int), pointer :: x_1d_int_ptr(:)
-   integer(c_int), pointer :: x_2d_int_ptr(:,:)
-   integer(c_int), pointer :: x_3d_int_ptr(:,:,:)
-   real(c_float), pointer  :: x_0d_float_ptr
-   real(c_float), pointer  :: x_1d_float_ptr(:)
-   real(c_float), pointer  :: x_2d_float_ptr(:,:)
-   real(c_float), pointer  :: x_3d_float_ptr(:,:,:)
+   real(c_double)        , pointer :: x_0d_double_ptr
+   real(c_double)        , pointer :: x_1d_double_ptr(:)
+   real(c_double)        , pointer :: x_2d_double_ptr(:,:)
+   real(c_double)        , pointer :: x_3d_double_ptr(:,:,:)
+   integer(c_int)        , pointer :: x_0d_int_ptr
+   integer(c_int)        , pointer :: x_1d_int_ptr(:)
+   integer(c_int)        , pointer :: x_2d_int_ptr(:,:)
+   integer(c_int)        , pointer :: x_3d_int_ptr(:,:,:)
+   real(c_float)         , pointer :: x_0d_float_ptr
+   real(c_float)         , pointer :: x_1d_float_ptr(:)
+   real(c_float)         , pointer :: x_2d_float_ptr(:,:)
+   real(c_float)         , pointer :: x_3d_float_ptr(:,:,:)
+   character(kind=c_char), pointer :: x_1d_char_ptr(:)
+   logical  (kind=c_bool), pointer :: x_1d_logical_ptr(:)
    ! The fortran name of the attribute name
    character(len=strlen(c_var_name))            :: var_name
    character(kind=c_char),dimension(:), pointer :: c_value => null()
@@ -1428,6 +1489,104 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
          endif
       enddo
       return
+   case ("sourcesinks/COSUMO/nf_q_source_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif = x_1d_int_ptr(1)
+       return
+   case ("sourcesinks/COSUMO/nf_q_source")
+       call c_f_pointer(xptr, x_1d_double_ptr, (/ nf_num_dif /))
+       nf_q_source => x_1d_double_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_q_intake_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif = x_1d_int_ptr(1)
+       return
+   case ("sourcesinks/COSUMO/nf_q_intake")
+       call c_f_pointer(xptr, x_1d_double_ptr, (/ nf_num_dif /))
+       nf_q_intake => x_1d_double_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_const_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif  = x_1d_int_ptr(1)
+       nf_numconst = x_1d_int_ptr(2)
+       return
+   case ("sourcesinks/COSUMO/nf_const")
+       call c_f_pointer(xptr, x_2d_double_ptr, (/ nf_num_dif, nf_numconst /))
+       nf_const => x_2d_double_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_intake_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif   = x_1d_int_ptr(1)
+       nf_numintake = x_1d_int_ptr(2)
+       i            = x_1d_int_ptr(3)
+       if (i /= 3) then
+           call mess(LEVEL_ERROR, 'set_var::nf_intake_shape: third dimension is not equal to 3')
+       endif
+       return
+   case ("sourcesinks/COSUMO/nf_intake")
+       call c_f_pointer(xptr, x_3d_double_ptr, (/ nf_num_dif, nf_numintake, 3 /))
+       nf_intake => x_3d_double_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_sink_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif   = x_1d_int_ptr(1)
+       nf_numsink   = x_1d_int_ptr(2)
+       i            = x_1d_int_ptr(3)
+       if (i /= 6) then
+           call mess(LEVEL_ERROR, 'set_var::nf_sink_shape: third dimension is not equal to 6')
+       endif
+       return
+   case ("sourcesinks/COSUMO/nf_sink")
+       call c_f_pointer(xptr, x_3d_double_ptr, (/ nf_num_dif, nf_numsink, 6 /))
+       nf_sink => x_3d_double_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_sour_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif   = x_1d_int_ptr(1)
+       nf_numsour   = x_1d_int_ptr(2)
+       i            = x_1d_int_ptr(3)
+       if (i /= 8) then
+           call mess(LEVEL_ERROR, 'set_var::nf_sink_shape: third dimension is not equal to 8')
+       endif
+       return
+   case ("sourcesinks/COSUMO/nf_sour")
+       call c_f_pointer(xptr, x_3d_double_ptr, (/ nf_num_dif, nf_numsour, 8 /))
+       nf_sour => x_3d_double_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_const_operator_shape")
+        call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+        nf_numconst = x_1d_int_ptr(1)
+        nf_namlen   = x_1d_int_ptr(2)
+        allocate(character(nf_namlen) :: nf_const_operator(nf_numconst))
+       return
+   case ("sourcesinks/COSUMO/nf_const_operator")
+       call c_f_pointer(xptr, x_1d_char_ptr, (/ nf_numconst * nf_namlen /))
+       nf_const_operator = transfer(x_1d_char_ptr,nf_const_operator)
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
+   case ("sourcesinks/COSUMO/nf_src_mom_shape")
+       call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
+       nf_num_dif = x_1d_int_ptr(1)
+       return
+   case ("sourcesinks/COSUMO/nf_src_mom")
+       call c_f_pointer(xptr, x_1d_logical_ptr, (/ nf_num_dif /))
+       nf_src_mom => x_1d_logical_ptr
+       ! Switch on nearfield
+       nearfield_mode = NEARFIELD_UPDATED
+       return
    end select
 
    if (numconst > 0) then
@@ -1815,6 +1974,11 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
             x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))  
          end if
          return
+      case("crest_level", "CrestLevel", "crestLevel")
+         if (is_in_network) then
+            x = get_crest_level_c_loc(network%sts%struct(item_index))
+         end if
+         return
       end select
 
    ! GATES
@@ -1913,6 +2077,59 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
    ! SOURCE-SINKS
    case("sourcesinks")
+      if (item_name == "COSUMO") then
+          select case(field_name)
+          case("nf_q_source")
+             if (.not.associated(nf_q_source)) then
+                return
+             endif
+             x = c_loc(nf_q_source)
+             return
+          case("nf_q_intake")
+             if (.not.associated(nf_q_intake)) then
+                return
+             endif
+             x = c_loc(nf_q_intake)
+             return
+          case("nf_const")
+             if (.not.associated(nf_const)) then
+                return
+             endif
+             x = c_loc(nf_const)
+             return
+          case("nf_intake")
+             if (.not.associated(nf_intake)) then
+                return
+             endif
+             x = c_loc(nf_intake)
+             return
+          case("nf_sink")
+             if (.not.associated(nf_sink)) then
+                return
+             endif
+             x = c_loc(nf_sink)
+             return
+          case("nf_sour")
+             if (.not.associated(nf_sour)) then
+                return
+             endif
+             x = c_loc(nf_sour)
+             return
+          case("nf_const_operator")
+             if (.not.associated(nf_const_operator)) then
+                return
+             endif
+             x = c_loc(nf_const_operator)
+             return
+          case("nf_src_mom")
+             if (.not.associated(nf_src_mom)) then
+                return
+             endif
+             x = c_loc(nf_src_mom)
+             return
+          end select
+          return
+      endif
       call getStructureIndex('sourcesinks', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
@@ -2050,6 +2267,44 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
             else
                x = c_null_ptr
             endif
+            return
+      end select
+   ! GEOMETRY
+   case("geometry")   
+      select case(item_name)
+         case("xcc")
+            x = c_loc(xzw)
+            return
+         case("ycc")
+            x = c_loc(yzw)
+            return
+         case("z_level")
+            x = c_loc(zws)
+            return
+         case("kbot")
+            x = c_loc(kbot)
+            return
+         case("ktop")
+            x = c_loc(ktop)
+            return
+      end select
+   ! FIELDS
+   case("field")   
+      select case(item_name)
+         case("water_depth")
+            x = c_loc(hs)
+            return
+         case("velocity_x")
+            x = c_loc(ucx)
+            return
+         case("velocity_y")
+            x = c_loc(ucy)
+            return
+         case("rho")
+            x = c_loc(rho)
+            return
+         case("constituents")
+            x = c_loc(constituents)
             return
       end select
    end select ! var_name
@@ -2343,6 +2598,8 @@ subroutine get_compound_field_name(c_var_name, c_field_index, c_field_name) bind
       select case(field_index)
       case(1)
          field_name = "gateLowerEdgeLevel"
+      case(2)
+         field_name = "CrestLevel"
       end select
    ! GATES
    case("gates")
@@ -3347,8 +3604,8 @@ subroutine write_partition_metis(c_netfile_in, c_netfile_out, c_npart, c_jaconti
    character(kind=c_char), intent(in)       :: c_netfile_out(MAXSTRLEN)
    integer(c_int), intent(in)               :: c_npart
    integer(c_int), intent(in)               :: c_jacontiguous
-   character(len=strlen(c_netfile_in))      :: netfile_in
-   character(len=strlen(c_netfile_out))     :: netfile_out
+   character(MAXSTRLEN)                     :: netfile_in
+   character(MAXSTRLEN)                     :: netfile_out
    integer                                  :: npart
    integer                                  :: jacontiguous
    integer                                  :: istat
@@ -3411,9 +3668,9 @@ subroutine write_partition_pol(c_netfile_in, c_netfile_out, c_polfile) bind(C, n
    character(kind=c_char), intent(in)       :: c_netfile_in(MAXSTRLEN)
    character(kind=c_char), intent(in)       :: c_netfile_out(MAXSTRLEN)
    character(kind=c_char), intent(in)       :: c_polfile(MAXSTRLEN)
-   character(len=strlen(c_netfile_in))      :: netfile_in
-   character(len=strlen(c_netfile_out))     :: netfile_out
-   character(len=strlen(c_polfile))         :: polfile
+   character(MAXSTRLEN)         :: netfile_in
+   character(MAXSTRLEN)         :: netfile_out
+   character(MAXSTRLEN)         :: polfile
    integer                                  :: minp,istat
    
    netfile_in = char_array_to_string(c_netfile_in, strlen(c_netfile_in))

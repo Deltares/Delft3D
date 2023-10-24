@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> "Casulli"-type refinement of quads
 subroutine refinequads_casulli
@@ -764,7 +764,7 @@ subroutine refinequads_casulli
       integer                                :: iLR1, iLR2, iSE1, iSE2, ipoint1, ipoint2
       integer                                :: icell
 
-      integer, external                      :: icommon
+      integer, external                      :: common_cell_for_two_net_links
 
 !     if L1.eq.0 or L2.eq.0 or L1.eq.L2 and L1 or L2 is a boundary link, store at the "ghost"-side
       L1 = L1_
@@ -784,7 +784,7 @@ subroutine refinequads_casulli
       end if
 
 !     find common cell
-      icell = icommon(L1,L2)
+      icell = common_cell_for_two_net_links(L1,L2)
       if ( icell.lt.1 ) then
          call qnerror('store_newnode: no cell found', ' ', ' ')
       end if
@@ -859,3 +859,5 @@ subroutine refinequads_casulli
    end function isleftright
 
 end subroutine refinequads_casulli
+
+    

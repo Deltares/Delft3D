@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq07
+      use m_read_block
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq07 ( lun    , lchar  , filtype, inpfil   , syname ,
      &                    iwidth , ioutpt , gridps , constants, chkpar ,
@@ -32,8 +40,12 @@
 
 !     Global declarations
 
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use m_check
+      use m_zoek
+      use m_srstop
+      use m_open_waq_files
+      use dlwqgrid_mod   ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token       ! tokenized reading
       use partmem, only: alone, lsettl, layt        ! for the interface with Delpar (Tau and VertDisp)
       use timers       !   performance timers
@@ -48,8 +60,8 @@
 
 !     kind                    function         name           Descriptipon
 
-      integer               , intent(in   ) :: lun(*)       !< unit numbers used
-      character(len=*)      , intent(in   ) :: lchar(*)     !< filenames
+      integer               , intent(inout) :: lun(*)       !< unit numbers used
+      character(len=*)      , intent(inout) :: lchar(*)     !< filenames
       integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       !< input file structure with include stack and flags
       character(len=*)      , intent(in   ) :: syname(*)    !< substance names
@@ -215,7 +227,7 @@
       if ( segfuncs%no_item   .gt. 0 ) write ( lun(2) ) (segfuncs%name(i)  , i=1, segfuncs%no_item)
       
       
-      call dhopnf  ( lun(16) , lchar(16) , 16    , 1     , ioerr )
+      call open_waq_files  ( lun(16) , lchar(16) , 16    , 1     , ioerr )
       write(lun(16)) ' 5.000PROCES'
       write(lun(16)) proc_pars%cursize
       do i = 1, proc_pars%cursize
@@ -292,3 +304,5 @@
  2420 FORMAT ( /,' ERROR: No parameter or segment function "LENGTH" found - needed for special waste loads!' )
 !
       END
+
+      end module m_dlwq07

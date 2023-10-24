@@ -3,7 +3,7 @@ function qp_updateaxes(obj,evd)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -41,6 +41,18 @@ if ishandle(obj)
 else
     ax = evd.AffectedObject;
 end
+
+Items = qp_get_items(ax);
+for i = 1:length(Items)
+    refreshAction = getappdata(Items(i),'axesRefresh');
+    if ~isempty(refreshAction)
+        refreshArgs = getappdata(Items(i),'axesRefreshArguments');
+        if ~isempty(refreshArgs)
+            refreshAction(refreshArgs{:})
+        end
+    end
+end
+
 setappdata(ax,'xlimmode','manual')
 setappdata(ax,'ylimmode','manual')
 if ~isempty(ax)

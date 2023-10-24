@@ -1,7 +1,7 @@
 module test_time_module
    !----- LGPL --------------------------------------------------------------------
    !                                                                               
-   !  Copyright (C)  Stichting Deltares, 2011-2022.                                
+   !  Copyright (C)  Stichting Deltares, 2011-2023.                                
    !                                                                               
    !  This library is free software; you can redistribute it and/or                
    !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module test_time_module
    !  Stichting Deltares. All rights reserved.                                     
    !                                                                               
    !-------------------------------------------------------------------------------
-   !  $Id$
-   !  $HeadURL$
+   !  
+   !  
    !!--description-----------------------------------------------------------------
    !
    !    Function: - Tests for various time and date processing routines
@@ -49,14 +49,17 @@ module test_time_module
 
       subroutine tests_time_module
          call test( test_conversion2juliandate, 'Test CalendarYearMonthDayToJulianDate' )
-         call test( test_julian, 'Test julian' )
+         call test( test_julian_gregor, 'Test Julian inverse to Gregor')
          call test( test_date2mjd2date, 'Test CalendarYearMonthDayToModifiedJulianDateAndBack')
+         call test( test_mjd2date, 'Test_ModifiedJulianDateToYearMonthDayHourMinuteSecond' )
          call test( test_split_date_time, 'Test split_date_time' )
          call test( test_split_date_time_invalid, 'Test split_date_time with invalid input')
          call test( test_parse_time_valid, 'Test parse_time with valid input')
          call test( test_parse_time_invalid, 'Test parse_time with invalid input')
          call test( test_ymd2modified_jul_string_valid, 'Test ymd2modified_jul_string with valid input')
          call test( test_ymd2modified_jul_string_invalid, 'Test ymd2modified_jul_string with invalid input')
+         call test( test_datetimestring_to_seconds, 'Test datetimestring_to_seconds' )
+         call test( test_seconds_to_datetimestring, 'Test seconds_to_datetimestring' )
       end subroutine tests_time_module
 
       !> test CalendarYearMonthDayToJulianDate
@@ -94,39 +97,109 @@ module test_time_module
 
       end subroutine test_conversion2juliandate
 
-      !> test julian
-      subroutine test_julian()
+      !> test Julian inverse to Gregor
+      subroutine test_julian_gregor
 
-         real(kind=hp) :: jdn1, jdn2, jdn3, jdn4
+         real(kind=hp) :: jdn, dsec
+         integer :: returnyear, returnmonth, returnday, hour, min, sec
+         integer :: year, month, day
 
-         jdn1 = julian(00010101, 0)
-         jdn2 = julian(15821004, 0)
-         jdn3 = julian(15821015, 0)
-         jdn4 = julian(20010101, 0)
+         jdn = julian(00010101, 0)
+         call assert_comparable(jdn, -678577.0_hp + offset_modified_jd, tol, 'error for 1-1-1')
 
-         call assert_comparable(jdn1, -678577.0_hp, tol, 'error for 1-1-1')
-         call assert_comparable(jdn2, -100841.0_hp, tol, 'error for 4-10-1582')
-         call assert_comparable(jdn3, -100840.0_hp, tol, 'error for 15-10-1582')
-         call assert_comparable(jdn4, 51910.0_hp, tol, 'error for 1-1-2001')
+         jdn = julian(15821004, 0)
+         call assert_comparable(jdn, -100841.0_hp + offset_modified_jd, tol, 'error for 4-10-1582')
+         
+         jdn = julian(15821015, 0)
+         call assert_comparable(jdn, -100840.0_hp + offset_modified_jd, tol, 'error for 15-10-1582')
 
-      end subroutine test_julian
+         year = 2001
+         month = 01
+         day = 01
+         jdn = julian(year*10000 + month * 100 + day, 0)
+         call assert_comparable(jdn, 51910.0_hp + offset_modified_jd, tol, 'error for 1-1-2001')         
+         call gregor(jdn, returnyear, returnmonth, returnday, hour, min, sec, dsec)
+
+         call assert_equal(year, returnyear, 'error in Julian/Gregor: incorrect year')
+         call assert_equal(month, returnmonth, 'error in Julian/Gregor: incorrect month')
+         call assert_equal(day, returnday, 'error in Julian/Gregor: incorrect day')
+         
+      end subroutine test_julian_gregor
 
       !> test yyyymmddToModifieldJulianDateToyyyymmdd
       subroutine test_date2mjd2date()
          implicit none
          logical       :: success_
-         real(kind=hp) :: expected_mjd, refdate_mjd
-         integer       :: refdate
-         integer       :: returndate
+         real(kind=hp) :: expected_mjd, refdate_mjd, second
+         integer       :: refdate, returndate, returntime
          
          refdate = 20221101
-         expected_mjd = 59884.5_hp
+         expected_mjd = 59884.0_hp
          success_ = ymd2modified_jul(refdate, refdate_mjd)
          call assert_comparable(refdate_mjd, expected_mjd, tol, 'error in conversion ymd to modified julian date')
          success_ = mjd2date(refdate_mjd, returndate)
          call assert_equal(refdate, returndate,'error in conversion modified julian date to ymd')
+         success_ = mjd2date(refdate_mjd, returndate, returntime)
+         ! check that no time shift was introduced
+         call assert_equal(returntime, 0,'error in mjd2date, unexpected timeshift')
                   
       end subroutine test_date2mjd2date
+
+      !> test ModifiedJulianDateToYearMonthDayHourMinuteSecond
+      subroutine test_mjd2date()
+         implicit none
+         integer       :: success
+         integer       :: ymd, ymd_expected
+         integer       :: hms, hms_expected
+         integer       :: year, year_expected
+         integer       :: month, month_expected
+         integer       :: day, day_expected
+         integer       :: hour, hour_expected
+         integer       :: minute, minute_expected, second_expected
+         real(kind=hp) :: second
+         real(kind=hp) :: timestamp_mjd
+ 
+         ! check correct date and hhmmss for 3h30 ie before noon and whole minutes
+         timestamp_mjd = 55833.125_hp + 30./1440.
+         ymd_expected = 20110929
+         hms_expected = 33000
+         success = mjd2date(timestamp_mjd,ymd)
+         call assert_equal(ymd_expected, ymd,'error in conversion modified julian date to yymmdd')
+
+         success = mjd2date(timestamp_mjd, ymd, hms)
+         call assert_equal(hms_expected, hms,'error in conversion modified julian date for hhmmss')
+ 
+         ! check correct date and hour for 18h i.e. after noon and with seconds
+         timestamp_mjd = 55833.80
+         year_expected = 2011
+         month_expected = 9
+         day_expected = 29
+         hour_expected = 19
+         minute_expected = 13
+         second_expected = 7
+         success = mjd2date(timestamp_mjd,year,month,day,hour,minute,second)
+         call assert_equal(year_expected, year,'error in conversion modified julian date: year')
+         call assert_equal(month_expected, month,'error in conversion modified julian date: month')
+         call assert_equal(day_expected, day,'error in conversion modified julian date: day')
+         call assert_equal(hour_expected, hour,'error in conversion modified julian date: hour')
+         call assert_equal(minute_expected, minute,'error in conversion modified julian date: minute')
+         call assert_equal(second_expected, int(second), 'error in conversion modified julian date: second')
+
+         ! check that rounding is correct for end of year
+         ! 20221231 = 59944 in mjd, 1 second = 1.157407E-5
+         timestamp_mjd = 59944.999985_hp
+         ymd_expected = 20221231
+         hms_expected = 235959
+         success = mjd2date(timestamp_mjd, ymd, hms)
+         call assert_equal(hms_expected, hms, 'error in conversion modified julian date: second')
+         
+         timestamp_mjd = 59944.999999_hp
+         ymd_expected = 20230101
+         hms_expected = 0
+         success = mjd2date(timestamp_mjd, ymd, hms)
+         call assert_equal(hms_expected, hms, 'error in conversion modified julian date: second')
+
+      end subroutine test_mjd2date
 
       !> test split_date_time with valid input
       subroutine test_split_date_time
@@ -235,7 +308,7 @@ module test_time_module
       subroutine test_ymd2modified_jul_string_valid
          integer, parameter           :: nr_cases = 9
          character(len=16), parameter :: date(nr_cases) = (/ &
-            "20200904        ", &   ! no separators
+            "20200904        ", &   ! no separat
             "0020200904        ", & ! no separators, six digit year
             "2020-09-04      ", &   ! - separators
             "2020-09-4       ", &   ! - separators, one digit day, two digit month
@@ -277,4 +350,22 @@ module test_time_module
       end subroutine test_ymd2modified_jul_string_invalid
       
 
+      subroutine test_datetimestring_to_seconds()
+        double precision    :: timsec
+        integer             :: stat
+      
+        call datetimestring_to_seconds('20120101000100','20120101',timsec,stat)     ! easy for now, delta = 1 minute
+        call assert_comparable(timsec, 60.0_hp, tol, 'error for timsec = 201201010001')
+      
+      end subroutine test_datetimestring_to_seconds
+      
+      subroutine test_seconds_to_datetimestring()
+        character(len=15) :: dateandtime
+        
+        dateandtime = '00000000_000000'
+        call seconds_to_datetimestring(dateandtime,'20120101',60.0_hp)              ! easy for now, delta = 1 minute
+        call assert_equal_string( trim(dateandtime), '20120101_000100', 'error for datetimestring = 20120101000001' )
+      
+      end subroutine test_seconds_to_datetimestring
+      
 end module test_time_module

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Increment the time-splitting upcoming time, if input time argument lies on or beyond that time.
 !! Each output file with name base_timesplit0_.. will contain output for time_split0 < time1 <= time_split.
@@ -55,7 +55,7 @@ integer :: iyear, imonth, iday, ihour, imin, isec, add_seconds
 
     do ! increment time_split until tim <= time_split
        ! First, get y/M/d/h/m/s values for current time_split since refdat:
-       call datetime_from_refdat(time_split, iyear, imonth, iday, ihour, imin, isec)
+       call datetime_from_refdat(time_split, refdat, iyear, imonth, iday, ihour, imin, isec)
 
        ! Second, add the ti_split increment to them, based on ti_split_unit
        add_seconds = 0
@@ -82,7 +82,7 @@ integer :: iyear, imonth, iday, ihour, imin, isec, add_seconds
        end select
 
        ! Finally convert the new absolute date time values to a time in seconds since refdat.
-       call seconds_since_refdat(iyear, imonth, iday, ihour, imin, isec+add_seconds, time_split)
+       call seconds_since_refdat(iyear, imonth, iday, ihour, imin, isec+add_seconds, refdat, time_split)
 
        if (tim <= time_split) then
           exit

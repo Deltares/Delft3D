@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2022.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module contains support methods for the EC-module.
 !! @author adri.mourits@deltares.nl
@@ -36,7 +36,7 @@ module m_ec_support
    use m_alloc
    use string_module
    use m_ec_parameters
-   use time_module
+   use time_module, only: ymd2modified_jul, mjd2date, split_date_time, parse_time
 
    implicit none
 
@@ -104,15 +104,11 @@ module m_ec_support
          real(hp),                   intent(in)  :: timestamp_mjd       !< number of time steps
          integer,                    intent(out) :: yyyymmdd            !< calculated Gregorian date
          integer,                    intent(out) :: hhmmss              !< time of the day
-         real(hp)                                :: dsec                !< fraction of seconds
-         integer                                 :: hh, mm, ss          !< hours, minutes, seconds helper variables
-         integer                                 :: iyear, imonth, iday !< year, month and day
 
-         !! TODO very ugly to add offset_modified_jd here
-         call gregor(timestamp_mjd + offset_modified_jd, iyear, imonth, iday, hh, mm, ss, dsec)
-
-         yyyymmdd = 10000 * iyear + 100 * imonth + iday
-         hhmmss = 10000 * hh + 100 * mm + ss
+         success = .false.
+         if (mjd2date(timestamp_mjd, yyyymmdd, hhmmss) /= 0) then
+            success = .true.
+         endif
 
          success = .true.
 
@@ -832,8 +828,7 @@ end subroutine ecInstanceListSourceItems
             endif
 
             if (ierr == 0) then
-               success = .true.
-               ref_date = JULIAN(yyyymmdd, 0)
+               success = ymd2modified_jul(yyyymmdd, ref_date)
                ref_date = ref_date + real(hh, hp) / 24.0_hp
             endif
          endif

@@ -7,7 +7,7 @@ function make_ecoplot(basedir,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -60,7 +60,7 @@ if ~isempty(err)
 end
 
 
-function localmake(qpversion,T)
+function localmake(qpversion,repo_url,hash,T)
 if ~exist('progsrc','dir')
     error('Cannot locate source')
 end
@@ -96,14 +96,16 @@ copyfile('../../../../third_party_open/netcdf/matlab/netcdfAll-4.1.jar','.')
 addpath ../../../../third_party_open/netcdf/matlab/mexnc
 addpath ../../../../third_party_open/netcdf/matlab/snctools
 %
-if nargin<2
-    qpversion=read_identification(sourcedir,'d3d_qp.m');
-    T=now;
+if nargin<4
+    [qpversion,hash,repo_url] = read_identification(sourcedir,'d3d_qp.m');
+    T = now;
 end
 fprintf('\nBuilding Delft3D-ECOPLOT version %s\n\n',qpversion);
 TStr = datestr(T);
-fstrrep('d3d_qp.m','<VERSION>',qpversion)
-fstrrep('d3d_qp.m','<CREATIONDATE>',TStr)
+fstrrep('d3d_qp.m', '<VERSION>', qpversion)
+fstrrep('d3d_qp.m', '<CREATIONDATE>', TStr)
+fstrrep('d3d_qp.m', '<GITHASH>', hash)
+fstrrep('d3d_qp.m', '<GITREPO>', repo_url)
 fstrrep('wl_identification.c','<VERSION>',qpversion)
 fstrrep('wl_identification.c','<CREATIONDATE>',TStr)
 g = which('-all','gscript');

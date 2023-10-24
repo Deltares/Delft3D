@@ -1,0 +1,43 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_tmpfil
+       logical :: reusetmp   !  Flag=TRUE if the temporary files have to be reused
+       logical :: flgrd      !  Flag=TRUE if the grid file containing the grid coord. were read without any errors
+       logical :: fldry      !  Flag=TRUE if the unformatted file for the dry points were read without any errors
+       logical :: fltd       !  Flag=TRUE if the unformatted file for the dam points were read without any errors
+       logical :: flcut
+       logical :: fl45
+       logical :: flbct      !  Flag for time-varying hydrodynamic data at the open boundaries (NTOT is > 0)
+       logical :: flbcc      !  Flag for time-varying transport data at open boundaries (NTO & LSTSC  > 0)
+       logical :: fldis      !  Flag for time-varying discharge data (NSRC is > 0)
+       logical :: fltem      !  Flag for time-varying data for the heat coefficients (temperature process is selected and KTEMP > 0)
+       logical :: fleva      !  Flag for time-varying rainfall / evaporation model
+       logical :: dryrun     !  true: Run without actual calculation
+    end type gd_tmpfil

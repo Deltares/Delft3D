@@ -1,4 +1,4 @@
-!!!  Copyright (C)  Stichting Deltares, 2022.
+!!!  Copyright (C)  Stichting Deltares, 2022-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,30 +21,13 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-!  $Id$
-!  $HeadURL$
+!
+!
 
 ! maptonetcdf.f90 --
 !      Program to convert a traditional binary map file into a NetCDF map file
 
-
-module dhnolay_dummy
-    implicit none
-
-    integer :: nolayers
-end module dhnolay_dummy
-
-subroutine dhnolay( nolay )
-    use dhnolay_dummy
-
-    implicit none
-    integer :: nolay
-
-    nolay = nolayers
-end subroutine dhnolay
-
 program maptonetcdf
-    use dhnolay_dummy
     use m_outmnc
 
     implicit none
@@ -66,7 +49,7 @@ program maptonetcdf
     character(len=255)                            :: ugridfile
 
     integer                                       :: ncidmap, timeid, bndtimeid, mncrec, lunut
-    integer                                       :: i, k, ierr, nosys, noseg, time
+    integer                                       :: i, k, ierr, nosys, noseg, time, nolayers
 
     lunut = 20
     open( 20, file = 'maptonetcdf.out' )
@@ -77,11 +60,24 @@ program maptonetcdf
         call get_command_argument( 3, string )
         read( string, * ) nolayers
     else
-        open( 10, file = 'maptonetcdf.inp', status = 'old' )
-        read( 10, '(a)' ) mapfile
-        read( 10, '(a)' ) ugridfile
-        read( 10, * )     nolayers
+        open( 10, file = 'maptonetcdf.inp', status = 'old', iostat = ierr )
+        if ( ierr /= 0 ) then
+            write(*,'(a)' ) 'No arguments or too few arguments given and file "maptonetcdf.inp" does not exist'
+            call print_usage
+            stop
+        end if
+
+        write(*,'(a)') 'No arguments or too few arguments given, using file "maptonetcdf.inp"'
+                         read( 10, '(a)', iostat = ierr ) mapfile
+        if ( ierr == 0 ) read( 10, '(a)', iostat = ierr ) ugridfile
+        if ( ierr == 0 ) read( 10, *, iostat = ierr )     nolayers
         close( 10 )
+
+        if ( ierr /= 0 ) then
+            write(*,'(a)' ) 'Error reading "maptonetcdf.inp"'
+            call print_usage
+            stop
+        endif
     endif
 
     !
@@ -98,7 +94,13 @@ program maptonetcdf
     !
     ! Open the map file and read the header
     !
-    open( 11, file = mapfile, access = 'stream', status = 'old' )
+    open( 11, file = mapfile, access = 'stream', status = 'old', iostat = ierr )
+
+    if ( ierr /= 0 ) then
+        write(*,'(a)') 'Map file "' // trim(mapfile) // '"  could not be opened!'
+        stop
+    endif
+
     read( 11 ) title
     read( 11 ) nosys, noseg
 
@@ -106,10 +108,10 @@ program maptonetcdf
     ! Check the number of layers - simple check
     !
     if ( mod(noseg,nolayers) /= 0 ) then
-        write(*,*) 'Error: mistake in the number of layers!'
-        write(*,*) '       Number given: ', nolayers
-        write(*,*) '       Should divide the number of segments in the file, being: ', noseg
-        write(*,*) 'Please correct this'
+        write(*,'(a)') 'Error: mistake in the number of layers!'
+        write(*,'(a)') '       Number given: ', nolayers
+        write(*,'(a)') '       Should divide the number of segments in the file, being: ', noseg
+        write(*,'(a)') 'Please correct this'
         stop
     endif
 
@@ -160,8 +162,8 @@ program maptonetcdf
     write( lunut, '(a20,2a12)' ) 'Parameter', 'Minimum', 'Maximum'
     write( lunut, '(a,2g12.4)' ) (syname(i), extreme(i,1), extreme(i,2) ,i=1,nosys)
 
-    write(*,*) 'Done'
-    write(*,*) 'Output available in ', trim(mncfile)
+    write(*,'(a)') 'Done'
+    write(*,'(a)') 'Output available in ', trim(mncfile)
 
 contains
 subroutine cleanup_names( name )
@@ -180,4 +182,15 @@ subroutine cleanup_names( name )
         enddo
     enddo
 end subroutine cleanup_names
+
+subroutine print_usage
+    write(*,'(a)') ''
+    write(*,'(a)') 'Usage: maptonetcdf mapfile ugridfile number-layers'
+    write(*,'(a)') 'Alternatively:'
+    write(*,'(a)') 'Provide an input file "maptonetcdf.inp" containing, in this order:'
+    write(*,'(a)') '- Name of the map file to be converted'
+    write(*,'(a)') '- Name of the UGRID file (waqgeom) that contains the grid information'
+    write(*,'(a)') '- Number of layers (this information is not contained in the UGRID file)'
+    write(*,'(a)') '  and is also used to check the UGRID file'
+end subroutine print_usage
 end program

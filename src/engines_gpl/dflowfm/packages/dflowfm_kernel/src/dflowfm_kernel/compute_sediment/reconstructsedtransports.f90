@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine reconstructsedtransports()
    ! Reconstructs cell centre transports from link based values for output purposes
@@ -63,7 +63,7 @@
    end do
 
    do l = 1, lsedtot
-      if (sedtyp(l)/=SEDTYP_COHESIVE) then
+      if (has_bedload(tratyp(l))) then
          do ll = 1, lnx
             k1 = ln(1,ll); k2 = ln(2,ll)
             ! bed load transports due to currents

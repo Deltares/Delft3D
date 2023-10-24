@@ -77,22 +77,6 @@
     <Compile Include="Helpers\StringUtilityExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <Content Include="..\..\..\io_netcdf\dll\x64\Debug\io_netcdf.dll">
-      <Link>io_netcdf.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\..\io_netcdf\dll\x64\Debug\io_netcdf.pdb">
-      <Link>io_netcdf.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <Content Include="..\..\..\io_netcdf\dll\x64\Release\io_netcdf.dll">
-      <Link>io_netcdf.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <None Include="Lib\*.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -101,9 +85,17 @@
     <None Include="packages.config" />
     <None Include="UML\Overview.cd" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Lib\" />
-  </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="Lib\hdf5.dll" />
+    <Content Include="Lib\hdf5_hl.dll" />
+    <Content Include="Lib\io_netcdf_dll.dll" />
+    <Content Include="Lib\libifcoremd.dll" />
+    <Content Include="Lib\libmmd.dll" />
+    <Content Include="Lib\netcdf.dll" />
+    <Content Include="Lib\ucrtbase.dll" />
+    <Content Include="Lib\vcruntime140.dll" />
+    <Content Include="Lib\zlib1.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

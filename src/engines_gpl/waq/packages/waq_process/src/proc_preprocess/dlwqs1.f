@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwqs1
+      use m_setqtl
+      use m_setprc
+      use m_setgeo
+      use m_setdsc
+      use m_setdpt
+      use m_setday
+      use m_rdstat
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQS1 ( LUNREP       , NPOS     ,
-     +                    CCHAR        , VRSION   ,
+     +                    CCHAR        , 
      +                    ILUN         , LCH      ,
      +                    LSTACK       , IOUTPT   ,
      +                    DTFLG1       , DTFLG3   ,
@@ -45,10 +58,10 @@
 
 !      Logical units      :
 
+      use m_zoek
       use timers       !   performance timers
-      use           stasub
-      use           dhralloc
-      use           ProcesSet
+      use dhralloc
+      use ProcesSet
 
       implicit      none
 
@@ -57,7 +70,6 @@
       integer  ( 4), intent(in   ) :: lunrep            !< unit nr of output report file
       integer  ( 4), intent(in   ) :: npos              !< significant line length of input file
       character( 1), intent(in   ) :: cchar             !< comment character
-      real     ( 4), intent(in   ) :: vrsion            !< version number of this input
       integer  ( 4), intent(inout) :: ilun (*)          !< unitnumber include stack
       character( *), intent(inout) :: lch  (*)          !< filename include stack for input
       integer  ( 4), intent(in   ) :: lstack            !< include file stack size
@@ -112,7 +124,7 @@
 !
       WRITE(LUNREP,2000)
       IPOSR = 0
-      CALL RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , VRSION ,
+      CALL RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  ,
      +              ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 ,
      +              DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  ,
      +              KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX ,
@@ -327,9 +339,7 @@
       NSPROC = ISPROC
 !
   500 CONTINUE
-      IF(VRSION.GE.0.0) THEN
-         WRITE ( LUNREP , 3000 ) 10
-      END IF
+      WRITE ( LUNREP , 3000 ) 10
 !
       if ( timon ) call timstop( ithndl )
       RETURN
@@ -343,3 +353,5 @@
      &         /' End of period   :        ' ,I10 )
  3000 FORMAT (/1X, 59('*'),' B L O C K -',I2,' ',5('*')/)
       END
+
+      end module m_dlwqs1

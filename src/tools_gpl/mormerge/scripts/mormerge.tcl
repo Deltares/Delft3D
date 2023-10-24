@@ -20,7 +20,7 @@
 #
 
 global version
-set version "2.19"
+set version "2.20"
 
 global debug
 set debug 0
@@ -2116,17 +2116,22 @@ if { $queuesys != "none" } {
       # nodelist still has to be filled
       # First try env(PBS_NODEFILE); this works in the testbank
       # Else use env(HOST); replace "x123.deltares.nl" by "x123"
+      # Else use "local"
       #
       if { [info exists env(PBS_NODEFILE)] } {
          set nodefilename $env(PBS_NODEFILE)
          readNodeFile $nodefilename infillist(numnodes) nodelist
       } else {
-         set host $env(HOSTNAME)
-         set dotpos [string first "." $host]
-         if { $dotpos > -1 } {
-            set host [string range $host 0 [expr $dotpos - 1]]
+         if { [info exists env(HOSTNAME)] } {
+            set host $env(HOSTNAME)
+            set dotpos [string first "." $host]
+            if { $dotpos > -1 } {
+               set host [string range $host 0 [expr $dotpos - 1]]
+            }
+            set nodelist $host
+         } else {
+            set nodelist "local"
          }
-         set nodelist $host
       }
    } else {
       set nodelist "local"

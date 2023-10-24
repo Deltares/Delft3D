@@ -1,7 +1,7 @@
 module m_cross_helper
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_cross_helper
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use m_network
@@ -39,10 +39,6 @@ module m_cross_helper
    public getBobs
    public getConveyance
    public getCrossDischarge
-
-   integer, public, parameter :: CSH_DEPTH = 0
-   integer, public, parameter :: CSH_LEVEL  = 1
-   
    
    private
    
@@ -55,11 +51,7 @@ contains
       
       type (t_CrossSection), pointer     :: cross1
       type (t_CrossSection), pointer     :: cross2 
-      double precision :: dx
-      double precision :: dxlocal
-      double precision :: distancelocal
       double precision :: factor
-      double precision :: linkpos
 
       if (network%adm%line2cross(ilink, 2)%c1 < 0) then
          ! no cross section on this branch

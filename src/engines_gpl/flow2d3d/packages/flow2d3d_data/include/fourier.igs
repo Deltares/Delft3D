@@ -1,0 +1,78 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_fourier
+    !
+    ! integers
+    !
+    integer :: fouwrt       ! Time to write fourier file (TEKAL/map-NetCDF)
+    integer :: nofouvar     ! Number of parameters to write to NetCDF file
+    integer :: ibluv
+    integer :: iblqf
+    integer :: iblbs
+    integer :: iblep
+    integer :: iblwl
+    integer :: ibleh
+    integer :: iblcn
+    integer :: idfile        ! Id of the NetCDF file
+    !
+    ! pointers
+    !
+    integer          , dimension(:)    , pointer :: fconno        ! Constituent number for Fourier analysis
+    integer          , dimension(:)    , pointer :: flayno        ! Layer number for fourier analysis
+    integer          , dimension(:)    , pointer :: fnumcy        ! Number of cycles for fourier analysis
+    integer          , dimension(:)    , pointer :: ftmsto        ! Integer time step counter stop time for fourier analysis
+    integer          , dimension(:)    , pointer :: ftmstr        ! Integer time step counter start time for fourier analysis
+    integer(pntrsize), dimension(:)    , pointer :: ifoupt        ! Pointer for FOUNAM(IFOU), points in real array R
+    integer          , dimension(:)    , pointer :: iofset        ! Offset from pointer address to asked layer and constituent for IFOU
+    integer          , dimension(:)    , pointer :: foumask       ! 0: no additional mask, 1: initial dry points only
+    integer          , dimension(:)    , pointer :: idvar         ! Ids of the variables in the NetCDF file
+    integer          , dimension(:,:)  , pointer :: fouref        ! Reference table: (ifou,1): fouid (line in input file)
+                                                                  !                  (ifou,2): fouvarstart (first index in fouvarnam/idvar to be used by this ifou
+    !
+    real(fp)         , dimension(:)    , pointer :: fknfac        ! Fourier amplitude correction factor
+    real(fp)         , dimension(:,:,:), pointer :: foucomp       ! Component in Fourier Analysis
+    real(fp)         , dimension(:)    , pointer :: foufas        ! Frequency for fourier analysis
+    real(fp)         , dimension(:,:,:), pointer :: fousma        ! Suma of fourier analysis
+    real(fp)         , dimension(:,:,:), pointer :: fousmb        ! Sumb of fourier analysis
+    real(fp)         , dimension(:,:,:), pointer :: fouvec        !  Maximum of vector magnitude for fourier analysis
+                                                                  !  For velocity (u,v), discharge (qxk, qyk) and bed shear stress (taubpu,taubpv)
+                                                                  !  NB: For discharges the analysis is actually performed on the unit discharges qxk/guu and qyk/gvv
+    real(fp)         , dimension(:)    , pointer :: fv0pu         ! Fourier phase correction
+    !    
+    character(1)     , dimension(:)    , pointer :: fouelp        !  Y/N: Yes/No requesting elliptic parameters
+                                                                  !  X/I: Max/Min values  requested instead of fourier analysis
+                                                                  !  E  : Max Energy head requested instead of fourier analysis
+    character(16)    , dimension(:)    , pointer :: founam        ! Names of variables for fourier analysis 
+    character(50)    , dimension(:)    , pointer :: fouvarnam     ! Names of variables for fourier analysis as written to NetCDF file 
+    character(50)    , dimension(:)    , pointer :: fouvarnamlong ! Part of the long names of variables for fourier analysis as written to NetCDF file 
+    character(50)    , dimension(:)    , pointer :: fouvarunit    ! Unit of variables for fourier analysis as written to NetCDF file 
+    character(1)     , dimension(:)    , pointer :: foutyp        ! Character indicating whether parameter is a scalar (s) or vector (v) quantity
+    !
+    end type gd_fourier

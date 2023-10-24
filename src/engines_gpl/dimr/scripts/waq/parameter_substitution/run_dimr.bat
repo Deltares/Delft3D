@@ -8,7 +8,7 @@ title run_dimr
     rem
     rem adri.mourits@deltares.nl
     rem 24 june 2015
-    rem 
+    rem
     rem
 setlocal enabledelayedexpansion
 
@@ -41,7 +41,7 @@ set D3D_HOME=%currentdir%..\..\bin
 set dimrexedir=%D3D_HOME%\%ARCH%\dimr\bin
 set waqexedir=%D3D_HOME%\%ARCH%\waq\bin
 
-set proc_def_dir=..\..\bin\win64\waq\default
+set proc_def_dir=..\..\bin\win64\waq\resources
     rem
     rem No adaptions needed below
     rem

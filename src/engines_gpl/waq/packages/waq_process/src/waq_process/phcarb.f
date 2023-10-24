@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,13 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_phcarb
+
+      implicit none
+
+      contains
+
 
       subroutine phcarb  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
 !>\file
 !>       Integrated calculation of pH and CO2 system
- 
+
 !
 !     Description of the module :
 !
@@ -59,22 +65,22 @@
 ! K0             R*4 1 L  solubility of CO2 in seawater                  [mol/(kg*atm)]
 ! PH             R*4 1 O  pH                                             [-]
 ! CO2            R*4 1 O  concentration CO2 in water                     [gCO2/m3]
-! pCO2water      R*4 1 O  partial pressure of CO2 in water               [µatm]
+! pCO2water      R*4 1 O  partial pressure of CO2 in water               [Âµ atm]
 ! HCO3           R*4 1 O  concentration of HCO3                          [gC/m3]
-! CO3	         R*4 1 O  concentration of CO3                           [gC/m3]
+! CO3	           R*4 1 O  concentration of CO3                           [gC/m3]
 ! Satcal         R*4 1 O  saturation state of calcite                    [-]
 ! Satarg         R*4 1 O  saturation state of aragonite                  [-]
-! BOH4           R*4 1 O  concentration of borate		         [gB/m3]
+! BOH4           R*4 1 O  concentration of borate		             [gB/m3]
 ! S              R*4 1 I  salinity                                       [g/kg]
 ! TEMP           R*4 1 I  temperature                                    [oC]
 ! TEMPK          R*4 1 L  temperature in Kelvin                          [K]
 ! RHOH2O         R*4 1 L  water density                                  [kg/l]
 ! CM3TOM3        R*4 1 L  conversion from cm3 to m3                      [cm3/m3]
-! ATMTOMICROATM  R*4 1 L  conversion from atm to µatm                    [atm/µatm]
+! ATMTOMICROATM  R*4 1 L  conversion from atm to Âµ atm                   [atm/Âµ atm]
 ! ATMTOPA        R*4 1 L  conversion from atm to Pa                      [atm/Pa]
 ! R              R*4 1 L  ideal gas constant                             [m3*Pa/(K*mol)]
 ! MOLKGCO2       R*4 1 L  CO2 concentration in water                     [molCO2/kg]
-! FCO2           R*4 1 L  fugacity of CO2                                [µatm]
+! FCO2           R*4 1 L  fugacity of CO2                                [Âµ atm]
 ! BV             R*4 1 L  virial coefficient of pure CO2                 [m3/mol]
 ! DELTA          R*4 1 L  virial coefficient of CO2 in air               [m3/mol]
 !-----------------------------------------------------------------------
@@ -83,21 +89,22 @@
 
 !     Modules called : -
 !
+      use m_monsys
       USE MOD_CHEMCONST
       USE MOD_ACBW_PHSOLVERS
       USE PHYSICALCONSTS, ONLY: CtoKelvin
 
       IMPLICIT NONE
-      
+
       REAL     PMSA  ( * ) , FL    (*)
       DOUBLE PRECISION AHPLUSD, P_VAL
-      
+
       INTEGER  ILUMON
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , ISEG, NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
       INTEGER  IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8, IP9, IP10,
      +         IP11, IP12, IP13, IP14
-      
+
       LOGICAL,SAVE  :: FIRST = .TRUE.
 !
 !     Local declarations, constants in source
@@ -115,7 +122,7 @@
       REAL, PARAMETER :: KELVIN        =    real(CtoKelvin)
       REAL, PARAMETER :: R             =    8.314
 
-      
+
       REAL            :: SAL, TEMP, TIC, ALKA, PH_MIN, PH_MAX
       REAL            :: PH_OLD, TEMPK, LNKW, KW
       REAL            :: LNK0, K0, LNK1, K1, LNK2, K2, LNKB, KB
@@ -123,7 +130,7 @@
       REAL            :: RHOH2O, TICM, ALK, BT, CA
       REAL            :: AHPLUS, PH, BV, DELTA, FCO2, MOLKGCO2
       REAL            :: CO2, pCO2water, HCO3, CO3, BOH4, SATCAL, SATARG
-      
+
       integer, save   :: nr_mes = 0     ! message count negative total carbonate
       integer, save   :: nrmes2 = 0     ! message count negative salinity
       integer, save   :: nrmes3 = 0     ! message count high salinity
@@ -151,11 +158,8 @@
 !
 !     Eerste kenmerk actief of inactief segment
 !
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!
 !     Alleen actieve en bodem segmenten behandelen
 !
-!!    IF (IKMRK1.EQ.1) THEN
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !     Map PMSA on local variables
@@ -166,10 +170,10 @@
       TEMP    = PMSA(IP4 )
       PH_MIN  = PMSA(IP5 )
       PH_MAX  = PMSA(IP6 )
-      
+
 !     Try to get the old value, this is a good initial value for our solvers.
       PH_OLD  = PMSA(IP7 )
-!     Because the value might not exist, if it is outside the range start neutral with pH = 7.0      
+!     Because the value might not exist, if it is outside the range start neutral with pH = 7.0
       IF (PH_OLD.LT.PH_MIN .OR. PH_OLD.GT.PH_MAX) THEN
           PH_OLD = 7.0e0
       ENDIF
@@ -244,12 +248,12 @@
       TEMPK   = TEMP + KELVIN
 
 ! Dissociation constant of water. DOE (1994), Zeebe and Wolf-Gladrow (2001). Total pH scale. [mol^2/kg^2 solution]
-      LNKW = 148.96502 - 13847.26/TEMPK - 23.6521 * log(TEMPK) + 
+      LNKW = 148.96502 - 13847.26/TEMPK - 23.6521 * log(TEMPK) +
      +       (118.67/TEMPK - 5.977 + 1.0495 * log(TEMPK)) *
      +       SAL**0.5 - 0.01615 * SAL
-      
+
       KW  = exp (LNKW)
-     
+
       IF (SAL .LT. 5.0e0) THEN
 ! Dissociation constant of carbonic acid. Roy et al (1993). Total pH scale. [mol/kg H2O] (Molality)
 ! Roy et al (1993). Salinities below 5 (freshwater). Total pH scale.
@@ -274,16 +278,16 @@
          LNK2 = LNK2 + log(1.0E0-SAL*0.001005)
 
          K2 = exp (LNK2)
-      
+
       ELSE
 
 ! Roy et al (1993). Salinities 5-45 (seawater). Total pH scale.
          LNK1 = 2.83655 - 2307.1266/TEMPK - 1.5529413 * log(TEMPK) +
-     +         (-0.20760841 - 4.0484/TEMPK) * SAL**0.5 + 0.08468345 * SAL - 
+     +         (-0.20760841 - 4.0484/TEMPK) * SAL**0.5 + 0.08468345 * SAL -
      +          0.00654208 * SAL**1.5
-      
+
          LNK1 = LNK1 + log(1.0E0-SAL*0.001005)
-      
+
          K1  = exp (LNK1)
 
 ! Roy et al (1993). Salinities 5-45 (seawater). Total pH scale.
@@ -300,26 +304,26 @@
 ! Dissociation constant of boric acid. Dickson (1990). [mol/kg solution]
 ! Dickson (1990). Salinities 5-45 (seawater). Total pH scale.
       LNKB = (-8966.90 - 2890.53 * SAL**0.5 - 77.942 * SAL +
-     +         1.728 * SAL**1.5 - 0.0996 * SAL**2)/TEMPK + (148.0248 + 
-     +         137.1942 * SAL**0.5 + 1.62142 * SAL) + (-24.4344 - 
-     +         25.085 * SAL**0.5 - 0.2474 * SAL) * log(TEMPK) + 
+     +         1.728 * SAL**1.5 - 0.0996 * SAL**2)/TEMPK + (148.0248 +
+     +         137.1942 * SAL**0.5 + 1.62142 * SAL) + (-24.4344 -
+     +         25.085 * SAL**0.5 - 0.2474 * SAL) * log(TEMPK) +
      +         0.053105 * SAL**0.5 * TEMPK
-     
+
       KB = exp (LNKB)
 
 ! Solubility constants of calcium carbonate.  Mucci (1983), Millero (1995). [mol^2/kg^2 solution]
 ! Solubility constant of calcite
-      LOGCAL = -171.9065 - 0.077993 * TEMPK + 2839.319/TEMPK + 
-     +          71.595 * log10(TEMPK) + (-0.77712 + 0.0028426 * TEMPK + 
-     +          178.34/TEMPK) * SAL**0.5 - 0.07711 * SAL + 0.0041249 * 
+      LOGCAL = -171.9065 - 0.077993 * TEMPK + 2839.319/TEMPK +
+     +          71.595 * log10(TEMPK) + (-0.77712 + 0.0028426 * TEMPK +
+     +          178.34/TEMPK) * SAL**0.5 - 0.07711 * SAL + 0.0041249 *
      +          SAL**1.5
-     
+
       Kcal = 10**LOGCAL
-     
+
 ! Solubility constant of aragonite
-      LOGARG = -171.945 - 0.077993 * TEMPK + 2903.293/TEMPK + 
-     +          71.595 * log10(TEMPK) + (-0.068393 + 0.0017276 * 
-     +          TEMPK + 88.135/TEMPK) * SAL**0.5 -0.10018 * SAL + 
+      LOGARG = -171.945 - 0.077993 * TEMPK + 2903.293/TEMPK +
+     +          71.595 * log10(TEMPK) + (-0.068393 + 0.0017276 *
+     +          TEMPK + 88.135/TEMPK) * SAL**0.5 -0.10018 * SAL +
      +          0.0059415 * SAL**1.5
 
       Karg = 10**LOGARG
@@ -328,7 +332,7 @@
       LNK0 = -60.2409 + 93.4517 / (TEMPK/100.0) + 23.3585 *
      +        log(TEMPK/100.0) + SAL * (0.023517 - 0.023656 * (TEMPK/100.0) +
      +        0.00447036 * (TEMPK/100.0)**2)
-      
+
       K0 = exp (LNK0)
 
 ! ******************************
@@ -345,7 +349,7 @@
 
 ! Total borate. Millero (1982), Millero (1985) [mmol/kg solution]
       BT = MTOMM * 0.000416 * (SAL/35.0)
-      
+
 ! Calcium concentration. Millero (1982) [mmol/kg solution]
       Ca = MTOMM * 0.01028 * (SAL/35.0)
 
@@ -364,52 +368,52 @@
 ! If still not succesfull use the robust solver
               AHPLUS = SNGL(SOLVE_ACBW_GENERAL(DBLE(ALK), DBLE(TICM), DBLE(BT)))
           ENDIF
-      ENDIF    
+      ENDIF
       PH = -LOG10(AHPLUS)
       PH = MAX(PH_MIN,PH)
       PH = MIN(PH_MAX,PH)
       AHPLUS = 10.**(-PH)
 
-      
+
 ! ---- SPECCARB ----
 ! ---- Calculation of CO2 ----
       CO2  = ((TICM * MMTOM * AHPLUS**2)/(AHPLUS**2 + K1 * AHPLUS + K1 * K2))
      +      * MCO2 * RHOH2O * M3TOL
- 
+
 ! ---- Calculation of pCO2 ----
 ! CO2 conversion from gCO2/m3 to molCO2/kg
       MOLKGCO2 = CO2/(MCO2 * RHOH2O * M3TOL)
 
-! Calculation of fugacity of CO2. Dickson (2007). [µatm]
+! Calculation of fugacity of CO2. Dickson (2007). [Âµ atm]
       FCO2 = (MOLKGCO2/K0) * ATMTOMICROATM
-      
+
 ! Calculation of virial coefficient of pure CO2. Weiss (1974). [m3/mol]
-      BV = (-1636.75 + 12.0408 * TEMPK - 0.0327957 * TEMPK**2 + 3.16528 * 1.0E-5 * TEMPK**3) 
+      BV = (-1636.75 + 12.0408 * TEMPK - 0.0327957 * TEMPK**2 + 3.16528 * 1.0E-5 * TEMPK**3)
      +      * CM3TOM3
- 
+
 ! Calculation of virial coefficient of CO2 in air. Weiss (1974). [m3/mol]
       DELTA = (57.7 - 0.118 * TEMPK) * CM3TOM3
 
-! Calculation of pCO2 in water. Dickson 2007. [µatm]
+! Calculation of pCO2 in water. Dickson 2007. [Âµatm]
       pCO2water = FCO2/(EXP(ATMTOPA * (BV + 2.0 * (DELTA))/(R * TEMPK)))
- 
+
 ! ---- Calculation of HCO3 ----
       HCO3 = ((TICM * MMTOM * K1 * AHPLUS)/(AHPLUS**2 + K1 * AHPLUS + K1 * K2))
      +      * MC * RHOH2O * M3TOL
-      
-! ---- Calculation of CO3 ---- 
+
+! ---- Calculation of CO3 ----
       CO3  = ((TICM * MMTOM * K1 * K2)/(AHPLUS**2 + K1 * AHPLUS + K1 * K2))
      +      * MC * RHOH2O * M3TOL
-      
+
 ! ---- SPECBOR ----
-! ---- Calculation of BOH4 ----      
+! ---- Calculation of BOH4 ----
       BOH4 = (BT * MMTOM * KB/(AHPLUS + KB))
      +      * MB * RHOH2O * M3TOL
 
 ! ---- Saturation state of calcium carbonate ----
 ! ---- Calculation of saturation state of calcite ----
       Satcal = (Ca * MMTOM * CO3 /Kcal) / M3TOL / MC / RHOH2O
-      
+
 ! ---- Calculation of saturation state of aragonite ----
       Satarg = (Ca * MMTOM * CO3 /Karg) / M3TOL / MC / RHOH2O
 
@@ -449,3 +453,5 @@
 !
       RETURN
       END
+
+      end module m_phcarb

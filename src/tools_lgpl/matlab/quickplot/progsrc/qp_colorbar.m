@@ -107,6 +107,7 @@ df0 = (t0(2) - t0(1))/lengthcmap;
 tm = mean(t0);
 df = max(df0, tm * 1e-11);
 t = mean(t0) + [-1 1]*(lengthcmap-1)*df/2;
+cblim = t;%[0 100];
 manualTicks = df>df0;
 
 %
@@ -172,10 +173,16 @@ if loc(1)=='v' % Append vertical scale to right of current plot
 
    % Create color stripe
    n = size(get(GCF,'colormap'),1);
-   image([0 1],t,(1:n)','Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
-   set(ax,'Ydir','normal')
-   set(ax,'YAxisLocation','right')
-   set(ax,'xtick',[])
+   I = findobj(ax,'type','image');
+   if ~isempty(I)
+       set(I,'YData',cblim)
+       set(ax,'YLim',cblim)
+   else
+       image([0 1],cblim,(1:n)','Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
+       set(ax,'Ydir','normal')
+       set(ax,'YAxisLocation','right')
+       set(ax,'xtick',[])
+   end
    X = 'Y';
 
    % set up axes deletefcn
@@ -211,9 +218,15 @@ elseif loc(1)=='h' % Append horizontal scale to top of current plot
 
    % Create color stripe
    n = size(get(GCF,'colormap'),1);
-   image(t,[0 1],(1:n),'Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
-   set(ax,'Ydir','normal')
-   set(ax,'ytick',[])
+   I = findobj(ax,'type','image');
+   if ~isempty(I)
+       set(I,'XData',cblim)
+       set(ax,'XLim',cblim)
+   else
+       image(cblim,[0 1],(1:n),'Parent',ax,'Tag','TMW_COLORBAR','deletefcn','qp_colorbar delete');
+       set(ax,'Ydir','normal')
+       set(ax,'ytick',[])
+   end
    X = 'X';
 
    % set up axes deletefcn
@@ -235,6 +248,8 @@ if manualTicks
         end
     end
     set(ax,[X 'tick'],t,[X 'ticklabel'],tstr)
+else
+    set(ax,[X 'tickmode'],'auto',[X 'ticklabelmode'],'auto')
 end
 
 if ~isfield(ud,'DeleteProxy'), ud.DeleteProxy = []; end

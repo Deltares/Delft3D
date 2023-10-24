@@ -32,7 +32,7 @@ function out=vs_diff(VS1,VS2,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -302,6 +302,7 @@ for i=1:length(gNamesMatch)
                         end
                     end
                 else
+                    gSel{gInfo1.VarDim} = 1:gSizeDim;
                     eData1=vs_let(VS1,gNamesMatch{i},gSel,eNamesMatch{j},eSel{:},'quiet','nowarn');
                     eData2=vs_let(VS2,gNamesMatch{i},gSel,eNamesMatch{j},eSel{:},'quiet','nowarn');
                     LDiffFound=0;

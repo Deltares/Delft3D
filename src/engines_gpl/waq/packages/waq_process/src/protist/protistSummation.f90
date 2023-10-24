@@ -1,4 +1,10 @@
-   !!  Copyright (C)  Stichting Deltares, 2012-2022.
+module m_protistsummation
+
+implicit none
+
+contains
+
+   !!  Copyright (C)  Stichting Deltares, 2012-2023.
    !!
    !!  This program is free software: you can redistribute it and/or modify
    !!  it under the terms of the GNU General Public License version 3,
@@ -88,3 +94,5 @@
    deallocate(nrinputs, conversionfactor, ipnt)
 
    end subroutine phprot
+
+end module m_protistsummation

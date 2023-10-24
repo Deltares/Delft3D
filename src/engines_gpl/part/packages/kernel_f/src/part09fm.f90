@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,14 +22,17 @@
 !!  rights reserved.
 
 module part09fm_mod
+use m_stop_exit
+
 !
 contains
       subroutine part09fm ( lun2   , itime  , nodye  , nwaste , mwaste ,  &
                             xwaste , ywaste , iwtime , amassd , aconc  ,  &
                             npart  , mpart  , xpart  , ypart  , zpart  ,  &
-                            wpart  , iptime , nopart , radius , nrowswaste, &
+                            wpart  , laypart, hpart  , iptime , nopart ,  &
+                            radius , nrowswaste,                          &
                             xpolwaste       , ypolwaste       , ndprt  ,  &
-                            nosubs , layt   , tcktot , zmodel ,  &
+                            nosubs , layt   , tcktot , zmodel ,           &
                             laytop , laybot , nplay  , laywaste,nolay  ,  &
                             modtyp , zwaste , track  , nmdyer , substi ,  &
                             rhopart )
@@ -79,6 +82,8 @@ contains
       real     ( dp), intent(  out) :: ypart  (*)            !< y-in-cell of particles
       real     ( dp), intent(  out) :: zpart  (*)            !< z-in-cell of particles
       real     ( rp), intent(  out) :: wpart  (nosubs,*)     !< weight of the particles
+      integer  ( ip), intent(  out) :: laypart  (*)          !< layer in which the particles are found
+      real     ( dp), intent(  out) :: hpart  (*)            !< position within the layer for the particles
       integer  ( ip), intent(  out) :: iptime (*)            !< particle age
       integer  ( ip), intent(inout) :: nopart                !< number of active particles
       real     ( rp), intent(in   ) :: radius (nodye)        !< help var. radius (speed)
@@ -89,12 +94,12 @@ contains
       integer  ( ip), intent(in   ) :: lun2                  !< output report unit number
       real     ( rp), intent(in   ) :: tcktot (layt)         !< thickness hydrod.layer
       logical       , intent(in   ) :: zmodel
-      integer  ( ip), intent(in   ) :: laytop(:,:)            !< highest active layer in z-layer model
-      integer  ( ip), intent(in   ) :: laybot(:,:)            !< highest active layer in z-layer model
+      integer  ( ip), intent(in   ) :: laytop(:,:)           !< highest active layer in z-layer model
+      integer  ( ip), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( ip)                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( ip), intent(inout) :: laywaste (nodye)      !< layer for the dye points
       integer  ( ip), intent(in   ) :: nolay                 !< number of comp. layer
-      real     ( rp), intent(inout) :: track  (8,*)          !< track array for all particles
+      real     ( rp), intent(inout) :: track  (10,*)         !< track array for all particles
       character( 20), intent(in   ) :: nmdyer (nodye)        !< names of the dye loads
       character( 20), intent(in   ) :: substi (nosubs)       !< names of the substances
       real     ( rp), intent(inout) :: rhopart  (nosubs,*)   !< density of the particles
@@ -108,7 +113,6 @@ contains
       integer(ip) :: iwt               ! help variable wasteload time
       integer(ip) :: ilay  , isub      ! loop variables layers and substances
       integer(ip) :: nwasth, mwasth    ! help variables for n and m of wastelocation
-      integer(ip) :: laypart           !< initial layer for the particles
       real   (rp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
       real   (rp) :: zwasth            ! help variables for z within the layer
       real   (rp) :: radiuh            ! help variable for the radius
@@ -152,7 +156,6 @@ contains
          ywasth = ywaste(id)
          zwasth = zwaste(id)
          radiuh = radius(id)
-         laypart = laywaste(id)
 !     distribution in a circle ?
 
          lcircl = .false.
@@ -184,13 +187,14 @@ contains
 
          nulay = 1
          ipart = 0
-         do i = 1, ndprt(id)
-            npart(nopart+i)   = 1
+         do i = nopart+1, nopart+ndprt(id)
+            npart(i)   = 1
 !            laypart(nopart+i) = 1 !2D for the moment!
-            xpart(nopart+i)   = xwasth
-            ypart(nopart+i)   = ywasth
-            zpart(nopart+i)   = zwasth
-            mpart(nopart+i)   = mwasth
+            xpart(i)   = xwasth
+            ypart(i)   = ywasth
+            zpart(i)   = zwasth
+            mpart(i)   = mwasth
+            laypart(i) = laywaste(id)
 !            radiuh            = 0.0
 
             if (radiuh.ne.-999.0) then
@@ -199,13 +203,12 @@ contains
                dpangle    = 2.0D0 * pi * rnd(rseed)
 !               xpart(nopart+i) = xwasth + radiuh * sin(angle)
 !               ypart(nopart+i) = ywasth + radiuh * cos(angle)
-! this is the code to deal with sferical models (if needed) te get the distances correct
-               dradius = sqrt(rnd(rseed)) * radius(id) !noteradius is in m. 
+! this is the code to deal with spherical models (if needed) to get the distances correct
+               dradius = sqrt(rnd(rseed)) * radius(id) !noteradius is in m.
                dxp = cos(dpangle) * dradius
                dyp = sin(dpangle) * dradius
-               xpart(nopart+i) = xwasth + dxp !radius(iload)/2. * rnd(rseed)
-               ypart(nopart+i) = ywasth + dyp !radius(iload)/2. * rnd(rseed)
-              ! trpart(ipart) = iwtime(iload)
+               xpart(i) = xwasth + dxp !radius(iload)/2. * rnd(rseed)
+               ypart(i) = ywasth + dyp !radius(iload)/2. * rnd(rseed)
                if (jsferic == 1) then
                   dradius = atan2(dradius,earth_radius)*raddeg_hp !in degrees
                   dxp = cos(dpangle) * dradius ! distance in degrees
@@ -214,83 +217,79 @@ contains
                   call Cart3Dtospher(dble(xwasth),dble(ywasth),dble(zwasth),xx,yy,ptref)
                   xx = xx + dxp
                   yy = yy + dyp
-                  call sphertocart3D(xx,yy,xpart(nopart+i),ypart(nopart+i),zpart(nopart+i))
+                  call sphertocart3D(xx,yy,xpart(i),ypart(i),zpart(i))
                endif
             else
                radiuh = 0
-!              spread the particles over a polygon
-!               !call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(id), &
-!               !                 xpolwaste(1:nrowswaste(id), id), ypolwaste(1:nrowswaste(id), id), &
-!               !                 xpart(i), ypart(i), npart(i), mpart(i))
             end if
 !
          enddo
 
-         !call calculate_position_in_grid(ndprt(id), xadd, yadd, nopart, xpart, ypart, zpart, mpart)
 
 !        correct the position for particules that ended up in a dry cell or outside the grid
 
-         !call correct_position( ndprt(i), xpart(nopart+1:), ypart(nopart+1:), npart(nopart+1:)
-
 !     distribute the particles for this waste over the vertical
 
-         do i = 1,ndprt(id)
-            !do
-            !   ipart = ipart + 1
-            !   if ( ipart .gt. nplay(nulay) ) then
-            !      ipart = 0
-            !      nulay = nulay + 1
-            !      if ( nulay .gt. nolay ) then
-            !         nulay = nolay
-            !         exit
-            !      endif
-            !endif
-            !if ( nulay .gt. nolay ) then
-            !   write (*,*) ' Nulay > nolay in part09 '
-            !   write( lun2,*) ' Nulay > nolay in part09 '
-            !   call stop_exit(1)
-            !endif
-            !if (zmodel) then
-            !   laypart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
-            !else
-            !   laypart(i) = nulay
-            !endif
-         
-            !laypart(nopart + i) = nulay
-!    for one layer models (2dh), the release will be in the user-defined location
-            if (jsferic .ne. 1) then ! in a sferic model, the zwaste is needed for conversion of sferic to cartesian, so setting the zpart cannot .
-               if ( modtyp .eq. model_oil .and. laywaste(id) .eq. 1 ) then
-                  zpart(nopart+i) = zwasth
-               elseif ( nolay .eq. 1 ) then
-                  zpart(nopart+i) = zwasth/100.0
+         do i = nopart+1,nopart+ndprt(id)
+            do
+               ipart = ipart + 1
+               if ( ipart .gt. nplay(nulay) ) then
+                  ipart = 0
+                  nulay = nulay + 1
+                  if ( nulay .gt. nolay ) then
+                     nulay = nolay
+                     exit
+                  endif
                else
-        
+                  exit
+               endif
+            enddo
+            if ( nulay .gt. nolay ) then
+               write (*,*) ' Nulay > nolay in part09 '
+               write( lun2,*) ' Nulay > nolay in part09 '
+               call stop_exit(1)
+            endif
+
+            if (zmodel) then
+               laypart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
+            else
+               laypart(i) = nulay
+            endif
+
+!    for one layer models (2dh), the release will be in the user-defined location
+            if ( modtyp .eq. model_oil .and. laypart(i) .eq. 1 ) then
+               hpart(i) = zwasth
+            elseif ( nolay .eq. 1 ) then
+               hpart(i) = zwasth/100.0
+            else
+
 !        for 3d models, the release will be distributed uniformly over the layer depth
 !                                       This always gives zero due to integer division !
 !                                       In part14 a random number generator is used ! (LP 2011)
-        
-                  !zpart(nopart+i) = (ipart-0.5)/nplay(nulay)
-               endif
+
+               hpart(i) = (ipart-0.5)/nplay(nulay)
             endif
-            
+
             do isub = 1, nosubs
-               wpart( isub, nopart+i ) = aconc( id, isub )
+               wpart( isub, i ) = aconc( id, isub )
                if (modtyp .eq. model_prob_dens_settling) then
-                  rhopart(isub, nopart+i) = pldensity(isub)
+                  rhopart(isub, i) = pldensity(isub)
                endif
             enddo
-            iptime(nopart+i) = 0
+            iptime(i) = 0
 
 !     store information required for Nefis files ofparticle tracks
 
-            track(1,nopart+i) = mpart(nopart+i)
-            track(2,nopart+i) = npart(nopart+i)
-            track(3,nopart+i) = laywaste(id)
-            track(4,nopart+i) = xpart(nopart+i)
-            track(5,nopart+i) = ypart(nopart+i)
-            track(6,nopart+i) = zpart(nopart+i)
-            track(7,nopart+i) = itime
-            track(8,nopart+i) = id
+            track(1,i) = mpart(i)
+            track(2,i) = npart(i)
+            track(3,i) = laywaste(id)
+            track(4,i) = xpart(i)
+            track(5,i) = ypart(i)
+            track(6,i) = zpart(i)
+            track(7,i) = laypart(i)
+            track(8,i) = hpart(i)
+            track(9,i) = itime
+            track(10,i) = id
 
 !     end of loop across the particles of this release
 

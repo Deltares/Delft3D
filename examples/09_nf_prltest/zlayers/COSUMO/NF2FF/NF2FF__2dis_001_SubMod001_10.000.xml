@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+  <fileVersion>0.3</fileVersion>
+  <!--'discharge' or 'velocity'-->
+  <discharge>
+    <Qsource>100.0</Qsource>
+    <!-- Constituents in fixed order: Temperature, Salinity, Sediments, Tracers
+         Operator: "absolute" values or "excess" (dT,dS,d..) -->
+    <constituentsOperator>excess</constituentsOperator>
+    <constituents>10.0 0.0 0.0</constituents>
+  </discharge>
+  <velocity>
+    <!-- Not implemented yet -->
+    <!-- This velocity block is added here as an example
+         COSUMO should produce a file that ONLY contains a discharge block OR a velocity block -->
+  </velocity>
+  <NFResult>
+    <!--Sinks will use dS/dTr(ajectory) to determine entrainment sinks. If dS/dTr=0 no (additional) entrainment will take place.-->
+    <sinks>
+   250.000	   350.087	     9.700	     1.000	     0.000	     0.000
+   281.250	   350.048	     9.700	     1.600	     0.250	     0.380
+   312.500	   350.008	     9.700	     1.900	     0.500	     0.750
+   343.750	   350.958	     9.700	     2.100	     0.750	     1.120
+   375.000	   350.919	     9.700	     2.300	     1.000	     1.500
+   406.250	   350.869	     9.700	     2.400	     1.250	     1.880
+   437.500	   350.830	     9.570	     2.600	     1.500	     2.250
+   468.750	   350.790	     9.220	     2.700	     1.750	     2.620
+   500.000	   350.741	     8.860	     2.800	     2.000	     3.000
+   531.250	   350.701	     8.510	     2.900	     2.250	     3.380
+   562.500	   350.662	     8.150	     3.000	     2.500	     3.750
+   593.750	   350.612	     7.800	     3.100	     2.750	     4.120
+   625.000	   350.573	     7.440	     3.200	     3.000	     4.500
+   656.250	   350.533	     7.090	     3.300	     3.250	     4.880
+   687.500	   350.483	     6.730	     3.400	     3.500	     5.250
+   718.750	   350.444	     6.370	     3.500	     3.750	     5.620
+   750.000	   350.394	     6.020	     3.600	     4.000	     6.000
+   781.250	   350.355	     5.660	     3.600	     4.250	     6.380
+   812.500	   350.315	     5.310	     3.700	     4.500	     6.750
+   843.750	   350.266	     4.950	     3.800	     4.750	     7.130
+   875.000	   350.226	     4.600	     3.900	     5.000	     7.500
+   906.250	   350.187	     4.240	     3.900	     5.250	     7.880
+   937.500	   350.137	     3.890	     4.000	     5.500	     8.250
+   968.750	   350.097	     3.530	     4.100	     5.750	     8.620
+  1000.000	   350.058	     3.180	     4.100	     6.000	     9.000
+  1031.250	   350.008	     2.820	     4.200	     6.250	     9.380
+  1062.500	   350.969	     2.470	     4.300	     6.500	     9.750
+  1093.750	   350.919	     2.120	     4.300	     6.750	    10.120
+  1125.000	   350.880	     1.760	     4.400	     7.000	    10.500
+  1156.250	   350.840	     1.410	     4.400	     7.250	    10.880
+  1187.500	   350.791	     1.050	     4.500	     7.500	    11.250
+  1218.750	   350.751	     0.950	     4.600	     7.500	    11.620
+  1250.000	   350.711	     0.840	     4.600	     7.500	    12.000
+  1281.250	   350.662	     0.740	     4.700	     7.500	    12.380
+  1312.500	   350.622	     0.630	     4.700	     7.500	    12.750
+  1343.750	   350.583	     0.530	     4.800	     7.500	    13.130
+  1375.000	   350.533	     0.420	     4.800	     7.500	    13.500
+  1406.250	   350.494	     0.320	     4.900	     7.500	    13.880
+  1437.500	   350.444	     0.210	     4.900	     7.500	    14.250
+  1468.750	   350.405	     0.110	     5.000	     7.500	    14.630
+	</sinks>
+    <!--The Q0/U0 + entrainment from sinks (if dS/dTr~=0) will be distributed over the sources (if the number of source lines >1). If the sources table contains 8 columns instead of 6 (X Y Z S BV BH), the last two columns are the velocity magnitude (in m/s) and direction (flowing TO in nautical degrees North) of the source to implement momoentum. If absent, no momentum will be added to the discharge.-->
+    <sources>
+  1500.000	   350.365	    -0.000	     5.000	     7.500	    15.000
+    </sources>
+  </NFResult>
+</NF2FF>

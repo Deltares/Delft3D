@@ -25,6 +25,10 @@ if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
 endif()
 
+if(NOT TARGET gridgeom_dll)
+    add_subdirectory(${checkout_src_root}/${gridgeom_dll_module} gridgeom_dll)
+endif()
+
 # Third party libraries
 # kdtree2
 if(NOT TARGET kdtree2)
@@ -42,18 +46,23 @@ if(NOT TARGET mormerge)
 endif()
 
 # dfmoutput
-if(NOT TARGET dfmoutput)
+if(NOT (TARGET dfmoutput OR NO_FM_TOOLS))
     add_subdirectory(${checkout_src_root}/${dfmoutput_module} dfmoutput)
 endif()
 
 # dfm_volume_tool
-if(NOT TARGET dfm_volume_tool)
+if(NOT (TARGET dfm_volume_tool OR NO_FM_TOOLS))
     add_subdirectory(${checkout_src_root}/${dfm_volume_tool_module} dfm_volume_tool)
 endif()
 
 # dfm_api_access
-if(NOT TARGET dfm_api_access)
+if(NOT (TARGET dfm_api_access OR NO_FM_TOOLS))
     add_subdirectory(${checkout_src_root}/${dfm_api_access_module} dfm_api_access)
+endif()
+
+# cosumo_bmi
+if(NOT TARGET cosumo_bmi)
+    add_subdirectory(${checkout_src_root}/${cosumo_bmi_module} cosumo_bmi)
 endif()
 
 # Third party
@@ -86,6 +95,10 @@ endif(WIN32)
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
+endif()
+
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
 endif()
 
 # Nefis

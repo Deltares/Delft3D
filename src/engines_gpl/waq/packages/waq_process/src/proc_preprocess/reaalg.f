@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_reaalg
+
+      implicit none
+
+      contains
+
 
       subroutine reaalg ( lunrep , lunblm , verspe , maxtyp , maxcof , 
      +                    notyp  , nocof  , noutgrp, nouttyp, alggrp ,
@@ -29,6 +35,7 @@
 !
 !     Read the BLOOM-species database.
 !
+      use m_srstop
       use timers       !   performance timers
 
       implicit none
@@ -169,3 +176,5 @@
  3011 format(' Error reading BLOOM database, processes per type')
 !
       end
+
+      end module m_reaalg

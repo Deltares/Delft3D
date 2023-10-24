@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_prprop
+
+      implicit none
+
+      contains
+
 
       subroutine prprop ( lunrep, laswi, config, no_act, actlst, allitems, procesdef,
      +                    noinfo, nowarn, old_items, ierror  )
@@ -33,6 +39,8 @@
 
 !     Modified  : Aug   2012 by Jan van Beek : licence check configurations moved from rd_tabs
 
+      use m_zoek
+      use m_srstop
       use timers         !< performance timers
       use processet      !< use processet definitions
       implicit none
@@ -440,3 +448,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_prprop

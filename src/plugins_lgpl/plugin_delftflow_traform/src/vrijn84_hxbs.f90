@@ -6,7 +6,7 @@ subroutine vrijn84_hxbs(dll_integers, max_integers, &
                   error_message_c  )
 !DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VRIJN84_HXBS' :: VRIJN84_HXBS
 !!--copyright-------------------------------------------------------------------
-! Copyright (c) 2005-2021, WL | Delft Hydraulics. All rights reserved.
+! Copyright (c) 2005-2023, WL | Delft Hydraulics. All rights reserved.
 !!--disclaimer------------------------------------------------------------------
 ! This code is part of the Delft3D software system. WL|Delft Hydraulics has
 ! developed c.q. manufactured this code to its best ability and according to the
@@ -60,6 +60,21 @@ character(kind=c_char)                     , intent(out) :: error_message_c(*) !
 logical                                    , intent(out) :: equi_conc     ! equilibrium concentration near bedlevel
 logical                                    , intent(out) :: sbc_total     ! Sediment bedlevel concentration  (scalar)
 !
+! Local variables for error message
+!
+character(len=256) :: error_message
+!
+call core_function() ! Core function call 
+!
+call message2c(error_message, error_message_c)
+
+contains
+    
+!
+! Core function definition 
+!
+subroutine core_function()
+!
 ! Local variables
 !
 integer            :: kode
@@ -106,8 +121,6 @@ logical, save      :: firsttime = .true.
 logical, save      :: original = .true.
 integer, save      :: ihidexp = 1
 real(hp), save     :: rhidexp = 1.0
-character(len=256) :: error_message
-
 !
 ! Local variables
 !
@@ -241,9 +254,6 @@ equi_conc     = .false.
 				d50tot = hidexp**(1.0/rhidexp)*d50
 			case default
 				error_message = 'D50 of complete mixture on the basis of hiding-exposure not possible'
-                do i=1,256
-                   error_message_c(i) = error_message(i:i)
-                enddo
                 return 
 		end select
 
@@ -348,8 +358,6 @@ sswu    = 0.0_hp
 sswv    = 0.0_hp
 t_relax = 0.0_hp
 
-do i=1,256
-   error_message_c(i) = error_message(i:i)
-enddo
+end subroutine core_function
 
 end subroutine vrijn84_hxbs

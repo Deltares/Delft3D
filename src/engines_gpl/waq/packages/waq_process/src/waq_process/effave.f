@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_effave
+      use m_get_effi
+
+
+      implicit none
+
+      contains
+
 
       subroutine effave ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -69,7 +77,6 @@
       do iseg = 1 , noseg
 
          do igro = 1, nspe
-!            if (btest(iknmrk(iseg),0)) then
                efftalg = pmsa(ip(2+igro))
                limralg = pmsa(ip(32+igro))
                if (istep .eq. 0) then
@@ -81,11 +88,6 @@
                   ! Add contribution of present time step to tracer
                   fl(iflux + igro) = ((1.0/(rstep + 1.0) * limralg) + (rstep/(rstep + 1.0) - 1.0) * efftalg) / delt
                endif
- !           else
- !             pmsa(ip(62+igro)) = efftalg
- !             fleffi = 0.0
- !           endif
-!
          end do
          ip  = ip  + increm
          iflux = iflux + noflux
@@ -97,3 +99,5 @@
       return
 !
       end
+
+      end module m_effave

@@ -1,0 +1,104 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+integer, parameter :: mxprt = 50   !  Max. number of print timesteps
+!
+type gd_inttim
+    !
+    ! doubles
+    real(hp) :: dtimmin               = 0.0_hp  ! idem, double precision for ec-module
+ 
+    real(fp) :: t0wnd                 = 0.0_fp
+    real(fp) :: t1wnd                 = 0.0_fp
+    real(fp) :: timsec                = 0.0_fp  ! simulation time in seconds, since julday. current date/time = julday + timsec
+    real(fp) :: timmin                = 0.0_fp  ! simulation time in minutes, since julday
+    real(fp) :: timnow                = 0.0_fp  ! Current timestep (multiples of dt)  = number of time steps since itdate, 00:00:00 hours
+    real(fp) :: timhr                 = 0.0_fp  ! simulation time in hours, since julday
+    real(fp) :: time_nodal_update_bnd = 0.0_fp  ! time of last update nodel factors for boundaries
+    real(fp) :: time_nodal_update_tgf = 0.0_fp  ! time of last update nodel factors for tidal forces
+    real(fp) :: ti_nodal                        ! interval in hours of update nodel factors
+    !
+    ! reals
+    !
+    ! integers
+    !
+    integer               :: itinit = 0        !  Initial time to start simulation (N * dt)
+    integer               :: itstrt = 0        !  Time to start simulation (N * dt)
+    integer               :: itstop = 0        !  OpenDA  : itstop = itstrt + 1 (halt computation, ready to continue)
+                                               !  else : itstop = itfinish
+                                               !  Note : before OpenDA introduction, itstop was used as itfinish
+    integer               :: itfinish = 0      !  Time to stop simulation (N * DT)
+                                               !  Note : introduced with OpenDA to replace itstop
+    integer               :: it0tem = 0        !  Previous time (multiple of dt) of the time-dependent data read from LUNTEM/LUNWND
+    integer               :: it1tem = 0        !  Next     time (multiple of dt) of the time-dependent data read from LUNTEM
+    integer               :: it0eva = 0        !  Previous time (multiple of dt) of the time-dependent data read from LUNTEM
+    integer               :: it1eva = 0        !  Next     time (multiple of dt) of the time-dependent data read from LUNTEM
+    integer               :: itcval = 0
+    integer               :: itlfsm = 0        !  Timespan for smoothing (N * DT)
+    integer               :: itmapf = 0        !  First time to write map file (expressed in multiples of DT)
+    integer               :: itmapi = 0        !  Interval   to write map file (expressed in multiples of DT)
+    integer               :: itmapl = 0        !  Last time  to write map file (expressed in multiples of DT)
+    integer               :: ithisf = 0        !  First time to write history file (expressed in multiples of DT)
+    integer               :: ithisi = 0        !  Interval   to write history file (expressed in multiples of DT)
+    integer               :: ithisl = 0        !  Last time  to write history file (expressed in multiples of DT)
+    integer               :: itcomf = 0        !  First time to write communication file (expressed in multiples of DT)
+    integer               :: itcomi = 0        !  Interval   to write communication file (expressed in multiples of DT)
+    integer               :: itcoml = 0        !  Last time  to write communication file (expressed in multiples of DT)
+    integer               :: itnflf = 0        !  First time to write near field files
+    integer               :: itnfli = 0        !  Interval   to write near field files
+    integer               :: itnfll = 0        !  Last time  to write near field files
+    integer               :: itnflrf = 0       !  First time to read near field files and perform near field computations
+    integer               :: itnflri = 0       !  Interval   to read near field files and perform near field computations
+    integer               :: itdrof = 0        !  First time to write drogue file (expressed in multiples of DT)
+    integer               :: itdroi = 0        !  Interval   to write drogue file (expressed in multiples of DT)
+    integer               :: itdrol = 0        !  Last time  to write drogue file (expressed in multiples of DT)
+    integer               :: itrsti = 0        !  Interval to write restart file (expressed in multiples of DT)
+    integer               :: iphisf = 0        !  First time to print history ASCII file (expressed in multiples of DT)
+    integer               :: iphisi = 0        !  Interval   to print history ASCII file (expressed in multiples of DT)
+    integer               :: iphisl = 0        !  Last time  to print histiry ASCII file (expressed in multiples of DT)
+    integer               :: ipmap(mxprt) = 0  !  Print times for map data (expressed in multiples of DT)
+    integer               :: itimtt = 0        !  Time step increment to update trachytope based roughness
+    integer               :: ittrtu = 0        !  Next time step to update trachytope based roughness
+    integer               :: itiwei = 0        !  Time step increment to activates the Internal Wave Energy calculation
+    integer               :: itdiag = 0        !  Time step to force computation into diagnostic mode. If no diagnostic mode specified then defined ITSTOP+1
+    integer               :: julday = 0        !  julian day number of reference date
+                                               !  simulation start time = julday + tstart
+    integer               :: ntstep = 0        !  Counts the number of timesteps performed
+    integer, dimension(6) :: i_date_time       ! integer representation of date_time
+    !
+    ! pointers
+    !
+    ! 
+    ! logicals
+    !
+    !
+    ! characters
+    !
+    character(24) :: date_time = ' '  ! current simulation date and time. Format: YYYY-MM-DD HH:MM:SS.FFFF
+end type gd_inttim

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dmpare
+
+      implicit none
+
+      contains
+
 
       subroutine dmpare ( lun     , ndmpar  , ntdmps  , noq     , noseg   ,
      &                    nobnd   , ipoint  , ntdmpq  , ndmpq   , ndmps   ,
@@ -166,6 +172,10 @@
             endif
          enddo
       enddo
+
+      if ( ierr > 0 ) then
+         goto 1000
+      endif
 
 !     allocate
 
@@ -405,3 +415,5 @@
      &          /' exchamge number :',I15 )
 
       end
+
+      end module m_dmpare

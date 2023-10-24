@@ -1,0 +1,175 @@
+    <testCases>
+        <!-- ======================================================================== -->
+	<testCase name="e105_f06_c071_generalstructure_door_closing_at_sill_3Dsigma" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c071_generalstructure_door_closing_at_sill_3Dsigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t2_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t2_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e105_f06_c074_generalstructure_door_closing_at_sill_3Dz" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c074_generalstructure_door_closing_at_sill_3Dz</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t2_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t2_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+   <testCase name="e105_f06_c077_generalstructure_door_closing_at_sill_3Dz_sigma" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c077_generalstructure_door_closing_at_sill_3Dz_sigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t2_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t2_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="e105_f06_c072__generalstructure_lowering_open_door_3Dsigma" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c072_generalstructure_lowering_open_door_3Dsigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t3_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t3_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="e105_f06_c075__generalstructure_lowering_open_door_3Dz" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c075_generalstructure_lowering_open_door_3Dz</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t3_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t3_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="e105_f06_c078__generalstructure_lowering_open_door_3Dz_sigma" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c078_generalstructure_lowering_open_door_3Dz_sigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t3_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t3_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	 <testCase name="e105_f06_c073_generalstructure_lowering_closed_door_3Dsigma" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c073_generalstructure_lowering_closed_door_3Dsigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t4_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t4_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	 <testCase name="e105_f06_c076_generalstructure_lowering_closed_door_3Dz" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c076_generalstructure_lowering_closed_door_3Dz</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t4_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t4_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	 <testCase name="e105_f06_c079_generalstructure_lowering_closed_door_3Dz_sigma" ref="dimr_trunk">
+      <path>e105_dflowfm-drtc/f06_3D_RTC/c079_generalstructure_lowering_closed_door_3Dz_sigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/t4_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0005" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/t4_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+<!-- ======================================================================== -->
+    </testCases>

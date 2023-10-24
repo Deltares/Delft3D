@@ -1,6 +1,6 @@
 # Set the directory of where the source code is located.
 set(src_path src)
-set(esfsm_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include) # Trace back to the esmfsm path
+set(esmfsm_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include) # Trace back to the esmfsm path
 set(include_path include)
 
 if (UNIX)
@@ -18,13 +18,13 @@ endif(UNIX)
 
 # Gather source files
 file(GLOB header_files ${include_path}/*.h)
-file(GLOB esm_global_header_files ${esfsm_include_path}/*.h)
+file(GLOB esm_global_header_files ${esmfsm_include_path}/*.h)
 file(GLOB esm_files ${src_path}/esm/*.cpp)
 file(GLOB fsm_files ${src_path}/fsm/*.cpp)
 
 # Define library
 include_directories(${include_path}
-                    ${esfsm_include_path}
+                    ${esmfsm_include_path}
                     ${pthreads_path})
 set(library_name esmfsm_c)
 add_library(${library_name} ${esm_files}

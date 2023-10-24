@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine settaubxu_nowave()
    use m_flowgeom
@@ -47,8 +47,8 @@
       if (hu(L)>epshu) then
          if (frcu(L)>0d0) then       ! input, or result from trachytopes
             call getcz(hu(L), frcu(L), ifrcutp(L), cz, L)
-            z0urou(L) = hu(L)*exp(-1d0 - vonkar*cz/sag)         ! getczz0
-            rz        = max(hu(Lb),epshu)/ee/z0urou(L)          ! cz/sag, jaustarint=1, compatible with getustbcfuhi
+            z0urou(L) = max(1d-200,hu(L)*exp(-1d0 - vonkar*cz/sag))  ! getczz0
+            rz        = max(hu(Lb),epshu)/ee/z0urou(L)               ! cz/sag, jaustarint=1, compatible with getustbcfuhi
             cz        = log(rz)/vonkar
             cwall     = 1d0/(cz**2)
             umod2     = u1(LB)*u1(LB) + v(Lb)*v(Lb)

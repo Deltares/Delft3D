@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_nitrif
+
+      implicit none
+
+      contains
+
 
       subroutine nitrif ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+
 !>\file
 !>       Nitrification of ammonium + decay of CBOD
 
@@ -144,8 +152,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF ( IKMRK1 .GT. 0) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 
       IVERSN = NINT ( PMSA( IP13) )
@@ -240,8 +247,8 @@
 !
 !           Calculate oxygen function
 !
-            IF ( (OOX - COX) .LT. 1E-20 )  CALL ERRSYS
-     &            ('OOX - COX in NITRIF zero', 1 )
+            IF ( (OOX - COX) .LT. 1E-20 )  CALL write_error_message
+     &            ('OOX - COX in NITRIF zero')
             IF ( OXY .GT. (OOX*POROS) ) THEN
                   O2FUNC = 1.0
             ELSEIF (OXY .LT. (COX*POROS) ) THEN
@@ -297,3 +304,5 @@
       RETURN
 !
       END
+
+      end module m_nitrif

@@ -14,7 +14,7 @@
 subroutine bilin5(xa, ya, x0, y0, w, ier)
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2022.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -38,8 +38,8 @@ subroutine bilin5(xa, ya, x0, y0, w, ier)
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 
 !!--pseudo code and references--------------------------------------------------

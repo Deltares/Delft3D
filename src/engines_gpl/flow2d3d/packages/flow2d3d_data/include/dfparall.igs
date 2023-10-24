@@ -1,0 +1,69 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type dfparalltype
+   !
+   integer                          :: mmaxgl      ! number of gridpoints of global computational grid in x-direction
+   integer                          :: nmaxgl      ! number of gridpoints of global computational grid in y-direction
+   !
+   integer                          :: nfg         ! first index of own subdomain w.r.t. global grid in y-direction
+   integer                          :: nlg         ! last index of own subdomain w.r.t. global grid in y-direction
+   integer                          :: mfg         ! first index of own subdomain w.r.t. global grid in x-direction
+   integer                          :: mlg         ! last index of own subdomain w.r.t. global grid in x-direction
+   !
+   integer, dimension(:,:), pointer :: iarrc       ! array containing collected grid indices
+   integer, dimension(:)  , pointer :: nf          ! first index w.r.t. global grid in y-direction
+   integer, dimension(:)  , pointer :: nl          ! last index w.r.t. global grid in y-direction
+   integer, dimension(:)  , pointer :: mf          ! first index w.r.t. global grid in x-direction
+   integer, dimension(:)  , pointer :: ml          ! last index w.r.t. global grid in x-direction
+   !
+   integer, dimension(:)  , pointer :: iblkad      ! administration array for subdomain interfaces
+                                                   ! contents:
+                                                   ! pos. 1                     number of neighbouring subdomains = m
+                                                   ! pos. 3*i-1                 number of i-th neighbour
+                                                   ! pos. 3*i                   position of i-th neighbour with respect to present subdomain
+                                                   ! pos. 3*i+1                 pointer of i-th neighbour in last part of this array
+                                                   ! pos. 3*m+2                 number of overlapping unknowns on subdomain interface
+                                                   ! pos. 3*m+3 ... 3*m+2+n     position of unknown in array to be sent to neighbour
+                                                   ! pos. 3*m+3+n ... 3*m+2*n+2 position of unknown in array to be received from neighbour
+   !
+   integer, dimension(:)  , pointer :: iweig       ! weights to determine load per part
+   !
+   integer                          :: ngridlo     ! local number of grid points
+   integer                          :: ngridgl     ! global number of grid points
+   integer                          :: nostatgl    ! global number of stations (i.e. original number excluding duplicate stations located in the halo regions)
+   integer                          :: nostatto    ! total number of stations (including "duplicate" stations located in halo regions)
+   integer                          :: ntruvgl     ! global number of transects (i.e. original number excluding duplicate stations located in the halo regions)
+   integer                          :: ntruvto     ! total number of transects (including "duplicate" stations located in halo regions)
+   !
+   integer, dimension(:)  , pointer :: order_tra   ! keeps track of original order of cross sections for output
+   integer, dimension(:)  , pointer :: order_sta   ! keeps track of original order of monitoring stations for output
+   integer, dimension(:,:), pointer :: mnit_global ! store the original, global mn indices of all cross sections
+                                                   ! Needed because when running parallel, mnit is adapted to the local (partition related) domain
+end type dfparalltype

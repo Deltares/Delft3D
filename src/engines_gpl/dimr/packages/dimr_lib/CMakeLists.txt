@@ -18,51 +18,44 @@ endif(UNIX)
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
-set(ini_version_file "${absolute_header_path}/version_number.ini")
 set(rc_version_file "${absolute_header_path}/dimr_lib_version.rc")
 set(header_version_file "${absolute_header_path}/dimr_lib_version.h")
-
-# Generate the version files
-generate_version_files(${rc_version_file} ${ini_version_file})
-generate_version_files(${header_version_file} ${ini_version_file})
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 # Gather source files
 file(GLOB source ${src_path}/*.cpp)
 file(GLOB headers ${header_path}/*.h)
 
 # Define library
-include_directories(${header_path})
+include_directories(${header_path}
+                    ${version_include_dir})
 set(library_name dimr_lib)
 add_library(${library_name} SHARED  ${source}
                                     ${headers}
-                                    ${ini_version_file}
                                     ${rc_version_file}
                                     ${header_version_file})
 
-# Define prebuild events
-prebuild_version_number(${library_name} ${rc_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file})
-prebuild_version_number(${library_name} ${header_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file})
-
-# Define dependencies
-set(oss_dependencies deltares_common_c) 
-oss_include_libraries(${library_name} oss_dependencies)
-
-# Common UNIX and WIN32 link library dependency
-target_link_libraries(${library_name} netcdf)
-
 if(UNIX)
+    set(oss_dependencies    deltares_common_c
+                            expat)
+    oss_include_libraries(${library_name} oss_dependencies)
+
     target_compile_definitions(${library_name} PRIVATE LINUX64)
 
-    target_link_libraries(${library_name} ${oss_dependencies})                      
+    target_include_directories(${library_name} 
+                               PRIVATE  
+                               ${header_path}
+                              "${expat_include_path}")
+
+    target_link_libraries(${library_name} ${oss_dependencies})
     target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})        
+    target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
 endif()
 
 if(WIN32)
+    set(oss_dependencies deltares_common_c) 
+    oss_include_libraries(${library_name} oss_dependencies)
+
     # Define output name
     set_target_properties(${library_name} 
                           PROPERTIES
@@ -76,7 +69,7 @@ if(WIN32)
     target_include_directories(${library_name} 
                                PRIVATE  
                                ${header_path}
-                               "${checkout_src_root}/third_party_open/expat/x64/include"
+                               "${expat_include_path}"
                                "${mpi_include_path}"
                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                "${checkout_src_root}/third_party_open/pthreads/include/x64")
@@ -85,11 +78,12 @@ if(WIN32)
     target_link_directories(${library_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/expat/x64/x64/"
+                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name}   ${oss_dependencies}
+                                            netcdf
                                             "${mpi_c_library}"
                                             "libexpat.lib"
                                             "pthreadVC2.lib"

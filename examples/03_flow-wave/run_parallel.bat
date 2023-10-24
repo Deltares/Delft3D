@@ -15,8 +15,8 @@
     rem build.bat all
     rem See README.md there for more information
 
-set build_configuration=build_all
-set script_path=..\..\src\bin\x64\dflow2d3d\scripts
+set build_configuration=build_delft3d4
+set script_path=..\..\%build_configuration%\x64\dflow2d3d\scripts
 call %script_path%\run_dflow2d3d_parallel_dwaves.bat 3 config_d_hydro.xml -w r17.mdw
 
 

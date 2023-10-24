@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    SUBROUTINE DRAWNU(KEY)
    use m_netw
@@ -109,7 +109,6 @@
     
       if (ndraw(2) == 6) then
          CALL TEKNET(NCOLDN,key) ! network on top
-         call tekpartmesh()
       end if
 
       if (ndraw(3) <= 4)  CALL TEKLAN(NCOLLN)
@@ -176,10 +175,6 @@
    IF (NDRAW(10) .EQ. 2) THEN
       CALL PLOT(NDRAW(10))
    ENDIF
-
-!   if ( japart.eq.1 ) then
-!      call tekpartmesh()
-!   end if
 
    RETURN
    END SUBROUTINE DRAWNU

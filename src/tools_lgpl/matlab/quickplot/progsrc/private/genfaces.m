@@ -3,7 +3,7 @@ function hNew=genfaces(hOld,Ops,Parent,Val,X,Y,Z)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -134,7 +134,7 @@ else
     % set face values of patches with undefined corners to NaN
     %
     for d = 1:size(xv,2)
-        coord = xv(:,d);
+        coord = xv(:,d)'; % force coord to be a row vector just in case there is just one face, i.e. fv is a row vector
         if ~isa(cv,'double')
             cv = double(cv);
         end

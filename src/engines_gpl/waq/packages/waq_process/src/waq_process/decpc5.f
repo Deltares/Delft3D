@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_decpc5
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DECPC5 ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
      +                    NOQ3   , NOQ4   )
+      use m_write_error_message
+      use m_evaluate_waq_attribute
+
 
 !
 !     Description of the module :
@@ -86,7 +95,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -168,7 +178,7 @@
 !
 !       In all active dry or wet segments
 !
-        CALL DHKMRK(3,IKNMRK(ISEG),IKMRK3)
+        CALL evaluate_waq_attribute(3,IKNMRK(ISEG),IKMRK3)
 
         IF (IKMRK3.EQ.1 .OR. IKMRK3.EQ.3) THEN
 !
@@ -205,20 +215,20 @@
 !
 !          Errors if certain vars =< 0
 !
-           IF (ANR .LT. 1E-30) CALL ERRSYS ('DECPC5: a_dNpr =< 0', 1 )
-           IF (APR .LT. 1E-30) CALL ERRSYS ('DECPC5: a_dPpr =< 0', 1 )
-           IF (ASR .LT. 1E-30) CALL ERRSYS ('DECPC5: a_dSpr =< 0', 1 )
-           IF (ALN .LT. 1E-30) CALL ERRSYS ('DECPC5: al_dNs =< 0', 1 )
-           IF (ALP .LT. 1E-30) CALL ERRSYS ('DECPC5: al_dPs =< 0', 1 )
-           IF (AUN .LT. 1E-30) CALL ERRSYS ('DECPC5: au_dNs =< 0', 1 )
-           IF (AUP .LT. 1E-30) CALL ERRSYS ('DECPC5: au_dPs =< 0', 1 )
+           IF (ANR .LT. 1E-30) CALL write_error_message ('DECPC5: a_dNpr =< 0')
+           IF (APR .LT. 1E-30) CALL write_error_message ('DECPC5: a_dPpr =< 0')
+           IF (ASR .LT. 1E-30) CALL write_error_message ('DECPC5: a_dSpr =< 0')
+           IF (ALN .LT. 1E-30) CALL write_error_message ('DECPC5: al_dNs =< 0')
+           IF (ALP .LT. 1E-30) CALL write_error_message ('DECPC5: al_dPs =< 0')
+           IF (AUN .LT. 1E-30) CALL write_error_message ('DECPC5: au_dNs =< 0')
+           IF (AUP .LT. 1E-30) CALL write_error_message ('DECPC5: au_dPs =< 0')
 !
 !          Errors if upper limits =< lower limits
 !
-           IF (AUN .LE. ALN) CALL ERRSYS ('DECPC5: au_dNs =< al_dNs ',1)
-           IF (AUP .LE. ALP) CALL ERRSYS ('DECPC5: au_dPs =< al_dPs ',1)
+           IF (AUN .LE. ALN) CALL write_error_message ('DECPC5: au_dNs =< al_dNs ')
+           IF (AUP .LE. ALP) CALL write_error_message ('DECPC5: au_dPs =< al_dPs ')
            IF (RC20UP .LT. RC20LO)
-     &     CALL ERRSYS ('DECPC5: ku_dSdec20 < kl_dSdec20 ',1)
+     &     CALL write_error_message ('DECPC5: ku_dSdec20 < kl_dSdec20 ')
 !
 !          If  detritus = 0 : set fluxes to zero and skip algorithm
 !
@@ -399,3 +409,5 @@
 
       RETURN
       END
+
+      end module m_decpc5

@@ -3,7 +3,7 @@ function [hNewVec,Error,FileInfo,PlotState]=qp_plot(PlotState,Ops)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -199,7 +199,7 @@ if ~strcmp(Parent,'loaddata')
         end
     end
     %
-    if isfield(Ops,'zlevel')
+    if isfield(Ops,'zlevel') && ~isequal(Ops.zlevel,'auto')
         Level = Ops.zlevel;
     else
         Level = -1;
@@ -346,12 +346,37 @@ if isfield(Ops,'plotcoordinate')
     % TODO: take into account the EdgeGeometry length ...
     switch Ops.plotcoordinate
         case {'path distance','reverse path distance'}
-            if isfield(data,'EdgeNodeConnect')
-                iNode = data.EdgeNodeConnect([1 size(data.EdgeNodeConnect,1)+(1:size(data.EdgeNodeConnect,1))]);
-                data.X = data.X(iNode);
-                data.Y = data.Y(iNode);
+            if isfield(data,'FaceNodeConnect') || isfield(data,'EdgeNodeConnect')
+                switch data.ValLocation
+                    case 'FACE'
+                        % here we should actually identify the point at
+                        % which we go from one face to the next. Such that
+                        % we get N data and N+1 coordinates.
+                        data.X = mean(data.X(data.FaceNodeConnect),2);
+                        data.Y = mean(data.Y(data.FaceNodeConnect),2);
+                    case 'EDGE'
+                        iNode = stitch_edges(data.EdgeNodeConnect);
+                        nodeMask = iNode==0;
+                        iNode(nodeMask) = 1;
+                        data.X = data.X(iNode);
+                        data.Y = data.Y(iNode);
+                        if any(nodeMask)
+                            data.X(nodeMask) = NaN;
+                            data.Y(nodeMask) = NaN;
+                            edgeMask = nodeMask(1:end-1) | nodeMask(2:end);
+                            data.Val(~edgeMask) = data.Val;
+                            data.Val(edgeMask) = NaN;
+                        end
+                    case 'NODE'
+                        % data.X/Y already contains the node coordinates
+                end
                 x = data.X;
                 y = data.Y;
+                for fld = {'FaceNodeConnect','EdgeNodeConnect','ValLocation'}
+                    if isfield(data,fld{1})
+                        data = rmfield(data,fld{1});
+                    end
+                end
             elseif isfield(data,'Y')
                 if size(data.X,2)==2 && size(data.X,1)>2
                     % The following lines are not valid for geographic coordinates!
@@ -414,6 +439,7 @@ if isfield(Ops,'plotcoordinate')
             data = rmfield(data,'YUnits');
         end
     end
+    data.Geom = 'sSEG';
 end
 
 if strcmp(Ops.presentationtype,'vector') || ...
@@ -430,7 +456,13 @@ if strcmp(Ops.presentationtype,'vector') || ...
         if isfield(data,'SEG')
             data(i).EdgeNodeConnect = data(i).SEG;
         end
-        if isfield(data,'XY')
+        if isfield(data,'XYZ')
+            data(i).X = data(i).XYZ(:,:,:,1);
+            data(i).Y = data(i).XYZ(:,:,:,2);
+            if size(data(i).XYZ,4)>2
+                data(i).Z = data(i).XYZ(:,:,:,3);
+            end
+        elseif isfield(data,'XY')
             if iscell(data(i).XY)
                 data(i).X = NaN(size(data(i).XY));
                 data(i).Y = data(i).X;
@@ -487,7 +519,7 @@ if strcmp(Ops.presentationtype,'vector') || ...
         end
         data(i).Geom = 'sSEG';
     end
-    for c = {'FaceNodeConnect','EdgeNodeConnect','ValLocation','SEG','XY','EdgeGeometry'}
+    for c = {'FaceNodeConnect','EdgeNodeConnect','ValLocation','SEG','XY','XYZ','TRI','EdgeGeometry'}
         s = c{1};
         if isfield(data,s)
             data = rmfield(data,s);
@@ -646,6 +678,14 @@ elseif isfield(data,'XDamVal')
 end
 
 if isfield(Ops,'vectorscalingmode')
+    if strcmp(Ops.axestype,'Lon-Lat') || (isfield(data,'XUnits') && strcmp(data(1).XUnits,'deg'))
+        % axes in Lon-Lat coordinates
+        % scale XComp depending on latitude
+        % note: this scaling needs to be done AFTER the vectorcomponent for colouring has been computed.
+        for d=length(data):-1:1
+            data(d).XComp = data(d).XComp./max(cosd(data(d).Y),1e-7);
+        end
+    end
     switch Ops.vectorscalingmode
         case ''
             quivopt={};
@@ -885,6 +925,30 @@ for dir = 1:3
     end
 end
 
+if isfield(Ops,'presentationtype')
+    switch Ops.presentationtype
+        case {'patches','patches with lines'}
+            if isfield(data,'ValLocation')
+                for d = length(data):-1:1
+                    switch data(d).ValLocation
+                        case 'NODE'
+                            % compute face averaged values
+                            FaceNodeConnect = data(d).FaceNodeConnect;
+                            Val = data(d).Val;
+                            %
+                            Msk = isnan(FaceNodeConnect);
+                            FaceNodeConnect(Msk) = 1;
+                            Val = Val(FaceNodeConnect);
+                            Val(Msk) = 0;
+                            Val = sum(Val,2)./sum(~Msk,2);
+                            %
+                            data(d).Val = Val;
+                            data(d).ValLocation = 'FACE';
+                    end
+                end
+            end
+    end
+end
 data = qp_clipvalues(data, Ops);
 
 if ~isempty(Parent) && all(ishandle(Parent)) && strcmp(get(Parent(1),'type'),'axes')
@@ -1269,6 +1333,7 @@ if isfield(Ops,'colourbar') && ~strcmp(Ops.colourbar,'none')
     isAx =strcmp(get(Chld,'type'),'axes');
     nonAx=Chld(~isAx);
     Ax   =Chld(isAx);
+    has_colorbar = ~isempty(findall(Parent,'tag','ColorbarDeleteProxy'));
     h=qp_colorbar(Ops.colourbar,'peer',Parent);
     if ~isempty(Units)
         if isequal(Units,'<matlab_time>')
@@ -1291,7 +1356,7 @@ if isfield(Ops,'colourbar') && ~strcmp(Ops.colourbar,'none')
         case 'horiz'
             xlabel(h,PName)
     end
-    if ~isempty(h)
+    if ~has_colorbar && ~isempty(h)
         set(pfig,'children',[nonAx;h;Ax(ishandle(Ax) & (Ax~=h))])
         cbratio = qp_settings('colorbar_ratio');
         if cbratio>1
@@ -1401,3 +1466,52 @@ for i = 1:numel(X)
     x(i) = xg(j) + fac * (xg(j+1) - xg(j));
     y(i) = yg(j) + fac * (yg(j+1) - yg(j));
 end
+
+
+function iNode = stitch_edges(EdgeNodeConnect)
+nEdges = size(EdgeNodeConnect,1);
+if nEdges == 1
+    iNode = EdgeNodeConnect;
+    return
+end
+iNode = zeros(1,3*nEdges);
+% identify match forward
+match = ismember(EdgeNodeConnect(1,:),EdgeNodeConnect(2,:));
+if sum(match) == 1 && find(match) == 1
+    iNode(2:-1:1) = EdgeNodeConnect(1,:);
+else
+    iNode(1:2) = EdgeNodeConnect(1,:);
+end
+iN = 2;
+iE = 2;
+while iE <= nEdges
+    % identify match backwards
+    match = EdgeNodeConnect(iE,:) == iNode(iN);
+    switch sum(match)
+        case 0
+            % no match ... skip one index
+            iN = iN+1;
+            % identify match forward
+            if iE < nEdges
+                match = ismember(EdgeNodeConnect(iE,:),EdgeNodeConnect(iE+1,:));
+            else
+                match = 0;
+            end
+            if sum(match) == 1 && find(match) == 1
+                iNode(iN+(2:-1:1)) = EdgeNodeConnect(iE,:);
+            else
+                iNode(iN+(1:2)) = EdgeNodeConnect(iE,:);
+            end
+            iN=iN+2;
+        case 1
+            % great ... one match as expected ... extend to not match index.
+            iN = iN+1;
+            iNode(iN) = EdgeNodeConnect(iE,~match);
+        case 2
+            % both match ... edge starts and ends at same node
+            iN = iN+1;
+            iNode(iN) = iNode(iN-1);
+    end
+    iE = iE+1;
+end
+iNode = iNode(1:iN);

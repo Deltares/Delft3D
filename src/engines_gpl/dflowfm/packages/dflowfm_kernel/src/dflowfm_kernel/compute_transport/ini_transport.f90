@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> initialize transport, set the enumerators
 subroutine ini_transport()
@@ -149,6 +149,8 @@ subroutine ini_transport()
             const_names(i) = 'sediment_'//trim(str)
          end do
       else
+         !
+         maserrsed = 0d0  ! initialise mass error counter
          !
          ! Map fraction names from sed to constituents (moved from ini_transport)
          !

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_satoxy
+
+      implicit none
+
+      contains
+
 
       subroutine satoxy ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_srstop
+      use m_monsys
+
 !>\file
 !>       Saturation concentration of oxygen
 
@@ -79,10 +88,7 @@
 !     Initial calculations
 !
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
-!jvb  IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
+
       CL     = PMSA(IP1 )
       TEMP   = PMSA(IP2 )
       SWITCH = NINT(PMSA(IP3 ))
@@ -135,3 +141,5 @@
       RETURN
 !
       END
+
+      end module m_satoxy

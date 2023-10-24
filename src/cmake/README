@@ -6,7 +6,7 @@ Compiling on Windows/Linux
 ==========================
 
 0. Be sure that you have installed all prerequisites listed at https://oss.deltares.nl/web/delft3d/source-code#prerequisites,
-   including CMake version 3.17 or higher. Make sure that CMake was added to the system variables Path. 
+   including CMake version 3.17 or higher. Make sure that CMake was added to the system variables Path.
    (should be working automatically)
    LINUX ONLY: Additional dependencies:
    - NetCDF         is assumed to be available via PKG_CONFIG_PATH::netcdf
@@ -20,14 +20,14 @@ Compiling on Windows/Linux
     . ../src/setenv.sh intel21
     This performs all "module load" statements (and compiler definitions) needed
 
-1. Create a target directory where the generated files should go to. 
+1. Create a target directory where the generated files should go to.
    Recommendation: On the top level, next to subdirs "src" and "examples", create directory "build_<configuration>".
 
 2. Open a command line screen, go into the target directory and execute the following statement:
    cmake <CMakeLists.txt location> -G "<Generator>" -A <Architecture> -B "<Target Directory>" -D CONFIGURATION_TYPE=<Configuration Type>
 
    where:
-     <CMakeLists.txt location>   : The location to the main CMakeLists.txt location. 
+     <CMakeLists.txt location>   : The location to the main CMakeLists.txt location.
                                    (e.g. ..\src\cmake)
      <Generator>                 : The generator to generate the solution for
                                    (e.g. "Visual Studio 15 2017", "Unix Makefiles")
@@ -63,7 +63,7 @@ Compiling on Windows/Linux
 
 C code on Linux
 ===============
-Use as an example: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/engines_gpl/dimr/packages/dimr_lib/CMakeLists.txt:
+Use as an example: https://git.deltares.nl/oss/delft3d/-/tree/main/src/engines_gpl/dimr/packages/dimr_lib/CMakeLists.txt:
 Copy and adapt the following block into your CMakeLists.txt file:
 >>>>>>>>>>>>>>>>>>>>>>>>
 if (UNIX)
@@ -71,13 +71,13 @@ if (UNIX)
     include(FortranCInterface)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDE_DIRS}) 
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
+
+    include_directories(${NETCDF_INCLUDE_DIRS})
     add_definitions(-DD3D_PLUGIN_EXT=".so")
     add_definitions(-DHAVE_STRUCT_TIMESPEC)
-endif(UNIX) 
+endif(UNIX)
 <<<<<<<<<<<<<<<<<<<<<<<<<
 This piece of code  produces a config.h file from a CMAKE template file. Make sure to copy the template file config.h.cmake.in into ${CMAKE_CURRENT_SOURCE_DIR}.
 config.h includes FortranCInterface.h, which itself implements the name mangling functions (which are system dependent, but produced by CMAKE during the configuration step).

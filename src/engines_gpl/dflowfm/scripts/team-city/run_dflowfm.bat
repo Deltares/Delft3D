@@ -12,7 +12,7 @@ title run_dflowfm
     rem         cd ...\x64\share\bin (or your local copy)
     rem         hydra_service.exe -install
     rem         mpiexec.exe -register -username <user> -password <password> -noprompt
-    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager, 
+    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
     rem     or in the command  box: hydra_service.exe -uninstall (smpd -uninstall)
     rem
     rem
@@ -22,7 +22,7 @@ title run_dflowfm
     rem Usage example:
     rem Execute in the working directory:
     rem path\to\delft3d\installation\x64\dimr\scripts\run_dimr_parallel.bat
-    rem More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 
 
@@ -45,8 +45,8 @@ if [%1] EQU [--help] ( goto usage )
     rem Sets the number of threads if it is not defined
 if defined OMP_NUM_THREADS (
 echo OMP_NUM_THREADS is already defined
-) else ( 
-   rem Getting and setting the number of physical cores  
+) else (
+   rem Getting and setting the number of physical cores
    for /F "tokens=2 delims==" %%C in ('wmic cpu get NumberOfCores /value ^| findstr NumberOfCores') do set NumberOfPhysicalCores=%%C
    set /A OMP_NUM_THREADS=!NumberOfPhysicalCores! - 2
    if /I OMP_NUM_THREADS LEQ 2 ( set OMP_NUM_THREADS=2 )

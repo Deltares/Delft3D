@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,6 +27,9 @@ program waqmerge
       use hydmod
       use hyd_waqgeom_old
       use m_alloc
+      use delwaq_version_module
+      use m_dattim
+      use m_dhfext
 
       implicit none
 
@@ -67,7 +70,7 @@ program waqmerge
       ! Version string
 
       version_temp = ' '
-      call getfullversionstring_waqmerge(version_temp)
+      call getfullversionstring_delwaq(version_temp)
       version = version_temp(5:)
       write(*,*)
       write (*,'(a)') ' ', trim(version)

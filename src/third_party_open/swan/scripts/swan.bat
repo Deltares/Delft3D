@@ -7,6 +7,7 @@ if exist swan_bat.log del swan_bat.log
 
 set swanexec=%~dp0\..\bin\swan_omp.exe
 set PATH=%~dp0\..\bin;%PATH%
+set PATH=%~dp0\..\..\share\bin;%PATH%
 
 rem
 set OMP_NUM_THREADS_BACKUP=%OMP_NUM_THREADS%

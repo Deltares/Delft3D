@@ -9,7 +9,7 @@ set(executable_name dimr_lib_tests)
 set(dimr_lib_sources "${dimr_src_path}/clock.cpp"
                      "${dimr_src_path}/exception.cpp"
                      "${dimr_src_path}/log.cpp")
-					 
+
 add_executable(${executable_name} ${source_files} ${dimr_lib_sources})
 
 set(oss_dependencies deltares_common_c dimr_lib) 
@@ -22,7 +22,7 @@ if(UNIX)
    target_include_directories(${executable_name} 
                                PRIVATE
                               "${dimr_lib_path}/include"
-                              "${checkout_src_root}/third_party_open/expat/x64/include")
+                              "${expat_include_path}")
 
 
     target_link_libraries(${executable_name} ${oss_dependencies}) 
@@ -37,29 +37,29 @@ endif(UNIX)
 
 if (WIN32)
     
-	oss_include_libraries(${executable_name} oss_dependencies) 
-						   
+    oss_include_libraries(${executable_name} oss_dependencies) 
+
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
     target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
     
     target_include_directories(${executable_name} 
                                PRIVATE
-							   "${checkout_src_root}/third_party_open/expat/x64/include"
-							   "${checkout_src_root}/third_party_open/mpich2/include"
-							   "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
-							   "${checkout_src_root}/third_party_open/pthreads/include/x64")
+                               "${expat_include_path}"
+                               "${checkout_src_root}/third_party_open/mpich2/include"
+                               "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
+                               "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/expat/x64/x64/"
-							"${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-							"${checkout_src_root}/third_party_open/mpich2/x64/lib"
-							"${checkout_src_root}/third_party_open/pthreads/bin/x64")
+                            "${expat_library_path_win}"
+                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${checkout_src_root}/third_party_open/mpich2/x64/lib"
+                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${executable_name} ${oss_dependencies} 
-	                                         "fmpich2.lib"
+                                             "fmpich2.lib"
                                              "libexpat.lib"
                                              "mpi.lib"
                                              "pthreadVC2.lib")

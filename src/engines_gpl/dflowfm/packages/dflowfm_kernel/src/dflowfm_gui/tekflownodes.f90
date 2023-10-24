@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine tekflownodes(ja)
  use unstruc_display
@@ -69,10 +69,7 @@
           if (inview( xz(k), yz(k) ) ) then
              zn = znod(k)
              if ( zn.eq.DMISS ) cycle
-             if (nodemode .eq. 2) then
-                call isocol(zn,ncol)
-                call dhtext( zn, xz(k), yz(k), bl(k) )
-             else if (nodemode == 3   .or. nodemode == 3 + 3) then    ! isolines within cell
+             if (nodemode == 3   .or. nodemode == 3 + 3) then    ! isolines within cell
                 if (k <= ndx2d) then
                    call ISOSMOOTHflownode(k)
                 else
@@ -89,6 +86,15 @@
                    call PFILLER(nd(k)%x, nd(k)%y, nn,NCOL,NCol)
                 endif
              endif
+             ! draw text values:
+             if (nodemode == 2 .or. nodemode >= 6) then
+                call isocol(zn,ncol)
+                if (nodewhat == 15 .or. nodewhat == 16 .or. nodewhat == 17 .or. nodewhat == 25) THEN
+                   CALL DHITEXT(int(zn), xz(k), yz(k), bl(k))
+                else
+                   call dhtext( zn, xz(k), yz(k), bl(k) )
+                end if
+             end if
           endif
        endif
     endif

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_clcrad
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE CLCRAD ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
@@ -30,6 +36,9 @@
 !                active water segments
 !
 
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with definition of the waterbottom segments
 
       IMPLICIT NONE
@@ -127,7 +136,7 @@
 
       DO 1000 ISEG=1,NOSEG
 
-         CALL DHKMRK( 1, IKNMRK(ISEG ), IKMRK1 )
+         CALL evaluate_waq_attribute( 1, IKNMRK(ISEG ), IKMRK1 )
 
 !........Segment is inactief
          IF      (IKMRK1 .EQ. 0) THEN
@@ -190,10 +199,10 @@
          INAAR = IEXPNT(2,IQ)
 
          IF ( IVAN .GT. 0 .AND. INAAR .GT. 0 ) THEN
-            CALL DHKMRK( 1, IKNMRK(IVAN ), IK1VN )
-            CALL DHKMRK( 1, IKNMRK(INAAR), IK1NR )
-            CALL DHKMRK( 2, IKNMRK(IVAN ), IK2VN )
-            CALL DHKMRK( 2, IKNMRK(INAAR), IK2NR )
+            CALL evaluate_waq_attribute( 1, IKNMRK(IVAN ), IK1VN )
+            CALL evaluate_waq_attribute( 1, IKNMRK(INAAR), IK1NR )
+            CALL evaluate_waq_attribute( 2, IKNMRK(IVAN ), IK2VN )
+            CALL evaluate_waq_attribute( 2, IKNMRK(INAAR), IK2NR )
 
 !...........Van segment = inactief
             IF ( IK1VN .EQ. 0 ) THEN
@@ -342,3 +351,5 @@
 
       RETURN
       END
+
+      end module m_clcrad

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Writes current state immediately to files, typically used in
 !! case of 'emergencies', without checking output intervals.
@@ -38,14 +38,14 @@
 subroutine flow_externaloutput_direct()
    use m_flowtimes
    use unstruc_messages
-   use time_module
+   use time_module, only: datetime_to_string
    implicit none
    integer :: iyear, imonth, iday, ihour, imin, isec
 
    call mess(LEVEL_INFO, 'Performing direct write of solution state...')
 
    ! Compute current absolute date time, based on time1 since refdat
-   call datetime_from_refdat(time1, iyear, imonth, iday, ihour, imin, isec)
+   call datetime_from_refdat(time1, refdat, iyear, imonth, iday, ihour, imin, isec)
    write (msgbuf, '(a,i0,a,f12.2,a,a,a,a)') 'Simulation current time: nt = ', int(dnt, 8), ', time1 = ', time1, 's ', &
                              '(', trim(datetime_to_string(iyear, imonth, iday, ihour, imin, isec)), ').'
    call msg_flush()

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_vbstat
+
+implicit none
+
+contains
+
 
       subroutine VBSTAT     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_monsys
+      use m_evaluate_waq_attribute
+
 !
 !*******************************************************************************
 !
@@ -99,9 +108,9 @@
          ! set botseg equal to iseg for the segments which have a bottom
 
          do iseg = 1,noseg
-            call dhkmrk(1,iknmrk(iseg),ikmrk1)
+            call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
             if (ikmrk1.lt.3) then
-               call dhkmrk(2,iknmrk(iseg),ikmrk2)
+               call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
                if ((ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
                   pmsa(ip + inc * (iseg - 1)) = real(iseg)
                endif
@@ -142,8 +151,8 @@
 !   *****     Insert your code here  *****
 !
 !        lowest water and 2d segments only
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
-         call dhkmrk(2,iknmrk(iseg),ikmrk2)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
          if (ikmrk1.lt.3 .and. (ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
 
             SwEmersion = pmsa( ipnt(  1) )
@@ -165,7 +174,6 @@
             if ( SwWV .eq. 0) then
                if (ifirst(1) .eq. 0) then
                   nsfVB = Initnsf
-!                  WRITE (ILUMON, *) 'ifirst, iseg, nsf', ifirst, iseg, nsfvb
                endif
 
                if ( NINT(SwEmersion) .eq. 0 ) then
@@ -216,3 +224,5 @@
 !
       return
       end
+
+end module m_vbstat

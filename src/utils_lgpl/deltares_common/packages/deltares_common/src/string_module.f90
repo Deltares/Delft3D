@@ -1,7 +1,7 @@
 module string_module
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module string_module
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Various string processing routines
@@ -92,7 +92,7 @@ module string_module
           !
           !! executable statements ---------------------------------------------------
           !
-          call addmessage(messages,'$Id$')
+          call addmessage(messages,'')
           call addmessage(messages,'$URL$')
       end subroutine string_module_info
 
@@ -1008,7 +1008,7 @@ module string_module
          
          slash  = CHAR  (47)
          lslash = INDEX (hlpstr,slash)
-         if (lslash .eq. 0) then
+         if (lslash == 0) then
             slash  = CHAR  (92)
          endif
          get_dirsep = slash

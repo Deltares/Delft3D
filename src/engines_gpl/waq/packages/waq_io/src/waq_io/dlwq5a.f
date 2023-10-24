@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,24 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5a
+      use m_read_time_delay
+      use m_dlwqj3
+      use m_dlwq5g
+      use m_dlwq5e
+      use m_dlwq5d
+      use m_dlwq5c
+
+
+      implicit none
+      
+      contains
+
 
       subroutine dlwq5a ( lun    , lchar  , iu     , iwidth , icmax  ,
      &                    car    , iimax  , iar    , irmax  , rar    ,
      &                    sname  , aname  , atype  , ntitm  , ntdim  ,
-     &                    nttype , drar   , dtflg1 , dtflg3 , vrsion ,
+     &                    nttype , drar   , dtflg1 , dtflg3 , 
      &                    ioutpt , ierr2  , ierr   , iwar   )
 
 !       Deltares Software Centre
@@ -60,7 +73,7 @@
 !                               Introduction DLWQ5G.F for column headers
 
 !     SUBROUTINES CALLED : RDTOK1 - tokenized input
-!                          DHOPNF - opens a file
+!                          open_waq_files - opens a file
 !                          DLWQ5B - gets names of items/concentrations
 !                          DLWQ5C - gets ODS data
 !                          DLWQ5D - gets block of breakpoint data
@@ -76,21 +89,25 @@
 !                          LUN(14) = unit intermediate file (boundaries)
 !                          LUN(15) = unit intermediate file (wastes)
 
+      use m_dlwq5b
+      use m_check
+      use m_zoek
+      use m_open_waq_files
       use rd_token
       use timers       !   performance timers
-      use dlwq_data
+      use dlwq_hyd_data
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
 
 
       implicit none
-      
-      integer  ( 4), intent(in   ) :: lun  (*)      !< array with unit numbers
+
+      integer  ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
       character( *), intent(inout) :: lchar(*)      !< filenames
       integer  ( 4), intent(in   ) :: iu            !< index in LUN array of workfile
       integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
       integer  ( 4), intent(in   ) :: icmax         !< maximum size of character workspace
-      character( *), intent(inout) :: car  (*)      !< character workspace
+      character( *), intent(inout) :: car  (icmax)  !< character workspace
       integer  ( 4), intent(in   ) :: iimax         !< maximum size of integer workspace
       integer  ( 4), intent(inout) :: iar  (iimax)  !< integer workspace
       integer  ( 4), intent(in   ) :: irmax         !< maximum size of real workspace
@@ -104,7 +121,6 @@
       real     ( 8), intent(inout) :: drar (*)      !< Double precision workspace
       logical      , intent(in   ) :: dtflg1        !< 'date'-format 1st time scale
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion        !< version of input
       integer  ( 4), intent(in   ) :: ioutpt        !< how extensive will the output be
       integer  ( 4), intent(  out) :: ierr2         !< return code of this routine
       integer  ( 4), intent(inout) :: ierr          !< cumulative error   count
@@ -117,11 +133,11 @@
       character     callr*10, calit*10, caldit*10, strng1*10, strng2*10,
      *              strng3*10
       integer       iorder   , noitm , nodim , iflag  , itype ,
-     +              ittim    , chkflg, ident , nottc  , lunwr2,
+     +              ittim    , ident , nottc  , lunwr2,
      +              ifilsz   , jfilsz, ipro  , itfacw , iopt  ,
      +              nobrk    , itel  , ioerr , iblock , k     ,
      +              i        , ihulp , ioff  , icm    , iim   ,
-     +              noits    , nconst, itmnr, iitm   , nocol , 
+     +              noits    , nconst, itmnr, iitm   , nocol ,
      +              idmnr    , nodis , nitm , nti    , nti2  ,
      +              ntr      , irm   , nottt, ierr3  , nr2   ,
      +              nts      , ntc   , ntd
@@ -129,7 +145,7 @@
       character     chulp*255
       logical       newrec   , scale , ods   , binfil , tdelay
       integer(4) :: ithndl = 0
-      
+
       type(t_dlwq_data_items)          :: dlwq_data_items
       type(t_dlwq_item)                :: dlwq_foritem
       character(20)                    :: data_item_name
@@ -137,8 +153,8 @@
       integer                          :: ndata_items
       integer                          :: iitem
       integer                          :: nitems
-      
-      
+
+
       if (timon) call timstrt( "dlwq5a", ithndl )
 !
 !     Initialise a number of variables
@@ -187,9 +203,9 @@
       binfil = .false.
       newrec = .false.
 !
-!     Open the binary work file and privide a zero overall default
+!     Open the binary work file and provide a zero overall default
 !
-      call dhopnf ( lun(iu) , lchar(iu) , iu    , 1     , ioerr )
+      call open_waq_files ( lun(iu) , lchar(iu) , iu    , 1     , ioerr )
       if ( iu .eq. 14 ) then
          write ( lunwr2 ) ' 4.900BOUND '
          calit  = 'BOUNDARIES'
@@ -300,17 +316,16 @@
          endif
 ! Now get the list of locations to apply the DATA_ITEM
          ioff   = 1
-         chkflg = 1
          icm    = icmax - ioff
          iim    = iimax - ioff
-         call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff),
-     *                 iar(ioff), icm   , iim   , aname , atype    ,
-     *                 ntitm    , nttype, noitm , noits , chkflg   ,
-     *                 calit    , ilun  , lch   , lstack, vrsion   ,
+         call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
+     *                 iar(ioff:), icm  , iim   , aname , atype    ,
+     *                 ntitm    , nttype, noitm , noits ,
+     *                 calit    , ilun  , lch   , lstack, 
      *                 itype    , rar   , nconst, itmnr , chulp    ,
      *                                    ioutpt, ierr2 , iwar     )
 ! Check if data_item already exists
-         
+
          if (dlwq_data_items%cursize .gt. 0) then
             call zoek ( data_item_name,dlwq_data_items%cursize,dlwq_data_items%name(1:dlwq_data_items%cursize),20,idata_item)
          else
@@ -371,22 +386,21 @@
             ioff  = nodim + idmnr + 1
             ident = 0
          endif
-         chkflg = 1
          icm    = icmax - ioff
          iim    = iimax - ioff
          if ( ident .le. 1) then
             call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff),
-     *                    iar(ioff), icm   , iim   , aname , atype    ,
-     *                    ntitm    , nttype, noitm , noits , chkflg   ,
-     *                    calit    , ilun  , lch   , lstack, vrsion   ,
+     *                    iar(ioff:), icm   , iim   , aname , atype   ,
+     *                    ntitm    , nttype, noitm , noits , 
+     *                    calit    , ilun  , lch   , lstack,
      *                    itype    , rar   , nconst, itmnr , chulp    ,
      *                                       ioutpt, ierr2 , iwar     )
          else
-            call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff),
-     *                    iar(ioff), icm   , iim   , dlwq_data_items%name(1:ndata_items) ,
+            call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
+     *                    iar(ioff:), icm   , iim   , dlwq_data_items%name(1:ndata_items) ,
      *                    dlwq_data_items%name(1:ndata_items) , ndata_items,
-     *                    ndata_items      , noitm , noits , chkflg   ,
-     *                    caldit   , ilun  , lch   , lstack, vrsion   ,
+     *                    ndata_items      , noitm , noits , 
+     *                    caldit   , ilun  , lch   , lstack,
      *                    itype    , rar   , nconst, itmnr , chulp    ,
      *                                       ioutpt, ierr2 , iwar     )
             if (noitm.ne.1) then
@@ -406,12 +420,12 @@
                      car(ioff+iitem-1) = dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      car(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      iar(ioff+iitem-1) = dlwq_data_items%dlwq_foritem(idata_item)%ipnt(iitem)
-                     iar(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%sequence(iitem) 
+                     iar(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%sequence(iitem)
                      if (iar(ioff+iitem-1) .gt. 0) then
-                        write ( lunut, 1023) car(ioff), idata_item, calit, iar(ioff+iitem-1), 
+                        write ( lunut, 1023) car(ioff), idata_item, calit, iar(ioff+iitem-1),
      &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      else
-                        write ( lunut, 1024) car(ioff), idata_item, calit, iar(ioff+iitem-1), 
+                        write ( lunut, 1024) car(ioff), idata_item, calit, iar(ioff+iitem-1),
      &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
                      end if
                   end do
@@ -423,7 +437,7 @@
                   noits = 1
                   iar(ioff) = -1300000000
                   iar(ioff+1) = 1
-               end if   
+               end if
             else
                write ( lunut , 1047 )
                !data ignored
@@ -434,8 +448,8 @@
                iar(ioff+1) = 1
             end if
          endif
-         
-         
+
+
          nocol = noits
          if ( ierr2 .ne. 0 ) goto 510
          goto 30
@@ -456,13 +470,12 @@
             ierr2 = 1
             goto 510
          endif
-         chkflg = 1
          icm    = icmax - ioff
          iim    = iimax - ioff
          call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff),
-     *                 iar(ioff), icm   , iim   , sname , atype    ,
-     *                 ntdim    ,   0   , nodim , nodis , chkflg   ,
-     *                 callr    , ilun  , lch   , lstack, vrsion   ,
+     *                 iar(ioff:), icm   , iim   , sname , atype   ,
+     *                 ntdim    ,   0   , nodim , nodis ,
+     *                 callr    , ilun  , lch   , lstack,
      *                 itype    , rar   , nconst, idmnr , chulp    ,
      *                                    ioutpt, ierr2 , iwar     )
          nocol = nodis
@@ -478,7 +491,7 @@
             ierr2 = 1
             goto 510
          endif
-!          Checks if an inner loop collumn header exists for the data matrix
+!          Checks if an inner loop column header exists for the data matrix
          call dlwq5g ( lunut  , iar    , itmnr  , noitm  , idmnr  ,
      *                 nodim  , iorder , iimax  , car    , iposr  ,
      *                 npos   , ilun   , lch    , lstack , cchar  ,
@@ -509,7 +522,7 @@
             endif
          endif
          if ( iopt .eq. 3 .or. iopt .eq. 4 ) nottt = nottt + 1
-         call dlwq5d ( lunut  , iar(nti2), rar(ntr), iim   , irm    ,
+         call dlwq5d ( lunut  , iar(nti2:), rar(ntr:), iim   , irm    ,
      *                 iposr  , npos     , ilun    , lch   , lstack ,
      *                 cchar  , chulp    , nottt   , nottc , ittim , nobrk  ,
      *                 iopt   , dtflg1   , dtflg3  , itfacw, itype  ,
@@ -523,19 +536,19 @@
          if ( nodim .eq. 0) then
             write(lunut,1370)
             iwar = iwar + 1
-         else  
+         else
 !          Assigns according to computational rules
             nr2 = ntr + nottt*nobrk
             call dlwq5e ( lunut, iar   , noitm, itmnr   , nodim   ,
-     *                    idmnr, iorder, rar  , iopt    , rar(ntr),
-     *                    nocol, nobrk , amiss, iar(nti), rar(nr2))
+     *                    idmnr, iorder, rar  , iopt    , rar(ntr:),
+     *                    nocol, nobrk , amiss, iar(nti:), rar(nr2:))
             strng3 = 'breakpoint'
 !          Writes to the binary intermediate file
             nts   = nconst + 1
             ntc   = nti
             icm   = icmax - ntc
             call dlwqj3 ( lunwr2 , lunut   , iwidth , nobrk  , iar    ,
-     *                    rar(nts),rar(nr2), itmnr  , idmnr  , iorder ,
+     *                    rar(nts:),rar(nr2:), itmnr  , idmnr  , iorder ,
      *                    scale  , .true.  , binfil , iopt   , ipro   ,
      *                    itfacw , dtflg1  , dtflg3 , ifilsz , jfilsz ,
      *                    sname  , strng1  , strng2 , strng3 , ioutpt )
@@ -556,18 +569,6 @@
          if ( itype .eq. 1 ) goto  30
          goto 10
       endif
-
-!          binary-file option selected
-
-!     if ( iabs(itype) .eq. 1 .and.  chulp(1:11) .eq. 'BINARY_FILE' ) then
-!        binfil = .true.
-!        if ( gettoken( chulp, ierr2 ) .gt. 0 ) goto 510
-!        write ( lun(41) , '(a240)' ) chulp
-!        write ( lunut   ,   2220   ) chulp
-!        call check_filesize( lunut, chulp, nosss*noitm, ierr )
-!        nufil = nufil + 1
-!        goto 10
-!     endif
 !
 !          ODS-file option selected
 !
@@ -591,18 +592,18 @@
          nts  = nconst + 1
          iim  = iimax - nti
          irm  = irmax - ntr
-         call dlwq5c ( chulp , lunut  , car   , iar      , rar(ntr),
+         call dlwq5c ( chulp , lunut  , car   , iar      , rar(ntr:),
      *                 icmax , iimax  , irmax , drar     , noitm   ,
      *                 nodim , iorder , scale , itmnr    , idmnr   ,
      *                         amiss  , nobrk , ierr2    , iwar    )
          if ( ierr2 .ne. 0 ) goto 510
          nr2 = ntr + noitm*nodim*nobrk
          call dlwq5e ( lunut , iar    , noitm , itmnr    , nodim   ,
-     *                 idmnr , iorder , rar   , iopt     , rar(ntr),
-     *                 nodim , nobrk  , amiss , iar(nti) , rar(nr2))
+     *                 idmnr , iorder , rar   , iopt     , rar(ntr:),
+     *                 nodim , nobrk  , amiss , iar(nti:) , rar(nr2:))
          strng3 = 'breakpoint'
          call dlwqj3 ( lunwr2 , lunut   , iwidth , nobrk  , iar    ,
-     *                 rar(nts),rar(nr2), itmnr  , idmnr  , iorder ,
+     *                 rar(nts:),rar(nr2:), itmnr  , idmnr  , iorder ,
      *                 scale  , ods     , binfil , iopt   , ipro   ,
      *                 itfacw , dtflg1  , dtflg3 , ifilsz , jfilsz ,
      *                 sname  , strng1  , strng2 , strng3 , ioutpt )
@@ -735,7 +736,7 @@
  1370 format (  ' WARNING: all DATA from this block is ignored !' )
  2220 format (  ' Input comes from binary file: ',A      )
 !
-      end
+      end subroutine dlwq5a
 !
 !     Additional documentation on the memory lay out
 !
@@ -804,3 +805,5 @@
 !
 !
 !
+
+      end module m_dlwq5a

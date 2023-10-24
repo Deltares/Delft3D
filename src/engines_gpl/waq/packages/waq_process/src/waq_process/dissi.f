@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,12 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dissi
+
+      implicit none
+
+      contains
+
 
       subroutine dissi  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_monsys
+
 !>\file
-!>       Dissolution of Si in opal 
+!>       Dissolution of Si in opal
 
 !
 !     Description of the module :
@@ -43,7 +51,7 @@
 ! TC      R*4 1 I     temperature coefficient of dissolution           [-]
 ! TEMP    R*4 1 I     temperature                                     [oC]
 ! TEMPC   R*4 1 -     temperature function                             [-]
-! SWDISSI R*4 1 I     option: 0.0 2nd order diss., 1.0 1st order diss.  
+! SWDISSI R*4 1 I     option: 0.0 2nd order diss., 1.0 1st order diss.
 !
 !     Logical Units : -
 !
@@ -52,8 +60,9 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 !
-      IMPLICIT REAL (A-H,J-Z)
-
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
+      
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
@@ -77,9 +86,6 @@
       IFLUX = 0
 !
       DO 9000 ISEG = 1 , NOSEG
-!
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1.OR.IKMRK1.EQ.3) THEN
 !
       IF (BTEST(IKNMRK(ISEG),0)) THEN
          CSID    = MAX(PMSA(IP1),0.0)
@@ -142,3 +148,5 @@
       RETURN
 !
       END
+
+      end module m_dissi

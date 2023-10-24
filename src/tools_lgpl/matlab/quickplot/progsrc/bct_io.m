@@ -23,7 +23,7 @@ function Info=bct_io(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -231,13 +231,12 @@ while ~feof(fid)
     floc = ftell(fid);
     %
     Line = fgetl(fid);
-    [key,remainder] = strtok(Line);
-    [eq,remainder] = strtok(remainder);
-    remainder = strtrim(remainder);
-    if any(strcmpi(key,{'[boundary]','[lateraldischarge]','[forcing]'}))
-        continue
-    end
-    if ~strcmp(eq,'=') 
+    ieq = strfind(Line,'=');
+    if isempty(ieq)
+        key = deblank(Line);
+        if any(strcmpi(key,{'[boundary]','[lateraldischarge]','[forcing]'}))
+            continue
+        end
         Data = sscanf(Line,'%f',inf);
         if length(Data)==NPar
             % data
@@ -258,6 +257,10 @@ while ~feof(fid)
         else
             error('Unable to identify keyword-value pair on line: %s',Line)
         end
+    else
+        ieq = ieq(1);
+        key = strtrim(Line(1:ieq-1));
+        remainder = strtrim(Line(ieq+1:end));
     end
     switch lower(key)
         case 'name'

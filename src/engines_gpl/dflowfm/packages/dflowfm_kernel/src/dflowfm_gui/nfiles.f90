@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    SUBROUTINE NFILES(MODE, NUM,  NWHAT,  KEY)
 !  grid lijst
@@ -742,7 +742,7 @@
             NUM = 1
          ELSE
             call doclose(midp)
-            CALL unc_write_map(filnam)
+            CALL unc_write_map(filnam, md_nc_map_precision)
             CALL MESSAGE('YOU SAVED ' , filnam, ' ')
             NUM = 0
          ENDIF

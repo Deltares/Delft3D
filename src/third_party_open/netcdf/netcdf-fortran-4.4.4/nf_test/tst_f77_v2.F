@@ -7,7 +7,7 @@ C     jvkepner@astro.Princeton.EDU.
 
 C     This program will bail out in the event of a netcdf error.
 
-C     $Id$
+C     
 
       PROGRAM tst_f77_v2
       

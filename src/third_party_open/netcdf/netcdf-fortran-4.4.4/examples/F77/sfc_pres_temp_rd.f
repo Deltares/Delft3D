@@ -13,7 +13,7 @@ C     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-tutorial
 C     Full documentation of the netCDF Fortran 77 API can be found at:
 C     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f77
 
-C     $Id$
+C     
 
       program sfc_pres_temp_rd
       implicit none

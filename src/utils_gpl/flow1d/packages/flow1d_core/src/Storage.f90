@@ -1,7 +1,7 @@
 module m_Storage
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_Storage
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -42,24 +42,16 @@ module m_Storage
    integer, public, parameter :: nt_None        = 0
    integer, public, parameter :: nt_Reservoir   = 2
    integer, public, parameter :: nt_Closed      = 3
-   integer, public, parameter :: nt_Loss        = 4
    double precision, public, parameter:: slot_area = 1d-2 ! value to be used for storageStreetArea when storageType is "closed"
    
    public realloc
    public dealloc
 
-   public addStorage
    public getVolume
    public getSurface
-   public printData
    public fill_hashtable
    public getTopLevel
 
-   interface printData
-      module procedure printStorageSet
-      module procedure printStorage
-   end interface
-   
    interface GetVolume
       module procedure GetVolumeByStorNode
    end interface GetVolume
@@ -85,7 +77,6 @@ module m_Storage
    type, public :: t_storage
       character(len=idlen)    :: id                      !< unique id of storage area
       character(len=idlen)    :: nodeId                  !< (optional) Node Id
-      character(len=idlen)    :: branchId                !< (optional) branchId
       character(len=idlen)    :: name                    !< Long name in the user interface
       integer                 :: gridPoint               !< gridpoint index
       integer                 :: node_index              !< connection node index
@@ -115,57 +106,7 @@ module m_Storage
    
 contains
     
-   integer function addStorage(storS, id, gridPoint, storageType, levels, storageArea, interpolTypeStorage, lengthStorageArea,       &
-                               levelsOnStreet, storageAreaOnStreet, interpolTypeStreet, lengthStreetArea)
-      use m_node
-      use m_branch
-      
-      ! Modules               
-                              
-      implicit none
-      
-      ! Input/output parameters
-      type(t_storageSet)               :: storS
-      character(len=idlen), intent(in) :: id
-      integer, intent(in)              :: gridPoint
-      integer, intent(in)              :: storageType
-      integer, intent(in)              :: interpolTypeStorage
-      integer, intent(in)              :: interpolTypeStreet
-      integer, intent(in)              :: lengthStorageArea
-      integer, intent(in)              :: lengthStreetArea
-      
-      double precision, dimension(lengthStorageArea)  :: levels
-      double precision, dimension(lengthStorageArea)  :: storageArea
-      double precision, dimension(:)                  :: levelsOnStreet
-      double precision, dimension(:)                  :: storageAreaOnStreet
-      
-      ! Local variables
-      integer istor
-      character(len=IdLen) :: line
-
-      ! Program code
-      
-      storS%Count = storS%Count+1
-      istor = storS%Count
-      if (storS%Count > storS%Size) then
-         call realloc(storS)
-      endif
-      nullify(storS%stor(istor)%storageArea)
-      nullify(storS%stor(istor)%streetArea)
-      
-      storS%stor(istor)%storageType = storageType
-      storS%stor(istor)%id = id 
-      ! Look for gridpoint index in network
-      if (storageType /= nt_None) then
-         storS%stor(istor)%gridPoint = gridPoint
-         call setTable(storS%stor(istor)%storageArea, interpolTypeStorage, levels, storageArea, lengthStorageArea)
-         if (lengthStreetArea/=0) then
-            call setTable(storS%stor(istor)%streetArea,  interpolTypeStreet,  levelsOnStreet, storageAreaOnStreet, lengthStreetArea)
-         endif
-      endif
-      addstorage = stors%count
-   end function addStorage
-   
+   !> deallocate storage array
    subroutine deallocStorage(storS)
       ! Modules
       
@@ -200,7 +141,7 @@ contains
 
    end subroutine
 !
-!
+   !> Resize storage array.  
    subroutine reallocStorage(storS)
       ! Modules
       
@@ -230,6 +171,7 @@ contains
       storS%Size = storS%Size+storS%growsBy
    end subroutine
    
+   !> Retrieve the surface area, using the storage node.
    double precision function getSurfaceByStorNode(storage, level)
       ! Modules
    
@@ -255,6 +197,7 @@ contains
       
    end function getSurfaceByStorNode
 
+   !> Retrieve the volume, using the storage node.
    double precision function getVolumeByStorNode(storage, level)
       ! Modules
 
@@ -288,6 +231,7 @@ contains
       endif
    end function getVolumeByStorNode
 
+   !> Get the top level of the storage node
    double precision function getTopLevel(storage)
       type(t_storage), intent(in)            :: storage
       if (storage%useStreetStorage .and. (.not. storage%useTable)) then
@@ -297,6 +241,7 @@ contains
       endif
    end function getTopLevel
    
+   !> Fill the hash table
    subroutine fill_hashtable_sto(storS)
    
       type (t_storageSet), intent(inout), target   :: storS
@@ -315,39 +260,6 @@ contains
       call hashfill(storS%hashlist)
       
    end subroutine fill_hashtable_sto
-   
-   subroutine printStorageSet(storS, unit)
-      type(t_storageSet)         :: storS
-      integer                    :: unit
-   
-      integer                    :: i
-   
-      write(unit, '(a)') ''
-      write(unit, '(a)') 'Storage in nodes'
-      write(unit, '(a)') '================'
-   
-      write(unit, '(''Number of storage nodes in network = '', i7)') stors%Count
-      do i = 1, stors%Count
-         write(unit, '(a)') ''
-         write(unit, '(''Storage node: '', i7)') i
-         call printData(storS%stor(i), unit)
-      enddo
-   end subroutine printStorageSet
-
-   subroutine printStorage(storage, unit)
-      type(t_storage)         :: storage
-      integer                    :: unit
-   
-      write(unit, '(''Gridpoint location: '', i7, '' storageType = '', i3)') storage%gridPoint, storage%storageType
-      if (associated(storage%storageArea)) then
-         write(unit, '(''Storage area data:'')')
-         call printData(storage%storageArea, unit)
-      endif
-      if (associated(storage%streetArea)) then
-         write(unit, '(''Street storage data:'')')
-         call printData(storage%streetArea, unit)
-      endif
-   end subroutine printStorage
 
    
 end module m_Storage

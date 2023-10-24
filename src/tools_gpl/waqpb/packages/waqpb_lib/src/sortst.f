@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,10 +24,12 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine sortst ( c10a , c10b , val , nr )
+      use m_zoek
+
 c     Subroutine to sort (part of) tables R6-R7-R8
       integer      nr, ir, jndex
       character*10 c10a(nr), c10b(nr), evea, eveb, sortar(nr)
@@ -78,6 +80,8 @@ c     back for next sweep
 
       subroutine sorts2 ( pr    , it    , nm    , de    , do    ,
      j                    sx    , nr    , do_de , do_sx )
+      use m_zoek
+
 
 c     Subroutine to sort tables R3-R4-R5
 

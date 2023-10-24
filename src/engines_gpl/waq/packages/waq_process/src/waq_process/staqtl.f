@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_staqtl
+
+      implicit none
+
+      contains
+
 
       subroutine staqtl ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Quantiles for a given substance during a given period
 
@@ -115,15 +125,6 @@
       BMIN  = PMSA(IP7)
       BMAX  = PMSA(IP8)
 
-!     IF ( NOBUCK .LT. 1 ) THEN
-!        CALL GETMLU( LUNREP )
-!        WRITE( LUNREP, * ) 'ERROR in STAQTL'
-!        WRITE( LUNREP, * )
-!    &'Number of buckets must be at least 1'
-!        WRITE( LUNREP, * )
-!    &'Number of buckets: ', NOBUCK
-!        CALL SRSTOP( 1 )
-!     ENDIF
       IF ( NOBUCK .GT. MAXBCK ) THEN
          CALL GETMLU( LUNREP )
          WRITE( LUNREP, * ) 'ERROR in STAQTL'
@@ -133,16 +134,6 @@
      &'Number of buckets: ', NOBUCK-1, ' - maximum: ', MAXBCK-1
          CALL SRSTOP( 1 )
       ENDIF
-!
-!     IF ( BMIN .GE. BMAX ) THEN
-!        CALL GETMLU( LUNREP )
-!        WRITE( LUNREP, * ) 'ERROR in STAQTL'
-!        WRITE( LUNREP, * )
-!    &'Expected range inappropriate: minimum must lower than maximum'
-!        WRITE( LUNREP, * )
-!    &'Minimum: ', BMIN, ' - maximum: ', BMAX
-!        CALL SRSTOP( 1 )
-!     ENDIF
 
       BDIFF = ( BMAX - BMIN ) / REAL(NOBUCK-1)
 
@@ -266,7 +257,7 @@
                PMSA(IP11) = BMIN
 
                IF ( NOWARN < MAXWARN ) THEN
-                  CALL DHKMRK(IKNMRK(ISEG), 3, ATTRIB )
+                  CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB )
                   IF ( ATTRIB .NE. 0 ) THEN
                      NOWARN = NOWARN + 1
                      WRITE(*,'(a,i0)')    'Quantile could not be determined for segment ', ISEG
@@ -292,3 +283,5 @@
 
       RETURN
       END
+
+      end module m_staqtl

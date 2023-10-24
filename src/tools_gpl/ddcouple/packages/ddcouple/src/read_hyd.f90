@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,7 +27,12 @@
 
       ! global declarations
 
+      use m_zoek
+      use m_monsys
+      use time_module
+      use m_get_filepath_and_pathlen
       use hydmod
+      use m_write_error_message
       use rd_token                    ! tokenized reading
       use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile
       implicit none
@@ -73,9 +78,8 @@
       integer             :: is                     ! second
       integer             :: idate                  ! date
       integer             :: itime                  ! time
-      real*8              :: julian                 ! julian function
       logical, parameter  :: untileol = .true.      ! read until the end of the line
-      
+
 
       ft_dat = ft_bin
       call getmlu(lunrep)
@@ -92,7 +96,7 @@
       ierr = 0
 
       hyd%description = ' '
-      call dhpath ( hyd%file_hyd%name, filpath, pathlen)
+      call get_filepath_and_pathlen ( hyd%file_hyd%name, filpath, pathlen)
 
       hyd%wasteload_coll%cursize = 0
       hyd%wasteload_coll%maxsize = 0
@@ -145,7 +149,7 @@
          if (itype .ne. 1) then
              goto 900
          end if
-         
+
          call zoek ( ctoken, nokey , key , 30 , ikey )
          if ( ikey .eq. 1 ) then
 
@@ -184,7 +188,7 @@
                   hyd%layer_type = HYD_LAYERS_Z
                else
                   if ( puttoken( ctoken ) .ne. 0 ) goto 900
-               end if         
+               end if
             else
                if ( puttoken( ctoken ) .ne. 0 ) goto 900
             end if
@@ -208,7 +212,7 @@
             ! convert to julian
             read (hyd%hyd_ref(1:8),'(i8)') idate
             read (hyd%hyd_ref(9:14),'(i6)') itime
-            hyd%time_ref = julian ( idate , itime )
+            hyd%time_ref = julian_with_leapyears ( idate , itime )
 
          elseif ( ikey .eq. 9 ) then
             ! hydrodynamic start
@@ -540,9 +544,9 @@
             ! file-created-by string.
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
             hyd%created_by = line(1:80)
-             
+
          elseif ( ikey .eq. 79) then
-            ! file-creation-date 
+            ! file-creation-date
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
             hyd%creation_date = line(1:40)
 
@@ -550,7 +554,7 @@
             ! sink-sources
             do
                if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
-                  if(itype==1) then 
+                  if(itype==1) then
                      ! look for end-domains keyword
                      call zoek ( ctoken, nokey , key , 30 , ikey2 )
                      if ( ikey2 .eq. 81 ) exit
@@ -565,7 +569,7 @@
 !               i_domain = domain_coll_add(hyd%domain_coll, domain)
             enddo
 
-         else    
+         else
             ! unknown keyword, ignore until the end of the line
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
 
@@ -581,5 +585,5 @@
       endif
 
       return
- 900  call dherrs('error reading hyd file ('//trim(key(ikey))//')')
+ 900  call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
       end subroutine read_hyd

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,8 +27,12 @@
 
       ! global declarations
 
+      use m_monsys
       use hydmod
       use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile
+      use delwaq_version_module
+      use m_dattim
+
       implicit none
 
       ! declaration of the arguments
@@ -52,7 +56,7 @@
       integer                   :: i_dd_bound             ! index in collection
       type(t_dd_bound),pointer  :: dd_bound               ! one dd_bound description
 
-      character(80)  version_full      !! Delft3D FLOW version information
+      character(Len=80) :: version_string_full
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
 
@@ -66,9 +70,8 @@
       call dlwqfile_open(hyd%file_hyd)
       lunhyd = hyd%file_hyd%unit_nr
 
-      version_full  = ' '
-      call getfullversionstring_ddcouple(version_full)
-      write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_full(5:))
+      call getfullversionstring_delwaq(version_string_full)
+      write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_string_full(5:))
 
       call dattim(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)

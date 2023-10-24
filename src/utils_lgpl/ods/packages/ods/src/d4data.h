@@ -1,4 +1,4 @@
-/* d4data.h   (c)Copyright Sequiter Software Inc., 1990-1993.  All rights reserved. */
+/* d4data.h   (c)Copyright Sequiter Software Inc., 1990-2023.  All rights reserved. */
 
 #ifndef S4MDX
 #ifndef S4FOX

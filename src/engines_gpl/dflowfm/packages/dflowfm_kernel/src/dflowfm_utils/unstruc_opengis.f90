@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> @file unstruc_opengis.f90
 !! Output Unstruc data in KML format.
@@ -559,7 +559,7 @@ contains
 
 !> Write D-Flow FM info+version as an OpenFOAM header into an ASCII file.
 subroutine foam_write_dflowfminfo(mout)
-    use unstruc_version_module
+    use dflowfm_version_module
     integer, intent(in) :: mout !< File unit nr for output.
 
     character(len=20) :: rundat
@@ -568,7 +568,7 @@ subroutine foam_write_dflowfminfo(mout)
 
     write(mout, '(a)')       '/*---------------------------------------------------------------------------*\ '  
     write(mout, '(a,a,a,a)') '| Generated on ', trim(rundat), repeat(' ', 79-16-len_trim(rundat)), '|'
-    write(mout, '(a,a,a,a)') '| ', trim(unstruc_version_full), repeat(' ', 79-3-len_trim(unstruc_version_full)), '|'
+    write(mout, '(a,a,a,a)') '| ', trim(version_full), repeat(' ', max(0,79-3-len_trim(version_full))), '|'
     write(mout, '(a)')       '\*---------------------------------------------------------------------------*/ ' 
 end subroutine foam_write_dflowfminfo
 

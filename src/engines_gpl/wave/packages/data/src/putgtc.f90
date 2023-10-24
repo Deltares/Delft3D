@@ -3,7 +3,7 @@ subroutine putgtc(filnam    ,grpnam    ,nelems    ,elmnms    ,elmdms    , &
                 & elmnam    ,celidt    ,wrilog    ,error     ,buffr     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                 
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                 
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine putgtc(filnam    ,grpnam    ,nelems    ,elmnms    ,elmdms    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: Read or writes character buffer to nefis files

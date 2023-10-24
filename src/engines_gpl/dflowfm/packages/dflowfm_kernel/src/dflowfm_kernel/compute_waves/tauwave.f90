@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine tauwave()
    use m_sferic
@@ -48,7 +48,7 @@
    implicit none
 
    logical                    :: javegczu
-   integer                    :: k, k1, k2, L, kb, ki, i
+   integer                    :: k, k1, k2, L, kb, ki
    double precision           :: phivr, sintu, costu
    double precision           :: fw, astar, astarc, tauwav, taucur, cdrag, tpu, z0, uorbu, fsqrtt
    double precision           :: cz, uuu, vvv, umod, umodsq, abscos, uorbhs, waveps, u2dh
@@ -67,16 +67,19 @@
 
    ! parameterized bottom friction models
 
-   taubu  = 0d0 ! flow
-   taubxu = 0d0 ! flow
-   z0urou = epsz0 ! flow 
-   cfwavhi= 0d0 
-   if (modind==9) then
-      cfhi_vanrijn = 0d0 
-   endif
-   do i = 1, wetLinkCount
-      L = onlyWetLinks(i)
-   !
+   do L = 1,lnx
+      huL=hu(L)
+      if (huL<=epshu) then
+         taubu(L)  = 0d0 ! flow
+         taubxu(L) = 0d0 ! flow
+         z0urou(L) = epsz0 ! flow 
+         cfwavhi(L)= 0d0 
+         if (modind==9) then
+            cfhi_vanrijn(L) = 0d0 
+         endif
+         cycle
+      endif
+      !
       huL = max(huL,1d-2)
       k1 = ln(1,L); k2 = ln(2,L)
       ac1 = acl(L); ac2 = 1d0-ac1
@@ -129,7 +132,7 @@
          !
          ! wave friction factor and drag coefficient
          !
-         astar  = tpu*uorbu/max(z0,1d-5)
+         astar  = tpu*uorbu/max(z0,epsz0)
 
          if (astar>astarc) then
             fw = 0.00251d0*exp(14.1d0/(astar**0.19))

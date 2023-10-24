@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
       program test4
       INTEGER*4 fds
       INTEGER ::
@@ -74,13 +74,23 @@ c
      &              'GROOTHEID 1', 'eenheid 1','Beschrijving 1',
      &               0, idum)
       if (error .ne. 0) goto 9999
+
+      error= Defelm( fds, 'ELEM_STR', 'CHARACTE', 20,
+     &              'GROOTHEID 2', 'eenheid 2','Beschrijving 2',
+     &               0, idum)
+      if (error .ne. 0) goto 9999
 c
       error= Defcel( fds, 'CEL_TEST_1', 1, 'ELEM_R_4')
+      if (error .ne. 0) goto 9999
+
+      error= Defcel( fds, 'CEL_TEST_2', 1, 'ELEM_STR')
       if (error .ne. 0) goto 9999
 c
       error= Defgrp( fds, 'GRP_TEST_1', 'CEL_TEST_1', 1, imax, 1)
       if (error .ne. 0) goto 9999
 c
+      error= Defgrp( fds, 'GRP_TEST_2', 'CEL_TEST_2', 1, imax, 1)
+      if (error .ne. 0) goto 9999
 C==========================================================
       error= Defgrp( fds, 'GRP_TEMP', 'CEL_TEST_1', 1, 1, 1)
       if (error .ne. 0) goto 9999
@@ -126,6 +136,20 @@ c
       call clock(cpu2)
       WRITE(*,'(''DATAGRP_TEST_1B written in [sec]'',1PE13.5)')
      *        cpu2-cpu1
+
+      call clock(cpu1)
+      DO 21 i= imax, 1, -1
+        UINDEX (1,1) = i
+        UINDEX (2,1) = i
+        error= Putelt( fds, 'DATAGRP_TEST_1C', '*',
+     +                 UINDEX, 1, 'ABCDEFGHIJKLMNOPQRST')
+        if (error .ne. 0) goto 9999
+ 21   CONTINUE
+
+      call clock(cpu2)
+      WRITE(*,'(''DATAGRP_TEST_1C written in [sec]'',1PE13.5)')
+     *        cpu2-cpu1
+
 c
 c=====================================================================
       write(*,*)

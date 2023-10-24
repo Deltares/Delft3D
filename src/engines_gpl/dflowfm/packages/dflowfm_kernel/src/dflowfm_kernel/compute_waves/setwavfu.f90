@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    !> subroutine to compute wave forces
    subroutine setwavfu()
@@ -43,7 +43,7 @@
    implicit none
 
    integer          :: mout
-   integer          :: L,LL,Lb,Lt, i
+   integer          :: L,LL,Lb,Lt
    double precision :: wavfx, wavfy, wavfbx, wavfby
    double precision :: wavfu_loc, wavfbu_loc, twavL, hwavL, wavfuL, wavfvL, cc
    double precision :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag,wavfang, wavfbang
@@ -76,46 +76,43 @@
    wavfv = 0d0
 
    if (kmx==0) then
-      do i = 1, wetLink2D-1
-         wavfu(L) = wavfu(L) * min(huvli(L), hminlwi) / rhomean       ! Dimensions [m/s^2]
-         wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean       ! Dimensions [m/s^2]
-      enddo
-      
-      do i = wetLink2D, wetLinkCount
-         L = onlyWetLinks(i)
-         k1 = ln(1,L) ; k2 = ln(2,L)
-         ac1 = acl(L)
-         ac2 = 1d0-ac1
+      do L = 1,lnx
+         if (hu(L) <= epshu) cycle
+         if (L > lnx1D) then
+            k1 = ln(1,L) ; k2 = ln(2,L)
+            ac1 = acl(L)
+            ac2 = 1d0-ac1
 
-         wavfx = ac1*sxwav(k1) + ac2*sxwav(k2)
-         wavfy = ac1*sywav(k1) + ac2*sywav(k2)
+            wavfx = ac1*sxwav(k1) + ac2*sxwav(k2)
+            wavfy = ac1*sywav(k1) + ac2*sywav(k2)
 
-         wavfbx = ac1*sbxwav(k1) + ac2*sbxwav(k2)
-         wavfby = ac1*sbywav(k1) + ac2*sbywav(k2)
+            wavfbx = ac1*sbxwav(k1) + ac2*sbxwav(k2)
+            wavfby = ac1*sbywav(k1) + ac2*sbywav(k2)
 
-         twavL = ac1*twav(k1)   + ac2*twav(k2)
+            twavL = ac1*twav(k1)   + ac2*twav(k2)
 
-         ! limit forces
-         fmax       = facmax*hu(L)**1.5 / max(0.1d0, twavL)
+            ! limit forces
+            fmax       = facmax*hu(L)**1.5 / max(0.1d0, twavL)
 
-         ! projection in face-normal direction
-         wavfu_loc  = wavfx*csu(L)  + wavfy*snu(L)
-         wavfv_loc  = -wavfx*snu(L)  + wavfy*csu(L)
-         wavfbu_loc = wavfbx*csu(L) + wavfby*snu(L)
-         wavfbv_loc = -wavfbx*snu(L) + wavfby*csu(L)
+            ! projection in face-normal direction
+            wavfu_loc  = wavfx*csu(L)  + wavfy*snu(L)
+            wavfv_loc  = -wavfx*snu(L)  + wavfy*csu(L)
+            wavfbu_loc = wavfbx*csu(L) + wavfby*snu(L)
+            wavfbv_loc = -wavfbx*snu(L) + wavfby*csu(L)
 
-         ! Should be done on the vector norm, nt separate comps
-         wavfmag = min(hypot(wavfu_loc,wavfv_loc),fmax)
-         wavfbmag = min(hypot(wavfbu_loc,wavfbv_loc),fmax)
-         wavfang  = atan2(wavfv_loc,wavfu_loc)
-         wavfbang  = atan2(wavfbv_loc,wavfbu_loc)    ! necessary?
-         wavfu_loc = wavfmag*cos(wavfang)
-         wavfv_loc = wavfmag*sin(wavfang)
-         wavfbu_loc = wavfbmag*cos(wavfbang)
-         wavfbv_loc = wavfbmag*sin(wavfbang)
+            ! Should be done on the vector norm, nt separate comps
+            wavfmag = min(hypot(wavfu_loc,wavfv_loc),fmax)
+            wavfbmag = min(hypot(wavfbu_loc,wavfbv_loc),fmax)
+            wavfang  = atan2(wavfv_loc,wavfu_loc)
+            wavfbang  = atan2(wavfbv_loc,wavfbu_loc)    ! necessary?
+            wavfu_loc = wavfmag*cos(wavfang)
+            wavfv_loc = wavfmag*sin(wavfang)
+            wavfbu_loc = wavfbmag*cos(wavfbang)
+            wavfbv_loc = wavfbmag*sin(wavfbang)
 
-         wavfu(L) = wavfu_loc + wavfbu_loc
-         wavfv(L) = wavfv_loc + wavfbv_loc
+            wavfu(L) = wavfu_loc + wavfbu_loc
+            wavfv(L) = wavfv_loc + wavfbv_loc
+         endif
          wavfu(L) = wavfu(L) * min(huvli(L), hminlwi) / rhomean       ! Dimensions [m/s^2]
          wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean       ! Dimensions [m/s^2]
       enddo

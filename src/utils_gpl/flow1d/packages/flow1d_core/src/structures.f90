@@ -1,7 +1,7 @@
 module m_1d_structures
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_1d_structures
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -35,14 +35,11 @@ module m_1d_structures
    use m_branch
    use m_tables
    use m_CrossSections
-   use m_Weir
    use m_Culvert
    use m_pump
-   use m_Orifice
    use m_General_Structure
    use m_Universal_Weir
    use m_Bridge
-   use m_ExtraResistance
    use m_hash_search
    use m_Dambreak
    use iso_c_utils
@@ -56,15 +53,11 @@ module m_1d_structures
 
    public addStructure
    public getStructureCount
-   public setRestartDataForStructures
-   public setValue
-   public getValue
    public reIndexCrossSections
    public getStrucType_from_string
 
    public getTableValue
    public getCrossSection
-   public getStructureById
    public GetStrucType_from_int
    public get_crest_level
    public get_crest_level_c_loc
@@ -73,24 +66,16 @@ module m_1d_structures
    public get_gate_opening_width_c_loc
    public get_gate_door_height_c_loc
    public get_width
-   public get_watershed_threshold
    public get_gle
    public get_opening_height
    public get_valve_opening
    public get_culvert_state
    public fill_hashtable
-   public set_crest_level
-   public set_crest_width
-   public set_gle
-   public set_opening_height
-   public set_valve_opening
    public incStructureCount
    public GetPumpCapacity
    public get_pump_capacity_c_loc
    public GetPumpStage
    public GetPumpReductionFactor
-   public getPumpSsLevel
-   public getPumpDsLevel
    public initialize_structure_links
    public set_fu_ru_structure
    public check_for_changes_on_structures
@@ -98,9 +83,6 @@ module m_1d_structures
    public get_discharge_under_compound_struc
    public set_u0isu1_structures
    public set_u1q1_structure
-   public reset_fu_ru_for_structure_link
-
-   public printData
 
    interface fill_hashtable
       module procedure fill_hashtable_sts
@@ -113,14 +95,6 @@ module m_1d_structures
 
    interface getTableValue
       module procedure getTableValueStruc
-   end interface
-
-   interface SetValue
-      module procedure setValueStruc
-   end interface
-
-   interface GetValue
-      module procedure getValueStruc
    end interface
 
    interface realloc
@@ -139,7 +113,7 @@ module m_1d_structures
    integer, public, parameter :: CFiValveOpening       = 22
    integer, public, parameter :: CFiSetpoint           = 29
    integer, public, parameter :: CFiHighestParameter   = 31
-    integer,         parameter :: MaxWarnings = 50
+   integer,         parameter :: MaxWarnings = 50
    integer                    :: numberOfWarnings = 0
 
     !---------------------------------------------------------
@@ -160,16 +134,13 @@ module m_1d_structures
       double precision, pointer, dimension(:) :: au => null() !< flow area
       double precision, pointer, dimension(:) :: u0 => null() !< flow velocity at previous time step
       double precision, pointer, dimension(:) :: u1 => null() !< flow velocity at current time step
-    
+
       integer                          :: compound
-      type(t_weir), pointer            :: weir => null()
-      type(t_orifice), pointer         :: orifice => null()
       type(t_pump), pointer            :: pump => null()
       type(t_culvert),pointer          :: culvert => null()
       type(t_uni_weir),pointer         :: uniweir => null()
       type(t_bridge),pointer           :: bridge => null()
       type(t_GeneralStructure),pointer :: generalst => null()
-      type(t_ExtraResistance),pointer  :: extrares => null()
       type(t_dambreak),pointer         :: dambreak => null()
    end type
 
@@ -211,12 +182,12 @@ module m_1d_structures
 
 
    contains
-   
+
    integer function AddStructure_short(sts, leftcalc, rightcalc, linknumber, icompound, compoundName, id, structureType)
       ! Modules
-   
+
       implicit none
-   
+
       ! Input/output parameters
       type(t_StructureSet) :: sts
       integer              :: leftcalc
@@ -226,16 +197,15 @@ module m_1d_structures
       character(*)         :: compoundName
       character(*)         :: id
       ! In 3Di branches have both xy and branchid, chainage
-   
+
       integer              :: structureType
-   
+
       ! Local variables
       integer :: ibranch
       double precision :: x
       double precision :: y
       double precision :: chainage
-      
-   
+
       ! Program code
       chainage = 0d0
       x = 0d0
@@ -264,7 +234,7 @@ module m_1d_structures
       integer              :: structureType
 
       ! Local variables
-      integer              :: i, j
+      integer              :: i
 
       type(t_structure), pointer       :: pstru
 
@@ -345,14 +315,11 @@ subroutine deallocstructure(sts)
    if (associated(sts%struct)) then
       length = sts%size
       do i = 1, length
-         if (associated(sts%struct(i)%weir))       deallocate(sts%struct(i)%weir)
-         if (associated(sts%struct(i)%orifice))    deallocate(sts%struct(i)%orifice)
          if (associated(sts%struct(i)%pump))       call dealloc(sts%struct(i)%pump)
          if (associated(sts%struct(i)%culvert))    call dealloc(sts%struct(i)%culvert)
          if (associated(sts%struct(i)%uniweir))    call dealloc(sts%struct(i)%uniweir)
          if (associated(sts%struct(i)%bridge))     deallocate(sts%struct(i)%bridge)
          if (associated(sts%struct(i)%generalst))  call dealloc(sts%struct(i)%generalst)
-         if (associated(sts%struct(i)%extrares))   call dealloc(sts%struct(i)%extrares)
          if (associated(sts%struct(i)%xCoordinates)) deallocate(sts%struct(i)%xCoordinates)
          if (associated(sts%struct(i)%yCoordinates)) deallocate(sts%struct(i)%yCoordinates)
          if (associated(sts%struct(i)%linknumbers))  deallocate(sts%struct(i)%linknumbers)
@@ -361,15 +328,12 @@ subroutine deallocstructure(sts)
          if (associated(sts%struct(i)%au))           deallocate(sts%struct(i)%au)
          if (associated(sts%struct(i)%u0))           deallocate(sts%struct(i)%u0)
          if (associated(sts%struct(i)%u1))           deallocate(sts%struct(i)%u1)
-         
-         sts%struct(i)%weir         => null()
-         sts%struct(i)%orifice      => null()
+
          sts%struct(i)%pump         => null()
          sts%struct(i)%culvert      => null()  
          sts%struct(i)%uniweir      => null() 
          sts%struct(i)%bridge       => null() 
          sts%struct(i)%generalst    => null()
-         sts%struct(i)%extrares     => null()
          sts%struct(i)%xCoordinates => null()
          sts%struct(i)%yCoordinates => null()
          sts%struct(i)%linknumbers  => null()
@@ -467,152 +431,6 @@ end subroutine deallocstructure
       endif
    end subroutine getCrossSection
 
-   !> Set structure parameter
-   logical function setValueStruc(sts, istru, iparam, value)
-      use m_GlobalParameters
-      
-      ! Modules
-
-      implicit none
-
-      ! Input/output parameters
-      type(t_structureSet)             :: sts         !< set containing structure data
-      integer                          :: istru       !< structure sequence number
-      integer                          :: iparam      !< parameter to be changed
-      double precision                 :: value       !< new value
-
-!
-!
-! Local variables
-!
-      character(IdLen)                   :: line
-!
-!
-!! executable statements -------------------------------------------------------
-!
-       SetValueStruc = .true.
-       if (iparam==CFiCrestWidth .and. value < 0.0) then
-          line = 'The crest width for structure with id: '//trim(sts%struct(istru)%id) //' is less than zero.'
-          call setMessage(LEVEL_ERROR, line)
-          return
-       endif
-
-       select case (sts%struct(istru)%type)
-       case (ST_WEIR)
-          select case (iparam)
-          case (CFiCrestLevel)
-             sts%struct(istru)%weir%crestlevel=value
-          case (CFiCrestWidth)
-             sts%struct(istru)%weir%crestwidth=value
-          case default
-             SetValueStruc = .false.
-          end select
-       case (ST_ORIFICE)
-          select case (iparam)
-          case (CFiCrestLevel)
-             sts%struct(istru)%orifice%crestlevel=value
-          case (CFiCrestWidth)
-             sts%struct(istru)%orifice%crestwidth=value
-          case (CFiGateOpeningHeight)
-             sts%struct(istru)%orifice%openlevel=value - sts%struct(istru)%orifice%crestlevel
-          case (CFiGateLowerEdgeLevel)
-             sts%struct(istru)%orifice%openlevel =value
-          case default
-             SetValueStruc = .false.
-          end select
-       case (ST_CULVERT)
-          if (iparam==CFiValveOpening) then
-             sts%struct(istru)%culvert%valveOpening=value
-          else
-            SetValueStruc = .false.
-          endif
-       case (ST_PUMP)
-          if (iparam==CFiPumpCapacity) then
-             sts%struct(istru)%pump%capacity(1) = value
-           else
-             SetValueStruc = .false.
-           endif
-       case (ST_GENERAL_ST)
-          select case (iparam)
-          case (CFiCrestLevel)
-             sts%struct(istru)%generalst%zs=value
-          case (CFiCrestWidth)
-             sts%struct(istru)%generalst%ws=value
-          case (CFiGateLowerEdgeLevel)
-             sts%struct(istru)%generalst%gateLowerEdgeLevel =value
-          case (CFiGateOpeningHeight)
-             sts%struct(istru)%generalst%gateLowerEdgeLevel =value + sts%struct(istru)%generalst%zs
-          case default
-             SetValueStruc = .false.
-          end select
-       case default
-         !nothing
-       end select
-
-       if (.not. allocated(sts%restartData).and. (sts%count > 0)) then
-          allocate(sts%restartData(sts%count, CFiHighestParameter))
-          sts%restartData = missingValue
-       endif
-
-       if (iparam <= CFiHighestParameter) then
-          sts%restartData(istru, iparam) = value
-       else
-          SetValueStruc = .false.
-       endif
-
-   end function setValueStruc
-
-   !> Get structure parameter
-   double precision function getValueStruc(sts, istru, iparam)
-      ! Modules
-
-      implicit none
-
-      ! Input/output parameters
-      type(t_structureSet)             :: sts         !< set containing structure data
-      integer                          :: istru       !< structure sequence number
-      integer                          :: iparam      !< parameter of interest
-!
-!
-! Local variables
-!
-      character(IdLen)                   :: line
-!
-!
-!! executable statements -------------------------------------------------------
-!
-       select case (sts%struct(istru)%type)
-       case (ST_WEIR)
-           if (iparam == CFiCrestLevel) getValueStruc = sts%struct(istru)%weir%crestlevel
-           if (iparam == CFiCrestWidth) getValueStruc = sts%struct(istru)%weir%crestwidth
-       case (ST_ORIFICE)
-           if (iparam == CFiCrestLevel)         getValueStruc = sts%struct(istru)%orifice%crestlevel
-           if (iparam == CFiCrestWidth)         getValueStruc = sts%struct(istru)%orifice%crestwidth
-           if (iparam == CFiGateLowerEdgeLevel) getValueStruc = sts%struct(istru)%orifice%openlevel
-           if (iparam == CFiGateOpeningHeight)  getValueStruc = sts%struct(istru)%orifice%openlevel - sts%struct(istru)%orifice%crestlevel
-       case (ST_CULVERT)
-           if (iparam == CFiCrestLevel)         getValueStruc = sts%struct(istru)%orifice%crestlevel
-           if (iparam == CFiGateLowerEdgeLevel) getValueStruc = sts%struct(istru)%orifice%openlevel
-           if (iparam == CFiGateOpeningHeight)  getValueStruc = sts%struct(istru)%orifice%openlevel - sts%struct(istru)%orifice%crestlevel
-       case (ST_PUMP)
-           getValueStruc = sts%struct(istru)%pump%capacity(1)
-       case (ST_GENERAL_ST)
-           if (iparam == CFiCrestLevel)         getValueStruc = sts%struct(istru)%generalst%zs
-           if (iparam == CFiCrestWidth)         getValueStruc = sts%struct(istru)%generalst%ws
-           if (iparam == CFiGateLowerEdgeLevel) getValueStruc = sts%struct(istru)%generalst%gateLowerEdgeLevel
-           if (iparam == CFiGateOpeningHeight)  getValueStruc = sts%struct(istru)%generalst%gateLowerEdgeLevel - sts%struct(istru)%generalst%zs
-       case default
-         !nothing
-       end select
-
-       if (iparam == CFiCrestWidth .and. getValueStruc < 0.0) then
-          line = 'The crest width for structure with id: '//trim(sts%struct(istru)%id) //' is less than zero.'
-          call setMessage(LEVEL_ERROR, line)
-          return
-       endif
-
-   end function getValueStruc
-
    subroutine reIndexCrossSections(sts, crs)
       ! modules
 
@@ -642,34 +460,6 @@ end subroutine deallocstructure
       enddo
 
    end subroutine reIndexCrossSections
-
-   subroutine SetRestartDataForStructures(sts)
-
-      ! modules
-      use m_globalParameters
-      implicit none
-
-      ! variables
-      type(t_structureSet)             :: sts       !< Current structure set
-
-      ! local variables
-      integer iparam, istru
-      logical success
-
-      !program code
-      success = .true.
-      do istru = 1, sts%count
-         do iparam = 1, CFiHighestParameter
-            if (abs(sts%restartData(istru, iparam) - missingValue) > 1d0) then
-               success = success .and. setValueStruc(sts, istru, iparam, dble(sts%restartData(istru, iparam)))
-            endif
-         enddo
-      enddo
-      if (.not. success) then
-         call setMessage(LEVEL_FATAL,"INTERNAL ERROR: inconsistent restart data for RTC-controlled structure data")
-      endif
-
-   end subroutine SetRestartDataForStructures
 
    integer function GetStrucType_from_string(string)
       use string_module
@@ -735,23 +525,6 @@ end subroutine deallocstructure
       end select
    end subroutine GetStrucType_from_int
 
-   function getStructureById(sts, id) result(pstru)
-      type(t_structureSet), intent(in)    :: sts       !< Current structure set
-      character(len=*), intent(in)        :: id
-      type(t_structure), pointer          :: pstru
-
-      integer :: istruc
-
-      pstru => null()
-      do istruc = 1, sts%count
-         if (trim(sts%struct(istruc)%id) == trim(id)) then
-            pstru => sts%struct(istruc)
-         endif
-      enddo
-      ! not found: return -1
-
-   end function getStructureById
-
    !> Gets the current value of the crest level for a given structure.
    !! If the type of the given structure does not have a crest, then it gets a dummy high value 1d10.
    !! The value is the actual value, e.g., %zs_actual, so it may differ from %zs
@@ -760,17 +533,13 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_WEIR)
-             get_crest_level = struc%weir%crestlevel
           case (ST_UNI_WEIR)
              get_crest_level = struc%uniweir%crestlevel_actual
-          case (ST_ORIFICE)
-             get_crest_level = struc%orifice%crestlevel
           case (ST_CULVERT)
              get_crest_level = max(struc%culvert%leftlevel, struc%culvert%rightlevel)
           case (ST_PUMP)
              get_crest_level = huge(1d0)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE)
              get_crest_level = struc%generalst%zs_actual
           case (ST_BRIDGE)
              get_crest_level = struc%bridge%bedLevel
@@ -788,13 +557,9 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_WEIR)
-             get_crest_level_c_loc = c_loc(struc%weir%crestlevel)
           case (ST_UNI_WEIR)
              get_crest_level_c_loc = c_loc(struc%uniweir%crestlevel)
-          case (ST_ORIFICE)
-             get_crest_level_c_loc = c_loc(struc%orifice%crestlevel)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE)
              get_crest_level_c_loc = c_loc(struc%generalst%zs)
           case default
              get_crest_level_c_loc = C_NULL_PTR
@@ -810,9 +575,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_ORIFICE)
-             get_gate_lower_edge_level_c_loc = c_loc(struc%orifice%openlevel)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_ORIFICE)
              get_gate_lower_edge_level_c_loc = c_loc(struc%generalst%gateLowerEdgeLevel)
           case default
              get_gate_lower_edge_level_c_loc = C_NULL_PTR
@@ -872,43 +635,20 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_WEIR)
-             get_width = struc%weir%crestwidth
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_ORIFICE, ST_WEIR)
              get_width = struc%generalst%ws_actual
-          case (ST_ORIFICE)
-             get_width = struc%orifice%crestwidth
           case default
              get_width = huge(1d0)
        end select
 
    end function get_width
 
-
-   !> Returns the threshold level for a structure that determines how it blocks incoming water levels.
-   !! This can typically be used to initialize 1D water levels along branches, in between structures.
-   !! Most structures have their watershed threshold identical to their crest level, but some (orifice)
-   !! always keep the left and right levels separated.
-   double precision function get_watershed_threshold(struc)
-      type(t_structure), intent(in) :: struc
-      
-       select case (struc%type)
-       case (ST_ORIFICE)
-          get_watershed_threshold = huge(1d0)
-       case default
-          get_watershed_threshold = get_crest_level(struc)
-       end select
-
-   end function get_watershed_threshold
-   
    double precision function get_gle(struc)
       
       type (t_structure), intent(inout) :: struc
       
       select case(struc%type)
-      case (ST_ORIFICE)
-         get_gle = struc%orifice%openlevel 
-      case (ST_GENERAL_ST)
+      case (ST_GENERAL_ST, ST_ORIFICE)
          get_gle = struc%generalst%gateLowerEdgeLevel_actual
       case (ST_CULVERT)
          get_gle = max(struc%culvert%leftlevel, struc%culvert%rightlevel) + struc%culvert%valveOpening
@@ -922,9 +662,7 @@ end subroutine deallocstructure
       type (t_structure), intent(inout) :: struc
       
       select case(struc%type)
-      case (ST_ORIFICE)
-         get_opening_height = struc%orifice%openlevel - struc%orifice%crestlevel
-      case (ST_GENERAL_ST)
+      case (ST_GENERAL_ST, ST_ORIFICE)
          get_opening_height = struc%generalst%gateLowerEdgeLevel_actual - struc%generalst%zs_actual
       case (ST_CULVERT)
          get_opening_height = struc%culvert%valveOpening
@@ -1017,78 +755,7 @@ end subroutine deallocstructure
       call hashfill(sts%hashlist_structure   )
       
    end subroutine fill_hashtable_sts
-   
-   subroutine set_crest_level(struc, value)
-   
-      type (t_structure), intent(inout) :: struc
-      double precision, intent(in)      :: value
-   
-      select case(struc%type)
-      case (ST_WEIR)
-         struc%weir%crestlevel=value
-      case (ST_ORIFICE)
-         struc%orifice%crestlevel=value
-      case (ST_UNI_WEIR)
-         struc%uniweir%crestlevel=value
-      case (ST_GENERAL_ST)
-         struc%generalst%zs=value
-      case default
-         !nothing
-      end select
-   end subroutine set_crest_level
 
-   subroutine set_crest_width(struc, value)
-      
-      type (t_structure), intent(inout) :: struc
-      double precision, intent(in)      :: value
-      
-      select case(struc%type)
-      case (ST_WEIR)
-         struc%weir%crestwidth=value
-      case (ST_ORIFICE)
-         struc%orifice%crestwidth=value
-      case (ST_GENERAL_ST)
-         struc%generalst%ws=value
-      end select
-   end subroutine set_crest_width
-
-   subroutine set_gle(struc, value)
-      
-      type (t_structure), intent(inout) :: struc
-      double precision, intent(in)      :: value
-      
-      select case(struc%type)
-      case (ST_ORIFICE)
-         struc%orifice%openlevel =value
-      case (ST_GENERAL_ST)
-         struc%generalst%gateLowerEdgeLevel =value
-      end select
-   end subroutine set_gle
-   
-   subroutine set_opening_height(struc, value)
-      
-      type (t_structure), intent(inout) :: struc
-      double precision, intent(in)      :: value
-      
-      select case(struc%type)
-      case (ST_ORIFICE)
-         struc%orifice%openlevel=value + struc%orifice%crestlevel
-      case (ST_GENERAL_ST)
-         struc%generalst%gateLowerEdgeLevel =value + struc%generalst%zs
-      end select
-   end subroutine set_opening_height
-   
-   subroutine set_valve_opening(struc, value)
-      
-      type (t_structure), intent(inout) :: struc
-      double precision, intent(in)      :: value
-      
-      select case(struc%type)
-      case (ST_CULVERT)
-         struc%culvert%valveOpening=value
-      end select
-   end subroutine set_valve_opening
-   
    !> Gets pump capacity, in the direction of the pump's orientation.
    !! (So possibly negative, when direction < 0.)
    double precision function GetPumpCapacity(stru)
@@ -1153,33 +820,6 @@ end subroutine deallocstructure
 
       GetPumpReductionFactor = stru%pump%reduction_factor
    end function GetPumpReductionFactor
-
-
-   !> Gets pump suction side level that was used in latest prepareComputePump call.
-   double precision function getPumpSsLevel(stru)
-      implicit none   
-      type(t_structure), intent(in)   :: stru !< Structure
-         
-      if (stru%type /= ST_PUMP) then
-         return
-      end if
-
-      getPumpSsLevel = stru%pump%ss_level
-   end function getPumpSsLevel
-
-
-   !> Gets pump delivery side level that was used in latest prepareComputePump call.
-   double precision function getPumpDsLevel(stru)
-      implicit none   
-      type(t_structure), intent(in)   :: stru !< Structure
-         
-      if (stru%type /= ST_PUMP) then
-         return
-      end if
-
-      getPumpDsLevel = stru%pump%ds_level
-   end function getPumpDsLevel
-
 
    !> Initializes the flow link administration for a single structure.
    function initialize_structure_links(struct, numlinks, links, wu) result(istat)
@@ -1332,8 +972,6 @@ end subroutine deallocstructure
       double precision,   intent(in)    :: s1k1, s1k2  !< water level on nodes k1 and k2
       double precision,   intent(in)    :: teta        !< Theta-value of theta-time-integration for this flow link.
 
-      double precision :: u1
-      
       ! NOTE: pstru%u1 must have been calculated before in set_u1q1_structure()
       get_discharge_under_compound_struc = pstru%au(L0)* (teta * pstru%u1(L0) + (1d0-teta) * pstru%u0(L0))
 
@@ -1377,36 +1015,4 @@ end subroutine deallocstructure
       
    end subroutine set_u1q1_structure
 
-   !> Set fu and ru to zero, when a structure link is closed
-   subroutine reset_fu_ru_for_structure_link(L, lin2str, struct)
-      integer,                         intent(in   )  :: L           !< Link number
-      integer, dimension(:),           intent(in   )  :: lin2str     !< Indirection table from L to structure number
-      type(t_structure), dimension(:), intent(inout)  :: struct      !< Array containing structure information
-      
-      integer :: istru
-      integer :: i, L0
-      
-      if (L > size(lin2str) ) then
-         return
-      endif
-      
-      if (lin2str(L) > 0) then
-         istru = lin2str(L)
-         do i = 1, struct(istru)%numlinks
-            if (L==abs(struct(istru)%linknumbers(i))) then
-               L0 = i
-            endif
-         enddo
-         struct(istru)%fu(L0) = 0d0
-         struct(istru)%ru(L0) = 0d0
-         struct(istru)%au(L0) = 0d0
-         if (struct(istru)%type == ST_GENERAL_ST) then
-            struct(istru)%generalst%fu(:,L0) = 0d0
-            struct(istru)%generalst%ru(:,L0) = 0d0
-            struct(istru)%generalst%au(:,L0) = 0d0
-         endif
-      endif
-      
-   end subroutine reset_fu_ru_for_structure_link
-   
 end module m_1d_structures

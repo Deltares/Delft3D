@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistzoo
+
+implicit none
+
+contains
+
 
 
   ! 6 char name for process mathc with second line of PDF
@@ -29,6 +35,7 @@ subroutine PROZOO     ( pmsa   , fl     , ipoint , increm, noseg , &
 !
 !*******************************************************************************
 !
+use m_evaluate_waq_attribute
 use protist_math_functions
 use protist_cell_functions
 use protist_phagotrophy_functions
@@ -158,7 +165,7 @@ use ieee_arithmetic
 
     ! segment loop
     segmentLoop: do iseg = 1 , noseg
-        call dhkmrk(1,iknmrk(iseg),ikmrk1)
+        call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1.eq.1) then
 
             Temp      = PMSA(ipnt(   3 ))   !   temperature                                            (C)
@@ -402,3 +409,5 @@ use ieee_arithmetic
     return
   end ! end subroutine
 
+
+end module m_protistzoo

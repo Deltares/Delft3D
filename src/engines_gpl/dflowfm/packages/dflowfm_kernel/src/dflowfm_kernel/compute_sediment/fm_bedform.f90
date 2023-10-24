@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 module m_calbedform
    
@@ -295,7 +295,7 @@ subroutine fm_calbf()
     use m_sediment, only: stmpar, sedtra
     use m_physcoef, only: ag
     use m_flowtimes, only: dts, dnt, time1, tfac, dt_user, tstart_user
-    use m_flowgeom, only: ndxi, lnxi, ndx, lnx, kfs, wcx1, wcx2,wcy1,wcy2, ln, wu, nd, ba, onlywetLinks, wetlinkcount
+    use m_flowgeom, only: ndxi, lnxi, ndx, lnx, kfs, wcx1, wcx2,wcy1,wcy2, ln, wu, nd, ba
     use m_flow, only: hs, hu, u1, v, au, plotlin, kmx
     use m_flowparameters, only: epshu, epshs
     use unstruc_files, only: mdia
@@ -313,7 +313,7 @@ subroutine fm_calbf()
     ! 
     integer                                   :: nm, k1, k2, k, kb, ki, n, Lb, Lt
     integer                                   :: lsed
-    integer                                   :: L, i
+    integer                                   :: L
     integer                                   :: istat
     integer                                   :: ierror
     integer                                   :: kk
@@ -440,33 +440,35 @@ subroutine fm_calbf()
           ! 2 and 3.
           !
           if (bdfrlxtype /= 1 .or. lfbedfrmADV) then
-            ! CH = aC*(U^bC)/H
-            hpow = (cdpar(2)-1.0_fp)/2.0_fp
-            ubedform = 0.0_fp
-            qbedformn = 0.0_fp
-            qbedformt = 0.0_fp
-            do i = 1, wetLinkCount
-                L = onlyWetLinks(i)
-                            !
-                ! Compute bedform celerity
-                !
-                if (kmx>0) then
-                   call getLbotLtop(L, Lb, Lt)
-                   umean = sum(u1(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
-                   vmean = sum(v(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
+             ! CH = aC*(U^bC)/H
+             hpow = (cdpar(2)-1.0_fp)/2.0_fp
+             ubedform = 0.0_fp
+             do L = 1, lnx
+                if (hu(L) > epshu) then
+                   !
+                   ! Compute bedform celerity
+                   !
+                   if (kmx>0) then
+                      call getLbotLtop(L, Lb, Lt)
+                      umean = sum(u1(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
+                      vmean = sum(v(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
+                   else
+                      umean = u1(L); vmean = v(L)
+                   endif   
+                   utot2 = umean**2+vmean**2   ! has to be depth-averaged value
+                   qbedformn(L) = cdpar(1)*(utot2**hpow)*umean/hu(L)
+                   qbedformt(L) = cdpar(1)*(utot2**hpow)*vmean/hu(L)
+                   ubedformu(L) = qbedformn(L)
+                   ! to nodes
+                   k1 = ln(1,L); k2 = ln(2,L)
+                   uxbf(k1) = uxbf(k1) + qbedformn(L)*wcx1(L)
+                   uybf(k1) = uybf(k1) + qbedformn(L)*wcy1(L)
+                   uxbf(k2) = uxbf(k2) + qbedformn(L)*wcx2(L)
+                   uybf(k2) = uybf(k2) + qbedformn(L)*wcy2(L)
                 else
-                   umean = u1(L); vmean = v(L)
-                endif   
-                utot2 = umean**2+vmean**2   ! has to be depth-averaged value
-                qbedformn(L) = cdpar(1)*(utot2**hpow)*umean/hu(L)
-                qbedformt(L) = cdpar(1)*(utot2**hpow)*vmean/hu(L)
-                ubedformu(L) = qbedformn(L)
-                ! to nodes
-                k1 = ln(1,L); k2 = ln(2,L)
-                uxbf(k1) = uxbf(k1) + qbedformn(L)*wcx1(L)
-                uybf(k1) = uybf(k1) + qbedformn(L)*wcy1(L)
-                uxbf(k2) = uxbf(k2) + qbedformn(L)*wcx2(L)
-                uybf(k2) = uybf(k2) + qbedformn(L)*wcy2(L)
+                   qbedformn(L) = 0.0_fp
+                   qbedformt(L) = 0.0_fp
+                end if
              enddo
              !
              do k = 1, ndx
@@ -480,38 +482,40 @@ subroutine fm_calbf()
           endif
        case(4)
 !          ! CH = max[(H/H_max)^CHp,G_min] * CHn * S / [H * (1-Fr^2)]
-         qbedformn = 0.0_fp
-         qbedformt = 0.0_fp
-         do i = 1, wetLinkCount
-            L = onlyWetLinks(i)
-                !
+          do L = 1, lnx
+             !
              ! Compute bedform celerity
              !
              ubedform = 0.0_fp
-             gamma = min(max((hu(L)/bdfHmax)**bdfC_Hp,bdfGmin),1.0_fp)
-             if (kmx>0) then
-                call getLbotLtop(L, Lb, Lt)
-                umean = sum(u1(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
-                vmean = sum(v(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
+             if (hu(L) > epshu) then
+                gamma = min(max((hu(L)/bdfHmax)**bdfC_Hp,bdfGmin),1.0_fp)
+                if (kmx>0) then
+                   call getLbotLtop(L, Lb, Lt)
+                   umean = sum(u1(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
+                   vmean = sum(v(Lb:Lt)*(hu(Lb:Lt)-hu(Lb-1:Lt-1)))/hu(L)
+                else
+                   umean = u1(L); vmean = v(L)
+                endif   
+                fr_loc2 = umean**2+vmean**2
+                fr_loc2 = fr_loc2/ag/hu(L)
+                sbu = 0.0_fp
+                sbv = 0.0_fp
+                do lsed = 1, lsedtot
+                   sbu = sbu + e_sbn(L,lsed)
+                   sbv = sbv + e_sbt(L,lsed)
+                enddo
+                qbedformn(L) = gamma*bdfC_Hn*sbu/hu(L)/max(1.0_fp-fr_loc2,0.1_fp)
+                qbedformt(L) = gamma*bdfC_Hn*sbv/hu(L)/max(1.0_fp-fr_loc2,0.1_fp)
+                ubedformu(L) = qbedformn(L)
+                k1 = ln(1,L); k2 = ln(2,L)
+                uxbf(k1) = uxbf(k1) + qbedformn(L)*wcx1(L)
+                uybf(k1) = uybf(k1) + qbedformn(L)*wcy1(L)
+                uxbf(k2) = uxbf(k2) + qbedformn(L)*wcx2(L)
+                uybf(k2) = uybf(k2) + qbedformn(L)*wcy2(L)
              else
-                umean = u1(L); vmean = v(L)
-             endif   
-             fr_loc2 = umean**2+vmean**2
-             fr_loc2 = fr_loc2/ag/hu(L)
-             sbu = 0.0_fp
-             sbv = 0.0_fp
-             do lsed = 1, lsedtot
-                sbu = sbu + e_sbn(L,lsed)
-                sbv = sbv + e_sbt(L,lsed)
-             enddo
-             qbedformn(L) = gamma*bdfC_Hn*sbu/hu(L)/max(1.0_fp-fr_loc2,0.1_fp)
-             qbedformt(L) = gamma*bdfC_Hn*sbv/hu(L)/max(1.0_fp-fr_loc2,0.1_fp)
-             ubedformu(L) = qbedformn(L)
-             k1 = ln(1,L); k2 = ln(2,L)
-             uxbf(k1) = uxbf(k1) + qbedformn(L)*wcx1(L)
-             uybf(k1) = uybf(k1) + qbedformn(L)*wcy1(L)
-             uxbf(k2) = uxbf(k2) + qbedformn(L)*wcx2(L)
-             uybf(k2) = uybf(k2) + qbedformn(L)*wcy2(L)
+                qbedformn(L) = 0.0_fp
+                qbedformt(L) = 0.0_fp
+             end if
           end do
           !
           do k = 1, ndx
@@ -689,6 +693,7 @@ subroutine fm_calksc()
     integer                                        :: kmaxx
     real(fp)                                       :: par1, par2, par3, par4, par5, par6
     real(fp)                                       :: relaxr, relaxmr, relaxd
+    real(fp)                                       :: llabda  ! local limited rlabda value
     real(fp)                                       :: maxdepfrac, zcc, zz
     real(fp)                                       :: hh, arg, uw, rr, umax, t1, uu, a11, raih, rmax, uon, uoff, uwbih, depth, umod, u2dh
     real(fp)                                       :: d50l, d90l, fch2, fcoarse, uwc, psi, rksr0, rksmr0, rksd0, cz_dum, z00
@@ -814,7 +819,8 @@ subroutine fm_calksc()
              !
              if (jawave>0 .and. .not. flowWithoutWaves) then
                 hh  = hwav(k) * sqrt(2.0_fp)
-                arg = 2.0_fp * pi * depth / max(rlabda(k),0.1)
+                llabda = max(0.1_fp, rlabda(k))
+                arg = 2.0_fp * pi * depth / llabda
                 if (arg > 50.0_fp) then
                    uw = 0.0_fp
                 else
@@ -826,7 +832,7 @@ subroutine fm_calksc()
                 uu    = umax / (ag*depth)**0.5_fp
                 a11   = -0.0049_fp*t1**2 - 0.069_fp*t1 + 0.2911_fp
                 raih  = max(0.5_fp  , -5.25_fp - 6.1_fp*tanh(a11*uu-1.76_fp))
-                rmax  = max(0.62_fp , min(0.75_fp , -2.5_fp*depth/max(rlabda(k),0.1)+0.85_fp))
+                rmax  = max(0.62_fp , min(-2.5_fp*depth/llabda+0.85_fp, 0.75_fp))
                 uon   = umax * (0.5_fp+(rmax-0.5_fp)*tanh((raih-0.5_fp)/(rmax-0.5_fp)))
                 uoff  = umax - uon
                 uon   = max(1.0e-5_fp , uon)

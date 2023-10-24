@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaqg
+use m_inverm
+
+
+implicit none
+
+contains
+
 
      subroutine DLWQG2     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+     use m_monsys
+     use m_write_error_message
+     use m_evaluate_waq_attribute
+
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'DLWQG2' :: DLWQG2
 !
 !*******************************************************************************
@@ -741,47 +753,47 @@
               if (increm(item).ne.0) then
                   errorstring = 'Input item _____ is not supposed to be space dependent'
                   write (errorstring(12:16),'(i5)') item
-                  CALL ERRSYS (errorstring, 1 )
+                  CALL write_error_message (errorstring)
               endif
           enddo
 
           ! validity checks
-          IF (kdpo4aap .LT. 0.0) CALL ERRSYS ('kdpo4aap negative', 1 )
-          IF (a_dNpr .LT. 1E-30) CALL ERRSYS ('DECDET: a_dNpr =< 0', 1 )
-          IF (a_dPpr .LT. 1E-30) CALL ERRSYS ('DECDET: a_dPpr =< 0', 1 )
-          IF (a_dSpr .LT. 1E-30) CALL ERRSYS ('DECDET: a_dSpr =< 0', 1 )
+          IF (kdpo4aap .LT. 0.0) CALL write_error_message ('kdpo4aap negative')
+          IF (a_dNpr .LT. 1E-30) CALL write_error_message ('DECDET: a_dNpr =< 0')
+          IF (a_dPpr .LT. 1E-30) CALL write_error_message ('DECDET: a_dPpr =< 0')
+          IF (a_dSpr .LT. 1E-30) CALL write_error_message ('DECDET: a_dSpr =< 0')
 
-          IF (al_dNf .LT. 1E-30) CALL ERRSYS ('DECDET: al_dN/F/M/S/ =< 0', 1 )
-          IF (al_dPf .LT. 1E-30) CALL ERRSYS ('DECDET: al_dP/F/M/S/ =< 0', 1 )
-          IF (au_dNf .LT. 1E-30) CALL ERRSYS ('DECDET: au_dN/F/M/S/ =< 0', 1 )
-          IF (au_dPf .LT. 1E-30) CALL ERRSYS ('DECDET: au_dP/F/M/S/ =< 0', 1 )
-          IF (al_dNm .LT. 1E-30) CALL ERRSYS ('DECDET: al_dN/F/M/S/ =< 0', 1 )
-          IF (al_dPm .LT. 1E-30) CALL ERRSYS ('DECDET: al_dP/F/M/S/ =< 0', 1 )
-          IF (au_dNm .LT. 1E-30) CALL ERRSYS ('DECDET: au_dN/F/M/S/ =< 0', 1 )
-          IF (au_dPm .LT. 1E-30) CALL ERRSYS ('DECDET: au_dP/F/M/S/ =< 0', 1 )
-          IF (al_dNs .LT. 1E-30) CALL ERRSYS ('DECDET: al_dN/F/M/S/ =< 0', 1 )
-          IF (al_dPs .LT. 1E-30) CALL ERRSYS ('DECDET: al_dP/F/M/S/ =< 0', 1 )
-          IF (au_dNs .LT. 1E-30) CALL ERRSYS ('DECDET: au_dN/F/M/S/ =< 0', 1 )
-          IF (au_dPs .LT. 1E-30) CALL ERRSYS ('DECDET: au_dP/F/M/S/ =< 0', 1 )
+          IF (al_dNf .LT. 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
+          IF (al_dPf .LT. 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
+          IF (au_dNf .LT. 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
+          IF (au_dPf .LT. 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
+          IF (al_dNm .LT. 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
+          IF (al_dPm .LT. 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
+          IF (au_dNm .LT. 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
+          IF (au_dPm .LT. 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
+          IF (al_dNs .LT. 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
+          IF (al_dPs .LT. 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
+          IF (au_dNs .LT. 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
+          IF (au_dPs .LT. 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
 !
 !         Errors if upper limits =< lower limits
 !
-          IF (au_dNf .LT. al_dNf)  CALL ERRSYS ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ',1)
-          IF (au_dPf .LT. al_dPf)  CALL ERRSYS ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ',1)
-          IF (au_dNm .LT. al_dNm)  CALL ERRSYS ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ',1)
-          IF (au_dPm .LT. al_dPm)  CALL ERRSYS ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ',1)
-          IF (au_dNs .LT. al_dNs)  CALL ERRSYS ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ',1)
-          IF (au_dPs .LT. al_dPs)  CALL ERRSYS ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ',1)
+          IF (au_dNf .LT. al_dNf)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
+          IF (au_dPf .LT. al_dPf)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
+          IF (au_dNm .LT. al_dNm)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
+          IF (au_dPm .LT. al_dPm)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
+          IF (au_dNs .LT. al_dNs)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
+          IF (au_dPs .LT. al_dPs)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
 
-          IF (ku_dFdcC20 .LT. kl_dFdcC20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ',1)
-          IF (ku_dFdcN20 .LT. kl_dFdcN20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ',1)
-          IF (ku_dFdcP20 .LT. kl_dFdcP20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ',1)
-          IF (ku_dMdcC20 .LT. kl_dMdcC20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ',1)
-          IF (ku_dMdcN20 .LT. kl_dMdcN20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ',1)
-          IF (ku_dMdcP20 .LT. kl_dMdcP20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ',1)
-          IF (ku_dSdcC20 .LT. kl_dSdcC20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ',1)
-          IF (ku_dSdcN20 .LT. kl_dSdcN20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ',1)
-          IF (ku_dSdcP20 .LT. kl_dSdcP20) CALL ERRSYS ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ',1)
+          IF (ku_dFdcC20 .LT. kl_dFdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
+          IF (ku_dFdcN20 .LT. kl_dFdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
+          IF (ku_dFdcP20 .LT. kl_dFdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
+          IF (ku_dMdcC20 .LT. kl_dMdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
+          IF (ku_dMdcN20 .LT. kl_dMdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
+          IF (ku_dMdcP20 .LT. kl_dMdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
+          IF (ku_dSdcC20 .LT. kl_dSdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
+          IF (ku_dSdcN20 .LT. kl_dSdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
+          IF (ku_dSdcP20 .LT. kl_dSdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
 
 
           ! Switches
@@ -792,17 +804,13 @@
 
           ! Check if sum of array dl equals input fixed layer thickness
           thick = sum(dl)
-          IF (abs(thick-Th_DelwaqG).gt.0.01*Th_DelwaqG) CALL ERRSYS ('Inconsistent layer definition (check Th_DelwaqG)',1)
+          IF (abs(thick-Th_DelwaqG).gt.0.01*Th_DelwaqG) CALL write_error_message ('Inconsistent layer definition (check Th_DelwaqG)')
 
           ! Determine 2D structure, first find dimension and next fill a mapping array
           noseg2d = 0
           do iseg = 1,noseg
-              CALL DHKMRK(1,IKNMRK(iseg),iatt1) ! pick up first attribute
-              CALL DHKMRK(2,IKNMRK(iseg),iatt2) ! pick up second attribute
-!             if (iatt1.gt.0) then
-!                 if (iatt2.eq.0.or.iatt2.eq.3) then
-!                     noseg2d = noseg2d+1
-!                 endif
+              CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+              CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
               if (iatt2.eq.0.or.iatt2.eq.3) then
                   noseg2d = noseg2d+1
               endif
@@ -811,14 +819,9 @@
           bottomsegments = 0
           itel = 0
           do iseg = 1,noseg
-              CALL DHKMRK(1,IKNMRK(iseg),iatt1) ! pick up first attribute
-              CALL DHKMRK(2,IKNMRK(iseg),iatt2) ! pick up second attribute
-!             if (iatt1.gt.0) then
-!                 if (iatt2.eq.0.or.iatt2.eq.3) then
-!                     itel = itel+1
-!                     bottomsegments(itel) = iseg
-!                 endif
-!             endif
+              CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+              CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
+
               if (iatt2.eq.0.or.iatt2.eq.3) then
                   itel = itel+1
                   bottomsegments(itel) = iseg
@@ -979,23 +982,6 @@
     !
           TFE  = fr_feim1 * IM1 + fr_feim2 * IM2 + fr_feim3 * IM3
 
-          ! the below part has been removed as it only calculates output items that are not (yet) noutput
-    !      QIM1 = 0.0
-    !      QIM2 = 0.0
-    !      QIM3 = 0.0
-    !      IF ( TFE .LT. 1E-10) THEN
-    !           FIM1 = 0.0
-    !           FIM2 = 0.0
-    !           FIM3 = 0.0
-    !      ELSE
-    !           FIM1 = fr_feim1 * IM1 / TFE
-    !           FIM2 = fr_feim2 * IM2 / TFE
-    !           FIM3 = fr_feim3 * IM3 / TFE
-    !           IF ( IM1 .GT. 1E-10 ) QIM1 = AAP*FIM1/IM1
-    !           IF ( IM2 .GT. 1E-10 ) QIM2 = AAP*FIM2/IM2
-    !           IF ( IM3 .GT. 1E-10 ) QIM3 = AAP*FIM3/IM3
-    !      ENDIF
-    !!
     !     Start the calculation of the sorption flux
     !     Use one of three options
     !
@@ -1769,10 +1755,6 @@
           iflux = nototseddis + 73
           fl(iflux+(iseg-1)*noflux) = fl(iflux+(iseg-1)*noflux) + fluxox*dl(ilay) /depth
 
-          if ( iseg2d == 1740 .or. iseg2d == 1940 ) then
-              !call print_kp( 'Fluxox', ilay, kp )
-          endif
-!
           ! +++++++++++++++++++++++++++++++++++++++++++
           ! Existing process PRECSUL
           ! +++++++++++++++++++++++++++++++++++++++++++
@@ -2058,7 +2040,7 @@
                           !
                           ! For the exchange with the overlying water we need the water segment to be active
                           !
-                          CALL DHKMRK(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+                          CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
                           if ( iatt1 == 1 ) then
                               term = dble(td(ilay)/(diflen/2.+dl(ilay)/2.))
                               bv(ilay)    = bv(ilay) + term*dble(cwater*poros)
@@ -2096,7 +2078,7 @@
               !all printstelsel(av,bv,nolay,'IN',isys)
               call INVERM (av,bv,nolay,1,nolay,iwork,rwork,ierror)
               !all printstelsel(av,bv,nolay,'OUT',isys)
-              if (ierror.ne.0) CALL ERRSYS ('Error Solving Local Equations', 1 )
+              if (ierror.ne.0) CALL write_error_message ('Error Solving Local Equations')
 
               do ilay = 1,nolay
                   sedconc(ilay,isys,iseg2d) = bv(ilay)
@@ -2211,7 +2193,7 @@
       ! Routine to initialise the sediment concentrations from the initial conditions file or from "S1" substances
       !
       subroutine initialise_sedconc
-
+     
       integer :: ilay, iseg, iseg2d, ip, isys, iflux
       integer :: ierr, luinit, lumon
       integer :: timeini, nosysini, nosegini
@@ -2241,7 +2223,7 @@
               call getmlu( lumon )
               write( lumon, '(2a)' ) 'Error reading file: ', trim(initfile)
               write( lumon, '(2a)' ) 'File does not exist - terminating calculation'
-              call errsys( 'Initial conditions file for sediment not found', 1 )
+              call write_error_message( 'Initial conditions file for sediment not found')
           endif
 
           read( luinit ) title
@@ -2252,7 +2234,7 @@
               write( lumon, '(2a)' )     'Error reading file: ', trim(initfile)
               write( lumon, '(a,2i10)' ) 'Wrong size parameters:', nosysini, nosegini
               write( lumon, '(a,2i10)' ) 'Expected parameters:  ', nototsed, nolay * noseg2d
-              call errsys( 'Initial conditions file for sediment inconsistent', 1 )
+              call write_error_message( 'Initial conditions file for sediment inconsistent')
           endif
 
           allocate( synameinit(nosysini) )
@@ -2336,6 +2318,8 @@
       end subroutine write_sedconc
 
       subroutine handle_zone_information( thickness, poros )
+      use m_monsys
+
       real, intent(in)       :: thickness, poros
 
       integer                            :: ierr, luzone, lumon, idx, ic, ip, ip2, ilay
@@ -2465,3 +2449,5 @@
       end function getindex
 
       end subroutine dlwqg2
+
+end module m_delwaqg

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> add internal tides friction forces to adve
    subroutine add_InternalTidesFrictionForces()
@@ -45,7 +45,7 @@
       double precision           :: dumx1, dumy1, dumx2, dumy2
       double precision           :: diss
 
-      integer                    :: k, k1, k2, L, i
+      integer                    :: k, k1, k2, L
       integer                    :: ierror
 
       double precision, external :: nod2linx, nod2liny
@@ -110,24 +110,26 @@
       end if
 
 !     interpolate to faces, project in face-normal direction, divide by water depth and add to adve
-      do i = 1, wetLinkCount
-         L = onlyWetLinks(i)
-         k1 = ln(1,L)
-         k2 = ln(2,L)
+      do L=1,Lnx
+         if ( hu(L).gt.0d0 ) then
+            k1 = ln(1,L)
+            k2 = ln(2,L)
 
-!         adve(L) = adve(L) - huvli(L) * (  &
-!            (acL(L)*workx(k1) + (1d0-acL(L))*workx(k2)) * csu(L) +   &
-!            (acL(L)*worky(k1) + (1d0-acL(L))*worky(k2)) * snu(L) )
+!            adve(L) = adve(L) - huvli(L) * (  &
+!              (acL(L)*workx(k1) + (1d0-acL(L))*workx(k2)) * csu(L) +   &
+!              (acL(L)*worky(k1) + (1d0-acL(L))*worky(k2)) * snu(L) )
 
-         dumx1 = nod2linx(L,1,workx(k1),worky(k1))
-         dumy1 = nod2liny(L,1,workx(k1),worky(k1))
+            dumx1 = nod2linx(L,1,workx(k1),worky(k1))
+            dumy1 = nod2liny(L,1,workx(k1),worky(k1))
 
-         dumx2 = nod2linx(L,2,workx(k2),worky(k2))
-         dumy2 = nod2liny(L,2,workx(k2),worky(k2))
+            dumx2 = nod2linx(L,2,workx(k2),worky(k2))
+            dumy2 = nod2liny(L,2,workx(k2),worky(k2))
 
-         adve(L) = adve(L) - huvli(L) *                                         &
-                             ( (acL(L)*dumx1 + (1d0-acL(L))*dumx2) * csu(L) +   &
-                               (acL(L)*dumy1 + (1d0-acL(L))*dumy2) * snu(L) )
+            adve(L) = adve(L) - huvli(L) *                                         &
+                                ( (acL(L)*dumx1 + (1d0-acL(L))*dumx2) * csu(L) +   &
+                                  (acL(L)*dumy1 + (1d0-acL(L))*dumy2) * snu(L) )
+
+         end if
       end do
 
       return

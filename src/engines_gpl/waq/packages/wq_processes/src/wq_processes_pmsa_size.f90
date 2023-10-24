@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_wq_processes_pmsa_size
+
+implicit none
+
+contains
+
 
       subroutine wq_processes_pmsa_size ( lunrep, noseg, noq, isizea)
 
+      use m_srstop
       use partition_arrays
       use processes_input
       use processes_pointers
@@ -204,3 +211,5 @@
  2040 format (   i4,1x,a20,i12 )
 
       end subroutine
+
+end module m_wq_processes_pmsa_size

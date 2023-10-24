@@ -1,6 +1,12 @@
+      module m_decdet
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2022.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -24,12 +30,14 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine decdet ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+
 !>\file
 !>       Mineralisation & conversion of detritus POC1,POC2,POC3,POC4,DOC
 
@@ -113,7 +121,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 !
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 !
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -207,8 +216,6 @@
 !
 !       In all "active" segments
 !
-!!      CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!      IF (IKMRK1.EQ.1.OR.IKMRK1.EQ.3) THEN
         IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !          INPUT of subroutine
@@ -255,35 +262,34 @@
 !
 !          Errors if certain vars =< 0
 !
-           IF (ANR .LT. 1E-30) CALL ERRSYS ('DECDET: a_dNpr =< 0', 1 )
-           IF (APR .LT. 1E-30) CALL ERRSYS ('DECDET: a_dPpr =< 0', 1 )
-           IF (ASR .LT. 1E-30) CALL ERRSYS ('DECDET: a_dSpr =< 0', 1 )
+           IF (ANR .LT. 1E-30) CALL write_error_message ('DECDET: a_dNpr =< 0')
+           IF (APR .LT. 1E-30) CALL write_error_message ('DECDET: a_dPpr =< 0')
+           IF (ASR .LT. 1E-30) CALL write_error_message ('DECDET: a_dSpr =< 0')
            IF (ALN .LT. 1E-30)
-     &     CALL ERRSYS ('DECDET: al_dN/F/M/S/ =< 0', 1 )
+     &     CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
            IF (ALP .LT. 1E-30)
-     &     CALL ERRSYS ('DECDET: al_dP/F/M/S/ =< 0', 1 )
+     &     CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
            IF (AUN .LT. 1E-30)
-     &     CALL ERRSYS ('DECDET: au_dN/F/M/S/ =< 0', 1 )
+     &     CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
            IF (AUP .LT. 1E-30)
-     &     CALL ERRSYS ('DECDET: au_dP/F/M/S/ =< 0', 1 )
+     &     CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
 !
 !          Errors if upper limits =< lower limits
 !
            IF (AUN .LT. ALN)
-     &     CALL ERRSYS ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ',1)
+     &     CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
            IF (AUP .LT. ALP)
-     &     CALL ERRSYS ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ',1)
+     &     CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
 !
            IF (RC20UPC .LT. RC20LOC)
-     &     CALL ERRSYS ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ',1)
+     &     CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
            IF (RC20UPN .LT. RC20LON)
-     &     CALL ERRSYS ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ',1)
+     &     CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
            IF (RC20UPP .LT. RC20LOP)
-     &     CALL ERRSYS ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ',1)
+     &     CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
 !
 !          If  detritus = 0 : set fluxes to zero and skip algorithm
 !
-!jvb       IF (POC .LT. 1E-10 .OR. PON .LT. 1E-10 .OR. POP .LT. 1E-10)
            IF (POC .LT. 1E-10)
      &        THEN
 !
@@ -470,3 +476,5 @@
 !
       RETURN
       END
+
+      end module m_decdet

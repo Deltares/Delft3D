@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_ddepth
+
+      implicit none
+
+      contains
+
 
       subroutine ddepth ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Dynamic calculation of the depth as volume / surf
 
@@ -47,6 +56,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -60,7 +70,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-      CALL DHKMRK(3,IKNMRK(ISEG),IKMRK3)
+      CALL evaluate_waq_attribute(3,IKNMRK(ISEG),IKMRK3)
       IF (IKMRK3.EQ.1 .OR. IKMRK3.EQ.3) THEN
 !
       VOLUME = PMSA(IP1 )
@@ -68,7 +78,7 @@
 
       IF (SURF    .LT. 1E-30) THEN
          write ( message(32:55) , '(i9,1x,e14.6)' ) iseg, surf
-         CALL ERRSYS ( message, 1 )
+         CALL write_error_message ( message )
       ENDIF
 
 !***********************************************************************
@@ -92,3 +102,5 @@
       RETURN
 !
       END
+
+      end module m_ddepth

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine compthick()
    !!--description-----------------------------------------------------------------
@@ -108,7 +108,7 @@
          do nm = 1, ndx
             thtrlyr(nm) = max(ttlalpha*duneheight(nm),ttlmin)
          enddo
-         case default
+      case default
          !
          ! nothing to do: constant in time
          !
@@ -117,10 +117,10 @@
       ! Determine new exchange layer thickness
       !
       select case(telform)
-      case(1)
+         case(1)
          case default
       endselect
-      case default
+   case default
       !
       ! No active layers: nothing to do
       !

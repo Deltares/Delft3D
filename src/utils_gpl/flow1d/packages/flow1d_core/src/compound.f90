@@ -1,7 +1,7 @@
 module m_compound
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_compound
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -35,14 +35,11 @@ module m_compound
    use m_branch
    use m_tables
    use m_CrossSections
-   use m_Weir
    use m_Culvert
    use m_pump
-   use m_Orifice
    use m_General_Structure
    use m_Universal_Weir
    use m_Bridge
-   use m_ExtraResistance
    use m_hash_search
    use m_Dambreak
    use iso_c_utils
@@ -56,8 +53,6 @@ module m_compound
 
    public initialize_compounds
    public computeCompound
-
-   public printData
 
    interface realloc
       module procedure reallocCompound
@@ -164,8 +159,10 @@ end subroutine
       do i = 1, cmps%count
          istru = cmps%compound(i)%structure_indices(1)
          numlinks = sts%struct(istru)%numlinks
-         allocate(cmps%compound(i)%linknumbers(numlinks))
-         cmps%compound(i)%linknumbers = sts%struct(istru)%linknumbers
+         if (numlinks > 0) then
+            allocate(cmps%compound(i)%linknumbers(numlinks))
+            cmps%compound(i)%linknumbers = sts%struct(istru)%linknumbers
+         end if
          cmps%compound(i)%numlinks = numlinks
          ! now check if other members contain the same links
          do j = 2, cmps%compound(i)%numstructs

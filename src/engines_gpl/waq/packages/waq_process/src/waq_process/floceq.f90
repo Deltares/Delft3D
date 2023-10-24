@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_floceq
+
+implicit none
+
+contains
+
 
       subroutine floceq     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_evaluate_waq_attribute
+
 !
 !*******************************************************************************
 !
@@ -95,7 +103,7 @@
          ! only for active water segments
 
          active = btest(iknmrk(iseg),0)
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
          bodem  = ikmrk1.eq.3
          if ( active .and. .not. bodem ) then
 
@@ -111,7 +119,7 @@
             elseif ( swfloceq .eq. 2 ) then
                macro = im2
                micro = im3
-            else ! if ( swfloceq .eq. 3 ) then
+            else
                macro = im3
                micro = im2
             endif
@@ -142,7 +150,7 @@
                dflocim1   =  0.0
                dflocim2   =  dfloc
                dflocim3   = -dfloc
-            else ! if ( swfloceq .eq. 3 ) then
+            else
                dflocim1   =  0.0
                dflocim2   = -dfloc
                dflocim3   =  dfloc
@@ -173,3 +181,5 @@
 
       return
       end subroutine
+
+end module m_floceq

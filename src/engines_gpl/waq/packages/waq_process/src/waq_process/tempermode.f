@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_tempermode
+
+      implicit none
+
+      contains
+
 
       subroutine tmode  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+
 !>\file
 !>       Defnines meaning of two modelled statevars ModTemp and NatTemp
 
@@ -87,7 +95,7 @@
             ETEMP = MTEMP
             TTEMP = TMPNAT  
          ELSE
-            CALL ERRSYS ('SwitchTemp has no valid value <0,1,2> in TMODE', 1 )             
+            CALL write_error_message ('SwitchTemp has no valid value <0,1,2> in TMODE')
          ENDIF
        
 !
@@ -110,3 +118,5 @@
       RETURN
 !
       END
+
+      end module m_tempermode

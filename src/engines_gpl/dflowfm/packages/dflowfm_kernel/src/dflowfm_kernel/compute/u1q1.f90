@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine u1q1()
  use m_flow                                          ! substitute u1 and q1
@@ -41,7 +41,7 @@
 
  implicit none
 
- integer          :: L0, L, k1, k2, k01, k02, LL, k, n, nn, km, n1, n2, Ld, kb, kt, ks, Lb, Lt, kmxLL, ng, istru, i
+ integer          :: L0, L, k1, k2, k01, k02, LL, k, n, nn, km, n1, n2, Ld, kb, kt, ks, Lb, Lt, kmxLL, ng, istru
  double precision :: qt, zws0k
  double precision :: accur = 1e-30, wb, ac1, ac2, dsL, sqiuh, qwb, qsigma
  double precision :: qwave
@@ -54,31 +54,35 @@
  if (kmx < 1) then ! original 2D coding              ! 1D2D
 
     if ( jampi.eq.0 ) then
-       u1 = 0d0
-       q1 = 0d0
-       qa = 0d0
        !$OMP PARALLEL DO           &
        !$OMP PRIVATE(L,k1,k2)
-       do i = 1, wetLinkCount
-          L = onlyWetLinks(i)
-          k1 = ln(1,L) ; k2 = ln(2,L)
-          u1(L) = ru(L) - fu(L)*( s1(k2) - s1(k1) )
-          q1(L) = au(L)*( teta(L)*u1(L) + (1d0-teta(L))*u0(L) )
-          qa(L) = au(L)*u1(L)
+       do L = 1,lnx
+          if (hu(L) > 0d0) then 
+             k1 = ln(1,L) ; k2 = ln(2,L)
+             u1(L) = ru(L) - fu(L)*( s1(k2) - s1(k1) )
+             q1(L) = au(L)*( teta(L)*u1(L) + (1d0-teta(L))*u0(L) )
+             qa(L) = au(L)*u1(L)
+          else
+             u1(L) = 0d0
+             q1(L) = 0d0
+             qa(L) = 0d0
+          endif
        enddo
       !$OMP END PARALLEL DO
-    else
+     else
 !      parallel: compute u1, update u1, compute remaining variables
-      
-      !      compute u1
-      u1 = 0d0
-      !$OMP PARALLEL DO           &
-      !$OMP PRIVATE(L,k1,k2)
-      do i = 1, wetLinkCount
-         L = onlyWetLinks(i)
-         k1 = ln(1,L)
-         k2 = ln(2,L)
-         u1(L) = ru(L) - fu(L)*( s1(k2) - s1(k1) )
+
+!      compute u1
+       !$OMP PARALLEL DO           &
+       !$OMP PRIVATE(L,k1,k2)
+       do L=1,Lnx
+          if ( hu(L).gt.0d0 ) then
+             k1 = ln(1,L)
+             k2 = ln(2,L)
+             u1(L) = ru(L) - fu(L)*( s1(k2) - s1(k1) )
+          else
+             u1(L) = 0d0
+          end if
        end do
       !$OMP END PARALLEL DO
 
@@ -88,16 +92,18 @@
        if ( jatimer.eq.1 ) call stoptimer(IUPDU)
 
 !      compute q1 and qa
-       q1 = 0d0
-       qa = 0d0
        !$OMP PARALLEL DO           &
        !$OMP PRIVATE(L,k1,k2)
-       do i = 1, wetLinkCount
-         L = onlyWetLinks(i)
-         k1 = ln(1,L)
-         k2 = ln(2,L)
-         q1(L) = au(L)*( teta(L)*u1(L) + (1d0-teta(L))*u0(L) )
-         qa(L) = au(L)*u1(L)
+       do L=1,Lnx
+          if ( hu(L).gt.0 ) then
+             k1 = ln(1,L)
+             k2 = ln(2,L)
+             q1(L) = au(L)*( teta(L)*u1(L) + (1d0-teta(L))*u0(L) )
+             qa(L) = au(L)*u1(L)
+          else
+             q1(L) = 0d0
+             qa(L) = 0d0
+          end if
        end do
       !$OMP END PARALLEL DO
     end if  ! jampi
@@ -106,8 +112,8 @@
        qa = q1
     endif
 
-    do i = 1, wetLinkCount
-       L = onlyWetLinks(i)
+    do L = 1,lnx
+
        if (q1(L) > 0) then
           k1 = ln(1,L) ; k2 = ln(2,L)
           squ(k1) = squ(k1) + q1(L)
@@ -126,9 +132,9 @@
 
     if (iadvec == 40) then
        voldhu = 0d0
-       do i = 1, wetLinkCount
-         L = onlyWetLinks(i)
-         if (q1(L) > 0) then
+       do L = 1,lnx
+
+          if (q1(L) > 0) then
              k1 = ln(1,L)
              voldhu(k1) = voldhu(k1) + q1(L)*hu(L)
           else if (q1(L) < 0) then

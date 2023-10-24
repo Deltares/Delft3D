@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,12 +25,12 @@ module behv_mauve_stinger_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
 use precision_part          ! single/double precision
 use timers
 !
 !  module procedure(s)
 !
-use random_surface_position_mod    ! explicit interface
 use vert_swimm_diurnal_mod         ! explicit interface
 use intpltd_diurnal_mod            ! explicit interface
 use intpltd_divelimit_mod          ! explicit interface
@@ -247,8 +247,6 @@ contains
                                          dive_at_night , ipart    , wsettl  , kpart   , zpart           ,    &
                                          buoy          , vzact    , v_swim  , d_swim  )
              
-             !Set random position at the surface
-             !call random_surface_position ( lunrep, idelt, ztop, zdepth, vzact, buoy, vz ) 
                
              !Check for depth not to exceed maximum depth  
              call intpltd_divelimit ( lunrep, idelt, ipart, zlevel, zdepth, wsettl) 

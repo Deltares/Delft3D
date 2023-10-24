@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getpar
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETPAR ( FNAME  , ITYPE  , PARDEF , MAXDEF , ITMDEP ,
      *                    LOCDEP , MAXLST , LANG   , PARLST , PARUNI ,
      *                    IPRTYP , IPRCOD , NRLST  , IERROR , OPTION )
+      use m_open_waq_files
+
 !
 !
 !     Deltares        MARINE & COASTAL MANAGEMENT
@@ -59,20 +67,26 @@
 !     OPTION  CHAR*256   1        IN/OUT  For future use
 !
 !
-      CHARACTER*256 FNAME(3) , OPTION
-      CHARACTER*20  PARDEF(MAXDEF) , PARLST(MAXLST) , PARUNI(MAXLST)
-      DIMENSION     IPRTYP(MAXLST) , IPRCOD(MAXLST)
-      LOGICAL       SETALL
+      CHARACTER*256         :: FNAME(3) , OPTION
+      CHARACTER*20          :: PARDEF(MAXDEF) , PARLST(MAXLST) , PARUNI(MAXLST)
+      DIMENSION             :: IPRTYP(MAXLST) , IPRCOD(MAXLST)
+      LOGICAL               :: SETALL
+      integer               :: lun
+      integer               :: MAXK
+      integer               :: k, i1, i2, i3
+      integer               :: ierror, notot, nodump, nrlst, iprcod, iprtyp
+      integer               :: itype, maxdef, itmdep, locdep, maxlst, lang
 !
 !         Open the DELWAQ .HIS file
 !
-      CALL DHOPNF ( 10 , FNAME(1) , 24 , 2 , IERROR )
+      lun = 10
+      CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
       IF ( IERROR .NE. 0 ) RETURN
 !
 !         Read primary system characteristics
 !
-      READ ( 10 , ERR=100 )   FNAME(3)(1:160)
-      READ ( 10 , ERR=110 )   NOTOT, NODUMP
+      READ ( lun , ERR=100 )   FNAME(3)(1:160)
+      READ ( lun , ERR=110 )   NOTOT, NODUMP
 !
 !         Read parameter names and try to find the wanted subset
 !
@@ -81,7 +95,7 @@
       IF ( PARDEF(1) .EQ. '*' ) SETALL = .TRUE.
       DO 40 I1 = 1 , NOTOT , MAXLST
          MAXK = MIN(NOTOT,I1+MAXLST-1) - I1 + 1
-         READ ( 10 , ERR=120 ) ( PARUNI(K) , K = 1,MAXK )
+         READ ( lun , ERR=120 ) ( PARUNI(K) , K = 1,MAXK )
          DO 30 I2 = 1 , MAXK
             DO 20 I3 = 1 , MAXDEF
                IF ( PARUNI(I2) .EQ. PARDEF(I3) .OR. SETALL ) THEN
@@ -116,6 +130,8 @@
 !
 !         Close the unit
 !
-  200 CLOSE ( 10 )
+  200 CLOSE ( lun )
       RETURN
       END
+
+      end module m_getpar

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_veg3dx
+
+      implicit none
+
+      contains
+
 
       subroutine veg3dx     ( pmsa   , fl     , ipoint , increm, noseg ,
      +                        noflux , iexpnt , iknmrk , noq1  , noq2  ,
      +                        noq3   , noq4   )
 
+      use m_evaluate_waq_attribute
       use layered_sediment
 
       ! function distribute multiple vegetation fluxes over the vertical
@@ -111,8 +118,8 @@
          hmax        = pmsa(ipnt(6))
          ffac        = pmsa(ipnt(7))
 
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
-         call dhkmrk(2,iknmrk(iseg),ikmrk2)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
          if (ikmrk1.lt.3) then ! also when dry!
 
             ! active water segment
@@ -254,3 +261,5 @@
 
       return
       end
+
+      end module m_veg3dx

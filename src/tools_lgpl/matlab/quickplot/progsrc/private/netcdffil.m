@@ -18,7 +18,7 @@ function varargout=netcdffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -66,7 +66,80 @@ if FI.NumDomains>1
 end
 
 if nargin==2
-    varargout={infile(FI,domain)};
+    if ~isempty(domain) && domain > 1
+        emptyParts = cell(1,FI.NumDomains);
+        
+        partFI = FI.Partitions{1};
+        infileStruct = infile(partFI,1);
+        [infileStruct.iPart] = deal(1);
+        for iq = 1:length(infileStruct)
+            infileStruct(iq).Partitions = emptyParts;
+            infileStruct(iq).Partitions{1} = infileStruct(iq);
+            
+            varid = infileStruct(iq).varid;
+            if iscell(varid) || isempty(varid)
+                infileStruct(iq).ncVarName = infileStruct(iq).Name;
+            else
+                infileStruct(iq).ncVarName = partFI.Dataset(varid+1).Name;
+            end
+        end
+        
+        for ipart = 2:FI.NumDomains
+            partFI = FI.Partitions{ipart};
+            infileStruct2 = infile(partFI,1);
+            [infileStruct2.iPart] = deal(ipart);
+            for iq2 = 1:length(infileStruct2)
+                infileStruct2(iq2).Partitions = emptyParts;
+                infileStruct2(iq2).Partitions{ipart} = infileStruct2(iq2);
+                
+                varid = infileStruct2(iq2).varid;
+                if iscell(varid) || isempty(varid)
+                    infileStruct2(iq2).ncVarName = infileStruct2(iq2).Name;
+                else
+                    infileStruct2(iq2).ncVarName = partFI.Dataset(varid+1).Name;
+                end
+            end
+            
+            iq = 1;
+            for iq2 = 1:length(infileStruct2)
+                if strcmp(infileStruct2(iq2).Name,'-------')
+                    % in case of a separator, merge it only if the
+                    % reference is also a separator
+                    if strcmp(infileStruct(iq).Name,'-------')
+                        % merge ... nothing to do
+                    else
+                        % insert
+                        infileStruct = insert_quantity(infileStruct,iq,infileStruct2(iq2));
+                    end
+                    iq = iq+1;
+                else
+                    iq1 = find_quantity(infileStruct2,iq2,infileStruct);
+                    if iq1 > 0
+                        % new quantity found, merge with iq1
+                        infileStruct(iq1).iPart = [infileStruct(iq1).iPart ipart];
+                        infileStruct(iq1).Partitions{ipart} = infileStruct2(iq2).Partitions{ipart};
+                        iq = iq1+1;
+                    else
+                        % new quantity not found.
+                        infileStruct = insert_quantity(infileStruct,iq,infileStruct2(iq2));
+                        iq = iq+1;
+                    end
+                end
+            end
+        end
+        infileStruct = rmfield(infileStruct,'ncVarName');
+        for i = 1:length(infileStruct)
+            if infileStruct(i).DimFlag(M_)
+                infileStruct(i).DimFlag(M_) = inf;
+            end
+            if infileStruct(i).DimFlag(N_)
+                infileStruct(i).DimFlag(N_) = inf;
+            end
+        end
+        varargout={infileStruct};
+    else
+        varargout={infile(FI,domain)};
+    end
     return
 elseif ischar(field)
     switch field
@@ -91,21 +164,28 @@ else
 end
 
 cmd=lower(cmd);
+% identify which partition actually contains this file
+if isfield(FI,'Partitions')
+    firstPart = Props.iPart(1);
+    useFI = FI.Partitions{firstPart};
+else
+    useFI = FI;
+end
 switch cmd
     case 'size'
-        varargout={getsize(FI,Props)};
+        varargout={getsize(useFI,Props)};
         return
     case 'times'
-        varargout={readtim(FI,Props,varargin{:})};
+        varargout={readtim(useFI,Props,varargin{:})};
         return
     case 'timezone'
-        [varargout{1:2}]=gettimezone(FI,domain,Props);
+        [varargout{1:2}]=gettimezone(useFI,domain,Props);
         return
     case 'stations'
-        varargout={readsts(FI,Props,0)};
+        varargout={readsts(useFI,Props,0)};
         return
     case 'subfields'
-        varargout={getsubfields(FI,Props,varargin{:})};
+        varargout={getsubfields(useFI,Props,varargin{:})};
         return
     case 'plotoptions'
         varargout = {[]};
@@ -159,11 +239,19 @@ if FI.NumDomains>1
             args{marg} = 0;
         end
         %
-        if iscell(Props.varid) && strcmp(Props.varid{1},'stream_function')
-            % select all M_
-            Props.Geom = 'UGRID2D-EDGE';
-            Props.varid = Props.varid{2};
-            Props.DimName{M_} = FI.Dataset(FI.Dataset(Props.varid+1).Mesh{2}).Mesh{6};
+        if iscell(Props.varid)
+            if strcmp(Props.varid{1},'stream_function') || strcmp(Props.varid{1},'net_discharge_into_cell')
+                % select all M_
+                for i = 1:length(Props.Partitions)
+                    PProps = Props.Partitions{i};
+                    PFI = FI.Partitions{i};
+                    PProps.Geom = 'UGRID2D-EDGE';
+                    PProps.varid = Props.varid{2};
+                    PProps.DimName{M_} = PFI.Dataset(PFI.Dataset(PProps.varid+1).Mesh{2}).Mesh{6};
+                    Props.Partitions{i} = PProps;
+                end
+                Props.Geom = 'UGRID2D-EDGE';
+            end
         end
     else
         % all partitions - unmerged - only "all m" allowed ...
@@ -174,16 +262,18 @@ if FI.NumDomains>1
         % read non-spatial data from the first file ... should be consistent across all files and no way to merge anyway
         Data = netcdffil(FI,1,Props,cmd,args{:});
     else
-        for i = 1:FI.NumDomains
-            Data2 = netcdffil(FI,i,Props,cmd,args{:});
-            if i==1
+        iOut = 1;
+        for i = Props.iPart
+            Data2 = netcdffil(FI,i,Props.Partitions{i},cmd,args{:});
+            if iOut == 1
                 Data = Data2;
             else
                 flds = fieldnames(Data2);
                 for j = 1:length(flds)
-                    Data(i).(flds{j}) = Data2.(flds{j});
+                    Data(iOut).(flds{j}) = Data2.(flds{j});
                 end
             end
+            iOut = iOut + 1;
         end
     end
     if spatial && domain == FI.NumDomains+2
@@ -200,6 +290,9 @@ if FI.NumDomains>1
             Data.YUnits = FI.MergedPartitions(m).XYUnits;
             Data.EdgeNodeConnect = FI.MergedPartitions(m).EdgeNodeConnect;
             Data.FaceNodeConnect = FI.MergedPartitions(m).FaceNodeConnect;
+            if isfield(FI.MergedPartitions,'EdgeFaceConnect')
+                Data.EdgeFaceConnect = FI.MergedPartitions(m).EdgeFaceConnect;
+            end
         end
         
         % z values
@@ -267,11 +360,18 @@ if FI.NumDomains>1
             end
         end
         %
-        if iscell(field.varid) && strcmp(field.varid{1},'stream_function') % note field is the original copy of Props
-            if DataRead
-                Data.Val = compute_stream_function(Data.Val, Data.EdgeNodeConnect, FI.MergedPartitions(m).nNodes);
+        if iscell(field.varid)
+            if strcmp(field.varid{1},'stream_function') % note field is the original copy of Props
+                if DataRead
+                    Data.Val = compute_stream_function(Data.Val, Data.EdgeNodeConnect, FI.MergedPartitions(m).nNodes);
+                end
+                Data.ValLocation = 'NODE';
+            elseif strcmp(Props.varid{1},'net_discharge_into_cell')
+                if DataRead
+                    Data.Val = compute_net_discharge_into_cell(Data.Val, Data.EdgeFaceConnect, FI.MergedPartitions(m).nFaces);
+                end
+                Data.ValLocation = 'FACE';
             end
-            Data.ValLocation = 'NODE';
         end
         if ~isequal(idx{M_},0)
             if XYRead
@@ -387,16 +487,40 @@ if DataRead && Props.NVal>0
                 %
                 meshInfo    = FI.Dataset(Info.Mesh{3});
                 if isempty(meshInfo.Attribute)
-                    meshAttribs = {};
+                    meshAttribNames = {};
                 else
-                    meshAttribs = {meshInfo.Attribute.Name};
+                    meshAttribNames = {meshInfo.Attribute.Name};
                 end
-                connect     = strmatch('edge_node_connectivity',meshAttribs,'exact');
-                [EdgeConnect, status] = qp_netcdf_get(FI,meshInfo.Attribute(connect).Value);
-                EdgeConnect(EdgeConnect<0) = NaN;
+                connect     = strmatch('edge_node_connectivity',meshAttribNames,'exact');
+                [EdgeNodeConnect, status] = qp_netcdf_get(FI,meshInfo.Attribute(connect).Value);
+                EdgeNodeConnect(EdgeNodeConnect<0) = NaN;
                 %
                 % Compute stream function psi (u = dpsi/dy, v = -dpsi/dx)
-                Psi = compute_stream_function(Discharge, EdgeConnect, sz(3));
+                Psi = compute_stream_function(Discharge, EdgeNodeConnect, sz(3));
+                %
+                Ans.Val = Psi(idx{3});
+            case 'net_discharge_into_cell'
+                edge_idx = idx;
+                edge_idx{3} = 1:FI.Dimension(Info.TSMNK(3)+1).Length;
+                Props.DimName{M_} = FI.Dataset(FI.Dataset(ivar+1).Mesh{3}).Mesh{6};
+                [Discharge, status] = qp_netcdf_get(FI,ivar,Props.DimName,edge_idx);
+                %
+                meshInfo    = FI.Dataset(Info.Mesh{3});
+                if isempty(meshInfo.Attribute)
+                    meshAttribNames = {};
+                else
+                    meshAttribNames = {meshInfo.Attribute.Name};
+                end
+                connect     = strmatch('edge_face_connectivity',meshAttribNames,'exact');
+                if isempty(connect)
+                    % TODO: reconstruct EdgeFaceConnect from EdgeNodeConnect and FaceNodeConnect.
+                    error('No edge_face_connectivity found in the netCDF file.')
+                else
+                    [EdgeFaceConnect, status] = qp_netcdf_get(FI,meshInfo.Attribute(connect).Value);
+                    EdgeFaceConnect(EdgeFaceConnect<0) = NaN;
+                end
+                %
+                Psi = compute_net_discharge_into_cell(Discharge, EdgeFaceConnect, sz(3));
                 %
                 Ans.Val = Psi(idx{3});
             case 'erosion_sedimentation'
@@ -740,11 +864,11 @@ if XYRead || XYneeded || ZRead
         end
         %
         if isempty(meshInfo.Attribute)
-            meshAttribs = {};
+            meshAttribNames = {};
         else
-            meshAttribs = {meshInfo.Attribute.Name};
+            meshAttribNames = {meshInfo.Attribute.Name};
         end
-        connect = strmatch('face_node_connectivity',meshAttribs,'exact');
+        connect = strmatch('face_node_connectivity',meshAttribNames,'exact');
         if ~isempty(connect)
             iconnect = strmatch(meshInfo.Attribute(connect).Value,{FI.Dataset.Name},'exact');
             if isempty(iconnect)
@@ -781,7 +905,7 @@ if XYRead || XYneeded || ZRead
         end
         %
         Ans.ValLocation = Props.Geom(max(strfind(Props.Geom,'-'))+1:end);
-        connect = strmatch('edge_node_connectivity',meshAttribs,'exact');
+        connect = strmatch('edge_node_connectivity',meshAttribNames,'exact');
         iconnect = [];
         if strcmp(Ans.ValLocation,'EDGE') || ~isfield(Ans,'FaceNodeConnect') || (~DataRead && ~isempty(connect))
             % "~DataRead" is a hack to load EdgeNodeConnect if available for use in GridView
@@ -944,6 +1068,23 @@ if XYRead || XYneeded || ZRead
                 Coord(Active~=1,:)=NaN; % Active~=1 excludes boundary points, Active==0 includes boundary points
             end
             %--------------------------------------------------------------------
+            % PALM special
+            %
+            if ~isempty(FI.Attribute)
+                GlobalAttribs = {FI.Attribute.Name}';
+                switch coordname{iCoord}
+                    case 'X'
+                        xo = strmatch('origin_x',GlobalAttribs);
+                        if ~isempty(xo)
+                            Coord = FI.Attribute(xo).Value + Coord;
+                        end
+                    case 'Y'
+                        yo = strmatch('origin_y',GlobalAttribs);
+                        if ~isempty(yo)
+                            Coord = FI.Attribute(yo).Value + Coord;
+                        end
+                end
+            end
             %
             %--------------------------------------------------------------------
             % ROMS special
@@ -1885,7 +2026,12 @@ else
             end
         end
         %
+        meshAttribNames = {};
         if ~isempty(Info.Mesh)
+            meshInfo    = FI.Dataset(Info.Mesh{3});
+            if ~isempty(meshInfo.Attribute)
+                meshAttribNames = {meshInfo.Attribute.Name};
+            end
             nmesh = nmesh+1;
             switch Info.Mesh{1}
                 case 'ugrid' %,'ugrid1d_network'}
@@ -2024,6 +2170,16 @@ else
                 Insert.DimName{M_} = FI.Dataset(FI.Dataset(Insert.varid{2}+1).Mesh{3}).Mesh{5};
                 %
                 Out(end+1)=Insert;
+                %
+                if ismember('edge_face_connectivity',meshAttribNames)
+                    Insert.Name = [prefix, 'net discharge into cell']; % can be used as stationarity check for the stream function
+                    Insert.Geom = 'UGRID2D-FACE';
+                    Insert.varid{1} = 'net_discharge_into_cell';
+                    Insert.DimName{M_} = FI.Dataset(FI.Dataset(Insert.varid{2}+1).Mesh{3}).Mesh{7};
+                    Insert.DataInCell = 1;
+                    %
+                    Out(end+1)=Insert;
+                end
             end
         else
             switch lower(Insert.Name)
@@ -2442,6 +2598,16 @@ if iscell(varid)
             dimNodes = FI.Dataset(XVar).TSMNK(3)+1;
             sz(M_) = FI.Dimension(dimNodes).Length;
             varid{2} = XVar;
+        case 'net_discharge_into_cell'
+            % get underlying discharge on edge variable
+            Info = FI.Dataset(varid{2}+1);
+            if ~isnan(Info.TSMNK(1))
+                sz(1) = FI.Dimension(Info.TSMNK(1)+1).Length;
+            end
+            % get the mesh variable
+            Info = FI.Dataset(Info.Mesh{3});
+            % get the face dimension
+            sz(M_) = FI.Dimension(strcmp({FI.Dimension.Name},Info.Mesh{7})).Length;
         case 'node_index'
             Info = FI.Dataset(varid{2}+1);
             sz(M_) = FI.Dimension(strcmp({FI.Dimension.Name},Info.Mesh{5})).Length;
@@ -2672,6 +2838,8 @@ for i = 1:length(uBrNr)
 end
 %
 % now we can check all the edges
+distmax = 0;
+nwarn = 0;
 for i = 1:length(uBrNr)
     bN = uBrNr(i);
     bX = BrX{bN};
@@ -2700,14 +2868,29 @@ for i = 1:length(uBrNr)
             dist1 = min(sqrt((bX([1 end])-x1).^2 + (bY([1 end])-y1).^2));
             dist2 = min(sqrt((bX([1 end])-x2).^2 + (bY([1 end])-y2).^2));
             if min(dist1) > 0 && min(dist2) > 0
-                ui_message('warning','The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut both nodes don''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,max(dist1,dist2))
+                dist = max(min(dist1),min(dist2));
+                nwarn = nwarn + 1;
+                if dist > distmax
+                    msg = {'The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut both nodes don''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,dist};
+                    distmax = dist;
+                end
             elseif min(dist1) > 0
-                ui_message('warning','The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,n(1),dist1)
+                dist = min(dist1);
+                nwarn = nwarn + 1;
+                if dist > distmax
+                    msg = {'The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,n(1),dist};
+                    distmax = dist;
+                end
             elseif min(dist2) > 0
-                ui_message('warning','The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,n(2),dist2)
+                dist = min(dist2);
+                nwarn = nwarn + 1;
+                if dist > distmax
+                    msg = {'The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,n(2),dist};
+                    distmax = dist;
+                end
             end
         else
-            % one branch on this branch, one on another branch
+            % one node on this branch, one on another branch
             if nBranches(1)==bN
                 n1 = n(1);
                 n2 = n(2);
@@ -2721,25 +2904,38 @@ for i = 1:length(uBrNr)
             x2 = X(n2);
             y2 = Y(n2);
             dist = sqrt((bX([1 end])-x2).^2 + (bY([1 end])-y2).^2);
-            if dist(1) == 0
-                % second node seems to match the beginning node of the
-                % branch
+            if dist(1) < dist(2)
+                % second node seems closer to the beginning of the branch
                 I = bS<s;
                 EdgeX{j} = [bX(I);x];
                 EdgeY{j} = [bY(I);y];
-            elseif dist(2) == 0
-                % second node seems to match the end node of the branch
+                if dist(1) > 0
+                    nwarn = nwarn + 1;
+                    if dist(1) > distmax
+                        msg = {'The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,n2,dist(1)};
+                        distmax = dist(1);
+                    end
+                end
+            else
+                % second node seems closer to the end node of the branch
                 I = bS>s;
                 EdgeX{j} = [x;bX(I)];
                 EdgeY{j} = [y;bY(I)];
-            else
-                % second node doesn't seem to match either node ...
-                ui_message('warning','The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %.3f).\n',j,n(1),n(2),bN,n2,min(dist))
-                EdgeX{j} = bX;
-                EdgeY{j} = bY;
+                if dist(2) > 0
+                    nwarn = nwarn + 1;
+                    if dist(2) > distmax
+                        msg = {'The edge %i connecting node %i to %i is supposed to lie on branch %i,\nbut node %i doesn''t seem to lie on that branch (mismatch = %g).\n',j,n(1),n(2),bN,n2,dist(2)};
+                        distmax = dist(2);
+                    end
+                end
             end
         end
     end
+end
+if distmax > eps(single(1))
+    msg1 = sprintf('Detected %i branch mismatches. Largest mismatch occurred at:',nwarn);
+    msg2 = sprintf(msg{:});
+    ui_message('warning',{msg1,msg2});
 end
 if any(doublePoints)
     if sum(doublePoints)==1
@@ -2930,7 +3126,7 @@ if localfopen
     fclose(fid);
 end
 
-function Psi = compute_stream_function(Discharge, EdgeConnect, nNodes)
+function Psi = compute_stream_function(Discharge, EdgeNodeConnect, nNodes)
 Psi = NaN(nNodes,1);
 Psi(1) = 0;
 found = true;
@@ -2940,18 +3136,24 @@ while found
     nnodes_done = sum(~isnan(Psi));
     progressbar(nnodes_done/nnodes, hPB);
     found = false;
-    for i = 1:size(EdgeConnect,1)
-        if ~isnan(Psi(EdgeConnect(i,1))) && isnan(Psi(EdgeConnect(i,2))) && ~isnan(Discharge(i))
-            Psi(EdgeConnect(i,2)) = Psi(EdgeConnect(i,1)) + Discharge(i);
+    for i = 1:size(EdgeNodeConnect,1)
+        if ~isnan(Psi(EdgeNodeConnect(i,1))) && isnan(Psi(EdgeNodeConnect(i,2))) && ~isnan(Discharge(i))
+            Psi(EdgeNodeConnect(i,2)) = Psi(EdgeNodeConnect(i,1)) + Discharge(i);
             found = true;
-        elseif isnan(Psi(EdgeConnect(i,1))) && ~isnan(Psi(EdgeConnect(i,2))) && ~isnan(Discharge(i))
-            Psi(EdgeConnect(i,1)) = Psi(EdgeConnect(i,2)) - Discharge(i);
+        elseif isnan(Psi(EdgeNodeConnect(i,1))) && ~isnan(Psi(EdgeNodeConnect(i,2))) && ~isnan(Discharge(i))
+            Psi(EdgeNodeConnect(i,1)) = Psi(EdgeNodeConnect(i,2)) - Discharge(i);
             found = true;
         end
     end
 end
 delete(hPB)
 Psi = Psi - min(Psi);
+
+function Psi = compute_net_discharge_into_cell(Discharge, EdgeFaceConnect, nFaces)
+from_somewhere = EdgeFaceConnect(:,1)~=0 & ~isnan(EdgeFaceConnect(:,1));
+to_somewhere = EdgeFaceConnect(:,2)~=0 & ~isnan(EdgeFaceConnect(:,2));
+Psi = -accumarray(EdgeFaceConnect(from_somewhere,1),Discharge(from_somewhere)',[nFaces,1]) ...
+      +accumarray(EdgeFaceConnect(to_somewhere,2),Discharge(to_somewhere)',[nFaces,1]);
 
 function check = strend(Str,SubStr)
 len_ss = length(SubStr);
@@ -2969,3 +3171,68 @@ if isempty(index)
 else
     netcdf_var = FormulaTerms{index,2};
 end
+
+
+function iq2 = find_quantity(structList1,iq1,structList2)
+if iq1 > length(structList1)
+    iq2 = -1;
+    return
+end
+struct1 = structList1(iq1);
+isAMatch = zeros(size(structList2));
+for iq2 = 1:length(structList2)
+    struct2 = structList2(iq2);
+    if strcmp(struct1.ncVarName,struct2.ncVarName) && ...
+            strcmp(struct1.Geom,struct2.Geom)
+        if strcmp(struct1.Name,struct2.Name)
+            isAMatch(iq2) = 2;
+        else
+            isAMatch(iq2) = 1;
+        end
+    end
+end
+iq2 = find(isAMatch==2);
+if isempty(iq2)
+    iq2 = 0;
+    if max(isAMatch) == 1
+        % not perfect, but maybe still a match ...
+        iq2 = ustrcmpi(struct1.Name,{structList2.Name});
+        if iq2 < 0
+            iq2 = 0;
+        else
+            % exactly one found
+        end
+    end
+elseif length(iq2) > 1
+    iq2 = 0;
+    fprintf('MULTIPLE matches found\n');
+else
+    % exactly one found
+end
+
+
+function structList = insert_quantity(structList,iq,struct)
+flds = fieldnames(structList);
+flds2 = fieldnames(struct);
+if ~isequal(flds,flds2)
+    missingFields = setdiff(flds,flds2);
+    if ~isempty(missingFields)
+        % add dummy entries for the missing fields
+        for f = 1:length(missingFields)
+            struct(1).(missingFields{f}) = [];
+        end
+    end
+    % no more missing fields
+    sharedFields = flds;
+    
+    extraFields = setdiff(flds2,flds);
+    % need to make sure that the order of the fields is the same, so
+    % execute the next line always
+    struct = orderfields(struct,[sharedFields;extraFields]);
+    if ~isempty(extraFields)
+        for f = 1:length(extraFields)
+            structList(1).(extraFields{f}) = [];
+        end
+    end
+end
+structList = [structList(1:iq-1) struct structList(iq:end)];

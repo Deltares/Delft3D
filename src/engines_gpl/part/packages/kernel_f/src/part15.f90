@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part15
+
+implicit none
+
+contains
+
 
       subroutine part15 ( lunpr  , itime  , spawnd , noseg  , nowind ,          &
                           iwndtm , wveloa , wdira  , wvelo  , wdir   )
@@ -45,6 +51,7 @@
 
 !     functions   called    :
 
+      use m_stop_exit
       use precision_part    ! single/double precision
       use timers
       use timespace    ! meteo module ?
@@ -154,3 +161,5 @@
       return
 !
       end subroutine
+
+end module m_part15

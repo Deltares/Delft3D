@@ -1,0 +1,36 @@
+D-Foundations DUMP FILE
+==============================================================================
+COMPANY    :    
+
+DATE       : 7-3-2019
+TIME       : 12:22:57
+FILENAME   : D:\DFoundations 19.1\release\Projects\Benchmarks\bm1-1a.fod
+CREATED BY : D-Foundations version 19.1.1.23780
+==========================    BEGINNING OF DATA     ==========================
+[DUMPFILE]
+[NEN AVERAGE PILE FACTORS]
+[TABLE]
+[COLUMN INDICATION]
+CptIndex
+AlphaSGemSg
+AlphaSGemClp
+AlphaPGem
+CptName
+[END OF COLUMN INDICATION]
+[DATA]
+  1  0.0060  0.0000  0.8000 
+  2  0.0060  0.0200  0.8000 
+  3  0.0060  0.0000  0.8000 
+[END OF DATA]
+[END OF TABLE]
+[END OF NEN AVERAGE PILE FACTORS]
+
+[CALCULATION PARAMETERS BEARING PILES EC 7]
+Ksi3Used = 1.3000
+Ksi4Used = 1.3000
+GammaBUsed = 1.2000
+GammaSUsed = 1.2000
+IsKsi3Used = 0
+[END OF CALCULATION PARAMETERS BEARING PILES EC 7]
+[END OF DUMPFILE]
+

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  !> Gets the local layer numbers for a given grid cell.
  subroutine getzlayerindices(n,nlayb,nrlay)
@@ -56,7 +56,7 @@
     fac = 0.0d0
  endif 
 
-! if (nlaybn(n) == 0) then
+ if (nlaybn(n) == 0) then
     do k = 1,mx
        dzz = fac*( zslay(k,Ltn)-zslay(k-1,Ltn) )
        if (numtopsig > 0 .and. janumtopsiguniform ==1) then
@@ -73,12 +73,12 @@
           endif
        endif
     enddo
-!    nlaybn(n) = nlayb 
-!    nrlayn(n) = nrlay  
+    nlaybn(n) = nlayb 
+    nrlayn(n) = nrlay  
 
-! else
-!    nlayb = nlaybn(n)
-!    nrlay = nrlayn(n)
-! endif
+ else
+    nlayb = nlaybn(n)
+    nrlay = nrlayn(n)
+ endif
 
  end subroutine getzlayerindices

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,5 +32,5 @@ module m_part_modeltypes
       integer, parameter :: model_oil                 = 4
       integer, parameter :: model_2d3d_temp           = 5
       integer, parameter :: model_prob_dens_settling  = 6
-      integer, parameter :: model_ibm                 = 7
+      integer, parameter :: model_abm                 = 7
 end module m_part_modeltypes

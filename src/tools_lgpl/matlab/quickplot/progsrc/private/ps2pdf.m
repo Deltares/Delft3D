@@ -101,7 +101,7 @@ function ps2pdf(varargin)
 %                    MATLAB's version of Ghostscript caused ps2pdf to fail.
 %      Apr 16, 2008: added deletepsfile option
 
-%   Copyright 2008-2020 The MathWorks, Inc.
+%   Copyright 2008-2023 The MathWorks, Inc.
 
    if nargin < 1 
       error('ps2pdf:parameters', 'No parameters specified. Type ''help ps2pdf'' for details on how to use this function.');

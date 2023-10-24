@@ -65,7 +65,7 @@ function varargout = grib(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1230,7 +1230,18 @@ end
 function dir = basedir
 try
    dir = qp_basedir('deploy');
+   % this is the correct location in MATLAB 2013b when the grib folder is
+   % included in the compilation.
+   if ~exist(fullfile(dir,'grib'),'dir')
+       dir = fullfile(dir,'d3d_qp');
+       % this is the correct location in MATLAB 2023a when the grib folder
+       % is included in the compilation.
+       if ~exist(fullfile(dir,'grib'),'dir')
+           ui_message('warning','Unable to locate the grib mapping folder in "%s".',dir)
+       end
+   end
 catch
+    % this is the correct location in source code mode
    dir = fileparts(which(mfilename));
 end
 

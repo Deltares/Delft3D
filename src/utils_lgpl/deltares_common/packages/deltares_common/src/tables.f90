@@ -1,7 +1,7 @@
 module tables
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module tables
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Tables module
@@ -36,7 +36,7 @@ module tables
 !!--declarations----------------------------------------------------------------
     use precision
     use string_module
-    use time_module
+    use time_module, only: ymd2jul
     implicit none
     !
     public tablefiletype

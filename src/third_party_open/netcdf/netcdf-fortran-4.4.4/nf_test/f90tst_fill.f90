@@ -4,7 +4,7 @@
 
 !     This program tests netCDF-4 fill values.
 
-!     $Id$
+!     
 
 program f90tst_fill
   use typeSizes

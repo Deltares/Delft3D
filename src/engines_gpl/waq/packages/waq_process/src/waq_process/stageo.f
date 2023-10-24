@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_stageo
+
+      implicit none
+
+      contains
+
 
       subroutine stageo ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Geometric mean of a variable during a certian time span
 
@@ -209,7 +219,7 @@
                PMSA(IP10)= 0.0
 
                IF ( NOWARN < MAXWARN ) THEN
-                  CALL DHKMRK(IKNMRK(ISEG), 3, ATTRIB )
+                  CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB )
                   IF ( ATTRIB .NE. 0 ) THEN
                      NOWARN = NOWARN + 1
                      WRITE(*,'(a,i0)') 'Geometric mean could not be determined for segment ', ISEG
@@ -233,3 +243,5 @@
 
       RETURN
       END
+
+      end module m_stageo

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine setdtorg(jareduced)                            ! set computational timestep dts
  use m_flowgeom
@@ -204,11 +204,6 @@
 
     else if (  ja_timestep_auto.eq.5 ) then   ! full 3D
 
-!       if ( jatransportmodule.eq.1 .and. time_dtmax.eq.time1 ) then
-!          dts = dtmin_transp
-!          kkcflmx = kk_dtmin
-!          jareduced = 1
-!       else
        do kk=1,Ndxi
           if ( jampi.eq.1 ) then
 !            do not include ghost cells

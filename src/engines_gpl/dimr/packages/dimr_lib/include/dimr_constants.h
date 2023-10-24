@@ -18,7 +18,13 @@ enum {
 	COMP_TYPE_FLOW1D2D = 7,
 	COMP_TYPE_DELWAQ = 8,
 	COMP_TYPE_RR = 9,
-	COMP_TYPE_TEST = 10
+	COMP_TYPE_COSUMO_BMI = 10,
+	COMP_TYPE_TEST = 11
+};
+
+enum {
+	ITEM_TYPE_SCALAR = 0,
+	ITEM_TYPE_PTR = 1
 };
 
 enum {
@@ -45,3 +51,4 @@ const char BmiSetVarEntryPoint[] = "set_var";
 const char BmiSetLogger[] = "set_logger";
 const char BmiSetLogger2[] = "set_logger_c_callback";
 const char BmiGetAttributeEntryPoint[] = "get_attribute";
+const char BmiGetVarShapeEntryPoint[] = "get_var_shape";

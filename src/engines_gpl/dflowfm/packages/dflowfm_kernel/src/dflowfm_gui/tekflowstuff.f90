@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !----------------------------------------------------------------------
 ! subroutines from unstruc.f90
@@ -97,30 +97,6 @@
        return
     end if
 
-    if (nodemode .ge. 6) then
-
-        do k = 1,ndxi
-           if (mod(k,200) == 0) then
-              call halt2(ja)
-              if (ja == 1) return
-           endif
-           if (nodewhat .ge. 2) then
-              ja2 = 1
-              if (wetplot > 0d0) then
-                 if (hs(k) < wetplot) then
-                    ja2 = 0
-                 endif
-                 if (ja2 == 1) then  ! nodewhat==3: always show bottom
-                    if (inview( xz(k), yz(k) ) ) then
-                       zn = znod(k)
-                       call dhtext( zn, xz(k), yz(k), bl(k) )
-                    endif
-                 endif
-              endif
-           end if
-        enddo
-
-    endif
 
     if (jaHighlight == 1) then
        if (ndmax .ne. 0) then
@@ -295,8 +271,7 @@
               uux = uqcx(k)
               uuy = uqcy(k)
            endif
-!           call arrowsxy( xz(kk), yz(kk), uux, uuy, VFAC, 0)
-           call arrows( xz(kk), yz(kk), uux, uuy, 0D0, VFAC)
+           call arrowsxy( xz(kk), yz(kk), uux, uuy, VFAC)
         endif
      enddo
  else if (ndraw(13) .eq. 5) then                        ! show vectors u based
@@ -340,7 +315,5 @@
  if ( jased.gt.0 .and. jased.le.3 ) call tekbanfs()
 
  call tekship()
-
- call tekpart()
 
  end subroutine tekflowstuff

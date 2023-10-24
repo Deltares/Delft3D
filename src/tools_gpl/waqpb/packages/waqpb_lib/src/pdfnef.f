@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2022.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       SUBROUTINE PDFNEF ( LUNREP, SERIAL, VERSIO, IERROR)
 C
@@ -47,6 +47,8 @@ C     LUNREP       INT    1       I       Unit number report file
 C     IERROR       INT    1       O       Error
 C
 C     IMPLICIT NONE for extra compiler checks
+      
+      use m_obtain_number_decimals
 C
       IMPLICIT NONE
 C
@@ -55,6 +57,8 @@ C
       INTEGER       LUNREP      , SERIAL     ,
      +              IERROR      , lunfil
       REAL          VERSIO
+      character(len=10) num_decimals_version_char
+      integer       num_decimals_version
 C
 C     Common declarations
 C
@@ -348,7 +352,13 @@ C
       SOURCE = 'Deltares'
       REMARK = ' '
       REMARK(1) = '@(#)Deltares, DELWAQ Process Definition '
-      WRITE(REMARK(2), '(A12,F5.2,A1,I10,A2,A10)') 'File Version',VERSIO, '.', SERIAL, ', ', RUNDAT(1:10)
+      
+      ! obtain number of decimals of version number
+      num_decimals_version = obtain_num_decimals_version(versio)
+      write(num_decimals_version_char,'(I10)') num_decimals_version
+      
+      WRITE(REMARK(2), '(A12,F5.'//num_decimals_version_char//',A1,I10,A2,A10)')
+     *  'File Version',VERSIO, '.', SERIAL, ', ', RUNDAT(1:10)
       REMARK(3) = RUNDAT(11:20)
       REMARK(4) = ' '
       CALL WR_FILID ( DEFFDS, FFORM , VFFORM, CONTEN,

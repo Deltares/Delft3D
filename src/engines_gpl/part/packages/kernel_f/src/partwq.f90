@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,8 +27,10 @@ module partwq_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
 use precision_part               ! single/double precision
-      use timers
+use timers
+use m_densty
 !
 !  module procedure(s)
 !
@@ -221,7 +223,7 @@ contains
       integer(ip) ::  nloads , nocons , nolay  , nmax   , nosubs , nopart , noptk
       integer(ip) ::  npwndw
 
-      real   (sp) ::  a0     , aby    , densty , drho   , hcapac , r0
+      real   (sp) ::  a0     , aby    , drho   , hcapac , r0
       real   (sp) ::  cp     , densmn , dfac   , dxby   , gamma  , pblay
       real   (sp) ::  ctot   , dectmp , dfact  , exp    , flrate , fwind  , hatm
       real   (sp) ::  ptlay  , reduc  , sumdc  , sumwp  , t0     , r10    , r20

@@ -19,7 +19,7 @@
 ! 	ushort ushort(x, y) ;
 ! 	uint uint(x, y) ;
 
-!     $Id$
+!     
 
 program f90tst_parallel3
   use typeSizes

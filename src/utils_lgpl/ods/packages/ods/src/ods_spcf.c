@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2022.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,7 @@
  *  ods_spcf.c -  Routines that are more or less specific to particular
  *                file types
  *
- *  Copyright (C) 2002 Deltares
+ *  Copyright (C) 2002-2023 Deltares
  *
  *  Arjen Markus
  */

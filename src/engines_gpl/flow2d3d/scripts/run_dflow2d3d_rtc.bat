@@ -8,12 +8,13 @@ title run_flow2d3d_rtc
     rem Leave this script where it is.
     rem Call this script from within the working directory:
     rem path\to\delft3d\installation\x64\dflow2d3d\scripts\run_dflow2d3d_rtc.bat
-    rem More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 setlocal enabledelayedexpansion
 
 set flowConfigFile=config_d_hydro.xml
 set debugLevel=-1
+set skipWait=0
 set forceExit=0
 set goToUsage=0
 set minDFound=0
@@ -26,6 +27,7 @@ set scriptDir=%~dp0
     if [%1]         EQU [--help]      ( set goToUsage=1                      & goto CONTINUEWITHNEXTARGUMENT )
     if [%1]         EQU [-d]          ( set minDFound=1                      & goto CONTINUEWITHNEXTARGUMENT )
     if  %minDFound% EQU 1             ( set debugLevel=%1 & set minDFound=0  & goto CONTINUEWITHNEXTARGUMENT )
+    if [%1]         EQU [--skipWait]  ( set skipWait=1                       & goto CONTINUEWITHNEXTARGUMENT )
     if [%1]         EQU [--forceExit] ( set forceExit=1                      & goto CONTINUEWITHNEXTARGUMENT )
     rem When reaching this point, the current argument is not a recognized option.
     rem Assumption: this argument is the name of the dimr config file
@@ -97,7 +99,9 @@ title RTC simulation
     echo "        Part VI   - Initialisation and checking second part..."
     echo "        Part VII  - Initialisation output..."
     echo "    Then press a key in the first command box to start RTC"
-%SystemRoot%\System32\timeout.exe 10
+if  %skipWait% EQU 0 (
+    C:\Windows\System32\timeout.exe 10
+)
 
 set PATH=%rtcexedir%;%sharedir%
 echo executing: "%rtcexedir%\rtc.exe" "%rtcdefaultdir%\RTC.FNM" "RTC.RTN"
@@ -113,6 +117,7 @@ echo run_dflow2d3d_rtc.bat [Options] [config_d_hydro.xml]
 echo     config_d_hydro.xml: (Optional) default: config_d_hydro.xml
 echo     Options:
 echo         --help        : (Optional) show this usage
+echo         --skipWait    : (Optional) Skip waiting until FLOW is up and running (needed by the testbench)
 echo         --forceExit   : (Optional) When this script is finished, execute the "exit" statement (needed by mormerge)
 echo         -d 0          : (Optional) Maximum debug level is zero
 

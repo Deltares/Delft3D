@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_grid
+      use m_read_sub_procgrid
+      use m_read_proc_time
+      use m_read_nobottomlay
+      use m_read_grid
+
+
+      implicit none
+
+      contains
+
 
       subroutine grid   ( lun    , noseg  , notot  , nototp , nolay  ,
      &                    gridps , nseg2  , nogrid , syname , ierr   ,
@@ -51,7 +62,7 @@
 !     Logical units  : LUN(29) = unit formatted output file
 !                      LUN( 2) = unit intermediate file (system)
 
-      use Grids        !   for the storage of contraction grids
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -61,7 +72,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun   (*)         !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
       integer  ( 4), intent(in   ) :: noseg             !< number of computational volumes
       integer  ( 4), intent(in   ) :: notot             !< total number of substances
       integer  ( 4), intent(in   ) :: nototp            !< total number of particle-substances
@@ -278,7 +289,7 @@
 !        Expand with layers in the base grid
 
       do igrid = 1, nogrid
-         
+
          if (igrid .eq. GridPs%bottom_grid) cycle
 
          noseg2 = GridPs%Pointers(igrid)%noseg_lay
@@ -422,3 +433,5 @@
  2130 format (/' ERROR, reading sub-grids information.' )
 
       end
+
+      end module m_grid

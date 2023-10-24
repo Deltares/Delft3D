@@ -15,7 +15,7 @@ function data = qp_clipvalues(data, Ops)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -94,33 +94,37 @@ for clipi = 1:4
         end
     end
 end
-if isfield(data, 'XYZ') && clippingspatial
-    for d = length(data):-1:1
-       val = data(d).XYZ;
-       szVal = size(val);
-       val = reshape(val, prod(szVal(1:end-1)), szVal(end));
-       for clipi = 2:4
-           switch clipi
-               case 2 % X
-                   dim = 1;
-                   clippingvals = Ops.xclipping;
-               case 3 % Y
-                   dim = 2;
-                   clippingvals = Ops.yclipping;
-               case 4 % Z
-                   dim = 3;
-                   clippingvals = Ops.zclipping;
-           end
-           if isempty(clippingvals) || size(val,2) < dim
-               % nothing
-           elseif isnumeric(clippingvals)
-               val(logical(ismember(val(:,dim), clippingvals)), :) = NaN;
-           else
-               val(:,dim) = realset(clippingvals, val(:,dim));
-               val(isnan(val(:,dim)),:) = NaN;
-           end
-       end
-       val = reshape(val, szVal);
-       data(d).XYZ = val;
+if clippingspatial
+    if isfield(data, 'XYZ')
+        for d = length(data):-1:1
+            val = data(d).XYZ;
+            szVal = size(val);
+            val = reshape(val, prod(szVal(1:end-1)), szVal(end));
+            for clipi = 2:4
+                switch clipi
+                    case 2 % X
+                        dim = 1;
+                        clippingvals = Ops.xclipping;
+                    case 3 % Y
+                        dim = 2;
+                        clippingvals = Ops.yclipping;
+                    case 4 % Z
+                        dim = 3;
+                        clippingvals = Ops.zclipping;
+                end
+                if isempty(clippingvals) || size(val,2) < dim
+                    % nothing
+                elseif isnumeric(clippingvals)
+                    val(logical(ismember(val(:,dim), clippingvals)), :) = NaN;
+                else
+                    val(:,dim) = realset(clippingvals, val(:,dim));
+                    val(isnan(val(:,dim)),:) = NaN;
+                end
+            end
+            val = reshape(val, szVal);
+            data(d).XYZ = val;
+        end
+    elseif isfield(data,'FaceNodeConnect') && isfield(data,'ValLocation') && strcmp(data.ValLocation,'FACE')
+        % to be implemented
     end
 end

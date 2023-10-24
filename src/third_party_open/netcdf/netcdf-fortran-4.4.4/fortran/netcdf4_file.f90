@@ -3,7 +3,7 @@
 
 ! This file contains the netcdf-4 file open and create functions.
 
-! $Id$
+! 
 ! -------
 function nf90_open(path, mode, ncid, chunksize, cache_size, cache_nelems, &
      cache_preemption, comm, info)

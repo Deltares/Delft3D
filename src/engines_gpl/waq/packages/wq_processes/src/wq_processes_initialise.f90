@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,7 +20,13 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      
+module m_wq_processes_initialise
+
+implicit none
+
+contains
+
+
       subroutine wq_processes_initialise ( lunlsp, pdffil, shared_dll_so, blmfil, blmoutfil, sttfil, statprocesdef, outputs, &
                                            nomult, imultp, constants, refday, noinfo, nowarn, ierr)
 
@@ -36,10 +42,40 @@
 !>                             .
 !>                          to a consistent set of sequential processes for the simulation part
 
+      use m_set_old_items
+      use m_set_fractions
+      use m_set_active
+      use m_setvat
+      use m_setopp
+      use m_setopo
+      use m_setdvp
+      use m_repuse
+      use m_reaalg
+      use m_rd_tabs
+      use m_prsort
+      use m_prprop
+      use m_proc_totals
+      use m_primpro
+      use m_makbar
+      use m_intoou
+      use m_getinv
+      use m_fill_old_items
+      use m_cnfrep
+      use m_blmeff
+      use m_algrep
+      use m_actrep
+      use m_zoek
+      use m_dattim
+      use m_srstop
+      use m_rd_stt
+      use m_monsys
+      use m_getidentification
+      use m_getcom
       use processes_input
       use processes_pointers
-      
-      use dlwq_data
+      use process_registration
+
+      use dlwq_hyd_data
       use dlwq0t_data
       use bloom_data_io, only:runnam
       use processet
@@ -53,12 +89,12 @@
 
       ! declaration of arguments
 
-      integer             , intent(in   ) :: lunlsp          !< unit number spe
+      integer             , intent(inout) :: lunlsp          !< unit number spe
       character(len=*)    , intent(in   ) :: pdffil          !< filename proc_def
       character(len=*)    , intent(in   ) :: shared_dll_so      !< name of the open processes library dll/so to be loaded during runtime
       character(len=*)    , intent(inout) :: blmfil          !< filename spe
       character(len=*)    , intent(in   ) :: blmoutfil       !< base name for bloom output files
-      character(len=*)    , intent(in   ) :: sttfil          !< filename stt
+      character(len=*)    , intent(inout) :: sttfil          !< filename stt
 
       type(procespropcoll), intent(inout) :: statprocesdef   !< the statistical proces definition
       type(outputcoll)    , intent(inout) :: outputs         !< output structure
@@ -200,7 +236,7 @@
 
       ierr = 0
       ierr2 = 0
-      
+
       ! allocate
 
       call realloc(actlst, nbprm, keepExisting=.false.,Fill=' ')
@@ -230,7 +266,7 @@
       write( lunlsp, '(XA/)') idstr
       call dattim(rundat)
       write (lunlsp,'(A,A/)') ' Execution start: ',rundat
-      
+
       ! Active/inactive substance list
       write ( lunlsp , 2080 ) nosys , notot-nosys , notot
       write ( lunlsp , 2100 )
@@ -245,16 +281,13 @@
 
       ! case sensitivity
       call setzmo ( 0 )
-      ! call setzmo ( 1 )
 
       ! monitoring level
-      !call setmmo ( mlevel )
       call setmmo ( 10     )
 
       ! active processes only switch
       ! only activated processes are switched on
       laswi = .true.
-      ! laswi = .false.
 
       ! initialise statistical processes
       statprocesdef%cursize = 0
@@ -274,9 +307,9 @@
             ierr = ierr + 1
             return
          else
-         endif   
+         endif
       endif
-      
+
       ! read process definition file
 
       call rd_tabs( pdffil, lunlsp , versio, serial, noinfo, nowarn, ierr2 )
@@ -463,7 +496,7 @@
                   endif
                endif
             enddo
-   
+
             ! replace proto with actual processes in constant list
             call actrep( noalg   , noprot   , namprot, nampact, nopralg, nampralg, constants)
          endif
@@ -547,7 +580,6 @@
 
       ! handle output from statistical processes
 
-!      call set_stat_output( statprocesdef, noutp, ioutps, nrvart, outputs)
       noout_statt = 0
       noout_state = 0
 !     first statistics with temporal output
@@ -592,7 +624,7 @@
             enddo
          enddo
       endif
- 
+
       ! replace names of bloom algea with actual names
       if ( l_eco .and. nbpr .gt. 0 ) then
 
@@ -604,7 +636,7 @@
                        noutgrp  , outgrp)
 
          runnam = blmoutfil
-         
+
          ! write the bloom efficiency file
          filnam = trim(runnam)//'.frm'
          open ( newunit=lunfrm, file=filnam )
@@ -796,7 +828,7 @@
       call realloc(nfluxsys, notot, keepExisting=.false.,Fill=0)
       call realloc(ipfluxsys, notot, keepExisting=.false.,Fill=0)
       call realloc(fluxsys, totfluxsys, keepExisting=.false.,Fill=0)
-      
+
       ifluxsys = 0
       do isys = 1 , notot
          do iflx = 1 , nflux
@@ -919,3 +951,5 @@
                 ' WQ Number  (in)active  name')
  2110 format ( i7,3x,a,a )
       end
+
+end module m_wq_processes_initialise

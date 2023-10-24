@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_propsg
+
+implicit none
+
+contains
+
 
 subroutine PROPSG   (  pmsa  , fl    , ipoint, increm, noseg , &
                        noflux, iexpnt, iknmrk, noq1  , noq2  , &
                        noq3  , noq4  )
+use m_properties
+use m_evaluate_waq_attribute
+
 
 !>\file
 !>       Properties of unaggregated particles (TRW and suspended solids)
@@ -84,9 +93,9 @@ subroutine PROPSG   (  pmsa  , fl    , ipoint, increm, noseg , &
     ipnt(1:nitem) = ipoint(1:nitem)
     
     do iseg = 1 , noseg
-        call dhkmrk(1,iknmrk(iseg),ikmrk1)
+        call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1.eq.1) then
-            call dhkmrk(2,iknmrk(iseg),ikmrk2)
+            call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
                 
             ! input independentt of fractions
             biofilm_density = pmsa(ipnt(ip_BioFilmDen))
@@ -139,3 +148,5 @@ subroutine PROPSG   (  pmsa  , fl    , ipoint, increm, noseg , &
     
     return
 end
+
+end module m_propsg

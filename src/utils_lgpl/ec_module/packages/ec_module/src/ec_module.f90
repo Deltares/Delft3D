@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of  
 !  Stichting Deltares. All rights reserved.                                     
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module contains the interfaces of the EC-module.
 !! It is the main access point to the EC-module.
@@ -410,7 +410,7 @@ module m_ec_module
    !     use m_ec_module, only: ecFindFileReader ! TODO: Refactor this private data access (UNST-703).
          use m_ec_filereader_read, only: ecParseARCinfoMask
          use m_ec_support
-         use time_module, only: JULIAN, date2mjd
+         use time_module, only: ymd2modified_jul
  
          type(tEcInstance), pointer :: instancePtr !< intent(in)
          character(len=*),                         intent(inout) :: name         !< Name for the target Quantity, possibly compounded with a tracer name.
@@ -443,7 +443,6 @@ module m_ec_module
          integer :: convtype !< EC-module's convType_ enumeration.
          !
          integer :: fileReaderId   !< Unique FileReader id.
-         integer :: sourceItemId   !< Unique SourceItem id.
          integer :: quantityId     !< Unique Quantity id.
          integer :: elementSetId   !< Unique ElementSet id.
          integer :: converterId    !< Unique Converter id.
@@ -455,7 +454,7 @@ module m_ec_module
          integer, external         :: findname
          type (tEcMask)            :: srcmask
          logical                   :: res
-         integer                   :: i, isrc, itgt
+         integer                   :: i, itgt
          integer                   :: fieldId
          real(hp)                  :: tgt_mjd
    
@@ -471,7 +470,7 @@ module m_ec_module
             fileReaderPtr => ecSupportFindFileReader(instancePtr, fileReaderId)
             fileReaderPtr%vectormax = vectormax
             
-            tgt_mjd = JULIAN(tgt_refdate, 0) ! TODO: handle time zone (and time?)
+            success = ymd2modified_jul(tgt_refdate, tgt_mjd) ! TODO: handle time zone (and time?)
 
             if (present(forcingfile)) then
                if (present(dtnodal)) then
@@ -663,6 +662,7 @@ module m_ec_module
 
       type(c_time)                                            :: ecReqTime    !< time stamp for request to EC
       real(hp)                                                :: tUnitFactor  !< factor for time step unit
+      real(hp)                                                :: tgt_mjd      !< current time in modified julian days
       character(len=20) :: datestring
       integer           :: ierr
       
@@ -674,7 +674,8 @@ module m_ec_module
          success = .false.
          call clearECMessage()
          tUnitFactor = ecSupportTimeUnitConversionFactor(tgt_tunit)
-         call ecReqTime%set2(JULIAN(tgt_refdate, 0), timesteps * tUnitFactor / 86400.0_hp - tgt_tzone / 24.0_hp)
+         ierr = ymd2modified_jul(tgt_refdate, tgt_mjd)
+         call ecReqTime%set2(tgt_mjd, timesteps * tUnitFactor / 86400.0_hp - tgt_tzone / 24.0_hp)        
          if (.not. ecGetValues(instancePtr, itemId, ecReqTime, target_array)) then
             datestring = datetime_to_string(ecReqTime%mjd(), ierr)
             if (ierr==0) then
@@ -711,7 +712,7 @@ module m_ec_module
          integer,                         intent(in) :: connectionId !< identifier of the connection
          character(len=*), dimension(:),  intent(in) :: qnames       !< list of quantity names 
          integer :: sourceItemId
-         integer :: n, i, isrc
+         integer :: i, isrc
          !
          success = .False. 
          do isrc = 1, size(qnames)

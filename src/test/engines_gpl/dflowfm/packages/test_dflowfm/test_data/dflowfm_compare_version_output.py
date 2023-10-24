@@ -23,10 +23,12 @@ filinhandle.closed
 
 fout = open("new_noversion.log", "w")
 for line in newFileContents:
-    startposVersion = str(line).lower().find("version")
-    if startposVersion>-1:
-        line = line[:startposVersion+7] + "\n"
-    fout.write(line)
+	if line.startswith("Source:"):
+		continue
+	startposVersion = str(line).lower().find("version")
+	if startposVersion>-1:
+		line = line[:startposVersion+7] + "\n"
+	fout.write(line)
 fout.close()
 
 print("##teamcity[testStarted name='dflowfm --version']")

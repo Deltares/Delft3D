@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq0i
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq0i ( keynam , intopt , lunut  , ierr2 )
 
@@ -52,6 +58,7 @@
 
 !     Modified          : April     2011 by Leo Postma
 !                                           Fortran 90 look and feel
+      use m_zoek
       use timers       !   performance timers
 
       implicit none
@@ -136,3 +143,5 @@
  1000 format ( ' Keyword (',i2,') detected: ',a )
 
       end
+
+      end module m_dlwq0i

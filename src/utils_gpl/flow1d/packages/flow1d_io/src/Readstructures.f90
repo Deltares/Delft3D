@@ -1,7 +1,7 @@
 module m_readstructures
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_readstructures
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -34,14 +34,11 @@ module m_readstructures
    use m_network
    use m_CrossSections
    use m_1d_structures
-   use m_Weir
    use m_Universal_Weir
    use m_Culvert
    use m_Bridge
    use m_pump
-   use m_Orifice
    use m_General_Structure
-   use m_ExtraResistance
    use m_Dambreak
 
    use properties
@@ -131,35 +128,15 @@ module m_readstructures
       type(tree_data), pointer                               :: md_ptr 
       integer                                                :: istat
       integer                                                :: numstr
-      integer                                                :: i, j
+      integer                                                :: i
       character(len=:), allocatable                          :: str_buf
 
       character(len=IdLen)                                   :: typestr
       character(len=IdLen)                                   :: st_id
       character(len=IdLen)                                   :: branchID
       
-      logical                                                :: isPillarBridge
-
-      integer                                                :: iCompound
-      character(len=IdLen)                                   :: compoundName
-      character(len=IdLen), allocatable, dimension(:)        :: structureNames
-      
       integer                                                :: iStrucType
-      integer                                                :: istru
       type(t_structure), pointer                             :: pstru
-      type(t_compound), pointer                              :: pcompound
-      integer                                                :: nweir
-      integer                                                :: nculvert
-      integer                                                :: norifice
-      integer                                                :: ngenstru
-      integer                                                :: nbridge
-      integer                                                :: ngate
-      integer                                                :: numStructures
-
-      integer                                                :: pos
-      integer                                                :: ibin = 0
-      character(len=Idlen)                                   :: binfile
-      logical                                                :: file_exist
       integer                                                :: major, minor, ierr
       
       success = .true.
@@ -175,9 +152,13 @@ module m_readstructures
       major = 1
       minor = 0
       call prop_get_version_number(md_ptr, major = major, minor = minor, success = success1)
-      ! by exception, we backwards-support majorVersion=1 (for orifice and weir)
+      if (.not. success1) then
+         msgbuf = ' Early return, file '//trim(structurefile)//' is a 2D3D structure file, it will be read by function flow_init_structurecontrol.'
+         call msg_flush()
+         return
+      endif
       ! For now majorVersion = 2.xx is supported for all structures, except for the bridge. 
-      if ((major /= StructureFileMajorVersion .and. major /= 1 .and. major /= 2) .or. (major == StructureFileMajorVersion .and. minor > StructureFileMinorversion)) then
+      if ((major /= StructureFileMajorVersion .and. major /= 2) .or. (major == StructureFileMajorVersion .and. minor > StructureFileMinorversion)) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of structure file detected in '''//trim(structurefile)//''': v', major, minor, '. Current format: v',StructureFileMajorVersion,StructureFileMinorVersion,'. Ignoring this file.'
          call err_flush()
          ierr = 1
@@ -274,14 +255,8 @@ module m_readstructures
             
             select case (iStrucType)
             case (ST_WEIR)
-               if (major ==1) then 
-                  ! support for version 1.0 structure files weirs as weir 
-                  call readWeir(pstru%weir, md_ptr%child_nodes(i)%node_ptr, success)
-               else
-                  ! support for version >= 2.0 structure files weirs as general structure
-                  call readWeirAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
-               endif
-                  
+               ! support for version >= 2.0 structure files weirs as general structure
+               call readWeirAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_UNI_WEIR)
                call readUniversalWeir(pstru%uniweir, md_ptr%child_nodes(i)%node_ptr, st_id, success)
             case (ST_CULVERT)
@@ -296,13 +271,8 @@ module m_readstructures
             case (ST_PUMP)
                call readPump(pstru%pump, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_ORIFICE, ST_GATE)
-               if (major ==1) then 
-                  ! support for version 1.0 structure files weirs as weir 
-                  call readOrifice(pstru%orifice, md_ptr%child_nodes(i)%node_ptr, success)
-               else
-                  ! support for version >= 2.0 structure files weirs as general structure
-                  call readOrificeAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
-               endif
+               ! support for version >= 2.0 structure files weirs as general structure
+               call readOrificeAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_GENERAL_ST)
                call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_DAMBREAK)
@@ -519,25 +489,6 @@ module m_readstructures
       enddo
    end subroutine finishreading
  
-   subroutine readWeir(weir, md_ptr, success)
-   
-      type(t_weir), pointer, intent(inout)     :: weir
-      type(tree_data), pointer, intent(in)     :: md_ptr
-      logical, intent(inout)                   :: success 
-
-      allocate(weir)
-
-      call prop_get_double(md_ptr, 'structure', 'crestlevel', weir%crestlevel, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'crestwidth', weir%crestwidth, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'dischargecoeff', weir%dischargecoeff, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'latdiscoeff', weir%latdiscoeff, success)
-
-      weir%cmu            = weir%dischargecoeff * weir%latdiscoeff
-
-      if (success) call prop_get_integer(md_ptr, 'structure', 'allowedflowdir', weir%allowedflowdir, success)
-
-   end subroutine readWeir
-
 
    !> Read specific data for the universal weir structure.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
@@ -786,7 +737,6 @@ module m_readstructures
       character(len=IdLen)                       :: CrsDefID
       integer                                    :: CrsDefIndx
       integer                                    :: icross
-      logical                                    :: isPillarBridge
       logical                                    :: success1
       double precision                           :: shift  
       
@@ -1122,7 +1072,7 @@ module m_readstructures
       call prop_get_string(md_ptr, '', key, tmpstr, success1)
       if (success1) then
          read(tmpstr, *, iostat = istat) value
-         if (istat /= 0) then ! No number, so assume it was a filename
+         if (istat /= 0 .or. index(tmpstr,'/') == 1) then ! No number or a string starting with '/': assume it was a filename
             forcinglist%Count = forcinglist%Count+1
             if (forcinglist%Count > forcinglist%Size) then
                call realloc(forcinglist)
@@ -1143,58 +1093,6 @@ module m_readstructures
       
    end subroutine get_value_or_addto_forcinglist
    
-   subroutine readOrifice(orifice, md_ptr, success)
-   
-      type(t_orifice), pointer, intent(inout)     :: orifice
-      type(tree_data), pointer, intent(in)        :: md_ptr
-      logical, intent(inout)                      :: success 
-      
-      double precision :: area, height
-   
-      allocate(orifice)
-      
-      call prop_get_double(md_ptr, 'structure', 'crestlevel', orifice%crestlevel, success)
-      if (success) then
-         call prop_get_double(md_ptr, 'structure', 'crestwidth', orifice%crestwidth, success)
-         if (success) call prop_get_double(md_ptr, 'structure', 'openlevel', orifice%openlevel, success)
-      else
-         success = .true.
-         orifice%crestlevel = 0d0
-         area = 0d0
-         call prop_get_double(md_ptr, 'structure', 'bottomlevel', orifice%crestlevel, success)
-         call prop_get_double(md_ptr, 'structure', 'area',         area, success)
-         height = sqrt(area)
-         orifice%crestwidth = height
-         orifice%openlevel = orifice%crestlevel+height
-      endif
-      
-      if (success) call prop_get_integer(md_ptr, 'structure', 'allowedflowdir', orifice%allowedflowdir, success)
-
-      if (success) call prop_get_double(md_ptr, 'structure', 'contractioncoeff', orifice%contrcoeff, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'latcontrcoeff', orifice%latcontrcoeff, success)
-
-      if (success) then
-         call prop_get_logical(md_ptr, 'structure', 'uselimitflowpos', orifice%uselimitflowpos, success)
-         if (success) then
-            call prop_get_double(md_ptr, 'structure', 'limitflowpos', orifice%limitflowpos, success)
-         else
-            orifice%uselimitflowpos = .false.
-            success = .true.
-         endif
-      endif
-      
-      if (success) then
-         call prop_get_logical(md_ptr, 'structure', 'uselimitflowneg', orifice%uselimitflowneg, success)
-         if (success) then
-            call prop_get_double(md_ptr, 'structure', 'limitflowneg', orifice%limitflowneg, success)
-         else
-            orifice%uselimitflowneg = .false.
-            success = .true.
-         endif
-      endif
-   
-   end subroutine readOrifice
-
    !> Read the weir parameters and define a general structure.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
    subroutine readWeirAsGenStru(generalst, md_ptr, st_id, forcinglist, success)
@@ -1552,51 +1450,5 @@ module m_readstructures
       end select
       
    end function allowedFlowDirToString
-
-
-   !> Read the general structure parameters for version 1.00 files
-   subroutine readGeneralStructure_v100(generalst, md_ptr, success)
-   
-      type(t_GeneralStructure), pointer, intent(inout)     :: generalst     !< general structure to be read into 
-      type(tree_data), pointer, intent(in)                 :: md_ptr        !< ini tree pointer with user input.
-      logical, intent(inout)                               :: success 
-      
-      allocate(generalst)
-
-      allocate(generalst%fu(3,1), generalst%ru(3,1), generalst%au(3,1))
-      allocate(generalst%widthcenteronlink(1), generalst%gateclosedfractiononlink(1), generalst%sOnCrest(1), generalst%state(3,1))
-      generalst%numlinks = 1
-      generalst%gateclosedfractiononlink(1) = 1d0
-      generalst%gatedoorheight = huge(1d0)
-      generalst%velheight = .true.
-      call prop_get_double(md_ptr, 'structure', 'widthLeftW1', generalst%wu1, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'widthleftWsdl',  generalst%wu2, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'widthcenter',    generalst%ws, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'widthrightWsdr', generalst%wd1, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'widthrightW2',   generalst%wd2, success)
-                                                                               
-      if (success) call prop_get_double(md_ptr, 'structure', 'levelleftZb1',   generalst%zu1, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'levelleftZbsl',  generalst%zu2, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'levelcenter',    generalst%zs, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'levelrightZbsr', generalst%zd1, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'levelrightZb2',  generalst%zd2, success)
-
-      if (success) call prop_get_double(md_ptr, 'structure', 'gateLowerEdgeLevel', generalst%gateLowerEdgeLevel, success)
-
-      if (success) call prop_get_double(md_ptr, 'structure', 'posfreegateflowcoeff',  generalst%cgf_pos, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'posdrowngateflowcoeff', generalst%cgd_pos, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'posfreeweirflowcoeff',  generalst%cwf_pos, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'posdrownweirflowcoeff', generalst%cwd_pos, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'poscontrcoeffreegate',  generalst%mugf_pos, success)
-      
-      if (success) call prop_get_double(md_ptr, 'structure', 'negfreegateflowcoeff',  generalst%cgf_neg, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'negdrowngateflowcoeff', generalst%cgd_neg, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'negfreeweirflowcoeff',  generalst%cwf_pos, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'negdrownweirflowcoeff', generalst%cwd_neg, success)
-      if (success) call prop_get_double(md_ptr, 'structure', 'negcontrcoeffreegate',  generalst%mugf_neg, success)
-      
-      if (success) call prop_get_double(md_ptr, 'structure', 'extraresistance', generalst%extraresistance, success)
-     
-   end subroutine readGeneralStructure_v100
   
 end module m_readstructures

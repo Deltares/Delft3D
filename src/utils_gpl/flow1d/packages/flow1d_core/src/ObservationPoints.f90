@@ -1,7 +1,7 @@
 module m_ObservationPoints
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_ObservationPoints
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -39,11 +39,8 @@ module m_ObservationPoints
    private 
      
    public realloc
-   public GetObservationPointsCount
    public dealloc
 
-   public getObservationPointById
-   public GetObservationPointValue
    public fill_hashtable
    
    interface fill_hashtable
@@ -63,18 +60,9 @@ module m_ObservationPoints
     
         character(IdLen)            :: id                   !< id of OPnt
         character(IdLen)            :: name                 !< name of OPnt
-        integer                     :: p1                   !< first point number
-        integer                     :: p2                   !< second point number
-        !> weight for determining function value. F(observation) = (weight -1)*f(p1) + weight*f(p2)
-        double precision            :: pointWeight          
-        integer                     :: l1                   !< first segment number
-        integer                     :: l2                   !< second segment number
-        !> weight for determining function value. F(observation) = (weight -1)*f(l1) + weight*f(l2)
-        double precision            :: linkWeight
         integer                     :: branchIdx            !< index of branch on which the observation point is located
         type(t_branch), pointer     :: branch               !< pointer to branch on which the observation point is located
         double precision            :: chainage             !< chainage of observation point on branch
-        !> optional 
         double precision            :: x                    !< x-coordinate
         double precision            :: y                    !< y-coordinate
         integer                     :: locationtype = 0     !< location type, one of INDTP_1D/2D/ALL :=1 (or 2) snap to 1d (or 2d) flownodes
@@ -91,17 +79,8 @@ module m_ObservationPoints
       type(t_hashlist)                                      :: hashlist
    end type t_ObservationPointSet
    
-   integer, parameter, public                               :: OBS_NEAREST = 1
-   integer, parameter, public                               :: OBS_LINEAR = 2
-   
 contains
     
-   integer function GetObservationPointsCount(obs)
-      type(t_ObservationPointSet)                  :: obs
-
-      GetObservationPointsCount = obs%count
-   end function GetObservationPointsCount
-   
    subroutine deallocObservationPoint(obs)
       ! Modules
       
@@ -149,46 +128,6 @@ contains
       obs%Size = obs%Size+obs%growsBy
    end subroutine
    
-   integer function getObservationPointById(obs, OPnt1)
-      type(t_ObservationPointSet), intent(in)   :: obs
-      character(IdLen)                          :: OPnt1
-      
-      integer i
-      
-      do i = 1, obs%count
-         if (trim(OPnt1) == trim(obs%OPnt(i)%id)) then
-            getObservationPointById = i
-            return
-         endif
-      enddo
-      ! not found
-      getObservationPointById = -1
-   end function getObservationPointById
-
-   double precision function GetObservationPointValue(pObs, values, mapIndex, onGridPoint)
-   
-      type(t_ObservationPoint) :: pObs
-      double precision, dimension (0:)  :: values
-      integer, dimension(:) :: mapIndex
-      logical onGridPoint
-      
-      integer :: p1
-      integer :: p2
-      double precision :: weight
-      
-      if (onGridPoint) then
-         p1 = pObs%p1
-         p2 = pObs%p2
-         weight = pObs%pointWeight
-      else
-         p1 = pObs%l1
-         p2 = pObs%l2
-         weight = pObs%linkWeight
-      endif
-      GetObservationPointValue = weight*values(mapIndex(p1)) + (1.0-weight)*values(mapIndex(p2))
-
-   end function GetObservationPointValue
-
    subroutine fill_hashtable_obs(obs)
    
       type (t_ObservationPointSet), intent(inout), target :: obs

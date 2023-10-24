@@ -6,7 +6,7 @@
 ! sparse  matrix  manipulation  routines  as  well as  a  few  iterative
 ! solvers, see detailed description of contents below.
 ! 
-!  Copyright (C) 2005, the Regents of the University of Minnesota 
+!  Copyright (C) 2005-2023, the Regents of the University of Minnesota 
 ! 
 ! SPARSKIT is  free software; you  can redistribute it and/or  modify it
 ! under the terms of the  GNU Lesser General Public License as published
@@ -31,8 +31,8 @@
 ! 
 ! For more information contact saad@cs.umn.edu
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 #include "blasfm.h"
 

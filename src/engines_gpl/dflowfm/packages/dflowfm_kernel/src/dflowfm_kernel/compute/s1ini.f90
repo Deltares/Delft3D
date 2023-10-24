@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine s1ini()                           ! links in continuity eq.
  use m_flow
@@ -42,7 +42,7 @@
  use m_partitioninfo
  implicit none
 
- integer          :: L, k1, k2, k, n, LL, kt, idim, imba, i
+ integer          :: L, k1, k2, k, n, LL, kt, idim, imba
  double precision :: aufu, auru, tetau
  double precision :: ds, hsk, Qeva_ow, Qeva_icept, Qrain, Qicept, Qextk, aloc
  logical :: isGhost
@@ -282,19 +282,20 @@
 
  if (kmx < 1) then ! original 2D coding
 
-   do i = 1, wetlinkCount
-      L = onlyWetLinks(i)
-      tetau       = teta(L)*au(L)
-      aufu        = tetau*fu(L)
-      k1 = ln(1,L); k2 = ln(2,L)
-      bb(k1)      = bb(k1)      + aufu
-      bb(k2)      = bb(k2)      + aufu
-      ccr(Lv2(L)) = ccr(Lv2(L)) - aufu
+    do L = 1,lnx
+       if (hu(L) > 0) then
+           tetau       = teta(L)*au(L)
+           aufu        = tetau*fu(L)
+           k1 = ln(1,L); k2 = ln(2,L)
+           bb(k1)      = bb(k1)      + aufu
+           bb(k2)      = bb(k2)      + aufu
+           ccr(Lv2(L)) = ccr(Lv2(L)) - aufu
 
-      auru        = tetau*ru(L) + (1d0 - teta(L))* au(L)*u0(L)  !     q1(L)
-      dd(k1)      = dd(k1) - auru
-      dd(k2)      = dd(k2) + auru
-   enddo
+           auru        = tetau*ru(L) + (1d0 - teta(L))* au(L)*u0(L)  !     q1(L)
+           dd(k1)      = dd(k1) - auru
+           dd(k2)      = dd(k2) + auru
+       endif
+    enddo
     !
  else
 

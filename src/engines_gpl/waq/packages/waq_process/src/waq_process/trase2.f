@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_trase2
+
+      implicit none
+
+      contains
+
 
       subroutine trase2 ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Total of transport in sediment for 66 substances
 
@@ -115,12 +123,12 @@
 
 !        Zoek eerste kenmerk van- en naar-segmenten
          IF ( IVAN .GT. 0 ) THEN
-             CALL DHKMRK(1,IKNMRK(IVAN ),IKMRKV)
+             CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
          ELSE
              IKMRKV = -1
          ENDIF
          IF ( INAAR .GT. 0 ) THEN
-             CALL DHKMRK(1,IKNMRK(INAAR),IKMRKN)
+             CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
          ELSE
              IKMRKN = -1
          ENDIF
@@ -218,3 +226,5 @@
 
       RETURN
       END
+
+      end module m_trase2

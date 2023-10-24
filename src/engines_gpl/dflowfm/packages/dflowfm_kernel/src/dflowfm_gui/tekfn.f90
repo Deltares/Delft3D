@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
       SUBROUTINE TEKFN(NSC,NF,JW,X,Y,N,X1,X2,Y1,Y2,NCOL,TITLE,JAUTO,JP,DAG,kp1)
       use m_flow, only : kplotfrombedorsurface
@@ -137,7 +137,7 @@
       IF (JW .EQ. 1) THEN
          CALL BOX(X1,Y1,X2,Y2)
 
-         CALL IGRCHARSIZE(2.0,1.0)
+         ! CALL IGRCHARSIZE(2.0,1.0)
          tex = ' '
          write(tex(2:10), '(F8.1)')  fy2 - fy1
          CALL DRAWTEXT(real(X1),real(Y2+DYH),TITLE//tex)

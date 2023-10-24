@@ -3,7 +3,7 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
                     & sour_ex   ,sour_im   ,sink      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes the sour and sink terms for the 2D case
@@ -113,6 +113,8 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
        sour_im = (hots-wsl)/h1
        sink    = wsl/h1
     else
+       sour_ex = 0.0_fp
+       sour_im = 0.0_fp
        sink = wsl/h1
     endif
 end subroutine soursin_2d

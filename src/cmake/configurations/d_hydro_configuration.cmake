@@ -1,5 +1,3 @@
-project(d_hydro)
-
 # D_HYDRO specific components
 add_subdirectory(${checkout_src_root}/${d_hydro_module} d_hydro)
 
@@ -28,3 +26,6 @@ if(UNIX)
   # install
   add_subdirectory(${checkout_src_root}/${install_d_hydro_module} install_d_hydro)
 endif()
+
+# Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
+project(d_hydro)

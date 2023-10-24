@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of  
 !  Stichting Deltares. All rights reserved.                                     
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module instantiates FileReaders and their source Items, just as a GUI/framework instantiates kernels and their target Items.
 !! @author adri.mourits@deltares.nl
@@ -370,18 +370,21 @@ module m_ec_provider
                      case ("rainfall",                                                    &
                            "rainfall_rate",                                               &
                            "airpressure_windx_windy", "airpressure_windx_windy_charnock", &
-                           "airpressure_stressx_stressy",                                 &
+                           "airpressure_stressx_stressy", "charnock",                     &
                            "windxy", "stressxy", "windx", "windy", "stressx", "stressy",  &
                            "nudge_salinity_temperature",                                  &
                            "airpressure","atmosphericpressure",                           &
-                           "airtemperature", "humidity", "cloudiness",                    &
+                           "airtemperature", "humidity", "dewpoint", "cloudiness",        &
                            "wind_speed", "wind_from_direction",                           &
+                           "airdensity",                                                  & 
                            "humidity_airtemperature_cloudiness",                          &
                            "humidity_airtemperature_cloudiness_solarradiation",           &
                            "dewpoint_airtemperature_cloudiness",                          &
                            "dewpoint_airtemperature_cloudiness_solarradiation",           &
                            "solarradiation", "longwaveradiation", "wavesignificantheight", &
-                           "waveperiod" )
+                           "waveperiod", "friction_coefficient_time_dependent", "wavedirection", & 
+                           "xwaveforce", "ywaveforce", "xwaveinducedvolumeflux","ywaveinducedvolumeflux", &
+                           "freesurfacedissipation","whitecappingdissipation","bottomorbitalvelocity","totalwaveenergydissipation","bottomdissipation" )
                         success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                      case ("hrms","tp", "tps", "rtp","dir","fx","fy","wsbu","wsbv","mx","my","dissurf","diswcap","ubot") 
                         success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2528,6 +2531,10 @@ module m_ec_provider
          case ('airpressure','atmosphericpressure') 
             ncvarnames(1) = 'msl'                            ! mean sea-level pressure
             ncstdnames(1) = 'air_pressure'
+         case ('airdensity') 
+            ! UNST-6593: airdensity has variable name p140209 and no standard_name, will be changed in the future according to ECMWF. 
+            ncvarnames(1) = 'p140209'                        ! air density above sea
+            ncstdnames(1) = 'air_density'
          case ('airpressure_windx_windy') 
             ncvarnames(1) = 'msl'                            ! mean sea-level pressure
             ncstdnames(1) = 'air_pressure'
@@ -2551,19 +2558,32 @@ module m_ec_provider
             ncstdnames(3) = 'northward_wind'
             ncvarnames(4) = 'c'                              ! space varying Charnock coefficients
             ncstdnames(4) = 'charnock'
+         case ('charnock')
+            ncvarnames(1) = 'c'                              ! space varying Charnock coefficients
+            ncstdnames(1) = 'charnock'
          case ('airtemperature')
             ncvarnames(1) = 't2m'                            ! 2-meter air temperature
             ncstdnames(1) = 'air_temperature'
          case ('cloudiness')
-            ncvarnames(3) = 'tcc'                            ! cloud cover (fraction)
-            ncstdnames(3) = 'cloud_area_fraction'
+            ncvarnames(1) = 'tcc'                            ! cloud cover (fraction)
+            ncstdnames(1) = 'cloud_area_fraction'
          case ('humidity')
             ncstdnames(1) = 'humidity'
             ncstdnames_fallback(1) = 'relative_humidity'
+         case ('dewpoint')
+            ncvarnames(1) = 'd2m'                            ! dew-point temperature
+            ncstdnames(1) = 'dew_point_temperature'
          case ('wind_speed')
             ncstdnames(1) = 'wind_speed'
          case ('wind_from_direction')
             ncstdnames(1) = 'wind_from_direction'
+         case ('humidity_airtemperature_cloudiness')
+            ncvarnames(1) = 'rhum'                           ! relative_humidity
+            ncstdnames(1) = 'relative_humidity'
+            ncvarnames(2) = 't2m'                            ! 2-meter air temperature
+            ncstdnames(2) = 'air_temperature'
+            ncvarnames(3) = 'tcc'                            ! cloud cover (fraction)
+            ncstdnames(3) = 'cloud_area_fraction'
          case ('dewpoint_airtemperature_cloudiness')
             ncvarnames(1) = 'd2m'                            ! dew-point temperature
             ncstdnames(1) = 'dew_point_temperature'
@@ -2592,15 +2612,42 @@ module m_ec_provider
             ncstdnames(1) = 'sea_water_potential_temperature'
             ncvarnames(2) = 'so'                             ! salinity
             ncstdnames(2) = 'sea_water_salinity'
+         case ('friction_coefficient_time_dependent')
+            ncvarnames(1) = 'friction_coefficient' 
+            ncstdnames(1) = 'friction_coefficient' 
          case ('wavesignificantheight')
             ncvarnames(1) = 'hs'                             ! significant wave height
             ncstdnames(1) = 'sea_surface_wave_significant_height'
          case ('waveperiod')
-            ncvarnames(1) = varname                          ! significant wave height
-            ncstdnames(1) = varname
-         case default                                        ! experiment: gather miscellaneous variables from an NC-file,
-            if (index(quantityName,'waqsegmentfunction')==1) then
-               ncvarnames(1) = quantityName
+             ncvarnames(1) = varname                          ! wave period
+             ncstdnames(1) = varname
+         case ('wavedirection')
+             ncvarnames(1) = 'theta0'
+             ncstdnames(1) = 'sea_surface_wave_from_direction'
+         case ('xwaveforce')
+             ncvarnames(1) = 'xfor'
+             ncstdnames(1) = 'xfor'
+         case ('ywaveforce')
+             ncvarnames(1) = 'yfor'
+             ncstdnames(1) = 'yfor'
+         case ('xwaveinducedvolumeflux')
+             ncvarnames(1) = 'xtrsp'
+             ncstdnames(1) = 'xtrsp'
+         case ('ywaveinducedvolumeflux')
+             ncvarnames(1) = 'ytrsp'
+             ncstdnames(1) = 'ytrsp'
+         case ('freesurfacedissipation')
+             ncvarnames(1) = 'ssurf'
+             ncstdnames(1) = 'ssurf'
+         case ('whitecappingdissipation')
+             ncvarnames(1) = 'swcap'
+             ncstdnames(1) = 'swcap'
+         case ('bottomorbitalvelocity')
+             ncvarnames(1) = 'ubot'
+             ncstdnames(1) = 'ubot'
+             case default                                        ! experiment: gather miscellaneous variables from an NC-file,
+             if (index(quantityName,'waqsegmentfunction')==1) then
+                 ncvarnames(1) = quantityName
                ncstdnames(1) = quantityName
             else if (index(quantityName,'initialtracer')==1) then
                ncvarnames(1) = quantityName(14:)
@@ -2669,7 +2716,7 @@ module m_ec_provider
                call setECMessage("Variable '" // nameVar // "' not found in NetCDF file '"//trim(fileReaderPtr%filename))
                return
             endif
-            fileReaderPtr%standard_names(idvar)=ncstdnames(i)                 ! overwrite the standardname by the one rquired
+            fileReaderPtr%standard_names(idvar)=ncstdnames(i)                 ! overwrite the standardname by the one required
 
             ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims)  ! get the number of dimensions
             if (allocated(coordids)) deallocate(coordids)                                 ! allocate space for the variable id's 

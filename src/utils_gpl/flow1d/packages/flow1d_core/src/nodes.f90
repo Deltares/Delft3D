@@ -1,7 +1,7 @@
 module m_node
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_node
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -42,14 +42,9 @@ module m_node
    end interface
 
    ! node types
-   integer, public, parameter :: nt_BND       = -2
    integer, public, parameter :: nt_NotSet    = -1
    integer, public, parameter :: nt_EndNode   = 0
    integer, public, parameter :: nt_LinkNode  = 1
-   integer, public, parameter :: nt_LevelBoun = 2
-   integer, public, parameter :: nt_DischBoun = 3
-   integer, public, parameter :: nt_QH_Boun   = 4
-   integer, public, parameter :: nt_EmBed     = 5
   
    public realloc
    public dealloc
@@ -74,14 +69,9 @@ module m_node
       character(IdLen)            :: name                !< nodeid(nnode): id of node
       integer                     :: index
       integer                     :: nodeType            !> node(1,:), possible values
-                                                         !! - -2    boundary node
                                                          !! - -1    not set
                                                          !! -  0    node with one reach connected
                                                          !! -  1    connection node with more than one reach connected
-                                                         !! -  2    water level boundary
-                                                         !! -  3    Discharge boundary 
-                                                         !! -  4    Discharge boundary as tabulated function of water level
-                                                         !! -  5    Embedded node
                
       double precision            :: x                   !< x-coordinate of node.
       double precision            :: y                   !< x-coordinate of node.

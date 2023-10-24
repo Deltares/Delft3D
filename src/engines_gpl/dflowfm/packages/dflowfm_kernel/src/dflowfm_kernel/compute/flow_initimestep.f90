@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine flow_initimestep(jazws0, iresult)                     ! intialise flow timestep, also called once after flowinit
  use timers
@@ -38,10 +38,12 @@
  use unstruc_model, only: md_restartfile
  use unstruc_channel_flow
  use m_1d_structures, only: initialize_structures_actual_params, set_u0isu1_structures
+ use m_nearfield, only : nearfield_mode, NEARFIELD_DISABLED, setNFEntrainmentMomentum
  use dfm_error
  use MessageHandling
  use m_partitioninfo
  use m_sediment, only: stm_included
+ use m_sethu
 
  implicit none
 
@@ -107,7 +109,7 @@
  adve = 0d0
 
  call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
- call sethu(jazws0)
+ call calculate_hu_au_and_advection_for_dams_weirs(jazws0)
 
  call setau()                                        ! set au and cfuhi for conveyance after limited h upwind at u points
  call timstop(handle_extra(39)) ! End huau
@@ -159,6 +161,12 @@ endif
 
  if (nshiptxy > 0) then
      call setship()                                        ! in initimestep
+ endif
+
+ if (nearfield_mode /= NEARFIELD_DISABLED .and. NFEntrainmentMomentum > 0) then
+     !
+     ! Update momentum exchange, based on current flow field
+     call setNFEntrainmentMomentum()
  endif
 
  call timstrt('Compute advection term', handle_extra(41)) ! Start advec

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,9 +29,11 @@
 
       ! global declarations
 
+      use m_srstop
       use hydmod
       use m_aggregate_waqgeom
       use m_aggregation_types
+      use m_dhaggr
 
       implicit none
 
@@ -74,8 +76,8 @@
 
 
       ! copy geometry type
-      output_hyd%geometry = input_hyd%geometry 
-      
+      output_hyd%geometry = input_hyd%geometry
+
       ! lga, only in non-regular
       ! only in structured cases!!
 
@@ -118,7 +120,7 @@
           apnt = ipnt_h(1,:)
           success = aggregate_ugrid_geometry(input_hyd%waqgeom,output_hyd%waqgeom,input_hyd%edge_type,output_hyd%edge_type,apnt)
           if ( .not. success ) then
-             write(message, *) 'There was and error when aggregating the grid! agrhyd will stop.' 
+             write(message, *) 'There was and error when aggregating the grid! agrhyd will stop.'
              call mess(LEVEL_ERROR, trim(message))
              call srstop(1)
           endif
@@ -136,7 +138,7 @@
              if ( iret .ne. i_sect ) then ; write(*,*) ' error copying boundary section data' ; call srstop(1) ; endif
           end do
       endif
- 
+
       ! pointers, allocate to the max
 
       if ( l_regular ) then

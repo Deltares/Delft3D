@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine flow_settidepotential(timmin)
  use m_flow
@@ -48,10 +48,10 @@
 
  double precision :: Omeg, tt
 
- call meteo_tidepotential( julrefdat, TIMmin , xz , yz , size(tidep,1), tidep, ndx, doodsonstart, doodsonstop , doodsoneps)
+ call meteo_tidepotential( julrefdat, TIMmin , doodsonstart, doodsonstop , doodsoneps)
 
  if (md_ident == 'equator1d' ) then
-    tt   = 60d0*(timmin-tstart_user)
+    tt   = 60d0*timmin-tstart_user
     do kk = 1,ndx
        tidep(1,kk) = ZP*sin(om*tt - nmode*dg2rd*xz(kk) )
     enddo

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine advec()                                  ! advection, based on u0, q0 24
  use m_flowtimes
@@ -349,9 +349,11 @@
  !$OMP PARALLEL DO                                                                   &
  !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,hh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2)
 
- do i = 1, wetLinkCount
-    L = onlyWetLinks(i)
-    advel = 0                                          !  advi (1/s), adve (m/s2)
+ do L  = 1,lnx
+
+  advel = 0                                          !  advi (1/s), adve (m/s2)
+
+  if ( hu(L) > 0 ) then
 
     k1    = ln(1,L) ; k2 = ln(2,L)
     iadvL = iadv(L)
@@ -567,10 +569,18 @@
 
     else if (iadvL == 5 .or. iadvL ==6) then         ! 5,6 = advection like 3,4, now Piaczek teta
 
-       if (kcu(L) ==1) then
-          volu = acl(L)*vol1_f(k1) + (1d0-acl(L))*vol1_f(k2)
+       if (jarhoxu == 0) then
+          if (kcu(L) == 1) then
+             volu  = acl(L)*vol1_f(k1) + (1d0-acl(L))*vol1_f(k2)
+          else
+             volu  = acl(L)*vol1(k1) + (1d0-acl(L))*vol1(k2)
+          endif
        else
-          volu = acl(L)*vol1(k1) + (1d0-acl(L))*vol1(k2)
+          if (kcu(L) == 1) then
+             volu  = acl(L)*vol1_f(k1)*rho(k1) + (1d0-acl(L))*vol1_f(k2)*rho(k2)
+          else
+             volu  = acl(L)*vol1(k1)*rho(k1) + (1d0-acl(L))*vol1(k2)*rho(k2)
+          endif
        endif
 
        if (volu > 0) then
@@ -730,6 +740,8 @@
     endif
 
     adve(L) = adve(L) + advel
+
+  endif
 
  enddo
 

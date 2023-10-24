@@ -8,10 +8,10 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & dzduu     ,dzdvv     ,rhowat    ,ag        ,bedw      , &
                    & pangle    ,fpco      ,susw      ,wave      ,eps       , &
                    & subiw     ,vcr       ,error     ,message   ,wform     , &
-                   & r         ,phi_phase ,uw_lt     )
+                   & r         ,phi_phase ,uwbih     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -35,8 +35,8 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute bed load transport according to Van Rijn
@@ -44,7 +44,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
 ! simulation.
 ! If no waves then use traditional Van Rijn formulation
 ! If waves then use new parameterization which
-! includes wave asymetry
+! includes wave asymmetry
 ! Note: The two methods are known to give different results
 ! (order factor 2) for situations without waves
 ! Van Rijn (1993,2000)
@@ -112,7 +112,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     integer                  , intent(in)  :: wform
     real(fp)                 , intent(in)  :: r
     real(fp)                 , intent(in)  :: phi_phase
-    real(fp)                 , intent(in)  :: uw_lt
+    real(fp)                 , intent(in)  :: uwbih
 !
 ! Local variables
 !
@@ -311,10 +311,10 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
              ! Makes u(0)=0 from ABREU et al 2010 CE (Part 2)
              tc     = time-deltat
              !
-             udt = uw_lt*f*(sin(omega*tc)+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*tc+phi_phase))   ! Velocity u(t) from Eq. (4)
+             udt = uwbih*f*(sin(omega*tc)+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*tc+phi_phase))   ! Velocity u(t) from Eq. (4)
              if (pangle > 0.0_fp) then !pangle is phase lead defined in .tra file
-                udt2 = uw_lt*f*(sin(omega*(tc+dtt))+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*(tc+dtt)+phi_phase))   ! Velocity u(t) from Eq. (4) with phase lead to t+dtt
-                udt1 = uw_lt*f*(sin(omega*(tc-dtt))+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*(tc-dtt)+phi_phase))   ! Velocity u(t) from Eq. (4) with phase lead to t-dtt
+                udt2 = uwbih*f*(sin(omega*(tc+dtt))+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*(tc+dtt)+phi_phase))   ! Velocity u(t) from Eq. (4) with phase lead to t+dtt
+                udt1 = uwbih*f*(sin(omega*(tc-dtt))+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*(tc-dtt)+phi_phase))   ! Velocity u(t) from Eq. (4) with phase lead to t-dtt
                 udt  = plead1*udt + plead2*tp*(udt2-udt1)/(4.0_fp*pi*dtt)                                                     ! Velocity u(t) with phase lead
              endif
              ! update uon and uoff values
@@ -434,7 +434,11 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
           !
           ! Gamma has been reduced from 0.2 in TR2000 to 0.1 in TR2004
           !
-          ua    = 0.1_fp * p2 * (uon**4-uoff**4) / (uon**3+uoff**3)
+          if (abs(uon+uoff) < 1e-6_fp) then
+             ua = 0.0_fp
+          else
+             ua = 0.1_fp * p2 * (uon**4-uoff**4) / (uon**3+uoff**3)
+          endif
           uau   = ua * cosphiwav
           uav   = ua * sinphiwav
           !

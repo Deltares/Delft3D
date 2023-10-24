@@ -1,0 +1,53 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_bcdat
+   real(fp)                                :: timtap
+   real(fp)                                :: depbnd
+   integer                                 :: gntoftoq        ! ntof+ntoq in the original, global numbering, before boundaries are removed due to
+                                                              ! parallel computation (and outside this partition)
+   integer                                 :: nmskf
+   integer                                 :: nmskl
+   integer                                 :: mmskf
+   integer                                 :: mmskl
+   integer                                 :: ncomp
+   integer                                 :: nsplit
+   integer     , dimension(:)    , pointer :: pindex          ! converts component number in internal database to component number used in hydrbc, hydrbcf and compnames
+   integer     , dimension(:)    , pointer :: bct_order       ! stores the original order of the timeseries-boundaries in the bct file
+                                                              ! used for parallel
+   integer     , dimension(:,:)  , pointer :: mnbnd_global    ! Copy of mnbnd containing the boundary indices of all boundaries in global indices
+                                                              ! used for parallel
+   integer     , dimension(:)    , pointer :: ext_bnd         ! mask array to identify boundaries whose information is prescribed by external components (e.g. SobekSIM) instead of the (dummy) input file
+   character(1)                            :: ascon           ! 'Y' if open bnd. contains type 'A'
+   character(8), dimension(:)    , pointer :: compnames
+   real(fp)    , dimension(:,:)  , pointer :: dist_pivot_part ! When running parallel and boundary "ibnd" has pivot point(s) outside the partition:
+                                                              ! dist_pivot_part(1,ibnd) : distance between start-pivot-point and the partition, along the open boundary
+                                                              ! dist_pivot_part(2,ibnd) : distance between end  -pivot-point and the partition, along the open boundary
+   real(fp)    , dimension(:,:,:), pointer :: hydrbcf
+end type gd_bcdat

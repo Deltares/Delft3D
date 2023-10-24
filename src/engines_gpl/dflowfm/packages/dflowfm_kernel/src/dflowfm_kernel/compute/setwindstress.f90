@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine setwindstress()
  use m_flowgeom
@@ -112,6 +112,11 @@
              if (jaroro > 1) then
                 roa  = roair(k)
              endif
+          endif
+          if (ja_airdensity > 0 .or. ja_varying_airdensity > 0) then
+             k = ln(2,L)
+             row = rho(ktop(k))
+             roa = airdensity(k)
           endif
           tuwi    = roa*cdw*uwi
           if (jamapwindstress > 0) then

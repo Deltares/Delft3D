@@ -341,7 +341,7 @@ contains
           endif
           write(*,*) 'Writing new reference file '//trim(treeRefFile)
        else
-           open(newunit=ftree,file=trim(treeTstFile),iostat=iostat)
+          open(newunit=ftree,file=trim(treeTstFile),iostat=iostat)
           if (iostat/=0) then
              call TCMessage(testname,'Cannot write EC-module tree!','testFailed')
              call ec_test_exception
@@ -351,18 +351,9 @@ contains
        call ecInstancePrintState(ecInstancePtr,callback_msg,ftree)
        close(ftree)
 
-       if (jacompare) then
-!         if (.not.compareTextDump(treeTstFile, treeRefFile)) then
-!            call TCMessage(testname,'Trees differ!','testFailed')
-!            call ec_test_exception
-!            return
-!         endif
-       endif
-
        ! try to estimate the result size
        result_size = ecEstimateItemresultSize(ecInstancePtr, itemIDs(1))
-       if (result_size>0) then
-       else
+       if (result_size<=0) then
           call TCMessage(testname,'returned result size is not larger than zero','testFailed')
           return
        endif
@@ -440,12 +431,6 @@ contains
              cycle
           endif
 
-          ! take a section of the resultvector and write it to file
-          !write(testOutLun,TIME_FMT) tst%t(it)
-          !do id=max(tst%ndxstart,1), min(tst%ndxend,result_size)
-          !   write(testOutLun,DATA_FMT) targetArray(id)
-          !enddo
-
           write(testOutLun,time_format) tst%t(it)
           do id=max(tst%ndxstart,1), min(tst%ndxend,result_size)
              write(testOutLun,'(a$)') ' '
@@ -512,12 +497,6 @@ contains
        ! Free EC instance
        success = ecInstanceFree(ecInstancePtr)
 
-   ! teamcity messages
-   ! "##teamcity[testStarted name='%s']\n"
-   ! "##teamcity[testFailed name='%s' message='Exception occurred' details='%s']\n" %
-   ! "##teamcity[testFailed name='%s' message='Comparison: differences above tolerance']\n" % stripEscapeCharacters(testCaseConfig.getName()))
-   ! "##teamcity[testFinished name='%s' message='Comparison passed']\n"
-
        contains
           subroutine callback_msg(lvl,msg)
              implicit none
@@ -556,6 +535,8 @@ contains
              call prop_get_integer (config_ptr, trim(testname), 'VectorMax', config%vectormax, status)
 
              liststring = ''
+             nx = 0
+             ny = 0
              call prop_get_string (config_ptr, trim(testname), 'LocationsX', liststring , status)
              if (len_trim(liststring)>0) then                  ! count the comma's, which serve as separators
                 nx = 1

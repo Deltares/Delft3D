@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine addbaroclinicpressure()
 use m_flowgeom
@@ -39,6 +39,8 @@ use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN
 
 implicit none
 integer                    :: L,LL,Lb,Lt,n, k, lnxbc
+
+if (jabarocterm==0) return
 
 if (jabarocponbnd == 0) then 
    lnxbc = lnxi

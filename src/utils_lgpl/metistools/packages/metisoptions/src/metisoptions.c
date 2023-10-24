@@ -15,21 +15,6 @@
 
 /// Fortan example: ierror = metisopts(opts,"CONTIG"//char(0),1)
 /// set value 1 at location METIS_OPTION_CONTIG in opts array
-int METISOPTIONS(int *options, const char *optionname, const int *optionval)
-{
-	return metisoptions(options, optionname, optionval);
-}
-
-int metisoptions_(int *options, const char *optionname, const int *optionval)
-{
-	return metisoptions(options, optionname, optionval);
-}
-
-int metisoptions__(int *options, const char *optionname, const int *optionval)
-{
-	return metisoptions(options, optionname, optionval);
-}
-
 
 int metisoptions(int *options, const char *optionname, const int *optionval)
 {
@@ -70,5 +55,21 @@ int metisoptions(int *options, const char *optionname, const int *optionval)
 		return 1;	// error
 	}
 }
+
+int METISOPTIONS(int *options, const char *optionname, const int *optionval)
+{
+	return metisoptions(options, optionname, optionval);
+}
+
+int metisoptions_(int *options, const char *optionname, const int *optionval)
+{
+	return metisoptions(options, optionname, optionval);
+}
+
+int metisoptions__(int *options, const char *optionname, const int *optionval)
+{
+	return metisoptions(options, optionname, optionval);
+}
+
 
 #endif

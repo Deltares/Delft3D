@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_covmac
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE COVMAC     ( PMSA   , FL     , IPOINT , INCREM, NOSEG ,
      +                        NOFLUX , IEXPNT , IKNMRK , NOQ1  , NOQ2  ,
@@ -27,6 +33,8 @@
 !
 !*******************************************************************************
 !
+      use m_evaluate_waq_attribute
+      use m_write_error_message
       IMPLICIT NONE
 !
 !     Type    Name         I/O Description
@@ -87,7 +95,7 @@
       IPNT(21) = IPOINT(21)
       DO ISEG = 1,NOSEG
          PMSA( IPNT( 21) ) = -1
-         CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+         CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
          IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
             PMSA( IPNT( 21) ) = ISEG
          ENDIF
@@ -125,10 +133,10 @@
 !
       DO 9000 ISEG = 1 , NOSEG
 
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 
          IF (IKMRK1.EQ.1) THEN
-            CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
             IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.1)) THEN
 
 !           Calculation of fcover for top layer only
@@ -141,7 +149,7 @@
                MaxEM05    = PMSA( IPNT( 12) )
                IBotSeg    = nint(PMSA( IPNT( 13) ))
                IF (IBotSeg .le. 0)
-     j            CALL DHERR2('IBotSeg',PMSA( IPNT( 13) ),ISEG,'COVMAC')
+     j            CALL write_error_message_with_values('IBotSeg',PMSA( IPNT( 13) ),ISEG,'COVMAC')
 
                RadIn      = PMSA( IPNT( 14) )
                EM01       = PMSA(IPOINT( 3)+(IBotSeg-1)*INCREM( 3))
@@ -222,3 +230,5 @@
 !
       RETURN
       END
+
+      end module m_covmac

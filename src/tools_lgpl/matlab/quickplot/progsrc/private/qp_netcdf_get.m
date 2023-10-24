@@ -9,7 +9,7 @@ function [Data, errmsg] = qp_netcdf_get(FI,var,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -255,7 +255,7 @@ if ~isempty(Info.Attribute)
                 Data(Data<=-32767)=NaN;
             case 'int'
                 Data(Data<=-2147483647)=NaN;
-            case {'float','double'}
+            case {'single','double'}
                 Data(Data>=9.9692099683868690e+36)=NaN;
         end
     end

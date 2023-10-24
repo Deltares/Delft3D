@@ -17,7 +17,7 @@ function stl(cmd,varargin)
 % License of main routine ...
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -116,7 +116,7 @@ function stlwrite(filename, varargin)
 %     fCols8bit = fColsDbl*255; % Pass cols in 8bit (0-255) RGB triplets
 %     stlwrite('testCol.stl',fv,'FaceColor',fCols8bit) 
 
-% Copyright (c) 2015-2020. Holcombe
+% Copyright (c) 2015-2023. Holcombe
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,14 +27,16 @@
 !
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+!
+!
 
 module m_fm_wq_processes
+   use m_rd_sub
+   use m_dhnoseg
    use precision
    use processes_input
    use processes_pointers
-   use dlwq_data
+   use dlwq_hyd_data
    use processet
    use output
 
@@ -109,7 +111,7 @@ module m_fm_wq_processes
    character(len=NAMWAQLEN), dimension(:), allocatable :: wqbotunits        !< water quality bottom variable units
    integer,  allocatable, dimension(:,:)     :: id_wqb                      !< wqbot id's in map-file
    integer,  allocatable, dimension(:,:)     :: id_wqb3d                    !< 3d wqbot id's in map-file
-   real(hp), allocatable, dimension(:,:)     :: wqbot                       !< water quality bottom variable values in double precission
+   real(hp), allocatable, dimension(:,:)     :: wqbot                       !< water quality bottom variable values in double precision
 
    type(outputcoll)                          :: outputs                     !< output structure
    integer,  allocatable, dimension(:,:)     :: id_waq                      !< waq output id's in map-file
@@ -132,6 +134,9 @@ module m_fm_wq_processes
    integer                                   :: isffmlayer                  !< pointer to fmlayer         segment function
    integer                                   :: isffmktop                   !< pointer to fmktop          segment function
    integer                                   :: isffmkbot                   !< pointer to fmkbot          segment function
+   integer                                   :: isfwaveheight               !< pointer to wave height     segment function
+   integer                                   :: isfwavelength               !< pointer to wave length     segment function
+   integer                                   :: isfwaveperiod               !< pointer to wave period     segment function
 !
 !     Balance output
 !

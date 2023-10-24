@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module part10fm_mod
+use m_fm_particles_in_grid
+
 
       implicit none
 !
@@ -115,14 +117,13 @@ contains
          nqzero = i-1
       endif
 ! Here we need to check which segments have a closed boundary
-      ! call make_closedbc_segment()
-!      stop
       !
       ! Note AM (2 september 2021): this loop needs revising, but for the moment let us concentrate on
       ! the diffusion coefficient
       !
 
       ! pick up the current particle coordinates loop over the particles, no movement if the sticky mass >0
+
       do while (ipart <= nopart)
         if (niter >= maxiter) then
            partdomain = .TRUE. ! to escape theloop
@@ -130,7 +131,6 @@ contains
         endif
         skip_pt = .FALSE.
         if (niter==0) mirror = .TRUE.
-!        if (mpart_prevt(ipart) == 0 .and. time0>tstart_user+dts) skip_pt = .TRUE.
         partdomain =  mpart(ipart) == 0 ! this is for the particles that come out of advection outside model domain
         ! if after the advectio the particle is outside the gridthen also set the previous mpart to 0 to avoid resetting back into the domain
         if (partdomain) then
@@ -182,7 +182,7 @@ contains
               do isub = 1 , nosubs
                  wpart(isub,ipart) = 0.0D0
               enddo
-              ! mover to next particle
+              ! move to next particle
               niter = 0
               ipart = ipart + 1
               xpartold = xpart(ipart)
@@ -200,6 +200,7 @@ contains
               yy(1) = ypart(ipart)
               if (jsferic == 1) call Cart3Dtospher(xpart(ipart),ypart(ipart),zpart(ipart),xx(1),yy(1),ptref)
               call part_findcell(1,xx,yy,mpart(ipart:ipart),ierror)
+
               !  We sill need to check for internal boundaries (eg thin dam or dry cell in the FM model)
               call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr) ! if openbound = false then there is an internal (no flow) boundary.
 
@@ -249,7 +250,7 @@ contains
               partdomain = mpart(ipart) == 0
               openbound=.TRUE.
               if  (jsferic ==1) zpartold = zpart(ipart)
-          endif
+           endif
       enddo
 
       ! need to store the x, y and k in case of sticky oil that should not move.
@@ -392,15 +393,9 @@ contains
           !now we can calculate the new displacement in the direction of hte flow
           dwx = (cdrag*(dpxwind-ux0old)) * dts
           dwy = (cdrag*(dpywind-uy0old)) * dts
-!          if (jsfer_old == 1) then
-!             call Cart3Dtospher(xpart(ipart),ypart(ipart),zpart(ipart),xx,yy,ptref)
-!             xx = xx + dwx
-!             yy = yy + dwy
-!             call sphertocart3D(xx,yy,xpart(ipart),ypart(ipart),zpart(ipart))
-!          else
-             xpart(ipart) = xpartold  + dwx
-             ypart(ipart) = ypartold  + dwy
-!          endif
+          xpart(ipart) = xpartold  + dwx
+          ypart(ipart) = ypartold  + dwy
+
           xx(1) = xpart(ipart)
           yy(1) = ypart(ipart)
           if (jsferic == 1) call Cart3Dtospher(xpart(ipart),ypart(ipart),zpart(ipart),xx(1),yy(1),ptref)
@@ -478,27 +473,9 @@ contains
    data ithndl / 0 /
 
    if (mpartold == 0) return  ! if the particle was not in the grid then skip
-   if ( timon ) call timstrt( "checkpart_openbound", ithndl )
+
    dmiss = -999.D0
- ! k = kpartold
    openbound = .TRUE.
-   if (.false.) then
-   i = 1
-   do while (i <= nqzero)  !loop over the edges with discharge = 0 to see whether it crosses the particle path
-     L = qbnd(i)
-     !L = icell2edge(i)   ! edge
-     k1 = edge2node(1,L)
-     k2 = edge2node(2,L)
-     call CROSS (xpart(ipart), ypart(ipart), xpartold, ypartold, xnode(k1), ynode(k1), xnode(k2), ynode(k2), JACROS,SL,SM,XCR,YCR,CRP, 0, dmiss)
-     if (jacros == 1) then ! boundary should be closed
-       if (abs(qe(L)) == 0.0D0) then
-         i = nqzero
-         openbound = .FALSE.  ! which is tghe best bvalue to check on zero flux: TODO
-       endif
-     endif
-     i = i +1
-   end do
-   else
    !go along the path between new and old to find a closed boundary
    mpart_tmp = mpartold
    do while (mpart_tmp .ne. mpart(ipart))
@@ -515,10 +492,9 @@ contains
           ! check whether the bondary is closed
           if (abs(qe(L)) == 0.0D0) then
             openbound = .FALSE.
-            if ( timon ) call timstop ( ithndl )
             return  ! if a closed boundary is found then return with openbound = false
           else
-            ! ensure a tolerance so that the coordinate is acutally in the next cell.
+            ! ensure a tolerance so that the coordinate is actually in the next cell.
             tolx = sign(1.0D0,(xpart(ipart) - xcr)) * DTOL
             toly = sign(1.0D0,(ypart(ipart) - ycr)) * DTOL
             xpartold = xcr + tolx
@@ -530,7 +506,6 @@ contains
               mpart_tmp = 0  ! this is outside the grid exit the routine
               mpart(ipart) = 0
               openbound = .TRUE. ! has to be an open boundary because the q is greater than 0
-              if ( timon ) call timstop ( ithndl )
               return
             endif
           endif
@@ -540,30 +515,9 @@ contains
       end do
        ! if no boundary found, then we are in the same segment,  exit the routine
       if (.not.isboundary) then
-        if ( timon ) call timstop ( ithndl )
         return
       endif
    end do
-   endif
-      ! if no boundary was found check around the end point in case it has skipped across a cell (via a corner)
-      !k = kpart(ipart)
-      !if (k > 0 .and. openbound) then
 
-      !    do i=jcell2edge(k),jcell2edge(k+1)-1
-
-      !      L = icell2edge(i)   ! edge
-      !      k1 = edge2node(1,L)
-      !      k2 = edge2node(2,L)
-
-      !      call CROSS (xpart(ipart), ypart(ipart), xpartold, ypartold, xnode(k1), ynode(k1), xnode(k2), ynode(k2), JACROS,SL,SM,XCR,YCR,CRP, jsferic, dmiss)
-      !      if (jacros == 1) then ! boundary crossed now check if open or closed
-      !        if (abs(qe(l)) < 1.0D-5) openbound = .FALSE.
-      !      endif
-
-      !    end do
-      !end if
-
-      if ( timon ) call timstop ( ithndl )
-
-      end subroutine
+   end subroutine
 end module

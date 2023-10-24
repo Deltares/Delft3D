@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2022.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -48,14 +48,15 @@
 
 #if defined(WIN32)
 #  define DFM_GENERATE_VOLUME_TABLES  DFM_GENERATE_VOLUME_TABLES
-#  define GET_VARIABLE_POINTER GET_VARIABLE_POINTER
+#  define WRITE_1D_FLOWGEOM_UGRID WRITE_1D_FLOWGEOM_UGRID
 #  define STDCALL
 #elif defined(linux)
 #  include "config.h"
 #  define DFM_GENERATE_VOLUME_TABLES FC_FUNC(dfm_generate_volume_tables,DFM_GENERATE_VOLUME_TABLES)
-#  define GET_VARIABLE_POINTER FC_FUNC(get_variable_pointer,GET_VARIABLE_POINTER)
+#  define WRITE_1D_FLOWGEOM_UGRID FC_FUNC(write_1d_flowgeom_ugrid,WRITE_1D_FLOWGEOM_UGRID)
 #  define STDCALL
 #endif
+
 /*
 *
 * Connection routine between F90 (main) -> C (interface) -> F90 (DLL).
@@ -96,17 +97,18 @@ long STDCALL DFM_GENERATE_VOLUME_TABLES(int64_t* sharedDLLHandle, double* increm
 	return -1;
 }
 
-long STDCALL GET_VARIABLE_POINTER(int64_t* sharedDLLHandle, char* var_name, void *xptr)
+long STDCALL WRITE_1D_FLOWGEOM_UGRID(int64_t* sharedDLLHandle, int64_t* ncid)
 {
-	typedef void* (STDCALL* MyProc)(char *, void *);
-	MyProc proc = (MyProc)GetDllProcedure(sharedDLLHandle, "dfm_get_variable_pointer");
+	typedef void* (STDCALL* MyProc)(int64_t*);
+	MyProc proc = (MyProc)GetDllProcedure(sharedDLLHandle, "write_1D_flowgeom_ugrid");
 
 
 	if (proc != NULL)
 	{
-		(void*)(*proc)(var_name, xptr);
+		(void*)(*proc)(ncid);
 		return 0;
 	}
 	return -1;
 }
+
 

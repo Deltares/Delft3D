@@ -18,7 +18,7 @@ function varargout=d3d_simfil(FI,idom,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -128,7 +128,11 @@ sz = getsize(FI,idom,Props);
 allidx=zeros(size(sz));
 for i=1:length(sz)
     if DimFlag(i)
-        if isempty(idx{i}) || isequal(idx{i},0) || isequal(idx{i},1:sz(i))
+        if i == T_ && isempty(idx{i})
+            idx{T_}=sz(T_);
+        elseif i == ST_ && isempty(idx{i})
+            % skip --> nothing
+        elseif  isempty(idx{i}) || isequal(idx{i},0) || isequal(idx{i},1:sz(i))
             idx{i}=1:sz(i);
             allidx(i)=1;
         end
@@ -556,6 +560,7 @@ switch FI.FileType(9:end)
                             Ans.XY{j} = landboundary('read',relpath(path_str,pli_files{j}));
                         end
                     end
+                    Ans.Val = inifile('hcgetstringi',FI.Structure,IndexChapter,'id','');
                 else
                     Ans = [];
                 end
@@ -1060,7 +1065,7 @@ switch FI.FileType
                             Out(ifld).Geom = 'POLYL';
                             Out(ifld).Coords = 'xy';
                             Out(ifld).DimFlag(ST_) = 3;
-                            Out(ifld).NVal = 0;
+                            Out(ifld).NVal = 4;
                         end
                         if ismember('dambreak',utypes)
                             ifld = ifld+1;

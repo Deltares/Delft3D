@@ -32,7 +32,7 @@ function varargout = asciiwind(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -174,9 +174,12 @@ for i = 1:length(t)
             OneTime = reshape(OneTime,[Structure.Header.n_cols Structure.Header.n_rows nQuant]);
             OneTime = permute(OneTime,[2 1 3]);
             OneTime = OneTime([1 1:end],[1:end 1],:);
-            OneTime(1,:,:) = 0;
-            OneTime(1,:,is_direction) = OneTime(2,:,is_direction);
-            OneTime(1,:,is_pressure) = Structure.Data(t(i)).p_drop_spw_eye;
+            % fill the eye -- Delft3D approach (FM? also for 4?)
+            OneTime(1,:,:) = 0; % set to zero by default
+            OneTime(1,:,is_direction) = OneTime(2,:,is_direction); % keep direction constant to the eye
+            OneTime(1,:,is_pressure) = Structure.Data(t(i)).p_drop_spw_eye; % use eye pressure for the eye
+            % fill the eye -- SFINCS approach
+            % OneTime(1,:,:) = 2*OneTime(2,:,:) - OneTime(3,:,:); % linearly extrapolate trend of innermost pair of data points
         case {'meteo_on_computational_grid','field_on_computational_grid'}
             %TODO: nQuant>1
             if isfield(Structure.Header,'grid_file')
@@ -702,16 +705,16 @@ if nargin<3
     wind_opt = 'x+y';
 end
 
+Header = Structure.Header;
 UNLIMITED = netcdf.getConstant('UNLIMITED');
 times = [Structure.Data.dtime]; % time
-ref_time = Structure.Header.RefDate; %min(times);
+ref_time = Header.RefDate; %min(times);
 %times = times - ref_time;
 n_times = length(times);
-n_range = Structure.Header.n_rows;
-ranges = (1:n_range) * Structure.Header.spw_radius / n_range;
-n_azimuth = Structure.Header.n_cols;
+n_range = Header.n_rows;
+ranges = (1:n_range) * Header.spw_radius / n_range;
+n_azimuth = Header.n_cols;
 azimuths = (0:n_azimuth-1) * 360 / n_azimuth;
-p_units = Structure.Header.unit{3};
 
 time_dim = netcdf.defDim(ncid,'time',UNLIMITED);
 range_dim = netcdf.defDim(ncid,'range',n_range);
@@ -723,7 +726,7 @@ netcdf.putAtt(ncid,time_var,'calendar','gregorian');
 tunits = sprintf('days since %sZ',datestr(ref_time,31));
 netcdf.putAtt(ncid,time_var,'units',tunits);
 
-if strcmp(Structure.Header.grid_unit,'degree')
+if strcmp(Header.grid_unit,'degree')
     x_var = 'longitude_eye';
     x_sname = 'longitude';
     x_descr = 'longitude of eye';
@@ -770,11 +773,6 @@ netcdf.putAtt(ncid,y_eye_id,'standard_name',y_sname);
 netcdf.putAtt(ncid,y_eye_id,'long_name',y_descr);
 netcdf.putAtt(ncid,y_eye_id,'units',y_units);
 
-eye_pressure_id = netcdf.defVar(ncid,'eye_pressure','double',time_dim);
-%netcdf.putAtt(ncid,eye_pressure_id,'standard_name','surface_air_pressure');
-netcdf.putAtt(ncid,eye_pressure_id,'long_name','surface air pressure in the eye');
-netcdf.putAtt(ncid,eye_pressure_id,'units',p_units);
-
 dim_order = [range_dim,azimuth_dim,time_dim];
 reorder = [2 1 3];
 dim_order = dim_order(reorder);
@@ -810,11 +808,53 @@ switch wind_opt
         error('Invalid option for storing wind "%s", expecting "mag+from", "mag+to" or "x+y".', var2str(wind_opt))
 end
 
-pressure_id = netcdf.defVar(ncid,'pressure','double',dim_order);
-netcdf.putAtt(ncid,pressure_id,'standard_name','surface_air_pressure');
-netcdf.putAtt(ncid,pressure_id,'long_name','pressure at the bottom of the atmosphere');
-netcdf.putAtt(ncid,pressure_id,'eye_value','eye_pressure');
-netcdf.putAtt(ncid,pressure_id,'units',p_units);
+var_id = zeros(1,Header.n_quantity);
+iq_wsp = 1;
+iq_wfd = 2;
+iq_prs = 3;
+for iq = 1:Header.n_quantity
+    switch Header.quantity{iq}
+        case 'wind_speed'
+            iq_wsp = iq;
+            continue
+        case 'wind_from_direction'
+            iq_wfd = iq;
+            continue
+        case 'p_drop'
+            iq_prs = iq;
+            varname = 'pressure';
+            stdname = 'surface_air_pressure';
+            longname = 'pressure at the bottom of the atmosphere';
+            units = Header.unit{iq};
+            p_units = units;
+        otherwise
+            varname = Header.quantity{iq};
+            stdname = '';
+            longname = '';
+            units = Header.unit{iq};
+    end
+
+    var_id(iq) = netcdf.defVar(ncid,varname,'double',dim_order);
+    if ~isempty(stdname)
+        netcdf.putAtt(ncid,var_id(iq),'standard_name',stdname);
+    end
+    if ~isempty(longname)
+        netcdf.putAtt(ncid,var_id(iq),'long_name',longname);
+    end
+    netcdf.putAtt(ncid,var_id(iq),'units',units);
+end
+pressure_id = var_id(iq_prs);
+
+if pressure_id > 0
+    netcdf.putAtt(ncid,pressure_id,'eye_value','eye_pressure');
+    
+    eye_pressure_id = netcdf.defVar(ncid,'eye_pressure','double',time_dim);
+    %netcdf.putAtt(ncid,eye_pressure_id,'standard_name','surface_air_pressure');
+    netcdf.putAtt(ncid,eye_pressure_id,'long_name','surface air pressure in the eye');
+    netcdf.putAtt(ncid,eye_pressure_id,'units',p_units);
+end
+
+% check for precipitation?
 
 NC_GLOBAL = netcdf.getConstant('GLOBAL');
 netcdf.putAtt(ncid,NC_GLOBAL,'date_modified',datestr(now,31));
@@ -833,11 +873,13 @@ netcdf.putVar(ncid,azimuth_id,0,n_azimuth,azimuths);
 
 x_eye = [Structure.Data.x_spw_eye];
 y_eye = [Structure.Data.y_spw_eye];
-p_eye = [Structure.Data.p_drop_spw_eye];
-
 netcdf.putVar(ncid,x_eye_id,x_eye);
 netcdf.putVar(ncid,y_eye_id,y_eye);
-netcdf.putVar(ncid,eye_pressure_id,p_eye);
+
+if pressure_id > 0
+    p_eye = [Structure.Data.p_drop_spw_eye];
+    netcdf.putVar(ncid,eye_pressure_id,p_eye);
+end
 
 store_range = 2:n_range+1;
 store_azim = 1:n_azimuth;
@@ -851,16 +893,16 @@ for t = 1:n_times
     DATA = permute(DATA(1,store_range,store_azim,:),[2 3 1 4]);
     switch wind_opt
         case 'mag+from' % mag + from_dir
-            u = DATA(:,:,1,1);
-            v = DATA(:,:,1,2);
+            u = DATA(:,:,1,iq_wsp);
+            v = DATA(:,:,1,iq_wfd);
             
         case 'mag+to' % mag + to_dir
-            u = DATA(:,:,1,1);
-            v = mod(DATA(:,:,1,2)+180,360);
+            u = DATA(:,:,1,iq_wsp);
+            v = mod(DATA(:,:,1,iq_wfd)+180,360);
             
         case 'x+y' % x + y
-            um = DATA(:,:,1,1);
-            to_dir_cart = 270 - DATA(:,:,1,2);
+            um = DATA(:,:,1,iq_wsp);
+            to_dir_cart = 270 - DATA(:,:,1,iq_wfd);
             u = um .* cosd(to_dir_cart);
             v = um .* sind(to_dir_cart);
     end
@@ -870,7 +912,12 @@ for t = 1:n_times
     count = count(reorder);
     netcdf.putVar(ncid,wind1_id,start,count,permute(u,reorder))
     netcdf.putVar(ncid,wind2_id,start,count,permute(v,reorder))
-    netcdf.putVar(ncid,pressure_id,start,count,permute(DATA(:,:,1,3),reorder))
+    
+    for iq = 1:Header.n_quantity
+        if var_id(iq) > 0
+            netcdf.putVar(ncid,var_id(iq),start,count,permute(DATA(:,:,1,iq),reorder))
+        end
+    end
 end
 
 

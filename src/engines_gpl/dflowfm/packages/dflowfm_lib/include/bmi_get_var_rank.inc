@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2022.                                
+!  Copyright (C)  Stichting Deltares, 2015-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -68,9 +68,29 @@
      rank = 1
   case("tetacr")
      rank = 1
+  case("InterceptThickness")
+     rank = 1
+  case("InterceptHs")
+     rank = 1
+  case("PotEvap")
+     rank = 1
+  case("ActEvap")
+     rank = 1
   case("infilt")
      rank = 1
+  case("infiltcap0")
+     rank = 1
   case("infiltcap")
+     rank = 1
+  case("HortonMinInfCap")
+     rank = 1
+  case("HortonMaxInfCap")
+     rank = 1
+  case("HortonDecreaseRate")
+     rank = 1
+  case("HortonRecoveryRate")
+     rank = 1
+  case("HortonState")
      rank = 1
   case("shx")
      rank = 1
@@ -127,6 +147,20 @@
   case("qqlat")
      rank = 1
   case("balat")
+     rank = 1
+  case("qplatCum")
+     rank = 1
+  case("qplatCumPre")
+     rank = 1
+  case("qplatAve")
+     rank = 1
+  case("qLatReal")
+     rank = 1
+  case("qLatRealCum")
+     rank = 1
+  case("qLatRealCumPre")
+     rank = 1
+  case("qLatRealAve")
      rank = 1
   case("n1latsg")
      rank = 1
@@ -186,13 +220,15 @@
      rank = 1
   case("s1")
      rank = 1
+  case("s1max")
+     rank = 1
   case("a0")
      rank = 1
   case("a1")
      rank = 1
-  case("vol0")
-     rank = 1
   case("vol1")
+     rank = 1
+  case("vol0")
      rank = 1
   case("vol1_f")
      rank = 1
@@ -205,6 +241,10 @@
   case("ucz")
      rank = 1
   case("ucmag")
+     rank = 1
+  case("ucx_mor")
+     rank = 1
+  case("ucy_mor")
      rank = 1
   case("sa0")
      rank = 1
@@ -228,6 +268,8 @@
      rank = 1
   case("au")
      rank = 1
+  case("au_nostrucs")
+     rank = 1
   case("hu")
      rank = 1
   case("frcu")
@@ -250,6 +292,8 @@
      rank = 1
   case("bl")
      rank = 1
+  case("bl_min")
+     rank = 1
   case("lnx1D")
      rank = 0
   case("lnxi")
@@ -264,6 +308,8 @@
      rank = 2
   case("lncn")
      rank = 2
+  case("kcu")
+     rank = 1
   case("iadv")
      rank = 1
   case("dx")
@@ -280,6 +326,8 @@
      rank = 2
   case("bob0")
      rank = 2
+  case("blup")
+     rank = 1
   case("xu")
      rank = 1
   case("yu")
@@ -334,6 +382,8 @@
      rank = 1
   case("ba")
      rank = 1
+  case("ndx1d")
+     rank = 0
   case default
      rank = 0
   end select

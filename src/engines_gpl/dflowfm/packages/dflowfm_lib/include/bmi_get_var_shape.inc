@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2022.                                
+!  Copyright (C)  Stichting Deltares, 2015-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -83,9 +83,29 @@
        shape(1) = stmpar%lsedtot
     case("tetacr")
        shape(1) = stmpar%lsedtot
+    case("InterceptThickness")
+       shape(1) = ndx
+    case("InterceptHs")
+       shape(1) = ndx
+    case("PotEvap")
+       shape(1) = ndx
+    case("ActEvap")
+       shape(1) = ndx
     case("infilt")
        shape(1) = ndx
+    case("infiltcap0")
+       shape(1) = ndx
     case("infiltcap")
+       shape(1) = ndx
+    case("HortonMinInfCap")
+       shape(1) = ndx
+    case("HortonMaxInfCap")
+       shape(1) = ndx
+    case("HortonDecreaseRate")
+       shape(1) = ndx
+    case("HortonRecoveryRate")
+       shape(1) = ndx
+    case("HortonState")
        shape(1) = ndx
     case("shx")
        shape(1) = nshiptxy
@@ -142,6 +162,20 @@
     case("qqlat")
        shape(1) = ndx
     case("balat")
+       shape(1) = numlatsg
+    case("qplatCum")
+       shape(1) = numlatsg
+    case("qplatCumPre")
+       shape(1) = numlatsg
+    case("qplatAve")
+       shape(1) = numlatsg
+    case("qLatReal")
+       shape(1) = numlatsg
+    case("qLatRealCum")
+       shape(1) = numlatsg
+    case("qLatRealCumPre")
+       shape(1) = numlatsg
+    case("qLatRealAve")
        shape(1) = numlatsg
     case("n1latsg")
        shape(1) = numlatsg
@@ -201,13 +235,15 @@
        shape(1) = ndx
     case("s1")
        shape(1) = ndx
+    case("s1max")
+       shape(1) = ndx
     case("a0")
        shape(1) = ndx
     case("a1")
        shape(1) = ndx
-    case("vol0")
-       shape(1) = ndx
     case("vol1")
+       shape(1) = ndx
+    case("vol0")
        shape(1) = ndx
     case("vol1_f")
        shape(1) = ndx
@@ -220,6 +256,10 @@
     case("ucz")
        shape(1) = ndkx
     case("ucmag")
+       shape(1) = ndkx
+    case("ucx_mor")
+       shape(1) = ndkx
+    case("ucy_mor")
        shape(1) = ndkx
     case("sa0")
        shape(1) = ndkx
@@ -243,6 +283,8 @@
        shape(1) = lnkx
     case("au")
        shape(1) = lnkx
+    case("au_nostrucs")
+       shape(1) = lnkx
     case("hu")
        shape(1) = lnx
     case("frcu")
@@ -265,6 +307,8 @@
        shape(1) = ndx
     case("bl")
        shape(1) = ndx
+    case("bl_min")
+       shape(1) = ndx
     case("lnx1D")
        shape(1) = 0
     case("lnxi")
@@ -282,6 +326,8 @@
     case("lncn")
        shape(2) = 2
        shape(1) = lnkx
+    case("kcu")
+       shape(1) = lnx
     case("iadv")
        shape(1) = lnx
     case("dx")
@@ -299,6 +345,8 @@
        shape(1) = lnx
     case("bob0")
        shape(2) = 2
+       shape(1) = lnx
+    case("blup")
        shape(1) = lnx
     case("xu")
        shape(1) = lnx
@@ -358,4 +406,6 @@
        shape(1) = ndx
     case("ba")
        shape(1) = ndx
+    case("ndx1d")
+       shape(1) = 0
   end select

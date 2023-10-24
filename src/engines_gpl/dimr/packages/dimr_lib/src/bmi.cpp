@@ -194,6 +194,7 @@ extern "C" {
 
 				chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
 				thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Initialize(%s)", thisDimr->control->subBlocks[0].unit.component->name, thisDimr->control->subBlocks[0].unit.component->inputFile);
+				// SetKeyVals for settings (before initialize)
 				nSettingsSet = thisDimr->control->subBlocks[0].unit.component->dllSetKeyVals(thisDimr->control->subBlocks[0].unit.component->settings);
 				thisDimr->timerStart(thisDimr->control->subBlocks[0].unit.component);
 				thisDimr->control->subBlocks[0].unit.component->result = (thisDimr->control->subBlocks[0].unit.component->dllInitialize) (thisDimr->control->subBlocks[0].unit.component->inputFile);
@@ -210,6 +211,7 @@ extern "C" {
 				}
 				
 				thisDimr->timerEnd(thisDimr->control->subBlocks[0].unit.component);
+				// SetKeyVals for parameters (after initialize)
 				nParamsSet = thisDimr->control->subBlocks[0].unit.component->dllSetKeyVals(thisDimr->control->subBlocks[0].unit.component->parameters);
 				(thisDimr->control->subBlocks[0].unit.component->dllGetStartTime) (&thisDimr->control->subBlocks[0].tStart);
 				(thisDimr->control->subBlocks[0].unit.component->dllGetEndTime) (&thisDimr->control->subBlocks[0].tEnd);
@@ -424,12 +426,11 @@ extern "C" {
 			throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::get_var: Unrecognized component \"%s\". Expecting \"componentName/parameterName\"\n", componentName);
 		}
 		// Get the pointer to the variable being asked for and put it in argument "ref"
-		double * transfer = new double[compPtr->numProcesses];
+		double transfer = -999000.0;
 
 		thisDimr->getAddress(sourceName, compPtr->type, compPtr->dllGetVar, &sourceVarPtr, compPtr->processes, compPtr->numProcesses, transfer);
-		*ref = thisDimr->send(sourceName, compPtr->type, sourceVarPtr, compPtr->processes, compPtr->numProcesses, transfer);
+		*ref = thisDimr->send(sourceName, compPtr->type, sourceVarPtr, compPtr->processes, compPtr->numProcesses, &transfer);
 
-		delete[] transfer;
 		delete[] componentName;
 	}
 

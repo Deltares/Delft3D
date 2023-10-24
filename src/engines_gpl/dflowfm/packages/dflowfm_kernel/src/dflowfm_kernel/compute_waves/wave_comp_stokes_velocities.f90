@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine wave_comp_stokes_velocities()
    use m_flowparameters
@@ -44,7 +44,7 @@
    double precision :: gammal, hwavL, hstokes, huL, deltahmin
    double precision, allocatable :: mx(:), my(:)
 
-   integer :: k1, k2, L, k, i
+   integer :: k1, k2, L, k
    integer :: ierror ! error (1) or not (0)
 
    double precision :: ac1, ac2
@@ -67,11 +67,11 @@
    deltahmin = 0.1d0   ! should be a parameter
    !
    do k = 1,ndx
-      massflux_max = 1d0/8d0*sag*(max(hs(k),0d0)**1.5)*gammax**2
+      massflux_max = 1d0/8d0*sag*(hs(k)**1.5)*(gammax**2)
       mnorm  = min(sqrt(mxwav(k)**2+mywav(k)**2), massflux_max)
       mangle = atan2(mywav(k), mxwav(k))
-      mx(k)  = mnorm*dcos(mangle)
-      my(k)  = mnorm*dsin(mangle)
+      mx(k)  = mnorm*cos(mangle)
+      my(k)  = mnorm*sin(mangle)
    end do
 
    if (jampi>0) then
@@ -79,40 +79,44 @@
       call update_ghosts(ITYPE_SALL, 1, ndx, my, ierror)
    endif
 
-   ustokes = 0d0
-   vstokes = 0d0
-   do i = 1, wetLinkBnd-1
-      L = onlyWetLinks(i)
-      huL=hu(L)
-      k1 = ln(1,L); k2 = ln(2,L)
-      ac1 = acl(L); ac2=1d0-ac1
-      !
-      ! civilized behaviour in shallow surf zone
-      hwavL = 0.5d0*(hwav(k1)+hwav(k2))
-      gammal = hwavL/huL
-      if (gammal>1.d0) then
-         hstokes = deltahmin*(gammal-1.d0)*hwavL+huL
+   do L=1,Lnxi
+      if ( hu(L).gt.epshu ) then
+         !
+         k1 = ln(1,L); k2 = ln(2,L)
+         ac1 = acl(L); ac2=1d0-ac1
+         !
+         ! civilized behaviour in shallow surf zone
+         huL = max(hs(k1),hs(k2))
+         hwavL = 0.5d0*(hwav(k1)+hwav(k2))
+         gammal = hwavL/huL
+         if (gammal>1.d0) then
+            hstokes = deltahmin*(gammal-1.d0)*hwavL+huL
+         else
+            hstokes = huL
+         endif
+         !
+         Mu =    ac1 *(csu(L)*(Mx(k1)) + snu(L)*(My(k1))) + &
+                 ac2 *(csu(L)*(Mx(k2)) + snu(L)*(My(k2)))
+
+         Mv =    ac1 *(-snu(L)*(Mx(k1)) + csu(L)*(My(k1))) + &
+                 ac2 *(-snu(L)*(Mx(k2)) + csu(L)*(My(k2)))
+
+         ustokes(L) = Mu/hstokes
+         vstokes(L) = Mv/hstokes
       else
-         hstokes = huL
-      endif
-      !
-      Mu =    ac1 *(csu(L)*(Mx(k1)) + snu(L)*(My(k1))) + &
-               ac2 *(csu(L)*(Mx(k2)) + snu(L)*(My(k2)))
-
-      Mv =    ac1 *(-snu(L)*(Mx(k1)) + csu(L)*(My(k1))) + &
-               ac2 *(-snu(L)*(Mx(k2)) + csu(L)*(My(k2)))
-
-      ustokes(L) = Mu/hstokes
-      vstokes(L) = Mv/hstokes
+         ustokes(L) = 0d0
+         vstokes(L) = 0d0
+      end if
    end do
 
    do L=lnxi+1,lnx                   ! Randen: Neumann
       if (hu(L)>epshu)  then
-         huL=hu(L)
+
          k1 = ln(1,L) ! buiten
          k2 = ln(2,L) ! binnen
          !
-         hwavL = 0.5d0*(hwav(k1)+hwav(k2))
+         huL = hs(k2)
+         hwavL = hwav(k2)
          gammal = hwavL/huL
          if (gammal>1.d0) then
             hstokes = deltahmin*(gammal-1.d0)*hwavL+huL

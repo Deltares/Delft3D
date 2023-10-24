@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getdim
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETDIM ( FNAME  , ITYPE  , DIM    , IPRDEP , ITMDEP ,
      *                             LOCDEP , NDIM   , IERROR , OPTION )
@@ -58,18 +64,28 @@
 !            NDIM(3) = nr of time steps in the file
 !
 !
+      use m_dhucas
+      use m_open_waq_files
+      use m_dhfext
+
       CHARACTER*256 FNAME(3) , OPTION
       CHARACTER*3   DIM
-      DIMENSION     NDIM(5)
+      DIMENSION     NDIM(3)
       character*256         :: ext     ! file extension
       integer               :: extpos  ! position of extension
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
+      integer               :: lun
+      integer               :: NODUMP, NOTOT
+      integer               :: k, NTT, ierror, idummy, notim, ndim, itype
+      real                  :: adummy
+      integer               :: iprdep, itmdep, locdep
 
 !
 !         Open the DELWAQ .HIS file
 !
-      CALL DHOPNF ( 10 , FNAME(1) , 24 , 2 , IERROR )
+      lun = 10
+      CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
       IF ( IERROR .NE. 0 ) RETURN
 
       ! map or his
@@ -84,11 +100,11 @@
 !
 !         Read primary system characteristics
 !
-      READ ( 10 , ERR=100 )   FNAME(3)(1:160)
-      READ ( 10 , ERR=110 )   NOTOT, NODUMP
-      READ ( 10 , ERR=120 ) ( FNAME(3)(181:200) , K = 1,NOTOT )
+      READ ( lun , ERR=100 )   FNAME(3)(1:160)
+      READ ( lun , ERR=110 )   NOTOT, NODUMP
+      READ ( lun , ERR=120 ) ( FNAME(3)(181:200) , K = 1,NOTOT )
       if ( .not. mapfil ) then
-         READ ( 10 , ERR=130 ) ( IDUMMY, FNAME(3)(221:240) , K = 1,NODUMP )
+         READ ( lun , ERR=130 ) ( IDUMMY, FNAME(3)(221:240) , K = 1,NODUMP )
       endif
 !
 !         Read the values at all times
@@ -96,7 +112,7 @@
       NTT   = NODUMP*NOTOT
       NOTIM = 0
 cjvb  NTT = 0
-   10 READ ( 10 , ERR=140 , END=20 )   IDUMMY, ( ADUMMY , K=1,NTT )
+   10 READ ( lun , ERR=140 , END=20 )   IDUMMY, ( ADUMMY , K=1,NTT )
       NOTIM = NOTIM + 1
       GOTO 10
 !
@@ -119,7 +135,9 @@ cjvb  NTT = 0
       GOTO 200
   140 IERROR = 14
 !
-  200 CLOSE ( 10 )
+  200 CLOSE ( lun )
       RETURN
 !
       END
+
+      end module m_getdim

@@ -1,0 +1,220 @@
+substance 'OXY' active
+   description        'Oxygen'
+   concentration-unit 'gO2/m3'
+   waste-load-unit    '-'
+end-substance
+substance 'CBOD5' active
+   description        'carbonaceous BOD (first pool) at 5 days'
+   concentration-unit 'gO2/m3'
+   waste-load-unit    '-'
+end-substance
+substance 'SOD' inactive
+   description        'Sediment oxygen demand (SOD)'
+   concentration-unit 'gO2'
+   waste-load-unit    '-'
+end-substance
+parameter 'SwOXYDem'
+   description   'switch oxygen consumption 0=BOD'
+   unit          '-'
+   value         0.000e+000
+end-parameter
+parameter 'RcBOD'
+   description   'decay reaction rate BOD (first pool) at 20 oC'
+   unit          '1/d'
+   value         3.000e-001
+end-parameter
+parameter 'TcBOD'
+   description   'decay temperature coefficient BOD'
+   unit          '-'
+   value         1.040e+000
+end-parameter
+parameter 'Temp'
+   description   'ambient water temperature'
+   unit          'oC'
+   value         1.500e+001
+end-parameter
+parameter 'VSedBOD5'
+   description   'sedimentatin velocity CBOD5'
+   unit          'm/d'
+   value         1.000e-001
+end-parameter
+parameter 'TaucSBOD'
+   description   'critical shear stress for sedimentation'
+   unit          'N/m2'
+   value         1.000e+012
+end-parameter
+parameter 'MinDepth'
+   description   'minimum waterdepth for sedimentation'
+   unit          'm'
+   value         1.000e-001
+end-parameter
+parameter 'VWind'
+   description   'wind velocity'
+   unit          'm/s'
+   value         3.000e+000
+end-parameter
+parameter 'SWRear'
+   description   'switch for oxygen reaeration formulation <1-11>'
+   unit          '-'
+   value         1.000e+000
+end-parameter
+parameter 'KLRear'
+   description   'reaeration transfer coefficient'
+   unit          'm/d'
+   value         1.000e+000
+end-parameter
+parameter 'TCRear'
+   description   'reaeration temperature coefficient'
+   unit          '-'
+   value         1.016e+000
+end-parameter
+parameter 'Salinity'
+   description   'Salinity'
+   unit          'g/kg'
+   value         3.500e+001
+end-parameter
+parameter 'fSOD'
+   description   'zeroth-order oxygen demand flux'
+   unit          'gO2/m2/d'
+   value         0.000e+000
+end-parameter
+parameter 'RcSOD'
+   description   'decay reaction rate SOD at 20 oC'
+   unit          '1/d'
+   value         1.000e-001
+end-parameter
+parameter 'TcSOD'
+   description   'decay temperature coefficient SOD'
+   unit          '-'
+   value         1.040e+000
+end-parameter
+parameter 'COXSOD'
+   description   'critical oxygen conc for SOD decay'
+   unit          'gO2/m3'
+   value         0.000e+000
+end-parameter
+parameter 'OOXSOD'
+   description   'optimal  oxygen conc for SOD decay'
+   unit          'gO2/m3'
+   value         2.000e+000
+end-parameter
+parameter 'CHEZY'
+   description   'chezy coefficient'
+   unit          'Vm/s'
+   value         -9.990e+002
+end-parameter
+parameter 'SWSatOXY'
+   description   'switch for oxygen saturation formulation <1-2>'
+   unit          '-'
+   value         1.000e+000
+end-parameter
+output 'Depth'
+   description   'depth of segment'
+end-output
+output 'Temp'
+   description   'ambient water temperature'
+end-output
+output 'Velocity'
+   description   'horizontal stream velocity'
+end-output
+output 'VWind'
+   description   'wind velocity'
+end-output
+output 'SWRear'
+   description   'switch for oxygen reaeration formulation <1-11>'
+end-output
+output 'KLRear'
+   description   'reaeration transfer coefficient'
+end-output
+output 'TCRear'
+   description   'reaeration temperature coefficient'
+end-output
+output 'SaturOXY'
+   description   'saturation concentration'
+end-output
+output 'Salinity'
+   description   'Salinity'
+end-output
+output 'RCREAR'
+   description   'rate constant for reaeration'
+end-output
+output 'SatPercOXY'
+   description   'Actual saturation percentage O2'
+end-output
+output 'SwOXYDem'
+   description   'switch oxygen consumption 0=BOD'
+end-output
+output 'RcBOD'
+   description   'decay reaction rate BOD (first pool) at 20 oC'
+end-output
+output 'TcBOD'
+   description   'decay temperature coefficient BOD'
+end-output
+output 'BOD5'
+   description   'calculated carbonaceous BOD at 5 days'
+end-output
+output 'BODu'
+   description   'calculated carbonaceous BOD at ultimate'
+end-output
+output 'fSOD'
+   description   'zeroth-order oxygen demand flux'
+end-output
+output 'RcSOD'
+   description   'decay reaction rate SOD at 20 oC'
+end-output
+output 'TcSOD'
+   description   'decay temperature coefficient SOD'
+end-output
+output 'TotalDepth'
+   description   'depth watercolumn'
+end-output
+output 'COXSOD'
+   description   'critical oxygen conc for SOD decay'
+end-output
+output 'OOXSOD'
+   description   'optimal  oxygen conc for SOD decay'
+end-output
+output 'VSedBOD5'
+   description   'sedimentatin velocity CBOD5'
+end-output
+output 'Tau'
+   description   'total bottom shear stress'
+end-output
+output 'TaucSBOD'
+   description   'critical shear stress for sedimentation'
+end-output
+output 'MinDepth'
+   description   'minimum waterdepth for sedimentation'
+end-output
+output 'PSedBOD5'
+   description   'Sedimentation probability <0-1> CBOD5'
+end-output
+output 'fSedBOD5'
+   description   'Sedimentation flux CBOD5'
+end-output
+output 'fSedSOD'
+   description   'Sedimentation flux CBOD5'
+end-output
+output 'Cl'
+   description   'Chloride'
+end-output
+output 'SWSatOXY'
+   description   'switch for oxygen saturation formulation <1-2>'
+end-output
+output 'CHEZY'
+   description   'chezy coefficient'
+end-output
+active-processes
+     name  'RearOXY' 'Reaeration of oxygen'
+     name  'BODCOD' 'Mineralisation BOD and COD'
+     name  'SedOXYDem' 'Sediment oxygen demand (additional)'
+     name  'S_CBOD51' 'Sedimentation CBOD5 (first pool)'
+     name  'SED_SOD' 'Sedimentation of oxygen demand'
+     name  'DynDepth' 'dynamic calculation of the depth'
+     name  'Veloc' 'horizontal stream velocity'
+     name  'Delt' 'Calculation of the timestep for processes'
+     name  'SaturOXY' 'Saturation concentration oxygen'
+     name  'TotDepth' 'depth watercolumn'
+     name  'Tau' 'Bottom friction'
+     name  'Chloride' 'calculation of chloride concentration from salinit'
+end-active-processes

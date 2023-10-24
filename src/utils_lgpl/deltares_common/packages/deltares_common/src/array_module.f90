@@ -1,7 +1,7 @@
 module array_module
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module array_module
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Various array processing routines
@@ -154,7 +154,7 @@ function convert_start_index(arr, imiss, providedIndex, requestedIndex) result(i
     !
     ! Body
     shift = requestedIndex - providedIndex
-    where(arr .ne. imiss) 
+    where(arr /= imiss) 
       arr= arr + shift   
     end where
     ierr = 0

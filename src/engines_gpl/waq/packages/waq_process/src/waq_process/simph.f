@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_simph
+
+      implicit none
+
+      contains
+
 
       subroutine simph  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -60,8 +66,10 @@
 
 !     Name     Type   Library
 !     ------   -----  ------------
+      use m_monsys
       USE PHYSICALCONSTS, ONLY: CtoKelvin
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -92,11 +100,8 @@
 !
 !     Eerste kenmerk actief of inactief segment
 !
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!
 !     Alleen actieve en bodem segmenten behandelen
 !
-!!    IF (IKMRK1.EQ.1) THEN
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !     Map PMSA on local variables
@@ -268,3 +273,5 @@
 !
       RETURN
       END
+
+      end module m_simph

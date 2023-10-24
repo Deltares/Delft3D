@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2022.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -710,6 +710,9 @@ static BInt4 RT_retrieve_file (
   BUInt8  numbytes;
   BInt4   max_comp;
 
+  cel_num_dim = 0;
+  i = -1;
+  
   cel_name    [MAX_NAME] = '\0';
   elm_desc    [MAX_DESC] = '\0';
   elm_name    [MAX_NAME] = '\0';

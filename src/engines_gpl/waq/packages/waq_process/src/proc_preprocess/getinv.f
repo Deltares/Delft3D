@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getinv
+      use m_vxlpoi
+      use m_valpoi
+
+
+      implicit none
+
+      contains
+
 
       subroutine getinv ( procesdef, notot , syname, nocons, constants,
      +                    nopa     , paname, nofun , funame, nosfun,
@@ -31,8 +40,11 @@
       ! if nessacary turns on secondary processes
       ! fills defaults in defaul array
 
+      use m_zoek
+      use m_monsys
+      use m_dhrmis
       use timers       !   performance timers
-      use dlwq_data
+      use dlwq_hyd_data
       use processet
       use output
       implicit none
@@ -90,7 +102,6 @@
       character(len=100)        :: line1           ! output buffer
       character(len=100)        :: line2           ! output buffer
       integer, parameter        :: nopred = 6      ! number of predefined defaults
-      logical                   :: dhrmis          ! external function chcks on missing value
       real, parameter           :: rmis0  = -888.  ! missing but no matter (set to 0.0)
       integer                   :: i_star          ! index of * in name
       integer(4)                :: ithndl = 0      ! handle for performance timer
@@ -460,3 +471,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_getinv

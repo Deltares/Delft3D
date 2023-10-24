@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_atrfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_atrfrc( lunrep, procesdef, sfracs)
 
       ! add attributes to processes from file
 
+      use m_gkwini
+      use m_getcom
+      use m_dhucas
       use processet
       use timers       !   performance timers
 
@@ -79,3 +88,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_add_atrfrc

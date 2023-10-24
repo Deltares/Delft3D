@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,10 +27,11 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  SUBROUTINE TEXTFLOW()
+ use time_module, only : seconds_to_datetimestring
  use m_flowgeom
  use Timers
  !USE M_NETW
@@ -86,7 +87,7 @@
  tstepinc = tim_get_wallclock_inc(handle_steps)
  cpuperstep = max(0d0, min(100d0,  tstepinc))
 
- call maketime(tex,time1)
+ call seconds_to_datetimestring(tex,refdat,time1)
 
  dtav = (time1 - tstart_user)/max(1d0, dnt)
 

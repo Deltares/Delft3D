@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_cnfrep
+
+      implicit none
+
+      contains
+
 
       subroutine cnfrep( noalg   , noprot, namprot, nampact, nopralg,
      +                   nampralg)
 
+      use m_dhucas
+      use m_dhslen
       use timers       !   performance timers
 
       integer        noalg , noprot , nopralg
@@ -37,6 +45,8 @@
       character*10   namep3
       logical        found
       integer(4) :: ithndl = 0
+      integer iproc, ipro, iproc2, ic, iprcnf, iprcnf2, ialg, ilen
+      
       if (timon) call timstrt( "cnfrep", ithndl )
 
       ! copy the license from the proto process to the process
@@ -101,3 +111,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_cnfrep

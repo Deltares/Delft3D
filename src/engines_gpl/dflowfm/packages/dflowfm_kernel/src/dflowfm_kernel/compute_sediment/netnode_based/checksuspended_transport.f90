@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine checksuspended_transport()
  implicit none
@@ -92,7 +92,7 @@
  wster     = c1+c2*Sster
  ws        = wster*sqsgd50
 
- dstar     = D50*( rhodelta/(vismol*vismol) )** (1d0/3d0)
+ dstar     = D50*( (rhodelta*ag)/(vismol*vismol) )** (1d0/3d0)
  Wschk     = 16.17d0*D50*D50/(1.80d-5 + sqrt(12.12*D50*D50*D50) ) ! Ferguson,Church 2006) Wikipedia sand fall velocity
 
 

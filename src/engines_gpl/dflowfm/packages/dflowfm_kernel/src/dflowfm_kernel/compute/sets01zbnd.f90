@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  !> Sets s1 or s0 water levels at zbndz-type boundaries.
  subroutine sets01zbnd(n01, jasetBlDepth)
@@ -37,13 +37,13 @@
  use m_flowtimes
  use m_missing
  use m_sobekdfm
- use unstruc_model, only: md_restartfile
+
  implicit none
  integer, intent(in) :: n01          !< Selects whether s0 or s1 has to be set.
  integer, intent(in) :: jasetBlDepth !< Whether or not (1/0) to set the boundary node bed levels, based on depth below s1. Typically only upon model init (based on initial water levels).
 
  integer          :: n, kb, k2, itpbn, L, ibnd
- double precision :: zb, hh, dtgh, alf, zcor
+ double precision :: zb, hh
  
  do n  = 1, nbndz                                    ! overrides for waterlevel boundaries
     kb      = kbndz(1,n)

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_ssedph
+
+      implicit none
+
+      contains
+
 
       subroutine ssedph ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Sum of sedimentation flux of algae Dynamo - Bloom - GEM
 
@@ -62,9 +70,9 @@
       IP2   = IPOINT(  2 )
 
       DO 9000 ISEG = 1 , NOSEG
-      CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+      CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
       IF (IKMRK1.EQ.1) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
 !
           DEPTH   = PMSA(IP2)
@@ -82,8 +90,6 @@
 
               SEDCAR = SEDCAR + SEDSPE
               SEDDM  = SEDDM  + SEDSPE*CTODRY
-
-!              IF ( NALG .GT. 6 ) THEN
 
                  IN = 2 + 2*NALG + IALG
                  NCRAT  = PMSA( IPOINT(IN) + (ISEG-1)*INCREM(IN) )
@@ -107,7 +113,6 @@
 
 !         NO LONGER Define fluxes only for Bloom (NALG .GT. 6)
 
-!          IF (NALG.GT.6) THEN
              IF (DEPTH .GT. 0.0) THEN
                 FL(IFLUX+1) = SEDCAR/DEPTH
                 FL(IFLUX+2) = SEDNIT/DEPTH
@@ -145,8 +150,8 @@
 !        Zoek eerste kenmerk van- en naar-segmenten
 
          IF ( IVAN.GT.0 .AND. INAAR.GT.0 ) THEN
-         CALL DHKMRK(1,IKNMRK(IVAN ),IKMRKV)
-         CALL DHKMRK(1,IKNMRK(INAAR),IKMRKN)
+         CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
+         CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
          IF (IKMRKV.EQ.1.AND.IKMRKN.EQ.1 .OR.
      +       IKMRKV.EQ.1.AND.IKMRKN.EQ.3) THEN
 
@@ -175,3 +180,5 @@
       RETURN
 !
       END
+
+      end module m_ssedph

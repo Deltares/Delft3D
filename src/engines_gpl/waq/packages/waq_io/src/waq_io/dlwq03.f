@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq03
+      use m_read_hydfile
+      use m_opt1
+      use m_opt0
+      use m_grid
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq03 ( lun    , lchar  , filtype, nrftot , nrharm ,
-     &                    ivflag , dtflg1 , iwidth , dtflg3 , vrsion ,
+     &                    ivflag , dtflg1 , iwidth , dtflg3 , 
      &                    ioutpt , gridps , syname , ierr   , iwar   ,
      &                    has_hydfile     , nexch                    )
 
@@ -40,19 +51,11 @@
 !>                 - time varying attribute arrays
 !>                 - information on the time series of volumes
 
-!       Created           : April '88  BY M.E. Sileon / L. Postma
-
-!       Modified          : ???????    by Jan van Beek  : Fixed and time varying attributes
-!                           April 1996 by Leo Postma    : Version support
-!                         : April 1997 by Rinze Bruinsma: Tokenized input data file reading added
-!                           July  2002 by Leo Postma    : Call to Opt1 changed.
-!                           May   2011 by Leo Postma    : Modernized and merged with layered bed
-
 !       Subroutines called: grid    read grid structures
 !                           opt0    read constant/time-variable block
 !                           opt1    get & open ( include ) file
-!                           dhopnf  open file
-!                           DHKMRK  get an attribute from an attribute integer
+!                           open_waq_files  open file
+!                           evaluate_waq_attribute  get an attribute from an attribute integer
 !                           srstop  stop with error code
 !                           check   end of block
 
@@ -61,7 +64,11 @@
 !                           LUN( 6) = unit intermediate file (grid)
 !                           LUN( 7) = unit intermediate file (volumes)
 
-      use grids        !   for the storage of contraction grids
+      use m_check
+      use m_srstop
+      use m_open_waq_files
+      use m_evaluate_waq_attribute
+      use dlwqgrid_mod !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use partmem      !   for PARTicle tracking
       use timers       !   performance timers
@@ -76,7 +83,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)        !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
@@ -85,7 +92,6 @@
       logical      , intent(in   ) :: dtflg1            !< 'date'-format 1st timescale
       integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion            !< version number of this input
       integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
       character(20), intent(in   ) :: syname (*)        !< array with substance names
       integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
@@ -334,7 +340,7 @@
                         enddo
                      enddo
                      if ( nx*ny .gt. 0 ) then
-                        call dhopnf  ( lun(6), lchar(6), 6    , 1   , ierr2 )
+                        call open_waq_files  ( lun(6), lchar(6), 6    , 1   , ierr2 )
                         write ( lun(6) ) pgrid
                         close ( lun(6) )
                      else
@@ -362,12 +368,8 @@
          if ( ierr2 /= 0 ) goto 240
       endif
 
-      if ( vrsion .lt. 4.20 ) then                             !   attributes not supported
-         nkopt = 0
-      else
-         if ( gettoken( nkopt, ierr2 ) .gt. 0 ) goto 240
-         write ( lunut , 2110 ) nkopt                          !   so many blocks of input are provided
-      endif
+      if ( gettoken( nkopt, ierr2 ) .gt. 0 ) goto 240
+      write ( lunut , 2110 ) nkopt                          !   so many blocks of input are provided
 
       do 20 i = 1 , nkopt                                      !   read those blocks
 
@@ -385,7 +387,7 @@
      &               .false. )
          if ( ierr2  .gt. 0 ) goto 240
          if ( ikopt1 .eq. 0 ) then                             !   binary file
-            call dhopnf  ( lun(40) , lchar(40) , 40 , 2 , ierr2 )
+            call open_waq_files  ( lun(40) , lchar(40) , 40 , 2 , ierr2 )
             read  ( lun(40) , end=250 , err=260 ) ( iread(j), j=1, noseg )
             close ( lun(40) )
          else
@@ -476,7 +478,7 @@
             ikmerge(iknm1) = 1
             iknmrk = 10**(iknm1-1)
             do iseg = 1 , noseg
-               call DHKMRK( iknm2, iread(iseg), ivalk )
+               call evaluate_waq_attribute( iknm2, iread(iseg), ivalk )
                iamerge(iseg) = iamerge(iseg) + iknmrk*ivalk
             enddo
    10    continue
@@ -485,12 +487,9 @@
 
 !     Time dependent attributes
 
-      if ( vrsion .lt. 4.20 ) then                             !   attributes not supported
-         ikopt2 = 0
-      else
-         if ( gettoken( ikopt2, ierr2 ) .gt. 0 ) goto 240
-         write ( lunut , 2300 ) ikopt2
-      endif
+      if ( gettoken( ikopt2, ierr2 ) .gt. 0 ) goto 240
+      write ( lunut , 2300 ) ikopt2
+
       if ( ikopt2 .eq. 1 ) then                                !   this file
          write ( lunut, 2310 )
          if ( gettoken( nopt, ierr2 ) .gt. 0 ) goto 240
@@ -569,7 +568,7 @@
       call opt0   ( lun    , 7      , 0        , 0        , noseg  ,
      &              1      , 1      , nrftot(2), nrharm(2), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &              filtype, dtflg3 , vrsion   , ioutpt   , ierr2  ,
+     &              filtype, dtflg3 , ioutpt   , ierr2  ,
      &              iwar2  , has_hydfile       )
 
       call check_volume_time( lunut, lchar(7), noseg, ierr2 )
@@ -774,3 +773,5 @@
 
       end subroutine check_volume_time
       end
+
+      end module m_dlwq03

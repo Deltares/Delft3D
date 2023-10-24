@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_vtrans
+
+      implicit none
+
+      contains
+
 
       subroutine vtrans ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -35,6 +41,13 @@
 ! NOLAY   I*4 1 I     number of layers
 !
 
+      use m_srstop
+      use m_monsys
+      use m_getcom
+      use m_dhnoseg
+      use m_dhnolay
+      use m_dhltim
+      use m_evaluate_waq_attribute
       use      bloom_data_vtrans
 
       implicit none
@@ -72,7 +85,6 @@
       integer                  :: nolayi
       integer                  :: idummy
       integer                  :: ierr2
-      logical                  :: dhltim
 !
       ip1  = ipoint( 1)
       ip2  = ipoint( 2)
@@ -239,7 +251,7 @@
             ifrom = iexpnt(1,iq)
             ito   = iexpnt(2,iq)
             if ( ifrom .gt. 0 .and. ito .gt. 0 ) then
-               call dhkmrk(1,iknmrk(ito),ikmrk1)
+               call evaluate_waq_attribute(1,iknmrk(ito),ikmrk1)
                if (ikmrk1.eq.1) then
                   disp  = pmsa(ip9) + pmsa(ip13)
                else
@@ -357,3 +369,5 @@
  1001 format(' noseg = ',I10)
  1002 format(' nolay = ',I10)
       end
+
+      end module m_vtrans

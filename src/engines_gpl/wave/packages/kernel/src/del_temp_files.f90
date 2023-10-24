@@ -1,7 +1,7 @@
 subroutine del_temp_files(n_swan_grids)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine del_temp_files(n_swan_grids)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 !
@@ -98,7 +98,7 @@ subroutine del_temp_files(n_swan_grids)
        !
     else
        do igrid = 1, n_swan_grids
-          write (filnam,'(a,i0,2a)') 'hot_', igrid, '_', trim(swan_run%writehottime)
+          write (filnam,'(a,i0,5a)') 'hot_', igrid, '_', trim(swan_run%writehottime(1:8)), '_', trim(swan_run%writehottime(10:15)), '.nc'
           inquire (file = trim(filnam), exist = ex, iostat = istat)
           if (istat==0 .and. ex) then
              open (newunit=fillun, file = trim(filnam))

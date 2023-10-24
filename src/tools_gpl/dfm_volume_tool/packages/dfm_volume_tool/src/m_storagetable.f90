@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,8 +26,8 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-! $Id$
-! $HeadURL$
+! 
+! 
 !> Module for using volume tables at 1d nodes for the computation of the total volume of water in a node.
 module m_StorageTable
    use messageHandling
@@ -44,6 +44,7 @@ private
    public generateVolumeTableOnBranches
    public getBedToplevel
    public calculateDeadStorage
+   public addvolumeandsurface
 
 contains
   
@@ -111,7 +112,7 @@ subroutine generateVolumeTableOnBranches(volume, surface, storage, deadstorage, 
 
 end subroutine generateVolumeTableOnBranches
 
-!> Add the volume and surface for this volume table to the aggregated volume and surface
+!> Add the volume and surface for this gridpoints volume table to the aggregated volume and surface
 subroutine AddVolumeAndSurface(vol, sur, deadstorage, wl_deadstorage, voltb, bedlevel, increment, numlevels)
 double precision, dimension(:), intent(inout) :: vol              !< Aggregated volume
 double precision, dimension(:), intent(inout) :: sur              !< Aggregated surface
@@ -159,16 +160,16 @@ enddo
 end subroutine ComputeSurfaceAndStorage
 
 
-!> Determine the lowest level and the highest level in the model.
+!> Determine the lowest level and the highest level in the volume table.
 subroutine getBedToplevel(voltb, numpoints, toplevel, bedlevel)
-   integer,          intent(in   ) :: numpoints
-   type(t_voltable), pointer, dimension(:), intent(in) :: voltb     !< volume table for individual 
-   double precision, intent(  out) :: toplevel       !< Highest level in the model, where cross sections or storage nodes are defined.
-   double precision, intent(  out) :: bedlevel       !< Lowest level in the model, where cross sections or storage nodes are defined.
+   type(t_voltable), pointer, dimension(:), intent(in   ) :: voltb      !< (numpoints) volume table for individual grid points.
+   integer,                                 intent(in   ) :: numpoints  !< Number of grid points in the input volume table.
+   double precision,                        intent(  out) :: toplevel   !< Highest absolute level in the model, where cross sections or storage nodes are defined.
+   double precision,                        intent(  out) :: bedlevel   !< Lowest (bed)level in the model, where cross sections or storage nodes are defined.
 
    integer :: n
-   toplevel = voltb(1)%topheight + voltb(1)%bedlevel
-   bedlevel = voltb(1)%bedlevel
+   toplevel = -huge(1d0)
+   bedlevel = huge(1d0)
    
    do n = 1, numpoints
       toplevel = max(toplevel, voltb(n)%topheight + voltb(n)%bedlevel)
@@ -178,7 +179,7 @@ subroutine getBedToplevel(voltb, numpoints, toplevel, bedlevel)
 end subroutine getBedToplevel
 
 !> Calculate the dead storage using boundary conditions, turn off levels of pumping stations and the geometry of the network.
-subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, bndindex, ln2nd, numlinks, numpoints, numboundaries)
+subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, bndindex, ln2nd, kcu2,  numlinks, numpoints, numboundaries)
 
    use m_flowgeom
    use m_network
@@ -192,6 +193,7 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
    double precision, dimension(:,:), intent(in   )    :: inslevtube      !< Inside level tubes. See BOB in D-FlowFM.
    integer,          dimension(:,:), intent(in   )    :: bndindex        !< Index numbers for boundary condtions. See KBNDZ in D-FfowFM.
    integer,          dimension(:,:), intent(in   )    :: ln2nd           !< Link nodes to node numbers. See LN in D-FfowFM.
+   integer,          dimension(:)  , intent(in   )    :: kcu2            !< Link type
    integer,                          intent(in   )    :: numpoints       !< Number of 1d points in volume tables.
    integer,                          intent(in   )    :: numlinks        !< Number of 1d internal links
    integer,                          intent(in   )    :: numboundaries   !< Number of water level boundaries
@@ -217,10 +219,7 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
       k2      = bndindex(2,n)
       L       = bndindex(3,n)
       itpbn   = bndindex(4,n)
-      if (     itpbn == 1) then                        ! waterlevelbnd
-         wl_deadstorage(k2) = bndvalues(n)
-         wl_deadstorage(kb) = bndvalues(n)
-      endif
+      wl_deadstorage(kb) = bndvalues(n)
    enddo
 
    ! Set the waterlevel at the suction side of a pump to the turn off level.
@@ -250,6 +249,9 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
    do while (numberOfChanges > 0)
       numberOfChanges = 0
       do L = 1, numlinks
+         if (kcu2(L) /= 1 ) then
+             cycle
+         endif
          do k1 = 1, 2
             if (k1==1) then
                k2 = 2

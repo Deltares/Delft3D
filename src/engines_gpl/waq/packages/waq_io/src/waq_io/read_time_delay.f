@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_time_delay
+
+      implicit none
+
+      contains
+
 
       subroutine read_time_delay ( ierr  )
 
@@ -46,13 +52,12 @@
 
 !     Global declarations
 
+      use time_module
       use rd_token       ! for definition and storage of data
       use timers         ! performance timers
       use m_sysi          ! Timer characteristics
 
       implicit none
-
-      real(8) julian     ! returns 64 bits real Julian data
 
 !     Arguments
 
@@ -135,7 +140,7 @@
 
 !     compute the Julian time of the result
 
-      deltim = julian ( idate , itime )
+      deltim = julian_with_leapyears ( idate , itime )
 
 !       write meaningfull message to check procedure
 
@@ -159,3 +164,5 @@
      &          ' a valid value string for the delay !'/' 2 integers',
      &          ' are expected in YYMMDD and HHMMSS format !')
       end
+
+      end module m_read_time_delay

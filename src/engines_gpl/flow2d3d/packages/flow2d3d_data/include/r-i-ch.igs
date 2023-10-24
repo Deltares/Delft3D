@@ -1,0 +1,488 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_r_i_ch
+!
+! real:
+       integer(pntrsize) :: alfas      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: alpha      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ampbc      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: areau      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: areav      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: atr        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: bruvai     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: c          !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cbuv       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cbuvrt     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cdwlsu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cdwlsv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cdwzbu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cdwzbv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cdwztu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cdwztv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cfurou     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cfvrou     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cgc        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cgdghf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cgdghl     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cvalu0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: cvalv0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: circ2d     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: circ3d     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: crbc       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctbf       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctbl       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctif       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctil       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctr        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctrf       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ctrl       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: czusus     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: czvsus     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dddeta     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dddksi     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: disch0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: disch1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ddpf
+       integer(pntrsize) :: decay      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: deltau     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: deltav     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: depchg     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dfu        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dfv        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: diapl      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dicuv      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dicww      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dircom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dircos     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dirsin     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dis        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: df         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: disch      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: discom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: discum     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: disinp     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: disnf      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dldeta     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dldksi     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dp         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpc        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpdeta     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpdksi     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dps        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpsed      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpu        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpv        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: drodep     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rint0      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rint1      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dsdeta     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dsdksi     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dtdeta     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dtdksi     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dteu       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dtev       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dtr        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dudz       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umdis0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umdis1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dvdz       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vmdis0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vmdis1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dxydro     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzdeta     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzdksi     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: encgf      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: encgl      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: entr       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: enstro     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: eroll0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: eroll1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: evap       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ewabr0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ewabr1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ewave0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ewave1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: excbed     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: fcorio     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: fltr       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: fuiwe      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: fviwe      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: fxw        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: fyw        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: grmasu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: grmasv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: grmsur     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: grmsvr     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: grfacu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: grfacv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gro        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gsqd       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gsqs       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: guu        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: guv        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gvu        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gvv        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hkru       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hkrv       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hrmcom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hrms       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hu         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hu0        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: huvw       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hv         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hv0        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hydrbc     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: msucom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: msvcom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ombc       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: omega      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: patm       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: phibc      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: porosu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: porosv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: precip     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: procbc     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: pship      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qsrcrt     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qtfrac     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qtfrct     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qtfrt2     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qu         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qv         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qxk        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qxkr       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qxkw       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qyk        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qykr       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qykw       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: qzk        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: r0         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: r1         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rbnd       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rbuff      !  Help arrays for writing NEFIS files
+       integer(pntrsize) :: rettim     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rho        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rhowat     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rich       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rint       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rintsm     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rlabda     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rmneg      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rnpl       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rob        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rsed       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rthbnd     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rtu2d0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rtu2d1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rtubnd     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rtur0      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rtur1      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rxx        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rxy        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ryy        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: rxz        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ryz        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: s0         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: s1         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sbtr       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sbtrc      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sbuu       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sbvv       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: seddif     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sepsus     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sig        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sigdif     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sigmol     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sink       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sinkr      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sinkw      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: soumud     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sour       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sournf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sourr      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sourw      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sstr       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sstrc      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: stbf       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: stbl       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: stif       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: stil       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sumrho     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: taubmx     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: taubpu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: taubpv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: taubsu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: taubsv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: teta       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tgarkt     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tgarkx     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tgarnp     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: thetbc     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: thick      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: thtim      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tkedis     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tkepro     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tp         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: tpcom      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: u0         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: u1         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ubrlsu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ubrlsv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umdis      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umean      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umeanf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umeanl     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umnflc     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: umnldf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: uorb       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ubot       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ubcom      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: usus       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: uvdist     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: uwtypu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: uwtypv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: v0         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: v1         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vicuv      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vicww      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vmdis      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vmean      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vmnflc     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vmnldf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vnu2d      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vnu3d      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: voldis     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: volum0     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: volum1     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vortic     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vsus       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: w1         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: w10mag     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wenf       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wenfm      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wenl       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wenlm      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: windcd     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: windsu     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: windsv     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: windu      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: windv      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wlen       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wlcom      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wphy       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ws         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wssus      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wstau      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsu        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsucom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsv        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsvcom     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsbodyu    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsbodyucom !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsbodyv    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: wsbodyvcom !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: x2y        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: x3         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: xcor       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: xy2        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: xydro      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: xyzsrc     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: xz         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: y3         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ycor       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: yz         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: z0ucur     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: z0vcur     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: z0urou     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: z0vrou     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zalfas     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zbdsed     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zbmnf      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zbmnl      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zcuru      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zcurv      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zcurw      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zdicww     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zdist      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zdps       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zdpsed     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zenst      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zetabf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zetabl     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zetaif     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zetail     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zfixfac    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zfrac      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zhidexp    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zmeanf     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zmeanl     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zmudfrac   !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zqxk       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zqyk       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zrca       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zrho       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zrich      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zrsdeq     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zsandfrac  !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zsbu       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zsbv       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zseddif    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zsinkse    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zsourse    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zssu       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zssv       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zstep      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ztaub      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ztauet     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ztauks     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: ztur       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zvicww     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zvort      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zwl        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zws        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zwndsp     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zwnddr     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zwndcd     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zairp      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zprecp     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: zevap      !  Description and declaration in esm_alloc_real.f90
+! real z-layer:
+       integer(pntrsize) :: drhodx     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: drhody     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzs0       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzs1       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzu0       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzu1       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzv0       !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dzv1       !  Description and declaration in esm_alloc_real.f90
+! real  non-hydrostatic:
+       integer(pntrsize) :: zj2
+       integer(pntrsize) :: zj
+       integer(pntrsize) :: res
+       integer(pntrsize) :: fact
+       integer(pntrsize) :: rl
+       integer(pntrsize) :: rlid
+       integer(pntrsize) :: rj2
+       integer(pntrsize) :: rj
+       integer(pntrsize) :: xj2
+       integer(pntrsize) :: xj
+       integer(pntrsize) :: apj
+       integer(pntrsize) :: pj
+       integer(pntrsize) :: pj2
+       integer(pntrsize) :: p1         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: p0         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: p00        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: pnhcor     !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: w0         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: u00
+       integer(pntrsize) :: v00
+       integer(pntrsize) :: s00        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: hydprs     !  Description and declaration in esm_alloc_real.f90
+! real staircase:
+       integer(pntrsize) :: guz        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gvz        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gud        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gvd        !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gsqiu      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: gsqiv      !  Description and declaration in esm_alloc_real.f90
+!
+! integer:
+       integer(pntrsize) :: ibuff      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: idifu      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: irocol     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: iroll      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: itbcc      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: itbct      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: itdis      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: itdro      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kadu       !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kadv       !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kcs        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kcu        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kcv        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfs        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfu        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfv        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kspu       !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kspv       !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kstp       !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kzs        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kzu        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kzv        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kmxsed     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: mnbar      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: mnbnd      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: mndro      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: mnit       !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: mnksrc     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: mnstat     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: nob        !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: zkfs       !  Description and declaration in esm_alloc_int.f90
+! integer z-layer:
+       integer(pntrsize) :: kcshyd     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfumin     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfvmin     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfsmin     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfumax     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfvmax     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfsmax     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfumx0     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfvmx0     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfsmx0     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfumn0     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfvmn0     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfsmn0     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfsz0
+       integer(pntrsize) :: kfsz1      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfuz0
+       integer(pntrsize) :: kfuz1      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfvz0
+       integer(pntrsize) :: kfvz1      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: izmodl     !  Description and declaration in esm_alloc_int.f90
+! integer staircase:
+       integer(pntrsize) :: kcscut     !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kcu45      !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kcv45      !  Description and declaration in esm_alloc_int.f90
+!
+! character:
+       integer(pntrsize) :: disint     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: dismmt     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: nambar     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: nambnd     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: namcon     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: namdro     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: namsrc     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: namst      !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: namtra     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: tprofc     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: tprofu     !  Description and declaration in esm_alloc_char.f90
+       integer(pntrsize) :: typbnd     !  Description and declaration in esm_alloc_char.f90
+!
+end type gd_r_i_ch

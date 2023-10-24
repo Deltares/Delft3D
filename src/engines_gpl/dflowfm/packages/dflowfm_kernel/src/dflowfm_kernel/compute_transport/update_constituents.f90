@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,12 +27,12 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,8 +58,8 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-! $Id$
-! $HeadURL$
+! 
+! 
 !> This subroutine transports an array of scalars.
 !> In light of future vectorization, the aim is to:
 !>   -use as few module variables as possible,
@@ -76,7 +76,7 @@ subroutine update_constituents(jarhoonly)
    use m_physcoef,   only: vicouv
    use m_transport
    use m_mass_balance_areas
-   use m_flowparameters, only: limtypsa, limtyptm, limtypsed
+   use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves
    use m_alloc
    use m_partitioninfo
    use m_timer
@@ -142,9 +142,12 @@ subroutine update_constituents(jarhoonly)
 
    fluxhor    = 0d0  ! not necessary
    sumhorflux = 0d0
-   fluxhortot = 0d0
-   sinksetot  = 0d0
-   sinkftot   = 0d0
+  
+   if (stm_included) then
+      fluxhortot = 0d0
+      sinksetot  = 0d0
+      sinkftot   = 0d0
+   endif
 
    do istep=0,nsubsteps-1
       if ( kmx.gt.0 ) then
@@ -157,7 +160,7 @@ subroutine update_constituents(jarhoonly)
       end if
 
 !     compute horizontal fluxes, explicit part
-      if (.not. stm_included) then     ! just do the normal stuff
+      if ((.not. stm_included) .or. flowwithoutwaves ) then     ! just do the normal stuff
          call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop,  kmxn, kmxL, constituents, difsedu, sigdifi, viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst,fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
       else
          if ( jatranspvel.eq.0 .or. jatranspvel.eq.1 ) then       ! Lagrangian approach
@@ -165,8 +168,8 @@ subroutine update_constituents(jarhoonly)
             do LL=1,Lnx
                call getLbotLtop(LL,Lb,Lt)                         ! prefer this, as Ltop gets messed around with in hk specials
                do L=Lb,Lt
-                  u1sed(L) = u1(L)!+mtd%uau(L)                    ! JRE to do, discuss with Dano
-                  q1sed(L) = q1(L)!+mtd%uau(L)*Au(L)
+                  u1sed(L) = u1(L)!+mtd%uau(LL)                    ! JRE to do, discuss with Dano
+                  q1sed(L) = q1(L)!+mtd%uau(LL)*Au(L)
                end do
             end do
          else if (jatranspvel .eq. 2) then                        ! Eulerian approach
@@ -174,8 +177,8 @@ subroutine update_constituents(jarhoonly)
             do LL=1,Lnx
                call getLbotLtop(LL,Lb,Lt)
                do L=Lb,Lt
-                  u1sed(L) = u1(L)-ustokes(L)
-                  q1sed(L) = q1(L)-ustokes(L)*Au(L)
+                  u1sed(L) = u1(L)-ustokes(L)       !+mtd%uau(LL)
+                  q1sed(L) = q1(L)-ustokes(L)*Au(L) !+mtd%uau(LL)*Au(L)
                end do
             end do
          end if
@@ -203,9 +206,6 @@ subroutine update_constituents(jarhoonly)
 
       if ( kmx.lt.1 ) then   ! 2D, call to 3D as well for now
          call solve_2D(NUMCONST, Ndkx, Lnkx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, const_sour, const_sink, nsubsteps, jaupdate, ndeltasteps, constituents, rhs)
-         if (jalimitdiff == 3) then
-            call diffusionimplicit2D()
-         endif
       else
          call comp_fluxver( NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, ktop, constituents, nsubsteps, jaupdate, ndeltasteps, fluxver, wsf)
 
@@ -232,6 +232,9 @@ subroutine update_constituents(jarhoonly)
       call comp_sinktot()
 
    end do
+   if (jalimitdiff == 3 .and. kmx == 0) then
+      call diffusionimplicit2D()
+   endif
 
    if( jased == 4 .and. stmpar%lsedsus > 0 ) then
       do j = ISED1,ISEDN
@@ -240,6 +243,10 @@ subroutine update_constituents(jarhoonly)
          sinkftot(j,:)   = sinkftot(j,:)   / dts_store
       enddo
    endif
+
+!  Move here, needed in two following subroutines
+!  restore dts
+   dts = dts_store
 
    if (jarhoonly == 1) then
       call extract_rho() ; numconst = numconst_store
@@ -252,9 +259,6 @@ subroutine update_constituents(jarhoonly)
 
    ierror = 0
 1234 continue
-
-!  restore dts
-   dts = dts_store
 
    if (timon) call timstop( ithndl )
    return

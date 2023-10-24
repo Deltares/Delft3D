@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,24 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delpar
+use m_wrttrk
+use m_plotgr
+use m_partzp
+use m_partvs
+use m_part17
+use m_part15
+use m_part08
+use m_part06
+use m_part01
+use m_inipart_asc
+use m_inipart
+
+
+implicit none
+
+contains
+
 
 !
 !
@@ -49,9 +67,6 @@
 !                                      rate
 !                             part14 - add continuous release
 !                             part15 - adapt wind and direction for actual time
-!                             part16 - output dump-file towards delwaq overtake
-!                                      (output map-file for eliminating
-!                                      particles of certain age)
 !                             part17 - calculate actual decaycoefficient
 !                             parths - make history plots
 !                             partur - adds user-defined releases from file to system
@@ -75,7 +90,6 @@
 !                             part12 - two substances/layers in map file
 !                             part13 - two substances in plot file
 !                             part14 - vertical position particles
-!                             part16 - two substances in deriv file
 !                             part18 - added
 !                             rdparm - two names, vertical position
 !                                      waste loads
@@ -145,7 +159,6 @@
 !     iofset  integer     1                             offset to real timings
 !     ipnt    integer  mnmax                            help pointer
 !     ipoil   integer     1                             oil-indicator mass/m^2 or mass/m^3
-!     ipc     integer     1                             option for predictor corrector
 !     ipset   integer  ipmax                            times for a plot file
 !     iptime  integer  npmax                            particle age
 !     iptmax  integer     1                             nr of plot grids
@@ -166,7 +179,6 @@
 !     kpart   integer  npmax                            3th grid index particles
 !     kwaste  integer     1                             k-values waste loads in model
 !     layt    integer     1                             number of layers hydr.database
-!     lcorr   logical     1                             switch pred. corrector scheme
 !     ldiffh  logical     1                             exchange horizont diffusion on/off
 !     ldiffz  logical     1                             exchange vertical diffusion on/off
 !     lgrid   integer  nmax *mmax                        active grid
@@ -305,11 +317,21 @@
       !
       !  module declarations
       !
+      use m_stop_exit
+      use m_part11
+      use m_report_date_time
+      use m_rdpart
+      use m_rdlgri
+      use m_rdfnam
+      use m_rdccol
+      use m_getdps
+      use m_monsys
       use precision_part                  ! single/double precision
       use timers
       use fileinfo  , lun=> lunit    ! logical unit numbers for files
       use spec_feat_par
       use normal_mod
+      use m_partfm
       !
       !  module procedure(s)
       !
@@ -334,8 +356,7 @@
       use partmem
       use m_part_regular
       use alloc_mod
-      use ibm_mod
-      use larvae_mod
+      use abm_mod
       use omp_lib
 
       implicit none                  ! force explicit typing
@@ -373,6 +394,7 @@
       call rdfnam ( lun     , ifnam   , fname   , nfiles  , 2       ,    &
                     1       , alone   )
       lunpr = lun(2)
+      call setmlu( lunpr )
 
       hyd%file_hyd%name = fname(18)
       call read_hyd(hyd)
@@ -556,7 +578,7 @@
                        ypart   , zpart   , npart   , mpart   , kpart   ,    &
                        iptime  , npmax   , nrowsmax, lunpr   )
       endif
-      if ( idp_file .ne. ' ' .and. modtyp .ne. model_ibm ) then
+      if ( idp_file .ne. ' ' .and. modtyp .ne. model_abm ) then
          if (modtyp .ne. model_prob_dens_settling) then
             write ( lunpr, * ) ' Opening initial particles file:', idp_file(1:len_trim(idp_file))
             call openfl ( lunini, idp_file, 0 )
@@ -751,15 +773,15 @@
                              amassd   , ioptrad  , ndisapp  , idisset  , tydisp   ,    &
                              efdisp   , xpoldis  , ypoldis  , nrowsdis , wpartini ,    &
                              iptime)
-            case ( 7 )     ! = ibm model
-               if ( mod(itime,86400) .eq. 0 ) then !jvb for output within ibm module this is a temporary hack
+            case ( 7 )     ! = abm model
+               if ( mod(itime,86400) .eq. 0 ) then !jvb for output within abm module this is a temporary hack
                   call part11 ( lgrid    , xb       , yb       , nmaxp    , npart    ,    &
                                 mpart    , xpart    , ypart    , xa       , ya       ,    &
                                 nopart   , npwndw   , lgrid2   , kpart    , zpart    ,    &
                                 za       , locdep   , dpsp     , layt     , mmaxp    ,    &
                                 tcktot   )
                endif
-               call ibm    ( lun(2)   , itime    , idelt    , nmaxp    , mmaxp    ,    &
+               call abm    ( lun(2)   , itime    , idelt    , nmaxp    , mmaxp    ,    &
                              layt     , noseglp  , nolayp   , mnmaxk   , lgrid    ,    &
                              lgrid2   , lgrid3   , nopart   , npwndw   , nosubs   ,    &
                              npart    , mpart    , kpart    , xpart    , ypart    ,    &
@@ -767,7 +789,7 @@
                              noconsp  , const    , concp    , xa       , ya       ,    &
                              angle    , vol1     , vol2     , flow     , depth    ,    &
                              vdiff1   , salin1   , temper1  , v_swim   , d_swim   ,    &
-                             itstrtp  , vel1     , vel2     , ibmmt    , ibmsd    ,    &
+                             itstrtp  , vel1     , vel2     , abmmt    , abmsd    ,    &
                              chronrev , selstage , zmodel   , laybot   , laytop   )
 
          end select
@@ -866,8 +888,8 @@
                        wvelo    , wdir     , decays   , wpart    , pblay    ,    &
                        npwndw   , vdiff    , nosubs   , dfact    , modtyp   ,    &
                        t0buoy   , abuoy    , kpart    , mmaxp    , layt     ,    &
-                       wsettl   , depth    , ldiffz   , ldiffh   , lcorr    ,    &
-                       acomp    , ipc      , accrjv   , xb       , yb       ,    &
+                       wsettl   , depth    , ldiffz   , ldiffh   , &
+                       acomp    , accrjv   , xb       , yb       ,    &
                        tcktot   , lun(2)   , alpha    , mapsub   , nfract   ,    &
                        taucs    , tauce    , chezy    , rhow     , lsettl   ,    &
                        mstick   , nstick   , ioptdv   , cdisp    , dminim   ,    &
@@ -986,3 +1008,5 @@
 
       end subroutine delpar
 
+
+end module m_delpar

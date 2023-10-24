@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,6 +28,7 @@ module part14fm_mod
                             ictmax , nwaste , mwaste , xwaste , ywaste ,    &
                             zwaste , aconc  , rem    , npart  , ndprt  ,    &
                             mpart  , xpart  , ypart  , zpart  , wpart  ,    &
+                            laypart, hpart  ,                               &
                             iptime , nopart , pblay  , radius , nrowswaste, &
                             xpolwaste       , ypolwaste       ,             &
                             ftime  , tmassu , nosubs ,                      &
@@ -83,6 +84,8 @@ module part14fm_mod
       real     ( dp), intent(  out) :: ypart  (*)            !< y-in-cell of particles
       real     ( dp), intent(  out) :: zpart  (*)            !< z-in-cell of particles
       real     ( rp), intent(  out) :: wpart  (nosubs,*)     !< weight of the particles
+      integer  ( ip), intent(  out) :: laypart  (*)          !< layer in which the particles are found
+      real     ( dp), intent(  out) :: hpart  (*)            !< position within the layer for the particles
       integer  ( ip), intent(  out) :: iptime (*)            !< particle age
       integer  ( ip), intent(inout) :: nopart                !< number of active particles
       real     ( rp), intent(in   ) :: pblay                 !< relative thickness lower layer
@@ -107,7 +110,7 @@ module part14fm_mod
       integer  ( ip), intent(in   ) :: laywaste (nodye+nocont) !< k-values of wasteload points
       integer  ( ip), intent(in   ) :: nolay                 !< number of comp. layer
       integer  ( ip), intent(in   ) :: linear (nocont)       !< 1 = linear interpolated loads
-      real     ( rp), intent(inout) :: track  (8,*)          !< track array for all particles
+      real     ( rp), intent(inout) :: track  (10,*)         !< track array for all particles
       character( 20), intent(in   ) :: nmconr (nocont)       !< names of the continuous loads
       real     ( rp), intent(  in)  :: spart  (nosubs,*)     !< size of the particles
       real     ( rp), intent(inout) :: rhopart  (nosubs,*)   !< density of the particles
@@ -142,13 +145,14 @@ module part14fm_mod
       integer(ip) :: mwasth, nwasth    ! help variables for n and m of wastelocation
       real   (rp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
       real   (rp) :: zwasth            ! help variables for z within the layer
-      integer(ip) :: laypart          !< k-values particles
       real   (rp) :: radiuh            ! help variable for the radius0
       real   (dp) :: dpangle, dxp, dyp, dradius, xx, yy
       integer(ip) :: ilay  , isub      ! loop variables layers and substances
 
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
+      integer(ip) :: np                ! Number of particles to add
+
+      integer(4), save :: ithndl = 0   ! handle to time this subroutine
+
       if ( timon ) call timstrt( "part14", ithndl )
 
 !     at first zero the remainder
@@ -234,7 +238,8 @@ module part14fm_mod
 !              rpnul = rest /aconu * dts
                rpnul = rest /avcon            ! time span first particle
                rest  = rest + amass
-               do i = 1 , 1 + int(rest/aconu-1.d-10)
+               np    = min( ndprt(ie) - ncheck(ic), 1 + int(rest/aconu-1.d-10) )
+               do i = 1 , np
                   iptime(ipb) = int(rpnul)
                   ipb         = ipb + 1
                   rpnul       = rpnul - dts
@@ -258,6 +263,9 @@ module part14fm_mod
          nopart = iend
          ncheck(ic) = ncheck(ic) + nopnow
 
+!!       write( lun2, * ) 'tmassu(ic), aconu, nopnow, rem(ic)', &
+!!                         tmassu(ic), aconu, nopnow, rem(ic)
+
          write ( lun2, 1010 ) tmassu(ic), aconu, nopnow*aconu, rem(ic)
          write ( lun2, 1020 ) ndprt (ie), nopnow, ncheck(ic)
 
@@ -267,7 +275,6 @@ module part14fm_mod
          ywasth = ywaste(ie)
          zwasth = zwaste(ie)
          radiuh = radius(ie)
-         laypart = laywaste(ie)
 !.. layer distribution
 
          if ( laywaste (ie) .eq. 0 ) then              !.. uniform
@@ -290,10 +297,11 @@ module part14fm_mod
 
 !         give particles gridcell and coordinates of the continuous load
 
-            npart (i) = nwasth
-            mpart (i) = mwasth
-            xpart (i) = xwasth
-            ypart (i) = ywasth
+            npart (i)  = nwasth
+            mpart (i)  = mwasth
+            xpart (i)  = xwasth
+            ypart (i)  = ywasth
+            laypart(i) = laywaste(ie)
             if ( modtyp .eq. model_two_layer_temp ) then
                t0buoy(i) = t0cf (ic)                    ! could be taken out of the particle loop
                abuoy (i) = 2.0*sqrt(acf(ic)*idelt)      ! even complete out of this routine
@@ -302,35 +310,13 @@ module part14fm_mod
                abuoy (i) = 0.0
             endif
 
-!           if (radiuh.ne.-999.0) then
-!              spread the particles over a circle
-!              call findcircle ( xpart(i), ypart(i), radiuh  , npart(i), mpart(i),  &
-!                                lgrid   , dx      , dy      , lcircl  )
-!           else
-!              spread the particles over a polygon
-!              call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(ie), &
-!                               xpolwaste(1:nrowswaste(ie), ie), ypolwaste(1:nrowswaste(ie), ie), &
-!                               xpart(i), ypart(i), npart(i), mpart(i))
-!           end if
 
 !     horizontal distribution (spreaded in a circle if required - this is at present copied for part09fm
 
          nulay = 1
-!         ipart = 0
-!         do i = 1, ndprt(id)
-!            npart(i)   = 1
-!            laypart(nopart+i) = 1 !2D for the moment!
-!            xpart(i)   = xwasth
-!            ypart(nopart+i)   = ywasth
-!            mpart(nopart+i)   = mwasth
-!            radiuh            = 0.0
 
             if (radiuh.ne.-999.0) then
 !              spread the particles over a circle
-!               radiusr = radiuh * sqrt(rnd(rseed))
-!               dpangle    = 2.0D0 * pi * rnd(rseed)
-!               xpart(nopart+i) = xwasth + radiuh * sin(angle)
-!               ypart(nopart+i) = ywasth + radiuh * cos(angle)
 ! this is the code to deal with sferical models (if needed) te get the distances correct
                dpangle =2.0D0 * pi * rnd(rseed)
                dradius = rnd(rseed) * radiuh !noteradius is in m. need to convert to degrees.
@@ -349,57 +335,48 @@ module part14fm_mod
                  yy = yy + dyp
                  call sphertocart3D(xx,yy,xpart(i),ypart(i),zpart(i))
                endif
-            !   zpart(nopart+i) = zwaste(iload)
 
             else
                radiuh = 0
-!              spread the particles over a polygon
-!               !call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(id), &
-!               !                 xpolwaste(1:nrowswaste(id), id), ypolwaste(1:nrowswaste(id), id), &
-!               !                 xpart(i), ypart(i), npart(i), mpart(i))
             end if
-!
-!         enddo
 
-            
+
 !         give the particles a layer number
-
-    70      ipart = ipart + 1
-            if ( ipart .gt. nplay(nulay) ) then         ! next layer
-               ipart = 0
-               nulay = nulay + 1
-               if ( nulay .gt. nolay ) then
-                  nulay = nolay
-                  goto 80
-               endif
-               goto 70
-            endif
-            if ( nulay .gt. nolay ) stop ' Nulay>nolay in part09 '
-    80      continue
-!           if (zmodel) then
-!              laypart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
-!           else
-!              laypart(i) = nulay
-!           endif
-
-            !laypart(i) = nulay !! TODO !!
-
-!         give the particles a z-value within the layer
-            if (jsferic .ne. 1) then ! in a sferic model, the zwaste is needed for conversion of sferic to cartesian (and vice cersa) , so setting the zpart cannot be used to set the layer or discharge depth.
-               if ( modtyp .eq. model_two_layer_temp ) then     ! .. two layer model use a pointe discharge (as in v3.00)
-                  if ( zwaste(ie) .gt. pblay ) then
-                     zpart(i) = ( zwaste(ie) - pblay ) / ( 1.0 - pblay )
-                  else
-                     zpart(i) =  zwaste(ie)/pblay
+            do
+               ipart = ipart + 1
+               if ( ipart .gt. nplay(nulay) ) then         ! next layer
+                  ipart = 0
+                  nulay = nulay + 1
+                  if ( nulay .gt. nolay ) then
+                     nulay = nolay
+                     exit
                   endif
-               elseif ( modtyp .eq. model_oil .and. laywaste(ie) .eq. 1 ) then   !   for one layer models (2dh),
-                  zpart(i) = zwaste(ie)           !      the release will be in the user-defined location
-               elseif ( nolay .eq. 1 ) then
-                  zpart(i) = zwaste(ie)/100.0
-               else                               !      release randomly distributed over the vertical
-                  zpart(i) = rnd(rseed)
+               else
+                  exit
                endif
+            enddo
+
+            if (zmodel) then
+               laypart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
+            else
+               laypart(i) = nulay
             endif
+
+!           give the particles a z-value within the layer
+            if ( modtyp .eq. model_two_layer_temp ) then     ! .. two layer model use a pointe discharge (as in v3.00)
+               if ( zwaste(ie) .gt. pblay ) then
+                  hpart(i) = ( zwaste(ie) - pblay ) / ( 1.0 - pblay )
+               else
+                  hpart(i) =  zwaste(ie)/pblay
+               endif
+            elseif ( modtyp .eq. model_oil .and. laypart(i) .eq. 1 ) then   !   for one layer models (2dh),
+                  hpart(i) = zwaste(ie)           !      the release will be in the user-defined location
+            elseif ( nolay .eq. 1 ) then
+               hpart(i) = zwaste(ie)/100.0
+            else                               !      release randomly distributed over the vertical
+               hpart(i) = rnd(rseed)
+            endif
+
 !         initialize rest of variables for new particle
 
             do isub = 1, nosubs
@@ -415,8 +392,10 @@ module part14fm_mod
             track(4,i) = xpart(i)
             track(5,i) = ypart(i)
             track(6,i) = zpart(i)
-            track(7,i) = itime
-            track(8,i) = ic + nodye
+            track(7,i) = laypart(i)
+            track(8,i) = hpart(i)
+            track(9,i) = itime
+            track(10,i) = ic + nodye
 
 !     end loop across the added particles for this continuous load
 

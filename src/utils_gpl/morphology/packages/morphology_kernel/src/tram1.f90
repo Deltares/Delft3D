@@ -10,7 +10,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                 & message   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,8 +34,8 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
@@ -291,9 +291,9 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
           !
           ! Set diffusion coefficient at bottom of layer
           !
+          dz        = h1 * (sig(k)-sig(k+1))
           diffbt    = seddif(k) + bakdif
-          diffbt    = max(diffbt , 0.1_fp*ws(k)*dz) ! \_ lines should be switched
-          dz        = h1 * (sig(k)-sig(k+1))        ! /
+          diffbt    = max(diffbt , 0.1_fp*ws(k)*dz)
           fact1     = 1.0_fp + dz * ws(k) / diffbt
           rsedeq(k) = rsedeq(k+1) / fact1
        enddo

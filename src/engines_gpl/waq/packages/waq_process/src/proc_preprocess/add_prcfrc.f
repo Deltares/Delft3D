@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,12 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_prcfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_prcfrc ( lunrep, procesdef, allitems, sfracs, no_act,
      +                        actlst, nbpr     )
 
       ! add processes per fractions
 
+      use m_zoek
+      use m_srstop
       use processet
       use timers       !   performance timers
 
@@ -107,8 +115,6 @@
                stochi_loop: do istochi = 1 , proc%no_fluxstochi
 
                   ! include also "dummy" rules (factor equal zero)
-
-                  !if ( abs(proc%fluxstochi(istochi)%scale) .gt. 1e-10 ) then
 
                      call zoek( basnam, 1, proc%fluxstochi(istochi)%substance, 10, indx)
                      if ( indx .eq. 1 ) then
@@ -388,3 +394,5 @@
       return
  2000 format ( 3a )
       end
+
+      end module m_add_prcfrc

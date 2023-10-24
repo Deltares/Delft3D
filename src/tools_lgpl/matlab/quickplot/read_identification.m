@@ -1,10 +1,10 @@
-function version=read_identification(sourcedir,file)
+function [version,hash,repo_url] = read_identification(sourcedir,file)
 %READ_INDENTIFICATION determine version number
 %   Read the version identification string from the specified file
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -48,15 +48,7 @@ baseversion = deblank(str(11:end));
 %
 % Determine the latest revision.
 %
-[revmin,revmax,changed] = determine_revision(sourcedir);
-if revmax<0
-    revstring = '[unknown revision]';
-else
-    revstring = sprintf('%05.5i',revmax);
-    if changed
-        revstring = [revstring ' (changed)'];
-    end
-end
+[revstring,repo_url,hash] = determine_revision(sourcedir);
 %
 % Combine version and revision to file version string.
 %

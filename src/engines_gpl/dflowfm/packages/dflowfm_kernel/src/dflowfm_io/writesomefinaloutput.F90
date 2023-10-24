@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine writesomefinaloutput()
  use m_sferic
@@ -44,7 +44,8 @@
  use m_monitoring_crosssections
  use m_observations, only : mxls
  use unstruc_files, only : defaultFilename
- use m_GlobalParameters, only: callcount, wccount, countstop, rate
+ use m_sediment, only: stm_included
+ use m_transport, only: maserrsed
 #ifdef _OPENMP
  use omp_lib
 #endif
@@ -82,7 +83,7 @@
   do i = 1,size(handle_extra)
      if (handle_extra(i) > 0) then
         time_cpu = tim_get_wallclock(handle_extra(i))
-        if ( time_cpu > 0.01d0) then ! only the relevant
+        if ( time_cpu > 0.01d0) then                     ! only the relevant
            write(msgbuf,'(a,a,F25.10)') 'extra timer:' , tim_get_label(handle_extra(i)), time_cpu      ; call msg_flush()
         endif
      endif
@@ -145,6 +146,7 @@
  write(msgbuf,'(a,F25.10)') 'time totalsolve        (s)  :' , t(3,itotalsol)                   ; call msg_flush()
 
  write(msgbuf,'(a,F25.10)') 'time setexternalforc.  (s)  :' , tim_get_wallclock(handle_ext)    ; call msg_flush()
+ write(msgbuf,'(a,F25.10)') 'time setext.forc.fetch (s)  :' , tim_get_wallclock(handle_fetch)  ; call msg_flush()																												 
  write(msgbuf,'(a,F25.10)') 'time setexternalfbnd.  (s)  :' , tim_get_wallclock(handle_extbnd) ; call msg_flush()
  write(msgbuf,'(a,F25.10)') 'time steps             (s)  :' , tim_get_wallclock(handle_steps)  ; call msg_flush()
  write(msgbuf,'(a,F25.10)') 'fraction solve/steps   ( )  :' , frac                       ; call msg_flush()
@@ -152,31 +154,43 @@
  write(msgbuf,'(a,F25.10)') 'av nr of cont. it s1it ( )  :' , dnums1it/max(dnt,1d-8)     ; call msg_flush()
 
  if ( jatimer.eq.1 ) then
-    write(msgbuf,'(a,F25.10)') 'time transport [s]         :' , gettimer(1,ITRANSPORT)
+    write(msgbuf,'(a,F25.10)') 'time transport         (s)  :' , gettimer(1,ITRANSPORT)
     call msg_flush()
     if (ti_waqproc /= 0) then
-       write(msgbuf,'(a,F25.10)') 'time processes [s]         :' , gettimer(1,IFMWAQ)
+       write(msgbuf,'(a,F25.10)') 'time processes         (s)  :' , gettimer(1,IFMWAQ)
        call msg_flush()
     endif
     if (idebug > 0) then
-    write(msgbuf,'(a,F25.10)') 'time debug     [s]         :' , gettimer(1,IDEBUG)
-    call msg_flush()
+       write(msgbuf,'(a,F25.10)') 'time debug            (s)  :' , gettimer(1,IDEBUG)
+       call msg_flush()
     endif
     if (jafilter > 0) then
-    write(msgbuf,'(a,F25.10)') 'time filter coeff.      [s]:' , gettimer(1,IFILT_COEF)
+    write(msgbuf,'(a,F25.10)') 'time filter coeff.     (s)  :' , gettimer(1,IFILT_COEF)
     call msg_flush()
-    write(msgbuf,'(a,F25.10)') 'time filter solve       [s]:' , gettimer(1,IFILT_SOLV)
+    write(msgbuf,'(a,F25.10)') 'time filter solve      (s)  :' , gettimer(1,IFILT_SOLV)
     call msg_flush()
-    write(msgbuf,'(a,F25.10)') 'time filter cnstr. mat. [s]:' , gettimer(1,IFILT_MAT)
+    write(msgbuf,'(a,F25.10)') 'time filter cnstr. mat.(s)  :' , gettimer(1,IFILT_MAT)
     call msg_flush()
-    write(msgbuf,'(a,F25.10)') 'time filter copy back   [s]:' , gettimer(1,IFILT_COPYBACK)
+    write(msgbuf,'(a,F25.10)') 'time filter copy back  (s)  :' , gettimer(1,IFILT_COPYBACK)
     call msg_flush()
-    write(msgbuf,'(a,F25.10)') 'time filter other       [s]:' , gettimer(1,IFILT_OTHER)
+    write(msgbuf,'(a,F25.10)') 'time filter other      (s)  :' , gettimer(1,IFILT_OTHER)
     call msg_flush()
-    write(msgbuf,'(a,F25.10)') 'time filter             [s]:' , gettimer(1,IFILT)
+    write(msgbuf,'(a,F25.10)') 'time filter            (s)  :' , gettimer(1,IFILT)
     call msg_flush()
     endif
+    if (jased > 0 .and. stm_included) then
+       write(msgbuf,'(a,F25.10)') 'time erosed            (s)  :' , gettimer(1,IEROSED)
+       call msg_flush()
+       write(msgbuf,'(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :' , maserrsed/1d6
+       call msg_flush()
+    endif 
  end if
+ 
+ if ( number_steps_limited_visc_flux_links > 0 ) then
+      msgbuf = ' ' ; call msg_flush()
+      write(msgbuf,'(a)') 'Viscosity coefficient/Horizontal transport flux were limited on some links in the course of computation.' 
+      call msg_flush()
+ end if 
 
  do k = 1,3
     msgbuf = ' ' ; call msg_flush()
@@ -238,16 +252,6 @@
 
  if (jawriteDetailedTimers > 0) then
     call timdump(trim(defaultFilename('timers')), .true.)
-
-    call system_clock(countstop, rate) ! Only to get the rate
-
-    open(newunit=mout, file=trim(defaultFilename('timers')), access='append', action='write')
-    write(mout, '(a,i15,a,D13.6, a,D13.6)') 'Totals GetCSParsFlowCross: Calls: ', callcount(1), &
-       'WC Time: ', real(wccount(1), 8 ) / real( rate, 8 )
-    write(mout, '(a,i15,a,D13.6, a,D13.6)') 'Totals GetCSParsFlowTot  : Calls: ', callcount(2), &
-       'WC Time: ', real(wccount(2), 8 ) / real( rate, 8 )
-    close(mout)
-
  end if
 
  call timstrt('All', handle_all)

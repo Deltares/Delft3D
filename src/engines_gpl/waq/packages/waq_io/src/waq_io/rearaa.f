@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rearaa
+
+      implicit none
+
+      contains
+
 
       subroutine rearaa ( lun     , lchar   , filtype , raname  , nexcraai,
      &                    iexcraai, ioptraai, noraai  , ntraaq  , ioutpt  ,
@@ -57,6 +63,8 @@
 !     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
 !                         LUN(29) = unitnumber formatted output file
 
+      use m_opt1
+      use m_zoek
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -66,7 +74,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun     (*)       !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun     (*)       !< array with unit numbers
       character( *), intent(inout) :: lchar   (*)       !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype (*)       !< type of binary file
       character(20), pointer       :: raname  (:)       !< name of monitoring areas
@@ -241,3 +249,5 @@
  2410 format (  /,' ERROR. observation ID not unique:',A)
  2500 format (  /,' ERROR. while reading transects' )
       end
+
+      end module m_rearaa

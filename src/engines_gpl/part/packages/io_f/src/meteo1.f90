@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,7 @@
 !!  rights reserved.
 
 module m_itdate
+
    character (len=8)                          :: refdat
    integer                                    :: itdate      ! should be user specified for (asc routines)
 
@@ -31,6 +32,8 @@ end module m_itdate
 
 module timespace_read
    use precision_part
+   use m_stop_exit
+   use m_meteo1temphelpers
    implicit none
 
   integer,  parameter    :: maxnamelen     = 256
@@ -811,9 +814,6 @@ function reaspwheader(minp      ,mx        ,nx        ,dxa        ,dya        , 
        if (k==4) read (rec(2:), *, err = 102) radius
     enddo
 
-!    if (sferic) then !hk: This has already been set by the flow grid. Here do no more than check consistency
-!       call meteosetsferic()
-!    endif
 
     !
     mx  = mx + 1              ! 1 KOLOM EXTRA VOOR 360 GRADEN = 0 GRADEN IVM INTERPOLATIE
@@ -1621,7 +1621,6 @@ function addprovider(idom, qid, kx, filename, filetype, method, operand, nump, i
 
      success = reaspwheader(minp,mx,nx,dxa,dya,mncoor)
      xe(2) = dxa ; ye(2) = dya
-!    call meteosetmncoord(mncoor) ! zet iets in private module meteo, moet hier eigenlijk uit
 
   case ( fourier )
 
@@ -1961,44 +1960,6 @@ subroutine read1polylin(minp,xs,ys,ns)
 
 end subroutine read1polylin
 
-subroutine read1pliz(minp,xs,ys,zs,ns)
-
-   implicit none
-
-   double precision             :: xs(:), ys(:), zs(:)
-
-   integer                      :: ns
-   integer                      :: minp
-
-   ! locals
-   character (len=maxnamelen)   :: rec
-   integer                      :: k, nr
-
-
-   ns = 0
-
-10 read(minp,'(a)',end = 999) rec
-   if  (rec(1:1) == '*' ) goto 10
-
-   read(minp,'(a)',end = 999) rec
-   read(rec ,*    ,err = 888) nr
-
-   do k = 1,nr
-      read(minp,'(a)',end = 999) rec
-      read(rec ,*    ,err = 777) xs(k), ys(k), zs(k)
-      ns = k
-   enddo
-
-   return
-
-  999 call doclose(minp) ; return
-
-  888 call readerror('reading nrows but getting ', rec, minp) ; return
-
-  777 call readerror('reading x, y  but getting ', rec, minp) ; return
-
-end subroutine read1pliz
-
 
 
 
@@ -2112,7 +2073,6 @@ function readfourierdims(minp,mx,nx) result(success)
    integer                      :: L, i1, i2
    character(len=10)            :: compname
 
-   integer, external            :: ifirstletter
 
    success = .false.
    mx = 3 ; nx = 0
@@ -2145,25 +2105,6 @@ function readfourierdims(minp,mx,nx) result(success)
 
 end function readfourierdims
 
-subroutine settimespacerefdat(refda, jul00)
-use m_itdate
-character (len=8) :: refda
-integer           :: jul00
-integer, external :: julday
-
-
-! timelast = t01ini todo: verwijderen
-
-refdat = refda
-read (refdat,*) itdate
-
-read(refdat(1:4),*) iyear0
-read(refdat(5:6),*) imonth0
-read(refdat(7:8),*) iday0
-
-jul0  = julday(imonth0,iday0,iyear0)
-jul00 = jul0
-end subroutine settimespacerefdat
 
 
 function readfouriercompstim(minp,d0,d1,mx,nx,kx,tim,tread) result(success)
@@ -2187,9 +2128,6 @@ use m_itdate
    character(len=8)                           :: compname
    integer                                    :: k, n, L, ierrs, i1, i2
    double precision                           :: fff, omeg, ampl, phas, omegt, phast
-
-
-   integer, external                          :: ifirstletter
 
 
    success = .false.
@@ -3249,89 +3187,6 @@ end interface find_nearest
 contains
 
 
-subroutine pinpok(xl, yl, n, x, y, inside)
-
-    ! Author: H. Kernkamp
-   implicit none
-
-   double precision              , intent(in)  :: xl
-   double precision              , intent(in)  :: yl
-   integer               , intent(in)  :: n
-   double precision, dimension(n), intent(in)  :: x
-   double precision, dimension(n), intent(in)  :: y
-   integer               , intent(out) :: inside
-
-   integer  :: i
-   integer  :: i1
-   integer  :: i2
-   integer  :: np
-   integer  :: rechts
-   double precision :: rl
-   double precision :: rm
-   double precision :: x1
-   double precision :: x2
-   double precision :: y1
-   double precision :: y2
-
-   if (n .le. 2) then
-      inside = 1
-   else
-      np = 0
- 5    continue
-      np = np + 1
-      if (np .le. n) then
-         if ( x(np) .ne. dmiss_default) goto 5
-      endif
-      np = np - 1
-      inside = 0
-      rechts = 0
-      i = 0
-10    continue
-      i1 = mod(i,np) + 1
-      i2 = mod(i1,np) + 1
-      x1 = x(i1)
-      x2 = x(i2)
-      y1 = y(i1)
-      y2 = y(i2)
-      if (xl .ge. min(x1,x2) .and. xl .le. max(x1,x2) ) then
-         if (xl .eq. x1 .and. yl .eq. y1 .or. &                     ! tussen of op lijnstuk
-            (x1 .eq. x2 .and. &                                     ! op punt 1
-             yl .ge. min(y1,y2) .and. yl .le. max(y1,y2) ) .or. &
-            (yl .eq. y1 .and. y1 .eq. y2)  ) then                   ! op verticale lijn
-            ! op horizontale lijn
-            inside = 1
-            return
-         else if (x1 .ne. x2) then
-            !
-            ! scheve lijn
-            !
-            rl = ( xl - x1 )  / ( x2 - x1 )
-            rm = ( y1 - yl )  + rl * ( y2 - y1 )
-            if (rm .eq. 0) then
-               !
-               ! op scheve lijn
-               !
-               inside = 1
-               return
-            else if (rm .gt. 0d0) then
-               !
-               ! onder scheve lijn
-               !
-               if (xl .eq. x1 .or. xl .eq. x2) then
-                  if (x1 .gt. xl .or. x2 .gt. xl) then
-                     rechts = rechts + 1
-                  endif
-               endif
-               inside = 1 - inside
-            endif
-         endif
-      endif
-      i = i + 1
-      if (i .lt. np) goto 10
-      if (mod(rechts,2) .ne. 0) inside = 1 - inside
-   endif
-end subroutine pinpok
-
 
 
 ! This subroutine interpolates one unstructured dataset xss, yss, zss, kcss, nss to another x, y, z, kcs, nx
@@ -3695,13 +3550,11 @@ subroutine dlauny(x         ,y         ,ns        )
        if (den/=0) then
           z = (x2*(x2 - x3) + y2*(y2 - y3))/den
        else
-          ! call qnerror('COINCIDING POINTS'  ,' '       ,' '       )
        endif
        xcent(ie) = 0.5D0*(x3 - z*y3)
        ycent(ie) = 0.5D0*(y3 + z*x3)
     enddo
     !
-    !     CALL READYY('CREATING TRIANGLE NETWORK',0.0)
     interval = max(1, ns/100)
     do in = 1, ns
 
@@ -3737,7 +3590,6 @@ subroutine dlauny(x         ,y         ,ns        )
              maxtri = max(maxtri, numtri + newel + 3)
              if (maxtri>nsm) then
                 write(*,*)'maxtri>nsm'
-                ! call qnerror('MAXIMUM NUMBER OF TRIANGLES EXCEEDED'     ,'REDUCE NUMBER OF SAMPLES IN'   ,'TRIANGULATION'      )
                 return
              endif
              indx(j, numtri + newel + j) = in
@@ -3746,7 +3598,6 @@ subroutine dlauny(x         ,y         ,ns        )
              inewe = numtri + newel + inew
              maxtri = max(maxtri, inewe)
              if (maxtri>nsm) then
-                ! call qnerror('MAXIMUM NUMBER OF TRIANGLES EXCEEDED'     ,'REDUCE NUMBER OF SAMPLES IN'   ,'TRIANGULATION'      )
                 write(*,*)'maxtri>nsm'
                 return
              endif
@@ -3843,10 +3694,6 @@ subroutine dlauny(x         ,y         ,ns        )
     ie = ie + 1
     if (ie<=numtri) goto 100
     !
-!    deallocate (xcent, ycent)
-    !
-    !     CALL READYY('CREATING TRIANGLE NETWORK',-1d0)
-!    write (mdia, *) numtri, maxtri
 end subroutine dlauny
 
 subroutine findtri_indices_weights(xp, yp, xs, ys, ns, zp, indxp)
@@ -3966,121 +3813,6 @@ subroutine linweight(xt ,yt ,xp ,yp, zp)
 
 end subroutine linweight
 
-subroutine linear(x         ,y         ,z         ,xp        ,yp        , &
-                & zp        ,jslo      ,slo       )
-    use precision_part
-    implicit none
-    !
-    !
-    ! COMMON variables
-    !
-    double precision :: dmiss
-
-    data dmiss /-999d0/
-!
-! Global variables
-!
-    integer, intent(in)            :: jslo
-    double precision, intent(out)              :: slo
-    double precision :: xp
-    double precision :: yp
-    double precision :: zp
-    double precision, dimension(3) :: x
-    double precision, dimension(3) :: y
-    double precision, dimension(3), intent(in) :: z
-!
-!
-! Local variables
-!
-
-    double precision :: a11
-    double precision :: a12
-    double precision :: a21
-    double precision :: a22
-    double precision :: a31
-    double precision :: a32
-    double precision :: b1
-    double precision :: b2
-    double precision :: det
-    double precision :: r3
-    double precision :: rlam
-    double precision :: rmhu
-    double precision :: x3
-    double precision :: xn
-    double precision :: xy
-    double precision :: y3
-    double precision :: yn
-    double precision :: z3
-    double precision :: zn
-!
-!
-!! executable statements -------------------------------------------------------
-!
-    !
-    !
-    !
-    !
-    zp = dmiss
-    a11 = x(2) - x(1)
-    a21 = y(2) - y(1)
-    a12 = x(3) - x(1)
-    a22 = y(3) - y(1)
-    b1 = xp - x(1)
-    b2 = yp - y(1)
-    !
-    det = a11*a22 - a12*a21
-    if (abs(det)<1E-9) then
-       return
-    endif
-    !
-    rlam = (a22*b1 - a12*b2)/det
-    rmhu = ( - a21*b1 + a11*b2)/det
-    !
-    zp = z(1) + rlam*(z(2) - z(1)) + rmhu*(z(3) - z(1))
-    if (jslo==1) then
-       a31 = z(2) - z(1)
-       a32 = z(3) - z(1)
-       x3 = (a21*a32 - a22*a31)
-       y3 = -(a11*a32 - a12*a31)
-       z3 = (a11*a22 - a12*a21)
-       r3 = sqrt(x3*x3 + y3*y3 + z3*z3)
-       if (r3/=0) then
-          xn = x3/r3
-          yn = y3/r3
-          zn = z3/r3
-          xy = sqrt(xn*xn + yn*yn)
-          if (zn/=0) then
-             slo = abs(xy/zn)
-          else
-             slo = dmiss
-          endif
-       else
-          slo = dmiss
-       endif
-    endif
-end subroutine linear
-
-subroutine minmax_h(x, n, xmin, xmax )  !   BEPAAL MINIMUM EN MAXIMUM VAN EEN EENDIMENSIONALE ARRAY
-    use precision_part
-    implicit none
-
-! Global variables
-
-    integer, intent(in)                :: n
-    double precision, dimension(n), intent(in) :: x
-    double precision                           :: xmax
-    double precision                           :: xmin
-
-    integer                            :: i
-
-    xmin = 1E30
-    xmax = -1E30
-
-    do i = 1, n
-       xmin = min(xmin, x(i))
-       xmax = max(xmax, x(i))
-    enddo
-end subroutine minmax_h
 
 
 subroutine get_extend2D(n, m, x, y, kcs, x_ext, y_ext)
@@ -4339,9 +4071,7 @@ subroutine polyint( xs, ys, zs ,kcs, ns,            &   ! interpolate in a polyl
     do m = 1, mnx
 
         if (jgetw .le. 1) then
-            !call polyindexweight( x(m), y(m), xs, ys, kcs, ns, xyen(:,m), k1, rl)    ! interpolate in a polyline like way
             call polyindexweight( x(m), y(m), xyen(1,m), xyen(2,m), xs, ys, kcs, ns, k1, rl)    ! interpolate in a polyline like way
-            !call findtri_indices_weights (x(n),y( n), xs, ys, ns, zp, indxp)     ! zoeken bij 0 en 1
             if (jgetw .eq. 1) then                                              ! zetten bij 1
                 indxn(1,m) = k1
                 wfn(1,m)   = rl
@@ -4360,68 +4090,6 @@ subroutine polyint( xs, ys, zs ,kcs, ns,            &   ! interpolate in a polyl
     enddo
 
 end subroutine polyint
-
-!subroutine polyindexweight( xe, ye, xs, ys, kcs, ns, xyen, k1, rl)    ! interpolate in a polyline like way
-!
-! ! Global variables
-! integer ,                intent(in)     :: ns       ! Dimension of polygon OR LINE BOUNDARY
-! double precision, dimension(:),  intent(in) :: xs       ! polygon
-! double precision, dimension(:),  intent(in) :: ys
-! integer, dimension(:),  intent(in)      :: kcs      ! polygon mask
-! double precision                        :: xyen(:)
-! double precision                        :: xe, ye, rl
-!
-!
-! integer :: ja1, ja2, k, km, k1, k2
-! double precision:: x1,x2,y1,y2,dis,xn,yn,dx,dy
-! double precision:: dism, dis1, dis2, rl1, rl2, dbdistance
-!
-!
-! dism = 1e30
-! do k = 1, ns
-!    dis  = DbdISTANCE( Xe,Ye,XS(K),YS(K) )
-!    if (dis < dism) then
-!       dism = dis
-!       km   = k
-!    endif
-! enddo
-!
-! k1 = 0
-!
-! if (km == 1) then
-!    x1 = xs(km  ); y1 = ys(km  )
-!    x2 = xs(km+1); y2 = ys(km+1)
-!    call LINEDISQ(Xe,Ye,X1,Y1,X2,Y2,JA1,DIS1,XN,YN,RL)
-!    if (ja1 == 1) then
-!       if (dis1 < rdis) k1 = km
-!    endif
-! else if (km == ns) then
-!    x1 = xs(km-1); y1 = ys(km-1)
-!    x2 = xs(km  ); y2 = ys(km  )
-!    call LINEDISQ(Xe,Ye,X1,Y1,X2,Y2,JA1,DIS1,XN,YN,RL)
-!    if (ja1 == 1) then
-!       if (dis1 < rdis) k1 = km-1
-!    endif
-! else
-!    x1 = xs(km-1); y1 = ys(km-1)
-!    x2 = xs(km)  ; y2 = ys(km)
-!    call LINEDISQ(Xe,Ye,X1,Y1,X2,Y2,JA1,DIS1,XN,YN,RL1)
-!    x1 = xs(km)  ; y1 = ys(km)
-!    x2 = xs(km+1); y2 = ys(km+1)
-!    call LINEDISQ(Xe,Ye,X1,Y1,X2,Y2,JA2,DIS2,XN,YN,RL2)
-!    if      (ja1 == 1) then ! if on line 1
-!        if (dis1 < rdis) then
-!           k1 = km-1 ; rl = rl1
-!        endif
-!    else if (ja2 == 1) then
-!        if (dis2 < rdis) then
-!           k1 = km ; rl = rl2
-!        endif
-!    else ! niet op een van beiden, maar wel in de buurt, uitwerken. Nu dus alleen convexe randen
-!    endif
-! endif
-!
-!end subroutine polyindexweight
 
 
 !> Selects the index of the polyline segment that intersects with line e--en
@@ -4470,30 +4138,7 @@ subroutine polyindexweight( xe, ye, xen, yen, xs, ys, kcs, ns, k1, rl)
  end if
 end subroutine polyindexweight
 
- SUBROUTINE LINEDISq(X3,Y3,X1,Y1,X2,Y2,JA,DIS,XN,YN,rl) ! = dlinesdis2
- integer          :: ja
- DOUBLE PRECISION :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
- DOUBLE PRECISION :: R2,RL,X21,Y21,X31,Y31,getdx,getdy,dbdistance
- ! korste afstand tot lijnelement tussen eindpunten
- JA  = 0
- X21 = getdx(x1,y1,x2,y2)
- Y21 = getdy(x1,y1,x2,y2)
- X31 = getdx(x1,y1,x3,y3)
- Y31 = getdy(x1,y1,x3,y3)
- R2  = dbdistance(x2,y2,x1,y1)
- R2  = R2*R2
- IF (R2 .NE. 0) THEN
-    RL  = (X31*X21 + Y31*Y21) / R2
-    IF (0d0 .LE. RL .AND. RL .LE. 1d0) then
-       JA = 1
-    endif
-    XN  = X1 + RL*(x2-x1)
-    YN  = Y1 + RL*(y2-y1)
-    DIS = dbdistance(x3,y3,xn,yn)
- ENDIF
- RETURN
- END subroutine LINEDISq
-
+ 
 
 end module timespace_triangle                           ! met leading dimensions 3 of 4
 module timespace
@@ -4573,130 +4218,6 @@ function addtimespacerelation(idom, qid, kx, x, y, kcs, filename, filetype, meth
 end function addtimespacerelation
 
 
-!> this function selects points (kc = 1) that can receive data from the provider in file =filename
-!! All points have an allowable 'search range', defined by a line from x,y
-!! to xyen(1,) to xyen(2,). Generally, the points in xyen are endpoints of
-!! rrtol times a perpendicular vector to edge links.
-subroutine selectelset( filename, filetype, x, y, xyen, kc, mnx, ki, num )
-  implicit none
-
-
-  ! arguments
-  integer         , intent(in)    :: mnx        ! dimension of quantity
-  double precision, intent(in)    :: x(:)       ! x   of elset of all possible points in model
-  double precision, intent(in)    :: y(:)       ! y   of elset
-  double precision, intent(in)    :: xyen(:,:)  ! Points on opposite edges of elementset
-  integer         , intent(inout) :: kc(:)      ! kcs of elset, allowable kandidates have 1, eg. points with less links than edges
-  integer         , intent(out)   :: ki(:)      !               index array of allowable points that fall near provided data
-  integer                         :: num        ! nr of points served bij this provider
-
-  character(*), intent(in)        :: filename   ! file name for meteo data file
-  integer     , intent(in)        :: filetype   ! spw, arcinfo, uniuvp etc
-
-  ! locals
-  double precision, allocatable   :: xs (:)     ! temporary array to hold polygon
-  double precision, allocatable   :: ys (:)     !
-  integer , allocatable           :: kcs(:)     !
-  double precision                :: rl
-  integer                         :: k1, minp, ns, m
-
-  num = 0
-
-  ki  = 0
-
-  if (filetype == poly_tim) then
-
-    if (.not. allocated(xs)) then
-        call realloc(xs,10000)
-        call realloc(ys,10000)
-        call realloc(kcs,10000)
-     endif
-
-     kcs = 1   ! todo make this safe
-
-     call oldfil(minp, filename)
-     call read1polylin(minp,xs,ys,ns)
-
-     do m = 1,mnx
-        if (iabs(kc(m)) == 1) then     ! point is a possible candidate for a line boundary
-           call polyindexweight( x(m), y(m),  xyen(1,m), xyen(2,m), xs, ys, kcs, ns, k1, rl)
-           ! if k1 > 0 this point can be dataprovided by this polyline
-           if (k1 > 0 ) then
-              if ( kc(m) .eq. -1 ) then
-                 errormessage = 'Boundary location already claimed; Overlap with other bnds?'
-                 return
-              else
-                 num     =  num + 1
-                 ki(num) =  m
-                 kc(m)   = -1                ! this tells you this point is already claimed by some bnd
-              endif
-           endif
-        endif
-     enddo
-
-     write(*,*) 'boundary: ', trim(filename), num
-     write(errormessage,*) filename, num
-
-     deallocate(xs, ys, kcs)
-
-
-  else ! en andere behandelmethodes voor andere mogelijkheden.
-
-
-  endif
-
-
-end subroutine selectelset
-
-subroutine selectelset_internal_links( filename, filetype, xz, yz, ln, lnx, keg, numg ) ! find links cut by polyline filetype 9
-  implicit none
-
-  character(*),     intent(in)    :: filename   ! file name for meteo data file
-  integer     ,     intent(in)    :: filetype   ! spw, arcinfo, uniuvp etc
-  double precision, intent(in)    :: xz (:)
-  double precision, intent(in)    :: yz (:)
-  integer         , intent(in)    :: ln (:,:)
-  integer         , intent(in)    :: lnx
-  integer         , intent(out)   :: keg(:)
-  integer                         :: numg
-
-  integer                         :: minp, np, L, k1, k2, ja
-  double precision, allocatable   :: xp(:) , yp(:)
-  double precision                :: xa, ya, xb, yb,xm, ym, CRPM
-
-  numg = 0
-
-  if (filetype == poly_tim) then
-
-     call realloc(xp,100000)
-     call realloc(yp,100000)
-
-     call oldfil(minp, filename)
-     call read1polylin(minp,xp,yp,np)
-
-     do L  = 1,lnx
-        k1 = ln(1,L) ; k2 = ln(2,L)
-        xa = xz(k1)  ; ya = yz(k1)
-        xb = xz(k2)  ; yb = yz(k2)
-
-        call CROSSPOLY(xa,ya,xb,yb,xp,yp,np,XM,YM,CRPM,JA)
-
-        if (ja == 1) then
-           numg = numg + 1
-           if (crpm > 0) then
-              keg(numg) = -L
-           else
-              keg(numg) =  L
-           endif
-        endif
-
-     enddo
-
-     deallocate(xp,yp)
-
-  endif
-
-end subroutine selectelset_internal_links
 
 function updatetimespaceproviders(idom, qid, time) result(success) ! nb, doet enkel qid, niet allen
   implicit none
@@ -5104,8 +4625,6 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
                                        !hier niet mx*nx, mx = elsetq
                     end if
 
-!                    call polyint (xs, ys, zs , kcss(ns+1:), ns,             &
-!                                  x , y , z  , kcs , kx, mx, jpoly, xyen)
                  endif
 
                  dataprovider%field(1-it1)%time = t0max
@@ -5428,7 +4947,6 @@ use m_alloc
 
   success = .false.
 
-  ! call realloc(subdoms, ndoms, stat= ierr )
   allocate (subdoms(ndoms), stat = ierr)
 
   if (ierr == 0) then
@@ -5508,41 +5026,6 @@ subroutine magdir2uv(u0,u1,a0,a1,uv)
   uv(2)  = wmag * sin(wdir)
 
 end subroutine magdir2uv
-
-
-subroutine regulate(w0,w1,a0,a1,w)
-   !
-   ! angular interpolation
-   !
-   implicit none
-   double precision              , intent(in)  :: a0
-   double precision              , intent(in)  :: a1
-   double precision, dimension(4), intent(in)  :: w0
-   double precision, dimension(4), intent(in)  :: w1
-   double precision, dimension(4), intent(out) :: w
-   !
-   ! local
-   !
-   integer :: k
-   !
-   ! body
-   !
-   ! Time interpolation
-   !
-   do k = 1,4
-     call regdir(w0(k),w1(k))
-     w(k) = a0*w0(k) + a1*w1(k)
-   enddo
-   !
-   ! The four surrounding points
-   !
-   call regdir(w(4),w(3))
-   call regdir(w(1),w(2))
-   call regdir(w(2),w(3))
-   call regdir(w(1),w(4))
-   call regdir(w(2),w(4))
-   call regdir(w(1),w(3))
-end subroutine regulate
 
 
 subroutine regdir(w0,w1)
@@ -5699,51 +5182,5 @@ subroutine bilin5(xa        ,ya        ,x0        ,y0        ,w         , &
     return
 99999 continue
 end subroutine bilin5
-
-subroutine distance2(sferic    ,x1        ,y1        ,x2        ,y2        , &
-                   & d12       )
-    use precision_part
-    implicit none
-!
-! Global variables
-!
-    logical, intent(in)   :: sferic !  true: spherical, false: cartesian coordinate system
-    double precision, intent(out) :: d12    !!  Calculated distance from 1 to 2
-    double precision, intent(in)  :: x1     !!  X coordinate of point 1 (deg or m)
-    double precision, intent(in)  :: x2     !!  X coordinate of point 2 (deg or m)
-    double precision, intent(in)  :: y1     !!  Y coordinate of point 1 (deg or m)
-    double precision, intent(in)  :: y2     !!  Y coordinate of point 2 (deg or m)
-!
-! Local variables
-!
-    double precision :: ddegrad
-    double precision :: dearthrad
-    double precision :: d128      ! Double precision d12
-    double precision :: phi       ! Angle
-    double precision :: x1rad     ! X1 in radials
-    double precision :: x2rad     ! X2 in radials
-    double precision :: y1rad     ! Y1 in radials
-    double precision :: y2rad     ! Y2 in radials
-!
-!! executable statements -------------------------------------------------------
-!
-    if (x1==x2 .and. y1==y2) then
-       d12 = 0.0_fp
-       return
-    endif
-    dearthrad = 6378137.0_hp
-    ddegrad   = acos( - 1.0_hp)/180.0_hp
-    if (sferic) then
-       x1rad = x1*ddegrad
-       x2rad = x2*ddegrad
-       y1rad = y1*ddegrad
-       y2rad = y2*ddegrad
-       phi = cos(y1rad)*cos(y2rad)*cos(x1rad - x2rad) + sin(y1rad)*sin(y2rad)
-       d128 = dearthrad*acos(phi)
-    else
-       d128 = sqrt((x2 - x1)**2 + (y2 - y1)**2)
-    endif
-    d12 = d128
-end subroutine distance2
 
 end module timespace

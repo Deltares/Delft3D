@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_gettme
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETTME ( FNAME  , ITYPE  , TIMDEF , MAXDEF , IPRDEP ,
      *                    LOCDEP , MAXLST , TIMLST , ITMTYP , NRLST  ,
@@ -56,22 +62,32 @@
 !     OPTION  CHAR*256   1        IN/OUT  For future use
 !
 !
+      use time_module
+      use m_dhucas
+      use m_open_waq_files
+      use m_dhfext
+
       CHARACTER*256    FNAME (3) , OPTION
       INTEGER          ITMTYP(*)
-      DOUBLE PRECISION TIMLST(*) , TIMDEF(2,*) , ATIME , OTIME, SECOND,
-     *                 JULIAN
+      DOUBLE PRECISION TIMLST(*) , TIMDEF(2,*) , ATIME , OTIME, SECOND
       LOGICAL          SETALL
-      EXTERNAL         JULIAN
 !
       REAL, ALLOCATABLE :: RDATA(:)
       character*256         :: ext     ! file extension
       integer               :: extpos  ! position of extension
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
+      integer               :: lun
+      integer               :: NODUMP
+      integer               :: k, I, NOTOT, NTT
+      integer               :: ierror, nrlst, iprcod, iprtyp
+      integer               :: itype, maxdef, itmdep, locdep, maxlst, lang
+      integer               :: iyear, imonth, iday, ihour, iminut, isecnd
+      integer               :: isfact, idummy, idate, itime, iprdep
 !
 !         Open the DELWAQ .HIS file
 !
-      CALL DHOPNF ( 10 , FNAME(1) , 24 , 2 , IERROR )
+      CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
       IF ( IERROR .NE. 0 ) RETURN
 
       ! map or his
@@ -86,7 +102,7 @@
 !
 !         Read primary system characteristics
 !
-      READ ( 10 , ERR=100 )   FNAME(3)(1:160)
+      READ ( lun , ERR=100 )   FNAME(3)(1:160)
       IF ( FNAME(3)(121:123) .NE. 'T0: ' .AND.
      *     FNAME(3)(121:123) .NE. 't0: ' .AND.
      *     FNAME(3)(121:123) .NE. 'T0= ' .AND.
@@ -100,14 +116,14 @@
       READ ( FNAME(3)(139:140) , '(I2)' ) IMINUT
       READ ( FNAME(3)(142:143) , '(I2)' ) ISECND
       READ ( FNAME(3)(151:158) , '(I8)' ) ISFACT
-      READ ( 10 , ERR=110 )   NOTOT, NODUMP
-      READ ( 10 , ERR=120 ) ( FNAME(3)(181:200) , K = 1,NOTOT )
+      READ ( lun , ERR=110 )   NOTOT, NODUMP
+      READ ( lun , ERR=120 ) ( FNAME(3)(181:200) , K = 1,NOTOT )
       if ( .not. mapfil ) then
-         READ ( 10 , ERR=130 ) ( IDUMMY, FNAME(3)(221:240) , K = 1,NODUMP )
+         READ ( lun , ERR=130 ) ( IDUMMY, FNAME(3)(221:240) , K = 1,NODUMP )
       endif
       IDATE  = IYEAR*10000+IMONTH*100+IDAY
       ITIME  = IHOUR*10000+IMINUT*100+ISECND
-      OTIME  = JULIAN ( IDATE , ITIME )
+      OTIME  = julian_with_leapyears ( IDATE , ITIME )
       SECOND = 1/864.00D+02
 !
 !         Read the values at all times
@@ -117,8 +133,8 @@
       NRLST = 0
       SETALL = .FALSE.
       IF ( TIMDEF(1,1) .LT. 0.5 ) SETALL = .TRUE.
-!  10 READ ( 10 , ERR=140 , END=200 ) IDUMMY, ( ADUMMY , K=1,NTT )
-   10 READ ( 10 , ERR=140 , END=200 ) IDUMMY, ( RDATA(K), K=1,NTT )
+
+   10 READ ( lun , ERR=140 , END=200 ) IDUMMY, ( RDATA(K), K=1,NTT )
       DO 20 I = 1 , MAXDEF
          ATIME = OTIME + IDUMMY*ISFACT*SECOND
          IF ( (ATIME.GT.TIMDEF(1,I) .AND. ATIME.LT.TIMDEF(2,I)) .OR.
@@ -148,8 +164,10 @@
       GOTO 200
   160 IERROR = 16
 !
-  200 CLOSE ( 10 )
+  200 CLOSE ( lun )
       IF (ALLOCATED(RDATA)) DEALLOCATE(RDATA)
       RETURN
 !
       END
+
+      end module m_gettme

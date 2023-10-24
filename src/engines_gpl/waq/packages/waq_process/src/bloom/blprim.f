@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,30 +20,40 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_blprim
+      use m_dynrun
+      use m_bvect
+
+
+      implicit none
+
+      contains
+
 
 !    Store computed biomass in BIOMAS array for use in D40BLO
 !    Compute primary production and associated fluxes
 
-      subroutine blprim (biomas, cnh4  , cno3  , cpo4  , csio  , 
+      subroutine blprim (biomas, cnh4  , cno3  , cpo4  , csio  ,
      j                   cdetn , cdetp ,         cco2  , ctic  ,
      j                   flmora, fldetn, tstepi, extot , exalg , temp  ,
      j                   rad   , depth , dayl  , id    , nset  ,
      j                   deat4 , totnut, chltot, flprpa, fluptn, faclim,
      j                   uptnit, fracam, fbod5 , ratgro, ratmor, algdm ,
      j                   iseg  , cgroup, lmixo , lfixn , lcarb , nutcon,
-     j                   flxcon, noutlim, outlim, nunucom, nuecogm, 
+     j                   flxcon, noutlim, outlim, nunucom, nuecogm,
      j                   con2out,swblsa , totnin, totpin, totsiin )
 
+      use m_srstop
       use bloom_data_dim
-      use bloom_data_size 
+      use bloom_data_size
       use bloom_data_caldynam
-      use bloom_data_io  
-      use bloom_data_phyt    
-      use bloom_data_sumou   
-      use bloom_data_xvect   
+      use bloom_data_io
+      use bloom_data_phyt
+      use bloom_data_sumou
+      use bloom_data_xvect
 
       implicit none
-!  
+!
 !     Arguments
 !
 !     Name    Type  Length   I/O  Description
@@ -54,7 +64,7 @@
       real(4)    cpo4             ! Concentration PO4 (gP/m3)
       real(4)    csio             ! Concentration SIO (gSi/m3)
       real(4)    cdetn            ! Concentration DetN (gN/m3)
-      real(4)    cdetp            ! Concentration DetP (gP/m3) 
+      real(4)    cdetp            ! Concentration DetP (gP/m3)
       real(4)    cco2             ! Concentration CO2 (g/m3)
       real(4)    ctic             ! Concentration TIC (gC/m3)
       real(4)    flmora(nuspec)   ! Mortality fluxes (gC/m3/d)
@@ -89,25 +99,25 @@
       real(4)    outlim(noutlim)  ! limiting factors (extended)
       integer    nunucom          ! max nr of nutrient constraints in DELWAQ output
       integer    nuecogm          ! max nr of algae groups in DELWAQ in/out
-      integer    con2out          ! mapping of actual nutrient constraints to DELWAQ output
+      integer    con2out(nunucom) ! mapping of actual nutrient constraints to DELWAQ output
       integer    swblsa           ! switch for BLOOM stand alone option
 
       integer    nutcon(nunucom)  ! Nutrients involved in active nutrient constraints
       integer    flxcon(nunucom)  ! Uptake fluxes involved in active nutrient constraints
       real(4)    TotNin           ! Total nitrogen for BLOOM stand alone        (g/m3)
       real(4)    TotPin           ! Total phosphorous for BLOOM stand alone     (g/m3)
-      real(4)    TotSIin          ! Total silicium for BLOOM stand alone        (g/m3)       
-      
+      real(4)    TotSIin          ! Total silicium for BLOOM stand alone        (g/m3)
+
 !     Local variables
       real(4)    cmort            ! Additional mortality flux (gDW/m3/d)
       real(8)    x(mt)            ! Remaining after mortality (gDW/m3)
       real(8)    xj               ! Biomass per group (gDW/m3)
-      integer    i                ! 
-      integer    i2               ! 
-      integer    ihulp            ! 
-      integer    inuco            ! 
-      integer    j                ! 
-      integer    k                ! 
+      integer    i                !
+      integer    i2               !
+      integer    ihulp            !
+      integer    inuco            !
+      integer    j                !
+      integer    k                !
       integer    ierror           ! Present number of mass errors
       real(8)    extot8           ! Real*8 version of input parameter
       real(8)    exbac8           ! ..
@@ -155,7 +165,7 @@
       concen (2) = dble(cpo4)
       concen (3) = dble(csio)
       inuco = 3
-      if (lcarb) then 
+      if (lcarb) then
          concen (inuco+1) = dble(ctic)          ! Decide if this should be tic
          inuco = inuco + 1
       endif
@@ -232,8 +242,8 @@
 
 !  Add nutrients in live phytoplankton to CONCEN.
 !  Contrary to earlier versions ALL cases pass this
-!  code, because X(J) is used afterwards to calculate 
-!  production flux, the same value needs to be given to 
+!  code, because X(J) is used afterwards to calculate
+!  production flux, the same value needs to be given to
 !  BLOOM as available nutrients in CONCEN
 !  (JvG, June 2006)
          do k=1,nunuco
@@ -245,13 +255,13 @@
       enddo
 
 !   In case of running in stand alone modus (SWBLSA=1) a steady state
-!   is calculated on basis of prescribed total nutrients and 
-!   detritus as based on the previous time step (TT dec 2015). 
-      if (swblsa.eq.1) then    
+!   is calculated on basis of prescribed total nutrients and
+!   detritus as based on the previous time step (TT dec 2015).
+      if (swblsa.eq.1) then
          concen (1) = dble(totnin-cdetn)
          concen (2) = dble(totpin-cdetp)
-         concen (3) = dble(totsiin)     
-      endif 
+         concen (3) = dble(totsiin)
+      endif
 
 ! Call BVECT to set the mortality constraints.
       call bvect (x, xdef)
@@ -312,10 +322,10 @@
             endif
             frmix  = max(frmixn,frmixp)
             fluptn(9) = fluptn(9) + frmix*flprpa(j)
-!           Uptake of DetC should be subtracted from total C-uptake 
+!           Uptake of DetC should be subtracted from total C-uptake
             fluptn(1) = fluptn(1) - frmix*flprpa(j)
          endif
-      enddo   
+      enddo
 
       if (totnut(1) .gt. 1e-30) then
          fbod5 = fbod5/totnut(1)
@@ -326,13 +336,13 @@
 !  Correct for depletion of NH4 assume that
 !  phytoplankton first depletes ammonia (completely)
 
-!  If BLOOM stand alone then derive steady state surplus nutrients 
+!  If BLOOM stand alone then derive steady state surplus nutrients
       if (swblsa.eq.1) then
-         fluptn(2) =  (cnh4 + auto(1)) /tstepi 
-         fluptn(3) =  (cno3 - totnin + totnut(2) + cdetn) /tstepi 
-         fluptn(4) =  (cpo4 - totpin + totnut(3) + cdetp) / tstepi 
-         fluptn(5) =  (csio - totsiin + totnut(4) ) / tstepi 
-      else 
+         fluptn(2) =  (cnh4 + auto(1)) /tstepi
+         fluptn(3) =  (cno3 - totnin + totnut(2) + cdetn) /tstepi
+         fluptn(4) =  (cpo4 - totpin + totnut(3) + cdetp) / tstepi
+         fluptn(5) =  (csio - totsiin + totnut(4) ) / tstepi
+      else
          if (xdef(1) .le. cno3) then
             uptake = fluptn(2)
             fluptn(2) = (cnh4 + auto(1)) / tstepi
@@ -358,7 +368,7 @@
             faclim(i) = real(ihulp)
          endif
       enddo
-      
+
 !     Extended output for limiting factors
 
       call bl_isplim(noutlim,outlim,nunucom,nuecogm,con2out)
@@ -386,13 +396,13 @@
 
       end
       subroutine bl_isplim(noutlim,outlim,nunucom,nuecogm,con2out)
-      
+
       use bloom_data_dim
       use bloom_data_matrix
       use bloom_data_phyt
-      
+
       implicit none
-      
+
       integer noutlim,nunucom,nuecogm
       integer con2out(nunucom)
       real(4) outlim(noutlim)
@@ -401,27 +411,26 @@
 !     ISPLIM  holds a list of actually limiting constraint numbers.
 !             The constraint nrs are dependent of actual NUNUCO (nr of nutrient constraints)
 !             and NUECOG (nr of algae groups). A common example for NUNUCO = 3 and NUECOG = 6:
-!       Legend for limiting factors: 
+!       Legend for limiting factors:
 !       Number   Constraint name
-!         1      NITROGEN        
-!         2      PHOSPHOR        
-!         3      SILICON         
-!         4      KMIN         (light limitation)      
+!         1      NITROGEN
+!         2      PHOSPHOR
+!         3      SILICON
+!         4      KMIN         (light limitation)
 !         5      KMAX         (photo-inhibition)
 !         6                   (to be neglected)
-!         7      Growth-DIATOMS  
+!         7      Growth-DIATOMS
 !               ......
-!        12      Growth-OSCILAT  
-!        13      Mortal-DIATOMS  
+!        12      Growth-OSCILAT
+!        13      Mortal-DIATOMS
 !               ......
-!        18      Mortal-OSCILAT  
+!        18      Mortal-OSCILAT
 !             This needs to be converted to the DELWAQ fixed dimension output structure:
 !        1 to NUNUCOM for nutrient limitations
 !        NUNUCOM+1 and +2 for light
 !       NUNUCOM + 3 to NUNUCOM + 2 + NUECOGM for Growth limitation
 !       NUNUCOM + 2 + NUECOGM + 1 to NUNUCOM + 2 + 2*NUECOGM for mortality limitation
 !
-!      WRITE (*,*) 'in'
       outlim = 0.0
       do ii = 1,mt   ! MT is dimension of ISPLIM according to blmdim.inc
          icon = isplim(ii)
@@ -440,7 +449,9 @@
             outlim(iconout) = 1.0
          endif
       enddo
-      
+
       return
       end
 
+
+      end module m_blprim

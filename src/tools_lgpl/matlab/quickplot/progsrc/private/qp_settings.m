@@ -15,7 +15,7 @@ function valo=qp_settings(param,val)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -71,10 +71,12 @@ if nargout==1
     if length(valo)==1
         valo = valo{1};
     end
+elseif isequal(param,'<DEFAULT>')
+    Settings = inifile('new');
 elseif isequal(param,'<SAVE>')
-    Settings=qp_write_settings(Settings,qppref);
+    Settings = qp_write_settings(Settings,qppref);
 else
-    Settings=inifile('set',Settings,grp,param,val);
+    Settings = inifile('set',Settings,grp,param,val);
 end
 
 

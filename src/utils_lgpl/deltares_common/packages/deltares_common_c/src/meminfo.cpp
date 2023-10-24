@@ -1,6 +1,6 @@
 #include "meminfo.h"
 #if linux
-#include <sys/sysctl.h>
+#include <sys/sysinfo.h>
 #endif
 
 #ifdef WIN32
@@ -10,7 +10,7 @@ unsigned __int64 MemInfo::GetTotalMemSize()
   MEMORYSTATUSEX status;
   status.dwLength = sizeof(status);
   GlobalMemoryStatusEx(&status);
-  return unsigned __int64 (status.ullTotalPhys);
+  return unsigned (__int64 (status.ullTotalPhys));
 }
 #elif defined(_SC_PHYS_PAGES)
 unsigned long long MemInfo::GetTotalMemSize()

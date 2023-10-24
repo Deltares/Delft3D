@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,8 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdstat
 
-      SUBROUTINE RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , VRSION ,
+      implicit none
+
+      contains
+
+
+      SUBROUTINE RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  ,
      +                    ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 ,
      +                    DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  ,
      +                    KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX ,
@@ -65,15 +71,16 @@
 !     PSTART  INTEGER  NPERIOD     OUTPUT  period start
 !     PSTOP   INTEGER  NPERIOD     OUTPUT  period stop
 !
+      use m_zoek
       use timers       !   performance timers
       USE      DHRALLOC
+      use m_cnvtim
 
       IMPLICIT NONE
 !
       INTEGER       LUNREP , IPOSR  , NPOS   , LSTACK , IOUTPT ,
      +              IERR   , NOSTAT , NKEY
       LOGICAL       DTFLG1 , DTFLG3
-      REAL          VRSION
       INTEGER       ILUN(*)
       CHARACTER*(*) LCH  (*)
       CHARACTER*1   CCHAR
@@ -140,10 +147,8 @@
          IF ( IERR2 .EQ. 2 ) GOTO 500
          IF ( IERR2 .EQ. 3 .AND. NOSTAT .EQ. 0 ) GOTO 500
          IF ( IERR2 .EQ. 3 ) THEN
-            IF (VRSION.GE.0.0) THEN
-               WRITE(LUNREP,*) 'ERROR : closing delimiter block 10 not found'
-               IERR = IERR + 1
-            ENDIF
+            WRITE(LUNREP,*) 'ERROR : closing delimiter block 10 not found'
+            IERR = IERR + 1
             GOTO 500
          ENDIF
          IF ( IERR2 .NE. 0 ) THEN
@@ -365,3 +370,5 @@
       RETURN
 !
       END
+
+      end module m_rdstat

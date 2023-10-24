@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,8 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -42,7 +42,7 @@
 !! \li \b Model \b setup: unstruc_model.f90
 !! \li \b Network \b data: network.f90 + network_data.f90
 !! \li \b Global \b data: modules.f90 (flow, geometry, times, parameters, ...)
-
+!!
 !! \li \b GUI \b and \b network \b algorithms: net.f90 (and utils_lgpl/gridgeom)
 !! \li \b Unstructured \b flow \b solver: unstruc.f90
 !! \li \b Matrix \b solver: solve_guus.f90, saadf90.F90, solve_petsc.F90
@@ -137,47 +137,6 @@
    numranks          = 1
    my_rank           = 0
    ja_mpi_init_by_fm = 0
-#ifdef HAVE_MPI
-
-   ! Preparations for calling mpi_init:
-   ! When using IntelMPI, mpi_init will cause a crash if IntelMPI is not
-   ! installed. Do not call mpi_init in a sequential computation.
-   ! Check this via the possible environment parameters.
-   jampi = merge(1, 0, running_in_mpi_environment())
-
-   if (jampi == 1) then
-       ja_mpi_init_by_fm = 1
-       call mpi_init(ierr)
-       if (ierr /= 0) then
-           jampi = 0
-       end if
-   end if
-
-   if (jampi == 1) then
-      ! From calling C/C++ side, construct an MPI communicator, and call
-      ! MPI_Fint MPI_Comm_c2f(MPI_Comm comm) to convert the C comm handle
-      ! to a FORTRAN comm handle.
-      call mpi_comm_rank(DFM_COMM_DFMWORLD,my_rank,ierr)
-      call mpi_comm_size(DFM_COMM_DFMWORLD,numranks,ierr)
-   end if
-
-   if ( numranks.le.1 ) then
-      jampi = 0
-   end if
-
-!  make domain number string as soon as possible
-   write(sdmn, '(I4.4)') my_rank
-   !write(6,*) 'my_rank =', my_rank
-
-!   call pressakey()
-#else
-   numranks=1
-   !write(6,*) 'NO MPI'
-   !call pressakey()
-#endif
-
-
-
    !INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS                                ! nanrelease
    !NEW_FPE_FLAGS = FPE_M_TRAP_OVF + FPE_M_TRAP_DIV0 + FPE_M_TRAP_INV     ! nanrelease
    !OLD_FPE_FLAGS = FOR_SET_FPE (NEW_FPE_FLAGS)                           ! nanrelease
@@ -217,7 +176,41 @@
     end select
 
 #ifdef HAVE_MPI
-    write(*,*) ' my_rank, numranks ', my_rank, numranks
+
+   ! Preparations for calling mpi_init:
+   ! When using IntelMPI, mpi_init will cause a crash if IntelMPI is not
+   ! installed. Do not call mpi_init in a sequential computation.
+   ! Check this via the possible environment parameters.
+   jampi = merge(1, 0, running_in_mpi_environment())
+
+   if (jampi == 1) then
+       ja_mpi_init_by_fm = 1
+       call mpi_init(ierr)
+       if (ierr /= 0) then
+           jampi = 0
+       end if
+   end if
+
+   if ( jampi == 1 ) then
+      ! From calling C/C++ side, construct an MPI communicator, and call
+      ! MPI_Fint MPI_Comm_c2f(MPI_Comm comm) to convert the C comm handle
+      ! to a FORTRAN comm handle.
+       call set_mpi_environment_wwo_fetch_proc()
+   endif
+
+   if ( numranks.le.1 ) then
+      jampi = 0
+   end if
+   write(*,*) ' my_rank, numranks ', my_rank, numranks
+!  make domain number string as soon as possible
+   write(sdmn, '(I4.4)') my_rank
+   !write(6,*) 'my_rank =', my_rank
+
+!   call pressakey()
+#else
+   numranks=1
+   !write(6,*) 'NO MPI'
+   !call pressakey()
 #endif
 
     if ( md_pressakey == 1 ) then
@@ -267,6 +260,18 @@
        goto 1234
     end if
 
+    if (md_jasavenet == 1) then
+       if (len_trim(iarg_outfile) == 0) then
+          ! Do not overwrite existing file
+          write (msgbuf, '(a)') 'Error, option --savenet given, but missing required option -o OUTPUTFILE.'
+          call warn_flush()
+          goto 1234
+       end if
+       call unc_write_net(iarg_outfile, janetcell = 1, janetbnd = 0, jaidomain = 0, iconventions = UNC_CONV_UGRID)
+       write (msgbuf, '(a)') 'Network was saved in latest format into '''//trim(iarg_outfile)//'''. Done.'
+       call msg_flush()
+       goto 1234
+    end if
 
     if ( md_jamake1d2dlinks .eq. 1 ) then
        ! Make 1D2D links for already loaded net file.
@@ -284,7 +289,7 @@
        goto 1234
     end if
 
-    if (jabatch == 1) then
+    if (iarg_dobatch == 1) then
        call dobatch()
     endif
 
@@ -455,6 +460,7 @@
 
 1234 continue
 
+   call finish_fetch_proc()
 !  finalize before exit in case we did "normal" computation
    call partition_finalize()
 

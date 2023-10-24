@@ -7,7 +7,7 @@ function make_quickplot(basedir,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -60,7 +60,7 @@ if ~isempty(err)
 end
 
 
-function localmake(qpversion,T)
+function localmake(qpversion,repo_url,hash,T)
 if ~exist('progsrc','dir')
     error('Cannot locate source folder "progsrc".')
 end
@@ -100,8 +100,8 @@ copyfile('../../../../third_party_open/netcdf/matlab/netcdfAll-4.1.jar','.')
 addpath ../../../../third_party_open/netcdf/matlab/mexnc
 addpath ../../../../third_party_open/netcdf/matlab/snctools
 
-if nargin<2
-    qpversion = read_identification(sourcedir, 'd3d_qp.m');
+if nargin<4
+    [qpversion,hash,repo_url] = read_identification(sourcedir, 'd3d_qp.m');
     T = now;
 end
 
@@ -112,9 +112,11 @@ fprintf('Current date and time           : %s\n', TStr);
 fprintf('Modifying files ...\n');
 fstrrep([targetdir,filesep,'d3d_qp.m'], '<VERSION>', qpversion)
 fstrrep([targetdir,filesep,'d3d_qp.m'], '<CREATIONDATE>', TStr)
+fstrrep([targetdir,filesep,'d3d_qp.m'], '<GITHASH>', hash)
+fstrrep([targetdir,filesep,'d3d_qp.m'], '<GITREPO>', repo_url)
 fstrrep([targetdir,filesep,'wl_identification.c'], '<VERSION>', qpversion)
 fstrrep([targetdir,filesep,'wl_identification.c'], '<CREATIONDATE>', TStr)
-if ~d3d_qp('version',qpversion,TStr)
+if ~d3d_qp('version',qpversion,repo_url,hash,TStr)
     error('Unable to write correct d3d_qp.version file.')
 end
 

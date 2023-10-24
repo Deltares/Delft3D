@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rwfunc
+
+      implicit none
+
+      contains
+
 
       subroutine rwfunc ( iopt   , nitem  , nvals  , item   , nrec   ,
      &                    nhtot  , ifact  , dtflg  , dtflg3 , lununf ,
@@ -61,8 +67,10 @@
 !     Logical units      : lunut  = unit formatted output file
 !                          lununf = unit unformatted output file
 
+      use m_conver
       use rd_token       ! for the reading of tokens
       use timers       !   performance timers
+      use m_cnvtim
 
       implicit none
 
@@ -207,3 +215,5 @@
  2070 format(   ' Printed output for output option 4 and higher !' )
 
       end
+
+      end module m_rwfunc

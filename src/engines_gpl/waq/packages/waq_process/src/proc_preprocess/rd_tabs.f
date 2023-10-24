@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_tabs
+
+      implicit none
+
+      contains
+
 
       subroutine rd_tabs( pdffil, lunrep, versio, serial, noinfo,
      +                    nowarn, nerror)
@@ -33,7 +39,25 @@
 
 !     Modified  : Aug   2012 by Jan van Beek : just read the tables
 
+      use m_rd_tabr8
+      use m_rd_tabr7
+      use m_rd_tabr6
+      use m_rd_tabr5
+      use m_rd_tabr4
+      use m_rd_tabr3
+      use m_rd_tabr2
+      use m_rd_tabr1
+      use m_rd_tabp5
+      use m_rd_tabp4
+      use m_rd_tabp3
+      use m_rd_tabp2
+      use m_rd_tabp1
+      use m_rd_tabm1
+      use m_rd_filid
+      use m_dhpfil
       use timers         !< performance timers
+      use m_dhfext
+
       implicit none
 
       ! arguments
@@ -370,3 +394,5 @@ cjvb +                itemgr      , itemsx      ,
       return
 
       end
+
+      end module m_rd_tabs

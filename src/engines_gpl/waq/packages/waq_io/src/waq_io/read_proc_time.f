@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_proc_time
+
+      implicit none
+
+      contains
+
 
       subroutine read_proc_time( notot  , syname , isyst  , ierr   )
 
@@ -38,6 +44,7 @@
 
 !     global declarations
 
+      use m_zoek
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
 
@@ -125,3 +132,5 @@
  2050 format ( ' Timestep multiplier for these substances is: ',I10)
 
       end
+
+      end module m_read_proc_time

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !---------------------------------------------------------------
 ! the following subroutines use kdtree2
@@ -71,6 +71,7 @@
 
       double precision                                   :: SL, SM, XCR, YCR, CRP
       double precision                                   :: xa, ya, xb, yb, af, d
+      double precision                                   :: xc, yc, xd, yd
       integer                                            :: i, k, L, N1, N2, NN, numnew
       integer                                            :: jacros, kint
       integer                                            :: LnxiORLnx
@@ -93,7 +94,7 @@
 
       if ( itype.eq.1 .or. itype.eq.3 ) then  ! netlinks
          LnxiORLnx = numL
-      else if ( itype.eq.2 ) then   ! flowlinks
+      else ! if ( itype.eq.2 ) then   ! flowlinks
          if ( jaboundarylinks.eq.1 ) then
             LnxiORLnx = Lnx
          else
@@ -180,7 +181,24 @@
             ya = yk(n1)
             xb = xk(n2)
             yb = yk(n2)
-         end if
+         else if ( itype.eq.4 ) then   
+            if (L <= lnx1D) then     ! flowlinks, cross with perpendicular in 1D 
+               n1 = ln(1,L) ; n2 = ln(2,L)
+               xc = xz(n1)  ; yc = yz(n1)
+               xd = xz(n2)  ; yd = yz(n2)
+               xa = 0.5d0*(xc+xd) - 0.5d0*(yd-yc)
+               ya = 0.5d0*(yc+yd) + 0.5d0*(xd-xc)
+               xb = 0.5d0*(xc+xd) + 0.5d0*(yd-yc)
+               yb = 0.5d0*(yc+yd) - 0.5d0*(xd-xc)
+               call movabs(xa,ya)
+               call lnabs (xb,yb)
+            else                     ! flowlinks, cross with netlinks in 2D 
+               xa = xk(lncn(1,L))
+               ya = yk(lncn(1,L))
+               xb = xk(lncn(2,L))
+               yb = yk(lncn(2,L))
+            endif
+         endif
 
 !        fill query vector
          call make_queryvector_kdtree(treeinst,xa,ya, jsferic)

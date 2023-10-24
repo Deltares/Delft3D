@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,30 +28,30 @@
 module m_delwaq1_data
 
 
-    use Grids        !   for the storage of contraction grids
-    use dlwq_data    !   for definition and storage of data
+    use dlwqgrid_mod        !   for the storage of contraction grids
+    use dlwq_hyd_data    !   for definition and storage of data
     use Output       !   for the output names and pointers
     use timers       !   performance timers
     use dhcommand
 
-    use D00SUB
     use ProcesSet
     use Workspace
     use Rd_token
-    
+
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
     use m_sysa          ! Pointers in real array workspace
     use m_sysj          ! Pointers in integer array workspace
     use m_sysc          ! Pointers in character array workspace
+    use m_waq_data_buffer
 
     implicit none
     integer, parameter             :: nlun   = 50              ! number of input / output files
     integer                        :: lun(nlun)                ! unit numbers input / output files
-    character(len=lchmax)             :: lchar(nlun)              ! file names input / output files
+    character(len=lchmax)          :: lchar(nlun)              ! file names input / output files
     integer, parameter             :: noint  = 200             ! number of integration options implemented
     integer                        :: iopt(noint)              ! integration option list
-          
+
 
     !
     !     work arrays
@@ -66,9 +66,7 @@ module m_delwaq1_data
     real             , allocatable :: rar(:)                  ! real work array
     character(len=20), allocatable :: car(:)                  ! character work array
 
-    real,              dimension(:), pointer :: abuf  => null()
-    integer,           dimension(:), pointer :: ibuf  => null()
-    character(len=20), dimension(:), pointer :: chbuf => null()
+    type(waq_data_buffer)          :: buffer
 
     !
     !     files, unit numbers, include file stack, input file settings
@@ -112,7 +110,6 @@ module m_delwaq1_data
     integer( 4)                    :: nomult                   !< number of multiple substances
     integer( 4)                    :: iwidth                   !< width of the output file
     integer( 4)                    :: refday                   !< reference day, varying from 1 till 365
-    real( 4)                       :: vrsion                   !< version number of this input
     integer( 4)                    :: ioutpt                   !< flag for more or less output
     integer                        :: ierr                     ! cumulative number of errors
     integer                        :: iwar                     ! cumulative number of warnings

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_get_effi
+
+      implicit none
+
+      contains
+
 
       subroutine get_effi( SWEff, temper, radiat, ext   , depthw, daylen, nspe  , effi )
 !>\file
 !>       calculate and store efficiency for all species
 
+      use m_maxprd
+      use m_ebcalc
       use bloom_data_dim
       use bloom_data_size
       use bloom_data_arran
@@ -199,6 +207,8 @@
 
       subroutine lookupeffi(rad,effi,numgr)
 
+      use m_srstop
+      use m_monsys
       use bloom_data_dim
       use bloom_data_arran
 
@@ -256,3 +266,5 @@
 
       return
       end subroutine get_nspe
+
+      end module m_get_effi

@@ -4,7 +4,7 @@
 ! This file contains the netcdf file functions that are shared by
 ! netcdf-3 and netcdf-4.
 
-! $Id$
+! 
 ! -------
 function nf90_inq_libvers()
   character(len = 80) :: nf90_inq_libvers

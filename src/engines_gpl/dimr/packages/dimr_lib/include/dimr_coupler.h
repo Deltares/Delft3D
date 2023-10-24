@@ -12,5 +12,6 @@ struct dimr_coupler {
 	dimr_component   *   targetComponent;     // idem
 	unsigned int         numItems;
 	dimr_couple_item *   items;               // Array of items defining this coupler
+	unsigned int     *   itemTypes;           // Array of type of each item
 	dimr_logger      *   logger;
 };

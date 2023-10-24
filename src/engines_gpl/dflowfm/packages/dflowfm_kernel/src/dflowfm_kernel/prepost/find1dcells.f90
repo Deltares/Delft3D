@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> find one-dimensional net cells
 !>    it is assumed that kc has been allocated
@@ -38,7 +38,7 @@
       use m_alloc
       use m_flowgeom, only: xz, yz, ba
       use gridoperations
-
+      use MessageHandling
       implicit none
 
       integer :: K1, K2, K3, L, LNX1D, N, NC1, NC2
@@ -68,37 +68,60 @@
          if (k1 == 0) cycle
 
          NC1 = 0       ; NC2 = 0
-
-         IF (NMK(K1) == 1 .and. kn(3,L) .ne. 1 .and. kn(3,L) .ne. 6) THEN
-            CALL INCELLS(XK(K1), YK(K1), NC1)       ! IS INSIDE 2D CELLS()
-         ENDIF
-         IF (NMK(K2) == 1 .and. kn(3,L) .ne. 1 .and. kn(3,L) .ne. 6) THEN
-            CALL INCELLS(XK(K2), YK(K2), NC2)
-         ENDIF
-
-         if (nc1 .ne. 0 .and. nc1 == nc2) then
-             nc2 = 0
+         IF ( kn(3,L) .ne. 1 .and. kn(3,L) .ne. 6 ) THEN !These link types are allowed to have no 2D cells
+            IF (NMK(K1) == 1) THEN
+               CALL INCELLS(XK(K1), YK(K1), NC1)       ! IS INSIDE 2D CELLS()
+            ENDIF
+            IF (NMK(K2) == 1) THEN
+               CALL INCELLS(XK(K2), YK(K2), NC2)
+            ENDIF
+            IF (NC1 == 0 .and. NC2 == 0) THEN
+               call mess(LEVEL_WARN, '1D2D link without valid 2D flowcell detected, discarding!')
+               cycle
+            endif
          endif
 
-         IF (NC1 == 0) THEN
-             IF ( KC(K1) == 1) THEN                 ! NIEUWE 1d CELL
-                nump1d2d =  nump1d2d + 1
-                KC(K1)   = -nump1d2d                ! MARKEREN ALS OUD
-             ENDIF
-             LNE(1,L) = -iabs(KC(K1))               ! NEW 1D CELL                   flag 1D links through negative lne ref
-          ELSE
-             LNE(1,L) =       NC1                   ! ALREADY EXISTING 2D CELL
-          ENDIF
-          IF (NC2 == 0) THEN
-             IF ( KC(K2) == 1) THEN                 ! NIEUWE 1d CELL
-                nump1d2d =  nump1d2d + 1
-                KC(K2)   = -nump1d2d
-             ENDIF
-             LNE(2,L) = -iabs(KC(K2))               ! NEW 1D CELL
-          ELSE
-             LNE(2,L) =       NC2                   ! ALREADY EXISTING 2D CELL
-          ENDIF
-          LNN(L) = 2
+         if (nc1 .ne. 0 .and. nc1 == nc2) then
+             ! Both net nodes inside 2D cell, but assume that the first is
+             ! then the 1D net node (because unc_read_net_ugrid() always
+             ! sets the 1D side of 1D2D mesh contacts as the first net link
+             ! node kn(1,L)).
+             nc1 = 0
+         endif
+
+         LNN(L) = 0
+         IF (NC1 == 0 ) THEN
+            IF ( KC(K1) == 1 .and. ( NMK(K1) > 1 .or. (kn(3,l) == 1 .or. kn(3,l) == 6) ) )  THEN! NIEUWE 1d CELL
+               nump1d2d =  nump1d2d + 1
+               KC(K1)   = -nump1d2d             ! MARKEREN ALS OUD       
+               LNE(1,L) = -iabs(KC(K1))         ! NEW 1D CELL flag 1D links through negative lne ref
+               LNN(L) = LNN(L) + 1
+            else if ( KC(K1) /= 1) then
+               LNE(1,L) = -iabs(KC(K1))         ! NEW 1D CELL flag 1D links through negative lne ref
+               LNN(L) = LNN(L) + 1
+            else
+               call mess(LEVEL_WARN, '1D2D link without valid 1D branch detected, discarding!')
+            endif
+         ELSE
+            LNE(1,L) =       NC1                ! ALREADY EXISTING 2D CELL
+            LNN(L) = LNN(L) + 1
+         ENDIF
+         IF (NC2 == 0) THEN
+            IF ( KC(K2) == 1 .and. ( NMK(K2) > 1 .or. (kn(3,l) == 1 .or. kn(3,l) == 6) ) ) THEN! NIEUWE 1d CELL
+               nump1d2d =  nump1d2d + 1
+               KC(K2)   = -nump1d2d
+               LNE(2,L) = -iabs(KC(K2))               ! NEW 1D CELL
+               LNN(L) = LNN(L) + 1                
+            else if (KC(k2) /= 1) then
+               LNE(2,L) = -iabs(KC(K2))               ! NEW 1D CELL
+               LNN(L) = LNN(L) + 1   
+            else
+               call mess(LEVEL_WARN, '1D2D link without valid 1D branch detected, discarding!')
+            endif
+         ELSE
+            LNE(2,L) =       NC2                   ! ALREADY EXISTING 2D CELL
+            LNN(L) = LNN(L) + 1
+         ENDIF
        ENDDO
 
 !     END COPY from flow_geominit

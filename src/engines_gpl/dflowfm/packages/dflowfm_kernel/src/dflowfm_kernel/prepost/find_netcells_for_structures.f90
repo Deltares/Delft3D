@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,15 +27,15 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Finds indices of netcells that relate to structures.
 !! The indices will be used when partitioning the mesh with METIS, by giving a special weight on the netcells.
 !! As a result, structures will not intercross the partition boundaries
 !! NOTE: This functionality ONLY supports when using "polylinefile" to specify the structure location
 !! TODO: extend it to support other ways of specifying the structure location.
-subroutine find_netcells_for_structures(nstrucells, istrucells)
+subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    use m_cell_geometry, only: xz, yz
    use m_structures
    use string_module
@@ -52,8 +52,9 @@ subroutine find_netcells_for_structures(nstrucells, istrucells)
    use m_alloc
    implicit none
 
-   integer,                        intent(inout) :: nstrucells !< Number of the netcells that are related to structures
-   integer, dimension(nstrucells), intent(inout) :: istrucells !< Indices of the netcells that are related to structures
+   integer,                             intent(in)    :: size_istrucells !< size of istrucells array
+   integer,                             intent(inout) :: nstrucells      !< Number of the netcells that are related to structures
+   integer, dimension(size_istrucells), intent(inout) :: istrucells      !< Indices of the netcells that are related to structures
 
    character(len=256)            :: plifile, qid, strid
    type(TREE_DATA), pointer      :: str_ptr

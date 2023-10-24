@@ -9,7 +9,7 @@
     # Usage example:
     # Execute in the working directory:
     # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
-    # More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    # More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 function print_usage_info {
     echo "Usage: ${0##*/} [OPTION]..."
@@ -104,13 +104,13 @@ case $key in
 esac
 done
 
-# Check configfile    
+# Check configfile
 if [ ! -f $configfile ]; then
     echo "ERROR: configfile $configfile does not exist"
     print_usage_info
 fi
 
-export NSLOTS=`expr $NNODES \* $corespernode` 
+export NSLOTS=`expr $NNODES \* $corespernode`
 
 workdir=`pwd`
 
@@ -153,7 +153,7 @@ echo "    Working directory    : $workdir"
 echo "    Number of partitions : $NSLOTS"
 echo "    `type mpiexec`"
 echo "    FI_PROVIDER          : $FI_PROVIDER"
-echo "    I_MPI_FABRICS        : $I_MPI_FABRICS" 
+echo "    I_MPI_FABRICS        : $I_MPI_FABRICS"
 if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
     echo "    Wave file            : $wavefile"
 fi
@@ -215,7 +215,7 @@ if [ $withrtc -ne 0 ] ; then
     $bindir/rtc $sharedir/rtc/RTC.FNM $workdir/RTC.RTN
 
     # Remove allocated shared memory
-    $bindir/esm_delete $DIO_SHM_ESM 
+    $bindir/esm_delete $DIO_SHM_ESM
 
 
 
@@ -234,7 +234,7 @@ else
         echo "$bindir/wave $wavefile 1 &"
               $bindir/wave $wavefile 1 &
     fi
-    
+
     if [ $NSLOTS -eq 1 ]; then
         echo "executing:"
         echo "$bindir/d_hydro $configfile"

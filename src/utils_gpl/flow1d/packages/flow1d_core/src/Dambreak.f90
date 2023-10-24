@@ -1,7 +1,7 @@
    module m_Dambreak
    !----- AGPL --------------------------------------------------------------------
    !
-   !  Copyright (C)  Stichting Deltares, 2017-2022.
+   !  Copyright (C)  Stichting Deltares, 2017-2023.
    !
    !  This program is free software: you can redistribute it and/or modify
    !  it under the terms of the GNU Affero General Public License as
@@ -25,8 +25,8 @@
    !  Stichting Deltares. All rights reserved.
    !
    !-------------------------------------------------------------------------------
-   !  $Id$
-   !  $HeadURL$
+   !  
+   !  
    !-------------------------------------------------------------------------------
 
    use m_GlobalParameters
@@ -50,7 +50,6 @@
       double precision :: f2
       double precision :: ucrit
       double precision :: t0
-      integer          :: hasTable       
       integer          :: materialtype                      =  1 !for algorithm 1, default matrerial type is clay
       double precision :: endTimeFirstPhase
       double precision :: breachWidthDerivative             = -1.0d0

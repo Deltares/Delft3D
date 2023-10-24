@@ -1,6 +1,6 @@
 ! This is part of the netCDF-4 fortran 90 API.
 ! Copyright 2006, UCAR
-! $Id$
+! 
 
   ! Extra netCDF-4 functions
 

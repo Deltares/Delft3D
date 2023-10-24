@@ -1,0 +1,63 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type sv_culver
+    real(hp)         , dimension(:)  , pointer :: dll_reals
+    real(fp)         , dimension(:)  , pointer :: arcul                ! wet area of culvert
+    real(fp)         , dimension(:)  , pointer :: calfa                ! correction coefficient for culvert
+    real(fp)         , dimension(:)  , pointer :: clcul                ! loss coefficient of culvert
+    real(fp)         , dimension(:)  , pointer :: cleng                ! length of culvert
+    real(fp)         , dimension(:,:), pointer :: closs1               ! loss coefficient 1 for culvert
+    real(fp)         , dimension(:,:), pointer :: closs2               ! loss coefficient 2 for culvert
+    real(fp)         , dimension(:,:), pointer :: closs3               ! loss coefficient 3 for culvert
+    real(fp)         , dimension(:)  , pointer :: cmann                ! friction coefficient for culvert
+    real(fp)         , dimension(:)  , pointer :: htcul                ! height of culvert
+    real(fp)         , dimension(:)  , pointer :: poscul               ! vertical position of culvert
+    real(fp)         , dimension(:,:), pointer :: wetar1               ! wet area 1 of culvert
+    real(fp)         , dimension(:,:), pointer :: wetar2               ! wet area 2 of culvert
+    real(fp)         , dimension(:,:), pointer :: wetar3               ! wet area 3 of culvert
+    real(fp)         , dimension(:)  , pointer :: wtcul                ! width of culvert
+    !
+    integer                                    :: ifirst               ! flag for initialization of culvert
+    integer                                    :: nculv                ! number of culverts
+    integer          , dimension(:)  , pointer :: numrel1              ! number of relations 1 for culvert
+    integer          , dimension(:)  , pointer :: numrel2              ! number of relations 2 for culvert
+    integer          , dimension(:)  , pointer :: numrel3              ! number of relations 3 for culvert
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle           ! handle of culvert dll
+    integer                                    :: max_integers
+    integer                                    :: max_reals
+    integer                                    :: max_strings
+    integer          , dimension(:)  , pointer :: dll_integers
+    !
+    character(256)                             :: culverfile           ! name of culver input file
+    character(256)   , dimension(:)  , pointer :: dll_function         ! name of culvert function in dll
+    character(256)   , dimension(:)  , pointer :: dll_name             ! name of culvert dll
+    character(256)   , dimension(:)  , pointer :: dll_usrfil           ! name of oprional input file for dll
+    character(256)   , dimension(:)  , pointer :: dll_strings
+end type sv_culver

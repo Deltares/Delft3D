@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_tabp2
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RD_TABP2 ( DEFFDS      ,
      +                      NO_ITEM_MAX , NO_ITEM     ,
@@ -108,7 +114,7 @@
 !     External NEFIS Functions
 !
       INTEGER   INQCEL
-     +         ,GETELS 
+     +         ,GETELS
      +         ,GETELT
       EXTERNAL  GETELS
      +         ,GETELT
@@ -144,11 +150,9 @@
 !
 !     Read all elements
 !
-!     WRITE(LUNREP,*) ' reading GROUP:',GRPNAM
       UINDEX(1) = 1
       UINDEX(2) = 1
       UINDEX(3) = 1
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(1)
       BUFLEN = NBYTSG(1)*ELMDMS(2,1)
       IERROR = GETELT (DEFFDS ,
      +                 GRPNAM , ELMNMS(1),
@@ -172,7 +176,6 @@
       DO IELM = 2 , NELEMS
          ELMDMS(2,IELM) = NO_ITEM
       ENDDO
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(2)
       BUFLEN = NBYTSG(2)*ELMDMS(2,2)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(2),
@@ -183,7 +186,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(3)
       BUFLEN = NBYTSG(3)*ELMDMS(2,3)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(3),
@@ -194,7 +196,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(4)
       BUFLEN = NBYTSG(4)*ELMDMS(2,4)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(4),
@@ -205,7 +206,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(5)
       BUFLEN = NBYTSG(5)*ELMDMS(2,5)
       IERROR = GETELT (DEFFDS ,
      +                 GRPNAM , ELMNMS(5),
@@ -216,7 +216,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(6)
       BUFLEN = NBYTSG(6)*ELMDMS(2,6)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(6),
@@ -227,7 +226,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(7)
       BUFLEN = NBYTSG(7)*ELMDMS(2,7)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(7),
@@ -238,7 +236,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(8)
       BUFLEN = NBYTSG(8)*ELMDMS(2,8)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(8),
@@ -249,7 +246,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(9)
       BUFLEN = NBYTSG(9)*ELMDMS(2,9)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(9),
@@ -260,7 +256,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(10)
       BUFLEN = NBYTSG(10)*ELMDMS(2,10)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(10),
@@ -277,7 +272,6 @@
          ITEM_SU = ' '
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(11)
       BUFLEN = NBYTSG(11)*ELMDMS(2,11)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(11),
@@ -288,7 +282,6 @@
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(12)
       BUFLEN = NBYTSG(12)*ELMDMS(2,12)
       IERROR = GETELS (DEFFDS ,
      +                 GRPNAM , ELMNMS(12),
@@ -304,3 +297,5 @@
       RETURN
 !
       END
+
+      end module m_rd_tabp2

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_grid
+
+      implicit none
+
+      contains
+
 
       subroutine read_grid ( lun    , aGrid  , GridPs , oldproc, nosegl_bottom, ierr   )
 
@@ -53,7 +59,9 @@
 !     Functions called   : gridpointercollfind to find the number of the reference grid by name
 !                                              function is contained in the grids module
 
-      use grids            !   for the storage of contraction grids
+      use m_srstop
+      use m_open_waq_files
+      use dlwqgrid_mod     !   for the storage of contraction grids
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
 
@@ -61,7 +69,7 @@
 
 !     declaration of arguments
 
-      integer               , intent(in   ) :: lun(*)        !< unit numbers used
+      integer               , intent(inout) :: lun(*)        !< unit numbers used
       type(GridPointer)     , intent(inout) :: aGrid         !< collection off all grid definitions
       type(GridPointerColl) , intent(in   ) :: GridPs        !< collection off all grid definitions
       logical               , intent(in   ) :: oldproc       !< true if old processing
@@ -136,7 +144,7 @@
 
                case ( 'AGGREGATIONFILE' )                      ! it is the filename keyword
                   if ( gettoken( ctoken, ierr2 ) .gt. 0 ) goto 1000
-                  call dhopnf ( lun(33), ctoken, 33, 1, ierr2 )
+                  call open_waq_files ( lun(33), ctoken, 33, 1, ierr2 )
                   if ( ierr2 .ne. 0 ) goto 1000
                   read  ( lun(33) ,   *  ) nmax,mmax,noseg_fil,idummy,idummy
                   write ( lunut   , 2020 ) ctoken, nmax, mmax, noseg_fil
@@ -233,6 +241,8 @@
       contains
 
       subroutine read_attributes_for_bottomgrid( lunut, iarray, nosegl, ierr )
+      use m_evaluate_waq_attribute
+
       integer :: lunut, nosegl, ierr
       integer, dimension(:) :: iarray
 
@@ -344,7 +354,7 @@
             ikmerge(iknm1) = 1
             iknmrk = 10**(iknm1-1)
             do iseg = 1 , noseg
-               call dhkmrk( iknm2, iread(iseg), ivalk )
+               call evaluate_waq_attribute( iknm2, iread(iseg), ivalk )
                iamerge(iseg) = iamerge(iseg) + iknmrk*ivalk
             enddo
          enddo
@@ -353,8 +363,8 @@
 
       ! Extract the information we need
       do i = 1,noseg
-          call dhkmrk( 1, iamerge(i), active )
-          call dhkmrk( 2, iamerge(i), attrib )
+          call evaluate_waq_attribute( 1, iamerge(i), active )
+          call evaluate_waq_attribute( 2, iamerge(i), attrib )
           if ( active == 1 .and. (attrib == 0 .or. attrib == 3) ) then
              iarray(i) = 1 + mod(i-1,nosegl)
           endif
@@ -399,3 +409,5 @@
       end subroutine read_attributes_for_bottomgrid
 
       end
+
+      end module m_read_grid

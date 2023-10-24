@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,20 +20,13 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_print6
 
-!    Date:       4 Jan 1994
-!    Time:       19:05
-!    Program:    PRINT6.FOR
-!    Version:    1.2
-!    Programmer: Hans Los
-!    Previous version(s):
-!    1.1 -- 12 Feb 1993 -- 08:36 -- Operating System: DOS
-!    PRINT6 FORTRAN -- 14 Jun 1991 -- 10:46 -- Operating System: DOS
-!    0.0 -- 14 Jun 1991 --  8:53 -- Operating System: CMS
-!
-!    Update 1.2: removed storage limiting factors in ISPLIM.
-!    Update 1.1: added JNOW to paramter list and replaced SOME
-!    occurences if INOW by JNOW
+      implicit none
+
+      contains
+
+
 !
 !  *********************************************************************
 !  *   SUBROUTINE TO PRINT SOLUTIONS FOR ALL FEASIBILITY INTERVALS     *
@@ -202,3 +195,5 @@
       end do
       return
       end
+
+      end module m_print6

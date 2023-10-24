@@ -1,14 +1,15 @@
-function [revmin,revmax,changed]=determine_revision(dirname,dbid)
-%DETERMINE_REVISION Determine subversion update revision numbers.
-%   [REVMIN,REVMAX,CHANGED] = DETERMINE_REVISION(DIR) determines the
-%   subversion update revision numbers for the specified directory DIR. The
-%   values returned are the minimum/oldest update number REVMIN, the
-%   maximum/youngest update number REVMAX and a flag CHANGED indicating
-%   whether the local code has been modified since these updates.
+function [revstring,repo_url,hash] = determine_revision(dirname,dbid)
+%DETERMINE_REVISION Determine the Git hash or Subversion revision string.
+%   STR = DETERMINE_REVISION(DIR) determines a revision string representing
+%   the code status in the provided DIR using information from Subversion
+%   or Git. For Subversion the string consists of the highest revision
+%   number found in the folder and a flag indicating whether the code has
+%   been changed. For Git the revision number is replaced by the short hash
+%   and the flag.
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -36,64 +37,119 @@ function [revmin,revmax,changed]=determine_revision(dirname,dbid)
 %   $HeadURL$
 %   $Id$
 
-iter = 1;
-found = 0;
-if nargin<2
-    dbid = 1;
-end
-while ~found
-    switch iter
-        case 1
-            if strncmp(computer,'PCWIN',5)
-               SvnVersion = '../../../../third_party_open/subversion/bin/win32/svnversion.exe';
-            else
-               SvnVersion = '/usr/bin/svnversion';
-            end
-        case 2
-            if strncmp(SvnVersion,'../',3)
-               SvnVersion = SvnVersion(4:end); % one level less deep
-            end
-        case 3
-            svnbin = getenv('SVN_BIN_PATH');
-            SvnVersion = [svnbin filesep 'svnversion.exe'];
-        case 4
-            svnbin = 'c:\Program Files\Subversion\bin';
-            SvnVersion = [svnbin filesep 'svnversion.exe'];
-        case 5
-            [s,SvnVersion] = system('which svnversion');
-            if s~=0
-                SvnVersion = 'The WHICH command failed';
-            end
-        case 6
-            dprintf(dbid,'Unable to locate SVNVERSION program.\nUsing built-in implementation of svnversion.\n')
-            [revmin,revmax,changed] = svnversion(dirname,dbid);
-            return
+Id = '$Id$';
+repo_url = '$HeadURL$';
+hash = 'N/A';
+if ~strcmp(Id(2:end-1),'Id')
+    % Subversion keyword expansion seems to be active.
+    % Use Subversion
+    iter = 1;
+    found = 0;
+    if nargin<2
+        dbid = 1;
     end
-    %
-    if exist(SvnVersion,'file')
-        break
+    while ~found
+        switch iter
+            case 1
+                if strncmp(computer,'PCWIN',5)
+                    SvnVersion = '../../../../third_party_open/subversion/bin/win32/svnversion.exe';
+                else
+                    SvnVersion = '/usr/bin/svnversion';
+                end
+            case 2
+                if strncmp(SvnVersion,'../',3)
+                    SvnVersion = SvnVersion(4:end); % one level less deep
+                end
+            case 3
+                svnbin = getenv('SVN_BIN_PATH');
+                SvnVersion = [svnbin filesep 'svnversion.exe'];
+            case 4
+                svnbin = 'c:\Program Files\Subversion\bin';
+                SvnVersion = [svnbin filesep 'svnversion.exe'];
+            case 5
+                [s,SvnVersion] = system('which svnversion');
+                if s~=0
+                    SvnVersion = 'The WHICH command failed';
+                end
+            case 6
+                dprintf(dbid,'Unable to locate SVNVERSION program.\nUsing built-in implementation of svnversion.\n')
+                [revmin,revmax,changed] = svnversion(dirname,dbid);
+                return
+        end
+        %
+        if exist(SvnVersion,'file')
+            break
+        end
+        iter = iter+1;
     end
-    iter = iter+1;
-end
 
-[s,revstring] = system(['"' SvnVersion '" "' dirname '"']);
-if s==0
-    changed = ismember('M',revstring);
-    rev = sscanf(revstring,'%i:%i');
-    if isempty(rev) %exported
-        revmin = 0;
-        revmax = 0;
-        changed = 1;
-    elseif length(rev)==1
-        revmin = rev;
-        revmax = rev;
+    [s,revstring] = system(['"' SvnVersion '" "' dirname '"']);
+    if s==0
+        changed = ismember('M',revstring);
+        rev = sscanf(revstring,'%i:%i');
+        if isempty(rev) %exported
+            revmin = 0;
+            revmax = 0;
+            changed = 1;
+        elseif length(rev)==1
+            revmin = rev;
+            revmax = rev;
+        else
+            revmin = rev(1);
+            revmax = rev(2);
+        end
     else
-        revmin = rev(1);
-        revmax = rev(2);
+        dprintf(dbid,'Unable to execute SVNVERSION program.\nUsing built-in implementation of svnversion.\n')
+        [revmin,revmax,changed] = svnversion(dirname,dbid);
     end
+
+    if revmax<0
+        revstring = '[unknown revision]';
+    else
+        revstring = sprintf('%05.5i',revmax);
+        if changed || revmin<revmax
+            revstring = [revstring ' (changed)'];
+        end
+    end
+
+    repo_url = repo_url(11:end-23);
 else
-    dprintf(dbid,'Unable to execute SVNVERSION program.\nUsing built-in implementation of svnversion.\n')
-    [revmin,revmax,changed] = svnversion(dirname,dbid);
+    % Use Git
+
+    % get hash
+    [a,b] = system('git log -n 1 -v --decorate');
+    [commit,b] = strtok(b);
+    [hash,b] = strtok(b);
+    b = strsplit(b,local_newline);
+    has_local_commits = isempty(strfind(b{1},'origin/'));
+    % if we could remove -n 1, we could look for the latest hash available
+    % at the origin, but that triggers a pager to wait for keypresses. The
+    % option --no-pagers before log seems to work on the command line, but
+    % not when called via system for some reason.
+
+    % get repository
+    [a,b] = system('git remote -v');
+    [origin,b] = strtok(b);
+    [repo_url,b] = strtok(b);
+
+    % git describe
+    %[a,b] = system(['git describe "' dirname '"']);
+    % returns something like: DIMRset_2.23.05-4-ge3176daa1
+    % but I don't want QUICKPLOT to refer to "DIMRset" tags
+    % however, neither should DIMRsets refer to QUICKPLOT tags.
+
+    % get status
+    [a,b] = system(['git status "' dirname '"']);
+    b = strsplit(b,local_newline);
+    staged = strncmp(b,'Changes to be committed:',24);
+    unstaged = strncmp(b,'Changes not staged for commit:',30);
+    untracked = strncmp(b,'Untracked files:',16);
+
+    % we should also check if we have local commits to be pushed.
+    revstring = hash(1:9);
+    if has_local_commits || any(staged) || any(unstaged) || any(untracked)
+        revstring = [revstring ' (changed)'];
+    end
 end
 
 
@@ -140,14 +196,14 @@ fclose(fid);
 entry = strfind(str,char(12));
 %
 substr = str(1:entry(1)-1);
-lines = strfind(substr,char(10));
+lines = strfind(substr,local_newline);
 updatestr = substr(lines(3)+1:lines(4)-1);
 updatenr = str2double(updatestr);
 %
 j = 0;
 for i=1:length(entry)-1
     substr = str(entry(i)+2:entry(i+1)-1);
-    lines = strfind(substr,char(10));
+    lines = strfind(substr,local_newline);
     if strcmp(substr(lines(1)+1:lines(2)-1),'file')
         j = j+1;
         entries(j).filename = substr(1:lines(1)-1);
@@ -207,4 +263,12 @@ end
 function dprintf(fid,varargin)
 if fid~=0
     fprintf(fid,varargin{:});
+end
+
+
+function s = local_newline
+if matlabversionnumber > 9.01
+    s = newline;
+else
+    s = char(10);
 end

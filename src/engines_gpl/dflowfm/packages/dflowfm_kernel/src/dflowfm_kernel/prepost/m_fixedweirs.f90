@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Contains the global data for all fixed weirs.
 !! fxw is the array of cross section paths.
@@ -53,7 +53,7 @@ module m_fixedweirs
     double precision, allocatable   :: weirdte(:)            ! loss coeff
     integer         , allocatable   :: iweirtxw(:)           ! weir type
 
-    double precision                :: sillheightmin    = 0.5d0 ! waqua dams with both sillheights > sillheightmin go to fixedweirs.pli
+    double precision                :: sillheightmin    = 0.0d0 ! waqua dams with both sillheights > sillheightmin go to fixedweirs.pli
                                                                 ! the rest goes to
 contains
 

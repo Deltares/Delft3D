@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,15 +27,15 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine velocities_explicit()
  use m_flowgeom
  use m_flow
  use m_flowtimes
  implicit none
- integer :: n, L, LL, k1, k2, i
+ integer :: n, L, LL, k1, k2
 
  if (itstep == 1) then
     u1 = (u0 - dts*adve)/(1d0 + dts*advi)
@@ -48,8 +48,7 @@
 
  squ = 0d0 ; sqi = 0d0
  if ( kmx.eq.0 ) then
-   do i = 1, wetLinkCount
-      L = onlyWetLinks(i)
+    do L = 1,lnx
       if (q1(L) > 0) then
           k1 = ln(1,L) ; k2 = ln(2,L)
           squ(k1) = squ(k1) + q1(L)

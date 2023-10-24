@@ -13,7 +13,7 @@
 ! Full documentation of the netCDF Fortran 90 API can be found at:
 ! http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
 
-! $Id$
+! 
 
 program sfc_pres_temp_wr
   use netcdf

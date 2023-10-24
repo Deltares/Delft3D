@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine read_lga(file_lga, mmax  , nmax  , nolay , nosegl, &
                           noq1    , noq2  , noq3  , lgrid )
@@ -34,6 +34,8 @@
 
       ! global declarations
 
+      use m_srstop
+      use m_monsys
       use filmod                   ! module contains everything for the files
       implicit none
 

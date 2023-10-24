@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_setqtl
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE SETQTL ( LUNREP     , NOKEY      ,
      +                    KEYNAM     , KEYVAL     ,
@@ -56,6 +62,9 @@
 !     IERR    INTEGER        1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
 !
+      use m_zoek
+      use m_srstop
+      use m_dhslen
       USE ProcesSet
       use timers       !   performance timers
 !
@@ -404,3 +413,5 @@
       RETURN
  2000 FORMAT(5A)
       END
+
+      end module m_setqtl

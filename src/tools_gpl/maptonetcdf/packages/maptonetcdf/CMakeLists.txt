@@ -1,24 +1,14 @@
 # Define include directory
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include) # Note that the CMAKE_CURRENT_SOURCE_DIR represents THIS directory
+# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(maptonetcdf_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the maptonetcdf path
+set(waq_root_path ${maptonetcdf_root_path}/../../engines_gpl/waq) # Trace back to the WAQ path
 
 # Set version file variables
-set(maptonetcdf_version_path ${maptonetcdf_root_path}/include)
+set(waq_version_path ${waq_root_path}/version)
 
-set(ini_version_file ${maptonetcdf_version_path}/version_number.ini)
-set(fortran_version_file_maptonetcdf ${maptonetcdf_root_path}/packages/maptonetcdf/src/maptonetcdf_version.F90)
-set(rc_version_file ${maptonetcdf_version_path}/version_number_maptonetcdf.rc)
-set(maptonetcdf_files ${maptonetcdf_root_path}/packages/maptonetcdf/src/maptonetcdf.f90
-                 ${maptonetcdf_root_path}/packages/maptonetcdf/src/maptonetcdf_version.F90)
-
-# Set icon file
-set(icon_file ${maptonetcdf_version_path}/maptonetcdf_icon.rc)
-
-# Generate version files
-generate_version_files(${fortran_version_file_maptonetcdf}
-                       ${ini_version_file}
-                       ON)
-
+set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
+set(rc_version_file ${waq_version_path}/version_number_maptonetcdf.rc)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 
 # Set source directory
@@ -30,22 +20,23 @@ get_fortran_source_files(${src_path} source_files)
 # Define executable
 set(executable_name maptonetcdf)
 add_executable(${executable_name} ${source_files}
-                                  ${fortran_version_file_maptonetcdf})
+                                  ${rc_version_file}
+                                  ${fortran_version_file_delwaq})
 
-# Define prebuild events
-prebuild_version_number(${executable_name} ${fortran_version_file_maptonetcdf}
-                                        ${maptonetcdf_root_path}
-                                        ${ini_version_file}
-                                        ON)
 
-set_source_files_properties(${fortran_version_file_maptonetcdf}
+
+set_source_files_properties(${fortran_version_file_delwaq}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
-
-
+set(oss_dependencies_general deltares_common
+                             deltares_common_c
+                             io_netcdf
+                             io_netcdf_data
+                             waq_kernel
+                             waq_utils_f)
 
 # Add dependencies
+target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
@@ -54,11 +45,7 @@ if (UNIX)
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_hyd
-                         waq_kernel)
+    set(oss_dependencies ${oss_dependencies_general})
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
@@ -70,13 +57,9 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies deltares_common
-                         deltares_common_c
-                         io_netcdf
-                         io_hyd
+    set(oss_dependencies ${oss_dependencies_general}
                          netcdf4
-                         netcdff
-                         waq_kernel)
+                         netcdff)
 
     oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
@@ -84,7 +67,6 @@ endif(WIN32)
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${waq_debug_flags}>")
 
 if(UNIX)
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
@@ -128,4 +110,3 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/maptonetcdf/scripts/run_maptonetcdf.sh  DESTINATION bin)
 endif(UNIX)
-

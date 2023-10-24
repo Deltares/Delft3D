@@ -1,0 +1,81 @@
+substance 'IM1' active
+   description        'inorganic matter (IM1)'
+   concentration-unit '(gDM/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'IM2' active
+   description        'inorganic matter (IM2)'
+   concentration-unit '(gDM/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'IM3' active
+   description        'inorganic matter (IM3)'
+   concentration-unit '(gDM/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'IM1S1' inactive
+   description        'IM1 in layer S1'
+   concentration-unit '(gDM/m2)'
+   waste-load-unit    '-'
+end-substance
+substance 'IM2S1' inactive
+   description        'IM2 in layer S1'
+   concentration-unit '(gDM/m2)'
+   waste-load-unit    '-'
+end-substance
+substance 'IM3S1' inactive
+   description        'IM3 in layer S1'
+   concentration-unit '(gDM/m2)'
+   waste-load-unit    '-'
+end-substance
+parameter 'VSedIM1'
+   description   'sedimentation velocity IM1'
+   unit          '(m/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'TaucSIM1'
+   description   'critical shear stress for sedimentation IM1'
+   unit          '(N/m2)'
+   value          0.1000E+00
+end-parameter
+parameter 'VSedIM2'
+   description   'sedimentation velocity IM2'
+   unit          '(m/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'TaucSIM2'
+   description   'critical shear stress for sedimentation IM2'
+   unit          '(N/m2)'
+   value          0.1000E+00
+end-parameter
+parameter 'VSedIM3'
+   description   'sedimentation velocity IM3'
+   unit          '(m/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'TaucSIM3'
+   description   'critical shear stress for sedimentation IM3'
+   unit          '(N/m2)'
+   value          0.1000E+00
+end-parameter
+parameter 'TaucRS1DM'
+   description   'critical shear stress for resuspension DM layer S1'
+   unit          '(N/m2)'
+   value          0.2000E+00
+end-parameter
+active-processes
+   name  'Compos' 'Composition'
+   name  'Sed_IM1' 'Sedimentation IM1'
+   name  'S12TraIM1' 'Resuspension, transport in S1-S2 IM1'
+   name  'S1_Comp' 'Composition sediment layer S1'
+   name  'Sed_IM2' 'Sedimentation IM2'
+   name  'S12TraIM2' 'Resuspension, transport in S1-S2 IM2'
+   name  'Sed_IM3' 'Sedimentation IM3'
+   name  'S12TraIM3' 'Resuspension, transport in S1-S2 IM3'
+   name  'CalTau' 'Calculation of bottom friction'
+   name  'DynDepth' 'dynamic calculation of the depth'
+   name  'Res_DM' 'Resuspension total bottom material (dry mass)'
+   name  'Veloc' 'Horizontal flow velocity'
+   name  'Chezy' 'Chezy coefficient'
+   name  'TotDepth' 'depth water column'
+end-active-processes

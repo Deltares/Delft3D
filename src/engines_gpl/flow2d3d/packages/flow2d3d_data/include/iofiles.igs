@@ -1,0 +1,102 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id: iofiles.igs 4613 2015-01-21 15:03:22Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20140326_Flow_netcdf/src/engines_gpl/flow2d3d/packages/data/include/iofiles.igs $
+!-------------------------------------------------------------------------------
+    integer, parameter :: FILOUT_DIA      =  1
+    integer, parameter :: FILOUT_HIS      =  2
+    integer, parameter :: FILOUT_MAP      =  3
+    integer, parameter :: FILOUT_COM      =  4
+    integer, parameter :: FILOUT_FOU      =  5
+    integer, parameter :: FILOUT_DRO      =  6
+!
+    integer, parameter :: FILOUT_CNT      =  6
+    integer, parameter :: MAXNR_GROUP     = 20
+!
+    integer, parameter :: IO_LOGIC2       = -1
+    integer, parameter :: IO_LOGIC4       = -2
+!
+    integer, parameter :: IO_INT2         = -11
+    integer, parameter :: IO_INT4         = -12
+    integer, parameter :: IO_INT8         = -13
+!
+    integer, parameter :: IO_REAL4        = -21
+    integer, parameter :: IO_REAL8        = -22
+!
+    integer, parameter :: IO_COMPLEX8     = -31
+    integer, parameter :: IO_COMPLEX16    = -32
+!
+    integer, parameter :: FTYPE_UNKNOWN   = -999
+    integer, parameter :: FTYPE_ASCII     = -1
+    integer, parameter :: FTYPE_NEFIS     =  0
+    integer, parameter :: FTYPE_NETCDF    =  1
+    integer, parameter :: FTYPE_UNFORM32  =  2   ! UNFORMATTED 32 bit
+    integer, parameter :: FTYPE_UNFORM64  =  3   ! UNFORMATTED 64 bit
+!
+    integer, parameter :: REQUESTTYPE_DEFINE =  1
+    integer, parameter :: REQUESTTYPE_WRITE  =  2
+!
+    type datagroup
+       character(16)                             :: name       !  Name of data group
+       integer                                   :: celidt     !  Group size
+       logical                                   :: first      !  First call (TODO: redefine as preparation / not written)
+       integer                                   :: grp_dim    !  Group dimension (time index)
+       !
+       integer                                   :: nelmx      !  Number of elements
+       integer        , dimension(:)   , pointer :: elm_ndims  !  Element number of dimensions
+       integer        , dimension(:, :), pointer :: elm_dims   !  Element dimension ids (indices in the iofile%dim_* arrays, 0 = no dimension, -999 = only elm_size specified)
+       integer        , dimension(:, :), pointer :: elm_size   !  Element size
+       integer        , dimension(:)   , pointer :: elm_type   !  Element type
+       character(64)  , dimension(:)   , pointer :: elm_unit   !  Element physical unit
+       character(64)  , dimension(:)   , pointer :: elm_name   !  Element name
+       character(16)  , dimension(:)   , pointer :: elm_qty    !  Element quantity
+       character(256) , dimension(:)   , pointer :: elm_lname  !  Element long name (a.k.a. description)
+       character(64)  , dimension(:)   , pointer :: elm_sname  !  Element standard name
+       integer        , dimension(:,:) , pointer :: elm_attrib !  Element attribute ids (indices in the iofile%att_* arrays, 0 = no attribute)
+    end type datagroup
+!
+    type iofile
+       integer                                   :: filetype
+       character(256)                            :: filename
+       !
+       character(64)  , dimension(:)   , pointer :: dim_name   !  Dimension name
+       integer        , dimension(:)   , pointer :: dim_id     !  Dimension id (in NetCDF file)
+       integer        , dimension(:)   , pointer :: dim_length !  Dimension length
+       !
+       character(64)  , dimension(:)   , pointer :: att_name   !  Attribute name
+       integer        , dimension(:)   , pointer :: att_vtype  !  Attribute value type
+       integer        , dimension(:)   , pointer :: att_ival   !  Attribute value integer
+       real(fp)       , dimension(:)   , pointer :: att_rval   !  Attribute value real
+       character(256) , dimension(:)   , pointer :: att_cval   !  Attribute value string
+       !
+       ! Attribute classes (used for stagger positions)
+       !
+       character      , dimension(:)   , pointer :: acl_label  !  Attribute class name
+       integer        , dimension(:,:) , pointer :: acl_attrib !  Attribute class attributes
+       !
+       type(datagroup), dimension(:)   , pointer :: group
+    end type iofile

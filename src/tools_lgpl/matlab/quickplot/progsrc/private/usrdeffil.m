@@ -18,7 +18,7 @@ function varargout=usrdeffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1374,7 +1374,7 @@ switch cmd
                 Props.Oper=Ops{k};
                 Props.Data={Vars(i) c};
                 Props.DataInCell = Vars(i).DataInCell;
-            case {'10log','abs','max m','alg.mean m','min m','max n','alg.mean n','min n','max k','alg.mean k','min k','sum k','sum m','sum n','flip m','flip n','flip k'}
+            case {'10log','abs','flip m','flip n','flip k'}
                 VarName=sprintf('%s(%s)',Ops{k},Vars(i).Name);
                 switch Ops{k}
                     case '10log'
@@ -1384,6 +1384,22 @@ switch cmd
                 Props.NVal=Vars(i).Props.NVal;
                 Props.Oper=Ops{k};
                 Props.Data={Vars(i)};
+                Props.DataInCell = Vars(i).DataInCell;
+            case {'max m','alg.mean m','min m','max n','alg.mean n','min n','max k','alg.mean k','min k','sum k','sum m','sum n'}
+                VarName=sprintf('%s(%s)',Ops{k},Vars(i).Name);
+                Props.Units = Vars(i).Units;
+                Props.NVal=Vars(i).Props.NVal;
+                Props.Oper=Ops{k};
+                Props.Data={Vars(i)};
+                switch Ops{k}
+                    case {'max m','alg.mean m','min m','sum m'}
+                        switch Props.Geom
+                            case {'UGRID2D-FACE', 'UGRID2D-EDGE', 'UGRID2D-NODE', 'UGRID1D-EDGE', 'UGRID1D-NODE'}
+                                Props.Geom = 'PNT';
+                            otherwise
+                                % should maybe also change
+                        end
+                end
                 Props.DataInCell = Vars(i).DataInCell;
             case {'m index','n index','k index'}
                 VarName=sprintf('%s(%s)',Ops{k},Vars(i).Name);

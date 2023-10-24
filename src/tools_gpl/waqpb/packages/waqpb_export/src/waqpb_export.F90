@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !
 !     Program to compose a PROCES.ASC file from tables
@@ -38,6 +38,9 @@
 !       - Dump structure to PROCES.ASC
 
 !     Include data structures for tables and PDF-file
+  
+      use m_obtain_number_decimals
+      
       include 'data_ff.inc'
       include 'pdf_ff.inc'
       integer      jndex , iproc , iinpu , iitem , ioutp , idisp , &
@@ -46,17 +49,17 @@
                    ierror, icnsb , imodv , i
       logical      itmswi(nitemm)
       logical      newfrm
-      character*10 c10   
+      character*10 c10, num_decimals_version_char
       character*20 c20
       character*50 adduni
       character*255 ArgumentString
-      real         actdef, versio
-      integer      lu_inp, lu_mes, status, lunfil
+      real         actdef, version
+      integer      lu_inp, lu_mes, status, lunfil, num_decimals_version
       
 !     Defaults for command line arguments
 
-      versio = 5.00
-      serial = 20130101
+      version = 6.00
+      serial = 20230101
       newfrm = .true.
 
       do i=1,9999
@@ -64,7 +67,7 @@
             if (ArgumentString.eq.'') exit
             if (index(ArgumentString,'-version').gt.0) then
                 c20 = ArgumentString(9:28)
-                read (c20,'(f20.0)',iostat=status) versio
+                read (c20,'(f20.0)',iostat=status) version
             endif
             if (index(ArgumentString,'-serial').gt.0) then
                 c20 = ArgumentString(8:27)
@@ -139,7 +142,7 @@
 
       write (lu_mes,'(''Writing NEFIS process definition file'')')
       call makind()
-      call pdfnef(lu_mes    , serial, versio, ierror)
+      call pdfnef(lu_mes    , serial, version, ierror)
       if ( ierror .ne. 0 ) then
          write (lu_mes,'(''ERROR writing NEFIS file'')')
          write (*,'(''ERROR writing NEFIS file, see report file'')')
@@ -152,7 +155,13 @@
       write (*,'('' Making PROCES.ASC......'')')
       write (*,*)
       open ( newunit=lunfil , file = 'procesm.asc' )
-      write ( lunfil , '(i10,50x,f8.2,2x,i10)' ) nproc,versio,serial
+      write(*,*) "QQ"
+
+      ! obtain number of decimals of version number
+      num_decimals_version = obtain_num_decimals_version(version)
+      write(num_decimals_version_char,'(I10)') num_decimals_version
+      
+      write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') nproc,version,serial
 
       do 800 iproc=1,nproc
 
@@ -503,4 +512,4 @@
       end if
 
       return
-      end
+  end

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_timer
+
+      implicit none
+
+      contains
+
 
       subroutine timer  ( dtflg1 , it1    , it2    , it3    , noopt  ,
      &                    dtflg3 , ierr   )
@@ -48,6 +54,7 @@
 
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
+      use m_cnvtim
 
       implicit none
 
@@ -154,3 +161,5 @@
      &          ' Allowed difference with T0 is usually ca. 68 years.' )
  2040 format ( /' ERROR: String is not a valid absolute timer :',A)
       end
+
+      end module m_timer

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 module m_sedtrails_netcdf
    use m_sedtrails_data
@@ -381,6 +381,7 @@ subroutine unc_write_sedtrails_filepointer(imapfile,tim)
    use m_fm_erosed
    use m_sediment, only: stm_included
    use m_flowtimes, only: it_st
+   use m_flowparameters, only: jawave
    
    implicit none
    
@@ -394,7 +395,8 @@ subroutine unc_write_sedtrails_filepointer(imapfile,tim)
    integer, save                          :: ndim
    integer, dimension(2)                  :: idims
    integer, dimension(2), save            :: id_timedim, id_time, id_timestep, id_sbx, id_sby, id_ssx, id_ssy, id_ssc, &
-                                             id_sedtotdim,id_flowelemdim, id_ucx, id_ucy, id_bl, id_hs, id_taus, id_tausmax
+                                             id_sedtotdim,id_flowelemdim, id_ucx, id_ucy, id_bl, id_hs, id_taus, id_tausmax, &
+                                             id_ua, id_va
    double precision, allocatable          :: work(:,:)
    integer         , allocatable          :: nodes(:)
    
@@ -461,8 +463,13 @@ subroutine unc_write_sedtrails_filepointer(imapfile,tim)
           call definencvar(imapfile,id_taus(iid)   ,nf90_double,idims,2, 'mean_bss_magnitude', 'mean bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
           call definencvar(imapfile,id_tausmax(iid),nf90_double,idims,2, 'max_bss_magnitude' , 'max bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
           call definencvar(imapfile,id_ssc(iid)    ,nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /),3, 'suspended_sed_conc', 'depth-averaged suspended sediment concentration', 'kg m-3', 'net_xcc net_ycc')
-       endif   
-       
+          !
+          if (jawave>0) then
+             call definencvar(imapfile,id_ua(iid)     ,nf90_double,idims,2, 'wave_nonlin_vel_x_comp', 'non-linear wave velocity contribution, x-component', 'm s-1', 'net_xcc net_ycc')
+             call definencvar(imapfile,id_va(iid)     ,nf90_double,idims,2, 'wave_nonlin_vel_y_comp', 'non-linear wave velocity contribution, y-component', 'm s-1', 'net_xcc net_ycc')
+          endif
+       endif  
+       !       
        ierr = nf90_enddef(imapfile)
    endif
    
@@ -576,6 +583,22 @@ subroutine unc_write_sedtrails_filepointer(imapfile,tim)
       enddo
       work=work/is_dtint
       ierr = nf90_put_var(imapfile, id_ssc(iid), work(1:numk,1:lsedtot), (/ 1, 1, itim /), (/ ndxndxi, lsedtot, 1 /))
+      !
+      if (jawave>0) then
+         do k=1, numk
+            nodes = pack([(ii,ii=1,size(st_ind(:,k)))], st_ind(:,k) > 0)
+            work(k,1) = sum(st_wf(nodes,k)*is_sumvalsnd(IDX_UA,st_ind(nodes,k), 1))
+         enddo 
+         work=work/is_dtint
+         ierr = nf90_put_var(imapfile, id_ua(iid)  , work(1:numk,1), (/ 1, itim /), (/ ndxndxi, 1 /))
+         !
+         do k=1, numk
+            nodes = pack([(ii,ii=1,size(st_ind(:,k)))], st_ind(:,k) > 0)
+            work(k,1) = sum(st_wf(nodes,k)*is_sumvalsnd(IDX_VA,st_ind(nodes,k), 1))
+         enddo 
+         work=work/is_dtint
+         ierr = nf90_put_var(imapfile, id_va(iid)  , work(1:numk,1), (/ 1, itim /), (/ ndxndxi, 1 /))
+      endif
    endif   
    
 end subroutine unc_write_sedtrails_filepointer

@@ -1,4 +1,4 @@
-!!  Copyright(C) Stichting Deltares, 2012-2022.
+!!  Copyright(C) Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_mpbllm
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE MPBLLM ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
@@ -51,6 +57,9 @@ C     110399  J. vGils        C-limitation removed from loop over Z
 C     110399  J. vGils        Error in time integration removed
 C     111103  Jan van Beek    2003 implementation
 C***********************************************************************
+
+      use m_evaluate_waq_attribute
+      use m_write_error_message
 
       IMPLICIT NONE
 
@@ -131,8 +140,8 @@ C     loop over the segments
 
       DO 1000 ISEG = 1 , NOSEG
 
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-         CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 
          RADSURF    = PMSA(IP(1))
          RADTOP     = PMSA(IP(2))
@@ -166,7 +175,7 @@ C     loop over the segments
 
 C        check proces parameters
 
-         IF (I_NRDZ.LE.0) CALL DHERR2('I_NRDZ'   ,FLOAT(I_NRDZ),ISEG,'MPBLLM')
+         IF (I_NRDZ.LE.0) CALL write_error_message_with_values('I_NRDZ'   ,FLOAT(I_NRDZ),ISEG,'MPBLLM')
 
 C        scale all radiance to PAR, radsurf with enhancement since it is used as top of sediment layer radiation
 
@@ -311,3 +320,5 @@ C        update pointering in PMSA array
 
       RETURN
       END
+
+      end module m_mpbllm

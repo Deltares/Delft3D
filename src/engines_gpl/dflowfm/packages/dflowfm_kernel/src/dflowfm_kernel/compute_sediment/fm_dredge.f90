@@ -1,7 +1,7 @@
 module m_fm_dredge
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@ module m_fm_dredge
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    private
@@ -39,7 +39,9 @@ contains
 
    subroutine fm_rddredge(dredgepar, md_dredgefile, error)
        use m_rddredge, only:rddredge
+       use precision, only: fp
        use properties, only: tree_data, tree_create
+       use m_depfil_stm, only:  depfil_stm
        use m_flowgeom, only: ba_mor, griddim, ndx
        use m_flowtimes, only: julrefdat
        use unstruc_files, only: mdia

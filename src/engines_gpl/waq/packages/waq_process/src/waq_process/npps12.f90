@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_npps12
+
+implicit none
+
+contains
+
 
       subroutine npps12     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_evaluate_waq_attribute
+
 !
 !*******************************************************************************
 !
@@ -78,9 +86,9 @@
       ipnt        = ipoint
 
       do 9000 iseg = 1 , noseg
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
          if (ikmrk1.eq.1) then
-         call dhkmrk(2,iknmrk(iseg),ikmrk2)
+         call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
          if (ikmrk2.eq.0.or.ikmrk2.eq.3) then
 
          nh4        = max(pmsa( ipnt( 1) ),0.0)
@@ -113,3 +121,5 @@
 
       return
       end subroutine
+
+end module m_npps12

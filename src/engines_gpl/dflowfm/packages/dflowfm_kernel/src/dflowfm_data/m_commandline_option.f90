@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> process command line option
 module m_commandline_option
@@ -47,6 +47,8 @@ implicit none
    character(len=lenfile)                         :: iarg_outfile = ' '     !< Output filename for several commandline/batch-mode operations (not related to model runs).
    integer                                        :: iarg_autostart         !< autostart/autstartstop or not set (-1)
    integer                                        :: iarg_usecaching = -1   !< use cache file or not or not set (-1)
+   integer                                        :: iarg_dobatch  = 0      !< Call the dobatch() subroutine for research functionality.
+
 
 contains
 !> read, from a string, command line option with key-value pair(s) of the form

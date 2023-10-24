@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine plotnu(fnam)
    implicit none
@@ -38,9 +38,8 @@
    CHARACTER PLOTJE*255
    character (len=*) fnam
 
-   plotje = fnam
+   plotje = trim(fnam)
    key = 3 ; ndraw(10) = 1
    call drawnu(key)
-   plotje = ' '
 
    end subroutine plotnu

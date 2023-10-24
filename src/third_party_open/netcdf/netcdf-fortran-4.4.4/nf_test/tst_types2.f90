@@ -4,7 +4,7 @@
 
 !     This program tests netCDF-4 int64 types from fortran 90.
 
-!     $Id$
+!     
 
 program tst_types2
   use typeSizes

@@ -1,7 +1,7 @@
 module m_readObservCrossSections
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_readObservCrossSections
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use m_CrossSections
@@ -85,11 +85,6 @@ module m_readObservCrossSections
       double precision, allocatable         :: xx(:), yy(:)
    
       integer                               :: branchIdx
-      type(t_ObservCrossSection), pointer   :: pobservcrs
-      integer                               :: pos
-      integer                               :: ibin = 0
-      character(len=IdLen)                 :: binfile
-      logical                               :: file_exist
       integer                               :: formatbr       ! =1: use branchid and chainage, =0: use xy coordinate and numCoordinates
       integer                               :: major, minor, ierr
       

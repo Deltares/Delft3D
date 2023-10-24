@@ -1,7 +1,7 @@
 module m_readStorageNodes
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_readStorageNodes
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -84,15 +84,10 @@ module m_readStorageNodes
       
       double precision                              :: x, y
       double precision                              :: chainage
-      double precision, allocatable, dimension(:)   :: x_tmp, y_tmp
       integer                                       :: branchIdx
       integer                                       :: nodeIdx
-      integer                                       :: local_grid_index
-      integer                                       :: gridPoint
       type(t_storage), pointer                      :: pSto
       
-      double precision                              :: bedLevel
-      double precision                              :: area
       double precision, allocatable, dimension(:)   :: streetLevel
       double precision, allocatable, dimension(:)   :: streetStorageArea
       integer                                       :: numLevels

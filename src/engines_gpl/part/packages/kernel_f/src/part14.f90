@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -178,8 +178,11 @@ module part14_mod
       real   (rp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
       real   (rp) :: radiuh            ! help variable for the radius
       integer(ip) :: ilay  , isub      ! loop variables layers and substances
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
+
+      integer(ip) :: np                ! Number of particles to add
+
+      integer(4), save :: ithndl = 0   ! handle to time this subroutine
+
       if ( timon ) call timstrt( "part14", ithndl )
 
 !     at first zero the remainder
@@ -265,7 +268,8 @@ module part14_mod
 !              rpnul = rest /aconu * dts
                rpnul = rest /avcon            ! time span first particle
                rest  = rest + amass
-               do i = 1 , 1 + int(rest/aconu-1.d-10)
+               np    = min( ndprt(ie) - ncheck(ic), 1 + int(rest/aconu-1.d-10) )
+               do i = 1 , np
                   iptime(ipb) = int(rpnul)
                   ipb         = ipb + 1
                   rpnul       = rpnul - dts

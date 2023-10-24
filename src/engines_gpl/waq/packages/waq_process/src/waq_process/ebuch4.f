@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_ebuch4
+
+      implicit none
+
+      contains
+
 
       subroutine ebuch4 ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_monsys
+
 !>\file
 !>       Ebullition of methane (new, generic!)
 
@@ -104,8 +112,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF ( IKMRK1 .GT. 0) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
             CCH4   = MAX ( 0.0, PMSA(IP1 ) )
@@ -149,3 +156,5 @@
       RETURN
 !
       END
+
+      end module m_ebuch4

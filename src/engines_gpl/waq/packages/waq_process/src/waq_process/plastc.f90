@@ -1,6 +1,15 @@
+module m_plastc
+
+implicit none
+
+contains
+
       subroutine PLASTC     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_write_error_message
+      use m_evaluate_waq_attribute
+
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'PLASTC' :: PLASTC
 !*******************************************************************************
 !
@@ -152,7 +161,7 @@
                 write (*,*) 'loute = ',loute
                 write (*,*) 'npmsa = ',npmsa
                 write (*,*) 'npmsamax = ',npmsamax
-                call errsys ('PMSA admin array too small',1)
+                call write_error_message ('PMSA admin array too small')
             endif
             offset_vel = lins+line+louts
 
@@ -235,7 +244,7 @@
           ! PAVED SYSTEM -------- ----------------------------------------------
 
           iseg = isegl + (rec_pav-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           ropaved = max(pmsa(ipnt(ip_ropaved)),0.0)
@@ -273,7 +282,7 @@
          ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_unp-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           ! rounpaved = max(pmsa(ipnt(ip_rounpaved)),0.0)  THIS IS THE RIGHT STATEMENT AFTER CORRECTION OF BIN FILE
@@ -312,7 +321,7 @@
           ! ENDPOINT SURFACE WATER
 
           iseg = isegl + (rec_sfw-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           ! fluxes
@@ -344,3 +353,5 @@
 
       return
       end
+
+end module m_plastc

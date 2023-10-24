@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_atmdep
+
+      implicit none
+
+      contains
+
 
       subroutine atmdep ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Atmosferic deposition and diffuse input of IMx, N, P, Org_us and Metals
 
@@ -49,6 +57,9 @@
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      integer  IP1, IP2, IP3, IP4, IP5, IP6, IFLUX, ISEG, IKMRK1,
+     +         IKMRK2, ISW1, ISW2
+      real     zfl, depth, conc, delt  
 
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
@@ -59,9 +70,8 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-      CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+      CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
       IF (IKMRK1.EQ.1) THEN
-!     IF (BTEST(IKNMRK(ISEG),0)) THEN
 
       ZFL   = PMSA( IP1 )
       DEPTH = PMSA( IP2 )
@@ -70,7 +80,7 @@
       ISW2  = NINT(PMSA( IP5 ))
       DELT  = PMSA( IP6 )
 
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ( ( ISW1   .EQ. 0                   ) .OR.    ! option load in all segments
      +     ( IKMRK2 .EQ. 0                   ) .OR.    ! segment with surface and bottom always a load
      +     ( IKMRK2 .EQ. 1 .AND. ISW1 .EQ. 1 ) .OR.    ! top segment and option top segment
@@ -108,3 +118,5 @@
       RETURN
 !
       END
+
+      end module m_atmdep

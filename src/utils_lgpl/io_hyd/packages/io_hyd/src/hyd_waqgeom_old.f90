@@ -1,6 +1,6 @@
 module hyd_waqgeom_old
 
-! $Id$
+! 
 
 use precision
 use netcdf

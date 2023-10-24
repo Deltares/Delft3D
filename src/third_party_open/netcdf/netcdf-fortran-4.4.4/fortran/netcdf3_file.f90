@@ -3,7 +3,7 @@
 
 ! This file contains the netcdf-3 file open and create functions.
 
-! $Id$
+! 
 ! -------
 function nf90_open(path, mode, ncid, chunksize)
   character (len = *), intent(in   ) :: path

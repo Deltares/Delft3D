@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine setextforcechkadvec()
  use m_flow
@@ -43,7 +43,7 @@
 
  implicit none
 
- integer          :: L,LL, Lb, Lt, k1,k2, kt1, kt2, i
+ integer          :: L,LL, Lb, Lt, k1,k2, kt1, kt2
  double precision :: dpatm, tidp, trshcorioi, fmax, floc, dzt, dztm, alf
  double precision :: GradHinUc
  double precision :: p1, p2, wfac, Dzk
@@ -148,47 +148,53 @@ if (jawind > 0) then
  endif
 
  if (japatm > 0 .or. jatidep > 0) then
-   do i = 1, wetLinkCount
-      L = onlyWetLinks(i)
-      k1     = ln(1,L) ; k2 = ln(2,L)
+    do L  = 1,lnx
+       if ( hu(L) > 0 ) then
+          k1     = ln(1,L) ; k2 = ln(2,L)
 
-      if (japatm > 0) then
-!         dpatm  = ( patm(k2) - patm(k1) )*dxi(L)/rhomean
-!         if ( hu(L) < trshcorio ) then
-!             dpatm  = dpatm*hu(L)*trshcorioi
-!         endif
+          if (japatm > 0) then
+!             dpatm  = ( patm(k2) - patm(k1) )*dxi(L)/rhomean
+!             if ( hu(L) < trshcorio ) then
+!                 dpatm  = dpatm*hu(L)*trshcorioi
+!             endif
 
-         dpatm  = (patm(k2)-patm(k1))*dxi(L)/rhomean
+             dpatm  = (patm(k2)-patm(k1))*dxi(L)/rhomean
 
-         if (kmx == 0) then
-            adve(L) = adve(L) + dpatm
-         else
-            do LL = Lbot(L), Ltop(L)
-               adve(LL) = adve(LL) + dpatm
-            enddo
-         endif
+             if (kmx == 0) then
+                adve(L) = adve(L) + dpatm
+             else
+                do LL = Lbot(L), Ltop(L)
+                   adve(LL) = adve(LL) + dpatm
+                enddo
+             endif
 
-      endif
+          endif
 
-      if (jatidep > 0 .or. jaselfal > 0) then
-         tidp  = ( tidep(1,k2) - tidep(1,k1) )*dxi(L)
-         if ( hu(L) < trshcorio) then
-            tidp = tidp*hu(L)*trshcorioi
-         endif
-         if (kmx == 0) then
-            adve(L) = adve(L) - tidp
-         else
-            do LL = Lbot(L), Ltop(L)
-               adve(LL) = adve(LL) - tidp
-            enddo
-         endif
+          if (jatidep > 0 .or. jaselfal > 0) then
+             if (jatidep == 1) then 
+                tidp = ( tidep(1,k2) - tidep(1,k1) )*dxi(L)
+             else
+                tidp = tidef(L)
+             endif
+             if ( hu(L) < trshcorio) then
+                tidp = tidp*hu(L)*trshcorioi
+             endif
+             if (kmx == 0) then
+                adve(L) = adve(L) - tidp
+             else
+                do LL = Lbot(L), Ltop(L)
+                   adve(LL) = adve(LL) - tidp
+                enddo
+             endif
 
-!            add to tidal forces
-         tidef(L) = tidp
-      endif
-   enddo
+             if (jatidep == 1) then  ! todo: check if you now get desired outputting if jatidep==2
+                tidef(L) = tidp      ! add to tidal forces
+             endif
+          endif
+       endif
+    enddo
 
-    if ( jatidep.gt.0 .or. jaselfal.gt.0 .and. kmx.eq.0 ) then
+    if ( jatidep>0 .or. jaselfal>0 .and. kmx.eq.0 ) then
        call comp_GravInput()
     end if
 
@@ -203,9 +209,10 @@ if (jawind > 0) then
     if ( jacreep == 1) then
        dsalL = 0d0
        dtemL = 0d0
-       do i = 1, wetLinkCount
-         L = onlyWetLinks(i)
-         call anticreep( L )
+       do L = 1,lnx
+          if (hu(L) > 0d0) then
+             call anticreep( L )
+          endif
        enddo
 
      else
@@ -250,20 +257,23 @@ if (jawind > 0) then
 
     if (kmx == 0) then
 
-      do i = 1, wetLinkCount
-         L = onlyWetLinks(i)
-         k1      = ln(1,L) ; k2 = ln(2,L)
+       do L  = 1,lnx
 
-         if     (hs(k1)  < 0.5d0*hs(k2) ) then
-            if (adve(L)  < 0 .and. hs(k1) < chkadvd ) then
-               adve(L)  = adve(L)*hs(k1) / chkadvd ! ; nochkadv = nochkadv + 1
-            endif
-         else if (hs(k2) < 0.5d0*hs(k1) ) then
-            if (adve(L)  > 0 .and. hs(k2) < chkadvd ) then
-               adve(L)  = adve(L)*hs(k2) / chkadvd ! ; nochkadv = nochkadv + 1
-            endif
-         endif
-      enddo
+          if ( hu(L) > 0 ) then
+             k1      = ln(1,L) ; k2 = ln(2,L)
+
+             if     (hs(k1)  < 0.5d0*hs(k2) ) then
+                if (adve(L)  < 0 .and. hs(k1) < chkadvd ) then
+                    adve(L)  = adve(L)*hs(k1) / chkadvd ! ; nochkadv = nochkadv + 1
+                endif
+             else if (hs(k2) < 0.5d0*hs(k1) ) then
+                if (adve(L)  > 0 .and. hs(k2) < chkadvd ) then
+                    adve(L)  = adve(L)*hs(k2) / chkadvd ! ; nochkadv = nochkadv + 1
+                endif
+             endif
+          endif
+
+       enddo
 
     else
 

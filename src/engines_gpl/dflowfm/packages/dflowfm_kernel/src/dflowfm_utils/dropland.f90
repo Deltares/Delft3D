@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  !> Drop land *during* flow computation.
  !!
@@ -64,7 +64,7 @@
        CALL DBPINPOL( xk(k), yk(k), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
        if (in == 1 .and. zk(k) /= dmiss) then
           zk(k) = zk(k) + dropstep
-          if (jaceneqtr == 2 .and. jased > 0) then
+          if (jaceneqtr == 2 .and. jased > 0 .and. jased<4) then
              do j = 1,mxgr
                 grainlay(j, k ) = max(0d0, grainlay(j, k ) + dropstep/mxgr)
              enddo

@@ -10,10 +10,10 @@ subroutine bedbc2004(tp        ,rhowat    , &
                    & i2d3d     ,mudfrac   ,fsilt     ,taucr1    ,psi       , &
                    & dzduu     ,dzdvv     ,eps       ,camax     ,iopsus    , &
                    & ag        ,wave      ,tauadd    ,gamtcr    ,betam     , &
-                   & awb       ,wform     ,phi_phase ,r         ,uw_lt     ) 
+                   & awb       ,wform     ,phi_phase ,r         ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -37,8 +37,8 @@ subroutine bedbc2004(tp        ,rhowat    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute bed roughness and shear stress parameters
@@ -87,7 +87,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp), intent(out) :: taucr1
     real(fp), intent(out) :: taurat
     real(fp), intent(out) :: tauwav
-    real(fp), intent(in)  :: tp     !< peak wave period
+    real(fp), intent(in)  :: tp     !< peak wave period (limited to values larger than 1e-2)
     real(fp), intent(in)  :: umod
     real(fp), intent(out) :: ustarc
     real(fp), intent(out) :: usus
@@ -113,7 +113,6 @@ subroutine bedbc2004(tp        ,rhowat    , &
     integer , intent(in)  :: wform
     real(fp), intent(out) :: phi_phase
     real(fp), intent(out) :: r
-    real(fp), intent(out) :: uw_lt
 !
 ! Local variables
 !
@@ -131,6 +130,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp) :: fw
     real(fp) :: fw1
     real(fp) :: kswr
+    real(fp) :: llabda ! local limited rlabda value
     real(fp) :: muw
     real(fp) :: raih 
     real(fp) :: rc
@@ -165,7 +165,6 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp) :: a
     real(fp) :: b
     real(fp) :: psi_phase
-    real(fp) :: bb_phase
     real(fp) :: rsf
     real(fp) :: aas
     real(fp) :: bbs
@@ -227,8 +226,9 @@ subroutine bedbc2004(tp        ,rhowat    , &
     if (phicur < 0.0_fp) then
        phicur = phicur + 2.0_fp*pi
     endif
+    llabda = max(0.1_fp, rlabda)
     if (wave .and. tp>0.1_fp) then
-       arg = 2.0_fp * pi * h1 / max(rlabda,1.0e-12_fp)
+       arg = 2.0_fp * pi * h1 / llabda
        if (arg > 50.0_fp) then
           awb = 0.0_fp
           uwb = 0.0_fp
@@ -244,7 +244,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
     !
     ! wave parameters (if waves are present)
     !
-    if (wave .and. tp>0.1_fp) then
+    if (wave) then
        !
        ! kswr has same value as kscr (uncalibrated)
        !
@@ -305,12 +305,15 @@ subroutine bedbc2004(tp        ,rhowat    , &
           u1     = umax / sqrt(ag*h1)
           a11    = -0.0049_fp*t1**2 - 0.069_fp*t1 + 0.2911_fp
           raih   = max(0.5_fp  , -5.25_fp-6.1_fp*tanh(a11*u1 - 1.76_fp))
-          rmax   = max(0.62_fp , min(0.75_fp, -2.5_fp*h1/rlabda + 0.85_fp) )
+          rmax   = max(0.62_fp , min(0.75_fp, -2.5_fp*h1/llabda + 0.85_fp) )
           !
           uon    = umax * (0.5_fp+(rmax-0.5_fp)*tanh((raih-0.5_fp)/(rmax-0.5_fp)))
           uoff   = umax - uon
           uon    = max(1.0e-5_fp , uon)
           uoff   = max(1.0e-5_fp , uoff)
+          !
+          uwbih  = (0.5_fp*uon**3.0_fp + 0.5_fp*uoff**3.0_fp)**(1.0_fp/3.0_fp)   ! Representative peak orbital velocity 
+
        else if (wform==2) then
           ! Modification by Marcio Boechat Albernaz
           !
@@ -326,35 +329,21 @@ subroutine bedbc2004(tp        ,rhowat    , &
           b = sqrt((2.0_fp*bb**2.0_fp)/(9.0_fp+2.0_fp*bb**2.0_fp))
           r = 2.0_fp*b/(1.0_fp+b**2.0_fp) 
 
-          ! Getting uon and uoff
-          rsf    = r*sin(phi_phase)/(1.0_fp+sqrt(1.0_fp-r**2.0_fp))   ! constant
-          aas      = 1.0_fp+rsf*r*sin(phi_phase)                      ! constant
-          bbs      = rsf*r*cos(phi_phase)                             ! constant
-          ccs      = r*cos(phi_phase)                                 ! constant
           !
-          xa       = bbs**2.0_fp+aas**2.0_fp                          ! members of quadr. func. ax^2
-          xb       = -2.0_fp*bbs*ccs                                  ! members of quadr. func. bx
-          xc       = ccs**2.0_fp-aas**2.0_fp                          ! members of quadr. func. c
+          ! uon and uoff are set in bedtr2004 for wform == 2
           !
-          x2       = -xb+sqrt(-xb-4.0_fp*xa*xc)/(2.0_fp*xc)           ! positive quadr. func.
-          x2       = max(x2,-1.0_fp)                                  ! makes asin(x) real.
-          x1       = -xb-sqrt(-xb-4.0_fp*xa*xc)/(2.0_fp*xc)           ! negative quadr. func.
-          x1       = min(x1,1.0_fp)                                   ! makes asin(x) real.
-          !
-          t1_sol   = asin(x1)/omega                                   ! du/dt=0 solution 1 -> bounded to be real from limiting x1
-          t2_sol   = asin(x2)/omega                                   ! du/dt=0 solution 2 -> bounded to be real from limiting x2
+          uon = 0.0_fp
+          uoff = 0.0_fp
 
-          ! With solutions for t -> compute uon and uoff
-          f      = sqrt(1.0_fp-r**2.0_fp)
-          uw_lt  = hrms*pi/(tp*sinh(k*h1)) ! velocity ampliture from linear theory
-          !
-          ! Algebraic solution for uon and uoff, updated in bedtr2004.f90
-          uon    = uw_lt*f*(sin(omega*t1_sol)+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*t1_sol+phi_phase))
-          uoff   = uw_lt*f*(sin(omega*t2_sol)+(r*sin(phi_phase))/(1.0_fp+f))/(1.0_fp-r*cos(omega*t2_sol+phi_phase))
+          if (k*h1>1e2_fp) then
+              uwbih = 0.0_fp
+          else
+              uwbih  = hrms*pi/(tp*sinh(k*h1)) ! Wave velocity amplitude (Uw) -> Used further @bedtr2004
+          endif
+
        endif
 
        ! Calculate velocity Amplitude Uw
-       uwbih  = (0.5_fp*uon**3.0_fp + 0.5_fp*uoff**3.0_fp)**(1.0_fp/3.0_fp)   ! Representative peak orbital velocity 
        tauwav = 0.25_fp * rhowat * fw * uwbih**2                              ! Wave related shear stress
        !
        ! Updated muw expression in TR2004
@@ -448,7 +437,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
        ! Upper limit camax set to 0.65 in stead of 0.05
        ! 0.05 is official TR2004, but results seem to be reasonable when using 0.65
        !
-       caks = min(camax , 0.015_fp*fsilt*d50*ta**1.5_fp/(aks*dstar**0.3_fp))
+       caks = min(0.015_fp*fsilt*d50*ta**1.5_fp/(aks*dstar**0.3_fp), camax)
     else
        caks = 0.0_fp
     endif

@@ -180,7 +180,7 @@ set_target_properties (${library_name} PROPERTIES FOLDER A_SolutionFolder/MyComp
 #---------------------------------------------------------------------------------------------------------------------------
 # Step #7: Set a post build setp
 
-# Set the post build step that calls the oss-post_build.cmd (Windows) or oss-post_build.sh (Linux)
+# Set the post build step that calls the oss-post_build.cmd (Windows)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 

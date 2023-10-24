@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_uniset
+
+      implicit none
+
+      contains
+
 
       subroutine uniset ( lun    , lchar  , nolun  , runid  )
 
@@ -31,7 +37,7 @@
 
 !     Created           : April 1988  By M.E. Sileon / L. Postma
 
-!     Subroutine called : dhopnf
+!     Subroutine called : open_waq_files
 !                         srstop
 
 !     Logical units     : 5       = keyboard
@@ -42,7 +48,14 @@
 !                         lun( 3) = unit intermediate file (harmonics)
 !                         lun( 4) = unit intermediate file (pointers)
 
+      use m_srstop
+      use m_monsys
+      use m_getcom
+      use m_get_filepath_and_pathlen
+      use m_open_waq_files
       use timers       !   performance timers
+      use m_dhdelf
+      use m_dhgnam
 
       implicit none
 
@@ -51,7 +64,7 @@
 !     kind           function         name            Descriptipon
 
       integer  ( 4), intent(in   ) :: nolun         !< Amount of unit numbers
-      integer  ( 4), intent(in   ) :: lun  (nolun)  !< Unit numbers
+      integer  ( 4), intent(inout) :: lun  (nolun)  !< Unit numbers
       character( *), intent(inout) :: lchar(nolun)  !< File names
       character( *), intent(in   ) :: runid         !< Runid
 
@@ -70,7 +83,7 @@
       integer         outpathlen
       character*(256) outid
       integer         ierr2
-      
+
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "uniset", ithndl )
 
@@ -82,12 +95,12 @@
 !        Specific output dir?
       call getcom ( '-output', 3, specout, idummy, rdummy, outputpath, ierr2)
       if (specout) then
-         if (ierr2.eq.0) then 
+         if (ierr2.eq.0) then
             write (*,'(A)') 'Found -output switch with the following path:'
             write (*,'(/A)') trim(outputpath)
             write (*,'(/A/)') 'Make sure this path exists, or DELWAQ will not run!'
-            call dhpath ( runid, runidpath, pathlen)
-            call dhpath ( outputpath, outputpath2, outpathlen)
+            call get_filepath_and_pathlen ( runid, runidpath, pathlen)
+            call get_filepath_and_pathlen ( outputpath, outputpath2, outpathlen)
             if (outpathlen == 0 .or. outputpath(1:1) == '.') then
 !          No dir indicators found or it starts with a dot, asume it is a local subdir
                outputpath = trim(runidpath)//trim(outputpath)
@@ -103,9 +116,9 @@
          endif
       endif
 
-!        Pad the model name in the file names   
+!        Pad the model name in the file names
       do ilun = 1 , nolun
-         if ( specout .and. index( lchar(ilun), '.wrk' ) .eq. 0 .and. 
+         if ( specout .and. index( lchar(ilun), '.wrk' ) .eq. 0 .and.
      &        index( lchar(ilun), '.inp' ) .eq. 0 ) then
             lchar(ilun) = trim(outid)//lchar(ilun)
          else
@@ -121,17 +134,17 @@
 
 !        Open the neccessary unit numbers
 
-      call dhopnf  ( lun(29) , lchar(29) , 29    , 1     , ioerr )
+      call open_waq_files  ( lun(29) , lchar(29) , 29    , 1     , ioerr )
       call setmlu(lun(29))
-      call dhopnf  ( lun(26) , lchar(26) , 26    , 1     , ioerr )
+      call open_waq_files  ( lun(26) , lchar(26) , 26    , 1     , ioerr )
       if ( ioerr .gt. 0 ) then
          write ( lun(29), 1000 ) lun(26) , lchar(26)
          call srstop ( 1 )
       endif
-      call dhopnf  ( lun( 2) , lchar( 2) ,  2    , 1     , ioerr )
-      call dhopnf  ( lun( 3) , lchar( 3) ,  3    , 1     , ioerr )
-      call dhopnf  ( lun( 4) , lchar( 4) ,  4    , 1     , ioerr )
-      call dhopnf  ( lun(41) , lchar(41) , 41    , 1     , ioerr )
+      call open_waq_files  ( lun( 2) , lchar( 2) ,  2    , 1     , ioerr )
+      call open_waq_files  ( lun( 3) , lchar( 3) ,  3    , 1     , ioerr )
+      call open_waq_files  ( lun( 4) , lchar( 4) ,  4    , 1     , ioerr )
+      call open_waq_files  ( lun(41) , lchar(41) , 41    , 1     , ioerr )
 
       if (timon) call timstop( ithndl )
       return
@@ -143,3 +156,5 @@
      &         /' Does not exist.',
      &         /' EXECUTION HALTED !!!!!!!!!!!!!')
       end
+
+      end module m_uniset

@@ -17,20 +17,19 @@ message(STATUS "Configuring '${executable_name}' with the following deltares_com
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
-set(ini_version_file "${absolute_header_path}/version_number.ini")
+set(rc_version_file "${absolute_header_path}/d_hydro_version.rc")
 set(header_version_file "${absolute_header_path}/d_hydro_version.h")
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 include_directories(${include_path}
                     ${deltares_common_c_include_path}
-                    ${d_hydro_lib_include_path})
+                    ${d_hydro_lib_include_path}
+                    ${version_include_dir})
 
 if (UNIX)    
     include_directories(${NETCDF_INCLUDEDIR}) 
     add_definitions(-DD3D_PLUGIN_EXT=".so")
 endif(UNIX)
-
-# Generate the version files
-generate_version_files(${header_version_file} ${ini_version_file})
 
 # Gather source files
 file(GLOB source ${src_path}/*.cpp)
@@ -39,13 +38,7 @@ set(d_hydro_src_path "${d_hydro_lib_path}/src")
 
 add_executable(${executable_name}   ${source}
                                     ${rc_version_file} 
-                                    ${header_version_file} 
-                                    ${ini_version_file})
-
-# Define prebuild events
-prebuild_version_number(${executable_name}  ${header_version_file} 
-                                            ${checkout_src_root}
-                                            ${ini_version_file})
+                                    ${header_version_file})
 
 # Common UNIX and WIN32 link library dependency
 if(UNIX)
@@ -60,7 +53,7 @@ if(UNIX)
                                PRIVATE  
                                ${header_path}
                               "${d_hydro_lib_path}/include"
-                              "${checkout_src_root}/third_party_open/expat/x64/include")
+                              "${expat_include_path}")
 
     target_link_libraries(${executable_name} ${oss_dependencies}) 
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
@@ -68,6 +61,7 @@ if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     target_link_libraries(${executable_name} Threads::Threads)
+    add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
 if (WIN32)
@@ -81,7 +75,7 @@ if (WIN32)
                                 PRIVATE  
                                 ${header_path}
                                 "${d_hydro_lib_path}/include"
-                                "${checkout_src_root}/third_party_open/expat/x64/include"
+                                "${expat_include_path}"
                                 "${mpi_include_path}"
                                 "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
@@ -90,7 +84,7 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/expat/x64/x64/"
+                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
@@ -121,8 +115,8 @@ post_build_target( ${executable_name}
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/lnx64/run_d_hydro.sh             DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/lnx64/submit_d_hydro.sh          DESTINATION bin)
+#    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/lnx64/run_d_hydro.sh             DESTINATION bin)
+#    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/lnx64/submit_d_hydro.sh          DESTINATION bin)
 endif(UNIX)
 
 if (WIN32)

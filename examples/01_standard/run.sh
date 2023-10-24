@@ -4,5 +4,5 @@
     # build.sh all
     # See README.md there for more information
 
-../../build_all/lnx64/bin/run_dflow2d3d.sh
+../../build_delft3d4/install/bin/run_dflow2d3d.sh
 

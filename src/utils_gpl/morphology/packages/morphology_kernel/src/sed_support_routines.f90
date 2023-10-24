@@ -1,7 +1,7 @@
 module sed_support_routines
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module sed_support_routines
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
 implicit none
@@ -35,6 +35,9 @@ private
 
 public shld
 public ruessink_etal_2012
+public calculate_critical_velocities
+public calculate_velocity_asymmetry
+public calculate_urms
 
 contains
 
@@ -122,5 +125,160 @@ subroutine ruessink_etal_2012(k, hs, h, sk, as, phi_phase, urs, bm)
 !   Ruessink et al. (2012), eq. (12)
     phi_phase = -psi - (pi/2.0_fp)
 end subroutine ruessink_etal_2012
+
+
+subroutine calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vicmol, d15, poros, pormax, rheea, delta, u, v, &
+    dzdx, dzdy, dtol, phi, ucr, ucrb, Ucrs)
+    use precision
+    use mathconsts
+    implicit none
+    
+    integer                  , intent(in)    :: dilatancy
+    integer                  , intent(in)    :: bedslpeffini
+    real(fp)                 , intent(in)    :: dzbdt    !<  Erosion/sedimentation velocity
+    real(fp)                 , intent(in)    :: ag
+    real(fp)                 , intent(in)    :: vicmol
+    real(fp)                 , intent(in)    :: d15
+    real(fp)                 , intent(in)    :: poros
+    real(fp)                 , intent(in)    :: pormax
+    real(fp)                 , intent(in)    :: rheea
+    real(fp)                 , intent(in)    :: delta
+    real(fp)                 , intent(in)    :: u
+    real(fp)                 , intent(in)    :: v
+    real(fp)                 , intent(in)    :: dzdx   
+    real(fp)                 , intent(in)    :: dzdy
+    real(fp)                 , intent(in)    :: dtol
+    real(fp)                 , intent(in)    :: phi   
+    real(fp)                 , intent(in)    :: ucr
+    real(fp)                 , intent(out)   :: ucrb
+    real(fp)                 , intent(out)   :: Ucrs
+
+    
+    real(fp)                       :: srftotal
+    real(fp)                       :: srfrhee
+    real(fp)                       :: vero      !< Erosion velocity
+    real(fp)                       :: kl
+    real(fp)                       :: alpha1, alpha2, beta, psi
+    
+    srfRhee  = 0.0_fp
+    srfTotal = 1.0_fp
+    if (dilatancy == 1) then
+       vero = max(0.0_fp,-dzbdt)
+       ! Permeability, Adel 1987
+       kl = ag/(160.0_fp*vicmol)*(d15**2)*((poros**3)/(1.0_fp-poros)**2)
+       ! Reduction factor on the critical Shields parameter by dilatancy (Van Rhee, 2010)
+       srfRhee = vero/kl*(pormax-poros)/(1.0_fp-poros)*rheea/delta
+    endif
+    !
+    if (bedslpeffini == 0) then
+         srfTotal = 1.0_fp + srfRhee
+    elseif (bedslpeffini == 1 .or. bedslpeffini == 2) then
+       if  ((abs(u) > dtol .or. abs(v) > dtol) .and. (abs(dzdx) > dtol .or. abs(dzdy) > dtol)) then
+          ! 
+          alpha1 = atan2(v,u)
+          ! Angle between the x-axis and the bed slope vector directed in down-slope direction
+          alpha2 = mod(atan2(-dzdy,-dzdx),2.0_fp*pi)
+          psi = alpha1-(alpha2-pi) 
+          if (abs(dzdx) < dtol) then 
+              !  Beta purely based on dzdy
+              beta = atan(abs(dzdy))
+          else
+              ! Maximum absolute bed slope angle, derived in de Vet 2014
+              beta = atan(abs(dzdx/sin(atan(dzdx/max(dzdy,DTOL)))))
+          endif
+          beta = min(beta,phi)
+          if (dilatancy == 1) then
+             ! Soulsby (1997), modified by de Vet 2014
+             srfTotal = (cos(psi)*sin(beta)+sqrt( &
+                        (srfRhee**2+2.0_fp*srfRhee*cos(beta)+cos(beta)**2) * &
+                         tan(phi)**2-sin(psi)**2*sin(beta)**2)) / tan(phi)
+          else
+             ! Soulsby (1997)
+             srfTotal = (cos(psi)*sin(beta) + &
+                         sqrt(cos(beta)**2*tan(phi)**2-sin(psi)**2*sin(beta)**2))/tan(phi)
+          endif
+       endif
+    endif
+   ! Calculate the new critical velocity based on the modification factors on the Shields parameter
+   Ucrb = Ucr*sqrt(srfTotal)
+   if (bedslpeffini == 1) then
+      ! bed+sus
+      Ucrs = Ucrb
+   else
+      ! bed only
+      Ucrs = Ucr*(1.0_fp+sqrt(srfRhee))
+   endif
+end subroutine calculate_critical_velocities
+
+
+subroutine calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
+    use precision
+    use mathconsts
+    implicit none
+    
+    integer                     , intent(in)     :: waveform
+    integer                     , intent(in)     :: sws
+    real(fp)                    , intent(in)     :: facas
+    real(fp)                    , intent(in)     :: facsk
+    real(fp)                    , intent(in)     :: h
+    real(fp)                    , intent(in)     :: hrms
+    real(fp)                    , intent(in)     :: rlabda
+    real(fp)                    , intent(in)     :: ag
+    real(fp)                    , intent(in)     :: tp
+    real(fp)                    , intent(in)     :: urms
+    real(fp)                    , intent(out)    :: uamag
+        
+    uamag = 0.0_fp
+    if (waveform==1) then
+       call ua_rvr(facas    ,facsk  ,sws   ,h   ,hrms   , &
+                 & rlabda   ,urms   ,uamag )
+    else if (waveform==2) then
+       call ua_vt(facas    ,facsk   ,sws   ,h      ,   &
+                & hrms     ,tp      ,ag    ,urms   ,   &
+                & uamag    )
+    end if
+
+end subroutine calculate_velocity_asymmetry
+
+subroutine calculate_urms(hrms, tp, h, ag, ubot_from_com, ubot, kwtur, urms, urms2)
+    use precision
+    use mathconsts
+
+    implicit none
+
+    logical , intent(in)           :: ubot_from_com
+    real(fp), intent(in)           :: hrms
+    real(fp), intent(in)           :: tp
+    real(fp), intent(in)           :: h
+    real(fp), intent(in)           :: ag
+    real(fp), intent(in)           :: ubot
+    real(fp), intent(in)           :: kwtur
+    real(fp), intent(out)          :: urms
+    real(fp), intent(out)          :: urms2
+
+    real(fp)                       :: tp2
+    real(fp)                       :: k
+    real(fp)                       :: uorb
+
+    if ( tp > 1.e-6_fp ) then
+       !
+       !     Prevent small tp
+       !
+       tp2 = max(tp, 1.0_fp)
+       !
+       call wavenr(h         ,tp2        ,k         ,ag        )
+       if (ubot_from_com) then
+          uorb = ubot
+       else
+          uorb = pi*hrms/tp2/sinh(k*h)
+       endif
+       urms = uorb*0.7071_fp
+       urms2 = urms**2 + 1.45_fp*kwtur
+    else
+       urms  = 0.0_fp
+       urms2 = 0.0_fp
+    endif
+
+end subroutine calculate_urms
 
 end module sed_support_routines

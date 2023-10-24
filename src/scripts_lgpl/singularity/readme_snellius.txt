@@ -1,7 +1,7 @@
-Running Delft3dfm in a Singularity container on Snellius:
+Running Delft3dfm in an Apptainer (Singularity) container on Snellius:
 
 1. Copy the script "submit_singularity_snellius.sh" into your working folder. 
-   It is a script for executing Singularity computations on Snellius.
+   It is a script for executing Apptainer (Singularity) computations on Snellius.
    "Working folder" is the location of your dimr configuration file.
    
 2. Modify "submit_singularity_snellius.sh" according to your own requirements.

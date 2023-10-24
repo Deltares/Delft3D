@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine print_help_commandline()
 use unstruc_display, only: jaGUI
@@ -134,12 +134,21 @@ endif
    write (*,*) '      OUTPUTFILE is the name under which the file will be saved.'
    write (*,*) '        When not specified, the original NETFILE will be overwritten.'
    write (*,*) ' '
+   write (*,*) '  --savenet NETFILE -o OUTPUTFILE'
+   write (*,*) '      Read network from NETFILE and save it in the latest UGRID format.'
+   write (*,*) '      OUTPUTFILE is the name under which the file will be saved.'
+   write (*,*) ' '
    write (*,*) ' --cutcells NETFILE'
    write (*,*) '      Cut the unstructured grid in NETFILE with the polygons specified'
    write (*,*) '      in a file called ''cutcellpolygons.lst''.'
    write (*,*) ' --convertlongculverts PREFIX'
    write (*,*) '      Convert long culverts in mdu specified structure file to a netfile + crs definition file'
    write (*,*) '      with file prefix PREFIX''.'
+   write (*,*) ' '
+   write (*,*) '  --exportnet-bedlevel MDUFILE'
+   write (*,*) '      Load the model in MDUFILE, initialize it, and export the interpolated'
+   write (*,*) '      bedlevels into an output file DFM_interpreted_network_<md_ident>_net.nc'
+   write (*,*) '      Only applied to models with a *.ext file containing bedlevel data.'
    write (*,*) ' '
    write (*,*) ' --no-geom-cache'
    write (*,*) '      Do not load nor save cache file with geometry information.'

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,15 +27,15 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
       SUBROUTINE START_PROGRAM()
       use M_dimens
       USE M_DEVICES
       use unstruc_files
       use unstruc_startup
-      use unstruc_version_module, only : unstruc_basename
+      use dflowfm_version_module, only : base_name
       use unstruc_display, only : jaGUI
       use unstruc_messages
 
@@ -66,7 +66,7 @@
       JSCREEN = 0
       INFOFILE = 0
 
-      CALL INIDIA(unstruc_basename)
+      CALL INIDIA(base_name)
 
       CALL FIRSTLIN(MDIA)
       CALL FIRSTLIN(6)

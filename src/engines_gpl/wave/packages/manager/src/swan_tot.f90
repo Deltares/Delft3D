@@ -1,7 +1,7 @@
 subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -108,7 +108,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
       if (wavedata%output%write_wavm) then
          call setoutputcount(wavedata%output, wavedata%output%count + 1)
       endif
-      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3) then
+      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
          !
          ! SWANFile is going to contain two datasets: from tstart and tend
          ! Output from tend will always be written
@@ -359,7 +359,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          write(*,'(a)') '  Read SWAN output'
          offset = 0
-         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3) then
+         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
             ! SWANFile contains two datasets: from tstart and tend
             ! First read the first dataset
             ! This must be placed in output%count-1
@@ -439,7 +439,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
             !
             ! The hotfile related to "usehottime" has been used and can now be deleted
             !
-            write (fname,'(a,i0,2a)') 'hot_', i_swan, '_', trim(swan_run%usehottime)
+            write (fname,'(a,i0,5a)') 'hot_', i_swan, '_', trim(swan_run%usehottime(1:8)), '_', trim(swan_run%usehottime(10:15)), '.nc'
             inquire (file = trim(fname), exist = exists)
             if (exists) then
                open (newunit=lunhot, file = trim(fname))
@@ -452,7 +452,8 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
             count = 0
             do
                count = count + 1
-               write (fname,'(a,i0,3a,i3.3)') 'hot_', i_swan, '_', trim(swan_run%usehottime), '-', count
+               write (fname,'(a,i0,5a,i3.3,a)') 'hot_', i_swan, '_', trim(swan_run%usehottime(1:8)), '_', trim(swan_run%usehottime(10:15)), '-', count,'.nc'
+               
                inquire (file = trim(fname), exist = exists)
                if (exists) then
                   open (newunit = lunhot, file = trim(fname))

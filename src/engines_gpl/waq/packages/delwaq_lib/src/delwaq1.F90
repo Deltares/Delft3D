@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,8 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1
+use m_delwaq1_write_messages
+use m_delwaq1_startup_screen
+use m_delwaq1_read_input_data
+use m_delwaq1_init
+use m_delwaq1_close_lunfiles
+
+
+implicit none
+
+contains
+
 
 subroutine delwaq1(argc, argv, errorcode)
+use m_delwaq1_allocate_workspace
+
 
 !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
@@ -59,3 +73,5 @@ subroutine delwaq1(argc, argv, errorcode)
     ! Delwaq1_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
     return
 end subroutine delwaq1
+
+end module m_delwaq1

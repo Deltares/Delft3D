@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 subroutine enghan(dll_integers, max_integers, &
                   dll_reals   , max_reals   , &
                   dll_strings , max_strings , &
@@ -76,6 +76,21 @@ logical               , intent(out) :: equi_conc          ! true: contration ces
 logical               , intent(out) :: sbc_total          ! true: bed load magnitude returned by formula
                                                           ! false: bed load components returned
 !
+! Local variables for error message
+!
+character(len=256) :: error_message
+!
+call core_function() ! Core function call 
+!
+call message2c(error_message, error_message_c)
+
+contains
+    
+!
+! Core function definition 
+!
+subroutine core_function()
+!
 ! Local variables for input parameters
 !
 integer            :: i
@@ -97,7 +112,6 @@ real(hp)           :: ws
 real(hp)           :: zumod
 character(len=256) :: runid
 character(len=256) :: filenm
-character(len=256) :: error_message
 !
 ! Local variables
 !
@@ -110,9 +124,6 @@ real(hp)           :: ustar
 !
 if (max_integers < 4) then
    error_message = 'Insufficient integer values provided by delftflow'
-   do i=1,256
-      error_message_c(i) = error_message(i:i)
-   enddo
    return
 endif
 nm      = dll_integers( 1) ! nm index of the grid cell
@@ -122,9 +133,6 @@ l       = dll_integers( 4) ! number of the sediment fraction in the computation
 !
 if (max_reals < 30) then
    error_message = 'Insufficient real values provided by delftflow'
-   do i=1,256
-      error_message_c(i) = error_message(i:i)
-   enddo
    return
 endif
 timsec  = dll_reals( 1)    ! current time since reference time [s]
@@ -160,9 +168,6 @@ taub    = dll_reals(30)    ! bed shear stress [N/m2]
 !
 if (max_strings < 2) then
    error_message = 'Insufficient strings provided by delftflow'
-   do i=1,256
-      error_message_c(i) = error_message(i:i)
-   enddo
    return
 endif
 runid   = dll_strings( 1)  ! user-specified run-identification
@@ -225,7 +230,7 @@ sswv    = 0.0_hp          ! suspended load transport, n direction due to waves i
 !
 t_relax = 0.0_hp          ! relaxation time is zero
 !
-do i=1,256
-   error_message_c(i) = error_message(i:i)
-enddo
+
+end subroutine core_function
+
 end subroutine enghan

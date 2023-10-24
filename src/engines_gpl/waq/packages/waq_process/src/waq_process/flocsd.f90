@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_flocsd
+
+implicit none
+
+contains
+
 
       subroutine flocsd     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
@@ -27,6 +33,7 @@
 !
 !*******************************************************************************
 !
+      use m_evaluate_waq_attribute
       use flocculation_dwq
 
       implicit none
@@ -112,7 +119,7 @@
          ! only for active water segments
 
          active = btest(iknmrk(iseg),0)
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
          bottom = ikmrk1.eq.3
          if ( active .and. .not. bottom ) then
             tke = tau / param_soulsby ! Very coarse estimate!
@@ -195,3 +202,5 @@
       enddo
 
       end subroutine flocsd
+
+end module m_flocsd

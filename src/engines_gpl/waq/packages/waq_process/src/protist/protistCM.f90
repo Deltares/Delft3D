@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,15 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistcm
+
+implicit none
+
+contains
+
 
 
   ! 6 char name for process mathc with second line of PDF
 subroutine PROTCM     ( pmsa   , fl     , ipoint , increm, noseg , &
-                            noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                            noq3   , noq4   )
+                        noflux , iexpnt , iknmrk , noq1  , noq2  , &
+                        noq3   , noq4   )
 !
 !*******************************************************************************
 !
+use m_evaluate_waq_attribute
 use protist_math_functions
 use protist_cell_functions
 use protist_types
@@ -180,7 +187,7 @@ use ieee_arithmetic
 
     ! segment loop
     segmentLoop: do iseg = 1 , noseg
-        call dhkmrk(1,iknmrk(iseg),ikmrk1)
+        call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1.eq.1) then
 
         ! species independent items
@@ -547,3 +554,5 @@ use ieee_arithmetic
     deallocate (ipnt)
     return
 end ! end subroutine
+
+end module m_protistcm

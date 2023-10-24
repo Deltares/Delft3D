@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_nlalg
+
+      implicit none
+
+      contains
+
 
       subroutine nlalg  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+
 !>\file
 !>       Nutrient limiation function for DYNAMO algae
 
@@ -51,11 +59,13 @@
 
 !     Name     Type   Library
 !     ------   -----  ------------
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      integer  iseg
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
@@ -72,8 +82,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.GT.0) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       AMOPRF    = PMSA( IP1)
@@ -85,21 +94,11 @@
       PO4       = PMSA( IP7)
       SI        = PMSA( IP8)
 
-      IF (AMOPRF .LT. 1E-20 )  CALL ERRSYS ('AMOPRF in NLALG zero', 1 )
+      IF (AMOPRF .LT. 1E-20 )  CALL write_error_message ('AMOPRF in NLALG zero' )
 
 !     Calculation of available dissolved N (NO3 corrected with AMOPRF)
       DIN = NO3 / AMOPRF + NH4
       IF ( (NO3 .LT. 0.0) .OR. (NH4 .LT. 0.0) ) DIN = 0.0
-
-!
-!     AM: These checks are suprefluous, as the limiting factor is set
-!         to zero anyway, if the concentration is negative.
-!     IF (ABS(DIN+KMDIN).LT.1E-20) CALL ERRSYS
-!    &                     ('DIN+KMDIN zero in NLALG', 1 )
-!     IF (ABS(PO4+KMP).LT.1E-20) CALL ERRSYS
-!    &                     ('PO4+KMP zero in NLALG', 1 )
-!     IF ( (KMSI .NE. -1.0) .AND. (ABS(SI+KMSI).LT.1E-20) ) CALL ERRSYS
-!    &                     ('SI+KMSI zero in NLALG', 1 )
 
 !     Nutrient limitation functions (MONOD)
       FN    = DIN / (DIN + KMDIN )
@@ -148,3 +147,5 @@
 
       END
 !
+
+      end module m_nlalg

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    ! =================================================================================================
    ! =================================================================================================
@@ -44,7 +44,7 @@
    implicit none
    double precision, dimension(lnkx), intent(in ) :: u1_loc
 
-   integer          :: L, KK, k1, k2, k, nw, Lb, Lt, LL, nn, n, kt,kb, kbk, k2k, i
+   integer          :: L, KK, k1, k2, k, nw, Lb, Lt, LL, nn, n, kt,kb, kbk, k2k
    integer          :: itpbn, newucxq=0
    double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, adx, ac1, ac2, wuw, hdx, hul, dzz, uin, duxdn, duydn
    double precision :: dischcorrection
@@ -57,8 +57,7 @@
    ucx_mor  = 0d0 ; ucy_mor  = 0d0
 
    if (kmx < 1) then                                   ! original 2D coding
-      do i = 1, wetLink2D-1
-         L = onlyWetLinks(i)
+      do L = 1,lnx1D
          if (u1_loc(L) .ne. 0d0 .and. kcu(L) .ne. 3) then  ! link flows ; in 2D, the loop is split to save kcu check in 2D
             k1 = ln(1,L) ; k2 = ln(2,L)
             wcxu          = wcx1(L)*u1_loc(L)
@@ -75,8 +74,7 @@
             ucyq_mor (k2) = ucyq_mor (k2) + wcyu*hu(L)
          endif
       enddo
-      do i = wetLink2D, wetLinkCount
-         L = onlyWetLinks(i)
+      do L = lnx1D + 1,lnx
          if (jabarrieradvection == 3) then
             if (struclink(L) == 1) cycle
          endif

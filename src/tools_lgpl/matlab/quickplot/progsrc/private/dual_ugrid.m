@@ -3,7 +3,7 @@ function data = dual_ugrid(data,includeBoundaryNodes)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -90,7 +90,7 @@ nFacesPerNode = accumarray(FaceNodeConnect(:),1,[nNodes 1]);
 nFacesPerNode(1) = nFacesPerNode(1)-sum(missing(:));
 %
 % Determine the list of Faces connected to a Node.
-% This list of Faces is not ordered clockwise or counterclockwise!
+% This list of Faces is not ordered!
 %
 NFC = [FaceNodeConnect(:) repmat((1:nFaces)',size(FaceNodeConnect,2),1)];
 NFC(missing,:) = [];
@@ -100,14 +100,14 @@ j(nFacesPerNode+1+(0:nNodes-1)'*size(j,1)) = NaN;
 j = cumsum(j);
 j = j(~isnan(j));
 NodeFaceConnect = NaN(nNodes,max(nFacesPerNode));
-NodeFaceConnect(NFC(:,1)+(j-1)*nNodes) = NFC(:,2); % not yet oriented clockwise/counterclockwise!
+NodeFaceConnect(NFC(:,1)+(j-1)*nNodes) = NFC(:,2); % not yet ordered clockwise/counterclockwise!
 %
-% Determine the numner of Edges connected to a Node.
+% Determine the number of Edges connected to a Node.
 %
 nEdgesPerNode = accumarray(EdgeNodeConnect(:),1,[nNodes 1]);
 %
 % Determine the list of Edges connected to a Node.
-% This list of Edges is not ordered clockwise or counterclockwise!
+% This list of Edges is not ordered!
 %
 NEC = sortrows([EdgeNodeConnect(:) repmat((1:nEdges)',2,1)]);
 j = ones(max(nEdgesPerNode)+1,nNodes);

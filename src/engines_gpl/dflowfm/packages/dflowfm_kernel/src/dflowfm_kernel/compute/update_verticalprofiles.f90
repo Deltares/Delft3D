@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine update_verticalprofiles()
 !c************************************************************************
@@ -64,7 +64,7 @@ subroutine update_verticalprofiles()
 
  double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
 
- double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq
+ double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf 
 
  double precision :: wk,wke,vk,um,tauinv,tauinf,xlveg,rnv, diav,ap1,alf,c2esqcmukep,teps,tkin
 
@@ -73,7 +73,7 @@ subroutine update_verticalprofiles()
  double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav,epswv, prsappr
 
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
- integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, jadrhodz = 1, kup, ierror, Ltv, ktv 
+ integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
 double precision, external :: setrhofixedp
 
@@ -329,11 +329,7 @@ double precision, external :: setrhofixedp
         advi(Lb) = advi(Lb)  + cfuhi3D
      endif
 
-     ! JRE with HK move out of subroutine getustb
-     if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then            ! Ustokes correction at bed
-        adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
-     endif
-
+ 
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
      tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
 
@@ -349,10 +345,38 @@ double precision, external :: setrhofixedp
      ck(0:kxL) = 0.d0
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
+     if (facLaxturb > 0) then 
+        if (jafacLaxturbtyp == 1) then 
+           do L  = Lb,Lt-1
+              zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+              if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+                 k1 = ln(1,L) ; k2 = ln(2,L) 
+                 if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+                    faclax = facLaxturb*zf
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                 endif
+              endif
+           enddo
+        else if (jafacLaxturbtyp == 2) then 
+           do L  = Lb,Lt-1
+              k1 = ln(1,L) ; k2 = ln(2,L) 
+              if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*turkin0(L) +  0.5d0*facLaxturb*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+              endif
+           enddo
+        endif
+     endif
+
      vicu      = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigtkei        !
 
      ! Calculate turkin source from wave dissipation: preparation
      if (jawave>0) then
+
+        !JRE with HK move out of subroutine getustb
+        if (jawaveStokes >= 1 .and. .not. flowWithoutWaves) then      ! Ustokes correction at bed
+           adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
+        endif
+
         k1=ln(1,LL); k2=ln(2,LL)
         ac1=acl(LL); ac2=1d0-ac1
         hrmsLL  = min(max(ac1*hwav(k1) + ac2*hwav(k2), 1d-2),gammax*hu(LL))
@@ -408,24 +432,24 @@ double precision, external :: setrhofixedp
             dzc1       = 0.5d0*(zws(k1u) - zws(k1-1) )  ! vertical distance between cell centers on left side
             if (dzc1 >  0) then
                if (idensform < 10) then                     
-               drhodz1 = ( rho(k1u) - rho(k1) ) / dzc1
+                  drhodz1 = ( rho(k1u) - rho(k1) ) / dzc1
                else
                   prsappr = ag*rhomean*( zws(ktop(ln(1,LL))) - zws(k1) )   
                   drhodz1 = ( setrhofixedp(k1u,prsappr) - setrhofixedp(k1,prsappr) ) / dzc1
-            endif
+               endif
             endif
 
             dzc2       = 0.5d0*(zws(k2u) - zws(k2-1) )  ! vertical distance between cell centers on right side
             if (dzc2 > 0) then
                if (idensform < 10) then      
-               drhodz2 = ( rho(k2u) - rho(k2) ) / dzc2
+                  drhodz2 = ( rho(k2u) - rho(k2) ) / dzc2
                else
                   prsappr = ag*rhomean*( zws(ktop(ln(2,LL))) - zws(k2) )  
                   drhodz2 = ( setrhofixedp(k2u,prsappr) - setrhofixedp(k2,prsappr) ) / dzc2
-            endif
+               endif
             endif
 
-            if (jadrhodz == 1) then
+            if (jadrhodz == 1) then               ! averagingif non zero   
 
                if (drhodz1 == 0) then
                   drhodz  = drhodz2
@@ -436,10 +460,39 @@ double precision, external :: setrhofixedp
                   drhodz  = acl(LL)* drhodz1 + (1.0d0 - acl(LL)) * drhodz2
                endif
 
-            else if (jadrhodz == 2) then
+            else if (jadrhodz == 2) then          ! averaging
+
+               drhodz  = acl(LL)* drhodz1 + (1.0d0 - acl(LL)) * drhodz2
+ 
+            else if (jadrhodz == 3) then          ! upwind
+ 
+               if (u1(L) > 0d0) then 
+                  drhodz = drhodz1
+               else 
+                  drhodz = drhodz2
+               endif
+
+            else if (jadrhodz == 4) then          ! most stratified, decreases viscosity
 
                drhodz  = min( drhodz1, drhodz2 )
 
+            else if (jadrhodz == 5) then
+
+               drhodz  = max( drhodz1, drhodz2 )  ! least stratified, increases viscosity 
+
+            else if (jadrhodz == 6) then          ! first average then d/dz
+
+               if (dzc1 > 0 .and. dzc2 > 0) then
+
+                  if (idensform < 10) then                     
+                     drhodz  = ( rho(k1u) + rho(k2u) - rho(k1) - rho(k2) ) / (dzc1 + dzc2)
+                  else
+                     prsappr = ag*rhomean*( zws(ktop(ln(1,LL))) - zws(k1) )   
+                     drhodz  = ( setrhofixedp(k1u,prsappr) + setrhofixedp(k2u,prsappr) - setrhofixedp(k1,prsappr) - setrhofixedp(k1,prsappr)) / ( dzc1 + dzc2)
+                  endif
+ 
+               endif
+               
             endif
  !
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
@@ -578,20 +631,23 @@ double precision, external :: setrhofixedp
                      ck(k-1) = ck(k-1) - adv
                   endif
                endif
-               if ( q1(L) + q1(L+1) > 0) then
-                  kup = ln(1,L) ; arLL = a1(n1)
-               else
-                  kup = ln(2,L) ; arLL = a1(n2)
-               endif
-               volki = 1d0 / (dzw(k)*arLL )
-               if (javakeps == 3) then
+               
+               if (javakeps == 3) then                     ! turkin 
+                  if ( q1(L) + q1(L+1) > 0) then
+                     kup = ln(1,L) ; arLL = a1(n1)
+                  else
+                     kup = ln(2,L) ; arLL = a1(n2)
+                  endif
+                  volki = 1d0 / (dzw(k)*arLL )
                   dk(k) = dk(k) + tqcu(kup)*volki
                   bk(k) = bk(k) + sqcu(kup)*volki
-                else if (javakeps == 4) then
-                   k1    = ln(1,L) ; k2 = ln(2,L)
-                   dk(k) = dk(k) + ( ac1*tqcu(k1) + ac2*tqcu(k2) ) * volki
-                   bk(k) = bk(k) + ( ac1*sqcu(k1) + ac2*sqcu(k2) ) * volki
-                endif
+               else if (javakeps == 4) then                ! turkin 
+                  k1    = ln(1,L) ; k2 = ln(2,L)
+                  volki = ( ac1*(vol1(k1) + vol1(k1+1)) + ac2*(vol1(k2) + vol1(k2+1)) )*0.5d0
+                  volki = 1d0/volki
+                  dk(k) = dk(k) + ( ac1*tqcu(k1) + ac2*tqcu(k2) ) * volki
+                  bk(k) = bk(k) + ( ac1*sqcu(k1) + ac2*sqcu(k2) ) * volki
+               endif
             enddo
          endif
      endif
@@ -671,6 +727,28 @@ double precision, external :: setrhofixedp
      dk(0:kxL) = dtiL*tureps0(Lb0:Lt)
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
+
+     if (facLaxturb > 0) then 
+        if (jafacLaxturbtyp == 1) then 
+           do L  = Lb,Lt-1
+              zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+              if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+                 k1 = ln(1,L) ; k2 = ln(2,L) 
+                 if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+                    faclax = facLaxturb*zf
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                 endif
+              endif
+           enddo
+        else if (jafacLaxturbtyp == 2) then 
+           do L  = Lb,Lt-1
+              k1 = ln(1,L) ; k2 = ln(2,L) 
+              if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*tureps0(L) +  0.5d0*facLaxturb*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+              endif
+           enddo
+        endif  
+     endif
 
      vicu  = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigepsi
 
@@ -825,21 +903,23 @@ double precision, external :: setrhofixedp
               endif
            endif
 
-           if ( q1(L) + q1(L+1) > 0) then
-              kup = ln(1,L) ; arLL = a1(n1)
-           else
-              kup = ln(2,L) ; arLL = a1(n2)
-           endif
-           volki = 1d0 / (dzw(k)*arLL )
-           if (javakeps == 3) then
+           if (javakeps == 3) then                          ! tureps 
+              if ( q1(L) + q1(L+1) > 0) then
+                 kup = ln(1,L) ; arLL = a1(n1)
+              else
+                 kup = ln(2,L) ; arLL = a1(n2)
+              endif
+              volki = 1d0 / (dzw(k)*arLL )
               dk(k) = dk(k) + eqcu(kup)*volki
               bk(k) = bk(k) + sqcu(kup)*volki
-           else if (javakeps == 4) then
+           else if (javakeps == 4) then                     ! tureps
               k1    = ln(1,L) ; k2 = ln(2,L)
+              volki = ( ac1*(vol1(k1) + vol1(k1+1)) + ac2*(vol1(k2) + vol1(k2+1)) )*0.5d0
+              volki = 1d0/volki
               dk(k) = dk(k) + ( ac1*eqcu(k1) + ac2*eqcu(k2) ) * volki
               bk(k) = bk(k) + ( ac1*sqcu(k1) + ac2*sqcu(k2) ) * volki
            endif
-         enddo
+        enddo
     endif
 
     if (javeg > 0) then  ! in turbulence model
@@ -886,10 +966,10 @@ double precision, external :: setrhofixedp
                   kup = ln(2,L) ; arLL = a1(n2)
                endif
                volki = 1d0 / (dzw(k)*arLL )
-               if (javakeps == 3) then
+               if (javakeps == 3) then             ! in test
                   dk(k) = dk(k) + ttqc(kup)*volki
                   bk(k) = bk(k) + sqcu(kup)*volki
-               else if (javakeps == 4) then
+               else if (javakeps == 4) then        ! in test
                   k1    = ln(1,L) ; k2 = ln(2,L)
                   dk(k) = dk(k) + ( ac1*ttqc(k1) + ac2*ttqc(k2) ) * volki
                   bk(k) = bk(k) + ( ac1*sqcu(k1) + ac2*sqcu(k2) ) * volki

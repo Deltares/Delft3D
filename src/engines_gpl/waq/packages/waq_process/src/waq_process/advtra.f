@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_advtra
+
+      implicit none
+
+      contains
+
 
       subroutine advtra ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -53,6 +59,7 @@
 !    integer :: topsedsed  ! first within collumn exchange number
 !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
 !
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with derived types and add function
 
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -77,6 +84,7 @@
      J         INRVOL, INSVOL, INBVOL, INPORI, INPORA,
      J         INDVOL, INDVEL, INSEEP
 
+      integer  IPSWRE, IPALPH, IPCFLX, INSWRE, INALPH, INCFLX
 !     Include column structure
 !     we define a double column structure, one for downward,
 !     and one for upward transport
@@ -158,7 +166,7 @@
 
 !     Zero output quantities on segment level
 
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
          IF (IKMRK1.EQ.3) THEN
             PMSA ( IPCFLX ) =  0.0
             PMSA ( IPRFLX ) =  0.0
@@ -408,22 +416,11 @@
 !         the inverse case is treated as DIGGING (see RESKOL)
 !         numerical parameter determines max.rel.corr. per time step
 
-!jvb      CORBUR = 0.0
           IF ( PORINP .GT. 0.0001 ) then
-!         IF ( PORACT .LT. PORINP-0.001 ) THEN
           IF ( PORACT .LT. PORINP ) THEN
-!jvb          CORBUR = ACTH/DELT*DM*(PORINP-PORACT)/(1.0-PORACT)*MXRCOR
               CORBUR = CORBUR + ACTH/DELT*DM*(PORINP-PORACT)/(1.0-PORACT)*MXRCOR
           ENDIF
           ENDIF
-!         write (78,*) 'iq ',iq
-!         write (78,*) 'porinp ',porinp
-!         write (78,*) 'poract ',poract
-!         write (78,*) 'acth   ',acth
-!         write (78,*) 'delt   ',delt
-!         write (78,*) 'dm     ',dm
-!         write (78,*) 'mxrcor ',mxrcor
-!         write (78,*) 'corbur ',corbur
 
 !         Flux from segment
 
@@ -433,7 +430,6 @@
 
           IF ( DM .GT. 1E-20 )
      J    PMSA(IPBVEL+(IQ-1)*INBVEL) = (TOTBUR+CORBUR)/DM/86400.
-!         WRITE(78,*) ' SED_BUR ',IQ,TOTBUR/DM/86400.
 
 !         Velocity for volume change, variable thickness ONLY,
 !         correction flux for porosity EXCLUDED
@@ -526,6 +522,7 @@
      J           FLRES , PRES  , TCRR  , RESTH , RESMX , SURFW ,
      J           SURFB , ZRESLE, VELRES, DM    , DMTOP
       LOGICAL    SW_PARTHENIADES
+      real       TIME_LEFT, ALPHA
 
 !     Resuspension submodel for DELWAQ-G, equals Restra, bug fixed ZRESLE
 !     AM (august 2018) ZRESLE is not actually used
@@ -549,8 +546,6 @@
 
           DMTOP   = PMSA(IPDM  +(IBODEM-1)*INDM  )
 
-!         Skip if resuspension is zero
-!         IF ( ZRES .LE. 0.0 ) GOTO 20
 !         No resuspensie if depth is below minimum value
           IF ( DEPTH .LT. MINDEP ) GOTO 20
 
@@ -748,7 +743,7 @@
           DVOL   = 0.0
           IF (DM .GT. 0.0) DVOL = SEDFLX/DM/86400.
           PMSA (IPSVEL+(IQ-1)*INSVEL) = DVOL
-!          WRITE(*,*) ' SED_VEL ',IQ,DVOL
+
           IF ( SW .GE. 0.5 ) THEN
 !             Compute volume change velocity
 !             Massa in DOWNwind segment!!!!!!!!!!!!!!!!!!!!!!
@@ -805,6 +800,9 @@
 !    integer :: topsedsed  ! first within collumn exchange number
 !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
 !
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with derived types and add function
 
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -817,7 +815,7 @@
       LOGICAL          KOLOM
       logical, save :: FIRST
       INTEGER  IK    , IQ    , ivan  , inaar , ikmrkv, ikmrkn,
-     j         lenkol , nkolom
+     j         lenkol , nkolom, ist, iw1, iw2, isb
       DATA FIRST / .true. /
       INTEGER lunrep, errorcode
 
@@ -848,9 +846,9 @@
 !        Zoek eerste kenmerk van- en naar-segmenten
 
          IKMRKV = -1
-         IF ( IVAN  .GT. 0 ) CALL DHKMRK(1,IKNMRK(IVAN ),IKMRKV)
+         IF ( IVAN  .GT. 0 ) CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
          IKMRKN = -1
-         IF ( INAAR .GT. 0 ) CALL DHKMRK(1,IKNMRK(INAAR),IKMRKN)
+         IF ( INAAR .GT. 0 ) CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
 
 !        Bottom-water exchange, the collumn starts
 
@@ -954,7 +952,6 @@
 !         numerical parameter determines max.rel.corr. per time step
 
           IF ( PORINP .GT. 0.0001 ) THEN
-!             IF ( PORACT .GT. PORINP+0.001 ) THEN
               IF ( PORACT .GT. PORINP ) THEN
                   CORDIG = CORDIG+ACTH/DELT*DM*(PORINP-PORACT)/(1.0-PORACT)*MXRCOR
               ENDIF
@@ -972,3 +969,5 @@
 
       RETURN
       END
+
+      end module m_advtra

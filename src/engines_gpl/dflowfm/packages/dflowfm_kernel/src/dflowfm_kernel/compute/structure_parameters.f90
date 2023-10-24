@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 ! =================================================================================================
 ! =================================================================================================
@@ -239,7 +239,11 @@
                   kd = ln(1,La)
                end if
                valgategen(IVAL_WIDTH,n) = valgategen(IVAL_WIDTH,n) + wu(La)
-               valgategen(IVAL_DIS,n) = valgategen(IVAL_DIS,n) + q1(La) * dir
+               if (hu(La) > epshu) then
+                  valgategen(IVAL_WIDTHWET,n) = valgategen(IVAL_WIDTHWET,n) + wu(La)
+                  valgategen(IVAL_DIS,n) = valgategen(IVAL_DIS,n) + q1(La) * dir
+               end if
+
                if (hs(ku) > epshs) then
                   valgategen(IVAL_WIDTHUP,n) = valgategen(IVAL_WIDTHUP,n) + wu(L)
                   valgategen(IVAL_S1UP,n)    = valgategen(IVAL_S1UP,n) + s1(ku)*wu(L)
@@ -254,7 +258,10 @@
                end if
 
                k = kcgen(1,L) ; if( q1(La) < 0d0 ) k = kcgen(2,L)
-               valgategen(IVAL_GATE_FLOWH,n) = valgategen(IVAL_GATE_FLOWH,n) + s1(k) * wu(La)
+               if (hs(k) > epshs) then
+                  valgategen(IVAL_GATE_WIDTHWET,n) = valgategen(IVAL_GATE_WIDTHWET,n) + wu(La)
+                  valgategen(IVAL_GATE_FLOWH,n) = valgategen(IVAL_GATE_FLOWH,n) + s1(k) * wu(La)
+               end if
             enddo
             if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                valgategen(IVAL_GATE_COUNT,n) = 1               ! rank contains the gate.
@@ -273,11 +280,13 @@
                else
                   valgategen(IVAL_S1DN,n) = dmiss
                end if
-               if( valgategen(IVAL_WIDTH,n) == 0d0 ) then
+               if( valgategen(IVAL_WIDTHWET,n) == 0d0 ) then
                   valgategen(IVAL_DIS,n) = dmiss
+               end if
+               if (valgategen(IVAL_GATE_WIDTHWET,n) == 0d0) then
                   valgategen(IVAL_GATE_FLOWH,n) = dmiss
                else
-                  valgategen(IVAL_GATE_FLOWH,n) = max( min( zcgen(3*i-1)-zcgen(3*i-2), valgategen(IVAL_GATE_FLOWH,n)/valgategen(IVAL_WIDTH,n)-zcgen(3*i-2) ), 0.0d0)  ! flow through height is always positive
+                  valgategen(IVAL_GATE_FLOWH,n) = max( min( zcgen(3*i-1)-zcgen(3*i-2), valgategen(IVAL_GATE_FLOWH,n)/valgategen(IVAL_GATE_WIDTHWET,n)-zcgen(3*i-2) ), 0.0d0)  ! flow through height is always positive
                endif
             endif
          enddo
@@ -457,14 +466,17 @@
                   dir = -1d0
                end if
                valdambreak(IVAL_WIDTH,n)     = valdambreak(IVAL_WIDTH,n) + dambreakLinksActualLength(L)
-               valdambreak(IVAL_DIS,n)       = valdambreak(IVAL_DIS,n) + q1(La)*dir
-               valdambreak(IVAL_AREA,n)      = valdambreak(IVAL_AREA,n) + au(La) ! flow area
                valdambreak(IVAL_DB_CRESTW,n) = valdambreak(IVAL_DB_CRESTW,n) + dambreakLinksActualLength(L)
+               if (hu(La) > epshu) then
+                  valdambreak(IVAL_WIDTHWET,n)  = valdambreak(IVAL_WIDTHWET,n) + dambreakLinksActualLength(L)
+                  valdambreak(IVAL_DIS,n)       = valdambreak(IVAL_DIS,n) + q1(La)*dir
+                  valdambreak(IVAL_AREA,n)      = valdambreak(IVAL_AREA,n) + au(La) ! flow area
+               end if
             enddo
-            if (L2dambreaksg(n) < L1dambreaksg(n)) then ! NOTE: valdambreak(12,n) in a parallel simulation already gets values after mpi communication
+            if (L2dambreaksg(n) < L1dambreaksg(n)) then ! NOTE: valdambreak(IVAL_DB_DISCUM,n) in a parallel simulation already gets values after mpi communication
                                                         ! from the previous timestep. In the case that the dambreak does not exist on the current domain, it should
                                                         ! not contribute to the cumulative discharge in the coming mpi communication so we set it to 0.
-               valdambreak(12,n) = 0d0
+               valdambreak(IVAL_DB_DISCUM,n) = 0d0
             else
                if (network%sts%struct(istru)%dambreak%width > 0d0) then
                   valdambreak(IVAL_DB_CRESTH,n) = network%sts%struct(istru)%dambreak%crl ! crest level
@@ -703,9 +715,6 @@
             pstru => network%sts%struct(istru)
             nlinks = pstru%numlinks
             call average_valstruct(valculvert(:,n), ST_CULVERT, istru, nlinks)
-            if (valculvert(1,n) == 0) then
-               valculvert(IVAL_CL_CRESTL:NUMVALS_CULVERT,n) = dmiss
-            end if
          end do
       end if
       ! === Orifice
@@ -810,18 +819,23 @@
                   valgategen(IVAL_S1DN,n) = dmiss
                end if
                if( valgategen(IVAL_WIDTH,n) == 0d0 ) then
-                  valgategen(IVAL_DIS,n) = dmiss
-                  valgategen(IVAL_GATE_FLOWH,n) = dmiss
                   valgategen(IVAL_GATE_OPENW,n) = dmiss
                   valgategen(IVAL_GATE_EDGEL,n) = dmiss
                   valgategen(IVAL_GATE_SILLH,n) = dmiss
                else
-                  i = gate2cgen(n)
-                  valgategen(IVAL_GATE_FLOWH,n) = max( min( zcgen(3*i-1)-zcgen(3*i-2), valgategen(IVAL_GATE_FLOWH,n)/valgategen(IVAL_WIDTH,n)-zcgen(3*i-2) ), 0.0d0)  ! flow through height is always positive
                   valgategen(IVAL_GATE_OPENW,n) = valgategen(IVAL_GATE_OPENW,n) / valgategen(IVAL_GATE_COUNT,n) !id_gategen_openw
                   valgategen(IVAL_GATE_EDGEL,n) = valgategen(IVAL_GATE_EDGEL,n) / valgategen(IVAL_GATE_COUNT,n) !id_gategen_edgel
                   valgategen(IVAL_GATE_SILLH,n) = valgategen(IVAL_GATE_SILLH,n) / valgategen(IVAL_GATE_COUNT,n) !id_gategen_sillh
                endif
+               if (valgategen(IVAL_WIDTHWET,n) == 0d0) then
+                  valgategen(IVAL_DIS,n) = dmiss
+               end if
+               if (valgategen(IVAL_GATE_WIDTHWET,n) == 0d0) then
+                  valgategen(IVAL_GATE_FLOWH,n) = dmiss
+               else
+                  i = gate2cgen(n)
+                  valgategen(IVAL_GATE_FLOWH,n) = max( min( zcgen(3*i-1)-zcgen(3*i-2), valgategen(IVAL_GATE_FLOWH,n)/valgategen(IVAL_GATE_WIDTHWET,n)-zcgen(3*i-2) ), 0.0d0)  ! flow through height is always positive
+               end if
             enddo
          endif
 

@@ -25,6 +25,8 @@ function print_usage_info {
     echo "- dimr"
     echo "- tests"
     echo "- swan"
+    echo "- delft3d4"
+    echo "- flow2d3d"
     echo
     echo "Options:"
     echo "-p, --prepareonly"
@@ -34,9 +36,22 @@ function print_usage_info {
     echo "      Compile in debug mode"
     echo
     echo "More info  : https://oss.deltares.nl/web/delft3d/source-code"
-    echo "About CMake: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/cmake/doc/README"
+    echo "About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/README"
     echo
     exit 1
+}
+
+# =========================
+# === CheckUtils        ===
+# =========================
+function CheckUtils () {
+    if ! command -v patchelf &> /dev/null; then
+       echo "'patchelf' is not found."
+    fi
+
+    if ! command -v svnversion &> /dev/null; then
+       echo "'svnversion' is not found."
+    fi
 }
 
 
@@ -63,8 +78,8 @@ function DoCMake () {
     echo
     echo "Executing CMake for $1 ..."
     cd    $root/build_$1$2
-    echo "cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype} &>build_$1$2/cmake_$1.log"
-          cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype} &>cmake_$1.log
+    echo "cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype}"
+          cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype}
     if [ $? -ne 0 ]; then
         echo "CMake configure resulted in an error. Check log files."
         exit 1
@@ -82,8 +97,8 @@ function BuildCMake () {
     echo
     echo "Building (make) based on CMake preparations for $1 ..."
     cd    $root/build_$1$2
-    echo "make VERBOSE=1 install &>build_$1$2/make_$1.log"
-          make VERBOSE=1 install &>make_$1.log
+    echo "make -j VERBOSE=1 install"
+          make -j VERBOSE=1 install
     if [ $? -ne 0 ]; then
         echo "CMake build resulted in an error. Check log files."
         exit 1
@@ -108,26 +123,6 @@ function InstallAll () {
         mkdir -p $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin
         mkdir -p $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin_COS7
 
-        ## The traditional build is not executed anymore
-        ## Start with artifacts from traditional build
-        #cp -rf $root/src/bin/ $root/build_$1$2/lnx64/ &>/dev/null
-        #cp -rf $root/src/lib/ $root/build_$1$2/lnx64/ &>/dev/null
-        #cp -rf $root/src/share/ $root/build_$1$2/lnx64/ &>/dev/null
-        ## Delete DIMR/D-Flow FM/D-WAQ/D-WAVES related files: they will be added from the CMake build tasks
-        #rm -f $root/build_$1$2/lnx64/bin/dflowfm        &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/bin/dimr           &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/lib/libdflowfm.so* &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/lib/libdimr.so*    &>/dev/null
-        #
-        #rm -f $root/build_$1$2/lnx64/bin/delwaq*                      &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/lib/libdelwaq.so*                &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/lib/libwaq_plugin_wasteload.so*  &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/share/delft3d/bloom*             &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/share/delft3d/proc_def*          &>/dev/null
-        #
-        #rm -f $root/build_$1$2/lnx64/bin/wave*                        &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/bin/swan*                        &>/dev/null
-        #rm -f $root/build_$1$2/lnx64/lib/libwave*                     &>/dev/null
 
         # CMaked stuff
         cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
@@ -143,6 +138,46 @@ function InstallAll () {
 }
 
 
+# =========================
+# === InstallDwaq       ===
+# =========================
+function InstallDwaq () {
+    if [ ${1} = "dwaq"  ]; then
+        echo
+        echo "Installing in build_$1$2 ..."
+        cd     $root
+        rm -rf $root/build_$1$2/lnx64
+        mkdir -p $root/build_$1$2/lnx64/bin
+        mkdir -p $root/build_$1$2/lnx64/lib
+
+
+        # CMaked stuff
+        cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
+    fi
+
+    return
+}
+
+
+# =========================
+# === InstallDimr       ===
+# =========================
+function InstallDimr () {
+    if [ ${1} = "dimr"  ]; then
+        echo
+        echo "Installing in build_$1$2 ..."
+        cd     $root
+        rm -rf $root/build_$1$2/lnx64
+        mkdir -p $root/build_$1$2/lnx64/bin
+        mkdir -p $root/build_$1$2/lnx64/lib
+
+
+        # CMaked stuff
+        cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
+    fi
+
+    return
+}
 
 # ============
 # === MAIN ===
@@ -154,9 +189,12 @@ prepareonly=0
 mode=quiet
 config=
 generator="Unix Makefiles"
-compiler=intel18
+compiler=intel21
 buildtype=Release
 buildDirExtension=""
+
+## check if Deltares system
+isdeltares=$([ -f "/opt/apps/deltares/.nl" ] && echo "yes" || echo "no")
 
 #
 ## Start processing command line options:
@@ -206,6 +244,14 @@ case $key in
     config="swan"
     shift
     ;;
+    delft3d4)
+    config="delft3d4"
+    shift
+    ;;
+    flow2d3d)
+    config="flow2d3d"
+    shift
+    ;;
     --debug)
     buildtype=Debug
     buildDirExtension="_debug"
@@ -224,19 +270,20 @@ if [ -z $config ]; then
     print_usage_info
 fi
 
-echo
-echo "    config      : $config" "${buildtype}"
-echo "    compiler    : $compiler"
-echo "    prepareonly : $prepareonly"
-echo
-
-
 scriptdirname=`readlink \-f \$0`
 scriptdir=`dirname $scriptdirname`
 root=$scriptdir
 
-# On Deltares systems only:
-if [ -f "/opt/apps/deltares/.nl" ]; then
+
+if [ "$isdeltares" = "yes" ]; then
+    # On Deltares systems only
+    echo
+    echo "    config          : $config" "${buildtype}"
+    echo "    deltares system : $isdeltares"
+    echo "    compiler        : $compiler"
+    echo "    prepareonly     : $prepareonly"
+    echo
+
     # Check if modules exist
     module list > /dev/null
     if [ $? -ne 0 ]; then
@@ -252,8 +299,22 @@ if [ -f "/opt/apps/deltares/.nl" ]; then
         echo "Setenv.sh resulted in an error. Check log files."
         exit 1
     fi
+
+else
+    # On other systems
+    echo
+    echo "    config          : $config" "${buildtype}"
+    echo "    prepareonly     : $prepareonly"
+    echo
 fi
 
+# check required utilities
+chkutils=$(CheckUtils)
+if [ ! -z "$chkutils" ]; then
+    echo "$chkutils"
+    echo "Install missing programs and retry."
+    exit 1
+fi
 
 CreateCMakedir ${config} ${buildDirExtension}
 
@@ -267,5 +328,7 @@ fi
 BuildCMake ${config} ${buildDirExtension}
 
 InstallAll ${config} ${buildDirExtension}
+InstallDwaq ${config} ${buildDirExtension}
+InstallDimr ${config} ${buildDirExtension}
 
 echo Finished

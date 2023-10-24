@@ -5,7 +5,7 @@ function qck_anim(cmd,afig,ANISteps)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -1059,6 +1059,7 @@ Hoptions  = findobj(uifig, 'tag', 'options');
 Htim      = findobj(uifig, 'tag', 'time steps');
 Hfps      = findobj(uifig, 'tag', 'max_fps');
 Hscr      = findobj(uifig, 'tag', 'script');
+Hok       = findobj(uifig, 'tag', 'ok');
 
 output = get(Houtp, 'value');
 outputtypes = get(Houtp, 'string');
@@ -1093,11 +1094,19 @@ switch cmd
         set(Hoptions, 'userdata', OPS)
 
     case 'time steps'
-        Range = getappdata(Htim, 'range');
-        ANISteps = str2vec(get(Htim, 'string'), 'range', Range, 'applylimit');
-        set(Htim, ...
-            'string', vec2str(ANISteps, 'noones', ...
-            'nobrackets'), 'userdata', ANISteps);
+         Range = getappdata(Htim, 'range');
+         try
+             ANISteps = str2vec(get(Htim, 'string'), 'range', Range, 'applylimit');
+             set(Htim, ...
+                 'foregroundcolor','k', ...
+                 'userdata', ANISteps)
+             % 'string', vec2str(ANISteps, 'noones', ...
+             set(Hok,'enable','on') % conditional on other checks?
+         catch
+             set(Htim, ...
+                 'foregroundcolor','r')
+             set(Hok,'enable','off')
+         end
         
     case 'max_fps'
         newfps = str2num(get(Hfps,'string'));

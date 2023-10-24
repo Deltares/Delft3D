@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Performs a single computational timestep, but not the init and finalize of the timestep.
 subroutine flow_run_single_timestep(key, iresult)                ! do only 1 flow timestep
@@ -60,7 +60,6 @@ integer :: N, L
  else
     call velocities_explicit()                       ! progress without pressure coupling
     call transport()                                 ! progress without pressure coupling
-    call update_part()
     time1  = time0 + dts                             ! progress without pressure coupling
  endif
 

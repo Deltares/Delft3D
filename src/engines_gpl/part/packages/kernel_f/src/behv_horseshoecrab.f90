@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,6 +25,7 @@ module behv_horseshoecrab_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
 use precision_part          ! single/double precision
 use timers
 !
@@ -261,9 +262,7 @@ contains
              call vert_swimm_diurnal (   lunrep        , daytime  , k       , nolay   , stick_to_bottom ,    &
                                          dive_at_night , ipart    , wsettl  , kpart   , zpart           ,    &
                                          buoy          , vzact    , v_swim  , d_swim  )
-             
-             ! !Check for depth not to exceed maximum depth             
-             !call intpltd_divelimit ( lunrep, idelt, zlevel, zdepth, vz)             
+                
               
            case ( behaviour_adult )                                                       !Behaviour 2 
 

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,6 +23,9 @@
 
 subroutine ddc_version(lunrep)
 
+    use delwaq_version_module
+    use m_dattim
+
     ! print version to report file
 
     integer, intent(in)      :: lunrep        ! unit number report file
@@ -35,7 +38,7 @@ subroutine ddc_version(lunrep)
 
     ! set version
 
-    call getfullversionstring_DDCOUPLE(idstr)
+    call getfullversionstring_delwaq(idstr)
     k = len_trim(idstr)
 
     ! write credentials to report file

@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
     rem
     rem Set the config file
     rem
-set argfile= 
+set argfile=
 if [%1] EQU [] (
     goto usage
 ) else (
@@ -21,8 +21,10 @@ if [%1] EQU [] (
 )
 echo Configfile:%argfile%
 if not exist %argfile% (
-    echo ERROR: configfile "%argfile%" does not exist
-    goto usage
+    if not exist %argfile%.inp (
+        echo ERROR: configfile "%argfile%" does not exist
+        goto usage
+    )
 )
 
 

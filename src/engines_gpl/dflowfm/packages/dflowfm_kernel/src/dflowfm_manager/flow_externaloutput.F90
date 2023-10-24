@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  !> Write solution data to output files (map/his/restart/waq).
  !! Each output type has its own interval (see m_flowtimes),
@@ -135,7 +135,7 @@
            endif
         endif
          if (comparereal(time_map, ti_mape, eps10) == 0) then
-            time_map = tstop_user + 1
+            time_map = tstop_user  + 1
          else
             tem_dif = (tim - ti_maps)/ti_map
             time_map = max(ti_maps + (floor(tem_dif + 0.001d0) +1)*ti_map,ti_maps)
@@ -149,6 +149,7 @@
             ! next time_map would be beyond end of map-window, write one last map exactly at that end.
                 time_map = ti_mape
             endif
+
          endif
      endif
    endif
@@ -208,28 +209,19 @@
    endif
    call timstop(handle_extra(76))
 
-  if (ti_waq > 0) then
-      if (comparereal(tim, time_waq, eps10) == 0) then
+   if (ti_waq > 0) then
 
-         if (comparereal(time_waq, ti_waqs, eps10) == 0) then
-            call waq_wri_model_files()
-            wrwaqon = .true.
-         endif
-
-         call waq_wri_couple_files(tim)
-         if (comparereal(time_waq, ti_waqe, eps10) == 0) then
-            time_waq = tstop_user + 1
-         else
-            tem_dif = (tim - ti_waqs)/ti_waq
-            time_waq = max(ti_waqs + (floor(tem_dif + 0.001d0)+1)*ti_waq,ti_waqs)
-         ! this is taken care of ! call volsur() ! TODO: move volsur in flow_initimestep to end of flow_singletimestep (is duplicate now)
-            if (comparereal(time_waq, ti_waqe, eps10) == 1) then
-               time_waq = ti_waqe
-            endif
-         endif
+      if (.not. wrwaqon) then
+          call waq_wri_model_files()
+          wrwaqon = .true.
       endif
-   endif
 
+      if (tim .ge. ti_waqs .and. tim .le. ti_waqe+0.1d0 .and. tim .ge. time_waq-0.1d0) then  
+          call waq_wri_couple_files(tim)
+          time_waq = time_waq + ti_waq 
+      endif
+
+   endif
 
    if (ti_stat > 0) then
       if (tim >= time_stat) then

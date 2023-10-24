@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq08
+      use m_read_initials
+      use m_opt2
+      use m_opt1
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq08 ( lun    , lchar  , filtype, noseg  , notot  ,
-     &                    syname , iwidth , vrsion , ioutpt , inpfil ,
+     &                    syname , iwidth , ioutpt , inpfil ,
      &                    gridps , ierr   , iwar   )
 
 !       Deltares Software Centre
@@ -57,15 +67,18 @@
 !      Subroutines called : opt1    ( which file is it ? )
 !                           opt2    ( read the data from an ASCII file )
 !                           rdtok1  ( tokenized data reading )
-!                           dhopnf  ( to open the binary intermediate file )
+!                           open_waq_files  ( to open the binary intermediate file )
 !                           check   ( to see of the group was read correctly )
 
 !      Logical units      : lun(27) = unit DELWAQ input file
 !                           lun(29) = unit formatted output file
 !                           lun(18) = unit intermediate file (initials)
 
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use m_check
+      use m_srstop
+      use m_open_waq_files
+      use dlwqgrid_mod   ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token
       use timers         ! performance timers
       use string_module  ! string manipulation tools
@@ -75,14 +88,13 @@
 
 !     Kind                    Function         Name               Description
 
-      integer           ( 4), intent(in   ) :: lun  (*)      !< array with unit numbers
+      integer           ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
       character         ( *), intent(inout) :: lchar(*)      !< filenames
       integer           ( 4), intent(inout) :: filtype(*)    !< type of binary file
       integer           ( 4), intent(in   ) :: noseg         !< nr of computational volumes
       integer           ( 4), intent(in   ) :: notot         !< nr of delwaq + delpar state variables
       character         (20), intent(in   ) :: syname(notot) !< names of the substances
       integer           ( 4), intent(in   ) :: iwidth        !< width of the output file
-      real              ( 4), intent(in   ) :: vrsion        !< version of input
       integer           ( 4), intent(in   ) :: ioutpt        !< option for extent of output
       type(inputfilestack)  , intent(inout) :: inpfil        !< input file strucure with include stack and flags
       type(gridpointercoll) , intent(in)    :: gridps        !< collection off all grid definitions
@@ -172,7 +184,7 @@
          call str_lower(cext)
          if ( cext .eq. '.map' .or. cext .eq. '.rmp' .or.
      &        cext .eq. '.rm2' ) then                             ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
-            call dhopnf  ( lun(18) , lchar(18) , 18    , 2     , ierr2 )
+            call open_waq_files  ( lun(18) , lchar(18) , 18    , 2     , ierr2 )
             read ( lun(18) ) cdummy(1:160)                        ! read title of simulation
             close ( lun(18) )
             if ( cdummy(114:120) .eq. 'mass/m2' .or.
@@ -203,7 +215,7 @@
       else
          lchar(18)(ip:ip+3) = '.map'
       endif
-      call DHOPNF  ( lun(18) , lchar(18) , 18    , 1     , ierr2 )
+      call open_waq_files  ( lun(18) , lchar(18) , 18    , 1     , ierr2 )
       if ( ierr2 .gt. 0 ) goto 10
 
 !        Write the .map header
@@ -305,3 +317,5 @@
  2110 format (  /,' WARNING: Binary initials file is assumed to have bed substances in mass/gridcell!' )
 
       end
+
+      end module m_dlwq08

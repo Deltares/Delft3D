@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,24 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq04
+      use m_scale
+      use m_pointi
+      use m_opt2
+      use m_opt1
+      use m_opt0
+      use m_dmpare
+      use m_dlwq0f
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq04 ( lun     , lchar   , filtype , nrftot  , nrharm  ,
      &                    ilflag  , dtflg1  , iwidth  , intsrt  , dtflg3  ,
-     &                    vrsion  , ioutpt  , nsegdmp , isegdmp , nexcraai,
+     &                    ioutpt  , nsegdmp , isegdmp , nexcraai,
      &                    iexcraai, ioptraai, gridps  , ierr    , iwar    ,
      &                    has_hydfile       , nexch   )
 
@@ -53,7 +67,7 @@
 !                            OPT2
 !                            SCALE
 !                            CHECK
-!                            DHOPNF
+!                            open_waq_files
 !                            RDTOK1 tokenized data reading
 
 !       Logical units      : LUN(27) = unit stripped DELWAQ input file
@@ -69,7 +83,12 @@
 !                            LUN(12) = unit intermediate file (velocities)
 !                            LUN(13) = unit intermediate file (lengths)
 
-      use Grids        !   for the storage of contraction grids
+      use m_check
+      use m_bound
+      use m_zoek
+      use m_srstop
+      use m_open_waq_files
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use pointr_mod
       use partmem
@@ -83,7 +102,7 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)        !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
@@ -93,7 +112,6 @@
       integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
       integer  ( 4), intent(in   ) :: intsrt            !< integration option
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion            !< version number of this input
       integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
       integer  ( 4), intent(in   ) :: nsegdmp (*)       !< number of volumes in this monitoring area
       integer  ( 4), intent(inout) :: isegdmp (*)       !< computational volume numbers
@@ -136,7 +154,7 @@
 !     Locals
 
       integer  ( 4)   nosss     !  number of volumes inclusive of bed volumes
-      logical         volume    !  if true, computed volumes
+      integer         volume    !  if true, computed volumes
       logical         disper    !  if true, dispersion
       real     ( 4)   adummy    !  real zero
       integer  ( 4)   idummy    !  integer zero
@@ -172,7 +190,7 @@
 
       nosss  = noseg + nseg2
       iposr  = 0
-      volume = .false.
+      volume = 0
       adummy = 0.0
       idummy = 0
       ifact  = 1
@@ -205,7 +223,7 @@
 
 !        These 2 options use a regular grid with full matrix.
 
-      if ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. regular ) then
+      if ( regular ) then
          nmax = noq1
          mmax = noq2
          kmax = noq3
@@ -260,26 +278,25 @@
       write ( lunut, 2050 ) nodisp
       idisp = 0
       if ( nodisp .gt. 0 ) then
-         if ( vrsion .gt. 4.02 ) then      !    they all get a name and if blank a default name
-            allocate ( dispnam(nodisp) )   !    'Dispersion nnnn'
-            do i = 1, nodisp
-               if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
-               if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2060 ) i
-               call ZOEK( dispnam(i), i-1, dispnam, 20, ifound )
-               if ( ifound .gt. 0 ) then
-                  write( lunut, 2070 ) dispnam(i)
-                  ierr = ierr + 1
-               endif
-            enddo
-            if ( ioutpt .ge. 2 ) then
-               write ( lunut, 2080 ) ( i, dispnam(i), i=1,nodisp )
-            else
-               write ( lunut, 2090 )
+         allocate ( dispnam(nodisp) )   !    'Dispersion nnnn'
+         do i = 1, nodisp
+            if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
+            if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2060 ) i
+            call ZOEK( dispnam(i), i-1, dispnam, 20, ifound )
+            if ( ifound .gt. 0 ) then
+               write( lunut, 2070 ) dispnam(i)
+               ierr = ierr + 1
             endif
-            write ( lunut, *    )
-            write ( lun(2) ) ( dispnam(i), i=1, nodisp)
-            deallocate ( dispnam )
+         enddo
+         if ( ioutpt .ge. 2 ) then
+            write ( lunut, 2080 ) ( i, dispnam(i), i=1,nodisp )
+         else
+            write ( lunut, 2090 )
          endif
+         write ( lunut, *    )
+         write ( lun(2) ) ( dispnam(i), i=1, nodisp)
+         deallocate ( dispnam )
+
          do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
             if ( gettoken( idisp(i), ierr2 ) .gt. 0 ) goto 100
             if ( idisp(i) .gt. nodisp) then
@@ -296,26 +313,25 @@
       write ( lunut , 2110 ) novelo
       ivelo = 0
       if ( novelo .gt. 0 ) then
-         if ( vrsion .gt. 4.02 ) then      !
-            allocate ( dispnam(novelo) )   !
-            do i = 1, novelo
-               if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
-               if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2120 ) i
-               call ZOEK( dispnam(i), i-1, dispnam, 20, ifound )
-               if ( ifound .gt. 0 ) then
-                  write( lunut, 2130 ) dispnam(i)
-                  ierr = ierr + 1
-               endif
-            enddo
-            if ( ioutpt .ge. 2 ) then
-               write ( lunut, 2080 ) ( i, dispnam(i), i=1,novelo )
-            else
-               write ( lunut, 2090 )
+         allocate ( dispnam(novelo) )   !
+         do i = 1, novelo
+            if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
+            if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2120 ) i
+            call ZOEK( dispnam(i), i-1, dispnam, 20, ifound )
+            if ( ifound .gt. 0 ) then
+               write( lunut, 2130 ) dispnam(i)
+               ierr = ierr + 1
             endif
-            write ( lunut, *    )
-            write ( lun(2) ) ( dispnam(i), i=1, novelo)
-            deallocate ( dispnam )
+         enddo
+         if ( ioutpt .ge. 2 ) then
+            write ( lunut, 2080 ) ( i, dispnam(i), i=1,novelo )
+         else
+            write ( lunut, 2090 )
          endif
+         write ( lunut, *    )
+         write ( lun(2) ) ( dispnam(i), i=1, novelo)
+         deallocate ( dispnam )
+
          do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
             if ( gettoken( ivelo(i), ierr2 ) .gt. 0 ) goto 100
             if ( ivelo(i) .gt. novelo) then
@@ -353,7 +369,7 @@
          if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 100
          write ( lunut , 2180 )  iopt1
 
-         if ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. regular ) then  !        Regular grid
+         if ( regular ) then  !        Regular grid
             call opt1 ( iopt1   , lun     , 8      , lchar  ,  filtype ,
      &                  dtflg1  , dtflg3  , 0      , ierr2  ,  iwar    ,
      &                  .false. )
@@ -366,8 +382,7 @@
      &                    flowpnt, ierr   , iwar    )
          endif
       endif
-      if ( has_hydfile .or.
-     &     .not. ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. regular ) ) then  ! Irregular grid/hyd-file
+      if ( has_hydfile .or. .not. ( regular ) ) then  ! Irregular grid/hyd-file
          call opt1 ( iopt1   , lun     , 44     , lchar  ,  filtype ,
      &               dtflg1  , dtflg3  , 0      , ierr2  ,  iwar    ,
      &               has_hydfile       )
@@ -415,7 +430,7 @@
       call opt0   ( lun    , 9      , noq1     , noq2     , noq3   ,
      &              nodisp , 1      , nrftot(3), nrharm(3), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &              filtype, dtflg3 , vrsion   , ioutpt   , ierr2  ,
+     &              filtype, dtflg3 , ioutpt   , ierr2  ,
      &              iwar   , .false. )
       ierr = ierr + ierr2
       disper = .false.
@@ -427,7 +442,7 @@
       call opt0   ( lun    , 10     , noq1     , noq2     , noq3   ,
      &              1      ,  1     , nrftot(4), nrharm(4), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &              filtype, dtflg3 , vrsion   , ioutpt   , ierr2  ,
+     &              filtype, dtflg3 , ioutpt   , ierr2  ,
      &              iwar   , has_hydfile       )
       ierr = ierr + ierr2
 
@@ -438,7 +453,7 @@
       call opt0   ( lun    , 11     , noq1     , noq2     , noq3   ,
      &              1      , 1      , nrftot(5), nrharm(5), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &              filtype, dtflg3 , vrsion   , ioutpt   , ierr2  ,
+     &              filtype, dtflg3 , ioutpt   , ierr2  ,
      &              iwar   , has_hydfile       )
       ierr = ierr + ierr2
       if ( .not. alone ) then
@@ -456,7 +471,7 @@
          call opt0   ( lun    , 12     , noq1     , noq2     , noq3   ,
      &                 novelo , 1      , nrftot(6), nrharm(6), ifact  ,
      &                 dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &                 filtype, dtflg3 , vrsion   , ioutpt   , ierr2  ,
+     &                 filtype, dtflg3 , ioutpt   , ierr2  ,
      &                 iwar   , .false. )
          ierr = ierr + ierr2
       endif
@@ -486,7 +501,7 @@
             call opt0   ( lun    , 13     , noq1     , noq2     , noq3   ,
      &                     2     , 1      , nrftot(7), nrharm(7), ifact  ,
      &                    dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &                    filtype, dtflg3 , vrsion   , ioutpt   , ierr2  ,
+     &                    filtype, dtflg3 , ioutpt   , ierr2  ,
      &                    iwar   , has_hydfile       )
 
          case default
@@ -512,11 +527,7 @@
            ierr2 = 1
            goto 100
       endif
-      if ( intsrt .eq. 19 .or. intsrt .eq. 20 ) then
-           write ( lun(29) , 2300 ) intsrt
-           ierr2 = 1
-           goto 100
-      endif
+
       allocate ( rwork(5,noq) , stat = ierr2 )
       if ( ierr2 .ne. 0 ) then
          write ( lunut , 2310 ) ierr2, 5*noq
@@ -584,36 +595,36 @@
       write ( lun(2) ) idummy , ( adummy , k = 1,3 )
       write ( lun(2) ) idummy , ( adummy , k = 1,3 )
 
-      call dhopnf  ( lun(8) , lchar(8) , 8      , 1     , ierr2 )
+      call open_waq_files  ( lun(8) , lchar(8) , 8      , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
       if ( noq1 .gt. 0 ) write( lun(8) )( ipnt(:,i) , i =       1, noq1  )
       if ( noq2 .gt. 0 ) write( lun(8) )( ipnt(:,i) , i = noq1 +1, noq12 )
       if ( noq3 .gt. 0 ) write( lun(8) )( ipnt(:,i) , i = noq12+1, noq   )
       close ( lun(8) )
 
-      call dhopnf  ( lun( 9) , lchar( 9) , 9      , 1     , ierr2 )
+      call open_waq_files  ( lun( 9) , lchar( 9) , 9      , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
       write ( lun( 9) ) idummy, ( rwork(1,i), ( adummy, k=1,nodisp-1 ) , i=1,noq )
       close ( lun( 9) )
 
-      call dhopnf  ( lun(10) , lchar(10) , 10     , 1     , ierr2 )
+      call open_waq_files  ( lun(10) , lchar(10) , 10     , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
       write ( lun(10) ) idummy, ( rwork(2,i) , i=1,noq )
       close ( lun(10) )
 
-      call dhopnf  ( lun(11) , lchar(11) , 11     , 1     , ierr2 )
+      call open_waq_files  ( lun(11) , lchar(11) , 11     , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
       write ( lun(11) ) idummy, ( rwork(3,i) , i=1,noq )
       close ( lun(11) )
 
       if ( novelo .gt. 0 ) then
-         call dhopnf  ( lun(12) , lchar(12) , 12     , 1     , ierr2 )
+         call open_waq_files  ( lun(12) , lchar(12) , 12     , 1     , ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          write ( lun(12) ) idummy,( (adummy,k=1,novelo) , i=1,noq)
          close ( lun(12) )
       endif
 
-      call dhopnf  ( lun(13) , lchar(13) , 13     , 1     , ierr2 )
+      call open_waq_files  ( lun(13) , lchar(13) , 13     , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
       write ( lun(13) ) idummy,(rwork(4,i),rwork(5,i), i=1,noq )
       close ( lun(13) )
@@ -715,3 +726,5 @@
  3010 format ( //,' Number of layers in the model:', I5)
 
       end
+
+      end module m_dlwq04

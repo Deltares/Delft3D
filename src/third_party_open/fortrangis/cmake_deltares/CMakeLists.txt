@@ -4,7 +4,6 @@ set(src_path "${CMAKE_CURRENT_SOURCE_DIR}/..")
 # Define the fortranc library
 set(fortranc_path ${src_path}/libfortranc)
 
-add_compile_options(-fpic)
 set(fortranc_sources ${fortranc_path}/fortranc.F90
                         ${fortranc_path}/iso_varying_string.F90)
                   
@@ -17,7 +16,8 @@ set(fortranc_library_name fortranc)
 add_library(${fortranc_library_name} ${fortranc_sources})
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_bounds_flag}>")
+target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
+target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Create the folder structure in project
 source_group("${visual_studio_source_group_name}" FILES ${fortranc_sources})
@@ -55,10 +55,9 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
     pkg_check_modules(GDAL REQUIRED IMPORTED_TARGET gdal)
 
-    target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
+    target_link_libraries(${fortrangis_library_name} INTERFACE proj PkgConfig::GDAL)
 endif(UNIX)
 if (WIN32)
     target_link_libraries(${fortrangis_library_name} INTERFACE proj)
@@ -75,7 +74,8 @@ target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_SHAPELIB)
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_GDAL)
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_bounds_flag}>")
+target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
+target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortran_sources})

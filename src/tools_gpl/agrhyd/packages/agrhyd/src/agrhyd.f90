@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,10 +22,15 @@
 !!  rights reserved.
 
       program agrhyd
+
       use hydmod
+      use m_getcom
+      use time_module
       use io_ugrid
       use system_utils
-      use agrhyd_version_module
+      use delwaq_version_module
+      use m_dattim
+
       implicit none
 
       type(t_hyd)          :: input_hyd     ! description of the input hydrodynamics
@@ -48,15 +53,14 @@
       character(len=256)   :: name          ! base name of the output files
       integer              :: output_start  ! output start time
       integer              :: output_stop   ! output stop time
-      integer              :: output_shift  ! output shift time 
-      character(14)        :: output_t0     ! output reference time 
+      integer              :: output_shift  ! output shift time
+      character(14)        :: output_t0     ! output reference time
       real(8)              :: output_t0_jul ! output reference time (julian)
       integer              :: output_t0_d   ! output reference date (ymd)
       integer              :: output_t0_t   ! output reference time (hms)
       real(8)              :: input_t0_jul  ! input reference time (julian)
       integer              :: input_t0_d    ! input reference date (ymd)
       integer              :: input_t0_t    ! input reference time (hms)
-      real*8               :: julian        ! function to convert ymd, hms to julian day
       real                 :: wdayshift     ! time in days (after shift)
       logical              :: l_regular     ! regular aggregartion option
       logical              :: l_expand      ! expand to full matrix
@@ -88,13 +92,12 @@
       type(t_dlwqfile)     :: new_grd               ! new grd file
       logical              :: singapore_rename_discharges ! special option rename discharges for singapore
       character(len=256)   :: singapore_discharge_names   ! special option filename for singapore
-      character(len=80)    :: version_full          ! version information
 
       ! sing_z variables
       integer :: iseg1, iseg2, iseg, ik1, ik2, isegb, lenname
 
       write(*,*)
-      write(*,'(a,a)') ' (c) ',agrhyd_version_full
+      write(*,'(a,a)') ' (c) ',delwaq_version_full
       write(*,*)
 
       ! get input file from commandline
@@ -109,7 +112,7 @@
       if ( input_file .eq. ' ' ) then
          open(lunrep,file='agrhyd.rep',recl=132)
          call dattim(rundat)
-         write(lunrep,'(a,a)') ' (c) ',agrhyd_version_full
+         write(lunrep,'(a,a)') ' (c) ',delwaq_version_full
          write(lunrep,'(a,a)') ' execution start: ',rundat
          write(lunrep,'(a)') ' error: no command line argument or interactive input with name of ini-filename'
          write(*,'(a)') ' error: no command line argument or interactive input with name of ini-filename'
@@ -121,7 +124,7 @@
       if ( .not. exist_ini ) then
          open(lunrep,file='agrhyd.rep',recl=132)
          call dattim(rundat)
-         write(lunrep,'(a,a)') ' (c) ',agrhyd_version_full
+         write(lunrep,'(a,a)') ' (c) ',delwaq_version_full
          write(lunrep,'(a,a)') ' execution start: ',rundat
          write(lunrep,'(a,a)') ' error: ini-file not found: ', trim(input_file)
          write(*,'(a,a)') ' error: ini-file not found: ', trim(input_file)
@@ -154,7 +157,7 @@
       open(lunrep,file=trim(name)//'-agrhyd.rep',recl=132)
       call setmlu(lunrep)
       call SetMessageHandling(lunMessages=lunrep)
-      write(lunrep,'(a,a)') ' (c) ',agrhyd_version_full
+      write(lunrep,'(a,a)') ' (c) ',delwaq_version_full
       call dattim(rundat)
       write(lunrep,'(2a)') ' execution start: ',rundat
       write(lunrep,*)
@@ -215,7 +218,7 @@
             endif
          endif
       enddo
-      
+
       ! report and check
 
       if ( input_hyd%geometry .ne. HYD_GEOM_CURVI .and. &
@@ -521,13 +524,13 @@
          read(output_hyd%hyd_ref,'(I8,I6)',IOSTAT=ierr) input_t0_d, input_t0_t
          read(output_t0         ,'(I8,I6)',IOSTAT=ierr2) output_t0_d, output_t0_t
          if (ierr.eq.0.and.ierr2.eq.0) then
-            input_t0_jul = julian(input_t0_d, input_t0_t)
-            output_t0_jul = julian(output_t0_d, output_t0_t)
+            input_t0_jul = julian_with_leapyears(input_t0_d, input_t0_t)
+            output_t0_jul = julian_with_leapyears(output_t0_d, output_t0_t)
             if (output_t0_jul.gt.0.0 .and. input_t0_jul .gt. 0.0) then
                output_shift = nint((input_t0_jul - output_t0_jul) * 86400)
                output_hyd%hyd_ref = output_t0
                output_hyd%cnv_ref = output_t0
-            endif      
+            endif
          endif
          if (output_shift.eq.0.and.output_hyd%cnv_ref.eq.output_t0) then
             write(lunrep,*) 'warning: interpet reference_time_output is identical to current reference time'
@@ -539,8 +542,7 @@
       endif
 
       ! write hyd file
-      version_full = trim(agrhyd_version_full)
-      call write_hyd(output_hyd, version_full)
+      call write_hyd(output_hyd, major_minor_buildnr)
 
       ! write time independent data
 
@@ -591,10 +593,10 @@
       cpatch = -1
       npatch = -1
       do ipatch = 0, 9
-         if (l_patch(ipatch)) then 
+         if (l_patch(ipatch)) then
             ! read the first timestep of the patch to see where the patch starts
             call read_hyd_step(input_patch_hyd(ipatch),itime_first_patch(ipatch),iend)
-            
+
             if (iend.ne.0) then
                write(lunrep,*) 'error: could not read first timestep of input hydrodynamics patch : '// &
                                trim(input_patch_hyd(ipatch)%file_hyd%name)
@@ -612,19 +614,19 @@
             exit
          endif
       enddo
-      
+
 !     time loop
 
       write(*,'(A)') 'timestamp       seconds        days'
       write(lunrep,'(A)') 'timestamp       seconds        days'
-      
+
       do
          if (cpatch.eq.-1) then
             call read_hyd_step(input_hyd,itime,iend)
          else
             call read_hyd_step(input_patch_hyd(cpatch),itime,iend)
          endif
-         if (l_patch(npatch)) then 
+         if (l_patch(npatch)) then
             if(itime.ge.itime_first_patch(npatch)) then
 !              switch a the next patch
                cpatch = npatch
@@ -650,7 +652,7 @@
                enddo
             endif
          endif
-         
+
          if ( iend .ne. 0 ) exit
          rday = itime/86400.
          write(*,'(A,I10,F12.3)') 'reading step:',itime,rday

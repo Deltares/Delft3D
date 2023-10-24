@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine furu()                                   ! set fu, ru and kfs
  use m_flow                                          ! substitue u1 and q1
@@ -43,6 +43,8 @@
  use unstruc_channel_flow
  use m_sferic
  use m_trachy, only: trachy_resistance
+ use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
+ use m_flowparameters, only: ifixedWeirScheme1d2d
 
  implicit none
 
@@ -68,37 +70,27 @@
  fsqrtt = sqrt(0.5d0)
  call timstrt('Furu', handle_furu)
 
- fu = 0d0
- ru = 0d0
-
  if (kmx == 0 .or. ifixedweirscheme > 0)  then  ! original 2D coding
 
     !$OMP PARALLEL DO                       &
-    !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp)
-   do i = 1, wetLinkCount
-      L = onlyWetLinks(i)
+    !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp,uorbL)
+    do L  = 1,lnx
 
-       if (kmx > 0) then
-          if (.not. (iadv(L) == 21 .or. iadv(L) >= 23 .and. iadv(L) <= 25) ) then  ! in 3D, only do this for weir points
-             cycle
+       if (hu(L) > 0) then
+
+          if (kmx > 0) then
+             if (.not. (iadv(L) == 21 .or. iadv(L) >= 23 .and. iadv(L) <= 25) ) then  ! in 3D, only do this for weir points
+                cycle
+             endif
           endif
-       endif
 
-       if (hu(L)==0d0) then
-          cycle
-       endif
+          k1  = ln(1,L) ; k2 = ln(2,L)
 
-       k1  = ln(1,L) ; k2 = ln(2,L)
-
-       slopec = 0d0
-       if (L > lnx1D) then
-          if (Slopedrop2D > 0) then           ! 2D droplosses at ridge points and at 2D/1D2D couplings
-             if (iadv(L) == 8) then
-                hup = s0(k2) - ( min(bob(1,L), bob(2,L) ) + twot*hu(L) )
-                if (hup < 0) then
-                    slopec = hup
-                else
-                   hup = s0(k1) - ( min( bob(1,L), bob(2,L) ) + twot*hu(L) )
+          slopec = 0d0
+          if (L > lnx1D) then
+             if (Slopedrop2D > 0) then           ! 2D droplosses at ridge points and at 2D/1D2D couplings
+                if (iadv(L) == 8) then
+                   hup = s0(k2) - ( min(bob(1,L), bob(2,L) ) + twot*hu(L) )
                    if (hup < 0) then
                        slopec = hup
                    else
@@ -130,79 +122,85 @@
                 endif
              endif
           endif
-       endif
 
-       agp = ag
-       if (jahelmert > 0 .and. jsferic > 0) then
-          st2  = sin(dg2rd*yu(L))**2
-          agp  = 9.7803253359*(1d0+0.00193185265241*st2)/sqrt(1d0-0.00669437999013*st2)
-       endif
-       gdxi  = agp*dxi(L)
-       cu    = gdxi*teta(L)
-       du    = dti*u0(L) - adve(L) + gdxi*slopec
-       ds    = s0(k2) - s0(k1)
-       if (teta(L) /= 1d0) then
-          du = du - (1d0-teta(L))*gdxi*ds
-       endif
-       du0 = du
+          agp = ag
+          if (jahelmert > 0 .and. jsferic > 0) then
+             st2  = sin(dg2rd*yu(L))**2
+             agp  = 9.7803253359*(1d0+0.00193185265241*st2)/sqrt(1d0-0.00669437999013*st2)
+          endif
+          gdxi  = agp*dxi(L) 
+          if (jarhoxu >= 2) then
+             gdxi = gdxi*rhomean/rhou(L)
+          endif
 
-     u1L = u0(L)
+          cu    = gdxi*teta(L)
+          du    = dti*u0(L) - adve(L) + gdxi*slopec
+          ds    = s0(k2) - s0(k1)
+          if (teta(L) /= 1d0) then
+             du = du - (1d0-teta(L))*gdxi*ds
+          endif
+          du0 = du
 
-     if (jaconveyance2D >=3 .or. L <= lnx1D ) then
-          v2 = 0d0
-       else
-          v2 = v(L)*v(L)
-       endif
+          u1L = u0(L)
 
-     if (jafrculin > 0) then
-           advi(L) = advi(L) + frculin(L)/hu(L)
-       endif
+          if (jaconveyance2D >=3 .or. L <= lnx1D ) then
+             v2 = 0d0
+          else
+             v2 = v(L)*v(L)
+          endif
+
+          if (jafrculin > 0) then
+              advi(L) = advi(L) + frculin(L)/hu(L)
+          endif
 
 
-     itu1  = 0
+          itu1  = 0
 
 10        continue
 
-     !if (jawave==3 .or. (jawave==4 .and. swave==1) .or. jawave==6 .and. .not. flowWithoutWaves) then                ! Delft3D-Wave Stokes-drift correction
-       if (jawave>0 .and. .not. flowWithoutWaves) then                ! Delft3D-Wave Stokes-drift correction
+          !if (jawave==3 .or. (jawave==4 .and. swave==1) .or. jawave==6 .and. .not. flowWithoutWaves) then                ! Delft3D-Wave Stokes-drift correction
+          if (jawave>0 .and. .not. flowWithoutWaves) then                ! Delft3D-Wave Stokes-drift correction
 
-         if (modind < 9) then
-              frL = cfwavhi(L)        
-           elseif (modind==9) then
-              frL = cfhi_vanrijn(L)   ! g/ca**2*umod/h/rho
-           elseif (modind==10) then   ! Ruessink 2003
-              uorbL = .5d0*(uorb(k1)+uorb(k2))
-              frL = cfuhi(L)*sqrt((u1L-ustokes(L))**2 + (v(L)-vstokes(L))**2 + (1.16d0*uorbL*fsqrtt)**2)
-           end if   
-           !
-           du = du0 + frL*ustokes(L)
-           !
-           ! and add vegetation stem drag with eulerian velocities, assumes fixed stem
-           if ((jaBaptist >= 2) .or. trachy_resistance) then
-               frL = frL + alfav(L)*hypot(u1L-ustokes(L),v(L)-vstokes(L))      
-           endif
+              if (modind < 9) then
+                 frL = cfwavhi(L)        
+              elseif (modind==9) then
+                 frL = cfhi_vanrijn(L)   ! g/ca**2*umod/h/rho
+              elseif (modind==10) then   ! Ruessink 2003
+                 uorbL = .5d0*(uorb(k1)+uorb(k2))
+                 frL = cfuhi(L)*sqrt((u1L-ustokes(L))**2 + (v(L)-vstokes(L))**2 + (1.16d0*uorbL*fsqrtt)**2)
+              end if   
+              !
+              du = du0 + frL*ustokes(L)
+              !
+              ! and add vegetation stem drag with eulerian velocities, assumes fixed stem
+              if ((jaBaptist >= 2) .or. trachy_resistance) then
+                  frL = frL + alfav(L)*hypot(u1L-ustokes(L),v(L)-vstokes(L))      
+              endif
 
-     else if ( ifxedweirfrictscheme > 0) then
-           if (iadv(L) == 21 .or. kcu(L) == 3) then
-              call fixedweirfriction2D(L,k1,k2,frL)
-           else
-              frL = cfuhi(L)*sqrt(u1L*u1L + v2)   ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
-           endif
-       else if ((jaBaptist >= 2) .or. trachy_resistance) then
-           frL = ( cfuhi(L) + alfav(L) )*sqrt(u1L*u1L + v2)      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
-       else
-           frL = cfuhi(L)*sqrt(u1L*u1L + v2)      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
+          else if ( ifxedweirfrictscheme > 0) then
+              if (iadv(L) == 21 .or. kcu(L) == 3) then
+                 call fixedweirfriction2D(L,k1,k2,frL)
+              else
+                 frL = cfuhi(L)*sqrt(u1L*u1L + v2)   ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
+              endif
+          else if ((jaBaptist >= 2) .or. trachy_resistance) then
+              frL = ( cfuhi(L) + alfav(L) )*sqrt(u1L*u1L + v2)      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
+          else
+              frL = cfuhi(L)*sqrt(u1L*u1L + v2)      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
+          endif
+
+          bui   = 1d0 / ( dti + advi(L) + frL )
+          fu(L) = cu*bui
+          ru(L) = du*bui
+          u1L0  = u1L
+          u1L   = ru(L) - fu(L)*ds
+          itu1  = itu1 + 1
+          if (huvli(L) > 1d0 .and. itu1 < 4 .and. abs( u1L-u1L0 ) > 1d-2 ) then  ! less than 1 m deep
+              goto 10
+          endif
+
        endif
 
-     bui   = 1d0 / ( dti + advi(L) + frL )
-       fu(L) = cu*bui
-       ru(L) = du*bui
-       u1L0  = u1L
-       u1L   = ru(L) - fu(L)*ds
-       itu1  = itu1 + 1
-       if (huvli(L) > 1d0 .and. itu1 < 4 .and. abs( u1L-u1L0 ) > 1d-2 ) then  ! less than 1 m deep
-           goto 10
-       endif
     enddo
     !$OMP END PARALLEL DO   ! todo check difference
 
@@ -396,6 +394,9 @@
  endif
 ! END DEBUG
 
+ if (ifixedWeirScheme1d2d ==1) then
+    call compfuru_1d2d_fixedweirs()
+ endif
  call timstop(handle_furu)
 
  end subroutine furu

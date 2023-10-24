@@ -7,7 +7,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
                       & epsmax    ,epsmxc    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute sediment diffusion coefficient
@@ -154,8 +154,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
        ! concentration in kmax centre by working upward from aks. This new
        ! reference concentration will be used in the source and sink terms
        ! but it will not be used in determining the suspended load correction
-       ! in bott3d; for the latter the original reference height and
-       ! concentration are used.
+       ! in bott3d; for the latter the original reference height is used.
        !
        cmaxs = 0.65_fp
        cmax  = min(max(0.05_fp, (d50/dsand)*cmaxs) , cmaxs)

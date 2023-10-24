@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_veg3du
+
+      implicit none
+
+      contains
+
 
       subroutine veg3du     ( pmsa   , fl     , ipoint , increm, noseg ,
      +                        noflux , iexpnt , iknmrk , noq1  , noq2  ,
      +                        noq3   , noq4   )
 
+      use m_evaluate_waq_attribute
       use layered_sediment
 
       ! function : vegetation module uptake of nutrients
@@ -150,9 +157,8 @@
          s1_fs1vbxxupy = 0.0
          s1_fs2vbxxupy = 0.0
 
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
-         call dhkmrk(2,iknmrk(iseg),ikmrk2)
-!         if (ikmrk1.eq.1 .or. ikmrk1 .eq. 3) then !=> NO TESTING ON IKMRK1, PROCESS IS ALLWAYS ON!
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
 
          ibotseg     = NINT(pmsa(ipnt(4)))
          inicovvbxx  = pmsa(ipoint( 19)+(ibotseg-1)*increm( 19)) / 100.
@@ -332,3 +338,5 @@
 
       return
       end
+
+      end module m_veg3du

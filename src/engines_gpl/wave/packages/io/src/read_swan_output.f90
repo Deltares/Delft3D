@@ -42,7 +42,7 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
                 & drtm01    ,setup     ,n_outpars ,add_out_vals)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -66,8 +66,8 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------

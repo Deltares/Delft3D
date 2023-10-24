@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_trcoef
+
+      implicit none
+
+      contains
+
 
       subroutine trcoef ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -60,8 +66,11 @@
 
 !     Name     Type   Library
 !     ------   -----  ------------
+      use m_write_error_message
+      use m_evaluate_waq_attribute
       USE PHYSICALCONSTS, ONLY: CtoKelvin
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -124,7 +133,7 @@
       EXP1 = EXP ( C6*(CRIT2-CRIT1) )
       IF ( IN2 .EQ. 0 ) THEN
          WIND   = PMSA(IP2 )
-      IF( WIND  .LT. 0.0   ) CALL ERRSYS ('WIND       in TRCOEF < 0', 1)
+      IF( WIND  .LT. 0.0   ) CALL write_error_message ('WIND       in TRCOEF < 0')
          IF ( WIND .GE. CRIT1 ) THEN
             IF ( WIND .LT. CRIT2 ) THEN
                EXP2   = EXP ( C6*(WIND-CRIT1) )
@@ -146,7 +155,7 @@
 !
       IF ( IN4 .EQ. 0 ) THEN
          M      = PMSA(IP4 )
-      IF( M     .LT. 1.E-30) CALL ERRSYS ('MOLMASS    in TRCOEF = 0', 1)
+      IF( M     .LT. 1.E-30) CALL write_error_message ('MOLMASS    in TRCOEF = 0')
          WORTL1 = SQRT(C1/M)
          WORTL5 = SQRT(C5/M)*C2
          WOROPT = .FALSE.
@@ -164,8 +173,8 @@
          VL = C18
          LDIF   = PMSA(IP5 )
          GDIF   = PMSA(IP6 )
-      IF( GDIF  .LT. 1.E-30) CALL ERRSYS ('GAS-DIFF   in TRCOEF = 0', 1)
-      IF( LDIF  .LT. 1.E-30) CALL ERRSYS ('WATER-DIFF in TRCOEF = 0', 1)
+      IF( GDIF  .LT. 1.E-30) CALL write_error_message ('GAS-DIFF   in TRCOEF = 0')
+      IF( LDIF  .LT. 1.E-30) CALL write_error_message ('WATER-DIFF in TRCOEF = 0')
 !     Calculate Schmidt numbers for water and gas
          SCG    = VG / ( RHOG * GDIF / 86400.)
          SCL    = VL / ( RHOL * LDIF / 86400.)
@@ -175,10 +184,9 @@
       ENDIF
 !
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.1)) THEN
 !
 !     Map PMSA on local variables
@@ -188,12 +196,12 @@
       IF ( ISWTCH .EQ. 0 ) THEN
 !
          VELOC  = PMSA(IP3 )
-      IF( VELOC .LT. 0.0   ) CALL ERRSYS ('VELOC      in TRCOEF < 0', 1)
+      IF( VELOC .LT. 0.0   ) CALL write_error_message ('VELOC      in TRCOEF < 0')
          DEPTH  = PMSA(IP7 )
 !
          IF ( WNDOPT ) THEN
             WIND  = PMSA(IP2 )
-      IF( WIND  .LT. 0.0   ) CALL ERRSYS ('WIND       in TRCOEF < 0', 1)
+      IF( WIND  .LT. 0.0   ) CALL write_error_message ('WIND       in TRCOEF < 0')
             IF ( WIND .GE. CRIT1 ) THEN
                IF ( WIND .LT. CRIT2 ) THEN
                   EXP2   = EXP ( C6*(WIND-CRIT1) )
@@ -202,11 +210,11 @@
                ENDIF
             ENDIF
          ENDIF
-      IF( WIND  .LT. 0.0   ) CALL ERRSYS ('WIND       in TRCOEF < 0', 1)
+      IF( WIND  .LT. 0.0   ) CALL write_error_message ('WIND       in TRCOEF < 0')
 !
          IF ( WOROPT ) THEN
             M      = PMSA(IP4 )
-      IF( M     .LT. 1.E-30) CALL ERRSYS ('MOLMASS    in TRCOEF = 0', 1)
+      IF( M     .LT. 1.E-30) CALL write_error_message ('MOLMASS    in TRCOEF = 0')
             WORTL1 = SQRT(C1/M)
             WORTL5 = SQRT(C5/M)*C2
          ENDIF
@@ -237,7 +245,7 @@
 !
          IF ( WNDOPT ) THEN
             WIND  = PMSA(IP2 )
-      IF( WIND  .LT. 0.0   ) CALL ERRSYS ('WIND       in TRCOEF < 0', 1)
+      IF( WIND  .LT. 0.0   ) CALL write_error_message ('WIND       in TRCOEF < 0')
 !     Calculate wind at watersurface from wind at 10m (m/s)
             FWIND = C21 * WIND * SQRT( C22 + C23 * WIND)
             IF ( FWIND .LT. CRIT3  ) THEN
@@ -258,8 +266,8 @@
 ! --- Impact formulations (O'connor personal communication?)
             LDIF   = PMSA(IP5 )
             GDIF   = PMSA(IP6 )
-      IF( GDIF  .LT. 1.E-30) CALL ERRSYS ('GAS-DIFF   in TRCOEF = 0', 1)
-      IF( LDIF  .LT. 1.E-30) CALL ERRSYS ('WATER-DIFF in TRCOEF = 0', 1)
+      IF( GDIF  .LT. 1.E-30) CALL write_error_message ('GAS-DIFF   in TRCOEF = 0')
+      IF( LDIF  .LT. 1.E-30) CALL write_error_message ('WATER-DIFF in TRCOEF = 0')
 !     Calculate Schmidt numbers for water and gas
             SCG    = VG / ( RHOG * GDIF / 86400.)
             SCL    = VL / ( RHOL * LDIF / 86400.)
@@ -292,3 +300,5 @@
       RETURN
 !
       END
+
+      end module m_trcoef

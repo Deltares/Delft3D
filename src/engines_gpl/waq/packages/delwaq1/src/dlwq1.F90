@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,10 +23,11 @@
 
       program dlwq1
 
+      use m_delwaq1
       use delwaq1_version_module
 
       implicit none
-      
+
       integer                          :: argc
       character(len=256), allocatable  :: argv(:)
       character(len=120)               :: idstr
@@ -42,7 +43,7 @@
       do i = 1, argc
           call getarg(i - 1, argv(i))
       end do
-      
+
       call delwaq1(argc, argv, errorcode)
 
       open  ( newunit=lunfil , file = 'delwaq.rtn' )

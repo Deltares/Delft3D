@@ -1,7 +1,7 @@
 C********************************************************************
 C   Copyright 1996, UCAR/Unidata
 C   See netcdf/COPYRIGHT file for copying and redistribution conditions.
-C   $Id$
+C   
 C********************************************************************
 
 

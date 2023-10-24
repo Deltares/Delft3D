@@ -1,7 +1,7 @@
-module M_friction                                 !< friction parameters, (more to follow)
+module m_Roughness
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,20 +25,10 @@ module M_friction                                 !< friction parameters, (more 
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
- integer                         :: mxengpar      !< dimension of engpar
- double precision, allocatable   :: engpar(:)     !< Engelund-Hansen parameters
-
- character(len=40), allocatable  :: exresid(:)    !< ids of Extra Resistances
- character(len=40), allocatable  :: exresnm(:)    !< Names of Extra Resistances
-
-end module M_friction
-
-   
-module m_Roughness
    use MessageHandling
    use m_alloc
    use m_branch
@@ -54,9 +44,6 @@ module m_Roughness
    public realloc
    public dealloc
    public GetChezy
-   public flengrpr
-   public setVonkar
-   public frictiontype_v1_to_new
    public getFrictionParameters
    public frictionTypeStringToInteger
    public functionTypeStringToInteger
@@ -79,11 +66,6 @@ module m_Roughness
    end interface dealloc
    
  
-   interface flengrpr
-      module procedure flengrprReal
-      module procedure flengrprDouble
-   end interface 
-   
    !> roughness definition
    
    !> Roughness definition
@@ -109,13 +91,7 @@ module m_Roughness
       double precision, allocatable     :: currentValues(:)                !< Time Interpolated Friction values of time dependent items (same index as timeSeriesIds).
       double precision, allocatable     :: timeDepValues(:,:)                 !< Friction values of time dependent items (same index as timeSeriesIds).
 
-
-      ! All fields below: branch oriented data (roughness v1, obsolete for v2)
-      integer, pointer                  :: rgh_type_neg(:) => null() !< Roughness type for negative flow direction at a branch
-      integer, pointer                  :: fun_type_neg(:) => null() !< Roughness parameter value for negative flow direction at a branch
-
-      integer                           :: spd_pos_idx       !< Index to Spatial Data for positive flow direction parameter values
-      integer                           :: spd_neg_idx       !< Index to Spatial Data for negative flow direction parameter values
+      integer                           :: spd_pos_idx       !< Index to Spatial Data for parameter values
       
    end type
    
@@ -146,13 +122,6 @@ module m_Roughness
    double precision, parameter, public                  :: chlim = 0.001d0             !< Lowest Chezy value
 
 contains
-   
-subroutine setVonkar(vonkarIn)
-   double precision, intent(in) :: vonkarIn
-   
-   vonkar = vonkarIn
-end subroutine setVonkar
-
    
 !> Reallocate roughness array, while keeping the original values in place   
 subroutine reallocRoughness(rgs)
@@ -211,13 +180,9 @@ subroutine deallocRoughness(rgs)
 
          if (associated(rgs%rough(i)%rgh_type_pos))  deallocate(rgs%rough(i)%rgh_type_pos) 
          if (associated(rgs%rough(i)%fun_type_pos))  deallocate(rgs%rough(i)%fun_type_pos)           
-         if (associated(rgs%rough(i)%rgh_type_neg))  deallocate(rgs%rough(i)%rgh_type_neg)
-         if (associated(rgs%rough(i)%fun_type_neg))  deallocate(rgs%rough(i)%fun_type_neg)
       
          rgs%rough(i)%rgh_type_pos  => null()
          rgs%rough(i)%fun_type_pos  => null()
-         rgs%rough(i)%rgh_type_neg  => null()
-         rgs%rough(i)%fun_type_neg  => null()
          
       enddo
       
@@ -234,38 +199,6 @@ subroutine deallocRoughness(rgs)
 
 end subroutine deallocRoughness
 
-! Function getFrictionValue is moved from Roughness.f90 to CorssSections.f90 to avoid circular references
-
-integer function frictiontype_v1_to_new(frictionType)
-   integer, intent(in) :: frictionType
-   
-   select case(frictionTYpe)
-   case(1)
-      ! Chezy
-      frictiontype_v1_to_new = R_Chezy
-   case (4) 
-      ! Manning-formula
-      frictiontype_v1_to_new = R_Manning
-   case (5) 
-      !           Strickler-1 formula
-      frictiontype_v1_to_new = R_Nikuradse
-   case (6) 
-      !           Strickler-2 formula
-      frictiontype_v1_to_new = R_Strickler
-   case (7) 
-      !           Nikuradze-formula == White Colebrook Waqua style
-      frictiontype_v1_to_new = R_WhiteColebrook
-   case (8)
-      !        Engelund-like roughness predictor
-      frictiontype_v1_to_new = 10
-   case (9) 
-      !           Bos Bijkerk formula
-      frictiontype_v1_to_new = R_BosBijkerk
-   end select
-   
-end function frictiontype_v1_to_new
-
-   
    !> Converts a friction type as text string into the integer parameter constant.
    !! E.g. R_Manning, etc. If input string is invalid, -1 is returned.
    subroutine frictionTypeStringToInteger(sfricType, ifricType)
@@ -394,9 +327,6 @@ double precision function GetChezy(frictType, cpar, rad, dep, u)
    case (9) 
       !           Bos Bijkerk formula
       GetChezy = cpar*dep**third*rad0**sixth
-   case (10)
-      !        Engelund-like roughness predictor
-      call flengrpr(cpar, u, rad0, GetChezy)
    case default
    end select
    !
@@ -410,189 +340,6 @@ double precision function GetChezy(frictType, cpar, rad, dep, u)
    endif
 
 end function GetChezy
-
-!> Get the Chezy value, using the Engelund roughness predictor
-subroutine flengrprDouble(d90, u, hrad, chezy)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
-    use m_friction
-    implicit none
-!
-! Global variables
-!
-    double precision, intent(out)              :: chezy   !< Roughness value
-    double precision, intent(in)               :: d90     !< d90 parameter value
-    double precision, intent(in)               :: hrad    !< hydraulic radius
-    double precision, intent(in)               :: u       !< flow velocity
-!
-!
-! Local variables
-!
-    logical                        :: high
-    logical                        :: low
-    logical                        :: moder
-    double precision               :: as1
-    double precision               :: as11
-    double precision               :: as12
-    double precision               :: as2
-    double precision               :: as21
-    double precision               :: as22
-    double precision               :: as3
-    double precision               :: as31
-    double precision               :: as32
-    double precision               :: c90
-    double precision               :: deltad
-    double precision               :: ths
-    double precision               :: thsg
-    real, dimension(2)             :: theng
-!
-!
-!! executable statements -------------------------------------------------------
-!
-    !
-    !=======================================================================
-    !                       Deltares
-    !                One-Two Dimensional Modelling System
-    !                           S O B E K
-    !
-    ! Subsystem:          Flow Module
-    !
-    ! Programmer:         J.Brouwer
-    !
-    ! Module:             ENGRPR (ENGelund Roughness PRedictor)
-    !
-    ! Module description: Calculation of the Chezy value in case of the
-    !                     Engelund roughness predictor. (only applicable in
-    !                     the main section)
-    !
-    !
-    ! Parameters:
-    ! NR NAME              IO DESCRIPTION
-    !  5 chezy             O  Chezy value
-    !  2 d90               I  D90 value.
-    !  1 engpar(9)         I  9 Engelund parameters:
-    !                         (1) = Parameter DELTA-d.
-    !                         (2) = Parameter THETA-Eng1.
-    !                         (3) = Parameter THETA-Eng2.
-    !                         (4) = Parameter as11.
-    !                         (5) = Parameter as21.
-    !                         (6) = Parameter as31.
-    !                         (7) = Parameter as12.
-    !                         (8) = Parameter as22.
-    !                         (9) = Parameter as32.
-    !  4 hrad              I  Hydraulic radius
-    !  3 u                 I  Velocity
-    !
-    !
-    !     update information
-    !     person                    date
-    !     Kuipers                   5-9-2001
-    !
-    !
-    !     Declaration of Parameters:
-    !
-    !
-    !     Declaration of local variables:
-    !
-    !
-    !     Engelund-like roughness predictor
-    !
-    !     Extraction of 'Engelund' parameters from -engpar-
-    !
-    !     theng(1) : Shields parameter on threshold of sediment movement
-    !     theng(2) : Shields parameter at transition point from dunes to
-    !                   flat bed
-    !     deltad   : relative density of bed material
-    !
-    deltad = engpar(1)
-    theng(1) = engpar(2)
-    theng(2) = engpar(3)
-    as11 = engpar(4)
-    as21 = engpar(5)
-    as31 = engpar(6)
-    as12 = engpar(7)
-    as22 = engpar(8)
-    as32 = engpar(9)
-    !
-    !     Compute C90 = Chezy coeff. w.r.t. grains
-    !
-    c90 = 18.0*log10(4.0*hrad/d90)
-    !
-    !     Compute thsg = Shields parameter w.r.t. grains
-    !
-    thsg = u*u/(c90*c90*deltad*d90)
-    !
-    !     Determine flow condition
-    !
-    !     low   = low with flat bed
-    !     moder = moderate with dunes
-    !     high  = high flow with anti-dunes
-    !     thsg     : Shields parameter w.r.t. grains
-    !
-    !                 thsg  < theng(1) : low flow       [flat bed  ]
-    !     theng(1) <  thsg  < theng(2) : moderate flow  [dunes     ]
-    !                 thsh  > theng(2) : high flow      [anti-dunes]
-    !
-    low = thsg<=theng(1)
-    moder = thsg>theng(1) .and. thsg<=theng(2)
-    high = thsg>theng(2)
-    !
-    if (low) then
-       !
-       !        Low flow
-       !
-       as1 = 0.0d0
-       as2 = 1.0d0
-       as3 = 0.0d0
-    !
-    elseif (moder) then
-       !
-       !        Moderate flow
-       !
-       as1 = as11
-       as2 = as21
-       as3 = as31
-    !
-    elseif (high) then
-       !
-       !        High flow
-       !
-       as1 = as12
-       as2 = as22
-       as3 = as32
-    !
-    else
-    endif
-    !
-    !     Compute Shields parameter thsh
-    !
-    ths = as1*thsg*thsg + as2*thsg + as3
-    !
-    !     Compute Engelund-like roughness predictor
-    !
-    if (low) then
-       chezy = c90
-    else
-       chezy = c90*sqrt(thsg/ths)
-    endif
-end subroutine flengrprDouble
-
-!> Get the Chezy value, using the Engelund roughness predictor
-subroutine flengrprReal(d90, u, hrad, chezy)
-   real, intent(in) :: d90          !< Roughness value
-   real, intent(in) :: u            !< d90 parameter value
-   real, intent(in) :: hrad         !< hydraulic radius
-   real, intent(out) :: chezy       !< flow velocity
-   
-   double precision C
-   
-   call flengrprDouble(dble(d90), dble(u), dble(hrad), C)
-   
-   chezy = C
-end subroutine flengrprReal
 
 !> Retrieve the friction parameter for given branchIndex/chainage
 subroutine getFrictionParameters(rgh, ibranch, chainage, c_type, c_par)

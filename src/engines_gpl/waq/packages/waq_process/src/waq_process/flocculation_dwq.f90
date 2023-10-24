@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2020.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !
 !!--description-----------------------------------------------------------------
 !
@@ -451,80 +451,6 @@ subroutine floc_chassagne( spm, tau, totaldepth, localdepth, grav, viscosity, rh
     settling_flux = spm * (floc_ratio * ws_macro + ws_micro) / (floc_ratio + 1.0_fp)
 
 end subroutine floc_chassagne
-
-
-subroutine flocculate(cfloc, adt, flocmod)
-!!use morphology_data_module, only: FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL
-
-!!--description-----------------------------------------------------------------
-!
-! Update the mass distribution of clay over the various floc sizes.
-!
-!!--declarations----------------------------------------------------------------
-!
-! Global variables
-!
-    real(fp), dimension(:,:), intent(inout)  :: cfloc   !< Concentration split per clay fraction and floc size [g/m3]
-    real(fp),                 intent(in)     :: adt     !< Relaxation factor towards equilibrium [-]
-    integer,                  intent(in)     :: flocmod !< Flocculation model being used [-]
-
-!
-! Local variables
-!
-    integer  :: i              !< Clay population index
-    integer  :: j              !< Floc size index
-    integer  :: nflocpop       !< Number of clay populations
-    integer  :: nflocsizes     !< Number of floc size classes
-    real(fp) :: tcclay         !< Total clay concentration [g/m3]
-    real(fp) :: tcpop          !< Total concentration of specific clay population [g/m3]
-    real(fp) :: eq_cfloc_micro !< Equilibrium concentration of micro flocs within specific clay population [g/m3]
-    real(fp) :: eq_cfloc_macro !< Equilibrium concentration of macro flocs within specific clay population [g/m3]
-    real(fp) :: settling_flux  !< DUMMY - Downward flux of SPM due to settling [g/m2/s]
-    real(fp) :: floc_ratio     !< Mass ratio of macro flocs versus micro flocs [-]
-    real(fp) :: ws_macro       !< DUMMY - Settling velocity of macro flocs [m/s]
-    real(fp) :: ws_micro       !< DUMMY - Settling velocity of micro flocs [m/s]
-    !
-    nflocpop = size(cfloc,1)
-    nflocsizes = size(cfloc,2)
-
-    tcclay = 0.0_fp
-    do j = 1, nflocsizes
-       do i = 1, nflocpop
-           tcclay = tcclay + cfloc(i,j)
-       enddo
-    enddo
-
-    select case (flocmod)
-    case (FLOC_MANNING_DYER)
-       call macro_micro_floc_manning( tcclay, floc_ratio )
-       do i = 1, nflocpop
-          tcpop = cfloc(i,1) + cfloc(i,2)
-          !
-          eq_cfloc_macro = floc_ratio / (1.0_fp + floc_ratio) * tcpop
-          eq_cfloc_micro = tcpop - eq_cfloc_macro
-          !
-          cfloc(i,1) = adt * eq_cfloc_micro + (1.0_fp - adt) * cfloc(i,1)
-          cfloc(i,2) = adt * eq_cfloc_macro + (1.0_fp - adt) * cfloc(i,2)
-       enddo
-
-    case (FLOC_CHASSAGNE_SAFAR)
-       call macro_micro_floc_chassagne( tcclay, floc_ratio )
-       do i = 1, nflocpop
-          tcpop = cfloc(i,1) + cfloc(i,2)
-          !
-          eq_cfloc_macro = floc_ratio / (1.0_fp + floc_ratio) * tcpop
-          eq_cfloc_micro = tcpop - eq_cfloc_macro
-          !
-          cfloc(i,1) = adt * eq_cfloc_micro + (1.0_fp - adt) * cfloc(i,1)
-          cfloc(i,2) = adt * eq_cfloc_macro + (1.0_fp - adt) * cfloc(i,2)
-       enddo
-
-    case (FLOC_VERNEY_ETAL)
-       !call floc_verney
-
-    end select
-
-end subroutine flocculate
 
 
 subroutine flocculate_dwq( swfloform, cmacro, cmicro, tpm, tke, tau, total_depth, local_depth, viscosity, rho_water, &

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+    <!--
+    Basic Windows configuration file: For "coupsds" (Data selection program)
+    -->
+    <config>
+        <localPaths>
+            <testCasesDir>.\data\cases</testCasesDir>
+            <enginesDir>.\data\engines\delft3d\win32</enginesDir>
+            <referenceDir>.\data\reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="testbench_ref_engines">
+                <credential ref="commandline"/>
+                <!--root>https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32</root-->
+                <root>https://repos.deltares.nl/repos/ds/dist/wix/source/delft3d/win32</root>
+            </location>
+            <location name="dsctestbench_cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="dsctestbench_reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="testbench_local_engines">
+                <root>./data/engines</root>
+            </location>
+            <location name="local">
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <!--
+    The order is important. Start with the following programs:
+        command_prompt
+        svn
+        mpi
+    -->
+    <programs>
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win64\svn.exe</path>
+        </program>
+        <program name="coupsds" logOutputToFile="true" programStringRemoveQuotes="true">
+            <shell ref="command_prompt"/>
+            <location ref="testbench_ref_engines" type="reference">
+                <from>.</from>
+            </location>
+            <location ref="testbench_local_engines" type="check">
+                <from>teamcity_artifacts/bin/win32</from>
+            </location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/bin/win32</from>
+			</location>
+            <path>dwaq/bin/coupsds.exe</path>
+        </program>
+    </programs>
+    <!--
+    default testCases
+    -->
+    <defaultTestCases>
+        <testCase name="coupsds_default">
+            <programs>
+                <program ref="coupsds"/>
+            </programs>
+            <location ref="dsctestbench_cases" type="input">
+                <from>\</from>
+            </location>
+            <location ref="dsctestbench_reference_results" type="reference">
+                <from>\win32\</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e52_f01_c01" ref="coupsds_default">
+            <path>e52_coupsds/f01_general/c01_test_01</path>
+            <programs>
+                <program ref="coupsds">
+                    <arguments>
+                        <argument>&lt;coupsds_test_01.inp &gt;coupsds_test_01.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="coupsds.rep" type="NUMBERTEXT"/>
+                <file name="coupsds_test_01.scr" type="NUMBERTEXT"/>
+                <file name="waq_test_01.inp" type="NUMBERTEXT"/>
+                <file name="waq_test_01.hyd" type="NUMBERTEXT"/>
+                <file name="waq_test_01.dwq" type="NUMBERTEXT"/>
+                <file name="waq_test_01.rep" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e52_f01_c02" ref="coupsds_default">
+            <path>e52_coupsds/f01_general/c02_test_02</path>
+            <programs>
+                <program ref="coupsds">
+                    <arguments>
+                        <argument>&lt;coupsds_test_02.inp &gt;coupsds_test_02.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="coupsds.rep" type="NUMBERTEXT"/>
+                <file name="coupsds_test_02.scr" type="NUMBERTEXT"/>
+                <file name="waq_test_02.inp" type="NUMBERTEXT"/>
+                <file name="waq_test_02.hyd" type="NUMBERTEXT"/>
+                <file name="waq_test_02.dwq" type="NUMBERTEXT"/>
+                <file name="waq_test_02.rep" type="NUMBERTEXT"/>
+                <file name="waq_test_02.src" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+		<!--- Case e52_f01_c03 seems to be invallid (sds-file doesn't contain the right information)
+        <testCase name="e52_f01_c03" ref="coupsds_default">
+            <path>e52_coupsds/f01_general/c03_test_03</path>
+            <programs>
+                <program ref="coupsds">
+                    <arguments>
+                        <argument>&lt;coupsds_test_03.inp &gt;coupsds_test_03.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="coupsds.rep" type="NUMBERTEXT"/>
+                <file name="coupsds_test_03.scr" type="NUMBERTEXT"/>
+                <file name="waq_test_03.inp" type="NUMBERTEXT"/>
+                <file name="waq_test_03.hyd" type="NUMBERTEXT"/>
+                <file name="waq_test_03.dwq" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> 
+        </testCase>
+		-->
+        <testCase name="e52_f01_c04" ref="coupsds_default">
+            <path>e52_coupsds/f01_general/c04_test_04</path>
+            <programs>
+                <program ref="coupsds">
+                    <arguments>
+                        <argument>&lt;coupsds_test_04.inp &gt;coupsds_test_04.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="coupsds.rep" type="NUMBERTEXT"/>
+                <file name="coupsds_test_04.scr" type="NUMBERTEXT"/>
+                <file name="waq_test_04.inp" type="NUMBERTEXT"/>
+                <file name="waq_test_04.hyd" type="NUMBERTEXT"/>
+                <file name="waq_test_04.dwq" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </testCases>
+</deltaresTestbench_v3>

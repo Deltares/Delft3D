@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_waqmeteo
+
+      implicit none
+
+      contains
+
 
       subroutine meteo  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -48,7 +54,7 @@
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-      INTEGER   MAXSTA,MAXVAR, IP , NP
+      INTEGER   MAXSTA,MAXVAR, IP , NP, ISEG, i
 !
 !     aantal meteo stations
 !
@@ -64,19 +70,23 @@
       PARAMETER (NP=5)
 
 
-      DIMENSION RAD(MAXSTA),VWIND(MAXSTA), DIR(MAXSTA), HUM(MAXSTA),
-     &          TEMP(MAXSTA), PRES(MAXSTA), SUN(MAXSTA)
-      DIMENSION X(MAXSTA), Y(MAXSTA)
+      real, DIMENSION(MAXSTA) :: RAD, VWIND, DIR, HUM,
+     +                           TEMP, PRES, SUN
+
+      real, DIMENSION(MAXSTA) :: X, Y
+
       DIMENSION IP((MAXSTA+1)* MAXVAR +  MAXSTA*2 + NP)
-      DIMENSION DIST(MAXSTA), WFAC(MAXSTA)
+      real, DIMENSION(MAXSTA) :: DIST, WFAC
+
+      integer icalcsw, inear
+      real scale, nostat, xseg, yseg, sum, sum2, min
 
       DO 10 I=1, (MAXSTA + 1)  * MAXVAR +  MAXSTA*2 + NP
         IP(I) = IPOINT(I)
    10 CONTINUE
 !
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !     waarden per station
@@ -221,3 +231,5 @@
       RETURN
 !
       END
+
+      end module m_waqmeteo

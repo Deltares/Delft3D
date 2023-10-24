@@ -1,6 +1,5 @@
 # Generated on 12:18:21, 14-03-2019
 # Deltares, D-Flow FM Version 1.2.38.60615M, Feb 28 2019, 13:01:17
-# Source:https://svn.oss.deltares.nl/repos/delft3d/trunk/
 
 [model]
 Program                     = D-Flow FM

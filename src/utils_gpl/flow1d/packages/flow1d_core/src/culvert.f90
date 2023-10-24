@@ -1,7 +1,7 @@
 module m_Culvert
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2021.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_Culvert
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use m_CrossSections
@@ -134,9 +134,7 @@ contains
       double precision               :: inflowCrest         !< zc_1 (at upstream water level)
       double precision               :: outflowCrest        !< zc_2 (at downstream water level)
       double precision               :: du
-      double precision               :: fr
       double precision               :: gl_thickness
-      double precision               :: dummy
       double precision               :: dpt                 !< upstream water depth
       double precision               :: openingfac
       double precision               :: valveOpening
@@ -195,36 +193,6 @@ contains
       gl_thickness = getGroundLayer(CrossSection)
 
       ! Check on Valve
-      if (culvert%has_valve .and. ((culvert%valveOpening - gl_thickness) < thresholdDry)) then
-         kfum  = 0
-         fum   = 0.0d0
-         rum   = 0.0d0
-         u1m   = 0.0d0
-         u0m   = 0.0d0
-         qm    = 0.0d0
-         q0m   = 0.0d0
-         culvert%state = 0
-         return
-      endif
-
-      if ((smax - culvertCrest - gl_thickness) < thresholdDry) then
-         kfum = 0
-      else
-         kfum = 1
-      endif
-
-      if (kfum==0) then 
-         kfum  = 0
-         fum   = 0.0d0
-         rum   = 0.0d0
-         u1m   = 0.0d0
-         u0m   = 0.0d0
-         qm    = 0.0d0
-         q0m   = 0.0d0
-         culvert%state = 0
-         return
-      endif
-      
       !     First find out the critical depth that can be used in free flow equations
       !     pjo, 13-04-2000, ars 4952, when flow direction changes, critical
       !     depth is taken as zero.

@@ -9,7 +9,7 @@
     # Usage example:
     # Execute in the working directory:
     # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
-    # More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    # More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 function print_usage_info {
     echo "Usage: ${0##*/} [OPTION]..."
@@ -138,7 +138,7 @@ echo "    nr of partitions          : $numnode"
 echo "    nr of partitions per node : $corespernode"
 echo "    Queue                     : $queue"
 echo "    Job name                  : $JOBNAME"
-echo 
+echo
 
     #
     # Set the directories containing the binaries

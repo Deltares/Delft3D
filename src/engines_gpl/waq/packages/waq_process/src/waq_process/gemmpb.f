@@ -1,4 +1,4 @@
-!!  Copyright(C) Stichting Deltares, 2012-2022.
+!!  Copyright(C) Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_gemmpb
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GEMMPB ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
@@ -50,6 +56,9 @@ C                             Explicit declarations
 C     150399  A. Blauw        MPB can't consume more than the min.flux
 C     311003  Jan van Beek    process two types at once and a lot more
 C***********************************************************************
+
+      use m_evaluate_waq_attribute
+      use m_write_error_message
 
       IMPLICIT NONE
 
@@ -133,8 +142,8 @@ C     from PMSA array
       REAL               :: LOCSEDDEPT         ! 70 in   Sediment layer depth to bottom of segment      (m)
       REAL               :: OXY                ! 71 in   Dissolved Oxygen                            (g/m3)
       REAL               :: MPBOXYCRIT         ! 72 in   Crit. oxygen conc. for growth and resp. MPB (g/m3)
-      REAL               :: MPB1MO_20          ! 73 in   MPB1peli mortality at 20øC under Oxygen depl.(1/d)
-      REAL               :: MPB2MO_20          ! 74 in   MPB2psam mortality at 20øC under Oxygen depl.(1/d)
+      REAL               :: MPB1MO_20          ! 73 in   MPB1peli mortality at 20Â°C under Oxygen depl.(1/d)
+      REAL               :: MPB2MO_20          ! 74 in   MPB2psam mortality at 20Â°C under Oxygen depl.(1/d)
       REAL               :: BIOMAS_MPB1_M2     ! 75 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
       REAL               :: BIOMAS_MPB2_M2     ! 76 out, MPB2psam biomass per m3 in layer S1        (gC/m3)
       REAL               :: BIOMAS_S1_MPB1_M3  ! 77 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
@@ -279,8 +288,8 @@ C     loop over the segments
 
       DO 1000 ISEG = 1 , NOSEG
 
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-         CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 
          TEMP           = PMSA(IP(1))
          BIOMAS_MPB1    = MAX(0.0,PMSA(IP(2)))
@@ -364,12 +373,12 @@ C     loop over the segments
 
 C           check proces parameters
 
-         IF (ZSED.LT.1E-20)  CALL DHERR2('ZSed'   ,ZSED   ,ISEG,'GEMMPB')
-         IF (SURF.LT.1E-20)  CALL DHERR2('Surf'   ,SURF   ,ISEG,'GEMMPB')
-         IF (RT_MPB1.LE.0.0) CALL DHERR2('RT_MPB1',RT_MPB1,ISEG,'GEMMPB')
-         IF (MT_MPB1.LE.0.0) CALL DHERR2('MT_MPB1',MT_MPB1,ISEG,'GEMMPB')
-         IF (RT_MPB2.LE.0.0) CALL DHERR2('RT_MPB2',RT_MPB2,ISEG,'GEMMPB')
-         IF (MT_MPB2.LE.0.0) CALL DHERR2('MT_MPB2',MT_MPB2,ISEG,'GEMMPB')
+         IF (ZSED.LT.1E-20)  CALL write_error_message_with_values('ZSed'   ,ZSED   ,ISEG,'GEMMPB')
+         IF (SURF.LT.1E-20)  CALL write_error_message_with_values('Surf'   ,SURF   ,ISEG,'GEMMPB')
+         IF (RT_MPB1.LE.0.0) CALL write_error_message_with_values('RT_MPB1',RT_MPB1,ISEG,'GEMMPB')
+         IF (MT_MPB1.LE.0.0) CALL write_error_message_with_values('MT_MPB1',MT_MPB1,ISEG,'GEMMPB')
+         IF (RT_MPB2.LE.0.0) CALL write_error_message_with_values('RT_MPB2',RT_MPB2,ISEG,'GEMMPB')
+         IF (MT_MPB2.LE.0.0) CALL write_error_message_with_values('MT_MPB2',MT_MPB2,ISEG,'GEMMPB')
 
 C        Active water segments and bottom segments
 
@@ -828,24 +837,6 @@ C           NH4 over NO3 preferency
 !           you get a correction on both fluxes. The fact that there is no flux to NO3 in the water means
 !           you have an exclusively negative contribution to NO3 in the water.
 
-            !FN_MPB1 = FAM_S1_MPB1 + (1.-FAM_S1_MPB1)*FNI_S1_MPB1
-!            FN_MPB1 = FNI_S1_MPB1 + FAM_S1_MPB1
-!           IF ( FN_MPB1 .GT. 1.E-20 ) THEN
-!              FNO3_MPB1 = FNI_S1_MPB1 / FN_MPB1
-!              FNH4_MPB1 = FAM_S1_MPB1 / FN_MPB1
-!           ELSE
-!              FNO3_MPB1 = 0.0
-!              FNH4_MPB1 = 1.0
-!           ENDIF
-            !FN_MPB2 = FAM_S1_MPB2 + (1.-FAM_S1_MPB2)*FNI_S1_MPB2
-!            FN_MPB2 = FNI_S1_MPB2 + FAM_S1_MPB2
-!           IF ( FN_MPB2 .GT. 1.E-20 ) THEN
-!              FNO3_MPB2 = FNI_S1_MPB2 / FN_MPB2
-!              FNH4_MPB2 = FAM_S1_MPB2 / FN_MPB2
-!           ELSE
-!              FNO3_MPB2 = 0.0
-!              FNH4_MPB2 = 1.0
-!           ENDIF
             FNO3_MPB1 = 0.0
             FNH4_MPB1 = 1.0
             FNO3_MPB2 = 0.0
@@ -976,3 +967,5 @@ C        update pointering in PMSA and FL array
 
       RETURN
       END
+
+      end module m_gemmpb

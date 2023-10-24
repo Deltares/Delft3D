@@ -1,5 +1,5 @@
 set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/../src")
-add_compile_options(-fpic)
+
 set(headers ${source_path}/shapefil.h)
 set(source  ${source_path}/dbfopen.c
             ${source_path}/safileio.c

@@ -1,0 +1,67 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    integer, parameter :: mxcpnt = 200
+                             !  Maximum number of pointers to
+                             !  declare for CH (see pointrs.inc)
+    integer, parameter :: mxipnt = 200
+                             !  Maximum number of pointers to
+                             !  declare for I (see pointrs.inc)
+    integer, parameter :: mxrpnt = 300
+                             !  Maximum number of pointers to
+                             !  declare for R (see pointrs.inc)
+!
+    type gd_pointrs
+!
+       integer      :: caddrs(mxcpnt + 1)
+                             !  Pointer array for CH array (see
+                             !  pointrs.inc)
+       integer      :: iaddrs(mxipnt + 1)
+                             !  Pointer array for I array (see
+                             !  pointrs.inc)
+       integer      :: raddrs(mxrpnt + 1)
+                             !  Pointer array for R array (see
+                             !  pointrs.inc)
+       integer      :: ncpntr
+                             !  Last Pointer declarred for CH (see
+                             !  pointrs.inc)
+       integer      :: nipntr
+                             !  Last Pointer declarred for I (see
+                             !  pointrs.inc)
+       integer      :: nrpntr
+                             !  Last Pointer declarred for R (see
+                             !  pointrs.inc)
+       integer      :: coldpt
+       integer      :: ioldpt
+       integer      :: roldpt
+       character*16 :: cpntrs(mxcpnt)
+       character*16 :: ipntrs(mxipnt)
+       character*16 :: rpntrs(mxrpnt)
+!
+    end type gd_pointrs

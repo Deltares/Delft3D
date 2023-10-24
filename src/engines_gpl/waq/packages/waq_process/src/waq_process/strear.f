@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_strear
+
+      implicit none
+
+      contains
+
 
       subroutine strear ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_srstop
+      use m_monsys
+
 !>\file
 !>       Aeration at weirs (Gameson and Nakasone) (input is array of structures)
 
@@ -205,3 +214,5 @@
       RETURN
 !
       END
+
+      end module m_strear

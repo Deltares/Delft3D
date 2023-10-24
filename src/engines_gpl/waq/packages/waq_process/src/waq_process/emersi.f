@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_emersi
+
+      implicit none
+
+      contains
+
 
       subroutine emersi ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -33,6 +39,10 @@
 !
 !***********************************************************************
 
+      use m_advtra
+      use m_dhnoseg
+      use m_dhnolay
+      use m_evaluate_waq_attribute
       use bottomset     !  module with definition of the waterbottom segments
 
       implicit none
@@ -99,16 +109,14 @@
 
       do iseg = 1 , nosegw
 
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
          if ( ikmrk1 .eq. 1 ) then
-!jvb     if (btest(iknmrk_save(iseg),0)) then
-
             depth      = pmsa(ip1 )
             zthreshold = pmsa(ip2 )
 
             ! look if segment has water surface
 
-            call dhkmrk(2,iknmrk(iseg),ikmrk2)
+            call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
             if ( (ikmrk2.eq.1 .or. ikmrk2.eq.0) .and. depth .le. zthreshold ) then
 
                ! set this segment to inactive
@@ -121,7 +129,7 @@
 
                   ! give the underlying segment the attribure with water surface
 
-                  call dhkmrk(2,iknmrk(iseg_down),ikmrk2)
+                  call evaluate_waq_attribute(2,iknmrk(iseg_down),ikmrk2)
                   if (ikmrk2.eq.2) then
                      iknmrk(iseg_down) = iknmrk(iseg_down) - 10 ! sets second attribute to 1
                   elseif (ikmrk2.eq.3) then
@@ -183,3 +191,5 @@
 
       return
       end
+
+      end module m_emersi

@@ -2,7 +2,7 @@ module m_structures
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -28,8 +28,8 @@ module m_structures
 !
 !-------------------------------------------------------------------------------
    
-! $Id$
-! $HeadURL$
+! 
+! 
 
 use properties
 use unstruc_channel_flow, only: network
@@ -40,17 +40,18 @@ type(tree_data), pointer, public :: strs_ptr !< A property list with all input s
 integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and from structure-input files. Use one or the other.
 
 ! COMMON indices for all structure types:
- integer, parameter :: NUMVALS_COMMON = 10 !< Number of common variables for all structure types except for pump and gate (new)
+ integer, parameter :: NUMVALS_COMMON = 11 !< Number of common variables for all structure types except for pump and gate (new)
  integer, parameter :: IVAL_WIDTH   = 1    !< Index of total width
- integer, parameter :: IVAL_WIDTHUP = 2    !< Index of wet flow link width on upstream side
- integer, parameter :: IVAL_WIDTHDN = 3    !< Index of wet flow link width on downstream side
- integer, parameter :: IVAL_WIDTHUPDN = 4  !< Index of width of wet flow links that have both upstream and downstream nodes wet
- integer, parameter :: IVAL_DIS = 5        !< Index of discharge
- integer, parameter :: IVAL_S1UP = 6       !< Index of water level at upstream
- integer, parameter :: IVAL_S1DN = 7       !< Index of water level at downstream
- integer, parameter :: IVAL_HEAD = 8       !< Index of head of the structure
- integer, parameter :: IVAL_AREA = 9       !< Index of flow area of the structure
- integer, parameter :: IVAL_VEL = 10       !< Index of flow velocity
+ integer, parameter :: IVAL_WIDTHWET= 2    !< Index of total width of wet links
+ integer, parameter :: IVAL_WIDTHUP = 3    !< Index of wet flow link width on upstream side
+ integer, parameter :: IVAL_WIDTHDN = 4    !< Index of wet flow link width on downstream side
+ integer, parameter :: IVAL_WIDTHUPDN = 5  !< Index of width of wet flow links that have both upstream and downstream nodes wet
+ integer, parameter :: IVAL_DIS = 6        !< Index of discharge
+ integer, parameter :: IVAL_S1UP = 7       !< Index of water level at upstream
+ integer, parameter :: IVAL_S1DN = 8       !< Index of water level at downstream
+ integer, parameter :: IVAL_HEAD = 9       !< Index of head of the structure
+ integer, parameter :: IVAL_AREA = 10      !< Index of flow area of the structure
+ integer, parameter :: IVAL_VEL = 11       !< Index of flow velocity
 
  !! For general structure, weir, orifice, because they share some common output variables
  ! Followings are extra variables for general structure, weir and orifice:
@@ -72,8 +73,8 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_AREA_OVER  = NUMVALS_COMMON + 14 !< Index of flow area over gate
  integer, parameter :: IVAL_AREA_UNDER = NUMVALS_COMMON + 15 !< Index of flow area under gate
  integer, parameter :: IVAL_VEL_OPEN   = NUMVALS_COMMON + 16 !< Index of velocity through gate opening
- integer, parameter :: IVAL_VEL_OVER   = NUMVALS_COMMON + 17 !< Index of velocity over gate opening
- integer, parameter :: IVAL_VEL_UNDER  = NUMVALS_COMMON + 18 !< Index of velocity under gate opening
+ integer, parameter :: IVAL_VEL_OVER   = NUMVALS_COMMON + 17 !< Index of velocity over gate
+ integer, parameter :: IVAL_VEL_UNDER  = NUMVALS_COMMON + 18 !< Index of velocity under gate
  integer, parameter :: IVAL_COUNT      = NUMVALS_COMMON + 19 !< Index of counters of partitions for parallel
 
  integer, parameter :: NUMEXTVALS_GENSTRU = 19 ! Number of extra variables for general structure, including last one as a counter
@@ -132,14 +133,15 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
                                                                              !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
  
  ! gate (new),  extra variables:
- integer, parameter :: NUMVALS_COMMON_GATE = 7                                 !< Number of common variables shared by gate
- integer, parameter :: IVAL_GATE_FLOWH = NUMVALS_COMMON_GATE + 1               !< Upstream average water level
- integer, parameter :: IVAL_GATE_COUNT = NUMVALS_COMMON_GATE + 2               !< Counter
- integer, parameter :: IVAL_GATE_OPENW = NUMVALS_COMMON_GATE + 3               !< Gate opening width
- integer, parameter :: IVAL_GATE_EDGEL = NUMVALS_COMMON_GATE + 4               !< Gate lower edge level
- integer, parameter :: IVAL_GATE_SILLH = NUMVALS_COMMON_GATE + 5               !< Gate crest level (via general structure)
- integer, parameter :: NUMEXTVALS_GATE = 5                                     !< Number of extra variables for gate
- integer, parameter :: NUMVALS_GATEGEN = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
+ integer, parameter :: NUMVALS_COMMON_GATE = 8                                    !< Number of common variables shared by gate
+ integer, parameter :: IVAL_GATE_FLOWH    = NUMVALS_COMMON_GATE + 1               !< Upstream average water level
+ integer, parameter :: IVAL_GATE_COUNT    = NUMVALS_COMMON_GATE + 2               !< Counter
+ integer, parameter :: IVAL_GATE_OPENW    = NUMVALS_COMMON_GATE + 3               !< Gate opening width
+ integer, parameter :: IVAL_GATE_EDGEL    = NUMVALS_COMMON_GATE + 4               !< Gate lower edge level
+ integer, parameter :: IVAL_GATE_SILLH    = NUMVALS_COMMON_GATE + 5               !< Gate crest level (via general structure)
+ integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6               !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
+ integer, parameter :: NUMEXTVALS_GATE    = 6                                     !< Number of extra variables for gate
+ integer, parameter :: NUMVALS_GATEGEN    = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
  double precision, dimension(:,:), allocatable :: valgategen                   !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
                                                                                !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
  
@@ -147,8 +149,8 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: NUMVALS_CMPSTRU = NUMVALS_COMMON       !< Total number of variables for compound structure, no extra variables.
  double precision, dimension(:,:), allocatable :: valcmpstru  !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
 
- ! Pump shares the first 8 indices in common indices, extra variables are as follows:
- integer, parameter :: NUMVALS_COMMON_PUMP = 8                              !< Number of common variables shared by pump
+ ! Pump shares the first 9 indices in common indices, extra variables are as follows:
+ integer, parameter :: NUMVALS_COMMON_PUMP = 9                              !< Number of common variables shared by pump
  integer, parameter :: IVAL_PP_CAP    = NUMVALS_COMMON_PUMP + 1               !< Pump capacity
  integer, parameter :: IVAL_PP_STAG   = NUMVALS_COMMON_PUMP + 2               !< Actual pump stage
  integer, parameter :: IVAL_PP_HEAD   = NUMVALS_COMMON_PUMP + 3               !< Pump head
@@ -373,7 +375,7 @@ subroutine reset_structures()
    if (allocated(gates)) deallocate(gates)
 end subroutine reset_structures
 
-!> Fills the valstruct array for one given structure on a given link LL.
+!> Fills the valstruct array for one given structure on a given link L.
 !! All values are filled, both the generic ones, as well as the type-specific ones.
 !! Note: old-style structures may call this with istrtypein = ST_UNSET.
 subroutine fill_valstruct_perlink(valstruct, L, dir, istrtypein, istru, L0)
@@ -384,10 +386,11 @@ subroutine fill_valstruct_perlink(valstruct, L, dir, istrtypein, istru, L0)
    use m_General_Structure
    use m_GlobalParameters
    use m_longculverts
-   use m_flowparameters, only: epshs
+   use m_flowparameters, only: epshs, epshu
    implicit none
    double precision, dimension(:), intent(inout) :: valstruct   !< Output values on structure (e.g. valweirgen(:)):
-                                                                !< (IVAL_WIDTH) total width
+                                                                !< (IVAL_WIDTH) total width, no matter dry or not
+                                                                !< (IVAL_WIDTHWET) total width of wet links
                                                                 !< (IVAL_WIDTHUP) total width of wet flowlinks on upstream side
                                                                 !< (IVAL_WIDTHDN) total width of wet flowlinks on downstream side
                                                                 !< (IVAL_WIDTHUPDN) total width of flowlinks when both upstream and downstream are wet
@@ -428,7 +431,7 @@ subroutine fill_valstruct_perlink(valstruct, L, dir, istrtypein, istru, L0)
    logical :: in_compound
 
    in_compound = .false.
-   
+
    if (istrtypein /= ST_LONGCULVERT) then
       if (dir > 0) then
          ku = ln(1,L)
@@ -438,72 +441,69 @@ subroutine fill_valstruct_perlink(valstruct, L, dir, istrtypein, istru, L0)
          kd = ln(1,L)
       end if
    else 
-     ku = longculverts(istru)%flownode_up
-     kd = longculverts(istru)%flownode_dn
+      ku = longculverts(istru)%flownode_up
+      kd = longculverts(istru)%flownode_dn
    end if
 
    ! 1. Generic values that apply to all structure types
    valstruct(IVAL_WIDTH) = valstruct(IVAL_WIDTH) + wu(L)
 
    if (istru > 0 .and. (istrtypein /= ST_LONGCULVERT) ) then ! When it is not old weir and not old general structure and not a compound structure
-     in_compound = (network%sts%struct(istru)%compound > 0)
+      in_compound = (network%sts%struct(istru)%compound > 0)
    end if
-
-   if (in_compound) then ! for a structure that belongs to a compound structure
-     k1 = ln(1,L)
-     k2 = ln(2,L)
-     if (hu(L) > 0) then
-       qcmp = get_discharge_under_compound_struc(network%sts%struct(istru), L0, s1(k1), s1(k2), teta(L))
-     else
-       qcmp = 0d0
-     end if
-     valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp*dir
-   else
-     valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L)*dir
-   end if
-
 
    if (hs(ku) > epshs) then
-     valstruct(IVAL_WIDTHUP) = valstruct(IVAL_WIDTHUP) + wu(L)
-     valstruct(IVAL_S1UP)    = valstruct(IVAL_S1UP) + s1(ku)*wu(L)
+      valstruct(IVAL_WIDTHUP) = valstruct(IVAL_WIDTHUP) + wu(L)
+      valstruct(IVAL_S1UP)    = valstruct(IVAL_S1UP) + s1(ku)*wu(L)
    end if
    if (hs(kd) > epshs) then
-     valstruct(IVAL_WIDTHDN) = valstruct(IVAL_WIDTHDN) + wu(L)
-     valstruct(IVAL_S1DN)    = valstruct(IVAL_S1DN) + s1(kd)*wu(L)
+      valstruct(IVAL_WIDTHDN) = valstruct(IVAL_WIDTHDN) + wu(L)
+      valstruct(IVAL_S1DN)    = valstruct(IVAL_S1DN) + s1(kd)*wu(L)
    end if
    if (hs(ku) > epshs .and. hs(kd) > epshs) then
-     valstruct(IVAL_WIDTHUPDN) = valstruct(IVAL_WIDTHUPDN) + wu(L)
-     valstruct(IVAL_HEAD)      = valstruct(IVAL_HEAD) + (s1(ku) - s1(kd))*wu(L)
+      valstruct(IVAL_WIDTHUPDN) = valstruct(IVAL_WIDTHUPDN) + wu(L)
+      valstruct(IVAL_HEAD)      = valstruct(IVAL_HEAD) + (s1(ku) - s1(kd))*wu(L)
    end if
 
 
-   if (istrtypein /= ST_PUMP) then ! Compute flow area for structures except for pump
-      if (istru > 0) then ! When it is not old weir and not old general structure and not a compound structure
-         if (in_compound) then ! for a structure that belongs to a compound structure
-            valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + network%sts%struct(istru)%au(L0)
+   if (hu(L) > epshu) then ! when link L is wet
+      valstruct(IVAL_WIDTHWET) = valstruct(IVAL_WIDTHWET) + wu(L)
+
+      if (in_compound) then ! for a structure that belongs to a compound structure
+         k1 = ln(1,L)
+         k2 = ln(2,L)
+         qcmp = get_discharge_under_compound_struc(network%sts%struct(istru), L0, s1(k1), s1(k2), teta(L))
+         valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp*dir
+      else
+         valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L)*dir
+      end if
+
+      if (istrtypein /= ST_PUMP) then ! Compute flow area for structures except for pump
+         if (istru > 0) then ! When it is not old weir and not old general structure and not a compound structure
+            if (in_compound) then ! for a structure that belongs to a compound structure
+               valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + network%sts%struct(istru)%au(L0)
+            else
+               valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + au(L)
+            end if
          else
             valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + au(L)
          end if
-      else
-         valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + au(L)
       end if
-   end if
 
-   ! 2. More specific valus that apply to certain structure types only
+      ! 2. More specific valus that apply to certain structure types only
 
-   ! 2a. General structure-based structures with a crest.
-   if (any(istrtypein == (/ ST_GENERAL_ST, ST_WEIR, ST_ORIFICE /))) then ! TODO: ST_GATE
-      valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0)*wu(L)
-      valstruct(IVAL_FORCEDIF)  = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L)*wu(L)
-   end if
-   
-   ! 2b. General structure-based structures with a (gate) door.
-   if (any(istrtypein == (/ ST_GENERAL_ST /))) then ! TODO: ST_GATE
-      k1 = ln(1,L)
-      k2 = ln(2,L)
+      ! 2a. General structure-based structures with a crest.
+      if (any(istrtypein == (/ ST_GENERAL_ST, ST_WEIR, ST_ORIFICE /))) then ! TODO: ST_GATE
+         valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0)*wu(L)
+         valstruct(IVAL_FORCEDIF)  = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L)*wu(L)
+      end if
 
-      genstr => network%sts%struct(istru)%generalst
-      if (hu(L) > 0) then
+      ! 2b. General structure-based structures with a (gate) door.
+      if (any(istrtypein == (/ ST_GENERAL_ST /))) then ! TODO: ST_GATE
+         k1 = ln(1,L)
+         k2 = ln(2,L)
+         genstr => network%sts%struct(istru)%generalst
+
          valstruct(IVAL_DIS_OPEN)  = valstruct(IVAL_DIS_OPEN)  + get_discharge_through_gate_opening(genstr, L0, s1(k1), s1(k2))*dir
          valstruct(IVAL_DIS_OVER)  = valstruct(IVAL_DIS_OVER)  + get_discharge_over_gate(genstr, L0, s1(k1), s1(k2))*dir
          valstruct(IVAL_DIS_UNDER) = valstruct(IVAL_DIS_UNDER) + get_discharge_under_gate(genstr, L0, s1(k1), s1(k2))*dir
@@ -512,29 +512,28 @@ subroutine fill_valstruct_perlink(valstruct, L, dir, istrtypein, istru, L0)
          valstruct(IVAL_AREA_OVER)  = valstruct(IVAL_AREA_OVER)  + genstr%au(2,L0) ! flow area over gate
          valstruct(IVAL_AREA_UNDER) = valstruct(IVAL_AREA_UNDER) + genstr%au(1,L0) ! flow area under gate
       end if
-   end if
-   
-   ! 2c. More specific values that apply to bridge
+
+      ! 2c. More specific value that applies to long culvert
+      if (istrtypein == ST_LONGCULVERT) then
+         valstruct(IVAL_LC_VALVE) = longculverts(istru)%valve_relative_opening
+      end if
+   end if ! hu(L) > epshu
+
+   ! 2d. More specific values that apply to bridge
    if (istrtypein == ST_BRIDGE) then
       valstruct(IVAL_BLUP)     = valstruct(IVAL_BLUP) + bl(ku)*wu(L)
       valstruct(IVAL_BLDN)     = valstruct(IVAL_BLDN) + bl(kd)*wu(L)
       valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%bridge%bedLevel_actual*wu(L)
    end if
 
-   ! 2d. More specific value that applies to long culvert
-   if (istrtypein == ST_LONGCULVERT) then
-      valstruct(IVAL_LC_VALVE) = longculverts(istru)%valve_relative_opening
-   end if
-
 end subroutine fill_valstruct_perlink
 
 
-!> Averages the values on one structure across all links,
+!> Averages the values on one structure across all links or all wet links,
 !! where needed taking care of partition models.
 !! Note 1: fill_valstructs_perlink must have been called in
 !! a loop prior to calling this averaging routine.
-!! Note 2: if it is a general structure (jagenst == 1), then (6)-(12) are computed as well.
-!! Note 3: if in parallel computing, MPI reduction must be done before calling this subroutine.
+!! Note 2: if in parallel computing, MPI reduction must be done before calling this subroutine.
 subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
    use m_missing, only: dmiss
    use m_partitioninfo, only: jampi
@@ -544,6 +543,7 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
    implicit none
    double precision, dimension(:), intent(inout) :: valstruct   !< Output values on structure (e.g. valpump(:)):
                                                                 !< (IVAL_WIDTH) total width
+                                                                !< (IVAL_WIDTHWET) total width of wet links
                                                                 !< (IVAL_WIDTHUP) total width of wet flowlinks on upstream side
                                                                 !< (IVAL_WIDTHDN) total width of wet flowlinks on downstream side
                                                                 !< (IVAL_WIDTHUPDN) total width of flowlinks when both upstream and downstream are wet
@@ -596,7 +596,12 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
       valstruct(IVAL_HEAD) = dmiss
    end if
    ! 1b. other generic variables
-   if (valstruct(IVAL_WIDTH) == 0d0 ) then ! zero width
+   if (valstruct(IVAL_WIDTH) == 0d0) then
+      valstruct(IVAL_CRESTL)    = dmiss ! crest level
+      valstruct(IVAL_CRESTW)    = dmiss ! crest width
+   end if
+
+   if (valstruct(IVAL_WIDTHWET) == 0d0 ) then ! zero width
       valstruct(IVAL_DIS) = dmiss  ! discharge
       if (istrtypein /= ST_PUMP) then
          valstruct(IVAL_AREA) = dmiss ! flow area
@@ -605,8 +610,6 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
 
       if (any(istrtypein == (/ ST_GENERAL_ST, ST_WEIR, ST_ORIFICE /))) then ! TODO: ST_GATE
          valstruct(IVAL_S1ONCREST) = dmiss ! water level on crest
-         valstruct(IVAL_CRESTL)    = dmiss ! crest level
-         valstruct(IVAL_CRESTW)    = dmiss ! crest width
          valstruct(IVAL_STATE)     = dmiss ! state
          valstruct(IVAL_FORCEDIF)  = dmiss ! force difference per unit width
       end if
@@ -622,8 +625,8 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
 
       if (any(istrtypein == (/ ST_GENERAL_ST, ST_WEIR, ST_ORIFICE /))) then ! TODO: ST_GATE
          pstru => network%sts%struct(istru)
-         valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTH)     ! water level on crest
-         valstruct(IVAL_FORCEDIF)  = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTH)     ! force difference per unit width
+         valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTHWET)     ! water level on crest
+         valstruct(IVAL_FORCEDIF)  = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTHWET)      ! force difference per unit width
       end if
    endif
 
@@ -632,6 +635,9 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
    if (any(istrtypein == (/ ST_GENERAL_ST, ST_ORIFICE /))) then ! TODO: ST_GATE
       if (valstruct(IVAL_WIDTH) == 0d0) then ! zero width
          valstruct(IVAL_OPENW:) = dmiss
+      end if
+      if (valstruct(IVAL_WIDTHWET) == 0d0) then ! zero wet width, info. on gate is not changed to dmiss
+         valstruct(IVAL_DIS_OPEN:) = dmiss
       else
          ! only for general structure
          if (istrtypein == ST_GENERAL_ST) then 
@@ -647,7 +653,7 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
          end if
       end if
    end if
-   
+
    ! 3. More specific values that apply to bridge
    if (istrtypein == ST_BRIDGE) then
       if (valstruct(IVAL_WIDTH) == 0d0 ) then ! zero width
@@ -658,6 +664,15 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
          valstruct(IVAL_BLUP)     = valstruct(IVAL_BLUP) / valstruct(IVAL_WIDTH)
          valstruct(IVAL_BLDN)     = valstruct(IVAL_BLDN) / valstruct(IVAL_WIDTH)
          valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL)/ valstruct(IVAL_WIDTH)
+      end if
+   end if
+
+   ! 4. More specific values that apply to culvert
+   if (istrtypein == ST_CULVERT) then
+      if (valstruct(IVAL_WIDTH) == 0d0) then
+         valstruct(IVAL_CL_CRESTL:NUMVALS_CULVERT) = dmiss
+      else if (valstruct(IVAL_WIDTHWET) == 0d0) then
+         valstruct(IVAL_CL_STATE) = dmiss
       end if
    end if
 
@@ -1402,34 +1417,35 @@ subroutine fill_valstruct_per_structure(valstruct, istrtypein, istru, nlinks)
    use m_GlobalParameters
    implicit none
    double precision, dimension(:), intent(inout) :: valstruct     !< Output values on structure (e.g. valweirgen(:)):
-                                                                !< (1) total width
-                                                                !< (2) total width of wet flowlinks on upstream side
-                                                                !< (3) total width of wet flowlinks on downstream side
-                                                                !< (4) total width of flowlinks when both upstream and downstream are wet
-                                                                !< (5) structure discharge
-                                                                !< (6) structure water level up
-                                                                !< (7) structure water level down
-                                                                !< (8) structure head
-                                                                !< (9) flow area
-                                                                !< (10) velocity
-                                                                !< (11) water level on crest, or valve relative opening if type is long culvert
-                                                                !< (12) crest level
-                                                                !< (13) crest width
-                                                                !< (14) state
-                                                                !< (15) force difference per unit width
-                                                                !< (16) gate opening width
-                                                                !< (17) gate lower edge level
-                                                                !< (18) gate opening height
-                                                                !< (19) gate upper edge level
-                                                                !< (20) discharge through gate opening
-                                                                !< (21) discharge over gate
-                                                                !< (22) discharge under gate
-                                                                !< (23) flow area in gate opening
-                                                                !< (24) flow area over gate
-                                                                !< (25) flow area under gate
-                                                                !< (26) velocity through gate opening
-                                                                !< (27) velocity over gate
-                                                                !< (28) velocity under gate
+                                                                  !< (IVAL_WIDTH) total width, no matter dry or not
+                                                                  !< (IVAL_WIDTHWET) total width of wet links
+                                                                  !< (IVAL_WIDTHUP) total width of wet flowlinks on upstream side
+                                                                  !< (IVAL_WIDTHDN) total width of wet flowlinks on downstream side
+                                                                  !< (IVAL_WIDTHUPDN) total width of flowlinks when both upstream and downstream are wet
+                                                                  !< (IVAL_DIS) structure discharge
+                                                                  !< (IVAL_S1UP) structure water level up
+                                                                  !< (IVAL_S1DN) structure water level down
+                                                                  !< (IVAL_HEAD) structure head
+                                                                  !< (IVAL_AREA) flow area
+                                                                  !< (IVAL_VEL) velocity
+                                                                  !< (IVAL_S1ONCREST) water level on crest, or valve relative opening if type is long culvert
+                                                                  !< (IVAL_CRESTL) crest level
+                                                                  !< (IVAL_CRESTW) crest width
+                                                                  !< (IVAL_STATE) state
+                                                                  !< (IVAL_FORCEDIF) force difference per unit width
+                                                                  !< (IVAL_OPENW) gate opening width
+                                                                  !< (IVAL_EDGEL) gate lower edge level
+                                                                  !< (IVAL_OPENH) gate opening height
+                                                                  !< (IVAL_UPPL) gate upper edge level
+                                                                  !< (IVAL_DIS_OPEN) discharge through gate opening
+                                                                  !< (IVAL_DIS_OVER) discharge over gate
+                                                                  !< (IVAL_DIS_UNDER) discharge under gate
+                                                                  !< (IVAL_AREA_OPEN) flow area in gate opening
+                                                                  !< (IVAL_AREA_OVER) flow area over gate
+                                                                  !< (IVAL_AREA_UNDER) flow area under gate
+                                                                  !< (IVAL_VEL_OPEN) velocity through gate opening
+                                                                  !< (IVAL_VEL_OVER) velocity over gate
+                                                                  !< (IVAL_VEL_UNDER) velocity under gate
    integer,                           intent(in   ) :: istrtypein !< Structure type
    integer,                           intent(in   ) :: istru      !< Structure index in network%sts set or in longculverts
    integer,                           intent(in   ) :: nlinks     !< Number of links for the structure

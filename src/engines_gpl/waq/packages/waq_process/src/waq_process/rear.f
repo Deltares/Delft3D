@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,21 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rear
+
+      implicit none
+
+      contains
+
 
       subroutine rear   ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_zerome
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Reaeration of carbon dioxide and oxygen
 
@@ -160,10 +171,8 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-      CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+      CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
       IF (IKMRK1.EQ.1) THEN
-!     als ook rekenen voor drooggevallen platen dan :
-!jvb  IF (IKMRK1.EQ.0.OR.IKMRK1.EQ.1) THEN
 
 !         Compute saturation percentage for all layers
 
@@ -172,7 +181,7 @@
       SATPERC = O2 / OXSAT * 100
       PMSA (IP27) = SATPERC
 
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.1)) THEN
 !
       DEPTH  = PMSA(IP2 )
@@ -417,3 +426,5 @@
       RETURN
 !
       END
+
+      end module m_rear

@@ -1,7 +1,6 @@
-module m_dredge
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,230 +24,160 @@ module m_dredge
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
+module m_dredge
     private
     
     public dredge
     
     contains
     
-    subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
-                & dbodsd, kfsed, s1, timhr, morhr, dadpar, error, &
-                & comm, duneheight, morpar, dt, ndomains, lundia, &
-                & julrefdate, nmlb, nmub, gderosed, morlyr, messages)
+subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
+            & dbodsd, kfsed, s1, timhr, morhr, dadpar, error, &
+            & comm, duneheight, morpar, dt, ndomains, lundia, &
+            & julrefdate, nmlb, nmub, gderosed, morlyr, messages)
     use precision
-    use properties
-    use table_handles
     use bedcomposition_module
-    use m_alloc
     use dredge_data_module
     use morphology_data_module
     use message_module
     !use morstatistics, only: morstats
     !
     implicit none
-    !
-    ! The following list of pointer parameters is used to point inside the various data structures
-    !
-    type (handletype)              , pointer :: tseriesfile
-    real(fp)      , dimension(:,:) , pointer :: link_percentage
-    real(fp)      , dimension(:,:) , pointer :: link_sum
-    real(fp)      , dimension(:)   , pointer :: dzdred
-    real(fp)      , dimension(:)   , pointer :: refplane
-    real(fp)      , dimension(:,:) , pointer :: voldred
-    real(fp)      , dimension(:)   , pointer :: totvoldred
-    real(fp)      , dimension(:)   , pointer :: globalareadred
-    real(fp)      , dimension(:,:) , pointer :: voldump
-    real(fp)      , dimension(:,:) , pointer :: percsupl
-    real(fp)      , dimension(:)   , pointer :: totvoldump
-    real(fp)      , dimension(:)   , pointer :: localareadump
-    real(fp)      , dimension(:)   , pointer :: globalareadump
-    real(fp)      , dimension(:)   , pointer :: globaldumpcap
-    integer                        , pointer :: dredge_domainnr
-    integer                        , pointer :: dredge_ndomains
-    integer                        , pointer :: nadred
-    integer                        , pointer :: nadump
-    integer                        , pointer :: nasupl
-    integer                        , pointer :: nalink
-    integer       , dimension(:,:) , pointer :: link_def
-    real(fp)                       , pointer :: tim_accum
-    real(fp)      , dimension(:)   , pointer :: tim_dredged
-    real(fp)      , dimension(:)   , pointer :: tim_ploughed
-    logical                        , pointer :: tsmortime
-    type (dredtype), dimension(:)  , pointer :: dredge_prop
-    type (dumptype), dimension(:)  , pointer :: dump_prop
-    real(fp)                       , pointer :: morfac
-    integer                        , pointer :: itmor
-    logical                        , pointer :: cmpupd
-!
-! Global variables
-!
-    type (dredge_type)                                   , target        :: dadpar     ! data structure for dredging and dumping settings
-    type (sedtra_type)                                   , target        :: gderosed   ! data structure for sediment variables
-    type (bedcomp_data)                                  , target        :: morlyr     ! data structure for bed composition settings
-    type (morpar_type)                                   , target        :: morpar     ! data structure for morphology settings
-    type (message_stack)                                 , target        :: messages   ! data structure for messages
-    integer                                              , intent(in)    :: lsedtot    ! total number of sediment fractions
-    integer                                              , intent(in)    :: nmmax      ! effective upper bound for spatial index nm
-    logical                                              , intent(in)    :: spinup     ! flag whether morphological spinup period is active
-    integer                                              , intent(in)    :: ndomains   ! number of domains
-    integer                                              , intent(in)    :: julrefdate ! Julian reference date (kind of) **
-    integer                                              , intent(in)    :: nmlb       ! lower array bound for spatial index nm
-    integer                                              , intent(in)    :: nmub       ! upper array bound for spatial index nm
-    integer                                                              :: lundia     ! file ID for diagnotic output
-    integer   , dimension(nmlb:nmub)                     , intent(in)    :: kfsed      ! morphology active flag per face
-    real(fp)                                             , intent(in)    :: dt         ! time step
-    real(fp)                                             , intent(in)    :: morhr      ! current morphological time
-    real(fp)                                             , intent(in)    :: timhr      ! current hydrodynamic time
-    real(fp)  , dimension(lsedtot)                       , intent(in)    :: cdryb      ! dry bed density used for conversion between m3 and kg
-    real(fp)  , dimension(lsedtot, nmlb:nmub)                            :: dbodsd     ! change in bed composition
-    real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: s1         ! water level at faces
-    real(fp)  , dimension(:)                             , pointer       :: duneheight ! pointer since this variable doesn't have to be allocated if use_dunes = .false.
-    real(prec), dimension(nmlb:nmub)                                     :: dps        ! bed level or depth at cell faces
-    real(fp)                                             , intent(in)    :: dpsign     ! +1 for dps = bed level, -1 for dps = depth
+
+    type (dredge_type)                                   , target        :: dadpar     !< data structure for dredging and dumping settings
+    type (sedtra_type)                                   , target        :: gderosed   !< data structure for sediment variables
+    type (bedcomp_data)                                  , target        :: morlyr     !< data structure for bed composition settings
+    type (morpar_type)                                   , target        :: morpar     !< data structure for morphology settings
+    type (message_stack)                                 , target        :: messages   !< data structure for messages
+    integer                                              , intent(in)    :: lsedtot    !< total number of sediment fractions
+    integer                                              , intent(in)    :: nmmax      !< effective upper bound for spatial index nm
+    logical                                              , intent(in)    :: spinup     !< flag whether morphological spinup period is active
+    integer                                              , intent(in)    :: ndomains   !< number of domains
+    integer                                              , intent(in)    :: julrefdate !< Julian reference date (kind of) **
+    integer                                              , intent(in)    :: nmlb       !< lower array bound for spatial index nm
+    integer                                              , intent(in)    :: nmub       !< upper array bound for spatial index nm
+    integer                                                              :: lundia     !< file ID for diagnotic output
+    integer   , dimension(nmlb:nmub)                     , intent(in)    :: kfsed      !< morphology active flag per face
+    real(fp)                                             , intent(in)    :: dt         !< time step
+    real(fp)                                             , intent(in)    :: morhr      !< current morphological time
+    real(fp)                                             , intent(in)    :: timhr      !< current hydrodynamic time
+    real(fp)  , dimension(lsedtot)                       , intent(in)    :: cdryb      !< dry bed density used for conversion between m3 and kg
+    real(fp)  , dimension(lsedtot, nmlb:nmub)                            :: dbodsd     !< change in bed composition
+    real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: s1         !< water level at faces
+    real(fp)  , dimension(:)                             , pointer       :: duneheight !< pointer since this variable doesn't have to be allocated if use_dunes = .false.
+    real(prec), dimension(nmlb:nmub)                                     :: dps        !< bed level or depth at cell faces
+    real(fp)                                             , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
     logical                                              , intent(out)   :: error
 !
     interface
        subroutine comm(a, n, error, msgstr)
            use precision
-           integer               , intent(in)    :: n      ! length of real array
-           real(fp), dimension(n), intent(inout) :: a      ! real array to be accumulated
-           logical               , intent(out)   :: error  ! error flag
-           character(*)          , intent(out)   :: msgstr ! string to pass message
+           integer               , intent(in)    :: n      !< length of real array
+           real(fp), dimension(n), intent(inout) :: a      !< real array to be accumulated
+           logical               , intent(out)   :: error  !< error flag
+           character(*)          , intent(out)   :: msgstr !< string to pass message
        end subroutine comm
     end interface
 !
 ! Local variables
 !
-    integer                         :: i
-    integer                         :: i2
-    integer                         :: ia
-    integer                         :: ib
-    integer                         :: ib2
-    integer                         :: id
-    integer                         :: il
-    integer                         :: imax
-    integer                         :: imaxdunes
-    integer                         :: imin
-    integer                         :: imindunes
-    integer                         :: inm
-    integer                         :: irock
-    integer                         :: istat
-    integer                         :: j
-    integer                         :: jnm
-    integer                         :: lsed
-    integer                         :: nm
-    integer                         :: nm_abs
-    integer                         :: localoffset
-    integer ,dimension(4)           :: paract
-    real(fp)                        :: areatim
-    real(fp)                        :: availvolume ! volume available for dredging
-    real(fp)                        :: avg_alphadune
-    real(fp)                        :: avg_depth
-    real(fp)                        :: avg_trigdepth
-    real(fp)                        :: clr
-    real(fp)                        :: ddp
-    real(fp)                        :: div2h
-    real(fp)                        :: dmax
-    real(fp)                        :: dpadd
-    real(fp)                        :: dredge_area
-    real(fp)                        :: dump_area
-    real(fp)                        :: dz
-    real(fp)                        :: dzdump
-    real(fp)                        :: dzl        ! depth change due to one sediment fraction
-    real(fp)                        :: extravolume
-    real(fp)                        :: factor
-    real(fp)                        :: fracdumped
-    real(fp)                        :: fracoutlet
-    real(fp)                        :: lin_dz
-    real(fp)                        :: ltimhr
-    real(fp)                        :: maxdumpvol ! (maximum) volume to be dumped in current time step
-    real(fp)                        :: maxvol     ! maximum volume to be dredged in current time step
-    real(fp)                        :: plough_fac ! fraction of dune height that remains after ploughing
-    real(fp)                        :: qua_dz
-    real(fp)                        :: requiredvolume
-    real(fp)                        :: voltim     ! local volume variable, various meanings
-    real(fp), dimension(1)          :: values
-    real(fp)                        :: voldredged
-    real(fp)                        :: voldumped
-    real(fp)                        :: voltot
-    real(fp)                        :: z_dredge
-    real(fp)                        :: z_dump
-    real(fp)                        :: zmin
-    real(fp)                        :: zmax
-    real(fp), dimension(:), pointer :: dz_dredge
-    real(fp), dimension(:), pointer :: area
-    real(fp), dimension(:), pointer :: hdune
-    real(fp), dimension(:), pointer :: reflevel
-    real(fp), dimension(:), pointer :: dunetoplevel
-    real(fp), dimension(:), pointer :: triggerlevel
-    real(fp), dimension(:), pointer :: bedlevel
-    real(fp), dimension(:), pointer :: dz_dump
-    real(fp), dimension(:), pointer :: troughlevel
-    real(fp), dimension(:), pointer :: sedimentdepth
-    !real(fp), dimension(:), pointer :: dz_dummy
-    logical                         :: dredged
-    logical                         :: local_cap
-    logical                         :: ploughed
-    logical , dimension(:), pointer :: triggered
     character(80)                   :: msgstr
-    character(256)                  :: errorstring
-    type(dredtype),         pointer :: pdredge
-    type(dumptype),         pointer :: pdump
 !
 !! executable statements -------------------------------------------------------
 !
-    tseriesfile         => dadpar%tseriesfile
-    link_percentage     => dadpar%link_percentage
-    link_sum            => dadpar%link_sum
-    dzdred              => dadpar%dzdred
-    refplane            => dadpar%refplane
-    voldred             => dadpar%voldred
-    totvoldred          => dadpar%totvoldred
-    globalareadred      => dadpar%globalareadred
-    voldump             => dadpar%voldump
-    percsupl            => dadpar%percsupl
-    totvoldump          => dadpar%totvoldump
-    localareadump       => dadpar%localareadump
-    globalareadump      => dadpar%globalareadump
-    globaldumpcap       => dadpar%globaldumpcap
-    dredge_domainnr     => dadpar%dredge_domainnr
-    dredge_ndomains     => dadpar%dredge_ndomains
-    nadred              => dadpar%nadred
-    nadump              => dadpar%nadump
-    nasupl              => dadpar%nasupl
-    nalink              => dadpar%nalink
-    link_def            => dadpar%link_def
-    tsmortime           => dadpar%tsmortime
-    dredge_prop         => dadpar%dredge_prop
-    dump_prop           => dadpar%dump_prop
-    tim_accum           => dadpar%tim_accum
-    tim_dredged         => dadpar%tim_dredged
-    tim_ploughed        => dadpar%tim_ploughed
-
-    morfac              => morpar%morfac
-    itmor               => morpar%itmor
-    cmpupd              => morpar%cmpupd
-    !
-    tim_accum = tim_accum + dt
+    dadpar%tim_accum = dadpar%tim_accum + dt
     error     = .false.
     msgstr    = ''
     !
-    ! DREDGING areas include SANDMINING areas.
+    call update_active_flags(dadpar, dt, morhr, timhr, julrefdate, lundia, error)
+    if ( error ) return
     !
-    ! Verify for each dredge and nourishment area whether dredging
-    ! respectively nourishment should occur at the current time step.
+    call determine_max_dump_capacity(dadpar, nmlb, nmub, s1, kfsed, dpsign, dps)
     !
-    if (tsmortime) then
+    if (ndomains > 1) then
+       !
+       ! Communicate dump capacity with other domains
+       !
+       call comm(dadpar%globaldumpcap, dadpar%nadump, error, msgstr)
+       if (msgstr /= '') call write_error(msgstr, unit=lundia)
+	   return
+    end if
+    !
+    call calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, dps, dpsign, duneheight, &
+                            s1, kfsed, morlyr, cdryb, dbodsd, messages, comm, lundia, msgstr, error)
+    if (error) then
+        call write_error(msgstr, unit=lundia)
+        return
+    end if
+    !
+    if (ndomains > 1) then
+       !
+       ! Communicate dredged volumes with other domains
+       !
+       call comm(dadpar%voldred, (dadpar%nadred+dadpar%nasupl)*(lsedtot+1), error, msgstr)
+       if (msgstr /= '') call write_error(msgstr, unit=lundia)
+	   return
+    end if
+    !
+    call distribute_sediments_over_dump_areas(lsedtot, dadpar) 
+    !
+    call calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lundia, kfsed, cdryb, dbodsd, &
+    duneheight, dps, dpsign, error)
+    !!
+    !! Update sediment administration for dumping only
+    !! dbodsd is filled (kg/m^2 sediment added to a cell)
+    !!
+    !if (cmpupd) then
+    !   allocate(dz_dummy(nmlb:nmub), stat=istat)   ! no actual bed update, unlike updmorlyr in fm_erosed.f90
+    !   if (morpar%moroutput%morstats) then
+    !       !call morstats ... not consistent yet between D-Flow FM and Delft3D FLOW
+    !   end if   
+    !   if (updmorlyr(morlyr, dbodsd, dz_dummy, messages) /= 0) then
+    !       call writemessages(messages, lundia)
+    !       error = .true.
+    !       goto 999
+    !   end if
+    !   deallocate(dz_dummy, stat=istat)
+    !end if
+end subroutine dredge
+
+
+!> Verify for each dredge and nourishment area whether dredging
+!! respectively nourishment should occur at the current time step.
+!! DREDGING areas include SANDMINING areas.
+subroutine update_active_flags(dadpar, dt, morhr, timhr, julrefdate, lundia, error)
+    use precision
+    use table_handles
+    use dredge_data_module
+    use message_module
+    implicit none
+    
+    type (dredge_type)            , target  , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
+    real(fp)                                , intent(in)    :: dt         !< time step
+    real(fp)                                , intent(in)    :: morhr      !< current morphological time
+    real(fp)                                , intent(in)    :: timhr      !< current hydrodynamic time
+    integer                                 , intent(in)    :: julrefdate !< Julian reference date (kind of) **
+    integer                                 , intent(in)    :: lundia     !< file ID for diagnotic output
+    logical                                 , intent(out)   :: error
+         
+    integer                         :: ia
+    integer ,dimension(4)           :: paract
+    character(256)                  :: errorstring
+    real(fp)                        :: ltimhr
+    real(fp), dimension(1)          :: values
+    type(dredtype),         pointer :: pdredge  
+
+    if (dadpar%tsmortime) then
        ltimhr = morhr
     else
        ltimhr = timhr
-    endif
+    end if
     !
-    do ia = 1,nadred+nasupl
-       pdredge => dredge_prop(ia)
+    do ia = 1, dadpar%nadred + dadpar%nasupl
+       pdredge => dadpar%dredge_prop(ia)
        !
        ! The default setting for dredging/nourishment is false
        ! unless there is no interval at all, then it is true.
@@ -257,22 +186,44 @@ module m_dredge
           pdredge%active = .true.
        else
           paract = pdredge%paractive
-          call  gettabledata(tseriesfile, paract(1) , paract(2), &
+          call  gettabledata(dadpar%tseriesfile, paract(1) , paract(2), &
                    & paract(3), paract(4)  , values    , ltimhr   , &
                    & julrefdate, errorstring, dt / 1800.0_fp)
           if (errorstring /= ' ') then
               error = .true.
               call write_error(errorstring, unit=lundia)
-              goto 999
-          endif
-          pdredge%active = values(1)>0.0_fp
-       endif
-    enddo
-    !
-    ! For each dump area determine the maximum dump capacity
-    !
-    do ib = 1, nadump
-       pdump => dump_prop(ib)
+          else
+              pdredge%active = values(1)>0.0_fp
+          end if
+       end if
+    end do
+end subroutine update_active_flags
+
+!> For each dump area determine the maximum dump capacity
+subroutine determine_max_dump_capacity(dadpar, nmlb, nmub, s1, kfsed, dpsign, dps)  
+    use precision
+    use dredge_data_module
+    implicit none
+    
+    type (dredge_type)            , target  , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
+    integer                                 , intent(in)    :: nmlb       !< lower array bound for spatial index nm
+    integer                                 , intent(in)    :: nmub       !< upper array bound for spatial index nm
+    real(fp)  , dimension(nmlb:nmub)        , intent(in)    :: s1         !< water level at faces
+    integer   , dimension(nmlb:nmub)        , intent(in)    :: kfsed      !< morphology active flag per face
+    real(fp)                                , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
+    real(prec), dimension(nmlb:nmub)        , intent(in)    :: dps        !< bed level or depth at cell faces
+    
+    integer                         :: i, ib, nm
+    real(fp), dimension(:), pointer :: area
+    real(fp), dimension(:), pointer :: reflevel
+    real(fp)                        :: voltim     ! local volume variable, various meanings
+    type(dredtype),       pointer   :: pdredge
+    type(dumptype),         pointer :: pdump
+
+    pdredge => dadpar%dredge_prop(dadpar%nadred + dadpar%nasupl)
+
+    do ib = 1, dadpar%nadump
+       pdump => dadpar%dump_prop(ib)
        area => pdump%area
        reflevel => pdump%reflevel
        reflevel = 0.0_fp
@@ -280,63 +231,138 @@ module m_dredge
        ! Set the reference level and compute dump capacity and area.
        !
        voltim = 0.0_fp
-       do i = 1,pdump%npnt
+       do i = 1, pdump%npnt
           nm = pdump%nm(i)
           if (nm <= 0) cycle ! get data only for internal points
           !if (nm==0) then
           !   reflevel(i) = 0.0_fp
           !   cycle
-          !endif
+          !end if
           !
           select case (pdump%depthdef)
           case (DEPTHDEF_REFPLANE)
-             reflevel(i) = refplane(nm)
+             reflevel(i) = dadpar%refplane(nm)
           case (DEPTHDEF_WATERLVL)
              reflevel(i) = s1(nm)
           case (DEPTHDEF_MAXREFWL)
-             reflevel(i) = max(s1(nm),refplane(nm))
+             reflevel(i) = max(s1(nm),dadpar%refplane(nm))
           case (DEPTHDEF_MINREFWL)
-             reflevel(i) = min(s1(nm),refplane(nm))
+             reflevel(i) = min(s1(nm),dadpar%refplane(nm))
           end select
           if (kfsed(nm)==1 .or. pdredge%dredgewhendry) then
              voltim = voltim + max( (reflevel(i) - pdump%mindumpdepth) - dpsign * real(dps(nm),fp), 0.0_fp)*area(i)
-          endif
-       enddo
+          end if
+       end do
        !
        ! If capacity limited use dump capacity to distribute sediment over the
        ! domains, otherwise use the area.
        !
        if (pdump%dumpcapaflag) then
-          globaldumpcap(ib) = voltim
+          dadpar%globaldumpcap(ib) = voltim
        else
-          globaldumpcap(ib) = 0.0_fp
-       endif
-    enddo
-    !
-    if (ndomains > 1) then
-       !
-       ! Communicate dump capacity with other domains
-       !
-       call comm(globaldumpcap, nadump, error, msgstr)
-       if (error) goto 999
-    endif
-    !
-    ! For each dredging area carry out the dredging.
-    !
-    do ia = 1,nadred+nasupl
-       pdredge => dredge_prop(ia)
-       voldred(ia,:) = 0.0_fp
+          dadpar%globaldumpcap(ib) = 0.0_fp
+       end if
+    end do
+    
+end subroutine determine_max_dump_capacity
+    
+   
+!> For each dredging area carry out the dredging.
+subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, dps, dpsign, duneheight, &
+                              s1, kfsed, morlyr, cdryb, dbodsd, messages, comm, lundia, msgstr, error)
+    use precision
+    use bedcomposition_module
+    use dredge_data_module
+    use morphology_data_module
+    use message_module
+    implicit none
+      
+	real(fp)                                 , intent(in)    :: dt         !< time step
+	integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
+    type (dredge_type)          , target     , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
+    type (morpar_type)          , target     , intent(inout) :: morpar     !< data structure for morphology settings
+	logical                                  , intent(in)    :: spinup     !< flag whether morphological spinup period is active
+    integer                                  , intent(in)    :: nmlb       !< lower array bound for spatial index nm
+    integer                                  , intent(in)    :: nmub       !< upper array bound for spatial index nm
+	real(prec), dimension(nmlb:nmub)         , intent(inout) :: dps        !< bed level or depth at cell faces
+	real(fp)                                 , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
+	real(fp)  , dimension(:)    , pointer    , intent(in)    :: duneheight !< pointer since this variable doesn't have to be allocated if use_dunes = .false.
+    real(fp)  , dimension(nmlb:nmub)         , intent(in)    :: s1         !< water level at faces
+	integer   , dimension(nmlb:nmub)         , intent(in)    :: kfsed      !< morphology active flag per face
+	type (bedcomp_data)         , target     , intent(in)    :: morlyr     !< data structure for bed composition settings
+    real(fp)  , dimension(lsedtot)           , intent(in)    :: cdryb      !< dry bed density used for conversion between m3 and kg
+    real(fp)  , dimension(lsedtot, nmlb:nmub), intent(inout) :: dbodsd     !< change in bed composition
+    type (message_stack)                     , intent(inout) :: messages   !< data structure for messages
+    integer                                  , intent(in)    :: lundia     !< file ID for diagnotic output
+	character(80)                            , intent(inout) :: msgstr
+    logical                                  , intent(out)   :: error
+    
+    interface
+       subroutine comm(a, n, error, msgstr)
+           use precision
+           integer               , intent(in)    :: n      !< length of real array
+           real(fp), dimension(n), intent(inout) :: a      !< real array to be accumulated
+           logical               , intent(out)   :: error  !< error flag
+           character(*)          , intent(out)   :: msgstr !< string to pass message
+       end subroutine comm
+    end interface
+    
+    integer                         :: i, ia, il, imin, imax, inm, j, jnm, lsed, nm
+    integer                         :: imaxdunes
+    integer                         :: imindunes
+    integer                         :: irock
+    integer                         :: nm_abs
+	logical , dimension(:), pointer :: triggered
+	real(fp), dimension(:), pointer :: area
+	real(fp)                        :: availvolume !< volume available for dredging
+	real(fp)                        :: avg_depth
+    real(fp)                        :: avg_trigdepth
+    real(fp)                        :: avg_alphadune
+    real(fp), dimension(:), pointer :: bedlevel
+	real(fp)                        :: clr
+	real(fp)                        :: ddp
+    real(fp)                        :: div2h
+    real(fp)                        :: dmax
+    real(fp)                        :: dredge_area
+	logical                         :: dredged
+	real(fp), dimension(:), pointer :: dunetoplevel
+    real(fp)                        :: dz
+    real(fp)                        :: dzl        !< depth change due to one sediment fraction
+	real(fp), dimension(:), pointer :: dz_dredge
+    real(fp)                        :: extravolume
+    real(fp)                        :: factor
+    real(fp), dimension(:), pointer :: hdune
+    real(fp)                        :: lin_dz
+    real(fp)                        :: maxvol     !< maximum volume to be dredged in current time step
+	real(fp)                        :: maxdumpvol !< (maximum) volume to be dumped in current time step
+	logical                         :: ploughed
+	real(fp)                        :: plough_fac !< fraction of dune height that remains after ploughing
+    real(fp), dimension(:), pointer :: reflevel
+	real(fp)                        :: requiredvolume
+    real(fp)                        :: qua_dz
+	real(fp), dimension(:), pointer :: sedimentdepth
+    real(fp), dimension(:), pointer :: triggerlevel
+	real(fp), dimension(:), pointer :: troughlevel
+    real(fp)                        :: voltim     !< local volume variable, various meanings
+    real(fp)                        :: zmax
+    real(fp)                        :: zmin
+	real(fp)                        :: z_dredge
+	type(dredtype),         pointer :: pdredge  
+
+    do ia = 1, dadpar%nadred + dadpar%nasupl
+       pdredge => dadpar%dredge_prop(ia)
+       dadpar%voldred(ia,:) = 0.0_fp
        !
        ! If not in a dredging interval then go to next dredge/nourishment area
        !
        if (.not. pdredge%active) cycle
-       if (pdredge%npnt==0 .and. pdredge%itype/=DREDGETYPE_NOURISHMENT) cycle
+       if (pdredge%npnt == 0 .and. pdredge%itype /= DREDGETYPE_NOURISHMENT) cycle
        !
        ! Maximum dredging volume depends on morphological time step.
        ! Although during the initial period morfac is arbitrary,
        ! it should effectively be set to 0.
        !
-       if ((comparereal(morfac,0.0_fp) == 0) .or. spinup) then
+       if ((comparereal(morpar%morfac,0.0_fp) == 0) .or. spinup) then
           !
           ! Rate limited dredging will be zero during simulation phases
           ! with morfac=0. User may have allowed for (unlimited)
@@ -346,49 +372,49 @@ module m_dredge
              maxvol = -999.0_fp
           else
              maxvol = 0.0_fp
-          endif
-       elseif (comparereal(pdredge%maxvolrate  ,-999.0_fp) /= 0) then
+          end if
+       else if (comparereal(pdredge%maxvolrate  ,-999.0_fp) /= 0) then
           !
           ! Rate limited dredging.
           !
-          maxvol = pdredge%maxvolrate*dt*morfac
+          maxvol = pdredge%maxvolrate*dt*morpar%morfac
        else
           !
           ! Dredging speed unconstrained.
           !
           maxvol = -999.0_fp
-       endif
+       end if
        !
        if (pdredge%dumplimited) then
           maxdumpvol = 0.0_fp
-          do il = 1, nalink
-             if (link_def(il,1) == ia) then
-                maxdumpvol = maxdumpvol + globaldumpcap(link_def(il,2))
-             endif
-          enddo
+          do il = 1, dadpar%nalink
+             if (dadpar%link_def(il,1) == ia) then
+                maxdumpvol = maxdumpvol + dadpar%globaldumpcap(dadpar%link_def(il,2))
+             end if
+          end do
           !
           if (comparereal(maxvol,-999.0_fp) == 0) then
              maxvol = maxdumpvol
           else
              maxvol = min(maxvol, maxdumpvol)
-          endif
-       endif
+          end if
+       end if
        !
        if (pdredge%itype == DREDGETYPE_NOURISHMENT) then
-          if (dredge_domainnr /= 1) cycle
+          if (dadpar%dredge_domainnr /= 1) cycle
           !
           if (comparereal(maxvol, -999.0_fp) == 0) then
              maxvol = pdredge%totalvolsupl
-          endif
+          end if
           if (comparereal(pdredge%totalvolsupl, -999.0_fp) /= 0) then
              maxvol = min(pdredge%totalvolsupl,maxvol)
              pdredge%totalvolsupl = pdredge%totalvolsupl-maxvol
-          endif
+          end if
           do lsed = 1, lsedtot
-             voldred(ia,lsed) = 0.01_fp*percsupl(pdredge%idx_type,lsed)*maxvol
-          enddo
+             dadpar%voldred(ia,lsed) = 0.01_fp*dadpar%percsupl(pdredge%idx_type,lsed)*maxvol
+          end do
           cycle
-       endif
+       end if
        !
        ! Dredging down to certain depth or level, or dredging at specified rate.
        !
@@ -411,13 +437,13 @@ module m_dredge
           !
           select case (pdredge%depthdef)
           case (DEPTHDEF_REFPLANE)
-             reflevel(i) = refplane(nm)
+             reflevel(i) = dadpar%refplane(nm)
           case (DEPTHDEF_WATERLVL)
              reflevel(i) = s1(nm)
           case (DEPTHDEF_MAXREFWL)
-             reflevel(i) = max(s1(nm),refplane(nm))
+             reflevel(i) = max(s1(nm),dadpar%refplane(nm))
           case (DEPTHDEF_MINREFWL)
-             reflevel(i) = min(s1(nm),refplane(nm))
+             reflevel(i) = min(s1(nm),dadpar%refplane(nm))
           end select
           !
           ! The sediment depth is stored always as a separate thickness instead
@@ -429,25 +455,25 @@ module m_dredge
                 call getsedthick(morlyr, nm, sedimentdepth(i))    ! in bedcompomodule
              else
                 sedimentdepth(i) = 1.0E11_fp
-             endif
+             end if
           else
              sedimentdepth(i) = 0.0_fp
-          endif
-       enddo
+          end if
+       end do
        !
        if (.not.pdredge%in1domain) then
           !
           ! communicate dredge data among domains
           !
           call comm(reflevel, pdredge%npnt, error, msgstr)
-          if (error) goto 999
+          if (error) return
           call comm(bedlevel, pdredge%npnt, error, msgstr)
-          if (error) goto 999
+          if (error) return
           call comm(hdune, pdredge%npnt, error, msgstr)
-          if (error) goto 999
+          if (error) return
           call comm(sedimentdepth, pdredge%npnt, error, msgstr)
-          if (error) goto 999
-       endif
+          if (error) return
+       end if
        !
        availvolume = 0.0_fp
        area => pdredge%area
@@ -464,7 +490,7 @@ module m_dredge
           dunetoplevel(i) = bedlevel(i) + hdune(i)/2
           triggerlevel(i) = bedlevel(i) + pdredge%alpha_dh*hdune(i)
           troughlevel(i) = bedlevel(i) - hdune(i)/2
-       enddo
+       end do
        !
        ddp = pdredge%dredge_depth
        clr = pdredge%clearance
@@ -477,7 +503,7 @@ module m_dredge
           ddp = ddp + clr
           clr = 0.0_fp
           pdredge%stilldredging = .false.
-       endif
+       end if
        !
        dredged = .false.
        ploughed = .false.
@@ -508,9 +534,9 @@ module m_dredge
                    ddp = ddp + clr
                    clr = 0.0_fp
                    exit
-                endif
-             enddo
-          endif
+                end if
+             end do
+          end if
           !
           ! Determine how much we would dredge at every location if the dredge
           ! rate is not limited by a maximum dredge rate and compute the
@@ -536,8 +562,8 @@ module m_dredge
                       hdune(i) = hdune(i)*plough_fac
                       dz_dredge(i) = 0.0_fp
                       cycle
-                   endif
-                endif
+                   end if
+                end if
                 !
                 ! If dredging is triggered, lower dredging level by
                 ! clearance.
@@ -557,7 +583,7 @@ module m_dredge
                    ! effective height  = volume / L_dune = dz^2/(2*H_dune)
                    !
                    dz_dredge(i) = (dunetoplevel(i) - z_dredge)**2/(2*hdune(i))
-                endif
+                end if
                 !
                 ! Don't dredge negative amounts of sediment.
                 !
@@ -565,9 +591,9 @@ module m_dredge
                 availvolume = availvolume + dz_dredge(i)*area(i)
              else 
                 dz_dredge(i) = 0.0_fp
-             endif
+             end if
              !
-          enddo
+          end do
           requiredvolume = availvolume
        case (DREDGETRIG_ALLBYAVG)
           !
@@ -589,8 +615,8 @@ module m_dredge
              availvolume = availvolume + dz_dredge(i)*area(i)
              if (sedimentdepth(i)>0) then
                 triggered(i) = .true.
-             endif
-          enddo
+             end if
+          end do
           avg_depth     = avg_depth/dredge_area
           avg_trigdepth = avg_trigdepth/dredge_area
           !
@@ -609,24 +635,24 @@ module m_dredge
                 ploughed = .true.
                 do i = 1, pdredge%npnt
                    hdune(i) = hdune(i)*plough_fac
-                enddo
+                end do
                 requiredvolume = 0.0_fp
              else
                 requiredvolume = (ddp - avg_trigdepth + clr)*dredge_area
-             endif
+             end if
           else 
              requiredvolume = 0.0_fp
-          endif
+          end if
        end select
        !
        if (ploughed) then
-           tim_ploughed(ia) = tim_ploughed(ia) + dt
-       endif
+           dadpar%tim_ploughed(ia) = dadpar%tim_ploughed(ia) + dt
+       end if
        if (requiredvolume > 0.0_fp .and. (maxvol < 0.0_fp .or. maxvol > 0.0_fp)) then
-           tim_dredged(ia) = tim_dredged(ia) + dt
+           dadpar%tim_dredged(ia) = dadpar%tim_dredged(ia) + dt
        else
            cycle
-       endif
+       end if
        !
        !-----------------------------------------------------------------------
        ! Perform dredging
@@ -636,7 +662,7 @@ module m_dredge
           ! No dredging capacity, reset all dredging amounts to zero.
           !
           dz_dredge = 0.0_fp
-       elseif ((maxvol > 0.0_fp .and. requiredvolume > maxvol) .or. &
+       else if ((maxvol > 0.0_fp .and. requiredvolume > maxvol) .or. &
              & (requiredvolume > 0.0_fp .and. requiredvolume < availvolume)) then
           !
           ! a) we need to dredge more than we can dredge per time step, or
@@ -651,12 +677,12 @@ module m_dredge
           if (maxvol > 0.0_fp .and. requiredvolume > maxvol) then
              requiredvolume = maxvol
              pdredge%stilldredging = pdredge%itype==DREDGETYPE_DREDGING
-          endif
+          end if
           !
           ! Reduce total dredging volume and dredging amounts
           ! per point at current time step
           !
-          select case (dredge_prop(ia)%dredgedistr)
+          select case (dadpar%dredge_prop(ia)%dredgedistr)
           case (DREDGEDISTR_UNIFORM)
              !
              ! dredge sediment uniformly:
@@ -669,7 +695,7 @@ module m_dredge
              !
              !  * increase thickness gradually
              !
-             dredge_area = globalareadred(ia)
+             dredge_area = dadpar%globalareadred(ia)
              do i = 1, pdredge%npnt
                 inm = pdredge%inm(i)
                 !
@@ -686,10 +712,10 @@ module m_dredge
                    do j = i,pdredge%npnt
                       jnm = pdredge%inm(j)
                       dz_dredge(jnm) = dmax
-                   enddo
+                   end do
                    exit
-                endif
-             enddo
+                end if
+             end do
           case (DREDGEDISTR_HIGHEST,DREDGEDISTR_SHALLOWEST) 
              !
              ! dredge slices off the top of the bed
@@ -702,18 +728,18 @@ module m_dredge
              ! Make sure that points that are not triggered for dredging
              ! do not actively participate in the dredging.
              !
-             if (dredge_prop(ia)%dredgedistr==DREDGEDISTR_SHALLOWEST) then
+             if ( dadpar%dredge_prop(ia)%dredgedistr == DREDGEDISTR_SHALLOWEST ) then
                 do i=1,pdredge%npnt
                    bedlevel(i)     = bedlevel(i)     - reflevel(i)
                    dunetoplevel(i) = dunetoplevel(i) - reflevel(i)
                    triggerlevel(i) = triggerlevel(i) - reflevel(i)
                    troughlevel(i)  = troughlevel(i)  - reflevel(i)
-                enddo
-             endif
+                end do
+             end if
              !
              do i=1,pdredge%npnt
                 if (.not.triggered(i)) dunetoplevel(i) = -1.0E11_fp
-             enddo
+             end do
              !
              call sortindices(pdredge%inm,pdredge%npnt, &  
                 & dunetoplevel, 1, pdredge%npnt, .false.)
@@ -739,28 +765,28 @@ module m_dredge
                       dz = min(bedlevel(jnm)-z_dredge, sedimentdepth(jnm))
                    else
                       dz = (dunetoplevel(jnm) - z_dredge)**2/(2*hdune(jnm))
-                   endif
+                   end if
                    !
                    voltim = voltim + max(dz,0.0_fp)*area(jnm)
-                enddo
+                end do
                 if (voltim>requiredvolume) then
                    imax = i
                 else
                    imin = i
-                endif
-             enddo
+                end if
+             end do
              !
              zmax = dunetoplevel(pdredge%inm(imin))
              if (imin<pdredge%npnt) then
                 zmin = dunetoplevel(pdredge%inm(imin+1))
              else
                 zmin = -1.0E11_fp
-             endif
+             end if
              imaxdunes = imin
              do i = imin+1,pdredge%npnt
                 inm = pdredge%inm(i)
                 dz_dredge(inm) = 0.0_fp
-             enddo
+             end do
              !
              ! dredge level is known to lie between zmin and zmax
              ! points imaxdunes+1:npnt have dunetoplevel below/equal zmin
@@ -807,10 +833,10 @@ module m_dredge
                             dz = min(bedlevel(jnm)-z_dredge, sedimentdepth(jnm))
                          else
                             dz = (dunetoplevel(jnm) - z_dredge)**2/(2*hdune(jnm))
-                         endif
+                         end if
                          !
                          voltim = voltim + max(dz,0.0_fp)*area(jnm)
-                      enddo
+                      end do
                       if (voltim>requiredvolume) then
                          !
                          ! zmin level can be raised.
@@ -824,13 +850,13 @@ module m_dredge
                          zmax = z_dredge
                          imindunes = i+1
                          exit
-                      endif
+                      end if
                       !
-                   endif
-                enddo
+                   end if
+                end do
              else
                 imindunes = imaxdunes+1
-             endif
+             end if
              !
              ! dredge level is known to lie between zmin and zmax
              ! points imaxdunes+1:npnt have dunetoplevel below/equal zmin
@@ -877,10 +903,10 @@ module m_dredge
                          dz = min(bedlevel(jnm)-z_dredge, sedimentdepth(jnm))
                       else
                          dz = (dunetoplevel(jnm) - z_dredge)**2/(2*hdune(jnm))
-                      endif
+                      end if
                       !
                       voltim = voltim + max(dz,0.0_fp)*area(jnm)
-                   enddo
+                   end do
                    if (voltim>requiredvolume) then
                       !
                       ! zmin level can be raised.
@@ -894,10 +920,10 @@ module m_dredge
                       zmax = z_dredge
                       irock = i
                       exit
-                   endif
+                   end if
                    !
-                endif
-             enddo
+                end if
+             end do
              !
              ! dredge level is known to lie between zmin and zmax
              ! points imaxdunes+1:npnt have dunetoplevel below/equal zmin
@@ -921,8 +947,8 @@ module m_dredge
                 !
                 if (pdredge%use_dunes) then
                    hdune(inm) = 0.0_fp
-                endif
-             enddo
+                end if
+             end do
              !
              ! at points irock+1:imindunes-1 the dunes are dredged
              ! completely and possibly a bit more.
@@ -934,7 +960,7 @@ module m_dredge
                 !
                 voltim = voltim + dz_dredge(inm)*area(inm)
                 lin_dz = lin_dz + area(inm)
-             enddo
+             end do
              !
              ! at points imindunes:imaxdunes only part of the dunes
              ! will be dredged.
@@ -950,7 +976,7 @@ module m_dredge
                 voltim = voltim + dz_dredge(inm)*area(inm)
                 lin_dz = lin_dz + dz*div2h*area(inm)
                 qua_dz = qua_dz + area(inm)*div2h
-             enddo
+             end do
              !
              ! solve equation requiredvolume = voltim + dz*lin_dz + dz**2*qua_dz
              !
@@ -974,7 +1000,7 @@ module m_dredge
                 !
                 lin_dz = -lin_dz/(2*qua_dz)
                 dz = lin_dz + sqrt(lin_dz**2+(requiredvolume-voltim)/qua_dz)
-             endif
+             end if
              !
              z_dredge = max(zmax-dz,zmin)
              !
@@ -985,8 +1011,8 @@ module m_dredge
                 !
                 if (pdredge%use_dunes) then
                    hdune(inm) = 0.0_fp
-                endif
-             enddo
+                end if
+             end do
              !
              do i = imindunes,imaxdunes
                 inm = pdredge%inm(i)
@@ -998,8 +1024,8 @@ module m_dredge
                 !
                 if (pdredge%use_dunes) then
                    hdune(inm) = 0.0_fp
-                endif
-             enddo
+                end if
+             end do
           case (DREDGEDISTR_PROPORTIONAL)
              !
              ! dredge sediment proportionally to amount of sediment available
@@ -1008,7 +1034,7 @@ module m_dredge
              factor = requiredvolume / availvolume
              do i = 1, pdredge%npnt
                 dz_dredge(i) = dz_dredge(i) * factor
-             enddo
+             end do
           case (DREDGEDISTR_HIGHFIRST,DREDGEDISTR_SHALLOWFIRST)
              !
              ! dredge highest points first
@@ -1021,18 +1047,18 @@ module m_dredge
              ! Make sure that points that are not triggered for dredging
              ! do not actively participate in the dredging.
              !
-             if (dredge_prop(ia)%dredgedistr==DREDGEDISTR_SHALLOWFIRST) then
+             if ( dadpar%dredge_prop(ia)%dredgedistr == DREDGEDISTR_SHALLOWFIRST ) then
                 do i=1,pdredge%npnt
                    bedlevel(i)     = bedlevel(i)     - reflevel(i)
                    dunetoplevel(i) = dunetoplevel(i) - reflevel(i)
                    triggerlevel(i) = triggerlevel(i) - reflevel(i)
                    troughlevel(i)  = troughlevel(i)  - reflevel(i)
-                enddo
-             endif
+                end do
+             end if
              !
              do i=1,pdredge%npnt
                 if (.not.triggered(i)) dunetoplevel(i) = -1.0E11_fp
-             enddo
+             end do
              !
              call sortindices(pdredge%inm,pdredge%npnt, &  
                 & dunetoplevel, 1, pdredge%npnt, .false.)
@@ -1055,10 +1081,10 @@ module m_dredge
                       !
                       dz_dredge(jnm) = 0.0_fp
                       hdune(jnm) = 0.0_fp
-                   enddo
+                   end do
                    exit
-                endif
-             enddo
+                end if
+             end do
           case (DREDGEDISTR_LOWFIRST,DREDGEDISTR_DEEPFIRST)
              !
              ! dredge lowest points first
@@ -1071,18 +1097,18 @@ module m_dredge
              ! Make sure that points that are not triggered for dredging
              ! do not actively participate in the dredging.
              !
-             if (dredge_prop(ia)%dredgedistr==DREDGEDISTR_DEEPFIRST) then
-                do i=1,pdredge%npnt
+             if ( dadpar%dredge_prop(ia)%dredgedistr == DREDGEDISTR_DEEPFIRST ) then
+                do i = 1, pdredge%npnt
                    bedlevel(i)     = bedlevel(i)     - reflevel(i)
                    dunetoplevel(i) = dunetoplevel(i) - reflevel(i)
                    triggerlevel(i) = triggerlevel(i) - reflevel(i)
                    troughlevel(i)  = troughlevel(i)  - reflevel(i)
-                enddo
-             endif
+                end do
+             end if
              !
              do i=1,pdredge%npnt
                 if (.not.triggered(i)) dunetoplevel(i) = 1.0E11_fp
-             enddo
+             end do
              !
              call sortindices(pdredge%inm,pdredge%npnt, &  
                 & dunetoplevel, 1, pdredge%npnt, .true.)
@@ -1105,10 +1131,10 @@ module m_dredge
                       !
                       dz_dredge(jnm) = 0.0_fp
                       hdune(jnm) = 0.0_fp
-                   enddo
+                   end do
                    exit
-                endif
-             enddo
+                end if
+             end do
           end select
        else
           !
@@ -1121,31 +1147,31 @@ module m_dredge
                 !
                 if (dz_dredge(i)>0.0_fp) then
                    hdune(i) = 0.0_fp
-                endif
-             enddo
-          endif
-       endif
+                end if
+             end do
+          end if
+       end if
        !
        do i = 1,pdredge%npnt
           nm = abs(pdredge%nm(i)) ! update both internal and halo points
           if (nm == 0) cycle
           !
-          dzdred(nm) = dz_dredge(i)
+          dadpar%dzdred(nm) = dz_dredge(i)
           if (pdredge%use_dunes) duneheight(nm) = hdune(i)
-       enddo
+       end do
        !
        ! Update sediment administration for sandmining/dredging only
        ! dbodsd is filled (kg/m^2 sediment removed in a cell)
        !
-       if (cmpupd) then
-          if (gettoplyr(morlyr, dzdred, dbodsd, messages) /= 0) then
+       if (morpar%cmpupd) then
+          if (gettoplyr(morlyr, dadpar%dzdred, dbodsd, messages) /= 0) then
              call writemessages(messages, lundia)
              error = .true.
-             goto 999
-          endif
+             return
+          end if
        else
           dbodsd = 0.0_fp
-       endif
+       end if
        !
        ! Use dbodsd to calculate voldred, and update dps
        !
@@ -1158,41 +1184,61 @@ module m_dredge
           dz = 0.0_fp
           do lsed = 1, lsedtot
              dzl               = dbodsd(lsed, nm_abs) / cdryb(lsed)
-             if (nm > 0) voldred(ia,lsed)  = voldred(ia,lsed) + dzl * area(i)
+             if (nm > 0) dadpar%voldred(ia,lsed)  = dadpar%voldred(ia,lsed) + dzl * area(i)
              dz                = dz + dzl
-          enddo
+          end do
           if (pdredge%obey_cmp) then
              dps(nm_abs)       = dps(nm_abs) - dpsign * dz
           else
              dps(nm_abs)       = dps(nm_abs) - dpsign * dz_dredge(i)
-             if (nm > 0) voldred(ia,lsedtot+1) = voldred(ia,lsedtot+1) + (dz_dredge(i)-dz) * area(i)
-          endif
-          dzdred(nm_abs)     = 0.0_fp
-       enddo
-    enddo
-    !
-    if (ndomains > 1) then
-       !
-       ! Communicate dredged volumes with other domains
-       !
-       call comm(voldred, (nadred+nasupl)*(lsedtot+1), error, msgstr)
-       if (error) goto 999
-    endif
-    !
-    !--------------------------------------------------------------------------
-    ! Distribute sediments over dump areas
-    !
-    voldump(1:nadump,1:lsedtot) = 0.0_fp
-    do ia = 1, nadred+nasupl
-       pdredge => dredge_prop(ia)
+             if (nm > 0) dadpar%voldred(ia,lsedtot+1) = dadpar%voldred(ia,lsedtot+1) + (dz_dredge(i)-dz) * area(i)
+          end if
+          dadpar%dzdred(nm_abs)     = 0.0_fp
+       end do
+    end do
+    
+end subroutine calculate_dredging
+
+
+!> Distribute sediments over dump areas
+subroutine distribute_sediments_over_dump_areas(lsedtot, dadpar)
+    use precision
+    use dredge_data_module
+    implicit none
+      
+	integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
+    type (dredge_type)          , target     , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
+    
+    integer                                  :: i, ia, i2, ib, ib2, min, lsed
+    integer  , dimension(:,:) , pointer      :: link_def
+    real(fp)                                 :: fracdumped
+    real(fp)                                 :: fracoutlet
+    real(fp) , dimension(:)   , pointer      :: globaldumpcap
+    real(fp) , dimension(:,:) , pointer      :: link_sum
+    real(fp)                                 :: maxvol     !< maximum volume to be dredged in current time step
+    real(fp) , dimension(:,:) , pointer      :: voldump
+    real(fp)                                 :: voldumped
+    real(fp)                                 :: voldredged
+    real(fp)                                 :: voltim     !< local volume variable, various meanings
+    real(fp)                                 :: voltot
+    type(dredtype)            , pointer      :: pdredge
+
+    voldump             => dadpar%voldump
+    voldump(1:dadpar%nadump,1:lsedtot) = 0.0_fp
+    globaldumpcap       => dadpar%globaldumpcap
+    link_sum            => dadpar%link_sum
+    link_def            => dadpar%link_def
+    
+    do ia = 1, dadpar%nadred + dadpar%nasupl
+       pdredge => dadpar%dredge_prop(ia)
        !
        ! Add dredged volumes to the total dredged volumes (cumulative!)
        !
        voldredged = 0.0_fp
        do lsed = 1, lsedtot
-          voldredged = voldredged + voldred(ia,lsed)
-       enddo
-       totvoldred(ia) = totvoldred(ia) + voldredged + voldred(ia,lsedtot+1)
+          voldredged = voldredged + dadpar%voldred(ia,lsed)
+       end do
+       dadpar%totvoldred(ia) = dadpar%totvoldred(ia) + voldredged + dadpar%voldred(ia,lsedtot+1)
        if (voldredged<=0.0_fp) cycle
        !
        select case (pdredge%dumpdistr)
@@ -1200,141 +1246,194 @@ module m_dredge
           !
           ! Distribute based on user-specified percentages
           !
-          do i = 1,nalink
-             if (link_def(i,1) /= ia) cycle
+          do i = 1, dadpar%nalink
+             if ( link_def(i,1) /= ia ) cycle
              ib = link_def(i,2)
              i2 = pdredge%outletlink
-             if (i2>0) then
+             if ( i2 > 0 ) then
                 ib2 = link_def(i2,2)
              else
                 ib2 = 0
-             endif
+             end if
              !
              voldumped = 0.0_fp
-             do lsed = 1,lsedtot
-                voltim = 0.01_fp*link_percentage(i,lsed)*voldred(ia,lsed)
+             do lsed = 1, lsedtot
+                voltim = 0.01_fp*dadpar%link_percentage(i,lsed)*dadpar%voldred(ia,lsed)
                 voldumped = voldumped + voltim
-             enddo
+             end do
              !
-             if (voldumped>globaldumpcap(ib) .and. dump_prop(ib)%dumpcapaflag) then
-                fracdumped = globaldumpcap(ib)/voldumped
+             if ( voldumped > globaldumpcap(ib) .and. dadpar%dump_prop(ib)%dumpcapaflag ) then
+                fracdumped = globaldumpcap(ib) / voldumped
                 globaldumpcap(ib) = 0.0_fp
              else
                 fracdumped = 1.0_fp
-                if (dump_prop(ib)%dumpcapaflag) then
-                   globaldumpcap(ib) = globaldumpcap(ib)-voldumped
-                endif
-             endif
+                if ( dadpar%dump_prop(ib)%dumpcapaflag ) then
+                   globaldumpcap(ib) = globaldumpcap(ib) - voldumped
+                end if
+             end if
              fracoutlet = 1.0_fp - fracdumped
              !
-             do lsed = 1,lsedtot
-                voltim = 0.01_fp*link_percentage(i,lsed)*voldred(ia,lsed)
+             do lsed = 1, lsedtot
+                voltim = 0.01_fp*dadpar%link_percentage(i,lsed)*dadpar%voldred(ia,lsed)
                 link_sum(i, lsed) = link_sum(i, lsed) + voltim*fracdumped
                 voldump(ib, lsed) = voldump(ib, lsed) + voltim*fracdumped
                 !
                 if (ib2>0) then
                    link_sum(i2, lsed) = link_sum(i2, lsed) + voltim*fracoutlet
                    voldump(ib2, lsed) = voldump(ib2, lsed) + voltim*fracoutlet
-                endif
-             enddo
-          enddo
+                end if
+             end do
+          end do
        case (DR2DUDISTR_SEQUENTIAL)
           !
           ! Distribute according user-specified order up to maximum
           ! capacity
           !
           voldumped = 0.0_fp
-          do i = 1,nalink
-             if (link_def(i,1) /= ia) cycle
+          do i = 1, dadpar%nalink
+             if ( link_def(i,1) /= ia ) cycle
              ib = link_def(i,2)
-             maxvol = voldredged-voldumped
-             if (dump_prop(ib)%dumpcapaflag) then
+             maxvol = voldredged - voldumped
+             if ( dadpar%dump_prop(ib)%dumpcapaflag ) then
                 maxvol = min(maxvol,globaldumpcap(ib))
-             endif
+             end if
              !
-             do lsed = 1,lsedtot
-                voltim = maxvol*(voldred(ia,lsed)/voldredged)
+             do lsed = 1, lsedtot
+                voltim = maxvol*(dadpar%voldred(ia,lsed)/voldredged)
                 link_sum(i, lsed) = link_sum(i, lsed) + voltim
                 voldump(ib, lsed) = voldump(ib, lsed) + voltim
-             enddo
-             if (dump_prop(ib)%dumpcapaflag) then
-                globaldumpcap(ib) = globaldumpcap(ib)-maxvol
-             endif
+             end do
+             if ( dadpar%dump_prop(ib)%dumpcapaflag ) then
+                globaldumpcap(ib) = globaldumpcap(ib) - maxvol
+             end if
              !
              voldumped = voldumped + maxvol
-             if (comparereal(voldredged,voldumped) == 0) exit
-          enddo
+             if ( comparereal(voldredged,voldumped) == 0 ) exit
+          end do
           !
           ! Maximum capacity reached; any sediment remaining?
           !
-          if (voldredged>voldumped) then
+          if ( voldredged > voldumped ) then
              maxvol = voldredged - voldumped
-             i = pdredge%outletlink
+             i  = pdredge%outletlink
              ib = link_def(i,2)
-             do lsed = 1,lsedtot
-                voltim = maxvol*(voldred(ia,lsed)/voldredged)
+             do lsed = 1, lsedtot
+                voltim = maxvol*(dadpar%voldred(ia,lsed) / voldredged)
                 link_sum(i, lsed) = link_sum(i, lsed) + voltim
                 voldump(ib, lsed) = voldump(ib, lsed) + voltim
-             enddo
-          endif
+             end do
+          end if
        case (DR2DUDISTR_PROPORTIONAL)
           maxvol = 0.0_fp
-          do i = 1,nalink
+          do i = 1, dadpar%nalink
              if (link_def(i,1) /= ia) cycle
              if (i==pdredge%outletlink) cycle
              ib = link_def(i,2)
              maxvol = maxvol + globaldumpcap(ib)
-          enddo
+          end do
           !
           ! Distribute proportionally based on dumping capacity
           ! Don't dump more than capacity available
           !
           voldumped = min(voldredged,maxvol)
-          if (voldumped>0.0_fp) then
-             do i = 1,nalink
-                if (link_def(i,1) /= ia) cycle
-                if (i==pdredge%outletlink) cycle
+          if ( voldumped > 0.0_fp ) then
+             do i = 1, dadpar%nalink
+                if ( link_def(i,1) /= ia ) cycle
+                if ( i == pdredge%outletlink ) cycle
                 ib = link_def(i,2)
                 !
                 voltot = (globaldumpcap(ib)/maxvol)*voldumped
-                do lsed = 1,lsedtot
-                   voltim = voltot*(voldred(ia,lsed)/voldredged)
+                do lsed = 1, lsedtot
+                   voltim = voltot*(dadpar%voldred(ia,lsed) / voldredged)
                    link_sum(i, lsed) = link_sum(i, lsed) + voltim
                    voldump(ib, lsed) = voldump(ib, lsed) + voltim
-                enddo
-                globaldumpcap(ib) = globaldumpcap(ib)-voltot
-             enddo
-          endif
+                end do
+                globaldumpcap(ib) = globaldumpcap(ib) - voltot
+             end do
+          end if
           !
           ! Maximum capacity reached; any sediment remaining?
           !
-          if (voldredged>voldumped) then
+          if ( voldredged > voldumped ) then
              maxvol = voldredged - voldumped
              i = pdredge%outletlink
              ib = link_def(i,2)
-             do lsed = 1,lsedtot
-                voltim = maxvol*(voldred(ia,lsed)/voldredged)
+             do lsed = 1, lsedtot
+                voltim = maxvol*(dadpar%voldred(ia,lsed) / voldredged)
                 link_sum(i, lsed) = link_sum(i, lsed) + voltim
                 voldump(ib, lsed) = voldump(ib, lsed) + voltim
-             enddo
-          endif
+             end do
+          end if
        end select
-    enddo
-    !
-    !--------------------------------------------------------------------------
-    ! And finally: Dumping
-    !
+    end do
+    
+end subroutine distribute_sediments_over_dump_areas
+
+!> calculation of dumping
+subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lundia, kfsed, cdryb,&
+                                  dbodsd, duneheight, dps, dpsign, error)
+    use precision
+    use dredge_data_module
+    use message_module
+    implicit none
+
+    type (dredge_type)                          , target , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
+    integer                                              , intent(in)    :: lsedtot    !< total number of sediment fractions
+    integer                                              , intent(in)    :: nmmax      !< effective upper bound for spatial index nm
+    integer                                              , intent(in)    :: nmlb       !< lower array bound for spatial index nm
+    integer                                              , intent(in)    :: nmub       !< upper array bound for spatial index nm
+    integer                                              , intent(in)    :: lundia     !< file ID for diagnotic output
+    integer   , dimension(nmlb:nmub)                     , intent(in)    :: kfsed      !< morphology active flag per face
+    real(fp)  , dimension(lsedtot)                       , intent(in)    :: cdryb      !< dry bed density used for conversion between m3 and kg
+    real(fp)  , dimension(lsedtot, nmlb:nmub)            , intent(inout) :: dbodsd     !< change in bed composition
+    real(fp)  , dimension(:)                             , pointer       :: duneheight !< pointer since this variable doesn't have to be allocated if use_dunes = .false.
+    real(prec), dimension(nmlb:nmub)                     , intent(inout) :: dps        !< bed level or depth at cell faces
+    real(fp)                                             , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
+    logical                                              , intent(out)   :: error
+        
+    interface
+       subroutine comm(a, n, error, msgstr)
+           use precision
+           integer               , intent(in)    :: n      !< length of real array
+           real(fp), dimension(n), intent(inout) :: a      !< real array to be accumulated
+           logical               , intent(out)   :: error  !< error flag
+           character(*)          , intent(out)   :: msgstr !< string to pass message
+       end subroutine comm
+    end interface
+!
+    integer                         :: i, ib, imax, imin, inm, j, jnm, lsed, nm
+    character(80)                   :: msgstr
+    logical                         :: local_cap
+    real(fp), dimension(:), pointer :: area
+    real(fp)                        :: areatim
+    real(fp), dimension(:), pointer :: bedlevel
+    real(fp)                        :: dpadd
+    real(fp)                        :: dump_area
+    real(fp)                        :: dz
+    real(fp)                        :: dzdump
+    real(fp), dimension(:), pointer :: dz_dump
+    real(fp)                        :: extravolume
+    real(fp)                        :: factor
+    real(fp)                        :: maxvol     !< maximum volume to be dredged in current time step
+    real(fp)                        :: zmax
+    real(fp)                        :: zmin
+    real(fp)                        :: z_dump
+    real(fp)                        :: requiredvolume
+    real(fp)                        :: voldumped
+    real(fp)                        :: voltim     !< local volume variable, various meanings
+    type(dumptype),         pointer :: pdump
+
     dbodsd(1:lsedtot, 1:nmmax) = 0.0_fp
-    do ib = 1, nadump
-       pdump => dump_prop(ib)
+    do ib = 1, dadpar%nadump
+       pdump => dadpar%dump_prop(ib)
        !
        ! Add dumped volumes to the total dumped volumes (cumulative!)
        !
        voldumped = 0.0_fp
        do lsed = 1, lsedtot
-          voldumped = voldumped + voldump(ib, lsed)
-       enddo
-       totvoldump(ib) = totvoldump(ib) + voldumped
+          voldumped = voldumped + dadpar%voldump(ib, lsed)
+       end do
+       dadpar%totvoldump(ib) = dadpar%totvoldump(ib) + voldumped
        !
        ! Skip dump areas where nothing has to be dumped
        !
@@ -1342,49 +1441,48 @@ module m_dredge
        !
        bedlevel => pdump%bedlevel
        bedlevel = 0.0_fp
-       hdune => pdump%hdune
-       hdune = 0.0_fp
+       pdump%hdune = 0.0_fp
        dz_dump => pdump%dz_dump
        dz_dump = 0.0_fp
-       reflevel => pdump%reflevel
        local_cap = .false.
        do i = 1, pdump%npnt
           nm = pdump%nm(i)
           if (nm <= 0) cycle ! get data only for internal points
           !
           bedlevel(i) = dpsign * real(dps(nm),fp)
-          if (pdump%use_dunes) hdune(i) = duneheight(nm)
+          if ( pdump%use_dunes ) pdump%hdune(i) = duneheight(nm)
           !
-          if (kfsed(nm)==1 .or. pdump%dumpwhendry) then
-             if (pdump%dumpcapaflag) then
-                dz_dump(i) = max( (reflevel(i) - pdump%mindumpdepth) - bedlevel(i), 0.0_fp)
+          if ( kfsed(nm) == 1 .or. pdump%dumpwhendry ) then
+             if ( pdump%dumpcapaflag ) then
+                dz_dump(i) = max( (pdump%reflevel(i) - pdump%mindumpdepth) - bedlevel(i), 0.0_fp)
                 local_cap = local_cap .or. dz_dump(i)>0.0_fp
              else
                 dz_dump(i) = 1.0E11_fp
                 local_cap = .true.
-             endif
+             end if
           else
              dz_dump(i) = 0.0_fp
-          endif
-       enddo
+          end if
+       end do
        !
        area => pdump%area
-       if (.not.pdump%in1domain) then
+       if ( .not. pdump%in1domain ) then
           !
           ! communicate dredge data among domains
           !
-          call comm(reflevel, pdump%npnt, error, msgstr)
-          if (error) goto 999
-          call comm(bedlevel, pdump%npnt, error, msgstr)
-          if (error) goto 999
-          call comm(dz_dump, pdump%npnt, error, msgstr)
-          if (error) goto 999
-       endif
+                           call comm(pdump%reflevel, pdump%npnt, error, msgstr)
+          if (.not. error) call comm(bedlevel, pdump%npnt, error, msgstr)
+          if (.not. error) call comm(dz_dump, pdump%npnt, error, msgstr)
+          if (error) then
+              call write_error(msgstr, unit=lundia)
+              return
+          end if
+       end if
        !
        ! Go through dumping procedure only if some dump capacity is available
        ! locally
        !
-       if (.not.local_cap) cycle
+       if ( .not. local_cap) cycle
        !
        select case (pdump%dumpdistr)
        case (DUMPDISTR_UNIFORM)
@@ -1395,25 +1493,25 @@ module m_dredge
           !    pdump%npnt.
           !
           call sortindices(pdump%inm,pdump%npnt, &
-             & dz_dump, 1, pdump%npnt,.true.)
+             & dz_dump, 1, pdump%npnt, .true.)
           !
           ! loop over points and increase dzdump gradually
           !
           requiredvolume = voldumped
-          dump_area = globalareadump(ib)
+          dump_area = dadpar%globalareadump(ib)
           do i = 1, pdump%npnt
              inm = pdump%inm(i)
              !
              extravolume = dz_dump(inm)*dump_area
-             if (extravolume<requiredvolume) then
+             if ( extravolume  < requiredvolume ) then
                 !
                 ! if insufficient capacity at current point, fill it up
                 ! and continue with next point
                 !
-                dump_area = dump_area - area(inm)
+                dump_area      = dump_area - area(inm)
                 requiredvolume = requiredvolume - dz_dump(inm)*area(inm)
              else
-                dzdump = dz_dump(inm)*requiredvolume/extravolume
+                dzdump = dz_dump(inm) * requiredvolume / extravolume
                 !
                 ! if sufficient capacity, fill all remaining points and
                 ! exit loop
@@ -1422,10 +1520,10 @@ module m_dredge
                    jnm = pdump%inm(j)
                    !
                    dz_dump(jnm) = dzdump
-                enddo
+                end do
                 exit
-             endif
-          enddo
+             end if
+          end do
        case (DUMPDISTR_LOWEST,DUMPDISTR_DEEPEST)
           !
           ! lowest or deepest locations first:
@@ -1433,38 +1531,38 @@ module m_dredge
           !    deepest point (min bedlevel) will become 1,
           !    shallowest point (max bedlevel) will become pdump%npnt.
           !
-          if (pdump%dumpdistr == DUMPDISTR_DEEPEST) then
-             do i=1,pdump%npnt
-                bedlevel(i) = bedlevel(i) - reflevel(i)
-             enddo
-          endif
+          if ( pdump%dumpdistr == DUMPDISTR_DEEPEST ) then
+             do i = 1, pdump%npnt
+                bedlevel(i) = bedlevel(i) - pdump%reflevel(i)
+             end do
+          end if
           !
           call sortindices(pdump%inm,pdump%npnt, &
-             & bedlevel, 1, pdump%npnt,.true.)
+             & bedlevel, 1, pdump%npnt, .true.)
           !
           !  * search bed level below which sufficient dumping capacity is
           !    available
           !
           requiredvolume = voldumped
-          do i = 2,pdump%npnt
-             inm = pdump%inm(i)
+          do i = 2, pdump%npnt
+             inm    = pdump%inm(i)
              z_dump = bedlevel(inm)
              !
              voltim = 0.0_fp
-             do j = 1, i-1
+             do j = 1, i - 1
                 jnm = pdump%inm(j)
                 !
                 voltim = voltim + max(min(dz_dump(jnm),z_dump-bedlevel(jnm)),0.0_fp)*area(jnm)
-             enddo
+             end do
              !
-             if (voltim>=requiredvolume) exit
-          enddo
-          imax = i-1
-          if (imax==pdump%npnt) then
+             if ( voltim >= requiredvolume ) exit
+          end do
+          imax = i - 1
+          if ( imax == pdump%npnt ) then
              zmax = 1.0E11_fp
           else
              zmax = z_dump
-          endif
+          end if
           zmin = bedlevel(pdump%inm(imax))
           !
           ! dump level is known to lie between zmin and zmax
@@ -1474,11 +1572,11 @@ module m_dredge
           !  * sort the first imax points based on increasing level of bed
           !    level plus maximum dump thickness
           !
-          pdump%sortvar = bedlevel+dz_dump
+          pdump%sortvar = bedlevel + dz_dump
           call sortindices(pdump%inm,imax, &
              & pdump%sortvar, 1, pdump%npnt,.true.)
           !
-          do i = 1,imax
+          do i = 1, imax
              inm = pdump%inm(i)
              z_dump = pdump%sortvar(inm)
              !
@@ -1490,15 +1588,15 @@ module m_dredge
                 jnm = pdump%inm(j)
                 !
                 voltim = voltim + max(min(dz_dump(jnm),z_dump-bedlevel(jnm)),0.0_fp)*area(jnm)
-             enddo
+             end do
              !
-             if (voltim>=requiredvolume) then
+             if ( voltim >= requiredvolume ) then
                 zmax = z_dump
                 exit
              else
                 zmin = z_dump
-             endif
-          enddo
+             end if
+          end do
           imin = i
           !
           ! dump level is known to lie between zmin and zmax
@@ -1510,16 +1608,16 @@ module m_dredge
           !  * determine exact height of dump level which lies between
           !    zmin and zmax
           !
-          voltim = 0.0_fp
+          voltim  = 0.0_fp
           areatim = 0.0_fp
           z_dump = zmin
-          do i = 1,imax
+          do i = 1, imax
              inm = pdump%inm(i)
              !
              voltim = voltim + max(min(dz_dump(inm),z_dump-bedlevel(inm)),0.0_fp)*area(inm)
-             if (i>=imin) areatim = areatim + area(inm)
-          enddo
-          dz = (requiredvolume - voltim)/areatim
+             if ( i >= imin ) areatim = areatim + area(inm)
+          end do
+          dz = (requiredvolume - voltim) / areatim
           z_dump = zmin + dz
           !
           do i = 1, pdump%npnt
@@ -1529,7 +1627,7 @@ module m_dredge
              ! determine the associated volume
              !
              dz_dump(inm) = max(min(dz_dump(inm),z_dump-bedlevel(inm)),0.0_fp)
-          enddo
+          end do
        case (DUMPDISTR_PROPORTIONAL)
           !
           ! proportional to maximum dump depth
@@ -1538,11 +1636,11 @@ module m_dredge
           maxvol = 0.0_fp
           do i = 1, pdump%npnt
              maxvol = maxvol + dz_dump(i)*area(i)
-          enddo
+          end do
           factor = voldumped / maxvol
           do i = 1, pdump%npnt
-             dz_dump(i) = dz_dump(i)*factor
-          enddo
+             dz_dump(i) = dz_dump(i) * factor
+          end do
        end select
        !
        ! Now dump the sediments locally
@@ -1553,33 +1651,16 @@ module m_dredge
           !
           dz = dz_dump(i)
           do lsed = 1, lsedtot
-             dpadd            = dz * (voldump(ib, lsed) / voldumped)
+             dpadd            = dz * (dadpar%voldump(ib, lsed) / voldumped)
              dbodsd(lsed, nm) = dbodsd(lsed, nm) + dpadd * cdryb(lsed)
-          enddo
+          end do
           !
           dps(nm) = dps(nm) + dpsign * real(dz_dump(i), prec)
-          if (pdump%use_dunes) duneheight(nm) = hdune(i)
-       enddo
-    enddo
-    !!
-    !! Update sediment administration for dumping only
-    !! dbodsd is filled (kg/m^2 sediment added to a cell)
-    !!
-    !if (cmpupd) then
-    !   allocate(dz_dummy(nmlb:nmub), stat=istat)   ! no actual bed update, unlike updmorlyr in fm_erosed.f90
-    !   if (morpar%moroutput%morstats) then
-    !       !call morstats ... not consistent yet between D-Flow FM and Delft3D FLOW
-    !   endif   
-    !   if (updmorlyr(morlyr, dbodsd, dz_dummy, messages) /= 0) then
-    !       call writemessages(messages, lundia)
-    !       error = .true.
-    !       goto 999
-    !   endif
-    !   deallocate(dz_dummy, stat=istat)
-    !endif
-    return
-
-999 if (msgstr /= '') call write_error(msgstr, unit=lundia)
-    end subroutine dredge
+          if (pdump%use_dunes) duneheight(nm) = pdump%hdune(i)
+       end do
+    end do
+    
+end subroutine calculation_of_dumping
 
 end module m_dredge
+

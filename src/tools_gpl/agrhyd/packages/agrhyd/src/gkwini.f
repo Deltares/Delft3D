@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2022.
+!!  Copyright (C)  Stichting Deltares, 2021-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,8 @@
 !!  rights reserved.
 
       subroutine gkwini ( lu , group , keywrd , value )
+      use m_zoek
+      use m_gkwini
 c=======================================================================
 c            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
 c                One Dimensional Modelling System
@@ -43,7 +45,7 @@ c
 c***********************************************************************
 c CVS log information:
 c
-c $Id$
+c
 c
 c History:
 c $Log: /delft3d/modules/d3d-waq/waq/libsrc/dh/gkwini.f $
@@ -143,6 +145,7 @@ c     Go for next line
       end
 
       SUBROUTINE GETTKO ( LINE , IN , CL , CT , TOKEN , IL , IERR )
+      use m_gkwini
 C
 C     LINE      INPUT STRING
 C     IN        LENGTH OF INPUT STRING
@@ -229,6 +232,8 @@ C     Skip trailing blanks
       RETURN
       END
       subroutine gi_ini ( lu , group , keywrd , ivalue )
+      use m_gkwini
+
       integer       lu
       character*(*) group, keywrd
       integer       ivalue
@@ -250,6 +255,8 @@ C     Skip trailing blanks
       return
       end
       subroutine gr_ini ( lu , group , keywrd , rvalue )
+      use m_gkwini
+
       integer       lu
       character*(*) group, keywrd
       real          rvalue
@@ -271,6 +278,9 @@ C     Skip trailing blanks
       return
       end
       subroutine gl_ini ( lu , group , keywrd , lvalue )
+      use m_zoek
+      use m_gkwini
+
       integer       lu
       character*(*) group, keywrd
       logical       lvalue

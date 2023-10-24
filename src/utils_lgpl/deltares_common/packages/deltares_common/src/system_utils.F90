@@ -1,7 +1,7 @@
 module system_utils
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module system_utils
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 !
 !   Support for low level system routines
@@ -258,7 +258,7 @@ function makedir(dirname) result(istat)
    
     slash = char(47)
     lslash = index (pathstr,slash)
-    if (lslash .eq. 0) then
+    if (lslash == 0) then
        slash = char(92)
     endif
 
@@ -272,7 +272,7 @@ function makedir(dirname) result(istat)
        return
     end if
 
-    if ( slash .eq. char(47)) then
+    if ( slash == char(47)) then
 !      linux
        command = "mkdir -p "//trim(dirname)
     else

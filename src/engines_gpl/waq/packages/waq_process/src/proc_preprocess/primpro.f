@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_primpro
+
+      implicit none
+
+      contains
+
 
       subroutine primpro ( procesdef, notot , syname, ndspx , nvelx ,
      &                     ioffx    , nosys , dsto  , vsto  , ndspn ,
@@ -28,6 +34,9 @@
 !>\file
 !>       detect and activate primary processes (which act directly on substances)
 
+      use m_zoek
+      use m_monsys
+      use m_write_error_message
       use processet
       use timers       !   performance timers
 
@@ -115,7 +124,7 @@
                      ifl = ifl + 1
                      call zoekio ( proc%fluxstochi(istochi)%ioitem, proc%no_fluxoutput, proc%fluxoutput, 20, iflux)
                      if ( iflux .le. 0 ) then
-                        call errsys('error in primpro: unknown flux pdef',1)
+                        call write_error_message('error in primpro: unknown flux pdef')
                      endif
                      write (line,'(4a)') ' found flux  [',proc%fluxstochi(istochi)%ioitem(1:20),'] ',
      +                                   proc%fluxoutput(iflux)%item%text
@@ -177,7 +186,7 @@
                      call zoekio ( proc%dispstochi(istochi)%ioitem, proc%no_output, proc%output_item,
      +                             20, ioutput, IOTYPE_EXCHANG_OUTPUT)
                      if ( ioutput .eq. -1 ) then
-                        call errsys('error in primpro: unknown disp pdef',1)
+                        call write_error_message('error in primpro: unknown disp pdef')
                      endif
                      write (line,'(4a)') ' found dispersion[',proc%dispstochi(istochi)%ioitem,'] ',
      +                                                        proc%output_item(ioutput)%item%text
@@ -255,7 +264,7 @@
                      call zoekio ( proc%velostochi(istochi)%ioitem, proc%no_output, proc%output_item,
      +                             20, ioutput, IOTYPE_EXCHANG_OUTPUT)
                      if ( ioutput .eq. -1 ) then
-                        call errsys('error in primpro: unknown velo pdef',1)
+                        call write_error_message('error in primpro: unknown velo pdef')
                      endif
                      write (line,'(4a)') ' found velocity [',proc%velostochi(istochi)%ioitem,'] ',
      +                                                       proc%output_item(ioutput)%item%text
@@ -324,3 +333,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_primpro

@@ -1,6 +1,6 @@
 @echo off
 set toolFound=false
-set cmakeConfiguration=build_all
+set cmakeConfiguration=build_dwaq
 
 if exist ..\..\..\..\%cmakeConfiguration%\waqpb_import\Release\waqpb_import.exe     set toolFound=true
 echo Searching in cmake build: %cmakeConfiguration%

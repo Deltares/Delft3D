@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+	<!--
+	Basic Windows configuration file: For "coup203" (Data selection program)
+	-->
+	<config>
+		<localPaths>
+			<testCasesDir>.\data\cases</testCasesDir>
+			<enginesDir>.\data\engines</enginesDir>
+			<referenceDir>.\data\reference_results</referenceDir>
+		</localPaths>
+        <locations>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+				<!--root>https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32</root-->
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+	<!--
+	The order is important. Start with the following programs:
+		command_prompt
+		svn
+		mpi
+	-->
+	<programs>
+		<program name="command_prompt">
+			<path>cmd</path>
+			<arguments>
+				<argument>/C</argument>
+			</arguments>
+		</program>
+		<program name="svn">
+			<path>thirdparty\svn\win64\svn.exe</path>
+		</program>
+		<program name="coup203" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+			<path>waq/bin/coup203.exe</path>
+            <shell ref="command_prompt"/>
+			<location ref="reference_engines" type="reference">
+				<from>dwaq</from>
+			</location>
+			<location ref="engines_to_compare" type="check">
+				<from>teamcity_artifacts/win64</from>
+			</location>			
+		</program>
+	</programs>
+	<!--
+	default testCases
+	-->
+	<defaultTestCases>
+		<testCase name="coup203_default">
+			<programs>
+                <program ref="coup203">
+                    <arguments>
+                        <argument>&gt;coup203_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+			</programs>
+			<location ref="cases" type="input">
+				<from>.</from>
+			</location>
+			<location ref="reference_results" type="reference">
+				<from>win64</from>
+			</location>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+		</testCase>
+	</defaultTestCases>
+	<!--
+	testCases
+	-->
+	<testCases>
+		<testCase name="e51_f01_c01" ref="coup203_default">
+			<path>e51_coup203/f01_general/c01_discharge</path>
+			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			<checks>
+                <file name="breakp-f34.dat" type="NUMBERTEXT"/>
+                <file name="com-f34.atr" type="NUMBERTEXT"/>
+                <file name="com-f34.src" type="NUMBERTEXT"/>
+                <file name="com-f34.wlk" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+			</checks>
+		</testCase>
+        <testCase name="e51_f01_c02" ref="coup203_default">
+            <path>e51_coup203/f01_general/c02_part_tutorial</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="delcom-s33.atr" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c03" ref="coup203_default">
+            <path>e51_coup203/f01_general/c03_s33a</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-s33.dat" type="NUMBERTEXT"/>
+                <file name="com-s33.src" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+                <file name="delcom-s33.atr" type="NUMBERTEXT"/>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c04" ref="coup203_default">
+            <path>e51_coup203/f01_general/c04_f34_meteo</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-f34.dat" type="NUMBERTEXT"/>
+                <file name="com-f34.src" type="NUMBERTEXT"/>
+                <file name="com-f34.wlk" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+                <file name="delcom-f34.atr" type="NUMBERTEXT"/>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c05" ref="coup203_default">
+            <path>e51_coup203/f01_general/c05_s33_time_aggregation</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-s33.dat" type="NUMBERTEXT"/>
+                <file name="com-s33.src" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+                <file name="delcom-s33.atr" type="NUMBERTEXT"/>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c06" ref="coup203_default">
+            <path>e51_coup203/f01_general/c06_siu_lam</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-d3d.dat" type="NUMBERTEXT"/>
+                <file name="com-d3d.src" type="NUMBERTEXT"/>
+                <file name="com-d3d.wlk" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+                <file name="delcom-d3d.atr" type="NUMBERTEXT"/>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c07" ref="coup203_default" ignore="true">
+            <path>e51_coup203/f01_general/c07_walk_cut_out</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c08" ref="coup203_default">
+            <path>e51_coup203/f01_general/c08_walk_hor_aggr</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-wlk.dat" type="NUMBERTEXT"/>
+                <file name="com-wlk.src" type="NUMBERTEXT"/>
+                <file name="com-wlk.wlk" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c09" ref="coup203_default">
+            <path>e51_coup203/f01_general/c09_walk_non_aggr</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-wlk.dat" type="NUMBERTEXT"/>
+                <file name="com-s33.src" type="NUMBERTEXT"/>
+                <file name="com-s33.wlk" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+                <file name="delcom-s33.atr" type="NUMBERTEXT"/>
+            </checks>
+        </testCase>
+        <testCase name="e51_f01_c10" ref="coup203_default">
+            <path>e51_coup203/f01_general/c10_walk_ver_aggr</path>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            <checks>
+                <file name="breakp-wlk.dat" type="NUMBERTEXT"/>
+                <file name="com-s33.src" type="NUMBERTEXT"/>
+                <file name="com-s33.wlk" type="NUMBERTEXT"/>
+                <file name="couplnef.out" type="NUMBERTEXT">
+                    <skipline>COUP203 Version</skipline>
+                </file>
+                <file name="delcom-s33.atr" type="NUMBERTEXT"/>
+            </checks>
+        </testCase>
+    </testCases>
+</deltaresTestbench_v3>

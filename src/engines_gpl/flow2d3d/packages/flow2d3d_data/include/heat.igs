@@ -1,0 +1,170 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_heat
+!
+! doubles
+!
+    real(fp)                :: cfrcon    !  Coefficient for free convection (used in Proctor heat model ktemp=5)
+    real(fp)                :: cp        !  Coefficient for water
+    real(fp)                :: gapres    !  Global Atmospheric Pressure, default is 101300.0 Pa                          
+    real(fp)                :: sarea     !  Area parameters for Excess T-model
+                                         !  Water surface area [m2]
+    real(fp)                :: fclou     !  % of sky covered by clouds
+    real(fp)                :: timjan
+    real(fp)                :: stanton   !  Parameter Stanton (used in Proctor heat model ktemp=5)
+	real(fp)                :: mulsta    !  Multiplication factor for Stanton [0.7,1.3]
+    real(fp)                :: dalton    !  Parameter Dalton (used in Proctor heat model ktemp=5)
+	real(fp)                :: muldal    !  Multiplication factor for Stanton [0.7,1.3]
+    real(fp)                :: qtotmx    !  Maximum value for the total heat exchange flux in temperature model KTEMP=3
+                                         !  In the research version it was introduced as qtotmx
+    real(fp)                :: lambda    !  Fixed   value for the exchange coefficient (lambda) in temperature model KTEMP=3
+                                         !  In the research version it was introduced as relaxt
+    real(fp)                :: rhum      !  Air humidity for KTEMP=1,2,4 or 5
+                                         !  Relative humidity in %
+    real(fp)                :: rhum0     !  Previous given rhum in time-series
+    real(fp)                :: rhum1     !  Next given rhum in time-series
+    real(fp)                :: tdryb     !  Dry bulb temperature for KTEMP=1,2 or 4
+    real(fp)                :: tdryb0    !  Previous given tdryb in time-seriesGlobal data
+    real(fp)                :: tdryb1    !  Next given tdryb in time-seriesGlobal data
+    real(fp)                :: qsun      !  Radiation flux from the Sun [W/m2]
+    real(fp)                :: qsun0     !  Previous given qsun in time-seriesGlobal data
+    real(fp)                :: qsun1     !  Next given qsun in time-seriesGlobal data
+    real(fp)                :: qradin    !  Total incident radiation flux [W/m2]
+    real(fp)                :: qradin0   !  Previous given qradin in time-series
+    real(fp)                :: qradin1   !  Next given qradin in time-series
+    real(fp)                :: tback     !  Back ground temperature
+                                         !  Background temp. in heat module [deg]
+                                         !  Background temperature for KTEMP=3
+    real(fp)                :: tback0    !  Previous given tback in time-series
+    real(fp)                :: tback1    !  Next given tback in time-series
+    real(fp)                :: tair      !  Air temperature in heat module [deg] for KTEMP=4 or 5
+    real(fp)                :: tair0     !  Previous given tair in time-series
+    real(fp)                :: tair1     !  Next given tair in time-series
+    real(fp)                :: cfclou    !  Fraction of sky covered with clouds for KTEMP=5
+                                         !  Fraction of sky covered with clouds
+    real(fp)                :: cfclou0   !  Previous given cfclou in time-series
+    real(fp)                :: cfclou1   !  Next given cfclou in time-series
+    real(fp)                :: vapres    !  Saturated vapour Pressure for KTEMP=4
+                                         !  Only if IVAPOP=1
+                                         !  Saturated vapour pressure
+    real(fp)                :: vapres0   !  Previous given vapres in time-series
+    real(fp)                :: vapres1   !  Next given vapres in time-series
+    real(fp)                :: dvapre    !  Time increment of saturated vapour pressure
+    real(fp)                :: evapor    !  Evaporation as input in mm/hour
+                                         !  In UPDEVA redefined in kg/(m2s)
+                                         !  Evaporation as input in mm/hour
+                                         !  In UPDEVA redefined in m/s
+                                         !  Evaporation in mm/hour
+    real(fp)                :: devapo    !  Time increment of Evaporation
+    real(fp)                :: precipt   !  Precipitation as input in mm/hour
+                                         !  In UPDEVA redefined in m/s
+                                         !  Precipitation in mm/hour
+    real(fp)                :: dpreci    !  Time increment of Precipitation
+    real(fp)                :: train     !  Rain temperature
+    real(fp)                :: dtrain    !  Time increment of the rain temperature
+    real(fp)                :: mulsd     !  Multiplier for the Secchi depth to obtain the Shallow Secchi depth (range 0.01--1)
+    real(fp)                :: betasd    !  Fraction of the solar radiation that penetrates deep (range 0--1)
+    real(fp)                :: albedo    !  Albedo coefficient 
+! reals
+!
+!
+! integers
+!
+    integer :: ivapop     !  Flag specifying whether vapour pres-
+                          !  sure data are to be computed or
+                          !  specified
+                          !  Only for KTEMP=4 IVAPOP can be 1
+                          !  Flag specifying whether vapour pres-
+                          !  sure data are to be computed or
+                          !  specified
+                          !  Option to specify either own data
+                          !  (1 = Own Data) for the vapour pressure
+                          !  or computed by the program
+                          !  (0 = Computed)
+                          !  Option to specify either own data
+                          !  (1=Own Data) for the vapour pressure
+                          !  or computed by the program
+                          !  (0=Computed)
+    integer :: maseva     !  Flag for Precipitation/Evaporation in mass equation
+                          !  1=on  Default when KEVA <> 0
+                          !  0=off Default for KTEMP <> 0, KEVA=0
+                          !  keva>=1: maseva=1
+                          !  keva=0 and ktemp=3: maseva=0 (warning generated)
+                          !  keva=0 and ktemp=1,2,4 or 5: maseva is set by keyword evamas/maseva
+    integer :: wslake     !  Flag for wind stress curve
+                          !  1=on can only be set when KTEMP = 5
+                          !  0=off Default 
+    integer :: sdlake     !  Flag for stanton and dalton equal to cd
+                          !  1=on can only be set when KTEMP = 5
+                          !  0=off Default
+!
+! pointers
+!
+    real(fp) , dimension(:) , pointer :: secchi     !  Secchidepth; extinc = 1.7 / secchi
+    real(fp) , dimension(:) , pointer :: rhumarr    ! Relative humidity array; used when read from file (rhum_file = true)
+    real(fp) , dimension(:) , pointer :: tairarr    ! Air temperature   array; used when read from file (tair_file = true)
+    real(fp) , dimension(:) , pointer :: clouarr    ! Cloudiness        array; used when read from file (clou_file = true)
+    real(fp) , dimension(:) , pointer :: swrfarr    ! Solar radiation   array; used when read from file (swrf_file = true)
+    real(fp) , dimension(:) , pointer :: qeva_out   ! Evaporation heat flux
+    real(fp) , dimension(:) , pointer :: qco_out    ! Heat flux of forced convection
+    real(fp) , dimension(:) , pointer :: qbl_out    ! Nett back radation
+    real(fp) , dimension(:) , pointer :: qin_out    ! Nett solar radiation
+    real(fp) , dimension(:) , pointer :: qnet_out   ! Total nett heat flux
+    real(fp) , dimension(:) , pointer :: hlc_out    ! Exchange coefficient in Excess temperature model
+    real(fp) , dimension(:) , pointer :: hfree_out  ! Free convection of sensible heat
+    real(fp) , dimension(:) , pointer :: efree_out  ! Free convection of latent heat   
+    real(fp) , dimension(:) , pointer :: qmis_out   ! keva=3: mismatch between calculated and derived heat flux
+    logical  , dimension(:) , pointer :: flbcktemp  ! [lstsc]  flag to indicate background temperature constituents
+    real(fp) , dimension(:) , pointer :: zqeva_out  ! Evaporation heat flux, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zqco_out   ! Heat flux of forced convection, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zqbl_out   ! Nett back radation, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zqin_out   ! Nett solar radiation, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zqnet_out  ! Total nett heat flux, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zhlc_out   ! Exchange coefficient in Excess temperature model, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zhfree_out ! Free convection of sensible heat, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zefree_out ! Free convection of latent heat, in zeta-point for history file
+    real(fp) , dimension(:) , pointer :: zqmis_out  ! keva=3: mismatch between calculated and derived heat flux, in zeta-point for history file
+
+!
+! logicals
+!
+    logical :: rhum_file   = .false. !  True when relative humidity is read from METEO input file
+    logical :: tair_file   = .false. !  True when air temperature   is read from METEO input file
+    logical :: clou_file   = .false. !  True when cloudiness        is read from METEO input file
+    logical :: prcp_file   = .false. !  True when precipitation     is read from METEO input file
+    logical :: swrf_file   = .false. !  True when solar radiation   is read from METEO input file
+    logical :: scc_file    = .false. !  True when Secchi depth      is read from METEO input file (only ktemp = 5)
+    logical :: free_convec = .false. !  True when free convection   is read from input file (only ktemp = 5)
+    logical :: solrad_read = .false. !  True when solar radiation   is read from extra column in .tem file (only ktemp = 5)
+    logical :: back_temp   = .false. !  True when background temperature is switched on
+!
+! characters
+!
+end type gd_heat

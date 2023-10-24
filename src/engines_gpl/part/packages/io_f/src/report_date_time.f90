@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_report_date_time
+
+implicit none
+
+contains
+
 
       subroutine report_date_time(lun)
 !
@@ -43,3 +49,5 @@
 !
       if ( timon ) call timstop ( ithndl )
       end subroutine report_date_time
+
+end module m_report_date_time

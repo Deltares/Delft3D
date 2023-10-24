@@ -3,7 +3,7 @@
 
 ! This program tests large files (> 4 GB) in netCDF-4. 
 
-! $Id$
+! 
 program tst_flarge
   use typeSizes
   use netcdf

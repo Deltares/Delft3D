@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,19 +33,21 @@ module m_missing_meteo
 end module m_missing_meteo
 
 
+module m_meteo1temphelpers
+   implicit none 
+
+   contains
 !> Opens an existing file for reading.
 !!
 !! When file does not exist or is already open, program stops with
 !! an error message.
-subroutine oldfil(minp, filename)!, istat)
+subroutine oldfil(minp, filename)
 implicit none
     integer,           intent(out) :: minp     !< New file pointer to opened file.
     character(*),      intent(in)  :: filename !< Name of the file to open.
-!    integer, optional, intent(out) :: istat
 
     integer                        :: istat_
     integer                        :: i
-    integer,external                        :: ifirstchar
     integer                        :: l2,l1
     integer                        :: l3
     logical                        :: jawel
@@ -94,11 +96,9 @@ subroutine newfil(minp, filename)!, istat)
 implicit none
     integer,           intent(out) :: minp     !< New file pointer to opened file.
     character(*),      intent(in)  :: filename !< Name of the file to open.
-!    integer, optional, intent(out) :: istat
 
     integer                        :: istat_
     integer                        :: i
-    integer,external                        :: ifirstchar
     integer                        :: l2,l1
     integer                        :: l3
     character(*) RW*20
@@ -185,26 +185,6 @@ subroutine zoekja(minp, rec, text, ja)
 end subroutine zoekja
 
 
-!> Searches for a keyword in file and returns the text value.
-!! 'key=text'
-subroutine zoekval(minp, key, val, ja)
-    implicit none
-    integer, intent(out)           :: ja    !< Whether key was found or not.
-    integer, intent(in)            :: minp  !< File pointer
-    character(*), intent(out)      :: val !< 
-    character(*), intent(in)       :: key
-
-    character(len=255) :: rec
-    integer :: l1
-
-    call zoekja(minp,rec,trim(key), ja)
-    if (ja .eq. 1) then
-        l1 = index(rec,'=') + 1
-        read(rec(l1:),*) val
-    else
-        return
-    endif
-end subroutine zoekval
 
 !> Searches for an optional keyword on current line and returns the text value.
 !! 'key=text'. Rewinds the file pointer to the original line.
@@ -218,8 +198,6 @@ subroutine zoekopt(minp, value, key, ja)
     character(len=255) :: rec
     integer :: l1
 
-    !write (msgbuf, '(a,a)') 'looking for optional keyword: ', key
-    !call msg_flush()
 
     ja = 0
 
@@ -235,7 +213,6 @@ subroutine zoekopt(minp, value, key, ja)
     endif
 
 999 continue
-    ! call mess(LEVEL_INFO, 'optional keyword', trim(key), 'NOT found.')
 end subroutine zoekopt
 
 
@@ -307,7 +284,6 @@ subroutine ilocatestring(rec,i1,i2)
 implicit none
 character(len=*), intent(in)  :: rec
 integer,          intent(out) :: i1, i2
-integer,external                        :: ifirstchar
 
 i1 = ifirstchar(rec)
 i2 = index(rec(i1:), ' ')
@@ -358,7 +334,6 @@ end subroutine ilocatestring
       double precision :: sm
       double precision, intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
       double precision :: x21, y21, x31, y31, x43, y43, xcr, ycr
-      double precision, external :: getdx, getdy
 
       ! Set defaults for no crossing at all:
       JACROS = 0
@@ -445,7 +420,6 @@ end subroutine ilocatestring
  double precision :: x1, y1, x2, y2
  ! locals
  double precision :: ddx, ddy, rr
- double precision, external :: getdx, getdy
 
  ddx = getdx(x1,y1,x2,y2)
  ddy = getdy(x1,y1,x2,y2)
@@ -524,3 +498,5 @@ end subroutine ilocatestring
       IF (jins .EQ. 0) INSIDE = 1 - INSIDE
       RETURN
       END SUBROUTINE PINPOK
+
+      end module m_meteo1temphelpers

@@ -1,7 +1,7 @@
 module m_Orifice
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_Orifice
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    implicit none
@@ -140,12 +140,6 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
         (s1m1 - s1m2<=0.0 .and. allowedflowdir==1) .or. &
         (sop - scr<=.0)) then
        kfum = 0
-    !           ARS 9698 .lt. is change to .le.
-    elseif (smax - scr < thresholdDry) then
-       kfum = 0
-    elseif (smax - scr > thresholdFlood) then
-       kfum = 1
-    else
     endif
     if (kfum == 0) then
        fum   = 0.0d0
@@ -168,21 +162,21 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
        if ((smax - scr) <= 1.5d0 * (smin - scr)) then
           !          submerged weir flow;  h_1 - z_s <= 3/2 (h_2 - z_s)
           state = 2
-          cu = cmu**2 * 2.0d0 * gravity/(StructureDynamicsFactor * dxm)
+          cu = cmu**2 * 2.0d0 * gravity/dxm
           !          ARS 4681 improved wetted area computation
           !          ARS 3479 wetted area orifice limited to opening
           aum = max(smax - u0m * u0m / (2.0d0*gravity) - scr, 2.0d0/3.0d0*(smax - scr)) * swi
           uweir = cmu*dsqrt(gravity * 2.0d0 * (smax - smin))
-          fr = dabs(uweir) / (StructureDynamicsFactor * dxm)
+          fr = dabs(uweir) / dxm
           rhsc = 0.0d0
           dadsm = swi
        else
           !          free weir flow;  h_1 - z_s > 3/2 (h_2 - z_s)
           state = 1
           aum = (2.0d0/3.0d0)*(smax - scr)*swi
-          cu = cmu**2*gravity/(1.5d0*(StructureDynamicsFactor*dxm))
+          cu = cmu**2*gravity/(1.5d0*dxm)
           uweir = cmu*dsqrt(2.0d0/3.0d0*gravity*(smax - scr))
-          fr = dabs(uweir)/(StructureDynamicsFactor*dxm)
+          fr = dabs(uweir)/dxm
           if (s1m2>s1m1) then
              rhsc = -cu*(s1m1 - scr)
           else
@@ -195,16 +189,16 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
        if (smin>sop) then
           !          submerged orifice flow;  h_2 > z_s + d_g = z_s + s_op - z_s = s_op
           state = 4
-          cu = cmu**2*2.0d0*gravity/(StructureDynamicsFactor*dxm)
+          cu = cmu**2*2.0d0*gravity/dxm
           uweir = cmu*dsqrt(gravity*2.0d0*(smax - smin))
-          fr = dabs(uweir)/(StructureDynamicsFactor*dxm)
+          fr = dabs(uweir)/dxm
           rhsc = 0.0
        else
           !          free orifice floww;  h_2 <= z_s + d_g = z_s + s_op - z_s = s_op
           state = 3
-          cu = cmu**2*2.0d0*gravity/(StructureDynamicsFactor*dxm)
+          cu = cmu**2*2.0d0*gravity/dxm
           uweir = cmu*dsqrt(2.0d0*gravity*(smax - (scr + scf*(sop - scr))))
-          fr = uweir/(StructureDynamicsFactor*dxm)
+          fr = uweir/dxm
           if (s1m2>s1m1) then
              rhsc = -cu*(smin - (scr + scf*(sop - scr)))
           else

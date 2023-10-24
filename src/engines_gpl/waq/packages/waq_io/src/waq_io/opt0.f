@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_opt0
+      use m_opt3
+      use m_opt2
+
+
+      implicit none
+
+      contains
+
 
       subroutine opt0   ( lun    , is     , noql1  , noql2  , noql3  ,
      &                    ndim2  , ndim3  , nrftot , nrharm , ifact  ,
      &                    dtflg1 , disper , volume , iwidth , lchar  ,
-     &                    filtype, dtflg3 , vrsion , ioutpt , ierr   ,
+     &                    filtype, dtflg3 , ioutpt , ierr   ,
      &                    iwar   , dont_read   )
 
 !       Deltares Software Centre
@@ -47,18 +56,11 @@
 !>                          Dlwq08 is a sort of dedicated verion of this routine
 !>                          to read initial conditions
 
-!     Created            : May   1988  by M.E. Sileon / Leo Postma
-
-!     Modified           : April 1996  by Leo Postma : Support version 4.90 for bounds and wastes
-!                        : April 1997  by R. Bruinsma: Tokenized input data file reading added
-!                          July  2002  by Leo Postma : Call to Opt1 changed. File option -4
-!                                                      allowed for composite hydrodynamics
-!                          May   2011  by Leo Postma : Fortran90 look and feel
 
 !     Subroutines called : opt1    get & open include file
 !                          opt2    read constants ( << (include) file)
 !                          opt3    read time dep  ( << (include) file)
-!                          dhopnf  open file
+!                          open_waq_files  open file
 
 !     Functions called   : gettok  tokenized data file reading
 
@@ -70,6 +72,8 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(is) = unit intermediate file (items)
 
+      use m_opt1
+      use m_open_waq_files
       use timers       !   performance timers
       use rd_token
       use m_sysn          ! System characteristics
@@ -81,7 +85,7 @@
 
 !     kind           function         name           Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun    (*)    !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)    !< array with unit numbers
       integer  ( 4), intent(in   ) :: is            !< entry in lun for this call
       integer  ( 4), intent(in   ) :: noql1         !< number of exchanges 1st direction
       integer  ( 4), intent(in   ) :: noql2         !< number of exchanges 2nd direction
@@ -98,7 +102,6 @@
       character( *), intent(inout) :: lchar  (*)    !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)    !< type of binary file
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion        !< version number of the input file
       integer  ( 4), intent(in   ) :: ioutpt        !< how extensive is output ?
       integer  ( 4), intent(inout) :: ierr          !< cumulative error count
       integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
@@ -228,7 +231,7 @@
       select case ( iopt2 )
          case ( 1, 2 )              !   Constants with and without defaults in three directions
             allocate ( values( ndim2, max(noql1,noql2,noql3) ) )
-            call dhopnf ( lun(is) , lchar(is) , is    , 1     , ierr2 )
+            call open_waq_files ( lun(is) , lchar(is) , is    , 1     , ierr2 )
             write ( lun(is) ) idummy
             if ( noql1 .gt. 0 ) write ( lunut , 2030 )
             call opt2 ( iopt2  , values , noql1  , ndim2  , ndim3  ,
@@ -284,3 +287,5 @@
  2090 format (  /,' ERROR. This keyword is not allowed here: ',A )
 
       end
+
+      end module m_opt0

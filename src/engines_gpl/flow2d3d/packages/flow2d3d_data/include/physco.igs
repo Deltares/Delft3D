@@ -1,0 +1,91 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+type gd_physco
+    !
+    ! doubles
+    !
+   real(fp) :: rhow      !  Description and declaration in esm_alloc_real.f90
+   real(fp) :: rhoa      !  Air density (default 1.25) [kg/m3]
+   real(fp) :: rhofrac
+   real(fp) :: ag        !  Description and declaration in esm_alloc_real.f90
+   real(fp) :: z0        !  Hydraulic roughness length
+                         !  Not used (set for TAUBOT routine)
+   real(fp) :: z0v       !  Roughness parameter used to compute
+                         !  wall stress velocity if IROV > 0
+   real(fp) :: vonkar    !  Von Karman constant
+   real(fp) :: vicmol    !  Moleculair viscosity of water
+   real(fp) :: vicouv    !  Background horizontal eddy viscosity coefficient [m2/s]
+   real(fp) :: vicoww    !  Background vertical   eddy viscosity coefficient [m2/s]
+   real(fp) :: dicouv    !  Background horizontal diffusivity    coefficient [m2/s]
+   real(fp) :: dicoww    !  Background vertical   diffusivity    coefficient [m2/s]
+   real(fp) :: sboltz    !  Stefan Boltzmann's constant
+   real(fp) :: wstcof(6) !  Wind stress Coefficients (constant)
+                         !  Space varying:
+                         !    Space varying: 1 - wstcof at wspeed1, 2 - wspeed1
+                         !                   3 - wstcof at wspeed2, 4 - wspeed2
+                         !                   5 - wstcof at wspeed3, 6 - wspeed3
+                         !    Uniform: 1 - wstcof at wspeed1      , 2 - 0.0 m/s
+                         !             3 - wstcof(2)              , 4 - 50.0 m/s
+                         !             5 - wstcof(3)              , 6 - 100.0 m/s
+    !
+    ! reals
+    !
+    ! integers
+    !
+   integer :: idensform  !  Flag to select the formula for the density of water
+                         !  =0: Eckardt formula (original formulations)
+                         !  =1: UNESCO formula (better match for fresh water problems)
+                         !  Any other value: treated as 1
+   integer :: iro        !  Flag to indicate rough or smooth bottom in law of the wall (vertical)
+                         !  >0: Rough  wall, ZRO is used
+                         !  =0: Smooth wall, ZRO is not used
+   integer :: irov       !  Flag to select the method how stress velocity (Log. law) is computed:
+                         !  =0: Smooth wall, Z0V is not used
+                         !  =1: Rough  wall, Z0V is used
+                         !  =2: No slip, Z0V is not used
+                         !  =3: (Not optional for users but
+                         !      used internally for HLES:)
+                         !      Smooth wall, Z0V is not used,
+                         !      full scale slip calculation
+    !
+    ! pointers
+    !
+    !
+    ! logicals
+    !
+    !
+    ! characters
+end type gd_physco
+!
+! Enumeration of density formulae:
+!
+integer, parameter             :: dens_Eckart = 0
+integer, parameter             :: dens_UNESCO = 1
+integer, parameter             :: dens_NaClSol = 2

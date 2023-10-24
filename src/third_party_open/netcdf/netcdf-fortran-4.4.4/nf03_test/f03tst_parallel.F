@@ -4,7 +4,7 @@
 
 !     This program tests netCDF-4 variable functions from fortran.
 
-!     $Id$
+!     
 
       program ftst_parallel
       USE netcdf4_f03

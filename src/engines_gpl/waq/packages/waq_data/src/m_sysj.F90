@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -89,8 +89,6 @@ module m_sysj
     integer :: IGNOS   !    pointer to GRDNOS, Number of segments for grid
     integer :: IGREF   !    pointer to GRDREF, Reference number for grid
     integer :: IGSEG   !    pointer to GRDSEG, pointers to base grid
-    integer :: IOWNS   !    pointer to OWNERS, partitioning of segments for parallel computing
-    integer :: IOWNQ   !    pointer to OWNERQ, partitioning of exchanges for parallel computing
     integer :: IPROR   !    pointer to PROREF, references to processes for input per process
     integer :: IPRVPT  !    pointer to PRVPNT, cumulative startpointer of variables per process
     integer :: IPRDON  !    pointer to PRDONE, help array to see whether processs is done
@@ -111,7 +109,7 @@ module m_sysj
                     ikbnd  , ipgrd  , ipndt  , ipvar  , iptyp  ,	       &
                     ivarr  , ividx  , ivtda  , ivdag  , ivtag  ,	       &
                     ivagg  , ivset  , ignos  , igref  , igseg  ,	       &
-                    iowns  , iownq  , ipror  , iprvpt , iprdon ,	       &
+                    ipror  , iprvpt , iprdon ,	       &
                     idmpb
       
     integer, parameter :: nr_jar = ijsize             ! total number of arrays

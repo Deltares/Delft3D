@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,23 +27,22 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine setbaptist()
  use m_flow
  use m_flowgeom
  implicit none
- integer          :: L, k1, k2, i
+ integer          :: L, k1, k2
  double precision :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg,Cda, areastem, umag,fac, facL, Cdaleaf
 
- do i = 1, wetLinkCount
-    L = onlyWetLinks(i)
+ do L = 1,lnx
     k1  = ln(1,L) ; k2 = ln(2,L)
 
     rnL = 0.5d0*( rnveg(k1) + rnveg(k2) )
 
-    if (rnL > densvegminbap) then              ! overwrite cfuhi on veg locations with 2D Baptist
+    if (hu(L) > 0 .and. rnL > densvegminbap) then              ! overwrite cfuhi on veg locations with 2D Baptist
         if (jaBaptist <= 2) then                               ! compute Baptist on board
            call getcz(hu(L), frcu(L), ifrcutp(L), Czb, L)      ! standard Chezy coeff
            if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then

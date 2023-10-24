@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_makpoc
+
+      implicit none
+
+      contains
+
 
       subroutine makpoc ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_srstop
+      use m_monsys
+
 !>\file
 !>       Derive OOC from IM-fractions and percentage POM in IMx
 
@@ -69,8 +78,7 @@
       IP8  = IPOINT( 8)
 !
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.GT.0) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       IM1   = MAX(0.0, PMSA(IP1))
@@ -97,7 +105,7 @@
            WRITE( LUNREP, * ) 'fctr * fcsed1 must be less than 1.00'
            CALL SRSTOP( 1 )
       END IF
-      
+
       IF (OCPOM * FRC2 .LT. 1.0D0) THEN
            POC2  =  FRC2 * IM2 /(1- OCPOM * FRC2)
       ELSE
@@ -121,7 +129,7 @@
            WRITE( LUNREP, * ) 'fctr * fcsed3 must be less than 1'
            CALL SRSTOP( 1 )
       END IF
-      
+
 !     Total POC
       POC  = POC1 + POC2 + POC3
 
@@ -143,3 +151,5 @@
       RETURN
 !
       END
+
+      end module m_makpoc

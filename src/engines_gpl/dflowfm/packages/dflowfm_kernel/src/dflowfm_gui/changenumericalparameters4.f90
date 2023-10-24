@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,19 +27,19 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    SUBROUTINE CHANGENUMERICALPARAMETERS4()
    USE M_FLOW
    use m_flowgeom
    use unstruc_display
-   use unstruc_version_module, only : unstruc_company, unstruc_program
+   use dflowfm_version_module, only : company, product_name
    use unstruc_messages
    implicit none
 
    integer :: numpar, numfld, numparactual, numfldactual
-   PARAMETER  (NUMPAR = 18, NUMFLD = 2*NUMPAR)
+   PARAMETER  (NUMPAR = 22, NUMFLD = 2*NUMPAR)
    INTEGER  IX(NUMFLD),IY(NUMFLD),IS(NUMFLD),IT(NUMFLD), L
    CHARACTER WRDKEY*40, OPTION(NUMPAR)*40, HELPM(NUMPAR)*60
    integer :: nlevel
@@ -71,7 +71,10 @@
    OPTION(16) = 'Cdleaf                           ( )   ' ; it(2*16) = 6
    OPTION(17) = 'Arealeaf                         ( )   ' ; it(2*17) = 6
    OPTION(18) = 'jaPure1D                         ( )   ' ; it(2*18) = 2
-
+   OPTION(19) = 'Bedslopedir                      ( )   ' ; it(2*19) = 6
+   OPTION(20) = 'Bedwidth                         (m)   ' ; it(2*20) = 6
+   OPTION(21) = 'Bedwaveamplitude                 (m)   ' ; it(2*21) = 6
+   OPTION(22) = 'Bedwavelength                    (m)   ' ; it(2*22) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -94,6 +97,11 @@
    HELPM (16) = '                                                        ( ) '
    HELPM (17) = '                                                        ( ) '
    HELPM (18) = '!< 0 = org 1D advec, 1 = pure1D using vol1_f, 2 = vol1  ( ) '
+   HELPM (19) = '0 = to E, 90 = to N                                     ( ) '
+   HELPM (20) = '                                                        ( ) '
+   HELPM (21) = '                                                        ( ) '
+   HELPM (22) = '                                                        ( ) '
+
 
 
    CALL SAVEKEYS()
@@ -126,7 +134,7 @@
    CALL IWinAction('FPC')
    CALL IWinOpen(IXP,IYP,IW,1)
    CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-   CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program) // ' PARAMETER FORM')
+   CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name) // ' PARAMETER FORM')
    CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 !
 !  Explain keyfunctions in bottom window
@@ -185,7 +193,10 @@
    CALL IFORMputdouble  (2*16 , Cdleaf,     '(F7.3)' )
    CALL IFORMputdouble  (2*17 , Arealeaf,   '(F7.3)' )
    CALL IFORMputinteger (2*18 , jaPure1D )
-
+   CALL IFORMputdouble  (2*19 , Bedslopedir      ,'(F7.3)' )
+   CALL IFORMputdouble  (2*20 , Bedwidth         ,'(F7.3)' )
+   CALL IFORMputdouble  (2*21 , Bedwaveamplitude ,'(F7.3)' )
+   CALL IFORMputdouble  (2*22 , Bedwavelength    ,'(F7.3)' )
 
    !  Display the form with numeric fields left justified
    !  and set the initial field to number 2
@@ -243,7 +254,11 @@
           CALL IFORMgetdouble  (2*16 , Cdleaf     )
           CALL IFORMgetdouble  (2*17 , Arealeaf   )
           CALL IFORMgetinteger (2*18 , jaPure1D     )
-
+          CALL IFORMgetdouble  (2*19 , Bedslopedir       )
+          CALL IFORMgetdouble  (2*20 , Bedwidth          )
+          CALL IFORMgetdouble  (2*21 , Bedwaveamplitude  )
+          CALL IFORMgetdouble  (2*22 , Bedwavelength     )
+ 
           do L = 1,Lnx1D
              if (prof1D(1,L) >= 0) then  ! only direct profiles
                 if (kcu(L) == 1 ) then

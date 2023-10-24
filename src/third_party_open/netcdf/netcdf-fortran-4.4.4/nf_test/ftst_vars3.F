@@ -5,7 +5,7 @@ C     See COPYRIGHT file for conditions of use.
 C     This program tests netCDF-4 variable functions from fortran, even
 C     more, even more.
 
-C     $Id$
+C     
 
       program ftst_vars3
       implicit none

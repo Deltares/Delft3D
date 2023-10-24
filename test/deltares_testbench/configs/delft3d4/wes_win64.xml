@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+    <!--
+    Basic Windows configuration file: For "wes" (Wind Enhanced Scheme)
+    -->
+    <config>
+        <localPaths>
+            <testCasesDir>./data/cases</testCasesDir>
+            <enginesDir>./data/engines</enginesDir>
+            <referenceDir>./data/reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+            </location>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
+    Programs
+    -->
+    <programs>
+        <!--
+        The order is important. Start with the following programs:
+            command_prompt
+            svn
+            mpi
+        -->
+        <program name="command_prompt">
+            <path>cmd</path>
+            <arguments>
+                <argument>/C</argument>
+            </arguments>
+        </program>
+        <program name="svn">
+            <path>thirdparty\svn\win64\svn.exe</path>
+        </program>
+        <program name="wes" logOutputToFile="true" programStringRemoveQuotes="true">
+            <path>wes/bin/wes.exe</path>
+            <shell ref="command_prompt"/>
+            <location ref="reference_engines" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/win64</from>
+            </location>
+        </program>
+    </programs>
+    <!--
+    default testCases
+    -->
+    <defaultTestCases>
+        <testCase name="wes_default">
+            <programs>
+                <program ref="wes"/>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+    <!--
+    testCases
+    -->
+    <testCases>
+        <testCase name="e68_f01_c01_katrina_t1" ref="wes_default">
+            <path>e68_wes/f01_general/c01_katrina_t1</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t1.inp</argument>
+                        <argument>&gt;t1_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t1_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t1_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t1.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c02_katrina_t2" ref="wes_default">
+            <path>e68_wes/f01_general/c02_katrina_t2</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t2.inp</argument>
+                        <argument>&gt;t2_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t2_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t2_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t2.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c03_katrina_t3" ref="wes_default">
+            <path>e68_wes/f01_general/c03_katrina_t3</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t3.inp</argument>
+                        <argument>&gt;t3_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t3_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t3_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t3.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c04_katrina_t4" ref="wes_default">
+            <path>e68_wes/f01_general/c04_katrina_t4</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t4.inp</argument>
+                        <argument>&gt;t4_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t4_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t4_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t4.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c05_katrina_t5" ref="wes_default">
+            <path>e68_wes/f01_general/c05_katrina_t5</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t5.inp</argument>
+                        <argument>&gt;t5_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t5_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t5_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t5.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c06_katrina_t6" ref="wes_default">
+            <path>e68_wes/f01_general/c06_katrina_t6</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t6.inp</argument>
+                        <argument>&gt;t6_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t6_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t6_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t6.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c07_katrina_t7" ref="wes_default">
+            <path>e68_wes/f01_general/c07_katrina_t7</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>t7.inp</argument>
+                        <argument>&gt;t7_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="t7_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="t7_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="t7.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c08_hemisphere" ref="wes_default">
+            <path>e68_wes/f01_general/c08_hemisphere</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>test_hemisphere.inp</argument>
+                        <argument>&gt;test_hemisphere_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test_hemisphere_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="test_hemisphere_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="test_hemisphere.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c09_wes" ref="wes_default">
+            <path>e68_wes/f01_general/c09_wes</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>wes.inp</argument>
+                        <argument>&gt;wes_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="wes_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="wes_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="wes.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c10_wes" ref="wes_default">
+            <path>e68_wes/f01_general/c10_wes</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>wes.inp</argument>
+                        <argument>&gt;wes_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="wes_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="wes_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="wes.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="e68_f01_c11_wes" ref="wes_default">
+            <path>e68_wes/f01_general/c11_wes</path>
+            <programs>
+                <program ref="wes">
+                    <arguments>
+                        <argument>wes_81.inp</argument>
+                        <argument>&gt;wes_wes_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="wes_81_wes.dia" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>Simulation date</skipline>
+                </file>
+                <file name="wes_wes_screen.log" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                </file>
+                <file name="wes_81.spw" type="NUMBERTEXT"/>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
+</testCases>
+</deltaresTestbench_v3>

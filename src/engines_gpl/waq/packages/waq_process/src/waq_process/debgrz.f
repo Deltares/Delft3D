@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_debgrz
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DEBGRZ  (PMSA , FL , IPOINT , INCREM , NOSEG , NOFLUX ,
      +                   IEXPNT, IKNMRK, IPODIM, NOQ1, NOQ2, NOQ3, NOQ4)
+      use m_monsys
+      use m_evaluate_waq_attribute
+
 !**********************************************************************
 !     +----------------------------------------+
 !     |    D E L F T   H Y D R A U L I C S     |
@@ -209,7 +218,7 @@
          !benthics can only occur in the bottom layer, they are put to zero in other layers
          BENTHS      =                   NINT(PMSA( IP( 9)))
          DO ISEG = 1, NOSEG
-            CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
             IF ( (IKMRK2 == 1 .OR. IKMRK2 == 2) .AND. BENTHS.eq.1 ) then
                Depth = PMSA( IP( 4))
                Vtot  = PMSA( IP(10))
@@ -232,10 +241,10 @@
 
       IFLUX = 0
       DO 9000 ISEG = 1, NOSEG
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 !        !if cell is active
          IF (IKMRK1.EQ.1) THEN
-            CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
             ! pelagics can occur everywhere, but benthic grazers can only exist in bottom layer
             IF ( (IKMRK2 == 1 .OR. IKMRK2 == 2 ) .AND. BENTHS.eq.1 ) then
                ! skip calculations
@@ -606,7 +615,7 @@
 !     spawning continues as long as conditions remain suitable
                if (DoSpawn > 0) then
                   if (( GSI > GSI_lower .AND. Temp > MinSpTemp ) .AND. R > 0 ) then
-!                    write(*,*) "Temp" , Temp, MinSpTemp
+
                      dSpw = (rSpawn * R + max(Pr,0.))                                    !(J/ind/d)
                      dSpw = min(dSpw,(R/DELT+min(Pr,0.)))
                   else
@@ -785,3 +794,5 @@
 
       RETURN
       END
+
+      end module m_debgrz

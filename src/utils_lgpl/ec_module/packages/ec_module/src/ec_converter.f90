@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2022.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
 !> This module contains all the methods for the datatype tEcConverter.
 !! @author adri.mourits@deltares.nl
@@ -678,6 +678,11 @@ module m_ec_converter
                         connection%sourceItemsPtr(i)%ptr%sourceT0fieldPtr%bbox = (/jjmin,iimin,jjmax,iimax/)
                         connection%sourceItemsPtr(i)%ptr%sourceT1fieldPtr%bbox = (/jjmin,iimin,jjmax,iimax/)
                      end do
+                     if (iimax == 0 .and. jjmax == 0) then
+                         write(*,*) "WARNING: ec_converter: no overlapping points found for quantity:"
+                         write(*,*) trim(connection%sourceItemsPtr(1)%ptr%quantityPtr%name)
+                         write(*,*) "This is allowed in parallel runs"
+                     endif
                   end if
                   ! Final step for gridded providers: when not masked, reset indices to undefined.
                   if (associated(targetElementSet%mask)) then
@@ -2722,7 +2727,6 @@ module m_ec_converter
                   sourceItem => connection%sourceItemsPtr(i)%ptr
                   sourceT0Field => sourceItem%sourceT0FieldPtr
                   sourceT1Field => sourceItem%sourceT1FieldPtr
-!                 sourceMissing = sourceT0Field%MISSINGVALUE
                   sourceMissing = sourceItem%quantityPtr%fillvalue
                   sourceElementSet => sourceItem%elementSetPtr
                   time_interpolation = sourceItem%quantityptr%timeint
@@ -2752,8 +2756,12 @@ module m_ec_converter
                            end if
                            mp = indexWeight%indices(1,j)
                            if (mp>0 .and. mp<=n_cols) then
-                              targetValues(j) = targetValues(j) + a0 * sourceItem%sourceT0FieldPtr%arr1d(mp) &
-                                                                + a1 * sourceItem%sourceT1FieldPtr%arr1d(mp)
+                              if ( comparereal(sourceT0Field%arr1d(mp), sourceMissing, .true.)==0 .or.   &
+                                   comparereal(sourceT1Field%arr1d(mp), sourceMissing, .true.)==0 ) then
+                                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                                  return
+                              end if
+                              targetValues(j) = targetValues(j) + a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)
                            end if
                         end do
                      else

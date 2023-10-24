@@ -1,0 +1,52 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+integer, parameter :: mxusrp = 10 !  Max. number of user defined parameters (e.g. files, constants etc.)
+!
+type gd_usrpar
+   real(fp)     , dimension(mxusrp)    :: rcousr !  User definable real constants
+   integer                             :: nprocs !  Number of User Defined processes
+   integer      , dimension(4, mxusrp) :: nprdim !  Test array to check if user defined
+                                                 !  files & constants are confirm the
+                                                 !  user defined input
+   integer      , dimension(mxusrp)    :: nread  !  Test field to check if user defined
+                                                 !  process is only once defined
+   integer(pntrsize), dimension(4, mxusrp) :: nprptr
+   integer                             :: nprcus !  Actual number of user defined processes
+   integer      , dimension(4, mxusrp) :: nprinp !  Nr. of input (files, real, integer and
+                                                 !  and character constants) required per
+                                                 !  process
+   integer      , dimension(mxusrp)    :: icousr !  User definable integer constants
+   character*256, dimension(mxusrp)    :: filusr !  File names for user defined values
+                                                 !  User defined file name for boundary
+                                                 !  conditions for turbulent quantities
+   character*20 , dimension(mxusrp)    :: procs  !  Names of User Defined Processes
+   character*20 , dimension(mxusrp)    :: prcusr !  User definable processes
+   character*20 , dimension(mxusrp)    :: ccousr !  User definable character constants
+end type gd_usrpar

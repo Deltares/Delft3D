@@ -1,3 +1,9 @@
+      module m_salchl
+
+      implicit none
+
+      contains
+
       subroutine salchl ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
@@ -6,7 +12,7 @@
 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +36,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 !
 !     Description of the module :
@@ -52,13 +58,15 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 !
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 !
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
       REAL     CL , SAL , SAL0 , GTCL , TEMP , DENS , SWSALCL 
+      integer  iseg
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
@@ -72,8 +80,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.GT.0) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       SAL     = PMSA( IP1 )
@@ -133,3 +140,5 @@
 !
       RETURN
       END
+
+      end module m_salchl

@@ -4,7 +4,7 @@
 
 ! This program tests netCDF-4 vlen variable functions from fortran 90.
 
-! $Id$
+! 
 
 program f90tst_vars_vlen
   use typeSizes

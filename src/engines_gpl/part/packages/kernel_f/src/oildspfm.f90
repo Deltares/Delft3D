@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module oildspfm_mod
+use m_stop_exit
+
 
    contains
         subroutine oildspfm (itime)
@@ -136,7 +138,7 @@ module oildspfm_mod
       use precision_part         ! single/double precision
       use partmem
       use m_transport
-      use m_particles
+      use m_particles, laypart => kpart
       use m_flow
       use m_flowtimes
       use timers            ! to time the performance
@@ -409,7 +411,6 @@ module oildspfm_mod
 
                oilmass = oilmass + amassd(1+(ifrac-1)*3,id)
 !              rhooil(ifrac)  = rhooil(ifrac) + amassd(1+(ifrac-1)*3,id)*rhotmp(ifrac)
-!              if (oilmass.gt.0.0) rhooil(ifrac)=rhooil(ifrac)/oilmass
                voloil0    = oilmass/rhooil(ifrac)                      !     volume = mass/rho
                difrho  = (rhow - rhooil(ifrac))/rhow
                if ( difrho .lt. 0 ) then
@@ -502,69 +503,6 @@ module oildspfm_mod
          endif
       enddo
 !
-! ================================plotgrid concentrations for high accuracy=========================================
-!
-!     this part was added in order to imporve the accuracy of the
-!     calculation of concentrations for oil dispersion
-!     it was shown that on the map grid this is not always ok
-!     4/8/2000
-!
-!     note: loop 30 was copied from routine part13 (loop 160 there)
-!           all not related to oil was removed from this loop
-!
-! no zoom grid for the moment
-!      if ( lplgr ) then
-!         call part11 ( lgrid  , xb     , yb     , nmax   , npart  ,   &
-!                       mpart  , xpart  , ypart  , xa     , ya     ,   &
-!                       nopart , npwndw , lgrid2 , kpart  , zpart  ,   &
-!                       za     , locdep , dps    , nolay  , mmax   ,   &
-!                       tcktot )
-!         windw1 =  window(1)
-!         windw3 =  window(3)
-!         xpf    = (window(2) - windw1) / mmap
-!         ypf    = (window(4) - windw3) / nmap
-!         amap   = 0.0
-!         do 30 i1 = npwndw, nopart
-!            ix = int((xa(i1) - windw1) / xpf) + 1
-!            if ( ix .le. 0 .or. ix .gt. mmap ) cycle
-!            iy = int((ya(i1) - windw3) / ypf) + 1
-!            if ( iy .le. 0 .or. iy .gt. nmap ) cycle
-!            i2 = lgrid(npart(i1), mpart(i1))
-!            if ( i2 .le. 1 ) cycle                            ! NB this probably should be 0 lp
-!            if ( area(i2) .le. 0.0 ) cycle
-!            ilay = kpart(i1)
-!            if ( lsettl .and. ilay .eq. nolay ) then
-!               iseg = (ilay-2)*nmax*mmax + i2
-!            else
-!               iseg = (ilay-1)*nmax*mmax + i2
-!            endif
-!            fvolum = surf * (volume(iseg)/area(i2))           ! the volume of one plot grid cell
-!            if ( fvolum .le. 0.0 ) cycle
-!            do 20 isub = 1, nosubs
-!               if ( isfile(isub) .eq. 1) cycle
-!               am = wpart(isub, i1)
-!               ac = am/fvolum
-!               if ( isub .lt. 3*nfract ) then
-!                  jsub = mod(isub-1,3) + 1
-!                  if ( jsub .eq. 2 ) then                     ! this is the submerged fraction
-!                     if ( lsettl .and. ilay .eq. nolay ) then
-!                        ac = am/surf
-!                     endif
-!                  elseif ( mstick(isub) .lt. 0 ) then         ! this is the sticky part of this fraction (nr 3)
-!                     ac = am/surf                             ! <==
-!                  else
-!                     ac = am/surf                             ! is this wrong ?
-!                  endif
-!               elseif ( lsettl .and. ilay .eq. nolay ) then   ! substances above the three oil fractions
-!                  ac = am/surf                                ! settled mass of this fraction
-!               elseif ( mstick(isub) .lt. 0 ) then            ! the sticky part of non-oil
-!                  ac = am/surf
-!               endif
-!               amap(isub, ilay, iy, ix) = amap(isub, ilay, iy, ix) + ac
-!  20        continue
-!  30     continue
-!      endif
-!
 ! ==============end oh high accuracy loop===============================================================
 !
 !.. determine evaporation per particle and dispersion per particle
@@ -635,7 +573,8 @@ module oildspfm_mod
 
          enddo
 
-         ic = mpart(i)
+         ic   = mpart(i)
+         ilay = laypart(i)
          if (ic > 0) ic = iabs(cell2nod(ic))
 ! references to the gridcell (is in this case can be replaced by kpart (segment number)         ic = lgrid3(npart(i), mpart(i))
          if ( ic .gt. 0 ) then !che
@@ -718,17 +657,8 @@ module oildspfm_mod
                      endif
                      cdelv = cdelv * voil
                      qentr = cdelv * wfact
-                     cfloat = constituents(ioilt(ifrac),ic)                  ! from the map file
-!                     if ( lplgr ) then                               ! but if possible, from the
-!                        ix = int((xa(i) - windw1) / xpf) + 1         ! more detailed plot grid
-!                        iy = int((ya(i) - windw3) / ypf) + 1
-!                        if (ix .gt. 0 .and. ix .le. mmap .and.    &
-!                            iy .gt. 0 .and. iy .le. nmap       ) then
-!                           ilay   = kpart(i)
-!                           isub   = ioilt(ifrac)
-!                           cfloat = amap(isub, ilay, iy, ix)
-!                        endif
-!                     endif
+                     cfloat = constituents(ioilt(ifrac),ic,ilay)      ! from the map file
+
                      if ( cfloat .gt. 0.0 ) then
                         tmpfractd(ifrac)   = qentr*dts / rhooilv(ifrac,i) / hmin
                         if ( tmpfractd(ifrac) .gt. 1.0 ) tmpfractd(ifrac) = 1.0
@@ -784,7 +714,6 @@ module oildspfm_mod
             dviso = visowat(ifrac) *                                                            &
                     exp( 2.5 * fwatoil(ifrac,i) /( 1.0 - 0.65 * fwatoil(ifrac,i) ) ) -          &
                     visowat(ifrac)
-!            if ( ioptd(ifrac) .eq. 1 ) then          ! this is only done when the dispersion option is  1 (Delvigne&Sweeney)
                if (ioptev(ifrac).ge.0)then
                   totfe(ifrac,i) = totfe(ifrac,i) + tmpfracte(ifrac) * ( 1.0 - totfe(ifrac,i) )  ! when fixed firt order constant for evap is used
                elseif (ioptev(ifrac).lt.-0.5) then
@@ -798,7 +727,6 @@ module oildspfm_mod
                rhooilv(ifrac,i) = rhow*fwatoil(ifrac,i) + rhooil(ifrac)*(1.0-fwatoil(ifrac,i))         &
                                   * ( 1.0 + cde * totfe(ifrac,i)   ) * ( 1.0 - cdt * (temp0-temp0) ) !if we work with temp dependent density then change temp0-temp0 into temp-reftemp (reference temperature)
                                                                                                     !the var temp is used for the calculation of the evaporation
-!            endif
    50    continue
 
 !     End of the loop ovver all particles i

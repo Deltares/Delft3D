@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_vbxs12
+
+implicit none
+
+contains
+
 
       subroutine VBXS12     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_monsys
+      use m_write_error_message
+      use m_evaluate_waq_attribute
+
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VBXS12' :: VBXS12
 !
 !*******************************************************************************
@@ -370,13 +380,9 @@
            ! set botseg equal to iseg for the segments which have a bottom
 
           do iseg = 1,noseg
-              call dhkmrk(1,iknmrk(iseg),ikmrk1)
-              call dhkmrk(2,iknmrk(iseg),ikmrk2)
-!             if (ikmrk1 == 1 ) then
-!                 if (ikmrk1.lt.3 .and. (ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
-!                     botseg(iseg) = iseg
-!                 endif
-!             endif
+              call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+              call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
+
               if (ikmrk1.lt.3 .and. (ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
                   botseg(iseg) = iseg
               endif
@@ -468,8 +474,8 @@
       do iseg = 1 , noseg
 
 !         lowest water and 2d segments only, also dry, ikmrk1 = 0
-          call dhkmrk(1,iknmrk(iseg),ikmrk1)
-          call dhkmrk(2,iknmrk(iseg),ikmrk2)
+          call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+          call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
           if (ikmrk1.lt.3 .and. (ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
 
 !*** VBSTAT ************************
@@ -627,11 +633,11 @@
               IF (  (SWiniVB .EQ. 1) .or. (SWiniVB .eq. 0 ) ) THEN
                    iniCovVB = iniCovVB / perc_frac
               ELSE
-                  CALL ERRSYS ('(no valid value for SWiniVB <0,1>', 1 )
+                  CALL write_error_message ('(no valid value for SWiniVB <0,1>')
               ENDIF
 
               IF (  (SWRegrVB .NE. 1) .and. (SWRegrVB .ne. 0 ) ) THEN
-                  CALL ERRSYS ('(no valid value for SWRegrVB <0,1>', 1 )
+                  CALL write_error_message ('(no valid value for SWRegrVB <0,1>')
               ENDIF
 
 ! ---          if the volume is zero, then the calculations below should be avoided altogether
@@ -661,18 +667,18 @@
 
 !                     Check values growth limitation (only 0 or 1)
                       IF ( (NINT(SWVBGro) .NE. 1) .and. (NINT(SWVBGro) .NE. 0) ) THEN
-                          CALL ERRSYS ('(no valid value for SWVBGroVB <0,1>', 1 )
+                          CALL write_error_message ('(no valid value for SWVBGroVB <0,1>')
                       ENDIF
 
 !                     Check values mort limitation (only 0 or 1)
                       IF ( (NINT(SWVBMrt) .NE. 1) .and. (NINT(SWVBMrt) .NE. 0) ) THEN
-                          CALL ERRSYS ('(no valid value for SWVBMrtVB <0,1>', 1 )
+                          CALL write_error_message ('(no valid value for SWVBMrtVB <0,1>')
                       ENDIF
 
 !                     Checking for nut availabilithy
 
                       if ( (F4VB + F5VB) - 1.E-10 .lt. 0.0 ) then
-                          CALL ERRSYS ('(no valid values for F4VB and F5VB (allocation factors vegetation  roots)', 1 )
+                          CALL write_error_message ('(no valid values for F4VB and F5VB (allocation factors vegetation  roots)' )
                       else
 !                         average Nutrient content of cohort
                           weighCN = F1VB*CNf1VB + F2VB*CNf2VB + F3VB*CNf3VB + F4VB*CNf4VB + F5VB*CNf5VB
@@ -693,7 +699,6 @@
 !                         initial biomass exceeds minimum
                           IF ( (iniVB - minVB) .gt. 1.E-10) then
 !                             initial biomass less than maximum biomass
-!                             IF ((maxVB - iniVB) .gt. 1.E-10) THEN
                               IF ( (iniVB/maxVB) .lt. 0.99) THEN
                                   ageVB  = hlfAgeVB + LOG((minVB-maxVB) /(iniVB-maxVB) - 1 ) / sfVB
                               ELSE
@@ -710,14 +715,6 @@
 
                          VBha  = VB / iniCovVB / tonha_gm2
                          dVB   = ( VBAha - VBha ) * tonha_gm2 * surf / volume / delt * iniCovVB
-!                        no growth reduction during initialisation
-!                         if (dVB .gt. 1.E-20) then
-!                             NutLimVB = min (1.0, (dVBMaxNL / dVB) )
-!                         else
-!                             NutLimVB = 1
-!                         endif
-!                         dVB = min(dVBMaxNL, dVB)
-
                       ELSE
 
                           VBha  = VB / iniCovVB / tonha_gm2
@@ -725,14 +722,14 @@
 !                         vegetation is flooded
                           if ( NINT (SWVBMrt) .eq. 1 ) then
                               SWVBDec = 1
-!                             WRITE (ILUMON, *) 'vbgro-deadstart ', iseg, ' ' , SWVBDec
+
                           endif
 
 !                         check if vegetation died long enough - regrowth allowed again
                           if  ( (VBha .lt. VBAge0ha) .and. (SWVBDec .eq. 1) .and.  SWRegrVB .eq. 1 )  then
                               SWVBDec = 0
                               ageVB = 0
-!                             WRITE (ILUMON, *) 'vbgro-decayklaar ', iseg, ' ' , SWVBDec
+
                           endif
 
 !                         calculate new age for decaying vegetation based on current biomass
@@ -745,9 +742,6 @@
                               else
 !                                 cannot calc age
                               endif
-!                             if (vbtype .eq. 5) then
-!                                 WRITE (ILUMON, *) 'agecalc at dying', iseg,'ifirst: ',ifirst(5),ageVB, VBha
-!                             endif
                           endif
 
 !                         calculate attainable biomass per ha using age
@@ -826,11 +820,6 @@
                           endif
 
                           if (rVB .lt. 1.0 .and. NINT(SWVBGro) .eq. 1 .and. NINT (SWVBMrt) .eq. 0) then
-!                             Checking for nutrient availability
-!                             if ( (F4VB + F5VB) - 1.E-10 .lt. 0.0 ) then
-!                                 CALL ERRSYS ('(no valid values for F4VB and F5VB (alloction factors vegetation  roots)', 1 )
-!                             end if
-!                             TODO check if sum (F1VB ... F5VB) = 1.00??
 
 !                             average Nutrient content of vegetation
                               weighCN = F1VB*CNf1VB + F2VB*CNf2VB + F3VB*CNf3VB + F4VB*CNf4VB + F5VB*CNf5VB
@@ -906,7 +895,7 @@
     !             make sure allocation factors for roots > 0
 
                   if ( (F4VB + F5VB) - 1.E-10 .lt. 0.0 ) then
-                      CALL ERRSYS ('(no valid values for F4VB and F5VB (alloction factors vegetation  roots)', 1 )
+                      CALL write_error_message ('(no valid values for F4VB and F5VB (alloction factors vegetation  roots)')
                   else
     !                 average Nutrient content of cohort
                       weighCN = F1VB*CNf1VB + F2VB*CNf2VB + F3VB*CNf3VB + F4VB*CNf4VB + F5VB*CNf5VB
@@ -1082,8 +1071,8 @@
           VegHeVB = pmsa(ipnt(ip_VegHeVB))
           FFacVB = pmsa(ipnt(ip_FFacVB))
 
-          call dhkmrk(1,iknmrk(iseg),ikmrk1)
-          call dhkmrk(2,iknmrk(iseg),ikmrk2)
+          call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+          call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
           if (ikmrk1.lt.3) then ! also when dry!
               if ( VegHeVB .gt. 0.0 ) then
 
@@ -1154,12 +1143,8 @@
           dS1VBups = 0.0
           dS2VBups = 0.0
 
-          call dhkmrk(1,iknmrk(iseg),ikmrk1)
-          call dhkmrk(2,iknmrk(iseg),ikmrk2)
-!         if (ikmrk1.eq.1 .or. ikmrk1 .eq. 3) then !=> NO TESTING ON IKMRK1, PROCESS IS ALLWAYS ON!
-
-!         inicovvbxx  = pmsa(ipoint( 19)+(ibotseg-1)*increm( 19)) / 100. WHY NEEDED THERE IS A VALID UPTAKE FLUX DEFINED ALREADY
-!         if (inicovvbxx .gt. 0.001) then
+          call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+          call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
 
           depth = pmsa(ipnt(ip_depth))
           totaldepth = pmsa(ipnt(ip_totaldepth))
@@ -1288,3 +1273,5 @@
 
       return
       end
+
+end module m_vbxs12

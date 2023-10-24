@@ -35,7 +35,7 @@
 !   2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3 ;
 ! }
 
-!     $Id$
+!     
 
 program f90tst_parallel
   use typeSizes

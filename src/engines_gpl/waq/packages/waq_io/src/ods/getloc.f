@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getloc
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETLOC ( FNAME  , ITYPE  , LOCDEF , MAXDEF , IPRDEP ,
      *                    ITMDEP , MAXLST , LOCLST , LOCTYP , LOCNR  ,
@@ -57,6 +63,10 @@
 !     OPTION  CHAR*256   1        IN/OUT  For future use
 !
 !
+      use m_dhucas
+      use m_open_waq_files
+      use m_dhfext
+
       CHARACTER*256 FNAME(3) , OPTION
       CHARACTER*20  LOCDEF(MAXDEF) , LOCLST(MAXLST)
       DIMENSION     LOCTYP(MAXLST) , LOCNR (MAXLST)
@@ -65,10 +75,15 @@
       integer               :: extpos  ! position of extension
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
+      integer               :: lun
+      integer               :: k, i1, i2, i3, NOTOT, ierror, nodump, idummy
+      integer               :: itype, itmdep, iprdep, nrlst, maxk, nbase
+      integer               :: locnr, loctyp, maxdef, maxlst
 !
 !         Open the DELWAQ .HIS file
 !
-      CALL DHOPNF ( 10 , FNAME(1) , 24 , 2 , IERROR )
+      lun = 10
+      CALL open_waq_files ( lun  , FNAME(1) , 24 , 2 , IERROR )
       IF ( IERROR .NE. 0 ) RETURN
 
       ! map or his
@@ -83,9 +98,9 @@
 !
 !         Read primary system characteristics
 !
-      READ ( 10 , ERR=100 )   FNAME(3)(1:160)
-      READ ( 10 , ERR=110 )   NOTOT, NODUMP
-      READ ( 10 , ERR=120 ) ( FNAME(3)(181:200) , K = 1,NOTOT )
+      READ ( lun , ERR=100 )   FNAME(3)(1:160)
+      READ ( lun , ERR=110 )   NOTOT, NODUMP
+      READ ( lun , ERR=120 ) ( FNAME(3)(181:200) , K = 1,NOTOT )
 !
 !         Read parameter names and try to find the wanted subset
 !
@@ -96,7 +111,7 @@
       DO 40 I1 = 1 , NODUMP , MAXLST
          MAXK = MIN(NODUMP,I1+MAXLST-NRLST-1) - I1 + 1
          if ( .not. mapfil ) then
-            READ ( 10 , ERR=130 ) ( IDUMMY, LOCLST(K), K = NRLST+1, NRLST+MAXK)
+            READ ( lun , ERR=130 ) ( IDUMMY, LOCLST(K), K = NRLST+1, NRLST+MAXK)
          else
             do k = nrlst+1, nrlst+maxk
                write(loclst(k), '(''segment '',i8)' ) k
@@ -138,6 +153,8 @@
 !
 !         Close the unit
 !
-  200 CLOSE ( 10 )
+  200 CLOSE ( lun )
       RETURN
       END
+
+      end module m_getloc

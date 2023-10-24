@@ -2,7 +2,7 @@ package:
   name: libnefis
 
 source:
-  url: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/utils_lgpl/nefis
+  url: https://git.deltares.nl/oss/delft3d/-/tree/main/src/utils_lgpl/nefis
 
 build:
   number: 3

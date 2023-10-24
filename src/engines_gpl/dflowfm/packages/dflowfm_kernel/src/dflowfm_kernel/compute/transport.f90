@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine transport()                           ! transport for now, advect salinity and add
                                                   ! high order limited terms to uqcx, uqcy
@@ -40,6 +40,7 @@ subroutine transport()                           ! transport for now, advect sal
  use m_sediment
  use m_netw, only : xk,yk,zk
  use m_flowtimes
+ use m_flowparameters, only : jadiagnostictransport
  use m_physcoef, only : idensform, difmolsal
  use m_partitioninfo
  use m_timer
@@ -64,7 +65,7 @@ subroutine transport()                           ! transport for now, advect sal
 
  ! kuzmin 2D limiting 
 
- double precision, external     :: dslim, setrho, dlimitercentral
+ double precision, external     :: dslim, dlimitercentral
 
  integer                        :: j, kj, kdj, kuj, kl1j, kl2j, kbj, kij, ki, jastep, kk, kb1, kb2, n1, n2, kkua, kkub, ku2
 
@@ -104,8 +105,6 @@ subroutine transport()                           ! transport for now, advect sal
 
  ! It is not allowed to change the selection of limiters for sal/tem/sed as defined in the input file. Therefore, the next line is now a comment (and will be removed in future)
  ! limtyp = max(Limtypsa, limtyptm, limtypsed)                   ! check if limiter need be applied
-
- if (jasal == 0 .and. jatem == 0 .and. jased == 0 .and. jatransportmodule == 0 ) return    ! no salinity, or sediment, no higher orders
 
  if (jasal > 0) then
 
@@ -189,9 +188,11 @@ subroutine transport()                           ! transport for now, advect sal
 
  endif
 
+    if (jadiagnostictransport == 0 ) then ! if jadiagnostictransport = 1 then update of constituents is skipped (all constituents are then "frozen")
        call apply_tracer_bc()
        call update_constituents(0) ! do all constituents
-
+    endif
+    
     if ( jasal.gt.0 ) then    !  compute salt error
 
        sam0tot = sam1tot

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,6 +34,7 @@ contains
 subroutine tests_MDU_fileversion
     call test( test_MDU_fileversion_model, 'Tests checking MDU file version (old ~model~ block).' )
     call test( test_MDU_fileversion_general, 'Tests checking MDU file version (new ~General~ block).' )
+    call test( test_read_stretch_coef, 'Tests reading stretch coefficients from MDU file.' )
 end subroutine tests_MDU_fileversion
 !
 !
@@ -78,10 +79,36 @@ subroutine test_MDU_fileversion_general
     ! read MDU
     call readMDUFile('new_general.mdu', ierr)
     istat = CHANGEDIRQQ("..")
-        
+
     call assert_equal(ierr, DFM_NOERR, 'Error when reading new MDU file version with [General] block.' ) 
- 
 
 end subroutine test_MDU_fileversion_general
+
+subroutine test_read_stretch_coef
+    use unstruc_model
+    use dfm_error
+    use m_partitioninfo, only: jampi
+    use m_flow, only: laycof
+    use unstruc_files
+    use ifport
+    ! Locals
+    integer       :: istat, ierr
+    real(kind=hp) :: sumlaycof
+
+    !
+    ! Body
+    jampi = 0
+    !
+    istat = CHANGEDIRQQ("MDUversion")
+    ! read MDU
+    call readMDUFile('stretch_example.mdu', ierr)
+    istat = CHANGEDIRQQ("..")
+
+    call assert_equal(ierr, DFM_NOERR, 'Error when reading MDU file with stretch coeff.' )
+    call assert_equal(size(laycof), 18, "Difference in dimension of laycof")
+    sumlaycof = sum(laycof)
+    call assert_comparable(sumlaycof, 100d0, 1d-12, "Difference in sum of laycof for all layers")
+
+end subroutine test_read_stretch_coef
 
 end module test_MDU_File_Version

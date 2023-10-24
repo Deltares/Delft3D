@@ -3,7 +3,7 @@ function [hNew,Thresholds,Param,Parent] = qp_plot_ugrid(hNew,Parent,Param,data,O
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -63,11 +63,7 @@ elseif isfield(data,'TRI')
 elseif isfield(data,'Connect')
     data.FaceNodeConnect = data.Connect;
     data = rmfield(data,'Connect');
-else
-    data.FaceNodeConnect = [];
 end
-FaceNodeConnect = data.FaceNodeConnect;
-nc = size(FaceNodeConnect,2);
 if isfield(data,'XYZ')
     data.X = data.XYZ(:,:,:,1);
     data.Y = data.XYZ(:,:,:,2);
@@ -102,7 +98,7 @@ switch NVal
                     if isfield(data,'EdgeNodeConnect')
                         EdgeNodeConnect = data.EdgeNodeConnect;
                     else
-                        EdgeNodeConnect = fnc2enc(FaceNodeConnect);
+                        EdgeNodeConnect = fnc2enc(data.FaceNodeConnect);
                     end
                     %
                     xy = EdgeNodeConnect(:,[1 2 2])';
@@ -344,17 +340,20 @@ switch NVal
                     [hNew,Param,Parent] = qp_plot_xzt(hNew,Parent,Param,data,Ops,Props,PName,TStr,stn,Quant,Units);
                 else
                     % what is this code for?
-                    fprintf('QP_PLOT_UGRID - point X');
+                    % --> Time series plot of single point.
+                    % --> Slice of m grid points.
                     switch data.ValLocation
                         case 'FACE'
                             Skip = isnan(data.FaceNodeConnect);
                             nNd = sum(~Skip,2);
                             FNC = data.FaceNodeConnect;
                             FNC(Skip) = 1;
+                            data.X = data.X(:)';
                             x = data.X(FNC);
                             x(Skip) = 0;
                             x = sum(x,2)./nNd;
                             if isfield(data,'Y')
+                                data.Y = data.Y(:)';
                                 y = data.Y(FNC);
                                 y(Skip) = 0;
                                 y = sum(y,2)./nNd;
@@ -371,8 +370,10 @@ switch NVal
                                 inode(1) = data.EdgeNodeConnect(1,1);
                                 inode(2:end) = data.EdgeNodeConnect(:,2);
                             end
+                            data.X = data.X(:)';
                             x = data.X(inode);
                             if isfield(data,'Y')
+                                data.Y = data.Y(:)';
                                 y = data.Y(inode);
                             else
                                 y = [];
@@ -388,7 +389,12 @@ switch NVal
                             val = data.Val;
                     end
                     z = [];
+                    if ~isfield(Ops,'plotcoordinate')
+                        Ops.plotcoordinate = 'dummy';
+                    end
                     switch Ops.plotcoordinate
+                        case 'dummy'
+                            % skip
                         case 'x coordinate'
                             if numel(val)==numel(x)
                                 x(isnan(val)) = NaN;
@@ -425,47 +431,69 @@ switch NVal
                     end
                     if length(data.Time)>1
                         nx = numel(x);
-                        nt = numel(data.Time);
-                        if strcmp(Ops.axestype,'X-Time')
-                            c1 = repmat(reshape(x, [1 nx]), [nt 1]);
-                            c2 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
-                            v = squeeze(data.Val);
+                        if nx == 1
+                            if FirstFrame
+                                hNew=line(data.Time,val, ...
+                                    'parent',Parent, ...
+                                    Ops.LineParams{:});
+                                set(Parent,'layer','top')
+                            elseif ishandle(hNew)
+                                set(hNew,'xdata',data.Time, ...
+                                    'ydata',val)
+                            else
+                                return
+                            end
+                            tit = {};
+                            if ~isempty(stn)
+                                tit{end+1}=stn;
+                            end
+                            if ~isempty(TStr)
+                                tit{end+1}=TStr;
+                            end
+                            qp_title(Parent,tit,'quantity',Quant,'unit',Units)
                         else
-                            c1 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
-                            c2 = repmat(reshape(x, [1 nx]), [nt 1]);
-                            v = squeeze(data.Val);
-                        end
-                        set(Parent,'NextPlot','add');
-                        switch Ops.presentationtype
-                            case 'values'
-                                I=~isnan(data.Val);
-                                hNew=gentextfld(hNew,Ops,Parent,v,c1,c2);
-                                
-                            case 'continuous shades'
-                                hNew=gensurface(hNew,Ops,Parent,v,c1,c2,v);
-                                
-                            case 'markers'
-                                hNew=genmarkers(hNew,Ops,Parent,v,c1,c2);
-                                
-                            case {'contour lines','coloured contour lines','contour patches','contour patches with lines'}
-                                if isequal(size(c1),size(v)+1)
-                                    [c1,c2,v]=face2surf(c1,c2,v);
-                                end
-                                v(isnan(c1) | isnan(c2))=NaN;
-                                ms=max(c1(:));
-                                mz=max(c2(:));
-                                c1(isnan(c1))=ms;
-                                c2(isnan(c2))=mz;
-                                hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
-                                
-                        end
-                        if FirstFrame
-                            set(Parent,'view',[0 90],'layer','top');
-                        end
-                        if strcmp(Ops.colourbar,'none')
-                            qp_title(Parent,PName,'quantity',Quant,'unit',Units)
-                        else
-                            qp_title(Parent,'','quantity',Quant,'unit',Units)
+                            nt = numel(data.Time);
+                            if strcmp(Ops.axestype,'X-Time')
+                                c1 = repmat(reshape(x, [1 nx]), [nt 1]);
+                                c2 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
+                                v = squeeze(data.Val);
+                            else
+                                c1 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
+                                c2 = repmat(reshape(x, [1 nx]), [nt 1]);
+                                v = squeeze(data.Val);
+                            end
+                            set(Parent,'NextPlot','add');
+                            switch Ops.presentationtype
+                                case 'values'
+                                    I=~isnan(data.Val);
+                                    hNew=gentextfld(hNew,Ops,Parent,v,c1,c2);
+                                    
+                                case 'continuous shades'
+                                    hNew=gensurface(hNew,Ops,Parent,v,c1,c2,v);
+                                    
+                                case 'markers'
+                                    hNew=genmarkers(hNew,Ops,Parent,v,c1,c2);
+                                    
+                                case {'contour lines','coloured contour lines','contour patches','contour patches with lines'}
+                                    if isequal(size(c1),size(v)+1)
+                                        [c1,c2,v]=face2surf(c1,c2,v);
+                                    end
+                                    v(isnan(c1) | isnan(c2))=NaN;
+                                    ms=max(c1(:));
+                                    mz=max(c2(:));
+                                    c1(isnan(c1))=ms;
+                                    c2(isnan(c2))=mz;
+                                    hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
+                                    
+                            end
+                            if FirstFrame
+                                set(Parent,'view',[0 90],'layer','top');
+                            end
+                            if strcmp(Ops.colourbar,'none')
+                                qp_title(Parent,PName,'quantity',Quant,'unit',Units)
+                            else
+                                qp_title(Parent,'','quantity',Quant,'unit',Units)
+                            end
                         end
                     else
                         if strcmp(Ops.facecolour,'none')

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2022.
+!  Copyright (C)  Stichting Deltares, 2011-2023.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 ! ftnunit.f90 --
 !     Module that implements part of the "ftnunit" framework:
 !     It is inspired by the well-known JUnit framework for
@@ -47,7 +47,7 @@
 !     - Test the various assertion failures
 !     - HTML output of number of differences
 !
-!     $Id$
+!     
 !
 
 

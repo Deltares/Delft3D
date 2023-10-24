@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine readprofilesdef(ja)    ! in afwachting van een module die profieldefinities leest
  USE UNSTRUC_MODEL
@@ -234,7 +234,7 @@ subroutine readprofilesdef(ja)    ! in afwachting van een module die profieldefi
      npr = npr2
      deallocate (npr2)
      ja  = 1
-     if (myzprofs > 0) then
+     if (myzprofs < 0) then
         call doclose(myzprofs)
      endif
 

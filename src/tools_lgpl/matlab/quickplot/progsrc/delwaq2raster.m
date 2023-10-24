@@ -106,7 +106,7 @@ function delwaq2raster(ini_file)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2022 Stichting Deltares.
+%   Copyright (C) 2011-2023 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -141,6 +141,8 @@ if isstandalone
     fprintf(1,'--------------------------------------------------------------------------------\n');
     fprintf(1,'Delft3D-DELWAQ2RASTER conversion tool.\n');
     fprintf(1,'Version <VERSION> (<CREATIONDATE>)\n');
+    fprintf(1,'Repository <GITREPO>\n');
+    fprintf(1,'Source hash <GITHASH>\n');
     fprintf(1,'--------------------------------------------------------------------------------\n');
 end
 
@@ -870,7 +872,7 @@ for ifld = 1:nchp
                     DATA  = [DATA;DATA_t];
                     ntim  = ntim  + ~iMissing;
                     if it==itstop
-                        DATA = prctile(DATA, info.prctl, 1);
+                        DATA = compute_percentile(DATA, info.prctl);
                         DATA(ntim==0) = NaN;
                     end
             end

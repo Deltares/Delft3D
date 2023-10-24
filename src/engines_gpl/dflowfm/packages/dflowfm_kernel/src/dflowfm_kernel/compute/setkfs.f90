@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine setkfs()                                 ! set kfs
  use m_flow
@@ -37,7 +37,7 @@
 
  implicit none
 
- integer :: L, i
+ integer :: L
  integer :: n, kb, ki, ndn
 
  kfs = 0
@@ -51,24 +51,26 @@
 
  if (ivariableteta<=1) then                          ! fully implicit and teta=constant
 
-   do i = 1, wetLinkCount
-      L = onlyWetLinks(i)
-      kfs(ln(1,L))=1
-      kfs(ln(2,L))=1
-   enddo
+    do L=1,lnx                                       ! implicit points
+       if (hu(L)>0d0) then                            ! if you want hs==0 in dry points, you need hu>epshu here
+           kfs(ln(1,L))=1
+           kfs(ln(2,L))=1
+       endif
+    enddo
 
  else                                                ! set kfs ic. teta; 0=not, 1 =impl, 2 = expl
 
-   do i = 1, wetLinkCount
-      L = onlyWetLinks(i)
-      if (teta(L) == 0) then
-         kfs(ln(1,L))=2
-         kfs(ln(2,L))=2
-      else if (teta(L) > 0) then
-         kfs(ln(1,L))=1                         ! todo: or bnd, randjes ook altijd impliciet
-         kfs(ln(2,L))=1
-      endif
-   enddo
+    do L=1,lnx                                       ! explicit points
+       if (hu(L)>0d0) then
+           if (teta(L) == 0) then
+              kfs(ln(1,L))=2
+              kfs(ln(2,L))=2
+           else if (teta(L) > 0) then
+              kfs(ln(1,L))=1                         ! todo: or bnd, randjes ook altijd impliciet
+              kfs(ln(2,L))=1
+          endif
+       endif
+    enddo
 
  endif
 

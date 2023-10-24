@@ -1,3 +1,9 @@
+      module m_inverm
+
+      implicit none
+
+      contains
+
 C----------------------------------------------------------------------C
 C                                                                      C
 C     SUBROUTINE INVERM                                                C
@@ -27,7 +33,9 @@ C                             = -1 : SINGULARITY IN MATRIX A DETECTED  C
 C                                                                      C
 C----------------------------------------------------------------------C
       SUBROUTINE INVERM (A,B,N,M,NMAX,IH,WORK,IER)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL*8  (A-H,O-Z)
+      IMPLICIT INTEGER (i,j,m,n)      
+      
       DIMENSION A(NMAX,*),B(NMAX,*),IH(*),WORK(*)
       IER = 0
       DO 10 IR = 1,N
@@ -68,3 +76,5 @@ C----------------------------------------------------------------------C
   300 CONTINUE
       RETURN
       END
+
+      end module m_inverm

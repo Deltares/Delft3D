@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !----- AGPL --------------------------------------------------------------------
 !
@@ -57,8 +57,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> @file modules.f90
 !! Modules with global data.
@@ -158,6 +158,7 @@
  double precision                  :: Dalton                     !< coeff for evaporative heat flux, if negative , take wind Cd
  double precision                  :: Tempmax = -999d0           !< limit
  double precision                  :: Tempmin = 0d0              !< limit
+ integer                           :: Jaallowcoolingbelowzero =0 !< Allow cooling below 0 degrees C (0=default since 2017) 
  double precision                  :: Salimax = -999d0           !< limit
  double precision                  :: Salimin = 0d0              !< limit
  double precision                  :: epshstem = 0.001d0         !< only compute heatflx + evap if depth > trsh
@@ -171,6 +172,8 @@
  double precision                  :: tetavmom                   !< vertical teta momentum
 
  double precision                  :: locsaltlev, locsaltmin, locsaltmax
+ 
+ integer                           :: NFEntrainmentMomentum = 0  !< 1: switched on: Momentum transfer in NearField related entrainment
  contains
 !> Sets ALL (scalar) variables in this module to their default values.
 subroutine default_physcoef()
@@ -242,6 +245,8 @@ tetavmom                    = 0.55d0        !< vertical teta momentum
 locsaltlev                  = 1d0           !< salinity level for case of lock exchange
 locsaltmin                  = 5d0           !< minimum salinity for case of lock exchange
 locsaltmax                  = 10d0          !< maximum salinity for case of lock exchange
+
+NFEntrainmentMomentum       = 0
 
 end subroutine default_physcoef
 end module m_physcoef

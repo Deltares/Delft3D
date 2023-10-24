@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
@@ -44,7 +44,7 @@
 
       implicit none
 
-      integer                                     :: k1, k2, k, L, i
+      integer                                     :: k1, k2, k, L
       double precision                            :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
 
       ! Fetch models
@@ -117,19 +117,19 @@
             hwav(k) = min(hwavuni, gammax*(s1(k)-bl(k)))
          enddo
          if (kmx==0) then
-            ustokes = 0d0
-            vstokes = 0d0
-            do i = 1, wetLinkCount
-               L = onlyWetLinks(i)
-               k1=ln(1,L)
-               k2=ln(2,L)
-               hh = hu(L) 
-               hw=0.5d0*(hwav(k1)+hwav(k2));tw=.5d0*(twav(k1)+twav(k2))
-               cs = 0.5*(cos(phiwav(k1)*dg2rd)+cos(phiwav(k2)*dg2rd))
-               sn = 0.5*(sin(phiwav(k1)*dg2rd)+sin(phiwav(k2)*dg2rd))
-               call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
-               ustokes(L) = ustt*(csu(L)*cs + snu(L)*sn)
-               vstokes(L) = ustt*(-snu(L)*cs + csu(L)*sn)
+            do L=1,lnx
+               k1=ln(1,L); k2=ln(2,L)
+               hh = hu(L); 
+               if (hh<=epshu) then
+                  ustokes(L) = 0d0; vstokes(L) = 0d0
+               else
+                  hw=0.5d0*(hwav(k1)+hwav(k2));tw=.5d0*(twav(k1)+twav(k2))
+                  cs = 0.5*(cos(phiwav(k1)*dg2rd)+cos(phiwav(k2)*dg2rd))
+                  sn = 0.5*(sin(phiwav(k1)*dg2rd)+sin(phiwav(k2)*dg2rd))
+                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  ustokes(L) = ustt*(csu(L)*cs + snu(L)*sn)
+                  vstokes(L) = ustt*(-snu(L)*cs + csu(L)*sn)
+               endif
             enddo
             call wave_uorbrlabda()
          endif

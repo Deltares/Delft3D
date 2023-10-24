@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,14 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_write_messages
+
+implicit none
+
+contains
+
 
 
 !>\file
 !>                    delwaq1_write_messages
 
 subroutine delwaq1_write_messages(errorcode)
+    use m_open_waq_files
     use m_delwaq1_data
-      
+    use m_dattim
+
     implicit none
 
     integer, intent(inout)                        :: errorcode
@@ -38,16 +46,16 @@ subroutine delwaq1_write_messages(errorcode)
     write (   *   ,'(  ''  Number of WARNINGS            :'',I6)') iwar
     write (   *   ,'(  ''  Number of ERRORS during input :'',I6)') ierr
     write (   *   ,'(  '' '')')
-    
+
     if ( ierr .eq. 0 ) then
         novec = min(novec,(nosss+nobnd-1))
         itota = 0
         itoti = 0
         itotc = 0
-        call space  ( lunrep, .false., abuf   , ibuf   , chbuf  , &
+        call space  ( lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                       itota , itoti  , itotc  )
 
-        call dhopnf  ( lun(1) , lchar(1) , 1     , 1     , ioerr )
+        call open_waq_files  ( lun(1) , lchar(1) , 1     , 1     , ioerr )
         write ( lun(1) )   in
         write ( lun(1) )   ii
         write ( lun(1) )   itota , itoti , itotc
@@ -56,7 +64,7 @@ subroutine delwaq1_write_messages(errorcode)
         write ( lun(1) ) ( filtype(k) , k = 1,nolun  )
     else
         write ( lunrep , '(  '' SIMULATION PROHIBITED !!!!!!!!'')' )
-        call dhopnf  ( lun(1) , lchar(1) , 1     , 3     , ioerr )
+        call open_waq_files  ( lun(1) , lchar(1) , 1     , 3     , ioerr )
         errorcode = 1
     endif
 
@@ -65,3 +73,4 @@ subroutine delwaq1_write_messages(errorcode)
     close ( lunrep )
 
 end subroutine delwaq1_write_messages
+end module m_delwaq1_write_messages

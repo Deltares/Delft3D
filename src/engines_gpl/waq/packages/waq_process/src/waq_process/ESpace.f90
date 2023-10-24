@@ -1,6 +1,16 @@
+module m_espace
+
+implicit none
+
+contains
+
       subroutine ESPACE     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
+      use m_gkwini
+      use m_write_error_message
+      use m_evaluate_waq_attribute
+
 !!!!!!!DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'ESPACE' :: ESPACE
 !
 !*******************************************************************************
@@ -189,9 +199,9 @@
             nsrca = nint(pmsa(ipoint(ip_nsrca)))
             nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
             nsubsin  = nint(pmsa(ipoint(ip_nsubs)))
-            if (nsubsin.ne.nsubs) call errsys ('Substances inconsistent',1)
+            if (nsubsin.ne.nsubs) call write_error_message ('Substances inconsistent')
             nrecin = nint(pmsa(ipoint(ip_nrecin)))
-            if (nrecin.ne.nrec) call errsys ('Receptors inconsistent',1)
+            if (nrecin.ne.nrec) call write_error_message ('Receptors inconsistent')
             nosegl = nint(pmsa(ipoint(ip_nosegl)))
 
             ! pick up constants
@@ -216,17 +226,7 @@
             npmsa = lins+line+louts+loute
 
             allocate( ipnt(npmsa) )
-!!            write (*,*) 'NPMSA = ', npmsa
-!!            if (npmsa.gt.npmsamax) then
-!!                write (*,*) 'lins = ',lins
-!!                write (*,*) 'line = ',line
-!!                write (*,*) 'louts = ',louts
-!!                write (*,*) 'loute = ',loute
-!!                write (*,*) 'npmsa = ',npmsa
-!!                write (*,*) 'npmsamax = ',npmsamax
-!           if (npmsa.gt.npmsamax) then
-!!               call errsys ('PMSA admin array too small',1)
-!!            endif
+
             offset_vel = lins+line+louts
 
             ! Fluxes Admin
@@ -309,8 +309,8 @@
             write (lu_nod,1002) trim(file_subs)
 
             read (lu_loc,*) nswb
-            if (nsc+nswb.ne.nosegl) call errsys('NSC+NSWB=/NOSEGL',1)
-            if (nswb.gt.0) call errsys('NSWB>0 not implemented',1)
+            if (nsc+nswb.ne.nosegl) call write_error_message('NSC+NSWB=/NOSEGL')
+            if (nswb.gt.0) call write_error_message('NSWB>0 not implemented')
 
       endif
 
@@ -419,7 +419,7 @@
           ! SEWER SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_sew-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           leakage = pmsa(ipnt(ip_leakage))
@@ -443,7 +443,7 @@
           ! PAVED SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_pav-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           ropaved = pmsa(ipnt(ip_ropaved))
@@ -474,7 +474,7 @@
           ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_unp-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           rounpaved = pmsa(ipnt(ip_rounpaved))
@@ -522,7 +522,7 @@
           ! SOIL SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_soi-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           gwbaseflow = pmsa(ipnt(ip_gwbflow))
@@ -555,7 +555,7 @@
           ! ENDPOINT STORM WATER
 
           iseg = isegl + (rec_stw-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           boun = 0.0
@@ -576,7 +576,7 @@
           ! ENDPOINT SURFACE WATER
 
           iseg = isegl + (rec_sfw-1)*nosegl
-          call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1.gt.0) then
 
           do isubs = 1,nsubs
@@ -618,3 +618,5 @@
       write(ddhhmmss1,'(i6,3(i2.2))') dd,hh,mm,ss
       return
       end
+
+end module m_espace

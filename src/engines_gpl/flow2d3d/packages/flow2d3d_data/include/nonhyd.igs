@@ -1,0 +1,68 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+integer, parameter :: nh_weak = 1 ! Marco Bijvelds method
+integer, parameter :: nh_full = 2 ! Sebastian Ullmann / Mart Borsboom method
+
+
+type gd_nonhyd
+    !
+    ! doubles
+    !
+    real(fp) :: epsnh
+    real(fp) :: rel_epsnh
+    real(fp) :: tetaq
+    real(fp) :: tetaz
+    real(fp) :: milu
+    !
+    ! reals
+    !
+    ! integers
+    !
+    integer :: nh_level ! has value nh_weak or nh_strong
+    integer :: m1_nhy
+    integer :: m2_nhy
+    integer :: n1_nhy
+    integer :: n2_nhy
+    integer :: nhiter
+    !
+    ! pointers
+    !
+    ! 
+    ! logicals
+    !
+    logical :: l2norm
+    logical :: flag_pp
+    !
+    ! characters
+    !
+    character(8) :: updwl
+    character(8) :: precon
+    character(8) :: krylov
+end type gd_nonhyd

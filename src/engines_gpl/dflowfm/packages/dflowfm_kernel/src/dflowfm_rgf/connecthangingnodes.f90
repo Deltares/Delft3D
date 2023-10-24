@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine connecthangingnodes()
 use m_netw
@@ -95,4 +95,50 @@ enddo
 
 call setnodadm(0)
 end subroutine removelinksofhangingnodes
+
+subroutine makeZKbedlevels()
+use m_netw
+use m_sferic
+use m_flow
+
+implicit none
+
+integer          :: k, k1, k2, ja  
+double precision :: X3,Y3,X1,Y1, X2,Y2,disn,dist,XN,YN,rl,hh,zt,zn,phase,bedwid2, bedrepose, gridsize
+
+x1       = 0d0 
+y1       = 0d0
+x2       = cos(bedslopedir*dg2rd)
+y2       = sin(bedslopedir*dg2rd)
+hh       = abs(zkuni)
+bedwid2  = 0.5d0*bedwidth
+k1 = kn(1,1) ; k2 = kn(2,1)
+call dbdistancehk(xk(k1),yk(k1),xk(k2), yk(k2),  gridsize) 
+
+do k = 1,numk 
+
+   x3 = xk(k) ; y3 = yk(k)    
+   call dLINEDIS2(X3,Y3,X1,Y1,-Y2,x2,JA,dist,XN,YN,rl)
+   call dLINEDIS2(X3,Y3,X1,Y1, X2,Y2,JA,disn,XN,YN,rl)
+
+   zk(k) = zkuni + bedslope*dist                                  ! in tangential of vector
+
+   if (bedwavelength .ne. 0d0) then                               ! idem
+       phase = twopi*dist/bedwavelength
+       zk(k) = zk(k) + bedwaveamplitude*cos(phase)
+   endif   
+
+   if (bedwidth > 0d0) then
+      bedrepose = hh*atan(0.5d0*pi/bedwid2)
+      zk(k) = zk(k) + hh*(1d0 - cos( disn*tan(bedrepose/hh) ) )   ! normal to vector
+      if (disn > bedwid2 + 2*gridsize) then 
+          xk(k) = dmiss ; yk(k) = dmiss; zk(k) = dmiss
+      endif
+   endif
+
+enddo
+
+call setnodadm(0)
+end subroutine makeZKbedlevels
+
 

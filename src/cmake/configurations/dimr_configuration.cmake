@@ -1,5 +1,3 @@
-project(dimr)
-
 # Specify the modules to be included
 if(NOT TARGET deltares_common)
   add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
@@ -24,3 +22,6 @@ if(UNIX)
   # install
   add_subdirectory(${checkout_src_root}/${install_dimr_module} install_dimr)
 endif()
+
+# Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
+project(dimr)

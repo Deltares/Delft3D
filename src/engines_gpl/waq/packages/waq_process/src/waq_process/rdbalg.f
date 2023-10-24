@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdbalg
+
+      implicit none
+
+      contains
+
 
       subroutine rdbalg ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+
 !>\file
 !>       Light efficiency function DYNAMO algae
 
@@ -44,13 +52,15 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
       LOGICAL  LGTOPT
+      integer  iseg
 !
       IN1  = INCREM( 1)
       IN2  = INCREM( 2)
@@ -84,8 +94,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       IF ( LGTOPT ) THEN
@@ -103,7 +112,7 @@
 !
       PMSA(IP6) = MAX(MIN(FRAD,1.0),0.0)
 !
-      IF (SATRAD .LT. 1E-20 )  CALL ERRSYS ('SATRAD in RADALG zero', 1 )
+      IF (SATRAD .LT. 1E-20 )  CALL write_error_message ('SATRAD in RADALG zero')
 
  8900 CONTINUE
 !
@@ -122,3 +131,5 @@
       RETURN
 !
       END
+
+      end module m_rdbalg

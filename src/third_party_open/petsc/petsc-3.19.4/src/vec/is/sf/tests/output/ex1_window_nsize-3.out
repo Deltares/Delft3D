@@ -1,0 +1,18 @@
+PetscSF Object: 3 MPI processes
+  type not yet set
+  PetscSFSetGraph() has not been called yet
+PetscSF Object: 3 MPI processes
+  type: basic
+  [0] Number of roots=0, leaves=0, remote ranks=0
+  [1] Number of roots=0, leaves=0, remote ranks=0
+  [2] Number of roots=0, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
+PetscSF Object: 3 MPI processes
+  type: window
+  PetscSFSetGraph() has not been called yet
+PetscSF Object: 3 MPI processes
+  type: window
+  [0] Number of roots=0, leaves=0, remote ranks=0
+  [1] Number of roots=0, leaves=0, remote ranks=0
+  [2] Number of roots=0, leaves=0, remote ranks=0
+  current flavor=CREATE synchronization=FENCE MultiSF sort=rank-order

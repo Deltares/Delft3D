@@ -1,0 +1,56 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id$
+!  $HeadURL$$
+!-------------------------------------------------------------------------------
+    type gd_zmodel
+!
+       integer, dimension(3) :: modify_dzsuv ! Option for modifying the bottom layering for smooth bottom shear stress
+                                             ! if modify_dzsuv(1) = 1 : modify dzs1
+                                             ! if modify_dzsuv(2) = 1 : modify dzu1
+                                             ! if modify_dzsuv(3) = 1 : modify dzv1
+       real(fp)              :: dzmin        ! Minimal layer thickness to avoid thin layers (=0.1*DRYFLC)
+       real(fp)              :: zbot         !  Global data
+                                             ! Lowest coord. point for construction of Cartesian grid for Z-MODEL
+                                             ! Min. inital/required z-coordinate of the bottom layer in the z-model
+                                             ! Uniform Depth for construction of Cartesian grid (Fixed layer Model)
+       real(fp)              :: ztop         !  Global data
+                                             ! Max. inital/required z-coordinate of the top layer in the z-model
+                                             ! Surface height for construction of Cartesian grid (Fixed layer Model)
+       real(fp)              :: theta    
+       logical               :: ztbml        ! Z-model TauBottom Modified Layering: equistant near-bed layering for smoother bottom shear stress):
+                                             ! modify the near-bed layering to obtain smoother bottom shear stress representation in z-layer models.
+       logical               :: ztbml_upd_r1 ! Flag to perform conservative remapping of constituents (r1), corresponding to the layer remapping (ZTBML)
+                                             ! By default it is false. In three situations it is set to true (during initialization and/or simulation):
+                                             ! 1) For restarts from a MAP-file where ZTBML was false. See routines flow_nefis_restart.f90 and chkset.f90.
+                                             ! 2) When the water level enters layer 2 from the bottom (kfsmin(nm)+1). See subroutine 
+                                             !    z_taubot_modify_layers.f90 and how it is called from z_adi.f90 / z_trisol.f90 / z_trisol_nhfull.f90
+                                             ! 3) When the bottom level changes due to morphodynamics. See subroutine z_taubot_modify_layers.f90.
+                                             !    and how it is called from z_adi.f90 / z_trisol.f90 / z_trisol_nhfull.f90.
+!
+    end type gd_zmodel
+!

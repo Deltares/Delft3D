@@ -6,7 +6,7 @@ function hNew = qp_scalarfield(Parent,hNew,presentationtype,datatype,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -208,6 +208,7 @@ set(Parent,'NextPlot','add')
 unknown_ValLocation = 0;
 Val = data.Val(:);
 
+hasFaceNodeConnect = true;
 if isfield(data,'FaceNodeConnect')
     FaceNodeConnect = data.FaceNodeConnect;
 elseif isfield(data,'TRI')
@@ -215,6 +216,7 @@ elseif isfield(data,'TRI')
 elseif isfield(data,'Connect')
     FaceNodeConnect = data.Connect;
 else
+    hasFaceNodeConnect = false;
     FaceNodeConnect = [];
 end
 
@@ -269,7 +271,7 @@ switch data.ValLocation
                 
             case 'continuous shades'
                 XY = [data.X data.Y];
-                if ~isempty(FaceNodeConnect)
+                if hasFaceNodeConnect
                     nNodes = sum(~isnan(FaceNodeConnect),2);
                     uNodes = unique(nNodes);
                     first = isempty(hNew);

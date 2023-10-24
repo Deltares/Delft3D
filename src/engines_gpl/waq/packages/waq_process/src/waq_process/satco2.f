@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_satco2
+
+      implicit none
+
+      contains
+
 
       subroutine satco2 ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -49,6 +55,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
+      use m_srstop
+      use m_monsys
       USE PHYSICALCONSTS, ONLY : CtoKelvin
       IMPLICIT NONE
 
@@ -80,17 +88,13 @@
       IP6  = IPOINT( 6)
 !
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
-!jvb  IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
+
       CL2    = PMSA(IP1 )/1000.
       TEMP   = PMSA(IP2 )
       SWITCH = NINT(PMSA(IP3 ))
       SAL    = PMSA(IP4 )
       PAPCO2 = PMSA(IP5)
-!     PAPCO2 = 3.162E-4
-!
+
 
       IF ( SWITCH .EQ. 1 ) THEN
 
@@ -153,3 +157,5 @@
       RETURN
 !
       END
+
+      end module m_satco2

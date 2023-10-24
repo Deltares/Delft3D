@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_wkcomp
+
+      implicit none
+
+      contains
+
 
       subroutine wkcomp ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -60,9 +66,7 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!        CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!        IF (IKMRK1.EQ.1.OR.IKMRK1.EQ.2) THEN
-!
+
             NO3     = PMSA(IP(1 ))
             NH4     = PMSA(IP(2 ))
             PO4     = PMSA(IP(3 ))
@@ -242,3 +246,5 @@
           ENDIF
       END FUNCTION RATIO
       END
+
+      end module m_wkcomp

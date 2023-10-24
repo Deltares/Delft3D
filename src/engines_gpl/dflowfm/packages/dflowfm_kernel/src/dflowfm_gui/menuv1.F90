@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    SUBROUTINE MENUV1(NUM,NWHAT)
    use m_netw
@@ -44,8 +44,6 @@
    integer :: jdemo
    COMMON /MODENOW/ MODE,NFLD
    COMMON /DEMO/ JDEMO
-
-   logical, external :: get_japart
 
    IF (NUM .EQ. 1) THEN
       EXP(1)    = 'MENU 1                                  '
@@ -188,10 +186,6 @@
 
       MAXOPT    = 40
 
-      if ( get_japart() ) then
-         MAXOPT = MAXOPT+1
-         OPTION(MAXOPT) = 'particles                               '
-      end if
 
    ELSE IF (NUM .EQ. 4) THEN
       EXP(1)    = 'MENU 4                                  '
@@ -244,8 +238,9 @@
       OPTION(35)= 'Convert crsdef/loc to profdef/loc files '
       OPTION(36)= 'Connecthangingnodes                     '
       OPTION(37)= 'Removelinksofhangingnodes               '
+      OPTION(38)= 'MakeZKbedlevels                         '
 
-      MAXOPT    =  37
+      MAXOPT    =  38
    ELSE IF (NUM .EQ. 6) THEN
       EXP(1)     = 'MENU 6                                  '
       EXP(2)     = 'VARIOUS                                 '

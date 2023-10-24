@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_sdppro
+
+      implicit none
+
+      contains
+
 
       subroutine sdppro ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Traditional algal growth module (DYNAMO)
 
@@ -46,7 +54,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -90,15 +99,14 @@
       IP34 = IPOINT(34)
       IP35 = IPOINT(35)
       IP36 = IPOINT(36)
-!
+
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
-!
+
 
       SURF      = PMSA(IP26)
       DEPTH     = PMSA(IP27)
@@ -211,8 +219,6 @@
         PRODD = AMIN1(UPTAKC, UPTAKN/NCRAT, UPTAKP/PCRAT, UPTAKS/SICRAT)
         PRODD = AMAX1 ( PRODD , 0.0 )
 
-!16/2   PMSA(IP11) = PRODD
-
 !       Nett primary production and uptake of nutrients
 
         FL ( 1 + IFLUX ) =  PRODD / DEPTH
@@ -299,9 +305,6 @@
 
       ENDIF
 
-!16/2   PMSA(IP12) = RESP
-
-
 !     Mortality, including processes as autolysis and zooplankton 'graas
       FL ( 2 + IFLUX ) = MORT0  *  TFUNM * DIAT / DEPTH
 
@@ -373,3 +376,5 @@
       IF (AVAFLX .LT. REQFLX) REQFLX = AVAFLX
       RETURN
       END
+
+      end module m_sdppro

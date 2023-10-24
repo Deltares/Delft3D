@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,12 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistpfd
+
+implicit none
+
+contains
+
 
 
     ! 6 char name for process mathc with second line of PDF
 subroutine PROPFD     ( pmsa   , fl     , ipoint , increm, noseg , &
                             noflux , iexpnt , iknmrk , noq1  , noq2  , &
                             noq3   , noq4   )
+use m_evaluate_waq_attribute
+
 !
 !*******************************************************************************
 !
@@ -73,7 +81,7 @@ subroutine PROPFD     ( pmsa   , fl     , ipoint , increm, noseg , &
 
     ! segment loop
     do iseg = 1 , noseg
-        call dhkmrk(1,iknmrk(iseg),ikmrk1)
+        call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1.eq.1) then
 
         Rad          = PMSA(ipnt(  1 ))  !    irradiation at the segment upper-boundary              (W/m2)
@@ -97,3 +105,5 @@ subroutine PROPFD     ( pmsa   , fl     , ipoint , increm, noseg , &
     enddo ! end loop over segments
     return
 end ! end subroutine
+
+end module m_protistpfd

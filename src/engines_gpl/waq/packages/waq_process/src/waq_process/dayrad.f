@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dayrad
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DAYRAD ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
      +                    NOQ3   , NOQ4   )
+      use m_evaluate_waq_attribute
+
 
 !***********************************************************************
 !
@@ -59,8 +67,8 @@
       REAL               :: AUXSYS             ! 5  in  ratio between days and system clock        (scu/d)
       REAL               :: DAYRADSURF         ! 6  out actual irradiance over the day              (W/m2)
       DOUBLE PRECISION   :: RADDAY             ! 7  out actual irradiance                           (W/m2)
-      DOUBLE PRECISION   :: RADTIME            ! 8  out actual irradiance                           (W/m2)      
-      
+      DOUBLE PRECISION   :: RADTIME            ! 8  out actual irradiance                           (W/m2)
+
 !     local decalrations
 
       DOUBLE PRECISION , PARAMETER :: SIN50M = -1.454389765D-2
@@ -92,8 +100,8 @@
       IN5  = INCREM( 5)
       IN6  = INCREM( 6)
       IN7  = INCREM( 7)
-      IN8  = INCREM( 8)      
-      
+      IN8  = INCREM( 8)
+
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
       IP3  = IPOINT( 3)
@@ -102,7 +110,7 @@
       IP6  = IPOINT( 6)
       IP7  = IPOINT( 7)
       IP8  = IPOINT( 8)
-      
+
       !
       VARFLG = .TRUE.
       IF ( IN2 .EQ. 0 .AND. IN3 .EQ. 0 .AND. IN4 .EQ. 0 .AND.
@@ -145,8 +153,7 @@
       ENDIF
 !
       DO ISEG = 1 , NOSEG
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!        IF (IKMRK1.GT.0) THEN
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 
             RADSURF = PMSA( IP1 )
 
@@ -191,7 +198,7 @@
 
             PMSA (IP6) = DAYRADSURF
             PMSA (IP7) = RADTIME
-            PMSA (IP8) = RADDAY            
+            PMSA (IP8) = RADDAY
 !
 !        ENDIF
 !
@@ -209,3 +216,5 @@
       RETURN
 !
       END
+
+      end module m_dayrad

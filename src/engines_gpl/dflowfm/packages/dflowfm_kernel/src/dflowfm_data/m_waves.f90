@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 module m_waves
 
@@ -37,7 +37,6 @@ module m_waves
  integer, parameter                         :: TPWAVSMOOTH   = 1    !< Indicator for TPS
  integer, parameter                         :: TPWAVRELATIVE = 2    !< Indicator for RTP
  integer                                    :: nwf                  !< nr of fetch wind dirs + 1
- integer                                    :: ndx2Dr               !< (reduced) total nr 2D cells
  double precision, allocatable              :: fetch(:,:)           !< wind dir dep. fetch lenght (m) of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
  double precision, allocatable              :: fetdp(:,:)           !< wind dir dep. waterdepth (m)   of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
  double precision, allocatable              :: fett(:,:)            !< reduce array, (2,ndx)
@@ -46,7 +45,7 @@ module m_waves
  double precision, allocatable, target      :: hwavcom(:)           !< [m] root mean square wave height (m) from external source
  double precision, allocatable, target      :: twav(:)              !< [s] wave period {"location": "face", "shape": ["ndx"]}
  double precision, allocatable, target      :: phiwav(:)            !< [degree] mean wave direction (degrees) from external source
- double precision, allocatable, target      :: Uorb(:)              !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
+ double precision, allocatable, target      :: uorb(:)              !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
  double precision, allocatable, target      :: ustokes(:)           !< [m/s] wave induced velocity, link-based and link-oriented
  double precision, allocatable, target      :: vstokes(:)           !< [m/s] wave induced velocity, link-based and link-oriented
  double precision, allocatable              :: rlabda(:)            !< [m] wave length

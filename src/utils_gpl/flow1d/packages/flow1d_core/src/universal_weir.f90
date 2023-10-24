@@ -1,7 +1,7 @@
 module m_Universal_Weir
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_Universal_Weir
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
    
    use m_GlobalParameters
@@ -161,22 +161,6 @@ module m_Universal_Weir
          uniweir%crestlevel_actual = max(bob0(1), bob0(2), uniweir%crestlevel)
       else
          uniweir%crestlevel_actual = uniweir%crestlevel
-      endif
-      !
-      !     Check on flooding or drying with treshold
-      if ((smax - uniweir%crestlevel_actual) < thresholdDry) then
-         kfum = 0
-      elseif ((smax - uniweir%crestlevel_actual) > thresholdFlood) then
-         kfum = 1
-      else
-      endif
-      if (kfum == 0) then
-         fum = 0.0
-         rum = 0.0
-         !        same as weir
-         u1m = 0.0
-         qm = 0.0
-         return
       endif
       !
       !     Switchfactor is the transition factor between free and

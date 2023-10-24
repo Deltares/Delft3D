@@ -1,34 +1,31 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2023.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
-
-! $Id$
-! $HeadURL$
 
 subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
                 & qunit     ,qvolk     ,toest     ,vov       , &
@@ -36,7 +33,6 @@ subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
                 & dtefri    ,iflagweir , &
                 & crestl    ,rmpbov    ,rmpben    ,veg       ,testfixedweirs      )
 !-------------------------------------------------------------------------------
-!  Original URL: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/engines_gpl/flow2d3d/packages/kernel/src/compute/enloss.f90
 !!--description-----------------------------------------------------------------
 !
 ! Function: Determines additional energy loss due to weir.
@@ -181,10 +177,10 @@ subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
           !
           !  Sieben2001 (NOT USED BELOW):
           !        cd0 = 0.85 * ( exp(-0.15*e1/lkruin) * (1.-0.25*exp(-0.5*mbov))+
-          !     +         (1.-exp(-0.15*e1/lkruin)) * (0.8+0.65*exp(-0.1*mben)) ) 
+          !     +         (1.-exp(-0.15*e1/lkruin)) * (0.8+0.65*exp(-0.1*mben)) )
           !         p   = 3.375 * ( exp(0.02*mben)/cd0**2 ) * ( 1+d1/h1 )**2 *
           !     +         ( h1/d1+1-exp(-0.1*mben) )**2
-          ! 
+          !
           !  Sieben2007 (USED BELOW):
           !        cd0 = 1.0 * ( exp(-0.5*e1/lkruin) * (1.-0.25*exp(-0.5*mbov))+
           !    +         (1.-exp(-0.5*e1/lkruin)) * (0.8+0.65*exp(-0.1*mben)) )
@@ -200,9 +196,9 @@ subroutine enloss(ag        ,d1        ,eweir     ,hkruin    ,hov       , &
           vil1 = 1 + ddive * (1-exp(-rmpben/vilcd(2)))
           pref = ( 27.0 / (4.0 * cd0**2) ) * max(0.001d0,vil1)**2
        endif
-       
+
        p = (1.0 + veg/3.0)**3 / (1.0+2*veg) * pref
-       
+
        qvolkvil = 2.0/3.0 * eweir * sqrt(2.0/3.0 * ag * eweir) * cd0
 
        sqfac = sqrt(max(0.0d0,1.0d0-max(0.0d0,ewben/eweir)**pref))

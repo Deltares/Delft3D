@@ -8,7 +8,7 @@ title run_flow2d3d__parallel_dwaves
     rem         cd ...\x64\share\bin (or your local copy)
     rem         hydra_service.exe -install
     rem         mpiexec.exe -register -username <user> -password <password> -noprompt
-    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager, 
+    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
     rem     or in the command  box: hydra_service.exe -uninstall (smpd -uninstall)
     rem
     rem This script runs Delft3D-FLOW in parallel online with Delft3D-WAVE on Windows
@@ -18,13 +18,13 @@ title run_flow2d3d__parallel_dwaves
     rem Leave this script where it is.
     rem Call this script from within the working directory:
     rem path\to\delft3d\installation\x64\dflow2d3d\scripts\run_dflow2d3d_parallel_dwaves.bat
-    rem More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 setlocal enabledelayedexpansion
 
 set numpar=%NUMBER_OF_PROCESSORS%
 set flowConfigFile=config_d_hydro.xml
-set mdwfile= 
+set mdwfile=
 set debugLevel=-1
 set forceExit=0
 set goToUsage=0

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! $Id: partition.F90 142612 2023-03-01 18:35:31Z markelov $
+! : https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20230301_UNST_4401_neumann/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_data/partition.F90 $
    
 !------------------------------------------------------------------------
 !  THOUGHTS:
@@ -45,20 +45,27 @@
 #include "config.h"
 #endif 
 
-!> the parameters and enumeraters are taken from
-!>   ../third_party_open/metis-<version>/include/metis.h
+!> @file partition.f90
+!! Data and parameter modules for partitioning & parallelizing D-Flow FM models.
+!!
+!! Includes FM's own partition data as well as some handling of METIS and PETSc.
+
+!> Interface module to METIS's native error codes.
 module m_metis
+! the parameters and enumerators are taken from
+!   ../third_party_open/metis-<version>/include/metis.h
    integer, parameter :: METIS_NOPTIONS=40
    
    integer, dimension(METIS_NOPTIONS) :: opts
 
    !> FORTRAN interface to native METIS return codes
-   integer, parameter :: METIS_OK              = 1    !< Returned normally
+   integer, parameter :: METIS_OK              =  1   !< Returned normally
    integer, parameter :: METIS_ERROR_INPUT     = -2   !< Returned due to erroneous inputs and/or options
    integer, parameter :: METIS_ERROR_MEMORY    = -3   !< Returned due to insufficient memory
    integer, parameter :: METIS_ERROR           = -4   !< Some other errors
 end module
 
+!> Administration data for D-Flow FM's partitions and MPI-communication patterns.
 module m_partitioninfo
 
 use m_tpoly
@@ -69,7 +76,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
 #endif
 
-   implicit none
+implicit none
 
 #ifdef HAVE_MPI
    !> The MPI communicator for dflowfm. Default: MPI_COMM_WORLD.
@@ -78,139 +85,151 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
    !! MPI_Fint MPI_Comm_c2f(MPI_Comm comm) to convert the C comm handle
    !! to a FORTRAN comm handle.
    integer, target :: DFM_COMM_DFMWORLD = NAMECLASH_MPI_COMM_WORLD !< [-] The MPI communicator for dflowfm (FORTRAN handle). {"rank": 0}
+   integer         :: DFM_COMM_ALLWORLD                             !< [-] The MPI communicator for dflowfm including the fetch proc (FORTRAN handle). {"rank": 0}#endif
 #endif
    type tghost
-      integer, dimension(:), allocatable   :: list               !< list of ghost nodes or links, in order of their corresponding other domain, dim(1:number of ghost nodes/links)
-      integer, dimension(:), allocatable   :: N                  !< cumulative number of ghost nodes/links per domain in the list, starts with fictitious domain 0, dim(0:numdomains)
-      integer, dimension(:), allocatable   :: neighdmn           !< list of neighboring domains, dim(1:numneighdmn)
-      integer                              :: num                !< number of ghost nodes or links
-      integer                              :: numdomains         !< number of domains
-      integer                              :: numneighdmn        !< number of neighboring domains
+      integer, allocatable       :: list(:)            !< list of ghost nodes or links, in order of their corresponding other domain, dim(1:number of ghost nodes/links)
+      integer, allocatable       :: N(:)               !< cumulative number of ghost nodes/links per domain in the list, starts with fictitious domain 0, dim(0:numdomains)
+      integer, allocatable       :: neighdmn(:)        !< list of neighboring domains, dim(1:numneighdmn)
+      integer                    :: num                !< number of ghost nodes or links
+      integer                    :: numdomains         !< number of domains
+      integer                    :: numneighdmn        !< number of neighboring domains
    end type
    
-   integer                                 :: ndomains = 0       !< number of domains
-   integer                                 :: numranks = 1       !< number of ranks
-   integer                                 :: my_rank            !< own rank
+   integer                       :: ndomains = 0       !< number of domains
+   integer                       :: numranks = 1       !< number of ranks
+   integer                       :: my_rank            !< own rank
    
-   character(len=4)                        :: sdmn               !< domain number string
+   integer                       :: use_fetch_proc = 0   !< if 1, then a separate proc is dedicated to calculate fetch parlength and depth
+   integer                       :: fetch_proc_rank = -1 !< the rank of the fetch proc. it is the last proc of the entire proc group when it is active 
+   
+   character(len=4)              :: sdmn               !< domain number string
 
-   type(tpoly), allocatable                :: partition_pol(:)   !< polygons that define the partition
-   integer                                 :: npartition_pol     !< number of partition polygons
+   type(tpoly), allocatable      :: partition_pol(:)   !< polygons that define the partition
+   integer                       :: npartition_pol     !< number of partition polygons
 
-   integer, dimension(:), allocatable      :: idomain            !< cell-based domain number, dim(nump1d2d or ndx)
-   integer, dimension(:), allocatable      :: idomain0           !< backup of idomain 
-   integer, dimension(:), allocatable      :: numndx             !< number of cells in a domain
-   integer, dimension(:), allocatable      :: ighostlev          !< ghost-cell level, combination of node-based and cell-based
-   integer, dimension(:), allocatable      :: ighostlev_nodebased !< ghost-cell level, neighboring cells connected through netnodes
-   integer, dimension(:), allocatable      :: ighostlev_cellbased !< ghost-cell level, neighboring cells connected through netlinks
+   integer, allocatable          :: idomain(:)             !< cell-based domain number, dim(nump1d2d or ndx)
+   integer, allocatable          :: idomain0(:)            !< backup of idomain 
+   integer, allocatable          :: numndx(:)              !< number of cells in a domain
+   integer, allocatable, target  :: ighostlev(:)           !< ghost-cell level, combination of node-based and cell-based
+   integer, allocatable, target  :: ighostlev_nodebased(:) !< ghost-cell level, neighboring cells connected through netnodes
+   integer, allocatable, target  :: ighostlev_cellbased(:) !< ghost-cell level, neighboring cells connected through netlinks
 
-   integer, parameter                      :: ITYPE_S      = 0   !< water-level communication identifier, for Poisson equation (water level), first ghost level only
-   integer, parameter                      :: ITYPE_U      = 1   !< flow link communication identifier
-   integer, parameter                      :: ITYPE_Sall   = 2   !< water-level communcation identifier, all ghost levels
-   integer, parameter                      :: ITYPE_S3D    = 3   !< 3D water-level communication identifier, for Poisson equation (water level), first ghost level only
-   integer, parameter                      :: ITYPE_U3D    = 4   !< 3D flow link communication identifier
-   integer, parameter                      :: ITYPE_Sall3D = 5   !< 3D water-level communcation identifier, all ghost levels
-   integer, parameter                      :: ITYPE_SallTheta = 6 !< water-level communcation identifier, all ghost levels, theta-grid (for XBeach waves)
-   integer, parameter                      :: ITYPE_Snonoverlap = 7  !< non-overlappling ghost nodes (for solver)
-   integer, parameter                      :: ITYPE_U3DW        = 8  !< 3D flow link communication identifier, starting at 0, for interfaces
+   integer, parameter            :: ITYPE_S      = 0       !< water-level communication identifier, for Poisson equation (water level), first ghost level only
+   integer, parameter            :: ITYPE_U      = 1       !< flow link communication identifier
+   integer, parameter            :: ITYPE_Sall   = 2       !< water-level communcation identifier, all ghost levels
+   integer, parameter            :: ITYPE_S3D    = 3       !< 3D water-level communication identifier, for Poisson equation (water level), first ghost level only
+   integer, parameter            :: ITYPE_U3D    = 4       !< 3D flow link communication identifier
+   integer, parameter            :: ITYPE_Sall3D = 5       !< 3D water-level communcation identifier, all ghost levels
+   integer, parameter            :: ITYPE_SallTheta = 6    !< water-level communcation identifier, all ghost levels, theta-grid (for XBeach waves)
+   integer, parameter            :: ITYPE_Snonoverlap = 7  !< non-overlappling ghost nodes (for solver)
+   integer, parameter            :: ITYPE_U3DW        = 8  !< 3D flow link communication identifier, starting at 0, for interfaces
+   integer, parameter            :: ITYPE_CN          = 9  !< corners communication identificator
 
    
-   integer, parameter                      :: IGHOSTTYPE_CELLBASED = 0  !< cell-based ghostlevels
-   integer, parameter                      :: IGHOSTTYPE_NODEBASED = 1  !< node-based ghostlevels
-   integer, parameter                      :: IGHOSTTYPE_COMBINED  = 2  !< combined ghostlevels
+   integer, parameter            :: IGHOSTTYPE_CELLBASED = 0  !< cell-based ghostlevels
+   integer, parameter            :: IGHOSTTYPE_NODEBASED = 1  !< node-based ghostlevels
+   integer, parameter            :: IGHOSTTYPE_COMBINED  = 2  !< combined ghostlevels
    
 !  the non-parameter variables that are initialized with 0 are set in "partition_setghost_params"
-   integer                                 :: numlay_cellbased=0           !< number of cell-based ghost-cell layers
-   integer                                 :: numlay_nodebased=0           !< number of node-based ghost-cell layers
+   integer                       :: numlay_cellbased=0           !< number of cell-based ghost-cell layers
+   integer                       :: numlay_nodebased=0           !< number of node-based ghost-cell layers
    
-   integer                                 :: minghostlev_s=0    !< minimum ghost-cell layer level of water-level nodes, used for overlap in solver
-   integer                                 :: maxghostlev_s=0    !< maximum ghost-cell layer level of water-level nodes, used for overlap in solver
-   integer                                 :: ighosttype_s=IGHOSTTYPE_CELLBASED
+   integer                       :: minghostlev_s=0    !< minimum ghost-cell layer level of water-level nodes, used for overlap in solver
+   integer                       :: maxghostlev_s=0    !< maximum ghost-cell layer level of water-level nodes, used for overlap in solver
+   integer                       :: ighosttype_s=IGHOSTTYPE_CELLBASED
    
-   integer                                 :: minghostlev_u=0    !< minimum ghost-cell layer level of links
-   integer                                 :: maxghostlev_u=0    !< maximum ghost-cell layer level of links
-   integer, parameter                      :: ighosttype_u=IGHOSTTYPE_COMBINED
+   integer                       :: minghostlev_u=0    !< minimum ghost-cell layer level of links
+   integer                       :: maxghostlev_u=0    !< maximum ghost-cell layer level of links
+   integer, parameter            :: IGHOSTTYPE_U=IGHOSTTYPE_COMBINED
    
-   integer                                 :: minghostlev_sall=0 !< minimum ghost-cell layer level of water-level nodes, all ghost levels
-   integer                                 :: maxghostlev_sall=0 !< maximum ghost-cell layer level of water-level nodes, all ghost levels
-   integer, parameter                      :: ighosttype_sall=IGHOSTTYPE_COMBINED
+   integer                       :: minghostlev_sall=0 !< minimum ghost-cell layer level of water-level nodes, all ghost levels
+   integer                       :: maxghostlev_sall=0 !< maximum ghost-cell layer level of water-level nodes, all ghost levels
+   integer, parameter            :: IGHOSTTYPE_SALL=IGHOSTTYPE_COMBINED
    
-   integer, parameter                      :: itag_s=1           !< communication tag
-   integer, parameter                      :: itag_u=2           !< communication tag
-   integer, parameter                      :: itag_sall=3        !< communication tag
-   integer, parameter                      :: itag_snonoverlap=4 !< communication tag
+   integer, parameter            :: ITAG_S=1           !< communication tag
+   integer, parameter            :: ITAG_U=2           !< communication tag
+   integer, parameter            :: ITAG_SALL=3        !< communication tag
+   integer, parameter            :: ITAG_SNONOVERLAP=4 !< communication tag
+   integer, parameter            :: ITAG_CN=5          !< communication tag
    
-   integer                                    :: numghost_s         !< number of water-level ghost nodes
-   integer, dimension(:), allocatable, target :: ighostlist_s       !< list of water-level ghost nodes, in order of their corresponding domain
-   integer, dimension(:), allocatable, target :: nghostlist_s       !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numghost_s            !< number of water-level ghost nodes
+   integer, allocatable, target  :: ighostlist_s(:)       !< list of water-level ghost nodes, in order of their corresponding domain
+   integer, allocatable, target  :: nghostlist_s(:)       !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   integer                                    :: numghost_u         !< number of ghost links
-   integer, dimension(:), allocatable, target :: ighostlist_u       !< list of ghost links, in order of their corresponding domain
-   integer, dimension(:), allocatable, target :: nghostlist_u       !< pointer to last link of a certain ghost domain in the ighostlist_u array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numghost_u            !< number of ghost links
+   integer, allocatable, target  :: ighostlist_u(:)       !< list of ghost links, in order of their corresponding domain
+   integer, allocatable, target  :: nghostlist_u(:)       !< pointer to last link of a certain ghost domain in the ighostlist_u array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   integer                                    :: numghost_sall      !< number of water-level ghost nodes
-   integer, dimension(:), allocatable, target :: ighostlist_sall    !< list of water-level ghost nodes, in order of their corresponding domain
-   integer, dimension(:), allocatable, target :: nghostlist_sall    !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numghost_sall         !< number of water-level ghost nodes
+   integer, allocatable, target  :: ighostlist_sall(:)    !< list of water-level ghost nodes, in order of their corresponding domain
+   integer, allocatable, target  :: nghostlist_sall(:)    !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   integer                                    :: numghost_snonoverlap      !< number of water-level ghost nodes
-   integer, dimension(:), allocatable, target :: ighostlist_snonoverlap    !< list of water-level ghost nodes, in order of their corresponding domain
-   integer, dimension(:), allocatable, target :: nghostlist_snonoverlap    !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numghost_snonoverlap         !< number of water-level ghost nodes
+   integer, allocatable, target  :: ighostlist_snonoverlap(:)    !< list of water-level ghost nodes, in order of their corresponding domain
+   integer, allocatable, target  :: nghostlist_snonoverlap(:)    !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
 
-   integer                                    :: numsend_s          !< number of water-level send nodes
-   integer, dimension(:), allocatable, target :: isendlist_s        !< list of water-level internal nodes to be sent to other domains
-   integer, dimension(:), allocatable, target :: nsendlist_s        !< pointer to last s-node of a certain other domain in the isendlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numghost_cn           !< number of water-level ghost node corners
+   integer, allocatable, target  :: ighostlist_cn(:)      !< list of water-level ghost node corners, in order of their corresponding domain
+   integer, allocatable, target  :: nghostlist_cn(:)      !< pointer to last s-node of a certain ghost domain in the ighostlist_cn array, first domain first, etc. {"shape": ["-1:numdomains-1"]}
    
-   integer                                    :: numsend_u          !< number of send links
-   integer, dimension(:), allocatable, target :: isendlist_u        !< list of internal links to be sent to other domains
-   integer, dimension(:), allocatable, target :: nsendlist_u        !< pointer to last link of a certain other domain in the isendlist_u array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numsend_s             !< number of water-level send nodes
+   integer, allocatable, target  :: isendlist_s(:)        !< list of water-level internal nodes to be sent to other domains
+   integer, allocatable, target  :: nsendlist_s(:)        !< pointer to last s-node of a certain other domain in the isendlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   integer                                    :: numsend_sall       !< number of water level send nodes, all ghostlevels.
-   integer, dimension(:), allocatable, target :: isendlist_sall     !< list of water level internal nodes to be sent to other domains, all ghostlevels.
-   integer, dimension(:), allocatable, target :: nsendlist_sall     !< pointer to last s-node of a certain other domain in the isendlist_sall array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numsend_u             !< number of send links
+   integer, allocatable, target  :: isendlist_u(:)        !< list of internal links to be sent to other domains
+   integer, allocatable, target  :: nsendlist_u(:)        !< pointer to last link of a certain other domain in the isendlist_u array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   integer                                    :: numsend_snonoverlap       !< number of water level send nodes, all non-overlapping ghostlevels (for solver).
-   integer, dimension(:), allocatable, target :: isendlist_snonoverlap     !< list of water level internal nodes to be sent to other domains, all non-overlapping ghostlevels (for solver).
-   integer, dimension(:), allocatable, target :: nsendlist_snonoverlap     !< pointer to last s-node of a certain other domain in the isendlist_snonoverlap array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
+   integer                       :: numsend_sall          !< number of water level send nodes, all ghostlevels.
+   integer, allocatable, target  :: isendlist_sall(:)     !< list of water level internal nodes to be sent to other domains, all ghostlevels.
+   integer, allocatable, target  :: nsendlist_sall(:)     !< pointer to last s-node of a certain other domain in the isendlist_sall array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   integer, dimension(:), allocatable         :: iglobal            !< [-] unique flow node numbers for matrix solver, does not exactly correspond with the original unpartitioned cell/flow node numbers! (duplicate boundary cells cause some addtional cell number increments.)
-   integer, dimension(:), allocatable, target :: iglobal_s          !< [-] global flow node numbers to help output aggregation later. Should exactly correspond with the original unpartitioned flow node numbers! (as opposed to iglobal) {"shape": ["ndx"]}
-   integer                                    :: Nglobal_s          !< total number of global net cells, equals unpartitioned nump1d2d, Ndxi
-   integer, dimension(:), allocatable         :: numcells           !< number of active cells per domain, dim(0:ndomains-1)
+   integer                       :: numsend_snonoverlap       !< number of water level send nodes, all non-overlapping ghostlevels (for solver).
+   integer, allocatable, target  :: isendlist_snonoverlap(:)  !< list of water level internal nodes to be sent to other domains, all non-overlapping ghostlevels (for solver).
+   integer, allocatable, target  :: nsendlist_snonoverlap(:)  !< pointer to last s-node of a certain other domain in the isendlist_snonoverlap array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
    
-   double precision, dimension(:), allocatable, private :: work, workrec  !< work array
+   integer                       :: numsend_cn          !< number of water level send node corners, all ghostlevels.
+   integer, allocatable, target  :: isendlist_cn(:)     !< list of water level internal node corners to be sent to other domains, all ghostlevels.
+   integer, allocatable, target  :: nsendlist_cn(:)     !< pointer to last s-node of a certain other domain in the isendlist_cn array, first domain first, etc., {"shape": ["-1:numdomains-1"]}
    
-   double precision, dimension(:,:), allocatable :: workmatbd ! for overlap (solver): matrix (bbr,ddr)
-   double precision, dimension(:,:), allocatable :: workmatc  ! for overlap (solver): matrix (ccr)
+   integer, allocatable          :: iglobal(:)          !< [-] unique flow node numbers for matrix solver, does not exactly correspond with the original unpartitioned cell/flow node numbers! (duplicate boundary cells cause some addtional cell number increments.)
+   integer, allocatable, target  :: iglobal_s(:)        !< [-] global flow node numbers to help output aggregation later. Should exactly correspond with the original unpartitioned flow node numbers! (as opposed to iglobal) {"shape": ["ndx"]}
+   integer                       :: nglobal_s           !< total number of global net cells, equals unpartitioned nump1d2d, ndxi
+   integer, allocatable          :: numcells(:)         !< number of active cells per domain, dim(0:ndomains-1)
+   
+   double precision, allocatable, private :: work(:), workrec(:)  !< work array
+   
+   double precision, allocatable :: workmatbd(:,:) ! for overlap (solver): matrix (bbr,ddr)
+   double precision, allocatable :: workmatc(:,:)  ! for overlap (solver): matrix (ccr)
 
 
-   integer, dimension(:), allocatable      :: nghostlist_s_3D
-   integer, dimension(:), allocatable      :: nsendlist_s_3D
+   integer, allocatable          :: nghostlist_s_3D(:)
+   integer, allocatable          :: nsendlist_s_3D(:)
    
-   integer, dimension(:), allocatable      :: nghostlist_sall_3D
-   integer, dimension(:), allocatable      :: nsendlist_sall_3D
+   integer, allocatable          :: nghostlist_sall_3D(:)
+   integer, allocatable          :: nsendlist_sall_3D(:)
    
-   integer, dimension(:), allocatable      :: nghostlist_u_3D
-   integer, dimension(:), allocatable      :: nsendlist_u_3D
+   integer, allocatable          :: nghostlist_u_3D(:)
+   integer, allocatable          :: nsendlist_u_3D(:)
    
-   integer, dimension(:), allocatable      :: nghostlist_u_3Dw
-   integer, dimension(:), allocatable      :: nsendlist_u_3Dw
+   integer, allocatable          :: nghostlist_u_3Dw(:)
+   integer, allocatable          :: nsendlist_u_3Dw(:)
    
-   integer, dimension(:), allocatable      :: nghostlist_sall_theta
-   integer, dimension(:), allocatable      :: nsendlist_sall_theta
+   integer, allocatable          :: nghostlist_sall_theta(:)
+   integer, allocatable          :: nsendlist_sall_theta(:)
    
-   integer                                 :: jaoverlap  !< overlap in solver (1) or not (0)
-   !integer                                 :: noverlap   !< number of overlapping nodes (in solver)
-   !integer, dimension(:), allocatable      :: ioverlap   !< overlapping nodes (in solver)
+   integer                       :: jaoverlap  !< overlap in solver (1) or not (0)
 
 #ifdef HAVE_MPI
-   integer                                 :: JAMPI = 1          !< use MPI (1) or not (0)
-   integer                                 :: ja_mpi_init_by_fm  !< MPI_Init called by FM (1) or not (0). Not/0 in case FM runs in library mode and an outside runner program has taken care of MPI_Init.
+   integer                       :: jampi = 1          !< use MPI (1) or not (0)
+   integer                       :: ja_mpi_init_by_fm  !< MPI_Init called by FM (1) or not (0). Not/0 in case FM runs in library mode and an outside runner program has taken care of MPI_Init.
 #else
-   integer                                 :: JAMPI = 0          !< use MPI (1) or not (0)
+   integer                       :: jampi = 0          !< use MPI (1) or not (0)
 #endif
 
-   double precision, dimension(:), allocatable :: reducebuf    !< work array for mpi-reduce
-   integer                                     :: nreducebuf   !< size of work array 'reducebuf'
+   double precision, allocatable :: reducebuf(:)    !< work array for mpi-reduce
+   integer                       :: nreducebuf      !< size of work array 'reducebuf'
 
 !! we need interfaces to getkbotktop and getLbotLtop for the function pointers
 ! interface
@@ -235,14 +254,14 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 !   end interface
    
 !   for test solver:  Schwarz method with Robin-Robin coupling
-   integer                                       :: nbndint   ! number of interface links
-   integer,          dimension(:,:), allocatable :: kbndint   ! interface administration, similar to kbndz, etc., dim(3,nbndint)
-   double precision, dimension(:,:), allocatable :: zbndint   ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   double precision :: stoptol =1d-4  ! parameter of stopping criteria for subsolver of Schwarz method
-   double precision :: sbeta = 10d0 ! beta value in Robin-Robin coupling for Schwarz iterations
-   double precision :: prectol = 0.50D-2 ! tolerance for drop of preconditioner
-   integer          :: jabicgstab = 1 ! 
-   integer          :: Nsubiters  = 1000
+   integer                       :: nbndint           ! number of interface links
+   integer,          allocatable :: kbndint(:,:)      ! interface administration, similar to kbndz, etc., dim(3,nbndint)
+   double precision, allocatable :: zbndint(:,:)      ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
+   double precision              :: stoptol =1d-4     ! parameter of stopping criteria for subsolver of Schwarz method
+   double precision              :: sbeta = 10d0      ! beta value in Robin-Robin coupling for Schwarz iterations
+   double precision              :: prectol = 0.50D-2 ! tolerance for drop of preconditioner
+   integer                       :: jabicgstab = 1    ! 
+   integer                       :: Nsubiters  = 1000
 
 !  1D global arrays that are stored during partitioning
    character(len=ug_idsLen), private, allocatable :: nodeids_g(:)                   !< backup for nodeids during partitioning
@@ -283,8 +302,8 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       integer, intent(in)                :: janet  !< for network (1) or flow geom (0) or add 1D net (2)
       integer, intent(in), optional      :: jafindcells !< findcells when applicable (1) or not (0)
       
-      integer, dimension(:), allocatable :: idomain_prev
-      integer, dimension(:), allocatable :: idum
+      integer, allocatable               :: idomain_prev(:)
+      integer, allocatable               :: idum(:)
       
       double precision                   :: zval
 
@@ -419,13 +438,6 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
             end do
          end do   ! do ipol=1,npartition_pol
       end do   ! do idmn=0,ndomains
-      
-      if ( janet.eq.0 ) then  ! flow mode
-!        get fictitious boundary cells in own domain
-         do i=Ndxi+1,Ndx
-            idomain(i) = my_rank
-         end do
-      end if
 
       ierror = 0
 1234  continue
@@ -526,8 +538,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       character(len=*),           intent(in)  :: md_ident
       integer,                    intent(out) :: ierror
 
-      integer                                 :: idmn
-!      integer                                 ::numlaymax      
+      integer                                 :: idmn 
       character(len=128)                      :: mesg
       integer                                 :: i
       ierror = 1
@@ -535,17 +546,11 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       call partition_setghost_params(icgsolver)
       
 !     the following subroutine will determine the number of domains and generate the domain numbering
-     if ( npartition_pol.lt.1 ) then ! If do not use polygon (the domain numbers have been read from the partition nc file)
-!        get fictitious boundary cells in own domain
-         if (Ndx > nump1d2d) then
-            call realloc(idomain, Ndx, keepExisting=.true.)
-            do i=Ndxi+1,Ndx
-               idomain(i) = my_rank
-            end do
-         endif
-     else
-        call partition_pol_to_idomain(0) ! for flow geom.
+     if ( npartition_pol > 0 ) then 
+        call partition_pol_to_idomain(0)
      endif
+     
+    call set_idomain_for_all_open_boundaries()
      
 !     check the number of ranks
       if ( ndomains.ne.numranks .and. jampi.eq.1 ) then
@@ -562,8 +567,6 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       end if
 
       idmn = my_rank
-      
-!      numlaymax = numlay+1 ! add additional level for enclosed cells and flowlinks
 
       call partition_set_ghostlevels(idmn, numlay_cellbased+1, numlay_nodebased+1, 1, ierror)
       if ( ierror /= 0 ) goto 1234
@@ -578,22 +581,6 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 !     flow links: check and fix orientation of send list
       call partition_fixorientation_ghostlist(ierror)
       if ( ierror /= 0 ) goto 1234
-      
-!      if ( kmx.gt.0 ) then
-!!        make 3D ghost- and sendlists
-!         call partition_make_ghostsendlists_3d(ierror)
-!         if ( ierror /= 0 ) goto 1234
-!      end if
-
-!      call partition_cleanup(0,ierror)
-!      if ( ierror.ne.0 ) goto 1234
-
-!     begin DEBUG
-!         call write_ghosts(trim(md_ident)//'_gst.pli')
-!     end DEBUG
-
-!     determine overlapping nodes in solver
-!      call partition_getoverlappingnodes()
       
 !     make non-overlapping ghost- and sendlists (for solver)      
       call partition_fill_ghostsendlist_nonoverlap(ierror)
@@ -616,9 +603,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       
 !     make 3D ghost- and sendlists
       call partition_make_ghostsendlists_3d(ierror)
-      if ( ierror /= 0 ) goto 1234
-      
- 1234 continue
+
       return
    end subroutine partition_init_3D
 
@@ -801,7 +786,8 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       integer, intent(  out)                :: ierror !< (allocation) error code. 0=success
 
       integer, allocatable                  :: edge_nodes(:,:)
-      integer, allocatable                  :: iglobal_edge(:) !< Original global number of all current 1D edges.
+      integer, allocatable                  :: iglobal_edge(:) !< Original global number of all current 1D edges (that is: excluding 1d2d)
+      integer, allocatable                  :: kperm(:) !< Permutation table for net nodes (from old to new numbering)
       integer                               :: i, ii, ic_p, ic_g, i_p, i_g, n1dedges, numk1d
       character(len=ug_idsLen), allocatable :: nodeids_p(:)
       character(len=ug_idsLongNamesLen), allocatable :: nodelongnames_p(:)
@@ -829,7 +815,8 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       end if
 
       ! create edge_nodes (Edge-to-node mapping array)
-      call get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, iglobal_edge, ierror)
+      ! Prepare 1D edges and 1d nodes for UGRID mesh1d writing, and obtain the original global numbers, so that edge/node (branch)ids can be set correctly.
+      call get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, iglobal_edge, kperm, ierror)
       if (ierror /= 0) return
 
       ! partition node arrays
@@ -838,6 +825,9 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       ! 1D cells have already been sorted in original global order
       ! and 1D net should be written in original order (with other partitions removed, that is: in the current 1:numk1d order)
       do ic_p = nump+1, nump1d2d
+         ! UNST-6571: deliberately not using kperm here, under the assumption that in input 1D netnodes are already sorted by branch,
+         !            and this loop should stay consistent with the one in unc_write_net_ugrid2().
+         !            This subroutine only deals with edge-ordering and partition-to-global mapping (i.e., no netnode remapping).
          i_p  = netcell(ic_p)%nod(1) ! 1D netcell -> 1D net node
          ic_g = iglobal_s(ic_p)
          i_g  = netcell0(ic_g)%nod(1) ! netcell0 currently still contains backup of unpartitioned original full grid.
@@ -868,25 +858,26 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
    end subroutine partition_make_1dugrid_in_domain
 
    !> Helper routine to get 1D edge_nodes and original edge number for current domain while partitioning.
+   !! The net link and net node numbering is returned in a "1D only" numbering, intended for UGRID mesh1d output.
    !! A 1D edge is a true 1D netlink, i.e., not a 1D2D link.
-   subroutine get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, Lorg, ierror)
-      use network_data, only : kn
+   subroutine get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, Lorg, kperm, ierror)
+      use network_data, only : kn, LNE
       implicit none
-      integer,              intent(in   ) :: numl1d          !< number of 1D links in original 1d mesh
-      integer,              intent(in   ) :: L2Lorg(:)       !< Mapping table current (new) to original net link numbers
+      integer,              intent(in   ) :: numl1d          !< number of 1D(+1D2D) links in current partition mesh
+      integer,              intent(in   ) :: L2Lorg(:)       !< Mapping table current (new) to original global net link numbers
       integer,              intent(  out) :: numk1d          !< number of 1D nodes returned
       integer,              intent(  out) :: n1dedges        !< number of 1D edges returned
       integer, allocatable, intent(  out) :: edge_nodes(:,:) !< Edge-to-node mapping array.
       integer, allocatable, intent(  out) :: Lorg(:)         !< Original edge numbers for current (new) edges (edges can be subset of 1D net links, namely: excluding the 1D2D net links).
+      integer, allocatable, intent(  out) :: kperm(:)        !< Permutation table for net node numbers (from old to new numbers).
       integer,              intent(  out) :: ierror          !< error code
 
       integer              :: k1, k2, l, size
-      integer, allocatable :: kc(:)
 
       size = maxval(kn(1:2, 1:numl1d))
-      allocate(kc(size), stat=ierror)
+      allocate(kperm(size), stat=ierror)
       if (ierror /= 0) return
-      kc(:) = 0
+      kperm(:) = 0
 
       n1dedges = 0
       do l=1,numl1d
@@ -907,18 +898,32 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 
             k1 = kn(1,l)
             k2 = kn(2,l)
-            if (kc(k1) == 0) then
+            if (kperm(k1) == 0) then
                numk1d = numk1d+1
-               kc(k1) = -numk1d ! remember new node number
+               kperm(k1) = numk1d ! remember new node number
             end if
-            if (kc(k2) == 0) then
+            if (kperm(k2) == 0) then
                numk1d = numk1d+1
-               kc(k2) = -numk1d ! remember new node number
+               kperm(k2) = numk1d ! remember new node number
             end if
 
-            edge_nodes(1,n1dedges) = abs(kc(kn(1,l)))
-            edge_nodes(2,n1dedges) = abs(kc(kn(2,l)))
-            Lorg(n1dedges) = L2Lorg(L) ! Note: this assumes that in original net, all 1D net links come first in the range 1:numl1d, and the 1D2D links are all togather at the end of that numl1d range.
+            edge_nodes(1,n1dedges) = kperm(kn(1,l))
+            edge_nodes(2,n1dedges) = kperm(kn(2,l))
+            Lorg(n1dedges) = L2Lorg(L) ! Note: this assumes that in original net, all 1D net links come first in the range 1:numl1d, and the 1D2D links are all together at the end of that numl1d range.
+         else if (kn(3,l) >= 3 .and. kn(3,l) <= 7) then
+            ! We may encounter an orphan 1D2D link, where the 1D side has no own true 1D links.
+            ! In that case, only increment the numk1d counter, but don't add any 1d edge.
+            if (lne(1,L) < 0) then ! #1 is the 1D side, as set in find1dcells()
+               k1 = kn(1,L)
+            else if (lne(2,L) < 0) then ! #2 is the 1D side, as set in find1dcells()
+               k1 = kn(2,L)
+            else
+               cycle
+            end if
+            if (kperm(k1) == 0) then
+               numk1d = numk1d + 1
+               kperm(k1) = numk1d ! remember new node number
+            end if
          end if
       end do
    end subroutine get_1d_edges_in_domain
@@ -1239,7 +1244,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       
       integer              :: ilay, ic, icother, i, ip1, kk, k, L, Lp1, numcells
       
-      integer, external    :: icommon
+      integer, external    :: common_cell_for_two_net_links
       
       ierror = 1
       
@@ -1260,7 +1265,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
                      ip1 = i+1; if ( ip1.gt.nmk(k) ) ip1=ip1-nmk(k)
                      L = nod(k)%lin(i)
                      Lp1 = nod(k)%lin(ip1)
-                     icother = icommon(L,Lp1)
+                     icother = common_cell_for_two_net_links(L,Lp1)
                      
                      if ( icother.eq.0 ) cycle  ! boundary links
                      
@@ -1310,146 +1315,27 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 
 !> make the lists of ghost-water-levels and velocities
 !>    it is assumed that idomain and ighostlev are filled
-   subroutine partition_make_ghostlists(idmn, ierror)
+   subroutine partition_make_ghostlists(domain_number, error)
       use m_alloc
       use m_flowgeom
 
       implicit none
 
-      integer, intent(in)  :: idmn     !< domain number
-      integer, intent(out) :: ierror   !< error (1) or not (0)
+      integer, intent(in)  :: domain_number
+      integer, intent(out) :: error    !< error (1) or not (0)
 
-      type(tghost), dimension(:), allocatable   :: sghost      !< tghost-type ghostlist at flownodes
-      type(tghost), dimension(:), allocatable   :: sallghost   !< tghost-type ghostlist at flownodes
-      type(tghost), dimension(:), allocatable   :: ughost      !< tghost-type ghostlist at velocties
+      error = 0
 
-      integer              :: i, j, num, nums, numu, numsall
-      integer              :: iglev
+!     get ghost lists for all ghost levels at flownodes, links and corners
+      call make_ghost_list(domain_number, ITYPE_S, minghostlev_s, maxghostlev_s, numghost_s, &
+          ighostlist_s, nghostlist_s, error)
+      call make_ghost_list(domain_number, ITYPE_Sall, minghostlev_sall, maxghostlev_sall, numghost_sall, &
+          ighostlist_sall, nghostlist_sall, error)
+      call make_ghost_list(domain_number, ITYPE_U, minghostlev_u, maxghostlev_u, numghost_u, &
+          ighostlist_u, nghostlist_u, error)
+      call make_ghost_list(domain_number, ITYPE_CN, minghostlev_sall, maxghostlev_sall, numghost_cn, &
+          ighostlist_cn, nghostlist_cn, error)
 
-      ierror = 1
-
-!     get ghosts for all ghost levels at both flownodes and links
-      call partition_get_ghosts(idmn, ITYPE_S, sghost, ierror)
-      call partition_get_ghosts(idmn, ITYPE_Sall, sallghost, ierror)
-      call partition_get_ghosts(idmn, ITYPE_U, ughost, ierror)
-
-!     count number of waterlevel ghostnodes
-      nums = 0
-      do iglev=minghostlev_s,maxghostlev_s
-         if ( iglev.lt.lbound(sghost,1) .or. iglev.gt.ubound(sghost,1) ) cycle   ! should not happen
-         do i=0,sghost(iglev)%numdomains-1
-            do j=sghost(iglev)%N(i-1)+1,sghost(iglev)%N(i)
-               nums = nums+1
-            end do
-         end do
-      end do
-      
-      
-!     count number of all waterlevel ghostnodes
-      numsall = 0
-      do iglev=minghostlev_sall,maxghostlev_sall
-         if ( iglev.lt.lbound(sallghost,1) .or. iglev.gt.ubound(sallghost,1) ) cycle   ! should not happen
-         do i=0,sallghost(iglev)%numdomains-1
-            do j=sallghost(iglev)%N(i-1)+1,sallghost(iglev)%N(i)
-               numsall = numsall+1
-            end do
-         end do
-      end do
-      
-!     count number of velocity ghostlinks
-      numu = 0
-      do iglev=minghostlev_u,maxghostlev_u
-         if ( iglev.lt.lbound(ughost,1) .or. iglev.gt.ubound(ughost,1) ) cycle   ! should not happen
-         do i=0,ughost(iglev)%numdomains-1
-            do j=ughost(iglev)%N(i-1)+1,ughost(iglev)%N(i)
-               numu = numu+1
-            end do
-         end do
-      end do
-
-!     deallocate
-      if ( allocated(ighostlist_s)) deallocate(ighostlist_s)
-      if ( allocated(nghostlist_s)) deallocate(nghostlist_s)
-      
-!     allocate
-      allocate(ighostlist_s(nums))
-      allocate(nghostlist_s(-1:ndomains-1))
-      numghost_s   = nums
-      ighostlist_s = 0
-      nghostlist_s = 0
-
-!     deallocate
-      if ( allocated(ighostlist_sall)) deallocate(ighostlist_sall)
-      if ( allocated(nghostlist_sall)) deallocate(nghostlist_sall)
-      
-!     allocate
-      allocate(ighostlist_sall(numsall))
-      allocate(nghostlist_sall(-1:ndomains-1))
-      numghost_sall   = numsall
-      ighostlist_sall = 0
-      nghostlist_sall = 0
-      
-!     deallocate
-      if ( allocated(ighostlist_u)) deallocate(ighostlist_u)
-      if ( allocated(nghostlist_u)) deallocate(nghostlist_u)
-      
-!     allocate
-      allocate(ighostlist_u(numu))
-      allocate(nghostlist_u(-1:ndomains-1))
-      numghost_u   = numu
-      ighostlist_u = 0
-      nghostlist_u = 0
-
-!     fill waterlevel ghostlist
-      num = 0
-      do i=0,ndomains-1
-         do iglev=minghostlev_s,maxghostlev_s
-            if ( iglev.lt.lbound(sghost,1) .or. iglev.gt.ubound(sghost,1) ) cycle
-            if ( i.gt.sghost(iglev)%numdomains-1 ) cycle
-            do j=sghost(iglev)%N(i-1)+1,sghost(iglev)%N(i)
-               num = num+1
-               ighostlist_s(num) = sghost(iglev)%list(j)
-               nghostlist_s(i:ndomains-1) = nghostlist_s(i:ndomains-1)+1
-            end do
-         end do
-      end do
-
-!     fill all waterlevel ghostlist
-      num = 0
-      do i=0,ndomains-1
-         do iglev=minghostlev_sall,maxghostlev_sall
-            if ( iglev.lt.lbound(sallghost,1) .or. iglev.gt.ubound(sallghost,1) ) cycle
-            if ( i.gt.sallghost(iglev)%numdomains-1 ) cycle
-            do j=sallghost(iglev)%N(i-1)+1,sallghost(iglev)%N(i)
-               num = num+1
-               ighostlist_sall(num) = sallghost(iglev)%list(j)
-               nghostlist_sall(i:ndomains-1) = nghostlist_sall(i:ndomains-1)+1
-            end do
-         end do
-      end do
-
-!     fill velocity ghostlist
-      num = 0
-      do i=0,ndomains-1
-         do iglev=minghostlev_u,maxghostlev_u
-            if ( iglev.lt.lbound(ughost,1) .or. iglev.gt.ubound(ughost,1) ) cycle
-            if ( i.gt.ughost(iglev)%numdomains-1 ) cycle
-            do j=ughost(iglev)%N(i-1)+1,ughost(iglev)%N(i)
-               num = num+1
-               ighostlist_u(num) = ughost(iglev)%list(j)
-               nghostlist_u(i:ndomains-1) = nghostlist_u(i:ndomains-1)+1
-            end do
-         end do
-      end do
-
-      ierror = 0
- 1234 continue
-
- !    deallocate
-      if ( allocated(sghost)    ) call dealloc_tghost(sghost)
-      if ( allocated(sallghost) ) call dealloc_tghost(sallghost)
-      if ( allocated(ughost)    ) call dealloc_tghost(ughost)
-      
       return
    end subroutine partition_make_ghostlists
 
@@ -1483,19 +1369,15 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
             npartition_pol = 0
          end if
       else if ( iwhat.eq.3 ) then
-!         call dealloc_tghost(sghost)
          if ( allocated(ighostlist_s) ) deallocate(ighostlist_s)
          if ( allocated(nghostlist_s) ) deallocate(nghostlist_s)
       else if ( iwhat.eq.4 ) then
-!         call dealloc_tghost(ughost)
          if ( allocated(ighostlist_u) ) deallocate(ighostlist_u)
          if ( allocated(nghostlist_u) ) deallocate(nghostlist_u)
       else if ( iwhat.eq.5 ) then
-!         call dealloc_tghost(sghost)
          if ( allocated(isendlist_s) ) deallocate(isendlist_s)
          if ( allocated(nsendlist_s) ) deallocate(nsendlist_s)
       else if ( iwhat.eq.6 ) then
-!         call dealloc_tghost(ughost)
          if ( allocated(isendlist_u) ) deallocate(isendlist_u)
          if ( allocated(nsendlist_u) ) deallocate(nsendlist_u)
       else if ( iwhat.eq.7 ) then
@@ -1671,169 +1553,33 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 
 !> make the lists of ghost-water-levels and velocities
 !>    it is assumed that idomain and ighostlev are filled
-   subroutine partition_get_ghosts(idmn, itype, ghost, ierror)
+   subroutine partition_get_ghosts(domain_number, itype, ghost_list, ierror)
       use m_alloc
-      use m_flowgeom
 
       implicit none
 
-      integer,                                 intent(in)  :: idmn   !< domain number
-      integer,                                 intent(in)  :: itype  !< type: 0: flownode, 1: flowlink
-      type(tghost), dimension(:), allocatable, intent(out) :: ghost  !< tghost-type ghost list
-      integer,                                 intent(out) :: ierror   !< error (1) or not (0)
-      
-      integer                                              :: minlev !< minimum ghost-level
-      integer                                              :: maxlev !< maximum ghost-level
-
-      integer                                              :: i, ic, j, Lf, num, numdomains
-      integer                                              :: idmn_ghost, ipoint, iglev, jaghost
-      integer                                              :: iglevL, iglevR
-      integer                                              :: ighosttype
+      integer,                   intent(in)  :: domain_number
+      integer,                   intent(in)  :: itype    !< type: flow node, flow link, flow node corner
+      type(tghost), allocatable, intent(out) :: ghost_list(:)
+      integer,                   intent(out) :: ierror   !< error (1) or not (0)
 
       ierror = 1
 
-      if ( allocated(ghost) ) call dealloc_tghost(ghost)
+      if ( allocated(ghost_list) ) call dealloc_tghost(ghost_list)
 
-      if ( itype.eq.ITYPE_Sall .or. itype.eq.ITYPE_S ) then  ! flownode
-         if ( itype.eq.ITYPE_Sall ) then
-            minlev = minghostlev_sall
-            maxlev = maxghostlev_sall
-            ighosttype = ighosttype_sall
-         else if ( itype.eq.ITYPE_S ) then
-            minlev = minghostlev_s
-            maxlev = maxghostlev_s
-            ighosttype = ighosttype_s
-         end if
-
-!        allocate and initialize
-         call alloc_tghost(ghost,maxlev,minlev)
-      
-   !     get the sorted ghostnode list and count the number of nodes per ghost domain
-   !        note: ghost()%N is per domain at first, will be cumulative later
-         do ic=1,Ndx ! also include fictitious boundary node
-            if ( idomain(ic).ne.idmn ) then
-               idmn_ghost = idomain(ic)
-               if ( ighosttype.eq.IGHOSTTYPE_CELLBASED ) then
-                  iglev      = ighostlev_cellbased(ic)
-               else if ( ighosttype.eq.IGHOSTTYPE_NODEBASED ) then
-                  iglev      = ighostlev_nodebased(ic)
-               else  ! combined
-                  iglev      = ighostlev(ic)
-               end if
-               
-               if ( iglev.ge.minlev .and. iglev.le.maxlev ) then
-                  num        = ghost(iglev)%num
-                  numdomains = ghost(iglev)%numdomains
-
-                  num        = num+1
-                  numdomains = max(numdomains, idmn_ghost+1)   ! domain numbers are zero-based
-               
-   !              reallocate if necessary
-                  if ( numdomains-1.gt.ubound(ghost(iglev)%N,1) ) then
-                     call realloc(ghost(iglev)%N, numdomains-1, -1, fill=0, keepExisting=.true.)
-                  end if
-                  if ( num.gt.ubound(ghost(iglev)%list,1) ) then
-                     call realloc(ghost(iglev)%list, int(1.2d0*dble(num))+1, fill=0, keepExisting=.true.)
-                  end if
-
-   !              administer ghost cell
-                  ghost(iglev)%N(idmn_ghost) = ghost(iglev)%N(idmn_ghost)+1
-   !              determine the position of the ghost cell in the array
-                  ipoint = sum(ghost(iglev)%N(0:idmn_ghost))
-   !              insert cell in list
-                  do i=num,ipoint+1,-1
-                     ghost(iglev)%list(i) = ghost(iglev)%list(i-1)
-                  end do
-                  ghost(iglev)%list(ipoint)        = ic
-               
-                  ghost(iglev)%num        = num
-                  ghost(iglev)%numdomains = numdomains
-               end if
-            end if
-         end do
-      
-      else if ( itype.eq.ITYPE_U ) then  ! flowlink
-         minlev = minghostlev_u
-         maxlev = maxghostlev_u
-         ighosttype = ighosttype_u
-
-!        allocate and initialize
-         call alloc_tghost(ghost,maxlev,minlev)
-         
-         num = 0
-         do Lf=1,lnx
-!           determine if flow link is a ghost link and get domain number and ghost level of link
-            if ( ighosttype.eq.IGHOSTTYPE_CELLBASED ) then
-               iglevL = ighostlev_cellbased(ln(1,Lf))
-               iglevR = ighostlev_cellbased(ln(2,Lf))
-            else if ( ighosttype.eq.IGHOSTTYPE_NODEBASED ) then
-               iglevL = ighostlev_nodebased(ln(1,Lf))
-               iglevR = ighostlev_nodebased(ln(2,Lf))
-            else  ! combined
-               iglevL = ighostlev(ln(1,Lf))
-               iglevR = ighostlev(ln(2,Lf))
-            end if
-            call link_ghostdata(idmn, idomain(ln(1,Lf)), idomain(ln(2,Lf)), jaghost, idmn_ghost, iglevL, iglevR, iglev)
-        
-            if ( jaghost.eq.1 ) then
-               if ( iglev.ge.minlev .and. iglev.le.maxlev ) then
-                  num        = ghost(iglev)%num
-                  numdomains = ghost(iglev)%numdomains
-
-                  num        = num+1
-                  numdomains = max(numdomains, idmn_ghost+1)   ! domain numbers are zero-based
-
-   !              reallocate if necessary
-                  if ( numdomains-1.gt.ubound(ghost(iglev)%N,1) ) then
-                     call realloc(ghost(iglev)%N, numdomains-1, -1, fill=0, keepExisting=.true.)
-                  end if
-                  if ( num.gt.ubound(ghost(iglev)%list,1) ) then
-                     call realloc(ghost(iglev)%list, int(1.2d0*dble(num))+1, fill=0, keepExisting=.true.)
-                  end if
-
-   !              administer ghost link
-                  ghost(iglev)%N(idmn_ghost) = ghost(iglev)%N(idmn_ghost)+1
-   !              determine the position of the ghost cell in the array
-                  ipoint = sum(ghost(iglev)%N(0:idmn_ghost))
-   !              insert cell in list
-                  do i=num,ipoint+1,-1
-                     ghost(iglev)%list(i) = ghost(iglev)%list(i-1)
-                  end do
-                  ghost(iglev)%list(ipoint)        = Lf
-
-                  ghost(iglev)%num        = num
-                  ghost(iglev)%numdomains = numdomains
-               end if
-            end if
-         end do   ! do Lf=1,lnx
+      if ( itype == ITYPE_Sall ) then ! flow node
+         call get_ghost_cells(domain_number, minghostlev_sall, maxghostlev_sall, IGHOSTTYPE_SALL, ghost_list)
+      else if ( itype == ITYPE_S ) then
+        call get_ghost_cells(domain_number, minghostlev_s, maxghostlev_s, ighosttype_s, ghost_list)
+      else if ( itype == ITYPE_U ) then  ! flow link
+         call get_ghost_links(domain_number, minghostlev_u, maxghostlev_u, IGHOSTTYPE_U, ghost_list)
+      else if ( itype == ITYPE_CN ) then  ! flow node corners
+         call get_ghost_corners(domain_number, minghostlev_sall, maxghostlev_sall, IGHOSTTYPE_SALL, ghost_list)
       else  ! unknown type
-            call qnerror('partition_get_ghosts: unsupported ghost type', ' ', ' ')
+         call qnerror('partition_get_ghosts: unsupported ghost type', ' ', ' ')
       end if
 
-!     accumulate ghost()%N
-      do iglev=minlev,maxlev
-         do i=ghost(iglev)%numdomains-1,0,-1
-            do j=0,i-1
-               ghost(iglev)%N(i) = ghost(iglev)%N(i) + ghost(iglev)%N(j)
-            end do
-         end do
-      end do
-
-!     count the neighboring domains
-      do iglev=minlev,maxlev
-         num = 0
-         do i=0,ghost(iglev)%numdomains-1
-            if ( ghost(iglev)%N(i)-ghost(iglev)%N(i-1).gt.0 ) then
-               num = num+1
-               if ( num.gt.ubound(ghost(iglev)%neighdmn,1) ) call realloc(ghost(iglev)%neighdmn, int(1.2d0*dble(num)+1d0), keepExisting=.true., fill=0)
-               ghost(iglev)%neighdmn(num) = i
-            end if
-         end do
-         ghost(iglev)%numneighdmn = num
-      end do
-
       ierror = 0
- 1234 continue
       
       return
    end subroutine partition_get_ghosts
@@ -1858,17 +1604,12 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       integer, intent(in),  optional :: ighostlevL  !< ghost level of left neighboring cell
       integer, intent(in),  optional :: ighostlevR  !< ghost level of right neighboring cell
       integer, intent(out), optional :: iglev       !< flow link ghost level (if ghostlevels specified, otherwise 0)
-      
-!      integer              :: icL, icR
                
-      jaghost    = 0
+      jaghost   = 0
       idmn_link = idmn
       if ( present(iglev) ) then
-         iglev      = 0
+         iglev  = 0
       end if
-      
-!      icL = ln(1,Lf)
-!      icR = ln(2,Lf)
       
       if ( ( idmnL.ne.idmn .and. idmnR.ne.idmn ) .or.  &
            ( idmnL.eq.idmn .and. idmnR.lt.idmn ) .or.  &
@@ -1913,128 +1654,135 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 
 
 !> fill sendghostlist
-   subroutine partition_fill_sendlist(idmn, idmn_other, itype, N, x, y, ghost, isendlist, nsendlist, ierror)
+   subroutine partition_fill_sendlist(own_domain_number, other_domain_number, itype, N_req, x_req, y_req, ghost_list, &
+       send_list, nr_send_list, ierror)
       
       use m_alloc
-      use network_data, only: xzw, yzw
-      use m_flowgeom,   only: xu, yu
+      use network_data,    only: numk,xzw, yzw, xk, yk
+      use m_flowgeom,      only: xu, yu
       use geometry_module, only: dbdistance
-      use m_missing, only: dmiss
-      use m_sferic, only: jsferic, jasfer3D
+      use m_missing,       only: dmiss
+      use m_sferic,        only: jsferic, jasfer3D
 
       implicit none
 
-      integer,                                     intent(in)    :: idmn         !< own domain
-      integer,                                     intent(in)    :: idmn_other   !< other domain
-      integer,                                     intent(in)    :: itype        !< type: 0: flownode, 1: flowlink
-      integer,                                     intent(in)    :: N            !< number of flownodes/links requested by other domain
-      double precision, dimension(N),              intent(in)    :: x, y         !< coordinates of requested flownodes/links
-      type(tghost),     dimension(:),              intent(in)    :: ghost        !< tghost-type list of ghost flownodes/links
-      integer,          dimension(:), allocatable, intent(inout) :: isendlist    !< send list
-      integer,          dimension(:), allocatable, intent(inout) :: nsendlist    !< cumulative number of flownodes/links per domain in the list, starts with fictitious domain 0, dim(-1:ndomains-1)
-      integer,                                     intent(out)   :: ierror       !< error (1) or not (0)
+      integer,              intent(in)    :: own_domain_number
+      integer,              intent(in)    :: other_domain_number
+      integer,              intent(in)    :: itype               !< ITYPE_*
+      integer,              intent(in)    :: N_req               !< number of flownodes/links/corners requested by other domain
+      double precision,     intent(in)    :: x_req(N_req), y_req(N_req)  !< coordinates of requested flownodes/links/corners
+      type(tghost),         intent(in)    :: ghost_list(:) 
+      integer, allocatable, intent(inout) :: send_list(:)        !< send list
+      integer, allocatable, intent(inout) :: nr_send_list(:)     !< cumulative number of flownodes/links/corners per domain in the list, starts with fictitious domain 0, dim(-1:ndomains-1)
+      integer,              intent(out)   :: ierror              !< error (1) or not (0)
 
-      integer,          dimension(:), allocatable                :: ilist
-
-      double precision                                           :: xi, yi, dis
-
-      integer                                                    :: i, ii, j, iglev, num, numnew
-      integer                                                    :: numdomains, idum
+      integer, allocatable                :: temp_list(:)                 !< temp list holds a list of flow nodes/links/corners
+      double precision, pointer           :: x_local(:), y_local(:)       !< pointers on flow nodes/links/corners
+      integer                             :: i, ii, j, ghost_level, num, numnew
+      integer                             :: numdomains, idum
+      integer                             :: node
       
-      integer                                                    :: jafound
-      double precision, parameter                                :: dtol=1d-4
+      integer                             :: jafound
+      double precision, parameter         :: TOLERANCE=1d-4
+      character(len=80)                   :: message2, message3
 
       ierror = 1
+      if ( own_domain_number < 0 ) then
+          return
+      endif
 
+      if ( itype == ITYPE_S .or. itype == ITYPE_SALL .or. itype == ITYPE_SNONOVERLAP ) then  ! flownodes
+         x_local => xzw
+         y_local => yzw
+      else if ( itype == ITYPE_U ) then   ! flowlinks
+         x_local => xu
+         y_local => yu
+      else if ( itype == ITYPE_CN ) then   ! corners
+         x_local => xk
+         y_local => yk
+      else
+         call qnerror('partition_fill_sendlist: unknown ghost type', ' ', ' ')
+         return
+      end if
+               
 !     allocate
-      allocate(ilist(N))
-      ilist = 0
+      allocate(temp_list(N_req))
+      temp_list(:) = 0
 
       num = 0
-      do j=1,N
-         jafound = 0
-  ghstlp:do iglev=lbound(ghost,1),ubound(ghost,1)
-            if ( idmn.gt.ghost(iglev)%numdomains-1 .or. idmn.lt.0 ) cycle
-            do ii=ghost(iglev)%N(idmn-1)+1,ghost(iglev)%N(idmn)
-               i = ghost(iglev)%list(ii)
-               if ( itype.eq.ITYPE_S .or. itype.eq.ITYPE_SALL .or. itype.eq.ITYPE_SNONOVERLAP ) then  ! flownodes
-                  xi = xzw(i)
-                  yi = yzw(i)
-               else if ( itype.eq.ITYPE_U ) then   ! flowlinks
-                  xi = xu(i)
-                  yi = yu(i)
-               else  ! unknown type
-                  call qnerror('partition_fill_sendlist: unknown ghost type', ' ', ' ')
-                  goto 1234
-               end if
-
-               dis = dbdistance(x(j),y(j),xi,yi, jsferic, jasfer3D, dmiss)
-               if ( dis.lt.dtol ) then ! found
-                  num = num+1
-                  ilist(num) = i
+      do j = 1, N_req
+          jafound = 0
+  search_loop: &
+         do ghost_level = lbound(ghost_list,1), ubound(ghost_list,1)
+            if ( own_domain_number > ghost_list(ghost_level)%numdomains - 1 ) cycle
+            do ii = ghost_list(ghost_level)%N(own_domain_number - 1) + 1, ghost_list(ghost_level)%N(own_domain_number)
+               i  = ghost_list(ghost_level)%list(ii)
+               if ( dbdistance(x_req(j), y_req(j), x_local(i), y_local(i), jsferic, jasfer3D, dmiss) < TOLERANCE ) then ! found
+                  num = num + 1
+                  temp_list(num) = i
                   jafound = 1
-                  exit ghstlp
+                  exit search_loop
                end if
             end do
-         end do ghstlp
-         
-!        check if flownode/link was found
-!         if ( jafound.eq.0 ) then
-!            num = num+1
-!            ilist(num) = 0 ! mark as not found            
-!            continue
-!         end if
-         
-!!        safety check
-!         if ( j.ne.num ) then
-!            call qnerror('partition_fill_sendlist: numbering error', ' ', ' ')
-!            goto 1234
-!         end if
-         
+         end do search_loop
+!        check if flownode/link/corner was found
+         if ( jafound == 0 ) then
+            write(message2,*) 'my_rank=', my_rank,' itype=',itype
+            write(message3,*) 'j=',j,' N_req=',N_req,' num=',num
+            if ( itype == ITYPE_CN ) then
+                do node = 1, numk
+                   if ( dbdistance(x_req(j), y_req(j), xk(node), yk(node), jsferic, jasfer3D, dmiss) < TOLERANCE ) then ! found
+                       num = num + 1
+                       temp_list(num) = node
+                       jafound = 1
+                       exit
+                   end if
+                end do  
+               if ( jafound == 0 ) then
+                  call qnerror('partition_fill_sendlist: numbering error', message2, message3)
+                  goto 1234
+               endif
+            end if
+         endif
       end do
-
-      !if ( num.eq.0 ) then
-      !   goto 1234  ! no flownodes/links found
-      !end if
 
 !     (re)allocate
-      if ( .not.allocated(nsendlist) ) then
-         !numdomains = idmn_other+1
+      if ( .not.allocated(nr_send_list) ) then
          numdomains = ndomains
-         allocate(nsendlist(-1:numdomains-1))
-         nsendlist = 0
+         allocate(nr_send_list(-1:numdomains-1))
+         nr_send_list(:) = 0
       else
-         numdomains = ubound(nsendlist,1)+1    ! number of domains so far
-         if ( idmn_other.gt.numdomains-1 ) then      ! number of domains needs to be increased
-            idum = nsendlist(numdomains-1)
-            call realloc(nsendlist, idmn_other, -1, fill=idum, keepExisting=.true.)
-            numdomains = idmn_other+1
+         numdomains = ubound(nr_send_list,1) + 1       ! number of domains so far
+         if ( other_domain_number > numdomains-1 ) then      ! number of domains needs to be increased
+            idum = nr_send_list(numdomains-1)
+            call realloc(nr_send_list, other_domain_number, -1, fill=idum, keepExisting=.true.)
+            numdomains = other_domain_number+1
          end if
       end if
 
-      if ( .not.allocated(isendlist) ) then
-         allocate(isendlist(num))
+      if ( .not.allocated(send_list) ) then
+         allocate(send_list(num))
       else
-         numnew = nsendlist(numdomains-1)+num
-         if ( numnew.gt.ubound(isendlist,1) ) then
-            call realloc(isendlist, int(1.2d0*dble(numnew)+1d0), fill=0, keepExisting=.true.)
+         numnew = nr_send_list(numdomains-1) + num
+         if ( numnew > ubound(send_list,1) ) then
+            call realloc(send_list, int(1.2d0*dble(numnew)+1d0), fill=0, keepExisting=.true.)
          end if
       end if
 
-!     fill list
-      do i=nsendlist(numdomains-1),nsendlist(idmn_other)+1,-1
-         isendlist(i+num) = isendlist(i)
+!     making a gap
+      do i = nr_send_list(numdomains-1), nr_send_list(other_domain_number)+1, -1
+         send_list(i + num) = send_list(i)
       end do
-      do i=1,num
-         isendlist(nsendlist(idmn_other)+i) = ilist(i)
+      ! put temp_list values in the gap
+      do i = 1, num
+         send_list(nr_send_list(other_domain_number)+i) = temp_list(i)
       end do
-      nsendlist(idmn_other:numdomains-1) = nsendlist(idmn_other:numdomains-1) + num
+      nr_send_list(other_domain_number:numdomains-1) = nr_send_list(other_domain_number:numdomains-1) + num
 
       ierror = 0
- 1234 continue
 
- !    deallocate
-      if ( allocated(ilist) ) deallocate(ilist)
+1234  continue      
+      if ( allocated(temp_list) ) deallocate(temp_list)
 
       return
    end subroutine partition_fill_sendlist
@@ -2057,42 +1805,42 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       type(tghost), dimension(:), allocatable :: sallghost
       type(tghost), dimension(:), allocatable :: ughost
       
-!      integer                                 :: numlaymax
-      
-      integer,                    parameter   :: maxnamelen=255
+      integer,                    parameter   :: MAXNAMELEN=255
 
       integer                                 :: idmn_other, minp
       
-      character(len=maxnamelen)               :: filename
+      character(len=MAXNAMELEN)               :: filename
       character(len=4)                        :: sdmn       ! domain number string
+      integer, allocatable                    :: nghostlist_cn_temp(:) !< temporal storige of ghost list reference data
+      integer, allocatable                    :: ighostlist_cn_temp(:) !< temporal storige of ghost list
 
       ierror = 1
-      
-!      numlaymax = numlay+1 ! include additional layer to detect all flownodes and flowlinks
-   
-      if ( allocated(isendlist_s) ) deallocate(isendlist_s)
-      if ( allocated(nsendlist_s) ) deallocate(nsendlist_s)
+
+      if ( allocated(isendlist_s)    ) deallocate(isendlist_s)
+      if ( allocated(nsendlist_s)    ) deallocate(nsendlist_s)
       
       if ( allocated(isendlist_sall) ) deallocate(isendlist_sall)
       if ( allocated(nsendlist_sall) ) deallocate(nsendlist_sall)
 
-      if ( allocated(isendlist_u) ) deallocate(isendlist_u)
-      if ( allocated(nsendlist_u) ) deallocate(nsendlist_u)
+      if ( allocated(isendlist_u)    ) deallocate(isendlist_u)
+      if ( allocated(nsendlist_u)    ) deallocate(nsendlist_u)
+      
+      if ( allocated(isendlist_cn)   ) deallocate(isendlist_cn)
+      if ( allocated(nsendlist_cn)   ) deallocate(nsendlist_cn)
 
-      if ( jampi.eq.0 ) then
+      if ( jampi == 0 ) then
 !        save polygon
          call savepol()
          
-         do idmn_other=0,ndomains-1
+         do idmn_other = 0, ndomains - 1
             write(sdmn, '(I4.4)') idmn_other
             filename = trim(trim(fnam)//'_'//sdmn//'_gst.pli')
             call oldfil(minp, filename)
             call reapol(minp, 0)
 
-            if ( NPL.lt.1 ) cycle
+            if ( NPL < 1 ) cycle
 
 !           make ghostcells of other domain
-!            call partition_set_ghostlevels(idmn_other, numlaymax, ierror)
             call partition_set_ghostlevels(idmn_other, numlay_cellbased+1, numlay_nodebased+1, 1, ierror)
             call partition_get_ghosts(idmn_other, ITYPE_S, sghost, ierror)
             call partition_get_ghosts(idmn_other, ITYPE_Sall, sallghost, ierror)
@@ -2106,148 +1854,183 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 
    !     restore polygon
          call restorepol()
+         
+         if ( allocated(sghost) )    call dealloc_tghost(sghost)
+         if ( allocated(sallghost) ) call dealloc_tghost(sallghost)
+         if ( allocated(ughost) )    call dealloc_tghost(ughost)
       else
-!         call partition_make_sendlist_MPI(ITYPE_S,numlaymax)
-!         call partition_make_sendlist_MPI(ITYPE_Sall,numlaymax)
-!         call partition_make_sendlist_MPI(ITYPE_u,numlaymax)
-         call partition_make_sendlist_MPI(ITYPE_S,   numlay_cellbased+1,numlay_nodebased+1)
-         call partition_make_sendlist_MPI(ITYPE_Sall,numlay_cellbased+1,numlay_nodebased+1)
-         call partition_make_sendlist_MPI(ITYPE_u,   numlay_cellbased+1,numlay_nodebased+1)
+!        fill send lists
+         call partition_make_sendlist_MPI(ITYPE_S,   numlay_cellbased+1,numlay_nodebased+1, isendlist_s, nsendlist_s)
+         call partition_make_sendlist_MPI(ITYPE_Sall,numlay_cellbased+1,numlay_nodebased+1, isendlist_sall, nsendlist_sall)
+         call partition_make_sendlist_MPI(ITYPE_U,   numlay_cellbased+1,numlay_nodebased+1, isendlist_u, nsendlist_u)
          
 !        communicate sendlist back to obtain (possibly) reduced ghostlist in own domain
 !        deallocate first
          nghostlist_s = 0
-         if ( allocated(ighostlist_s) ) deallocate(ighostlist_s)
-         
+         if ( allocated(ighostlist_s)    ) deallocate(ighostlist_s)      
          nghostlist_sall = 0
-         if ( allocated(ighostlist_sall) ) deallocate(ighostlist_sall)
-         
+         if ( allocated(ighostlist_sall) ) deallocate(ighostlist_sall)   
          nghostlist_u = 0
-         if ( allocated(ighostlist_u) ) deallocate(ighostlist_u)
+         if ( allocated(ighostlist_u)    ) deallocate(ighostlist_u)
          
 !        fill ghostlists
-!         call partition_make_sendlist_MPI(ITYPE_S,numlaymax,ifromto=1)
-!         call partition_make_sendlist_MPI(ITYPE_Sall,numlaymax,ifromto=1)
-!         call partition_make_sendlist_MPI(ITYPE_u,numlaymax,ifromto=1)
-         call partition_make_sendlist_MPI(ITYPE_S,   numlay_cellbased+1,numlay_nodebased+1,ifromto=1)
-         call partition_make_sendlist_MPI(ITYPE_Sall,numlay_cellbased+1,numlay_nodebased+1,ifromto=1)
-         call partition_make_sendlist_MPI(ITYPE_u,   numlay_cellbased+1,numlay_nodebased+1,ifromto=1)
+         call partition_make_sendlist_MPI(ITYPE_S,   numlay_cellbased+1,numlay_nodebased+1, ighostlist_s, nghostlist_s, ifromto=1)
+         call partition_make_sendlist_MPI(ITYPE_Sall,numlay_cellbased+1,numlay_nodebased+1, ighostlist_sall, nghostlist_sall, ifromto=1)
+         call partition_make_sendlist_MPI(ITYPE_u,   numlay_cellbased+1,numlay_nodebased+1, ighostlist_u, nghostlist_u, ifromto=1)
+         
+         nghostlist_cn_temp = nghostlist_cn
+         ighostlist_cn_temp = ighostlist_cn
+         call partition_make_sendlist_MPI(ITYPE_CN,  numlay_cellbased+1,numlay_nodebased+1, isendlist_cn, nsendlist_cn)
+         nghostlist_cn = nghostlist_cn_temp
+         ighostlist_cn = ighostlist_cn_temp
+         
       end if
       
 !     set number of send nodes/links
-      numsend_s    = 0
-      numsend_sall = 0
-      numsend_u    = 0
-      if ( allocated(nsendlist_sall) ) then
-         if ( allocated(nsendlist_s) )    numsend_s    = nsendlist_s(ndomains-1)
-         if ( allocated(nsendlist_sall) ) numsend_sall = nsendlist_sall(ndomains-1)
-         if ( allocated(nsendlist_u) )    numsend_u    = nsendlist_u(ndomains-1)
-      
-!        flow links: check and fix orientation of send list
-!         call partition_fixorientation_sendlist(ierror)
-      end if
-      
-!     (re)set number of ghost nodes/links    
-      numghost_s    = 0
-      numghost_sall = 0
-      numghost_u    = 0  
-      if ( allocated(nghostlist_sall) ) then
-         if ( allocated(nghostlist_s) )    numghost_s    = nghostlist_s(ndomains-1)
-         if ( allocated(nghostlist_sall) ) numghost_sall = nghostlist_sall(ndomains-1)
-         if ( allocated(nghostlist_u) )    numghost_u    = nghostlist_u(ndomains-1)
-      end if
+      numsend_s    = get_list_size(nsendlist_s   , nsendlist_sall)
+      numsend_sall = get_list_size(nsendlist_sall, nsendlist_sall)
+      numsend_u    = get_list_size(nsendlist_u   , nsendlist_sall)
+      numsend_cn   = get_list_size(nsendlist_cn  , nsendlist_sall)
+
+      numghost_s    = get_list_size(nghostlist_s   , nghostlist_sall)
+      numghost_sall = get_list_size(nghostlist_sall, nghostlist_sall)
+      numghost_u    = get_list_size(nghostlist_u   , nghostlist_sall)
+      numghost_cn   = get_list_size(nghostlist_cn  , nghostlist_sall)
       
 !     safety: make dummy empty lists
       call realloc(nghostlist_s,    ndomains-1, -1, keepExisting=.true., fill=0)
       call realloc(nghostlist_sall, ndomains-1, -1, keepExisting=.true., fill=0)
       call realloc(nghostlist_u,    ndomains-1, -1, keepExisting=.true., fill=0)
+      call realloc(nghostlist_cn,   ndomains-1, -1, keepExisting=.true., fill=0)
                                                     
       call realloc(nsendlist_s,     ndomains-1, -1, keepExisting=.true., fill=0)
       call realloc(nsendlist_sall,  ndomains-1, -1, keepExisting=.true., fill=0)
       call realloc(nsendlist_u,     ndomains-1, -1, keepExisting=.true., fill=0)
-      
-      
+      call realloc(nsendlist_cn,    ndomains-1, -1, keepExisting=.true., fill=0)
+          
       call realloc(ighostlist_s,    max(numghost_s,1),    keepExisting=.true., fill=0)
       call realloc(ighostlist_sall, max(numghost_sall,1), keepExisting=.true., fill=0)
       call realloc(ighostlist_u,    max(numghost_u,1),    keepExisting=.true., fill=0)
+      call realloc(ighostlist_cn,   max(numghost_cn,1),   keepExisting=.true., fill=0)
       
       call realloc(isendlist_s,     max(numsend_s,1),     keepExisting=.true., fill=0)
       call realloc(isendlist_sall,  max(numsend_sall,1),  keepExisting=.true., fill=0)
       call realloc(isendlist_u,     max(numsend_u,1),     keepExisting=.true., fill=0)
+      call realloc(isendlist_cn,    max(numsend_cn,1),    keepExisting=.true., fill=0)
 
       ierror = 0
  1234 continue
-
-!     deallocate
-      if ( allocated(sghost) ) call dealloc_tghost(sghost)
-      if ( allocated(sallghost) ) call dealloc_tghost(sallghost)
-      if ( allocated(ughost) ) call dealloc_tghost(ughost)
 
       return
    end subroutine partition_make_sendlists
    
 !> communicate ghost cells to other domains
-   subroutine partition_make_sendlist_MPI(itype,numlay_cell,numlay_node,ifromto)
+   subroutine partition_make_sendlist_MPI(itype, numlay_cell, numlay_node, i_list, n_list, ifromto)
       use m_alloc
       use m_missing
-      use network_data, only : xzw, yzw
+      use network_data, only : xzw, yzw, xk, yk
       use m_flowgeom,   only : xu, yu
 #ifdef HAVE_MPI
       use mpi
 #endif
       
       implicit none
-      integer,                                       intent(in)  :: itype      !< type: 0: flownode, 1: flowlink
-      
-      integer,                                       intent(in)  :: numlay_cell  !< number of cell-based ghost-levels considered (normally numlay_cellbased+1)
-      integer,                                       intent(in)  :: numlay_node  !< number of node-based ghost-levels considered (normally numlay_nodebased+1)
-      integer,                          optional,    intent(in)  :: ifromto    !< fill sendlists from ghostlists (0, default) or ghostlists from sendlists (1)
+      integer,                       intent(in)  :: itype        !< type: 0: flow node, 1: flow link, 9: corners
+      integer,                       intent(in)  :: numlay_cell  !< number of cell-based ghost-levels considered (normally numlay_cellbased+1)
+      integer,                       intent(in)  :: numlay_node  !< number of node-based ghost-levels considered (normally numlay_nodebased+1)
+      integer,  allocatable,      intent(inout)  :: i_list(:)    !< isendlist or ighostlist (consistent with ifromto)
+      integer,  allocatable,      intent(inout)  :: n_list(:)    !< nsendlist or nghostlist (consistent with ifromto)
+      integer,          optional,    intent(in)  :: ifromto      !< fill sendlists from ghostlists (0, default) or ghostlists from sendlists (1)
 
 #ifdef HAVE_MPI 
 
-      type(tghost),     dimension(:),   allocatable              :: sghost
-      type(tghost),     dimension(:),   allocatable              :: sallghost
-      type(tghost),     dimension(:),   allocatable              :: ughost
+      type(tghost),     allocatable, target      :: ghost_list(:)
       
-      double precision, dimension(:,:), allocatable              :: xysnd        ! send     cell-center coordinates (first x, then y)
-      double precision, dimension(:,:), allocatable              :: xyrec        ! recieved cell-center coordinates (first x, then y)
+      double precision, pointer                  :: x_coords(:), y_coords(:)
+      double precision, allocatable              :: xy_send(:,:)  ! send buffer for cell/link center or corner coordinates (first x, then y)
+      double precision, allocatable              :: xy_recv(:,:)  ! receive buffer for cell/link center or corner coordinates (first x, then y)
+     
+      integer,          allocatable              :: ighostlev_bak(:)             ! store of the combined ghost levelslevels
+      integer,          allocatable              :: ighostlev_cellbased_bak(:)   ! store of the cell-based ghost levels
+      integer,          allocatable              :: ighostlev_nodebased_bak(:)   ! store of the node-based ghost levels
       
-      integer,          dimension(:,:), allocatable              :: numrequest   ! number of cells requested from other domains (message size)
+      integer,          pointer                  :: nfromlist(:)
+      integer,          pointer                  :: ifromlist(:)
       
-      integer,          dimension(:),   allocatable              :: ighostlev_bak             ! store of the combined ghost levelslevels
-      integer,          dimension(:),   allocatable              :: ighostlev_cellbased_bak   ! store of the cell-based ghost levels
-      integer,          dimension(:),   allocatable              :: ighostlev_nodebased_bak   ! store of the node-based ghost levels
+      integer                                    :: status(MPI_STATUS_SIZE)
+      integer                                    :: irequest(ndomains)
+      integer                                    :: my_proc_send_to(0:ndomains-1)               ! number of cells/links/corners send by my_rank proc to others
+      integer                                    :: all_proc_recv(0:ndomains-1,0:ndomains-1)    ! number of cells/links/corners received from other domains
+      integer                                    :: nrequest, itag=1, error
       
-      integer,          dimension(:),   pointer                  :: nfromlist
-      integer,          dimension(:),   pointer                  :: ifromlist
+      integer                                    :: i, icount, k, num, other_domain
+      integer                                    :: from_send_list
       
-      integer,          dimension(MPI_STATUS_SIZE)               :: istat
+      character(len=1024)                        :: str
       
-      integer,          dimension(ndomains)                      :: irequest
-      
-      integer,          dimension(0:ndomains-1)                  :: numrequest_loc
-      
-      integer                                                    :: nrequest, itag, ierr
-      
-      integer                                                    :: i, icount, k, num, other_domain
-      integer                                                    :: idir
-      
-      integer, parameter                                         :: NUMRECINI=10
-      character(len=1024)                                        :: str
-      
-      integer,          dimension(:), allocatable, target        :: idumzero
-      
-      allocate(idumzero(-1:ndomains-1))
-      idumzero = 0
-      
+      integer,           target                  :: idumzero(-1:ndomains-1)
+            
       if ( present(ifromto) ) then
-         idir = ifromto
+         from_send_list = ifromto
       else
-         idir = 0 ! fill sendlists
+         from_send_list = 0 
+      end if
+      
+      if ( itype == ITYPE_S ) then  ! flow nodes
+         if ( from_send_list == 0 ) then
+            nfromlist => nghostlist_s
+            ifromlist => ighostlist_s
+         else
+            nfromlist => nsendlist_s
+            ifromlist => isendlist_s
+         end if
+         x_coords => xzw
+         y_coords => yzw
+      else if ( itype == ITYPE_Sall ) then  ! all flow nodes
+         if ( from_send_list == 0 ) then
+            nfromlist => nghostlist_sall
+            ifromlist => ighostlist_sall
+         else
+            nfromlist => nsendlist_sall
+            ifromlist => isendlist_sall
+         end if
+         x_coords => xzw
+         y_coords => yzw
+      else if ( itype == ITYPE_Snonoverlap ) then  ! all non-overlapping flow nodes (for solver)
+         if ( from_send_list == 0 ) then
+            nfromlist => nghostlist_snonoverlap
+            ifromlist => ighostlist_snonoverlap
+         else
+            nfromlist => nsendlist_snonoverlap
+            ifromlist => isendlist_snonoverlap
+         end if
+         x_coords => xzw
+         y_coords => yzw
+      else if ( itype == ITYPE_U ) then  ! flow links
+         if ( from_send_list == 0 ) then
+            nfromlist => nghostlist_u
+            ifromlist => ighostlist_u
+         else
+            nfromlist => nsendlist_u
+            ifromlist => isendlist_u
+         end if
+         x_coords => xu
+         y_coords => yu
+        else if ( itype == ITYPE_CN ) then  ! flow node corners
+         if ( from_send_list == 0 ) then
+            nfromlist => nghostlist_cn
+            ifromlist => ighostlist_cn
+         else
+            nfromlist => nsendlist_cn
+            ifromlist => isendlist_cn
+         end if
+         x_coords => xk
+         y_coords => yk
+      else
+         call qnerror('partition_make_sendlist_MPI: unknown ghost type', ' ', ' ')
+         return
       end if
 
-      itag = 1
-      
 !     store ghost levels of this domain
       allocate(ighostlev_bak(ubound(ighostlev,1)))
       ighostlev_bak = ighostlev
@@ -2255,233 +2038,104 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       ighostlev_cellbased_bak = ighostlev_cellbased
       allocate(ighostlev_nodebased_bak(ubound(ighostlev_nodebased,1)))
       ighostlev_nodebased_bak = ighostlev_nodebased
-      
-!     allocate send and recieve arrays
-      allocate(xysnd(2,NUMRECINI))
-      allocate(xyrec(2,NUMRECINI))
-      
-      allocate(numrequest(0:ndomains-1,0:ndomains-1))
-      numrequest = 0
-      
-!     fill send coordinates
-      if ( itype.eq.ITYPE_S ) then  ! flow nodes
-         if ( idir.eq. 0 ) then
-            nfromlist => nghostlist_s
-            ifromlist => ighostlist_s
-         else
-            nfromlist => nsendlist_s
-            ifromlist => isendlist_s
-         end if
-         
-         if ( .not.associated(nfromlist) ) then
-            nfromlist => idumzero
-         end if
-         
-         num = nfromlist(ndomains-1)
-         call realloc(xysnd, (/ 2, num /), keepExisting=.false., fill=0d0)
-         
-         do i=1,num
-            k = ifromlist(i)
-            xysnd(1,i) = xzw(k)
-            xysnd(2,i) = yzw(k)
-         end do
-      else if ( itype.eq.ITYPE_Sall ) then  ! all flow nodes
-         if ( idir.eq. 0 ) then
-            nfromlist => nghostlist_sall
-            ifromlist => ighostlist_sall
-         else
-            nfromlist => nsendlist_sall
-            ifromlist => isendlist_sall
-         end if
-         
-         if ( .not.associated(nfromlist) ) then
-            nfromlist => idumzero
-         end if
-         
-         num = nfromlist(ndomains-1)
-         call realloc(xysnd, (/ 2, num /), keepExisting=.false., fill=0d0)
-         
-         do i=1,num
-            k = ifromlist(i)
-            xysnd(1,i) = xzw(k)
-            xysnd(2,i) = yzw(k)
-         end do
-      else if ( itype.eq.ITYPE_Snonoverlap ) then  ! all non-overlapping flow nodes (for solver)
-         if ( idir.eq. 0 ) then
-            nfromlist => nghostlist_snonoverlap
-            ifromlist => ighostlist_snonoverlap
-         else
-            nfromlist => nsendlist_snonoverlap
-            ifromlist => isendlist_snonoverlap
-         end if
-         
-         if ( .not.associated(nfromlist) ) then
-            nfromlist => idumzero
-         end if
-         
-         num = nfromlist(ndomains-1)
-         call realloc(xysnd, (/ 2, num /), keepExisting=.false., fill=0d0)
-         
-         do i=1,num
-            k = ifromlist(i)
-            xysnd(1,i) = xzw(k)
-            xysnd(2,i) = yzw(k)
-         end do
-      else if ( itype.eq.ITYPE_U ) then
-         if ( idir.eq. 0 ) then
-            nfromlist => nghostlist_u
-            ifromlist => ighostlist_u
-         else
-            nfromlist => nsendlist_u
-            ifromlist => isendlist_u
-         end if
-         
-         if ( .not.associated(nfromlist) ) then
-            nfromlist => idumzero
-         end if
-         
-         num = nfromlist(ndomains-1)
-         call realloc(xysnd, (/ 2, num /), keepexisting=.false., fill=0d0)
-         
-         do i=1,num
-            k = ifromlist(i)
-            xysnd(1,i) = xu(k)
-            xysnd(2,i) = yu(k)
-         end do
-      else
-         call qnerror('partition_make_sendlist_MPI: unknown ghost type', ' ', ' ')
-         goto 1234
+    
+      if ( .not.associated(nfromlist) ) then
+          idumzero(:)  = 0
+          nfromlist    => idumzero
       end if
-      
-!     count other domains connected and number of cells to be sent
-      numrequest_loc = 0   ! message size, per other domain
-      do other_domain=0,ndomains-1
-         if ( other_domain.eq.my_rank ) cycle
-         num = nfromlist(other_domain)-nfromlist(other_domain-1)
-         if ( num.lt.1 ) cycle
-         numrequest_loc(other_domain) = num
+         
+      num = nfromlist(ndomains-1)
+      allocate(xy_send(2,max(num,1)))
+      allocate(xy_recv(2,max(num,1)))
+               
+      do i = 1, num
+          xy_send(1,i) = x_coords(ifromlist(i))
+          xy_send(2,i) = y_coords(ifromlist(i))
       end do
-      
+    
+!     count other domains connected and number of cells to be sent
+      my_proc_send_to(:) = 0  
+      do other_domain = 0, ndomains - 1
+         if ( other_domain == my_rank .or. ( nfromlist(other_domain) - nfromlist(other_domain - 1) < 1 ) ) cycle
+         my_proc_send_to(other_domain) = nfromlist(other_domain) - nfromlist(other_domain - 1)
+      end do
+       
 !     compose other-domain administration
-      numrequest = 0 ! safety
-      call mpi_allgather(numrequest_loc, ndomains, MPI_INTEGER, numrequest, ndomains, MPI_INTEGER, DFM_COMM_DFMWORLD, ierr)
+      all_proc_recv(:,:) = 0
+      call mpi_allgather(my_proc_send_to, ndomains, MPI_INTEGER, all_proc_recv, ndomains, MPI_INTEGER, DFM_COMM_DFMWORLD, error)
       
-!     send own ghost cells to other domain     
-      nrequest = 0   ! number of outgoing requests
-      irequest = 0
-      do other_domain=0,ndomains-1
-         if ( other_domain.eq.my_rank ) cycle
-         num = numrequest(other_domain, my_rank)
-         if ( num.lt.1 ) cycle
-         nrequest = nrequest+1
-         call mpi_isend(xysnd(1,nfromlist(other_domain-1)+1), 2*num, mpi_double_precision, other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), ierr)
+!     send own ghost data to other domains     
+      nrequest    = 0   
+      irequest(:) = 0
+      do other_domain = 0, ndomains - 1
+         if ( other_domain == my_rank .or. all_proc_recv(other_domain, my_rank) < 1 ) cycle
+         nrequest = nrequest + 1
+         call mpi_isend(xy_send(1,nfromlist(other_domain-1)+1), 2*all_proc_recv(other_domain, my_rank), mpi_double_precision, &
+             other_domain, itag, DFM_COMM_DFMWORLD, irequest(nrequest), error)
       end do
       
 !     make ghosts if we need to search in own subdomain (only once for all other subdomains)
-      if ( idir.eq.1 ) then
-         if ( itype.eq.ITYPE_S ) then
-            call partition_get_ghosts(my_rank, ITYPE_S, sghost, ierr)
-         else if ( itype.eq.ITYPE_SALL ) then
-            call partition_get_ghosts(my_rank, ITYPE_SALL, sallghost, ierr)
-         else if ( itype.eq.ITYPE_U) then
-            call partition_get_ghosts(my_rank, ITYPE_U, ughost, ierr)
-         end if
+      if ( from_send_list == 1 ) then
+         call partition_get_ghosts(my_rank, itype, ghost_list, error)
       end if
       
-!     recieve requests from other domains
-      do other_domain=0,ndomains-1
-         num = numrequest(my_rank,other_domain)
-         if ( num.lt.1 ) cycle
+!     receive ghost data from other domains
+      do other_domain = 0, ndomains - 1
+         if ( all_proc_recv(my_rank, other_domain) < 1 ) cycle
+         num = all_proc_recv(my_rank, other_domain)
 !        get message length
-         call mpi_probe(other_domain,itag,DFM_COMM_DFMWORLD,istat,ierr)
-         call mpi_get_count(istat,mpi_double_precision,icount,ierr)
+         call mpi_probe(other_domain, itag, DFM_COMM_DFMWORLD, status, error)
+         call mpi_get_count(status, mpi_double_precision, icount, error)
          
 !        check message length (safety)
-         if ( icount.ne.2*num ) then
-            write(str, *) 'partition_make_sendlist_MPI: icount.ne.2*num, domain: ', my_rank, ', other domain: ', other_domain, ' icount: ', icount, ', 2*num: ', 2*num
+         if ( icount /= 2*num ) then
+            write(str, *) 'partition_make_sendlist_MPI: icount.ne.2*num, domain: ', my_rank, &
+                ', other domain: ', other_domain, ' icount: ', icount, ', 2*num: ', 2*num
             call qnerror(str, ' ', ' ')
             call qnerror('partition_communicate_ghosts: message length error', ' ', ' ')
          end if
          
-!        check array size
-         if ( icount.gt.2*ubound(xyrec,2) ) then   ! reallocate if necessary
-            call realloc(xyrec, (/ 2,int(1.2d0*dble(icount/2)+1d0) /), keepExisting=.false., fill=0d0)
-!            call writemesg('resizing xyrec')
+!        check recv array size
+         if ( icount > 2*ubound(xy_recv,2) ) then   ! reallocate if necessary
+            call realloc(xy_recv, (/ 2,int(1.2d0*dble(icount/2)+1d0) /), keepExisting=.false., fill=0d0)
          end if
 
-         call mpi_recv(xyrec,icount,mpi_double_precision,other_domain,MPI_ANY_TAG,DFM_COMM_DFMWORLD,istat,ierr)
+         call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
          
 !        make ghostcells of other domain in this domain
-         if ( idir.eq.0 ) then
-!            call partition_set_ghostlevels(other_domain, numlaymax, ierr)
-            call partition_set_ghostlevels(other_domain, numlay_cell, numlay_node, 1, ierr)
+         if ( from_send_list == 0 ) then
+            call partition_set_ghostlevels(other_domain, numlay_cell, numlay_node, 1, error)
+            if ( itype /= ITYPE_Snonoverlap ) then
+                call partition_get_ghosts(other_domain, itype, ghost_list, error)
+            else
+                call partition_get_ghosts(other_domain, ITYPE_Sall, ghost_list, error)
+            end if
          end if
          
-         if ( itype.eq.ITYPE_S ) then
-!           find the send cells
-            if ( idir.eq.0 ) then
-               call partition_get_ghosts(other_domain, ITYPE_S, sghost, ierr)
-               call partition_fill_sendlist(my_rank, other_domain, ITYPE_S, num, xyrec(1,1:num), xyrec(2,1:num), sghost, isendlist_s, nsendlist_s, ierr)
-            else
-               call partition_fill_sendlist(other_domain, other_domain, ITYPE_S, num, xyrec(1,1:num), xyrec(2,1:num), sghost, ighostlist_s, nghostlist_s, ierr)
-            end if
-            
-            if ( ierr.ne.0 ) goto 1234
-         else if ( itype.eq.ITYPE_Sall ) then
-!           find the send cells
-            if ( idir.eq.0 ) then
-               call partition_get_ghosts(other_domain, ITYPE_Sall, sallghost, ierr)
-               call partition_fill_sendlist(my_rank, other_domain, ITYPE_Sall, num, xyrec(1,1:num), xyrec(2,1:num), sallghost, isendlist_sall, nsendlist_sall, ierr)
-            else
-               call partition_fill_sendlist(other_domain, other_domain, ITYPE_Sall, num, xyrec(1,1:num), xyrec(2,1:num), sallghost, ighostlist_sall, nghostlist_sall, ierr)
-            end if
-            
-            if ( ierr.ne.0 ) goto 1234
-         else if ( itype.eq.ITYPE_Snonoverlap ) then
-!           find the send cells
-            if ( idir.eq.0 ) then
-               call partition_get_ghosts(other_domain, ITYPE_Sall, sallghost, ierr)
-               call partition_fill_sendlist(my_rank, other_domain, ITYPE_Snonoverlap, num, xyrec(1,1:num), xyrec(2,1:num), sallghost, isendlist_snonoverlap, nsendlist_snonoverlap, ierr)
-            else
-               call partition_fill_sendlist(other_domain, other_domain, ITYPE_Snonoverlap, num, xyrec(1,1:num), xyrec(2,1:num), sallghost, ighostlist_snonoverlap, nghostlist_snonoverlap, ierr)
-            end if
-            
-            if ( ierr.ne.0 ) goto 1234
-         else if ( ITYPE.eq.ITYPE_U ) then
-!           find the send cells
-            if ( idir.eq.0 ) then
-               call partition_get_ghosts(other_domain, ITYPE_U, ughost, ierr)
-               call partition_fill_sendlist(my_rank, other_domain, ITYPE_U, num, xyrec(1,1:num), xyrec(2,1:num), ughost, isendlist_u, nsendlist_u, ierr)
-            else
-               call partition_fill_sendlist(other_domain, other_domain, ITYPE_U, num, xyrec(1,1:num), xyrec(2,1:num), ughost, ighostlist_u, nghostlist_u, ierr)
-            end if
-            
-            if ( ierr.ne.0 ) goto 1234
+!       find the send cells      
+        if ( from_send_list == 0 ) then
+            call partition_fill_sendlist(my_rank, other_domain, itype, num, xy_recv(1,1:num), xy_recv(2,1:num), ghost_list, i_list, n_list, error)
          else
-            call qnerror('partition_make_sendlist_MPI: uknown ghost type', ' ', ' ')
+            call partition_fill_sendlist(other_domain, other_domain, itype, num, xy_recv(1,1:num), xy_recv(2,1:num), ghost_list, i_list, n_list, error)
          end if
+                     
+        if ( error /= 0 ) goto 1234
       end do   ! other_domain=0,ndomains-1
-      
-!     terminate send (safety)
-      do i=1,nrequest
-         call mpi_wait(irequest(i),istat,ierr)
-      end do
       
 !     restore ghost levels
       ighostlev = ighostlev_bak
       ighostlev_cellbased = ighostlev_cellbased_bak
       ighostlev_nodebased = ighostlev_nodebased_bak
+            
+!     wait for isends to finish
+      call mpi_waitall(nrequest, irequest, MPI_STATUSES_IGNORE, error)
          
-1234  continue          
-      
-!     deallocate
-      if ( allocated(idumzero)   )     deallocate(idumzero)
-      if ( allocated(xysnd)      )    deallocate(xysnd)
-      if ( allocated(xyrec)      )    deallocate(xyrec)
-      if ( allocated(numrequest) )    deallocate(numrequest)
-      if ( allocated(sghost)     )    call dealloc_tghost(sghost)
-      if ( allocated(sallghost)  )    call dealloc_tghost(sallghost)
-      if ( allocated(ughost)     )    call dealloc_tghost(ughost)
+1234  continue
+
+      ! in principal, the deallocation is not needed because the variables are local.
+      if ( allocated(xy_send)    )    deallocate(xy_send)
+      if ( allocated(xy_recv)    )    deallocate(xy_recv)
+      if ( allocated(ghost_list) )    call dealloc_tghost(ghost_list)
       if ( allocated(ighostlev_bak) ) deallocate(ighostlev_bak)
       if ( allocated(ighostlev_nodebased_bak) ) deallocate(ighostlev_nodebased_bak)
          
@@ -2725,16 +2379,14 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
    end subroutine partition_fill_ghostsendlist_3d
    
 !> generate non-overlapping ghost/sendlists (for solver)
-   subroutine partition_fill_ghostsendlist_nonoverlap(ierror)
+   subroutine partition_fill_ghostsendlist_nonoverlap(error)
       use m_alloc
       implicit none
       
-      integer,               intent(out) :: ierror   !< error (1) or not (0)
+      integer,               intent(out) :: error   !< error (1) or not (0)
             
       integer                            :: i, idmn, iglev, inum, k, lenold
-      
-      ierror = 1
-      
+  
       if ( allocated(nghostlist_snonoverlap) ) deallocate(nghostlist_snonoverlap)
       if ( allocated(ighostlist_snonoverlap) ) deallocate(ighostlist_snonoverlap)
       
@@ -2749,9 +2401,8 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 !     check for overlap (in solver)      
       if ( maxghostlev_s.eq.1 ) then
           jaoverlap = 0
-          
-          ierror = 0
-          goto 1234
+          error     = 0
+          return
       end if
       
 !     safety: allocate lists with full overlapping length
@@ -2799,7 +2450,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       end do
       
 !     make sendlist
-      call partition_make_sendlist_MPI(ITYPE_Snonoverlap, numlay_cellbased+1,numlay_nodebased+1)
+      call partition_make_sendlist_MPI(ITYPE_Snonoverlap, numlay_cellbased+1,numlay_nodebased+1, isendlist_snonoverlap, nsendlist_snonoverlap)
 
       
 !     (re)set number of ghost nodes/links 
@@ -2818,140 +2469,121 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 !         call mess(LEVEL_ERROR, 'partition_fill_ghostsendlist_nonoverlap gave error')
 !         goto 1234
 !      end if
-      
-!!     BEGIN DEBUG
-!      allocate(idum(Ndx))
-!      idum = 0
-!      
-!      do i=1,noverlap
-!         k = ioverlap(i)
-!         if ( idum(k).ne.0 ) then
-!            continue
-!         end if
-!         idum(k) = i
-!      end do
-!      
-!      do i=1,numghost_snonoverlap
-!         k = ighostlist_snonoverlap(i)
-!         if ( idum(k).ne.0 ) then
-!            write(6,*) i
-!            continue
-!         else
-!            idum(k) = 1
-!         end if
-!      end do
-!      
-!      do i=1,numghost_sall
-!         k = ighostlist_sall(i)
-!         if ( idum(k).eq.0 ) then
-!            continue
-!         end if
-!         idum(k) = 0
-!      end do
-!      
-!      do k=1,Ndx
-!         if ( idum(k).gt.0 ) then
-!            write (6,*) idum(k)
-!            continue
-!         end if
-!      end do
-!!     END DEBUG
-
          
-      ierror = 0
- 1234 continue    
+      error = 0
       
       return
     end subroutine partition_fill_ghostsendlist_nonoverlap
    
    
-   subroutine update_ghosts(itype, NDIM, N, var, ierror)
+   subroutine update_ghosts(itype, ndim, n, solution, error, ignore_orientation)
 #ifdef HAVE_MPI   
       use mpi
 #endif      
       use m_flowgeom
       use m_flow, only: kmxn, kmxL, kbot, Lbot, Ndkx, Lnkx
+      use network_data, only: numk
       use messageHandling
 
       implicit none
 
-      integer,                                     intent(in)    :: itype        !< type: 0: flownode, 1: flowlink
-      integer,                                     intent(in)    :: NDIM         !< number of unknowns per flownode/link
-      integer,                                     intent(in)    :: N            !< number of flownodes/links
-      double precision, dimension(NDIM*N),         intent(inout) :: var          !< solution
-      integer,                                     intent(out)   :: ierror       !< error (1) or not (0)
-      
+      integer,                                 intent(in)    :: itype        !< type: 0: flownode, 1: flowlink
+      integer,                                 intent(in)    :: ndim         !< number of unknowns per flownode/link
+      integer,                                 intent(in)    :: n            !< number of flownodes/links
+      double precision, dimension(ndim*n),     intent(inout) :: solution     !< solution
+      integer,                                 intent(out)   :: error        !< error (1) or not (0)
+      logical, optional,                       intent(in)    :: ignore_orientation !< Ignore orientation of ghost and own location, useful for directionless quantities on u-points. Default: .false.
 
-      
-      ierror = 1
+      error = 1
       
       if ( .not.allocated(isendlist_sall) ) goto 1234   ! safety
       
-      if ( itype.eq.ITYPE_S ) then
-         if ( N.ne.Ndx) then
+      if ( itype == ITYPE_S ) then
+         if ( n /= ndx) then
             call qnerror('update_ghosts, ITYPE_S: numbering error', ' ', ' ')
             goto 1234
          end if
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_s(ndomains-1), ighostlist_s, nghostlist_s, nsendlist_s(ndomains-1), isendlist_s, nsendlist_s, itag_s, ierror)
-      else if ( itype.eq.ITYPE_SALL ) then
-         if ( N.ne.Ndx) then
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_s(ndomains-1), ighostlist_s, nghostlist_s, &
+             nsendlist_s(ndomains-1), isendlist_s, nsendlist_s, ITAG_S, error, ignore_orientation=ignore_orientation)
+      else if ( itype == ITYPE_SALL ) then
+         if ( n /= ndx) then
             call qnerror('update_ghosts, ITYPE_Sall: numbering error', ' ', ' ')
             goto 1234
          end if
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_sall(ndomains-1), ighostlist_sall, nghostlist_sall, nsendlist_sall(ndomains-1), isendlist_sall, nsendlist_sall, itag_sall, ierror)
-      else if ( itype.eq.ITYPE_U ) then
-         if ( N.ne.Lnx) then
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_sall(ndomains-1), ighostlist_sall, nghostlist_sall,&
+             nsendlist_sall(ndomains-1), isendlist_sall, nsendlist_sall, ITAG_Sall, error, ignore_orientation=ignore_orientation)
+      else if ( itype == ITYPE_U ) then
+         if ( n /= lnx) then
             call qnerror('update_ghosts, ITYPE_U: numbering error', ' ', ' ')
             goto 1234
          end if
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, itag_u, ierror)
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, &
+             nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, ITAG_U, error, ignore_orientation=ignore_orientation)
+      else if ( itype == ITYPE_CN ) then
+         if ( n /= numk ) then
+            call qnerror('update_ghosts, ITYPE_CN: numbering error', ' ', ' ')
+            goto 1234
+         end if
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_cn(ndomains-1), ighostlist_cn, &
+             nghostlist_cn, nsendlist_cn(ndomains-1), isendlist_cn, nsendlist_cn, ITAG_CN, error)
 !
 !     3D-extension         
-      else if ( itype.eq.ITYPE_S3D ) then
-         if ( N.ne.Ndkx) then
+      else if ( itype == ITYPE_S3D ) then
+         if ( n /= ndkx) then
             call qnerror('update_ghosts, ITYPE_S3D: numbering error', ' ', ' ')
             goto 1234
          end if
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_s(ndomains-1), ighostlist_s, nghostlist_s, nsendlist_s(ndomains-1), isendlist_s, nsendlist_s, itag_s, ierror, nghostlist_s_3D, nsendlist_s_3D, kmxn, kbot)
-      else if ( itype.eq.ITYPE_SALL3D ) then
-         if ( N.ne.Ndkx) then
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_s(ndomains-1), ighostlist_s, nghostlist_s, &
+             nsendlist_s(ndomains-1), isendlist_s, nsendlist_s, ITAG_S, error, nghostlist_s_3D, nsendlist_s_3D, &
+             kmxn, kbot, ignore_orientation=ignore_orientation)
+      else if ( itype == ITYPE_SALL3D ) then
+         if ( n /= ndkx) then
             call qnerror('update_ghosts, ITYPE_Sall3D: numbering error', ' ', ' ')
             goto 1234
          end if
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_sall(ndomains-1), ighostlist_sall, nghostlist_sall, nsendlist_sall(ndomains-1), isendlist_sall, nsendlist_sall, itag_sall, ierror, nghostlist_sall_3D, nsendlist_sall_3D, kmxn, kbot)
-      else if ( itype.eq.ITYPE_U3D ) then
-         if ( N.ne.Lnkx) then
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_sall(ndomains-1), ighostlist_sall, &
+             nghostlist_sall, nsendlist_sall(ndomains-1), isendlist_sall, nsendlist_sall, ITAG_Sall, error, nghostlist_sall_3D, nsendlist_sall_3D, &
+             kmxn, kbot, ignore_orientation=ignore_orientation)
+      else if ( itype == ITYPE_U3D ) then
+         if ( n /= lnkx) then
             call qnerror('update_ghosts, ITYPE_U3D: numbering error', ' ', ' ')
             goto 1234
          end if
-!         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, itag_u, ierror, nghost3d=nghostlist_u_3D, nsend3d=nsendlist_u_3D, kmxnL=kmxL, kbot=Lbot)
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, itag_u, ierror, nghostlist_u_3D, nsendlist_u_3D, kmxL, Lbot)
-       else if ( itype.eq.ITYPE_U3DW ) then
-         if ( N.ne.Lnkx) then
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, &
+             nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, ITAG_U, error, nghostlist_u_3D, nsendlist_u_3D,&
+             kmxL, Lbot, ignore_orientation=ignore_orientation)
+       else if ( itype == ITYPE_U3DW ) then
+         if ( n /= lnkx) then
             call qnerror('update_ghosts, ITYPE_U3DW: numbering error', ' ', ' ')
             goto 1234
          end if
-         call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, itag_u, ierror, nghostlist_u_3Dw, nsendlist_u_3Dw, kmxL+1, Lbot-1)
+         call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_u(ndomains-1), ighostlist_u, nghostlist_u, &
+             nsendlist_u(ndomains-1), isendlist_u, nsendlist_u, ITAG_U, error, nghostlist_u_3Dw, nsendlist_u_3Dw, &
+             kmxL+1, Lbot-1, ignore_orientation=ignore_orientation)
                  
 !     overlap
-      else if ( itype.eq.ITYPE_Snonoverlap ) then
-         if ( N.ne.Ndx ) then
+      else if ( itype == ITYPE_Snonoverlap ) then
+         if ( n /= ndx ) then
             call qnerror('update_ghosts, ITYPE_Snonoverlap: numbering error', ' ', ' ')
             goto 1234
          end if
-         if ( jaoverlap.eq.1 ) then
-            call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_snonoverlap(ndomains-1), ighostlist_snonoverlap, nghostlist_snonoverlap, nsendlist_snonoverlap(ndomains-1), isendlist_snonoverlap, nsendlist_snonoverlap, itag_snonoverlap, ierror)
+         if ( jaoverlap == 1 ) then
+            call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_snonoverlap(ndomains-1), ighostlist_snonoverlap,&
+                nghostlist_snonoverlap, nsendlist_snonoverlap(ndomains-1), isendlist_snonoverlap, nsendlist_snonoverlap, &
+                ITAG_Snonoverlap, error, ignore_orientation=ignore_orientation)
          else  ! no overlap: use sall
-            call update_ghost_loc(ndomains, NDIM, N, var, nghostlist_sall(ndomains-1), ighostlist_sall, nghostlist_sall, nsendlist_sall(ndomains-1), isendlist_sall, nsendlist_sall, itag_sall, ierror)
+            call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_sall(ndomains-1), ighostlist_sall, &
+                nghostlist_sall, nsendlist_sall(ndomains-1), isendlist_sall, nsendlist_sall, ITAG_Sall, error, &
+                ignore_orientation=ignore_orientation)
          end if
       else
          call qnerror('update_ghosts: unknown ghost type', ' ', ' ')
       end if
       
-      ierror = 0
+      error = 0
  1234 continue
  
-      if ( ierror /= 0 ) call mess(LEVEL_ERROR, 'update_ghosts gave error')
+      if ( error /= 0 ) call mess(LEVEL_ERROR, 'update_ghosts gave error')
       
       return
    end subroutine update_ghosts
@@ -2959,7 +2591,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
      
 !> update ghost values
 !>   3D extension: we assume that kbot/Lbot and kmxn/kmxL match their counterparts in the other domain(s)
-   subroutine update_ghost_loc(ndomains, NDIM, N, s, numghost, ighost, nghost, numsend, isend, nsend, itag, ierror, nghost3d, nsend3d, kmxnL, kbot)
+   subroutine update_ghost_loc(ndomains, NDIM, N, s, numghost, ighost, nghost, numsend, isend, nsend, itag, ierror, nghost3d, nsend3d, kmxnL, kbot, ignore_orientation)
 #ifdef HAVE_MPI   
       use mpi
 #endif      
@@ -2971,7 +2603,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       integer,                                     intent(in)     :: ndomains        !< number of subdomains
       integer,                                     intent(in)     :: NDIM            !< number of unknowns per flownode/link
       integer,                                     intent(in)     :: N               !< number of flownodes/links
-      double precision, dimension(NDIM*N),         intent(inout)  :: s               !< solution
+      double precision, dimension(NDIM*N),         intent(inout)  :: s               !< Solution. Note: will correct for orientation between ghost and own location if needed (typically only for u-points).
       integer,                                     intent(in)     :: numghost        !< number of ghost nodes/links
       integer,          dimension(numghost),       intent(in)     :: ighost          !< ghost nodes/links
       integer,          dimension(-1:ndomains-1),  intent(in)     :: nghost          !< ghost list pointers
@@ -2985,6 +2617,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       integer,          dimension(-1:ndomains-1),  intent(in), optional :: nsend3d   !< number of unknowns to be send     per domain
       integer,          dimension(N),              intent(in), optional :: kmxnL     !< number of layers
       integer,          dimension(N),              intent(in), optional :: kbot      !< bottom layer indices
+      logical,                                     intent(in), optional :: ignore_orientation !< Ignore orientation of ghost and own location, useful for directionless quantities on u-points. Default: .false.
 
 !      double precision, dimension(:), allocatable                :: work         ! work array
 #ifdef HAVE_MPI
@@ -3002,6 +2635,7 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
 !      double precision, parameter                                 :: DNOCELL = -1234.5678
       
       character(len=1024)                                         :: str
+      logical :: ignore_orientation_
 #endif
       ierror = 1
 #ifdef HAVE_MPI
@@ -3010,6 +2644,11 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
       ja3d = 0
       if ( present(nghost3d) .and. present(nsend3d) .and. present(kmxnL) .and. present(kbot) ) then
          ja3d = 1
+      end if
+
+      ignore_orientation_ = .false.
+      if (present(ignore_orientation)) then
+         ignore_orientation_ = ignore_orientation
       end if
          
 !     allocate work array (will be reallocated later)
@@ -3206,7 +2845,12 @@ use meshdata, only : ug_idsLen, ug_idsLongNamesLen
                 if ( ighost(i).gt.0 ) then
                    s(ighost(i)) = workrec(i)
                 else if ( ighost(i).lt.0 ) then
-                   s(-ighost(i)) = -workrec(i)
+                   ! Some quantities may not need an orientation fix on u-points:
+                   if (ignore_orientation_) then
+                      s(-ighost(i)) =  workrec(i)
+                   else
+                      s(-ighost(i)) = -workrec(i)
+                   end if
                 end if
                   
 !               else  ! no cell was found during handshake
@@ -4808,10 +4452,10 @@ end subroutine partition_make_globalnumbers
          integer :: ibr, inext
          
 !     see if any of the left/right links of other domain's branches is in a netbranch in this domain
-         ibr_glob_left = 0
-         ibr_glob_right = 0
-         Lother_left  = 0
-         Lother_right = 0
+         ibr_glob_left = -huge(0)
+         ibr_glob_right= -huge(0)
+         Lother_left   = -huge(0)
+         Lother_right  = -huge(0)
          ioff = 0
          do idmn=0,numranks-1
             istart = 1 + ioff                   ! global branch number of first branch in other domain
@@ -4885,22 +4529,36 @@ end subroutine partition_make_globalnumbers
          end do
       
 !        gather information from all domains
-         call MPI_allreduce(ibr_glob_left,idum,numallnetbr,MPI_INTEGER,MPI_SUM,DFM_COMM_DFMWORLD,ierror)
+         call MPI_allreduce(ibr_glob_left,idum,numallnetbr,MPI_INTEGER,MPI_MAX,DFM_COMM_DFMWORLD,ierror)
          if ( ierror.ne.0 ) goto 1234
          ibr_glob_left = idum
       
-         call MPI_allreduce(ibr_glob_right,idum,numallnetbr,MPI_INTEGER,MPI_SUM,DFM_COMM_DFMWORLD,ierror)
+         call MPI_allreduce(ibr_glob_right,idum,numallnetbr,MPI_INTEGER,MPI_MAX,DFM_COMM_DFMWORLD,ierror)
          if ( ierror.ne.0 ) goto 1234
          ibr_glob_right = idum
       
-         call MPI_allreduce(Lother_left,idum,numallnetbr,MPI_INTEGER,MPI_SUM,DFM_COMM_DFMWORLD,ierror)
+         call MPI_allreduce(Lother_left,idum,numallnetbr,MPI_INTEGER,MPI_MAX,DFM_COMM_DFMWORLD,ierror)
          if ( ierror.ne.0 ) goto 1234
          Lother_left = idum
       
-         call MPI_allreduce(Lother_right,idum,numallnetbr,MPI_INTEGER,MPI_SUM,DFM_COMM_DFMWORLD,ierror)
+         call MPI_allreduce(Lother_right,idum,numallnetbr,MPI_INTEGER,MPI_MAX,DFM_COMM_DFMWORLD,ierror)
          if ( ierror.ne.0 ) goto 1234
          Lother_right = idum
 
+         where (ibr_glob_left == -huge(0))
+            ibr_glob_left = 0
+         end where
+         where (ibr_glob_right == -huge(0))
+            ibr_glob_right = 0
+         end where
+         where (Lother_left == -huge(0))
+            Lother_left = 0
+         end where
+         where (Lother_right == -huge(0))
+            Lother_right = 0
+         end where
+
+             
    !     check for mutual connectivity
          do ibr=1,numallnetbr
    !        check right
@@ -5247,20 +4905,6 @@ end subroutine partition_make_globalnumbers
       return
    end subroutine generate_partition_pol_from_idomain
    
-!> reduce error level, note that it is assumed that DFM_NOERR=0 and that all error levels >=0 
-   subroutine reduce_error(ierror) 
-      implicit none 
-      integer, intent(inout) :: ierror
-      
-      integer, dimension(1)  :: idum
-      
-      idum(1) = ierror
-      call reduce_int_max(1, idum)
-      ierror = idum(1)
-
-      return 
-   end subroutine reduce_error 
-   
 !> Gathers integer data from all processes and delivers it to a speicified root process.
 !! Note: the same number of data from each subdomain are sent.
 subroutine gather_int_data_mpi_same(ndata_send, data_send, ndata_gat, data_gat, ndata_recv, root, ierror)
@@ -5342,11 +4986,342 @@ end subroutine gatherv_int_data_mpi_dif
       implicit none
       integer :: ierr
 #ifdef HAVE_MPI      
-      call MPI_Abort(DFM_COMM_DFMWORLD, DFM_GENERICERROR, ierr)
+      call MPI_Abort(DFM_COMM_ALLWORLD, DFM_GENERICERROR, ierr)
 #endif
       return
    end subroutine abort_all
-   end module m_partitioninfo
+   
+!> counts a number of ghost data
+integer function count_list_size(min_ghost_level, max_ghost_level, ghost_list)
+implicit none
+integer,      intent(in)   :: min_ghost_level, max_ghost_level
+type(tghost), intent(in)   :: ghost_list(:) 
+
+integer                    :: ghost_level, domain_number
+
+count_list_size = 0
+do ghost_level = min_ghost_level, max_ghost_level
+    if ( ghost_level < lbound(ghost_list,1) .or. ghost_level > ubound(ghost_list,1) ) cycle   ! should not happen
+    do domain_number = 0, ghost_list(ghost_level)%numdomains - 1
+        if ( ghost_list(ghost_level)%N(domain_number) < ghost_list(ghost_level)%N(domain_number-1) ) cycle
+        count_list_size = count_list_size + ghost_list(ghost_level)%N(domain_number) - ghost_list(ghost_level)%N(domain_number-1)
+    end do
+end do
+end function count_list_size
+   
+!> allocates ghost lists
+subroutine  allocate_ghost_data_lists(list_size, ghost_data_list, nr_ghost_data_list)
+implicit none
+integer, intent(in)                 :: list_size
+integer, allocatable, intent(inout) :: ghost_data_list(:)
+integer, allocatable, intent(inout) :: nr_ghost_data_list(:)
+
+!     deallocate
+if ( allocated(ghost_data_list)   ) deallocate(ghost_data_list)
+if ( allocated(nr_ghost_data_list)) deallocate(nr_ghost_data_list)
+      
+!     allocate
+allocate(ghost_data_list(list_size))
+allocate(nr_ghost_data_list(-1:ndomains-1))
+ghost_data_list    = 0
+nr_ghost_data_list = 0
+end subroutine  allocate_ghost_data_lists
+
+!> fills ghost data list
+subroutine fill_ghost_data_list(min_ghost_level, max_ghost_level, ghost_list, ghost_data_list, nr_ghost_data_list)
+implicit none
+integer,                                 intent(in) :: min_ghost_level, max_ghost_level
+type(tghost), dimension(:), allocatable, intent(in) :: ghost_list 
+integer, allocatable,                 intent(inout) :: ghost_data_list(:)
+integer, allocatable,                 intent(inout) :: nr_ghost_data_list(:)
+
+integer :: num, domain_number, ghost_level, index
+
+num = 0
+do domain_number = 0, ndomains - 1
+    do ghost_level = min_ghost_level, max_ghost_level
+        if ( ghost_level < lbound(ghost_list,1) .or. ghost_level > ubound(ghost_list,1) ) cycle
+        if ( domain_number > ghost_list(ghost_level)%numdomains-1 ) cycle
+        do index = ghost_list(ghost_level)%N(domain_number - 1) + 1, ghost_list(ghost_level)%N(domain_number)
+            num  = num + 1
+            ghost_data_list(num) = ghost_list(ghost_level)%list(index)
+            nr_ghost_data_list(domain_number:ndomains-1) = nr_ghost_data_list(domain_number:ndomains-1) + 1
+        end do
+    end do
+end do
+end subroutine fill_ghost_data_list
+
+!> get ghost cells 
+!! get the sorted ghost flow node list and count the number of flow nodes per ghost domain
+subroutine get_ghost_cells(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
+use m_flowgeom, only: ndx
+use m_alloc
+
+implicit none
+integer,                   intent(in)  :: domain_number
+integer,                   intent(in)  :: min_ghost_level, max_ghost_level, ghost_type
+type(tghost), allocatable, intent(out) :: ghost_list(:) 
+
+integer, pointer :: ghost_level(:)
+integer          :: cell
+
+if ( ghost_type == IGHOSTTYPE_CELLBASED ) then
+    ghost_level => ighostlev_cellbased
+else if ( ghost_type == IGHOSTTYPE_NODEBASED ) then
+    ghost_level => ighostlev_nodebased
+else  ! combined
+    ghost_level => ighostlev
+end if
+        
+call alloc_tghost(ghost_list, max_ghost_level, min_ghost_level)
+
+do cell = 1, ndx ! also include fictitious boundary node
+    if ( idomain(cell) /= domain_number .and. &
+        ghost_level(cell) >= min_ghost_level .and. ghost_level(cell) <= max_ghost_level ) then
+        call add_data_to_ghost_list(ghost_level(cell), idomain(cell), ghost_list, cell)
+    end if
+end do
+
+call accumulate_ghost_N(min_ghost_level, max_ghost_level, ghost_list)
+call count_neighboring_domains(min_ghost_level, max_ghost_level, ghost_list)
+
+end subroutine get_ghost_cells
+         
+!> add value (flow node, flow link, corner) to ghost_list
+subroutine add_data_to_ghost_list(ghost_level, domain_number, ghost_list, value)
+use m_alloc
+
+implicit none
+integer, intent(in)                      :: ghost_level, domain_number, value
+type(tghost), allocatable, intent(inout) :: ghost_list(:)
+
+integer :: number_of_data, number_of_domains
+
+number_of_data    = ghost_list(ghost_level)%num + 1
+number_of_domains = max(ghost_list(ghost_level)%numdomains, domain_number + 1)   ! domain numbers are zero-based
+               
+if ( number_of_domains - 1 > ubound(ghost_list(ghost_level)%N,1) ) then
+    call realloc(ghost_list(ghost_level)%N, number_of_domains-1, -1, fill=0, keepExisting=.true.)
+end if
+if ( number_of_data > ubound(ghost_list(ghost_level)%list,1) ) then
+    call realloc(ghost_list(ghost_level)%list, int(1.2d0*dble(number_of_data))+1, fill=0, keepExisting=.true.)
+end if
+
+ghost_list(ghost_level)%N(domain_number) = ghost_list(ghost_level)%N(domain_number) + 1
+call insert_in_ghost_list(ghost_level, domain_number, ghost_list, number_of_data, value)
+ghost_list(ghost_level)%num        = number_of_data
+ghost_list(ghost_level)%numdomains = number_of_domains
+        
+end subroutine add_data_to_ghost_list
+
+!> insert node/link/corner into ghost list
+subroutine insert_in_ghost_list(ghost_level, domain_number, ghost_list, number_of_data, value)
+implicit none
+integer, intent(in)                      :: ghost_level, domain_number, number_of_data, value
+type(tghost), allocatable, intent(inout) :: ghost_list(:)
+
+integer  :: number_of_data_in_list, i
+
+number_of_data_in_list = sum(ghost_list(ghost_level)%N(0:domain_number))
+do i = number_of_data, number_of_data_in_list + 1, -1
+    ghost_list(ghost_level)%list(i)  = ghost_list(ghost_level)%list(i-1)
+end do
+ghost_list(ghost_level)%list(number_of_data_in_list) = value
+
+end subroutine insert_in_ghost_list
+
+
+!> get ghost links
+subroutine get_ghost_links(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
+use m_flowgeom, only: Lnx, ln
+use m_alloc
+
+implicit none
+integer,                   intent(in)  :: domain_number
+integer,                   intent(in)  :: min_ghost_level, max_ghost_level, ghost_type
+type(tghost), allocatable, intent(out) :: ghost_list(:)
+
+integer, pointer :: ghost_level(:)
+integer          :: link, link_ghost_level, ghost_domain_number, jaghost
+
+if ( ghost_type == IGHOSTTYPE_CELLBASED ) then
+    ghost_level => ighostlev_cellbased
+else if ( ghost_type == IGHOSTTYPE_NODEBASED ) then
+    ghost_level => ighostlev_nodebased
+else  ! combined
+    ghost_level => ighostlev
+end if
+
+call alloc_tghost(ghost_list, max_ghost_level, min_ghost_level)
+
+do link = 1, lnx
+!   determine if flow link is a ghost link and get ghost domain number and ghost level of link
+    call link_ghostdata(domain_number, idomain(ln(1,link)), idomain(ln(2,link)), jaghost, ghost_domain_number, &
+            ghost_level(ln(1,link)), ghost_level(ln(2,link)), link_ghost_level)
+
+    if ( jaghost > 0 .and. link_ghost_level >= min_ghost_level .and. link_ghost_level <= max_ghost_level ) then
+        call add_data_to_ghost_list(link_ghost_level, ghost_domain_number, ghost_list, link)
+    end if
+end do 
+
+call accumulate_ghost_N(min_ghost_level, max_ghost_level, ghost_list)
+call count_neighboring_domains(min_ghost_level, max_ghost_level, ghost_list)
+
+end subroutine get_ghost_links
+
+!>     accumulate ghost_list()%N
+subroutine accumulate_ghost_N(min_ghost_level, max_ghost_level, ghost_list)
+implicit none
+integer,                   intent(in)    :: min_ghost_level, max_ghost_level
+type(tghost), allocatable, intent(inout) :: ghost_list(:)
+
+integer :: ghost_level, domain_number, j
+
+do ghost_level = min_ghost_level, max_ghost_level
+    do domain_number  = ghost_list(ghost_level)%numdomains - 1, 0, -1
+        do j = 0, domain_number - 1
+            ghost_list(ghost_level)%N(domain_number) = ghost_list(ghost_level)%N(domain_number) + ghost_list(ghost_level)%N(j)
+        end do
+    end do
+end do
+end subroutine accumulate_ghost_N
+
+!>     count the neighboring domains
+subroutine count_neighboring_domains(min_ghost_level, max_ghost_level, ghost_list)
+use m_alloc
+implicit none
+integer,                   intent(in)    :: min_ghost_level, max_ghost_level
+type(tghost), allocatable, intent(inout) :: ghost_list(:)
+
+integer :: ghost_level, domain_number, num
+
+do ghost_level = min_ghost_level, max_ghost_level
+    num = 0
+    do domain_number = 0, ghost_list(ghost_level)%numdomains - 1
+        if ( ghost_list(ghost_level)%N(domain_number) - ghost_list(ghost_level)%N(domain_number-1) > 0 ) then
+            num = num + 1
+            if ( num > ubound(ghost_list(ghost_level)%neighdmn,1) ) then
+                call realloc(ghost_list(ghost_level)%neighdmn, int(1.2d0*dble(num)+1d0), keepExisting=.true., fill=0)
+            end if
+            ghost_list(ghost_level)%neighdmn(num) = domain_number
+        end if
+    end do
+    ghost_list(ghost_level)%numneighdmn = num
+end do
+end subroutine count_neighboring_domains
+
+
+!> get ghost corners 
+subroutine get_ghost_corners(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
+use network_data, only : kn, numk, nmk, nod
+use m_alloc
+
+implicit none
+integer,                   intent(in)  :: domain_number
+integer,                   intent(in)  :: min_ghost_level, max_ghost_level, ghost_type
+type(tghost), allocatable, intent(out) :: ghost_list(:)
+
+integer, external :: common_cell_for_two_net_links
+
+integer, pointer     :: ghost_level(:)
+integer              :: node, index, first_link, second_link, cell, number_of_cells, min_ghost_level_for_cell
+integer, allocatable :: list_of_cells(:)
+
+if ( ghost_type == IGHOSTTYPE_CELLBASED ) then
+    ghost_level => ighostlev_cellbased
+else if ( ghost_type == IGHOSTTYPE_NODEBASED ) then
+    ghost_level => ighostlev_nodebased
+else  ! combined
+    ghost_level => ighostlev
+end if
+        
+call alloc_tghost(ghost_list, max_ghost_level, min_ghost_level)
+      
+allocate( list_of_cells(  maxval(nmk(1:numk)) ) )
+
+loop_over_nodes: &
+  do node = 1, numk      
+    number_of_cells = 0
+    do index = 1, nmk(node)
+        first_link = nod(node)%lin(index)
+        if ( index < nmk(node) ) then
+            second_link = nod(node)%lin(index+1)
+        else
+            second_link = nod(node)%lin(1)
+        end if
+        
+        cell = common_cell_for_two_net_links(first_link, second_link)
+                
+        if ( cell < 1 ) cycle
+        
+        if ( idomain(cell) == domain_number ) cycle loop_over_nodes
+                
+        if ( ghost_level(cell) < min_ghost_level .or. ghost_level(cell) > max_ghost_level ) cycle 
+        
+        number_of_cells = number_of_cells + 1
+        list_of_cells(number_of_cells) = cell
+    end do
+    
+    if ( number_of_cells == 0 ) cycle
+    
+    min_ghost_level_for_cell = max_ghost_level + 1
+    do index = 1, number_of_cells
+        if ( min_ghost_level_for_cell > ghost_level(list_of_cells(index)) ) then
+             min_ghost_level_for_cell = ghost_level(list_of_cells(index))
+             cell                     = list_of_cells(index)
+        else if ( min_ghost_level_for_cell == ghost_level(list_of_cells(index)) ) then
+            if ( iabs(domain_number - idomain(cell)) > iabs(domain_number - idomain(list_of_cells(index))) ) then
+                cell = list_of_cells(index)
+            end if
+        end if  
+    end do
+    
+    if ( min_ghost_level_for_cell <= max_ghost_level) then
+        call add_data_to_ghost_list(ghost_level(cell), idomain(cell), ghost_list, node)
+    end if
+end do loop_over_nodes
+
+call accumulate_ghost_N(min_ghost_level, max_ghost_level, ghost_list)
+call count_neighboring_domains(min_ghost_level, max_ghost_level, ghost_list)
+
+end subroutine get_ghost_corners
+
+!> makes ghost list 
+subroutine make_ghost_list(domain_number, itype, min_ghost_level, max_ghost_level, list_size,&
+    ghost_data_list, nr_ghost_data_list, error)
+
+integer, intent(in)                       :: domain_number
+integer, intent(in)                       :: itype         ! type of ghost
+integer, intent(in)                       :: min_ghost_level 
+integer, intent(in)                       :: max_ghost_level
+integer, intent(inout)                    :: list_size
+integer, allocatable, intent(inout)       :: ghost_data_list(:)
+integer, allocatable, intent(inout)       :: nr_ghost_data_list(:)
+integer, intent(inout)                    :: error         !< error (1) or not (0)
+
+type(tghost), allocatable                 :: ghost_list(:)
+      
+call partition_get_ghosts(domain_number, itype, ghost_list, error)
+list_size = count_list_size(min_ghost_level, max_ghost_level, ghost_list)
+call allocate_ghost_data_lists(list_size, ghost_data_list, nr_ghost_data_list)
+call fill_ghost_data_list(min_ghost_level, max_ghost_level, ghost_list, ghost_data_list, nr_ghost_data_list)
+
+end subroutine make_ghost_list
+    
+function  get_list_size(list, list_sall) result(size)
+integer, allocatable, intent(in) :: list(:)
+integer, allocatable, intent(in) :: list_sall(:)
+integer                          :: size
+ 
+if (allocated(list_sall) .and. allocated(list) ) then
+    size = list(ndomains-1)
+else
+    size = 0
+endif
+ 
+end function  get_list_size
+
+end module m_partitioninfo
    
    
    subroutine pressakey()
@@ -5358,14 +5333,14 @@ end subroutine gatherv_int_data_mpi_dif
 
       integer             :: ierr
 
-      call MPI_barrier(DFM_COMM_DFMWORLD,ierr)
+      call MPI_barrier(DFM_COMM_ALLWORLD,ierr)
 
       if ( my_rank.eq.0 ) then
          write(6,*) "press a key from rank 0..."
          read(5,*)
       end if
 
-      call MPI_barrier(DFM_COMM_DFMWORLD,ierr)
+      call MPI_barrier(DFM_COMM_ALLWORLD,ierr)
 #else
       write(6,*) "press a key..."
       read(5,*)
@@ -5563,8 +5538,8 @@ end subroutine gatherv_int_data_mpi_dif
       real,             allocatable, dimension(:) :: ubvec           ! specify the allowed load imbalance tolerance for each constraint.=1.001 when ncon=1
       integer                                     :: L, k1, k2
 
-      integer,          allocatable, dimension(:)  :: iadj_tmp
-      integer,          allocatable, dimension(:)  :: iadj, jadj, adjw
+      integer,          allocatable, dimension(:)  :: xadj_tmp
+      integer,          allocatable, dimension(:)  :: xadj, adjncy, adjw
 
       integer,                       external      :: metisopts, METIS_PartGraphKway, METIS_PartGraphRecursive, METIS_PARTMESHDUAL
 
@@ -5663,62 +5638,60 @@ end subroutine gatherv_int_data_mpi_dif
          ubvec = 1.001                      ! allowed load imbalance tolerance
 
 !        generate adjacency structure in CSR format 
-         allocate(iadj(nump1d2d+1), stat=ierror)
-         call aerr('iadj(nump1d2d+1)', ierror, nump1d2d+1)
-         iadj = 0
-         allocate(iadj_tmp(nump1d2d+1), stat=ierror)
-         call aerr('iadj_tmp(nump1d2d+1)', ierror, nump1d2d+1)
+         allocate(xadj(nump1d2d+1), stat=ierror)
+         call aerr('xadj(nump1d2d+1)', ierror, nump1d2d+1)
+         xadj = 0
+         allocate(xadj_tmp(nump1d2d+1), stat=ierror)
+         call aerr('xadj_tmp(nump1d2d+1)', ierror, nump1d2d+1)
 
 !        count number of connection per vertex
-         iadj_tmp = 0
+         xadj_tmp = 0
          do L=1,numL
             if ( lnn(L) > 1 ) then
                k1 = abs(lne(1,L))
                k2 = abs(lne(2,L))
-               iadj_tmp(k1) = iadj_tmp(k1) + 1
-               iadj_tmp(k2) = iadj_tmp(k2) + 1
+               xadj_tmp(k1) = xadj_tmp(k1) + 1
+               xadj_tmp(k2) = xadj_tmp(k2) + 1
             end if
          end do
 
 !        set startpointers
-         iadj(1) = 1
+         xadj(1) = 1
          do k=1,nump1d2d
-            iadj(k+1) = iadj(k) + iadj_tmp(k)
+            xadj(k+1) = xadj(k) + xadj_tmp(k)
          end do
 
 !        set connections
-         allocate(jadj(iadj(nump1d2d+1)-1), stat=ierror)
-         call aerr('jadj(iadj(nump1d2d+1)-1)', ierror, iadj(nump1d2d+1)-1)
-         jadj = 0
+         allocate(adjncy(xadj(nump1d2d+1)-1), stat=ierror)
+         call aerr('adjncy(xadj(nump1d2d+1)-1)', ierror, xadj(nump1d2d+1)-1)
+         adjncy = 0
 
-         iadj_tmp = iadj
+         xadj_tmp = xadj
          do L=1,numL
             if ( lnn(L).gt.1 ) then
                k1 = abs(lne(1,L))
                k2 = abs(lne(2,L))
-               jadj(iadj_tmp(k1)) = k2
-               jadj(iadj_tmp(k2)) = k1
-               iadj_tmp(k1) = iadj_tmp(k1)+1
-               iadj_tmp(k2) = iadj_tmp(k2)+1
+               adjncy(xadj_tmp(k1)) = k2
+               adjncy(xadj_tmp(k2)) = k1
+               xadj_tmp(k1) = xadj_tmp(k1)+1
+               xadj_tmp(k2) = xadj_tmp(k2)+1
             end if
          end do
 
-         allocate(adjw(iadj(nump1d2d+1)-1), stat=ierror)
-         call aerr('jadjw(iadj(nump1d2d+1)-1)', ierror, iadj(nump1d2d+1)-1)
-         adjw = 0
-!        set edge weights and vsize
-         call set_weights_for_METIS(nump1d2d, Nparts, iadj(nump1d2d+1)-1, iadj, jadj,vsize, adjw)
+         allocate(adjw(xadj(nump1d2d+1)-1), stat=ierror)
+         call aerr('jadjw(xadj(nump1d2d+1)-1)', ierror, xadj(nump1d2d+1)-1)
+         call set_edge_weights_and_vsize_for_METIS(nump1d2d, Nparts, xadj(nump1d2d+1)-1, xadj, adjncy, vsize, adjw)
 
 !        make CSR arrays zero-based
-         iadj = iadj-1
-         jadj = jadj-1
+         xadj   = xadj-1
+         adjncy = adjncy-1
       endif
 
      ! netstat = NETSTAT_CELLS_DIRTY
 
       select case (method)
       case (0,1)
-         ierror = METIS_PartGraphKway(Ne, Ncon, iadj, jadj, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
+         ierror = METIS_PartGraphKway(Ne, Ncon, xadj, adjncy, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
          if (ierror /= METIS_OK .and. jacontiguous == 1) then
             call mess(LEVEL_INFO, 'The above METIS error message is not a problem.')
             call mess(LEVEL_INFO, 'It means that partitioning failed for k-way method with option contiguous=1')
@@ -5726,13 +5699,13 @@ end subroutine gatherv_int_data_mpi_dif
             call mess(LEVEL_INFO, 'contiguous=0.')
             ierror = metisopts(opts, "CONTIG", 0) ! Fallback, allow non-contiguous domains in case of non-contiguous network.
             if (ierror == 0) then ! Note: metisopts does not use METIS_OK status, but simply 0 instead.
-               ierror = METIS_PartGraphKway(Ne, Ncon, iadj, jadj, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
+               ierror = METIS_PartGraphKway(Ne, Ncon, xadj, adjncy, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
             else
                call mess(LEVEL_ERROR, 'Fallback fails.')
             end if
          end if
       case (2)
-         ierror = METIS_PartGraphRecursive(Ne, Ncon, iadj, jadj, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
+         ierror = METIS_PartGraphRecursive(Ne, Ncon, xadj, adjncy, vwgt, vsize, adjw, Nparts, tpwgts, ubvec, opts, objval, idomain)
       case (3)
          ierror = METIS_PARTMESHDUAL(Ne, Nn, eptr, eind, vwgt, vsize, ncommon, Nparts, tpwgts, opts, objval, idomain, npart)
       case default
@@ -6453,47 +6426,117 @@ end subroutine gatherv_int_data_mpi_dif
 ! =================================================================================================
 !> Sets weights of edges and vsize on mesh that is to be partitioned by METIS
 !! If there are structures defined by polylines, then for structure related cells and edges, it gives special values to edges weights and vertex size.
-!! The purpose is to avoid structures intercross partition boundaries.
+!! The purpose is to avoid structures intercross partition boundaries including ghost cells.
 !! NOTE: It uses "Ne/Nparts" as the special weights on structures, othere weight values can also be investigated.
 !! Now ONLY support structures defined by polylines. TODO: support setting special weights on structures that are defined by other ways.
-   subroutine set_weights_for_METIS(Ne, Nparts, njadj, iadj, jadj,vsize, adjw)
-      use m_alloc
-      implicit none
-      integer,                      intent(in)    :: Ne     !< Number of vertices
-      integer,                      intent(in)    :: Nparts !< Number of partition subdomains
-      integer,                      intent(in)    :: njadj  !< Length of array jadj
-      integer, dimension(Ne),       intent(in)    :: iadj   !< Array for mesh structure (CSR format, see METIS manual)
-      integer, dimension(njadj),    intent(in)    :: jadj   !< Array for mesh structure (CSR format, see METIS manual)
-      integer, dimension(njadj),    intent(inout) :: adjw   !< Edge weight
-      integer, dimension(Ne),       intent(inout) :: vsize  !< Size of vertices
+subroutine set_edge_weights_and_vsize_for_METIS(Ne, Nparts, njadj, xadj, adjncy, vsize, adjw)
+   implicit none
+   integer,                    intent(in)    :: Ne     !< Number of vertices
+   integer,                    intent(in)    :: Nparts !< Number of partition subdomains
+   integer,                    intent(in)    :: njadj  !< Length of array adjncy
+   integer, dimension(Ne),     intent(in)    :: xadj   !< The adjacency structure of the graph as described in Section 5.5. of METIS manual
+   integer, dimension(njadj),  intent(in)    :: adjncy !< The adjacency structure of the graph as described in Section 5.5. of METIS manual
+   integer, dimension(njadj),  intent(inout) :: adjw   !< Edge weight used to minimize edge cut (see METIS manual)
+   integer, dimension(Ne),     intent(inout) :: vsize  !< Vertex size used to minimize total communication volume (see METIS manual)
 
-      integer              :: nstrucells         ! Number of netcells that relate to structures
-      integer, allocatable :: istrucells(:)      ! Indices of netcells that relate to structures, there can be duplicated
-                                                 ! indices here, and it is no problem
-      integer              :: i, j, k, val_adjw, val_vsize, val
+   integer                                   :: number_of_vertices_related_to_structures
+   integer, dimension(Ne)                    :: list_of_vertices_related_to_structures
+   integer                                   :: vertex_index, vertex, higher_weight
+   integer, parameter                        :: DEFAULT_WEIGHT_VALUE = 1
+   integer, parameter                        :: INITIAL_HALO_LEVEL   = 0 
 
-      ! Find indices of net cells that relate to structures
-      nstrucells = Ne
-      call realloc(istrucells, nstrucells, keepExisting=.false., fill = 0)
-      call find_netcells_for_structures(nstrucells, istrucells)
+   adjw(:)  = DEFAULT_WEIGHT_VALUE
+   vsize(:) = DEFAULT_WEIGHT_VALUE
 
-      ! Set weights, the structure cells and their connected edges get bigger weights
-      val  = 1
-      if (nstrucells > 0) then      ! If there are structures
-         adjw  = val                ! edge weight, used to minimize edge cut (see METIS manual)
-         vsize = val                ! size of vertex, used to minimize total communication volume (see METIS manual)
-         val_adjw = int(Ne/Nparts)  ! edge weight of structure related edges
-         val_vsize = int(Ne/Nparts) ! size of vertex of structure related cells
+   call find_netcells_for_structures(Ne, number_of_vertices_related_to_structures, list_of_vertices_related_to_structures)
 
-         do i = 1, nstrucells
-            k = istrucells(i)
-            vsize(k) = val_vsize
-            do j = iadj(k), iadj(k+1)-1
-               adjw(j) = val_adjw
-            end do
-         end do
-      else ! no structures, set the same weights
-         adjw  = val
-         vsize = val
+   if (number_of_vertices_related_to_structures > 0) then
+      higher_weight = int(Ne/Nparts)  
+      do vertex_index = 1, number_of_vertices_related_to_structures
+         vertex = list_of_vertices_related_to_structures(vertex_index)
+         call set_edge_weights_and_vsize_with_halo(INITIAL_HALO_LEVEL, vertex, higher_weight, DEFAULT_WEIGHT_VALUE, &
+                                                   Ne, xadj, njadj, adjncy, adjw, vsize)
+      end do
+   end if
+end subroutine set_edge_weights_and_vsize_for_METIS
+    
+!> set edge weight and vsize for vertex and associated edges with halo around structures  
+recursive subroutine set_edge_weights_and_vsize_with_halo(halo_level, vertex, higher_weight, default_weight_value, &
+                                                          size_xadj, xadj, size_jadj, adjncy, adjw, vsize)
+   implicit none
+   integer,                        intent(in)    :: halo_level           !< halo_level around the structures
+   integer,                        intent(in)    :: vertex               !< vertex of the graph
+   integer,                        intent(in)    :: higher_weight        !< higher_weight to be assigned to vsize and adjw around structures
+   integer,                        intent(in)    :: default_weight_value !< default_weight_value
+   integer,                        intent(in)    :: size_xadj            !< size of xadj array
+   integer, dimension(size_xadj),  intent(in)    :: xadj                 !< starting points for adjacency list, the adjacency structure of the graph is described in Section 5.5. of METIS manual
+   integer,                        intent(in)    :: size_jadj            !< size of adjacency list array
+   integer, dimension(size_jadj),  intent(in)    :: adjncy               !< adjacency list, the adjacency structure of the graph is described in Section 5.5. of METIS manual
+   integer, dimension(size_jadj),  intent(inout) :: adjw                 !< Edge weight used to minimize edge cut (see METIS manual)
+   integer, dimension(size_xadj),  intent(inout) :: vsize                !< Vertex size used to minimize total communication volume (see METIS manual)
+
+   integer, parameter     :: MAX_HALO_LEVEL  = 6 ! perhaps, it is too strong, some experiments are needed on MAX_HALO_LEVEL and MAX_GHOST_LEVEL
+   integer, parameter     :: MAX_GHOST_LEVEL = 4 ! maxghostlev_sall is not defined yet at this stage 
+   integer                :: edge, next_halo_level, next_halo_level_higher_weight
+   
+   if ( halo_level <= MAX_HALO_LEVEL .and. higher_weight > default_weight_value ) then
+      next_halo_level = halo_level + 1
+      if ( halo_level > MAX_GHOST_LEVEL ) then 
+          next_halo_level_higher_weight = higher_weight / 2 ! an attemp to smooth constraints
+      else
+          next_halo_level_higher_weight = higher_weight
       end if
-   end subroutine set_weights_for_METIS
+      
+      if ( vsize(vertex) < higher_weight ) then
+           vsize(vertex) = higher_weight
+      end if
+      do edge = xadj(vertex), xadj(vertex + 1) - 1
+         if ( adjw(edge) < higher_weight ) then
+              adjw(edge) = higher_weight
+         end if
+         call set_edge_weights_and_vsize_with_halo(next_halo_level, adjncy(edge), next_halo_level_higher_weight, &
+                                         default_weight_value, size_xadj, xadj, size_jadj, adjncy, adjw, vsize)
+      end do
+   end if
+end subroutine set_edge_weights_and_vsize_with_halo
+    
+!> set idomain values for all open boundary cells
+subroutine set_idomain_for_all_open_boundaries()
+   use m_flowexternalforcings, only: nbndz, kez, nbndu, keu, ke1d2d
+   use m_sobekdfm            , only: nbnd1d2d
+   use m_cell_geometry       , only: ndx 
+   use m_partitioninfo       , only: idomain
+   use m_alloc               , only: realloc
+   implicit none
+   
+   if ( size(idomain) < ndx ) then
+       call realloc(idomain, ndx, keepExisting=.true.)
+   end if
+   call set_idomain_for_open_boundary_points(nbndz, size(kez), kez, ndx, idomain)
+   call set_idomain_for_open_boundary_points(nbndu, size(keu), keu, ndx, idomain)
+   call set_idomain_for_open_boundary_points(nbnd1d2d, size(ke1d2d), ke1d2d, ndx, idomain)
+
+end subroutine set_idomain_for_all_open_boundaries
+
+!> set idomain values for a set of open boundary cells
+subroutine set_idomain_for_open_boundary_points(number_of_boundary_points, links_array_size, &
+    links_to_boundary_points, ndx, idomain)
+   use m_flowgeom     , only: ln, lne2ln
+   implicit none
+   
+   integer, intent(in)     :: number_of_boundary_points                  !< number of boundary points
+   integer, intent(in)     :: links_array_size                           !< size of the links array
+   integer, intent(in)     :: links_to_boundary_points(links_array_size) !< links to boundary cells
+   integer, intent(in)     :: ndx                                        !< number of flow nodes (internal + boundary)
+   integer, intent(inout)  :: idomain(ndx)                               !< cell-based domain number
+
+   integer                 :: boundary_cell, boundary_point_number, internal_cell, link
+   
+   do  boundary_point_number  = 1, number_of_boundary_points
+       link                   = links_to_boundary_points(boundary_point_number)
+       boundary_cell          = ln(1,lne2ln(link)) 
+       internal_cell          = ln(2,lne2ln(link))
+       idomain(boundary_cell) = idomain(internal_cell)
+   end do
+   
+end subroutine set_idomain_for_open_boundary_points

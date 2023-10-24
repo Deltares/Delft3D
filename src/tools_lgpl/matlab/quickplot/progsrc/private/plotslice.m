@@ -48,7 +48,7 @@ switch Ops.presentationtype
                 'markerfacecolor',Ops.markerfillcolour, ...
                 'facecolor','none');
         else
-            set(hNew,'xdata',x,'ydata',z,'zdata',zeros(size(s)))
+            set(hNew,'xdata',x,'ydata',z,'zdata',zeros(size(x)))
         end
 
     case 'values'

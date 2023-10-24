@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,12 +27,12 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
       SUBROUTINE FILEMENU(mrgf,filnam,ierror)
       use unstruc_display
-      use unstruc_version_module, only : unstruc_company, unstruc_program
+      use dflowfm_version_module, only : company, product_name
       use unstruc_files, only : filnammenu
       implicit none
       integer,           intent(inout) :: mrgf    !<  call with mrgf = 0 means LOAD, mrgf = 1  means SAVE, mrgf = 2 means get filename only
@@ -89,7 +89,7 @@
       CALL IWinAction('FPC')
       CALL IWinOpen(IXP,IYP,IW,1)
       CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-      CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program)// ' FILEMENU')
+      CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name)// ' FILEMENU')
       CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 !
 !     Explain keyfunctions in bottom window

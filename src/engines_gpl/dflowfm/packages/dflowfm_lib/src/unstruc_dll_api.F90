@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -62,42 +62,18 @@ subroutine  dfm_generate_volume_tables(increment) bind(C, name="dfm_generate_vol
    
 end subroutine dfm_generate_volume_tables
 
-!!> generate the volume table with the given increment
-subroutine  dfm_get_variable_pointer(name_var, x) bind(C, name="dfm_get_variable_pointer")
-   !DEC$ ATTRIBUTES DLLEXPORT :: dfm_get_variable_pointer
+!!> DLL handle to unc_write_1D_flowgeom_ugrid, used by volume tool to write 1D flowgeom
+subroutine write_1D_flowgeom_ugrid(ncid) bind(C, name="write_1D_flowgeom_ugrid")
+   !DEC$ ATTRIBUTES DLLEXPORT :: write_1D_flowgeom_ugrid
 
-   use messageHandling
-   use unstruc_channel_flow
-   use m_VolumeTables
+   use unstruc_netcdf, only: unc_write_1D_flowgeom_ugrid, t_unc_mapids      
+   use messageHandling, only: Idlen
    use iso_c_utils
-   use m_flowgeom
-   use m_flowexternalforcings
    
-   type(c_ptr), intent(inout)  :: x
-   character(kind=c_char), intent(in) :: name_var(*)
-   
-   character(len=idlen) :: varname
-   integer, target :: numpoints
-   
-   varname = char_array_to_string(name_var)
+   integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
+   type(t_unc_mapids)  :: mapids
+   call unc_write_1D_flowgeom_ugrid(mapids%id_tsp,ncid)
 
-   select case(varname)
-   case('numpoints')
-      numpoints = size(vltb)
-      x = c_loc(numpoints)
-   case('nbndz')
-      x = c_loc(nbndz)
-   case('ln')
-      x = c_loc(ln)
-   case('kbndz')
-      x = c_loc(kbndz)
-   case('vltb')
-      x = c_loc(vltb)
-   case('vltbOnLinks')
-      x = c_loc(vltbOnLinks)
-   case('network')
-      x = c_loc(Network)
-   end select
-   
-end subroutine  dfm_get_variable_pointer
+end subroutine write_1D_flowgeom_ugrid
+
 end module dll_api

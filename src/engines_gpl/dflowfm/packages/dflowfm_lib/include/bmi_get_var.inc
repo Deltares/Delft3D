@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2022.                                
+!  Copyright (C)  Stichting Deltares, 2015-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -68,10 +68,30 @@
      x = c_loc(stmpar%sedpar%taucr)
   case("tetacr") !<  [-] dimensionless critical shear stress tetacr. {"location": "face", "shape": ["stmpar%lsedtot"], "internal": "stmpar%sedpar%tetacr"}
      x = c_loc(stmpar%sedpar%tetacr)
+  case("InterceptThickness") !<  [m] Interception layer thickness (max depth) {"location": "face", "shape": ["ndx"]}
+     x = c_loc(InterceptThickness)
+  case("InterceptHs") !<  [m] Interception layer water depth at current time {"location": "face", "shape": ["ndx"]}
+     x = c_loc(InterceptHs)
+  case("PotEvap") !<  [m/s] Potential evaporation {"location": "face", "shape": ["ndx"]}
+     x = c_loc(PotEvap)
+  case("ActEvap") !<  [m/s] Actual evaporation {"location": "face", "shape": ["ndx"]}
+     x = c_loc(ActEvap)
   case("infilt") !<  [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
      x = c_loc(infilt)
+  case("infiltcap0") !<  [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
+     x = c_loc(infiltcap0)
   case("infiltcap") !<  [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
      x = c_loc(infiltcap)
+  case("HortonMinInfCap") !<  [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+     x = c_loc(HortonMinInfCap)
+  case("HortonMaxInfCap") !<  [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+     x = c_loc(HortonMaxInfCap)
+  case("HortonDecreaseRate") !<  [1/hr] Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+     x = c_loc(HortonDecreaseRate)
+  case("HortonRecoveryRate") !<  [1/hr] Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+     x = c_loc(HortonRecoveryRate)
+  case("HortonState") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+     x = c_loc(HortonState)
   case("shx") !<  [m] current position {"shape": ["nshiptxy"]}
      x = c_loc(shx)
   case("shy") !<  [m] current position {"shape": ["nshiptxy"]}
@@ -128,6 +148,20 @@
      x = c_loc(qqlat)
   case("balat") !<  [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
      x = c_loc(balat)
+  case("qplatCum") !<  [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
+     x = c_loc(qplatCum)
+  case("qplatCumPre") !<  [m3/s] Cumulative lateral discharge of provider at previous history output time {"shape": ["numlatsg"]}
+     x = c_loc(qplatCumPre)
+  case("qplatAve") !<  [m3/s] Average lateral discharge of provider during the past history output interal {"shape": ["numlatsg"]}
+     x = c_loc(qplatAve)
+  case("qLatReal") !<  [m3/s] Realized lateral discharge {"shape": ["numlatsg"]}
+     x = c_loc(qLatReal)
+  case("qLatRealCum") !<  [m3/s] Cumulative realized lateral discharge {"shape": ["numlatsg"]}
+     x = c_loc(qLatRealCum)
+  case("qLatRealCumPre") !<  [m3/s] Cumulative realized lateral discharge at previous history output time {"shape": ["numlatsg"]}
+     x = c_loc(qLatRealCumPre)
+  case("qLatRealAve") !<  [m3/s] Average realized lateral discharge during the past history output interal {"shape": ["numlatsg"]}
+     x = c_loc(qLatRealAve)
   case("n1latsg") !<  [-] first  nlatnd point in lateral signal numlatsg {"shape": ["numlatsg"]}
      x = c_loc(n1latsg)
   case("n2latsg") !<  [-] second nlatnd point in lateral signal numlatsg {"shape": ["numlatsg"]}
@@ -186,14 +220,16 @@
      x = c_loc(s0)
   case("s1") !<  [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
      x = c_loc(s1)
+  case("s1max") !<  [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
+     x = c_loc(s1max)
   case("a0") !<  [m2] storage area at start of timestep {"location": "face", "shape": ["ndx"]}
      x = c_loc(a0)
   case("a1") !<  [m2] storage area at end of timestep {"location": "face", "shape": ["ndx"]}
      x = c_loc(a1)
-  case("vol0") !<  [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
-     x = c_loc(vol0)
   case("vol1") !<  [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
      x = c_loc(vol1)
+  case("vol0") !<  [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
+     x = c_loc(vol0)
   case("vol1_f") !<  [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndx"]}
      x = c_loc(vol1_f)
   case("hs") !<  [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
@@ -206,6 +242,10 @@
      x = c_loc(ucz)
   case("ucmag") !<  [m/s] cell center velocity magnitude {"location": "face", "shape": ["ndkx"]}
      x = c_loc(ucmag)
+  case("ucx_mor") !<  [m/s] cell center velocity for sedmor, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
+     x = c_loc(ucx_mor)
+  case("ucy_mor") !<  [m/s] cell center velocity for sedmor, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
+     x = c_loc(ucy_mor)
   case("sa0") !<  [1e-3] salinity (ppt) at start of timestep {"location": "face", "shape": ["ndkx"]}
      x = c_loc(sa0)
   case("sa1") !<  [1e-3] salinity (ppt) at end   of timestep {"location": "face", "shape": ["ndkx"]}
@@ -228,6 +268,8 @@
      x = c_loc(q1_main)
   case("au") !<  [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
      x = c_loc(au)
+  case("au_nostrucs") !<  [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
+     x = c_loc(au_nostrucs)
   case("hu") !<  [m] upwind waterheight at u-point (m) {"location": "edge", "shape": ["lnx"]}
      x = c_loc(hu)
   case("frcu") !<  [TODO] friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
@@ -250,6 +292,8 @@
      x = c_loc(ba_mor)
   case("bl") !<  [m] bottom level (m) (positive upward) {"location": "face", "shape": ["ndx"]}
      x = c_loc(bl)
+  case("bl_min") !<  [m] Minimal/deepest bottom level (m) (positive upward) {"location": "face", "shape": ["ndx"]}
+     x = c_loc(bl_min)
   case("lnx1D") !<  [-] nr of 1D flow links (so first 1D, next 2D, next boundaries). {"rank": 0}
      x = c_loc(lnx1D)
   case("lnxi") !<  [-] nr of flow links (internal, 1D+2D    ). {"rank": 0}
@@ -264,6 +308,8 @@
      x = c_loc(LLkkk)
   case("lncn") !<  [-] 2D link (2,*) corner administration, 1=nod1, 2=nod2  linker en rechter netnr {"shape": [2, "lnkx"]}
      x = c_loc(lncn)
+  case("kcu") !<  [-] link code, 1=1D link, 2=2D link, -1= bc 1D, -2=bc 2D, 3=lateral_1d2d_link, 4=longitudinal_1d2d_link, 5=street_inlet_1d2d_link, 7=roof_gutter_1d2d_link {"shape": ["lnx"]}
+     x = c_loc(kcu)
   case("iadv") !<  [-] type of advection for this link {"location": "edge", "shape": ["lnx"]}
      x = c_loc(iadv)
   case("dx") !<  [m] link length (m) {"location": "edge", "shape": ["lnx"]}
@@ -280,6 +326,8 @@
      x = c_loc(bob)
   case("bob0") !<  [m] left and right inside lowerside tube (binnenkant onderkant buis) HEIGHT values (m) (positive upward), NOT adjusted for structures {"location": "edge", "shape": [2, "lnx"]}
      x = c_loc(bob0)
+  case("blup") !<  [m] "upwind" bed level at u point, as determined by sethu() {"location": "edge", "shape": ["lnx"]}
+     x = c_loc(blup)
   case("xu") !<  [m] velocity point x {"location": "edge", "shape": ["lnx"]}
      x = c_loc(xu)
   case("yu") !<  [m] velocity point y {"location": "edge", "shape": ["lnx"]}
@@ -334,5 +382,7 @@
      x = c_loc(yz)
   case("ba") !<  [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
      x = c_loc(ba)
+  case("ndx1d") !<  [-] volume table size {"rank": 0}
+     x = c_loc(ndx1d)
   end select
 

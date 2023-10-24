@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_pointi
+
+      implicit none
+
+      contains
+
 
       subroutine pointi ( lun    , lchar  , noseg  , noq    , noq1   ,
      &                    noq2   , noq3   , noqt   , nobnd  , ipnt   ,
@@ -47,7 +53,9 @@
 !     Logical units      : lunut   = unit formatted output file
 !                          lun( 8) = unit intermediate file ('to-from')
 
-      use grids          ! for the storage of contraction grids
+      use m_bound
+      use m_open_waq_files
+      use dlwqgrid_mod          ! for the storage of contraction grids
       use rd_token       ! for the reading of tokens
       use timers       !   performance timers
 
@@ -57,7 +65,7 @@
 
 !     kind           function         name            Descriptipon
 
-      integer  ( 4), intent(in   ) :: lun   (*)     !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)     !< array with unit numbers
       character( *), intent(inout) :: lchar (*)     !< array with file names of the files
       integer  ( 4), intent(in   ) :: noseg         !< number of computational volumes
       integer  ( 4), intent(in   ) :: noq           !< noq1 + noq2 + noq3
@@ -94,7 +102,7 @@
 
       noq12 = noq1 + noq2
       if ( ipopt1 .eq. 0 )  then
-         call dhopnf  ( lun(44) , lchar(44) , 44      , 2+ftype, ierr2 )
+         call open_waq_files  ( lun(44) , lchar(44) , 44      , 2+ftype, ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          do iq = 1, noq
             read ( lun(44), iostat = ierr1 ) ipnt(:,iq)
@@ -138,7 +146,7 @@
 !        No problems found, so continue
 
          close ( lun(44) )
-         call dhopnf  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
+         call open_waq_files  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          if ( noq1 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq =       1, noq1  )
          if ( noq2 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq = noq1 +1, noq12 )
@@ -149,7 +157,7 @@
                if ( gettoken( ipnt(ip,iq), ierr2 ) .gt. 0 ) goto 100
             enddo
          enddo
-         call dhopnf  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
+         call open_waq_files  ( lun(8) , lchar(8) , 8     , 1     , ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          if ( noq1 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq =       1, noq1  )
          if ( noq2 .gt. 0 ) write( lun(8) )( ipnt(:,iq), iq = noq1 +1, noq12 )
@@ -201,3 +209,5 @@
  2111 format (  /,' ERROR: too few extra exchanges (DELWAQG) present in the exchanges file' )
 
       end
+
+      end module m_pointi

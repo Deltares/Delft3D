@@ -25,7 +25,7 @@ module HRextensions
    !  Stichting Deltares. All rights reserved.
    !
    !-------------------------------------------------------------------------------
-   !  $Id$
+   !  
    !  $URL$
    !!--description-----------------------------------------------------------------
    !! extensions for SWAN for HR (Hydraulic Boundaries / in Dutch: Hydraulische Randvoorwaarden)

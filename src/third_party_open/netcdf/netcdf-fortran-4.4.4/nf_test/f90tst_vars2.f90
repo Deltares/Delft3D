@@ -4,7 +4,7 @@
 
 !     This program tests netCDF-4 variable functions from fortran.
 
-!     $Id$
+!     
 
 program f90tst_vars2
   use typeSizes

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -67,8 +67,6 @@ module partmem
       integer  ( ip)           :: nolayp        ! number of layers   <== pas op
       integer  ( ip)           :: noslay        ! number of layers inclusive of optional bed layer
       integer  ( ip)           :: idelt         ! simulation time step inputfile
-      integer  ( ip)           :: ipc           ! choice numerical scheme
-      logical  ( ip)           :: lcorr         ! switch for predcorrector scheme
       integer  ( ip)           :: ioptdv        ! vertical diffusion option
       real     ( rp)           :: alpha         ! scale factor for vertical diffusivity
       real     ( rp)           :: cdisp         ! vertical diffusivity constant
@@ -379,12 +377,12 @@ module spec_feat_par
       real     ( sp), pointer  :: xpolscreens(:)   ! x-coordinates of screen polygon
       real     ( sp), pointer  :: ypolscreens(:)   ! y-coordinates of screen polygon
 
-!     IBM      
-      logical                  :: ibmmodel          ! is IBM keyword active
+!     ABM      
+      logical                  :: abmmodel          ! is ABM keyword active
       logical                  :: chronrev          ! is chronology reversed
-      character( 256)          :: ibmmodelname      ! name of IBM model used
-      character( 256)          :: ibmstagedev       ! name of IBM model stage developement used
-      integer  ( sp)           :: ibmmt             ! nr of IBM model used
-      integer  ( sp)           :: ibmsd             ! nr of IBM model stage developement used
-      real     ( sp)           :: selstage          ! nr of IBM model stage for chronology reversed model
+      character( 256)          :: abmmodelname      ! name of ABM model used
+      character( 256)          :: abmstagedev       ! name of ABM model stage developement used
+      integer  ( sp)           :: abmmt             ! nr of ABM model used
+      integer  ( sp)           :: abmsd             ! nr of ABM model stage developement used
+      real     ( sp)           :: selstage          ! nr of ABM model stage for chronology reversed model
 end module spec_feat_par

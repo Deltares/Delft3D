@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine makeq1qaAtStart()
  use m_flow
@@ -37,7 +37,7 @@
  use unstruc_netcdf
  implicit none
 
- integer :: L, idfile, idvar, ierr, jaq1, jaqa, i
+ integer :: L, idfile, idvar, ierr, jaq1, jaqa
 
  jaq1 = 1
  jaqa = 1
@@ -60,18 +60,22 @@
  end if
 
  if (jaq1 == 1) then
-    q1 = 0d0
-    do i = 1, wetLinkCount
-       L = onlyWetLinks(i)
-       q1(L) = au(L)*( teta(L)*u1(L) + (1d0-teta(L))*u0(L) )
+    do L = 1,lnx
+       if (hu(L) > 0) then
+          q1(L) = au(L)*( teta(L)*u1(L) + (1d0-teta(L))*u0(L) )
+       else
+          q1(L) = 0
+       endif
     enddo
  end if
 
  if (jaqa == 1) then
-    qa = 0
-    do i = 1, wetLinkCount
-       L = onlyWetLinks(i)
-       qa(L) = au(L)*u1(L)
+    do L = 1,lnx
+       if (hu(L) > 0) then
+          qa(L) = au(L)*u1(L)
+       else
+          qa(L) = 0
+       endif
     enddo
  end if
 

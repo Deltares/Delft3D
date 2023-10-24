@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,9 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_bloom_3dl
+
+implicit none
+
+contains
+
 
       subroutine init_3dl( noseg , nosegw, nosegl, nolay , ngro  , ntyp  )
       
+      use m_srstop
+      use m_monsys
       use bloom_data_3dl
 
       implicit none
@@ -118,6 +126,7 @@
 
       subroutine effilay_3dl( surf, exttot, dep   , igroup, itype )
 
+      use m_ebcalc
       use bloom_data_3dl
 
       implicit none
@@ -156,3 +165,5 @@
 
       return
       end subroutine effilay_3dl
+
+end module m_bloom_3dl

@@ -1,7 +1,7 @@
 module m_rdmorlyr
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module m_rdmorlyr
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 use m_depfil_stm
 contains
@@ -52,16 +52,16 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
 !
 ! Arguments
 !
-    integer                                         , intent(in)  :: lsedtot  !  Description and declaration in esm_alloc_int.f90
-    integer                                                       :: lundia   !  Description and declaration in inout.igs
+    integer                                         , intent(in)  :: lsedtot  !< Description and declaration in esm_alloc_int.f90
+    integer                                                       :: lundia   !< Description and declaration in inout.igs
     integer                                         , intent(in)  :: nmaxus
     integer                                         , intent(in)  :: nto
     integer                                         , intent(in)  :: version
     logical                                         , intent(in)  :: lfbedfrm    
     logical                                         , intent(out) :: error
     character(*)                                                  :: filmor
-    character(20)             , dimension(nto)                    :: nambnd   !  Description and declaration in esm_alloc_char.f90
-    character(20)             , dimension(lsedtot)                :: namsed   !  Names of all sediment fractions 
+    character(20)             , dimension(nto)                    :: nambnd   !< Description and declaration in esm_alloc_char.f90
+    character(20)             , dimension(lsedtot)                :: namsed   !< Names of all sediment fractions 
     type(morpar_type)                               , pointer     :: morpar
     type(sedpar_type)                               , pointer     :: sedpar
     type(bedcomp_data)                              , pointer     :: morlyr
@@ -81,7 +81,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     integer                  :: mxnulyr
     integer                  :: nm
     integer                  :: nval
-    character(11)            :: fmttmp       ! Format file ('formatted  ') 
+    character(11)            :: fmttmp       !< Format file ('formatted  ') 
     character(20)            :: parname
     character(20)            :: txtput2
     character(40)            :: txtput1
@@ -168,8 +168,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     error      = .false.
     rmissval   = -999.0_fp
     fmttmp     = 'formatted'
+    
     !
-    ! allocate memory for boundary conditions
+    ! allocate memory for boundary conditions. This needs to be done always. 
     !
     istat = 0
     allocate (morpar%cmpbnd(nto), stat = istat)
@@ -180,14 +181,14 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        call write_error(errmsg, unit=lundia)
        error = .true.
        return
-    endif
-    !
-    cmpbnd              => morpar%cmpbnd
-    !
+    endif  
+    
+    cmpbnd     => morpar%cmpbnd
     do j = 1, nto
        cmpbnd(j)%icond = 1
        cmpbnd(j)%ibcmt = 0
     enddo
+
     !
     ! return if input file is too old, otherwise get
     ! the data tree read from the input file
@@ -199,8 +200,10 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
           error = .true.
           return
        endif
-       goto 777
+       call set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
+       return
     endif
+
     write (lundia, '(a)') '*** Start  of underlayer input'
     !
     ! underlayer bookkeeping mechanism
@@ -774,9 +777,22 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     write (lundia, '(a)') '*** End    of underlayer input'
     write (lundia, *)
     !
-    ! Set sediment properties for the morphological layers
+    call set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
     !
-777 continue
+    deallocate(parnames, stat = istat)
+    !
+end subroutine rdmorlyr
+
+
+subroutine set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
+    use bedcomposition_module, only : bedcomp_data, setbedfracprop
+    use morphology_data_module, only : sedpar_type
+    implicit none
+
+    integer                                 , pointer, intent(in)      :: iporosity
+    type(bedcomp_data)                      , pointer, intent(inout)   :: morlyr
+    type(sedpar_type)                       , pointer, intent(inout)   :: sedpar
+                  
     if (iporosity==0) then
        !
        ! porosity is fraction dependent and included in cdryb densities
@@ -791,10 +807,8 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
              & sedpar%logsedsig, sedpar%rhosol)
        ! sedpar%cdryb = sedpar%rhosol
     endif
-    deallocate(parnames, stat = istat)
-    !
-end subroutine rdmorlyr
-
+    
+end subroutine set_sediment_properties_for_the_morphological_layers
 
 subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
                    & zdiff     ,griddim   ,error     )
@@ -813,11 +827,11 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
 ! Global variables
 !
     type(griddimtype)                        , target   , intent(in)  :: griddim
-    integer                                             , intent(in)  :: lundia  !  Description and declaration in inout.igs
-    integer                                             , intent(in)  :: ndiff   !  Description and declaration in bedcomposition module
-    real(fp), dimension(ndiff)                          , intent(out) :: zdiff   !  Description and declaration in bedcomposition module
-    real(fp), dimension(ndiff,griddim%nmlb:griddim%nmub), intent(out) :: kdiff   !  Description and declaration in bedcomposition module
-    character(*)                                                      :: fildiff
+    integer                                             , intent(in)  :: lundia  !< Description and declaration in inout.igs
+    integer                                             , intent(in)  :: ndiff   !< Description and declaration in bedcomposition module
+    real(fp), dimension(ndiff)                          , intent(out) :: zdiff   !< Description and declaration in bedcomposition module
+    real(fp), dimension(ndiff,griddim%nmlb:griddim%nmub), intent(out) :: kdiff   !< Description and declaration in bedcomposition module
+    character(*)                                        , intent(out) :: fildiff
     logical                                             , intent(out) :: error
 !
 ! Local variables
@@ -979,8 +993,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
     use string_module, only: remove_leading_spaces
     use grid_dimens_module, only: griddimtype
     use message_module, only: FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
-    use MessageHandling
-    use sediment_basics_module, only: SEDTYP_COHESIVE
+    use MessageHandling, only: mess, LEVEL_ERROR
     use morphology_data_module, only: sedpar_type, morpar_type
     use m_depfil_stm
     !
@@ -1030,6 +1043,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
     logical                               :: anysedbed
     logical                               :: err2
     logical                               :: ex
+    logical                               :: success
     character(10)                         :: lstr
     character(10)                         :: versionstring
     character(11)                         :: fmttmp   ! Format file ('formatted  ') 
@@ -1088,7 +1102,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
        mfluff = 0.0_fp
        !
        do ised = 1, lsed
-           if (sedpar%sedtyp(ised) /= SEDTYP_COHESIVE) cycle
+           if (sedpar%sedtyp(ised) > sedpar%max_mud_sedtyp) cycle ! check for IFORM == -3 instead?
            inquire (file = mflfil(ised), exist = ex)
            if (ex) then
                call depfil_stm(lundia    ,error     ,mflfil(ised)         , &
@@ -1372,12 +1386,17 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                       ! Constant thickness
                       !
                       sedbed = rmissval
-                      call prop_get(layer_ptr, '*', parname, sedbed)
-                      if (comparereal(sedbed,rmissval) == 0) then
-                         write (message,'(a,i2,2a)')  &
-                             & 'Missing Thick keyword for layer ', ilyr, &
-                             & ' in file ', trim(flcomp)
-                         call mess(LEVEL_ERROR, message)  
+                      success = .true.
+                      call prop_get(layer_ptr, '*', parname, sedbed, success, valuesfirst=.true.)
+                      if (.not.success) then
+                         if (filename == 'dummyname') then ! string was empty or key not found
+                            write (message,'(a,i2,2a)')  &
+                               & 'No value assigned to Thick for layer ', ilyr,' in file ', trim(flcomp)
+                         else
+                            write (message,'(3a,i2,2a)')  &
+                               & 'Invalid file or value "',trim(filename),'" assigned to Thick for layer ', ilyr,' in file ', trim(flcomp)
+                         endif
+                         call mess(LEVEL_ERROR, message)
                          error = .true.
                          return
                       endif
@@ -1442,18 +1461,18 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          ! Constant fraction
                          !
                          fraction = rmissval
-                         call prop_get(layer_ptr, '*', parname, fraction)
-                         if (comparereal(fraction,rmissval) == 0) then
-                            fraction = 0.0_fp
-                         elseif (fraction<0.0_fp .or. fraction>1.0_fp) then
-                            write (message,'(a,e12.4,5a,i2,3a)')  &
-                                & 'Invalid value ',fraction,' for ', trim(parname), &
-                                & ' of ', trim(layertype), ' layer ', &
-                                & ilyr, ' in file ', trim(flcomp), &
-                                & ' Value between 0 and 1 required.'
-                            call mess(LEVEL_ERROR, message)  
-                            error = .true.
-                            return
+                         success = .true.
+                         call prop_get(layer_ptr, '*', parname, fraction, success, valuesfirst=.true.)
+                         if (.not.success) then
+                            if (filename == 'dummyname') then ! string was empty or key not found
+                               fraction = 0.0_fp
+                            else
+                               write (message,'(7a,i2,2a)')  &
+                                  & 'Invalid file or value "',trim(filename),'" assigned to ',trim(parname),' of ', trim(layertype), ' layer ', ilyr,' in file ', trim(flcomp)
+                               call mess(LEVEL_ERROR, message)
+                               error = .true.
+                               return
+                            endif
                          else
                             anyfrac = .true.
                          endif

@@ -45,7 +45,7 @@ function [out,out2]=qp_gridview(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1481,17 +1481,29 @@ if isfield(GRID,'FaceNodeConnect') || isfield(GRID,'EdgeNodeConnect') % unstruct
         eConnect(any(isnan(eConnect),2),:) = [];
         GRID.EdgeNodeConnect = eConnect;
     end
-    xy = eConnect(:,[1 2 2])';
-    xy = xy(:);
-    xy_wrong = min(xy);
-    if xy_wrong>=1
-        xy_wrong = max(xy);
+    
+    % convert EdgeNodeConnect to a long list of node pairs that can be
+    % transformed to x,y coordinates of a line. Note that we first create
+    % triplets by duplicating the second column, and blank the resulting
+    % 3rd X and Y coordinates before plotting.
+    iNode = eConnect(:,[1 2 2])';
+    iNode = iNode(:);
+    if isempty(iNode)
+        warning('Empty edge-node-connectivty array!')
+    elseif any(isnan(iNode(:)))
+        warning('NaN values in the edge-node-connectivity array!')
+        iNode = [];
+    else
+        wrong_iNode = min(iNode);
+        if wrong_iNode >= 1 % minimum is not wrong ...
+            wrong_iNode = max(iNode);
+        end
+        if wrong_iNode < 1 || wrong_iNode > length(GRID.X)
+            error('Invalid node index found in edge_node_connectivity table. Value (%i) outside range 1:%i.',wrong_iNode,length(GRID.X))
+        end
     end
-    if xy_wrong<1 || xy_wrong>length(GRID.X)
-        error('Invalid node index found in edge_node_connectivity table. Value (%i) outside range 1:%i.',xy_wrong,length(GRID.X))
-    end
-    X = GRID.X(xy);
-    Y = GRID.Y(xy);
+    X = GRID.X(iNode);
+    Y = GRID.Y(iNode);
     X(3:3:end) = NaN;
     Y(3:3:end) = NaN;
     G=line('parent',A);

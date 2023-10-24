@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> This module contains general functions for snapping locations to either flowlink numbers or flownode numbers
 module m_inquire_flowgeom
@@ -324,7 +324,7 @@ module m_inquire_flowgeom
 
       do i = 1, network%sts%Count
          strucid_tmp = network%sts%struct(i)%id
-         if (trim(strucid_tmp) == trim(strucid)) then
+         if (trim(strucid_tmp) == trim(strucid) .and. network%sts%struct(i)%numlinks > 0) then
             L = network%sts%struct(i)%linknumbers(1)
             ! NOTE: intentionally no abs() here, but also not on call site: L = -1 means not found, and for 1D structures, linknumber(1) is always > 0.
             exit

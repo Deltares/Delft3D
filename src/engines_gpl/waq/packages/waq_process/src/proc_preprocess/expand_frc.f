@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_expand_frc
+
+      implicit none
+
+      contains
+
 
       subroutine expand_frc ( lunrep, procesdef, allitems, sfracs)
 
       ! expand processes per fractions
 
+      use m_zoek
       use processet
       use timers       !   performance timers
 
@@ -571,3 +578,5 @@
       return
  2000 format ( 3a )
       end
+
+      end module m_expand_frc

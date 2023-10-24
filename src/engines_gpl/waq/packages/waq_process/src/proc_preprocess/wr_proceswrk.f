@@ -1,6 +1,12 @@
+      module m_wr_proceswrk
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +30,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine wr_proceswrk( lurep , procesdef, nodef , defaul, idpnw ,
      +                         ivpnw , dsto     , vsto  , locnam, nopred,
@@ -44,6 +50,12 @@
 
 !     Created   : Aug   2012 by Jan van Beek
 
+      use m_wrstoc
+      use m_wripro
+      use m_setvat
+      use m_proc_totals
+      use m_intoou
+      use m_open_waq_files
       use timers         !< performance timers
       use processet      !< use processet definitions
       use output         !< use output definitions
@@ -81,7 +93,7 @@
       character(len=20)   , intent(in   ) :: sfname(*)              !< segm.func. names
       character(len=20)   , intent(in   ) :: syname(*)              !< substance names
       integer             , intent(in   ) :: intopt                 !< integration sub options
-      integer             , intent(in   ) :: lun(*)                 !< unit numbers
+      integer             , intent(inout) :: lun(*)                 !< unit numbers
       character(len=*)    , intent(in   ) :: lchar(*)               !< filenames
       integer             , intent(in   ) :: noutp                  !< total number of output files
       integer             , intent(in   ) :: ioutps(7,*)            !< (old) output structure
@@ -194,7 +206,7 @@
       ! write stochi file, set stochi array, balance output settings
 
       if ( btest(intopt,3) .and. .not. btest(intopt,4) ) then
-         call dhopnf ( lun(36) , lchar(36), 36    , 1     , ierr2 )
+         call open_waq_files ( lun(36) , lchar(36), 36    , 1     , ierr2 )
       endif
       allocate(stochi(notot*no_flu))
       call wrstoc ( procesdef, lun(36), notot  , syname, stochi,
@@ -206,7 +218,7 @@
 
       ! write process intermediate file
 
-      call dhopnf ( lun(24) , lchar(24), 24    , 1     , ierr2 )
+      call open_waq_files ( lun(24) , lchar(24), 24    , 1     , ierr2 )
       call wripro ( nproc , nsvar  , iflux , nipmsa, prvvar,
      +              prvtyp, noloc  , nodef , defaul, pronam,
      +              nflux , lun(24), versio, stochi, notot ,
@@ -224,3 +236,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_wr_proceswrk

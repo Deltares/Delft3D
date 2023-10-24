@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rd_tabr1
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE RD_TABR1 ( DEFFDS      ,
      +                      NO_C_P_MAX  , NO_CONF     ,
@@ -103,11 +109,9 @@
 !
 !     Read the group
 !
-!     WRITE(LUNREP,*) ' reading GROUP:',GRPNAM
       UINDEX(1) = 1
       UINDEX(2) = 1
       UINDEX(3) = 1
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(1)
       BUFLEN = NBYTSG(1)*ELMDMS(2,1)
       IERROR = GETELT (DEFFDS ,
      +                 GRPNAM , ELMNMS(1) ,
@@ -126,7 +130,6 @@
          IERROR = 2
          GOTO 900
       ENDIF
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(2)
       BUFLEN = NBYTSG(2)*ELMDMS(2,2)
       IERROR = GETELT (DEFFDS ,
      +                 GRPNAM , ELMNMS(2) ,
@@ -159,7 +162,7 @@
       DO IELM = 3 , NELEMS
          ELMDMS(2,IELM) = NO_CONF*NO_PROC
       ENDDO
-!     WRITE(LUNREP,*) ' reading ELEMENT:',ELMNMS(3)
+
       BUFLEN = NBYTSG(3)*ELMDMS(2,3)
       IERROR = GETELT (DEFFDS ,
      +                 GRPNAM , ELMNMS(3),
@@ -175,3 +178,5 @@
       RETURN
 !
       END
+
+      end module m_rd_tabr1

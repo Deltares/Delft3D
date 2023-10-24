@@ -4,7 +4,7 @@
 
 !     This program tests netCDF-4 new types from fortran 90.
 
-!     $Id$
+!     
 
 program tst_types
   use typeSizes

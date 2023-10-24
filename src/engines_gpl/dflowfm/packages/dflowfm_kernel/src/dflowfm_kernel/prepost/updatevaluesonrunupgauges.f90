@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !< update runup values per dts
 subroutine updateValuesOnRunupGauges()
@@ -60,13 +60,13 @@ subroutine updateValuesOnRunupGauges()
 
           k1 = ln(1,L); k2 = ln(2,L)
 
-          if (hs(k1)>epshu .and. hs(k2)<epshu) then
+          if (hs(k1)>epshu .and. hs(k2)<=epshu) then
              if (s1(k1)>=maxz) then
                 maxz = s1(k1)
                 maxx = xz(k1)
                 maxy = yz(k1)
              endif
-          elseif (hs(k2)>epshu .and. hs(k1)<epshu) then
+          elseif (hs(k2)>epshu .and. hs(k1)<=epshu) then
              if (s1(k2)>=maxz) then
                 maxz = s1(k2)
                 maxx = xz(k2)

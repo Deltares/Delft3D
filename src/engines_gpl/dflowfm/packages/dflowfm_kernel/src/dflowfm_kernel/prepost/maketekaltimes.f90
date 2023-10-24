@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,11 +27,12 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    subroutine maketekaltimes()
    use m_flowtimes
+   use time_module, only : seconds_to_datetimestring
    implicit none
    logical          :: jawel
    integer          :: minp, mout, i, k
@@ -84,7 +85,7 @@
      enddo
      do i=1,6202
         read(minp,*) tim, (a(k), k = 1,30)
-        call maketime(dateandtime, tim)
+        call seconds_to_datetimestring(dateandtime, refdat, tim)
         dateandtime(9:9) = ' '
         write(mout,'(a, 30F10.3)') dateandtime, (a(k), k = 1,30)
      enddo

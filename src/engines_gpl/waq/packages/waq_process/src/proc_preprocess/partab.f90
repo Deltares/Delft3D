@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,10 @@
 !!  rights reserved.
 
       module partable
+      use m_valpoi
+      use m_zoek
+      use m_monsys
+
 
 ! NB This is a module, because the subroutine partab allocates the array proref
 !                      that is used outside of partab, through dlwqp1 in wripro.
@@ -48,7 +52,7 @@
 
 !     Modified  :
 
-      use dlwq_data
+      use dlwq_hyd_data
       use ProcesSet
       use timers       !   performance timers
 
@@ -360,7 +364,7 @@
      &                          paname, nofun , funame, nosfun   , sfname,                &
      &                          valnam, input )
 
-      use dlwq_data
+      use dlwq_hyd_data
 
       character(20)       , intent(in   ) :: valnam
       character(20)       , intent(in   ) :: input

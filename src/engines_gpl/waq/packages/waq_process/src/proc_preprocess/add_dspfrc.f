@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,11 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_add_dspfrc
+
+      implicit none
+
+      contains
+
 
       subroutine add_dspfrc( lunrep, procesdef, sfracs)
 
       ! add the dispersion and velocity stochi for fractions
 
+      use m_zoek
+      use m_srstop
       use ProcesSet
       use timers       !   performance timers
 
@@ -185,3 +193,5 @@
       return
  2000 format ( 5a )
       end
+
+      end module m_add_dspfrc

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,8 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_read_hydfile
+
+implicit none
+
+contains
+
 
 subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, ierr )
+use m_get_filepath_and_pathlen
+
 
 !   Deltares Software Centre
 
@@ -69,7 +77,7 @@ subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, ierr )
     idxlga  = -1
     idxgeom = -1
 
-    call dhpath( hydfile, path, pathlen )
+    call get_filepath_and_pathlen( hydfile, path, pathlen )
 
     open( newunit = lunin, file = hydfile, status = 'old', iostat = ierr )
     if ( ierr /= 0 ) then
@@ -182,3 +190,5 @@ subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, ierr )
         return
     endif
 end subroutine read_hydfile
+
+end module m_read_hydfile

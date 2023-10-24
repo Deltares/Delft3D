@@ -1,6 +1,6 @@
 ! This is part of the netCDF-4 fortran 90 API.
 ! Copyright 2006, UCAR
-! $Id$
+! 
   
 public :: nf90_create_par, nf90_open_par, nf90_var_par_access, &
      nf90_inq_ncid, nf90_inq_grps, nf90_inq_grp_ncid, nf90_inq_grp_full_ncid, nf90_inq_grpname, &

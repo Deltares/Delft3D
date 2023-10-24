@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_bodcod
+
+      implicit none
+
+      contains
+
 
       subroutine bodcod ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_srstop
+      use m_monsys
+
 !>\file
 !>       Decay of BOD, COD and NBOD and associated oxygen consumption
 
@@ -96,6 +105,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -227,13 +237,10 @@
       ELSE
         AFACT  = .TRUE.
       ENDIF
-!     write(*,*) 'afact:' , afact
-
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       IF ( TFACT ) THEN
@@ -321,7 +328,6 @@
       IF (AFACT) THEN
 
         AGEFL  = PMSA(IP23)
-!       write(*,*) 'agefl: ', agefl
 
         IF ((COD.LT.1.0E-06).OR.(BOD5.LT.1.0E-6)) THEN
           AGEFUN = AGEFL
@@ -330,25 +336,15 @@
           AGEFU  = PMSA(IP24)
           AGEIL  = PMSA(IP25)
           AGEIU  = PMSA(IP26)
-!       write(*,*) 'agefu: ', agefu
-!       write(*,*) 'ageil: ', ageil
-!       write(*,*) 'ageiu: ', ageiu
 
-!         AGEIND = BOD5 / COD
           AGEIND = COD / BOD5
-!         write(*,*) 'ageind: ', ageind
 
           IF (AGEIND.LE.AGEIL) THEN
             AGEFUN = AGEFU
-!         write(*,*) 'agefun-1: ', agefun
 
-!         ELSEIF (AGEIND.GE.AGEIU) THEN
-!           AGEFUN = AGEFL
-!         write(*,*) 'agefun-2: ', agefun
           ELSE
             AGEFUN = AGEFL + (AGEFU - AGEFL) *
      1               EXP(-((AGEIND-AGEIL)/AGEIU)**2)
-!         write(*,*) 'agefun-3: ', agefun
 
           ENDIF
         ENDIF
@@ -470,3 +466,5 @@
       RETURN
 !
       END
+
+      end module m_bodcod

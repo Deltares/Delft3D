@@ -2,7 +2,7 @@
 !/*********************************************************************
 ! *   Copyright 1996, UCAR/Unidata
 ! *   See netcdf/COPYRIGHT file for copying and redistribution conditions.
-! *   $Id$
+! *   
 ! *********************************************************************/
 
 ! Implementation of test.inc in a module

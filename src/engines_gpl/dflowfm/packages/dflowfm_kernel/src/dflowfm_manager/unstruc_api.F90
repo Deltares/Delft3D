@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 module unstruc_api
  use m_flowtimes
  use m_timer
@@ -49,7 +49,7 @@ use m_landboundary
 use M_splines
 use m_monitoring_crosssections
 use unstruc_files
-use unstruc_version_module, only : unstruc_basename
+use dflowfm_version_module, only : base_name
 use gridoperations
 use m_samples
 
@@ -62,7 +62,7 @@ use m_samples
     !endif
     !
 
-    call inidia(unstruc_basename)
+    call inidia(base_name)
 
     KMAX = 2
     LMAX = 2
@@ -88,13 +88,22 @@ use m_samples
 
 end subroutine init_core
 
+!> Executes a batch of dflowfm model runs, defined by a .batdfm input file.
+!! Contents of .batdfm file: a sequence of lines, with the following
+!! supported keywords:
+!! LOAD=basemodel.mdu : The main MDU file that is the starting point for all runs.
+!! START PARAMETERS=variant.mdu : Small MDU-fragments file, overriding any settings read from the basemodel.
+!!                                Will auto-save the complete file after reading, under the same name.
+!! CHOICES=NUM NWHAT  : execute some GUI-menu commands, NUM = menu number, NWHAT = menu item number.
+!! RUN                : Run the loaded model/variant.
+!! SAVE=newfilename   : Saves an MDU/net.nc/other file.
 subroutine batch(batfile) ! 
 use m_flow
 use m_flowgeom
 use m_monitoring_crosssections
 use unstruc_model
 implicit none
-integer :: k, ja, minp, mout, L1, istat, i
+integer :: k, ierr, minp, mout, L1, istat, i
 integer :: MODE,NUM,NWHAT,KEY
 double precision    :: QQQ, upot,ukin,ueaa
 character *(*)      :: batfile
@@ -146,7 +155,7 @@ endif
 
 if (index (rec, 'RUN') > 0) then 
     
-    call dodfm(ja) 
+    ierr = flow()
  
     if (ncrs>0) then 
 
@@ -177,61 +186,6 @@ return
 
 end subroutine batch
 
-subroutine dobatch() ! 
-use m_flow
-use m_flowgeom
-integer :: k, ja, mout, km(100)
-double precision :: q30, q31, q32, q40, q41, q42
-
-open (newunit=mout, file = 'tst.out') 
-write(mout,'(a)' ) ' kmx     q30     q40    q31     q41     q32    q42  ' 
-
-km(1)  = 1
-km(2)  = 2
-km(3)  = 3
-km(4)  = 5
-km(5)  = 8
-km(6)  = 16
-km(7)  = 32
-km(8)  = 64
-km(9)  = 128
-km(10) = 256
-km(11) = 512
-km(12) = 1024
-
-do k = 2, 12
-
-   call api_loadmodel('tst.mdu') ; kmx = km(k) ; iturbulencemodel = 3 ; jaustarint = 0 ; if (k > 10) dt_max = 1d0
-   call dodfm(ja)                              ; q30 = q1(1) / 47.434
-
-   call api_loadmodel('tst.mdu') ; kmx = km(k) ; iturbulencemodel = 4 ; jaustarint = 0 ; if (k > 10) dt_max = 1d0 
-   call dodfm(ja)                              ; q40 = q1(1) / 47.434 
-   
-   call api_loadmodel('tst.mdu') ; kmx = km(k) ; iturbulencemodel = 3 ; jaustarint = 1 ; if (k > 10) dt_max = 1d0
-   call dodfm(ja)                              ; q31 = q1(1) / 47.434
-  
-   call api_loadmodel('tst.mdu') ; kmx = km(k) ; iturbulencemodel = 4 ; jaustarint = 1 ; if (k > 10) dt_max = 1d0
-   call dodfm(ja)                              ; q41 = q1(1) / 47.434
-   
-   call api_loadmodel('tst.mdu') ; kmx = km(k) ; iturbulencemodel = 3 ; jaustarint = 2 ; if (k > 10) dt_max = 1d0
-   call dodfm(ja)                              ; q32 = q1(1) / 47.434
-  
-   call api_loadmodel('tst.mdu') ; kmx = km(k) ; iturbulencemodel = 4 ; jaustarint = 2 ; if (k > 10) dt_max = 1d0
-   call dodfm(ja)                              ; q42 = q1(1) / 47.434
-
-   write(mout,'(i8,6F8.3)' ) kmx, q30, q40, q31, q41, q32, q42 
-enddo
-close(mout) 
-end subroutine dobatch
-
-
-subroutine dodfm(ja) ! for those who like calling subroutines 
-use unstruc_netcdf
-integer :: ja
-ja = 0
-ja = flow()
-end subroutine dodfm
-
   integer function boundary_timeseries(location,quantity,t0,t1,dt,target_array) result(iresult)
   use m_meteo
   use m_ec_module
@@ -260,6 +214,7 @@ end subroutine dodfm
   use unstruc_display
   use unstruc_messages
   use unstruc_display 
+  use unstruc_model 
     integer             :: jastop
     
     iresult = DFM_NOERR
@@ -276,10 +231,16 @@ end subroutine dodfm
     end if
 
     call writesomefinaloutput()
+
+    if (jagui > 0) then 
+       call plotnu(md_ident)
+    endif  
+
     
     if (jastop == 0 .and. jaGUI == 0) then
        call flowfinalize()
     endif   
+  
   end function flow
  
 
@@ -358,7 +319,6 @@ end subroutine api_loadmodel
    if (jampi == 1) then
       call updateValuesOnCrossSections_mpi(time1)
       call updateValuesOnRunupGauges_mpi()
-      call reduce_particles()
    endif
    call timstop(inner_timerhandle)
     
@@ -446,6 +406,8 @@ use unstruc_netcdf
 use MessageHandling, only: FinalizeMessageHandling
 use m_ec_module
 use m_meteo, only: ecInstancePtr
+use m_nearfield
+    call dealloc_nfarrays()
 
     if (.not.ecFreeInstance(ecInstancePtr)) then
        continue     

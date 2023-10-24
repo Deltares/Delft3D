@@ -1,0 +1,303 @@
+<testCases>
+    <testCase name="e02_f114_c010_1Dnetwork-urban-slope1Ddrop" ref="dimr_trunk_2">
+      <path>e02_dflowfm/f114_parallel_1D/c010_1Dnetwork-urban-slope1Ddrop</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>FlowFM_slope1Ddrop_true.mdu</argument>
+            <argument>--partition:ndomains=2:ugrid=1:icgsolver=6:contiguous=0</argument>
+          </arguments>
+        </program>
+        <program ref="dimr2" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/FlowFM_slope1Ddrop_true_0000_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/FlowFM_slope1Ddrop_true_0001_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f114_c020_initial-conditions-water-level" ref="dimr_trunk">
+      <path>e02_dflowfm/f114_parallel_1D/c020_initial-conditions-water-level</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>dflow1d.mdu</argument>
+            <argument>--partition:ugrid=1:icgsolver=6</argument>
+            <argument>manual_part_np3_multipleholes.pol</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_dflow1d/dflow1d_0000_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_dflow1d/dflow1d_0001_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f114_c021_roughness_main" ref="dimr_trunk">
+      <path>e02_dflowfm/f114_parallel_1D/c021_roughness_main</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>dflow1d.mdu</argument>
+            <argument>--partition:ugrid=1:icgsolver=6</argument>
+            <argument>manual_part_np3_multipleholes.pol</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_dflow1d/dflow1d_0000_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_czs" toleranceAbsolute="0.0001" />
+             <parameter name="mesh1d_czu" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_dflow1d/dflow1d_0001_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_czs" toleranceAbsolute="0.0001" />
+             <parameter name="mesh1d_czu" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f114_c030_1Dnetwork_pipes_urban" ref="dimr_trunk_2">
+      <path>e02_dflowfm/f114_parallel_1D/c030_1Dnetwork_pipes_urban</path>
+      <programs>
+        <program ref="dimr2" seq="1">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_FlowFM/FlowFM_0000_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_FlowFM/FlowFM_0001_map.nc" type="netCDF">
+          <parameters>
+             <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f114_c040_korte-woerden-1d" ref="dimr_trunk">
+      <path>e02_dflowfm/f114_parallel_1D/c040_korte-woerden-1d</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>FlowFM_rrexport.mdu</argument>
+            <argument>--partition:ndomains=3:ugrid=1:icgsolver=6</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_FlowFM_rrexport/FlowFM_rrexport_0000_his.nc" type="netCDF">
+            <parameters>
+               <parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+               <parameter name="water_balance_laterals_total" toleranceAbsolute="0.0001" />
+               <parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+               <parameter name="weirgen_discharge" toleranceAbsolute="0.0001" />
+               <parameter name="pump_structure_discharge" toleranceAbsolute="0.0001" />
+            </parameters>
+        </file>
+        <file name="DFM_OUTPUT_FlowFM_rrexport/FlowFM_rrexport_0000_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh.d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+    </checks>
+    </testCase>
+    <testCase name="e02_f114_c050_laterals_prescribed_Q_parallel" ref="dimr_trunk_2">
+      <path>e02_dflowfm/f114_parallel_1D/c050_laterals_prescribed_Q_parallel</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>tst.mdu</argument>
+            <argument>--partition:ndomains=2:ugrid=1:icgsolver=6:contiguous=0</argument>
+          </arguments>
+        </program>
+        <program ref="dimr2" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_tst/tst_0000_his.nc" type="netCDF">
+            <parameters>
+               <parameter name="lateral_geom_node_count" toleranceAbsolute="0.0001" />
+               <parameter name="lateral_geom_node_coordx" toleranceAbsolute="0.0001" />
+               <parameter name="lateral_prescribed_discharge_average" toleranceAbsolute="0.0001" />
+               <parameter name="lateral_realized_discharge_average" toleranceAbsolute="0.0001" />
+            </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f114_c060_thacker1d_standard" ref="dimr_trunk_4">
+      <path>e02_dflowfm/f114_parallel_1D/c060_thacker1d_standard</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>planar1d.mdu</argument>
+            <argument>--partition:ndomains=4:ugrid=1:icgsolver=6:contiguous=0</argument>
+          </arguments>
+        </program>
+        <program ref="dimr4" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <checks>
+        <file name="dflowfmoutput/planar1d_0000_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh.d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/planar1d_0001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh.d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/planar1d_0002_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh.d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/planar1d_0003_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh.d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+      </checks>
+      <maxRunTime>20.0</maxRunTime>
+    </testCase>
+    <testCase name="e02_f114_c070_Fine1D_Coarse2D_Rural_Embedded_Links" ref="dimr_trunk_2">
+      <path>e02_dflowfm/f114_parallel_1D/c070_Fine1D_Coarse2D_Rural_Embedded_Links</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>1D2D.mdu</argument>
+            <argument>--partition:ndomains=2:ugrid=1:icgsolver=6:contiguous=0</argument>
+          </arguments>
+        </program>
+        <program ref="dimr2" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <checks>
+        <file name="DFM_OUTPUT_1D2D/1D2D_0000_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_1D2D/1D2D_0001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+      </checks>
+      <maxRunTime>20.0</maxRunTime>
+    </testCase>
+    <testCase name="e02_f114_c080_korte-woerden-1d2d-ManholeStreetinlets" ref="dimr_trunk_2">
+      <path>e02_dflowfm/f114_parallel_1D/c080_korte-woerden-1d2d-ManholeStreetinlets</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>FlowFM.mdu</argument>
+            <argument>--partition:ndomains=2:ugrid=1:icgsolver=6:contiguous=0</argument>
+          </arguments>
+        </program>
+        <program ref="dimr2" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <checks>
+        <file name="DFM_OUTPUT_FlowFM/FlowFM_0000_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_FlowFM/FlowFM_0001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+      </checks>
+      <maxRunTime>20.0</maxRunTime>
+    </testCase>
+    <testCase name="e02_f114_c090_dar-es-salaam" ref="dimr_trunk_2">
+      <path>e02_dflowfm/f114_parallel_1D/c090_dar-es-salaam</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>FM_model.mdu</argument>
+            <argument>part_np2_multipleholes_R_1.pol</argument>
+            <argument>--partition:ugrid=1:icgsolver=6</argument>
+          </arguments>
+        </program>
+        <program ref="dimr2" seq="2">
+           <arguments>
+               <argument>dimr_config.xml</argument>
+           </arguments>
+        </program>
+      </programs>
+      <checks>
+        <file name="DFM_OUTPUT_FM_model/FM_model_0000_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_FM_model/FM_model_0001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
+          </parameters>
+        </file>
+      </checks>
+      <maxRunTime>20.0</maxRunTime>
+    </testCase>
+</testCases>

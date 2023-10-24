@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdpart
+use m_stop_exit
+use m_skip_comments
+use m_polpart
+use m_rdwnd
+
+
+implicit none
+
+contains
+
 
       subroutine rdpart ( lun1   , lun2   , lnam1  )
 
@@ -95,6 +106,7 @@
       real     ( sp), pointer     :: ypoltmp(:)      ! temp y-coordinates polygon
       integer  ( ip)                 nrowstmp        ! temp length polygon
       integer  ( ip)                 npmargin        ! allocation margin in number of particles
+      integer  ( ip)              :: ipc             ! numerical integration scheme
 
       character( 20)                 cplastic        ! plastic name
       real     ( sp)                 rdpldensity     ! read plastic density
@@ -139,7 +151,6 @@
       push    = .false.
       npos    = 200
       iposr   =   0
-      close ( lun1 )
       open  ( newunit=ilun(i), file=lch(i), iostat=ios) ! File might already be open
       if (ios.ne.0 .and. ios.ne.5004) then
          write ( lun2, * ) ' Error opening PART input file'
@@ -182,7 +193,7 @@
 !                    4 - oil model
 !                    5 - (obsolete option)
 !                    6 - Probabilistic density driven settling model
-!                    7 - IBM model
+!                    7 - ABM model
 
       if ( gettoken( modtyp , ierr2 ) .ne. 0 ) goto 11
       if ( gettoken( notrak , ierr2 ) .ne. 0 ) goto 11
@@ -235,12 +246,10 @@
          write ( *   , 2022 )
          call stop_exit(1)
       endif
-      if ( ipc .le. 1 ) then
-         lcorr = .false.
-         write ( lun2, * ) ' Predictor corrector scheme is not used '
-      else
-         lcorr = .true.
-         write ( lun2, * ) ' Predictor corrector scheme is used '
+      if ( ipc /= 1 ) then
+         write ( lun2, '(/A,I3)')  'Error: Numerical scheme must be 1. &
+                        Current value given is: ', ipc
+         call stop_exit(1)
       endif
 
 !    read vertical diffusivity parameters
@@ -375,7 +384,7 @@
          case ( 6 )
             write ( *, * ) ' You are using the probabilistic density driven settling model '
          case ( 7 )
-            write ( *, * ) ' You are using the general Individual Based Model (IBM)'
+            write ( *, * ) ' You are using the general Agent Based Model (ABM)'
             pblay  = 0.0
          case default
             write(lun2 , 2015) modtyp
@@ -484,7 +493,7 @@
          case ( 4 )
             write ( lun2, 2002 ) 'Oil model - dispersion and evaporation included'
          case ( 7 )
-            write ( lun2, 2001) 'General Individual Based Model (IBM)'
+            write ( lun2, 2001) 'General Agent Based Model (ABM)'
       end select
 
       subst2( nosubs+2 ) = 'nr of particles'
@@ -671,9 +680,9 @@
       nrowsscreens = 0
       partinifile = ' '
       partrelfile = ' '
-      ibmmodel = .false.
-      ibmmodelname = ""
-      ibmstagedev = ""
+      abmmodel = .false.
+      abmmodelname = ""
+      abmstagedev = ""
       chronrev = .false.
       selstage = 0.0
 
@@ -811,49 +820,49 @@
                case ('partrelfile')
                   write ( lun2, '(/a)' ) '  Found keyword "partrelfile".'
                   if ( gettoken( partrelfile  , ierr2 ) .ne. 0 ) goto 9302   ! part FM ini file
-               case ('ibmmodel')
-                  if (modtyp /= model_ibm) goto 9401
-                  write ( lun2, '(/a)' ) '  Found keyword "ibmmodel".'
-                  ibmmodel = .true.
-                  if ( gettoken( ibmmodelname     , ierr2 ) .ne. 0 ) goto 9402   ! IBM model name
-                  write ( lun2, '(/a)' ) '  Found IBM model name : ', ibmmodelname
-                  select case (trim(ibmmodelname)) ! Set IBM model
+               case ('abmmodel')
+                  if (modtyp /= model_abm) goto 9401
+                  write ( lun2, '(/a)' ) '  Found keyword "abmmodel".'
+                  abmmodel = .true.
+                  if ( gettoken( abmmodelname     , ierr2 ) .ne. 0 ) goto 9402   ! ABM model name
+                  write ( lun2, '(/a)' ) '  Found ABM model name : ', abmmodelname
+                  select case (trim(abmmodelname)) ! Set ABM model
                     case ("test")
-                        ibmmt = 0        ! model type none
+                        abmmt = 0        ! model type none
                     case ("european_eel")
-                        ibmmt = 1        ! model type European eel
+                        abmmt = 1        ! model type European eel
                     case ("atlantic_salmon")
-                        ibmmt = 2        ! model type Atlantic salmon
+                        abmmt = 2        ! model type Atlantic salmon
                     case ("mauve_stinger")
-                        ibmmt = 3        ! model type Mauve stinger
+                        abmmt = 3        ! model type Mauve stinger
                     case ("horseshoecrab")
-                        ibmmt = 4        ! model type Horseshoe crab
+                        abmmt = 4        ! model type Horseshoe crab
                     case ("mangrove_seeds")
-                        ibmmt = 5        ! model type Mangrove propagules
+                        abmmt = 5        ! model type Mangrove propagules
                     case ("asian_carp_eggs")
-                        ibmmt = 6        ! model type Asian Carp Eggs
-                    case default         !IBM model not filled
-                        write(lun2, '(/a)') ' Unrecognised IBM model name : ', trim(ibmmodelname)
+                        abmmt = 6        ! model type Asian Carp Eggs
+                    case default         !ABM model not filled
+                        write(lun2, '(/a)') ' Unrecognised ABM model name : ', trim(abmmodelname)
                         goto 9403
                   end select
-                  if ( gettoken( ibmstagedev , ierr2 ) .ne. 0 ) goto 9404   ! IBM stage development
-                    write ( lun2, '(/a)' ) ' Found IBM stage development name : ', ibmstagedev
+                  if ( gettoken( abmstagedev , ierr2 ) .ne. 0 ) goto 9404   ! ABM stage development
+                    write ( lun2, '(/a)' ) ' Found ABM stage development name : ', abmstagedev
                   ! Set stage development
-                  select case (trim(ibmstagedev))
+                  select case (trim(abmstagedev))
                     case ("dev_fixed")
-                        ibmsd = 0 !dev_fixed
+                        abmsd = 0 !dev_fixed
                     case ("dev_linear")
-                        ibmsd = 1 !dev_linear
+                        abmsd = 1 !dev_linear
                     case ("dev_interpolate")
-                        ibmsd = 2 !dev_intpltd
+                        abmsd = 2 !dev_intpltd
                     case ("dev_asian_carp_eggs")
-                        ibmsd = 3 !dev_asian_carp_eggs
-                    case default        !IBM model not filled
-                        write(lun2, '(/a)') ' Unrecognised IBM model stage development : ', trim(ibmstagedev)
+                        abmsd = 3 !dev_asian_carp_eggs
+                    case default        !ABM model not filled
+                        write(lun2, '(/a)') ' Unrecognised ABM model stage development : ', trim(abmstagedev)
                         goto 9405
                    end select
                case ('revchron')
-                  if (modtyp /= model_ibm) goto 9406
+                  if (modtyp /= model_abm) goto 9406
                   write ( lun2, '(/a)' ) '  Found keyword "revchron".'
                   chronrev = .true.
                   if ( gettoken( selstage     , ierr2 ) .ne. 0 ) goto 9407   ! Give stage for release
@@ -1876,7 +1885,7 @@
 
 !     close input file
 
-      close ( lun1 )
+      close ( ilun(1) )
 
 !     check on the total number of particles:
 
@@ -1946,7 +1955,6 @@
             call alloc ( cwork, pg(i)%imask ,                    pg(i)%nmap, pg(i)%mmap )
          enddo
       endif
-!      if ( idummy .gt. 0 ) call alloc ( "subsud", subsud, idummy*2 )
       call alloc ( "dfact ", dfact , nosubs       )
       call alloc ( "fstick", fstick, nosubs       )
       call alloc ( "isfile", isfile, nosub_max    )
@@ -1969,12 +1977,11 @@
       call alloc ( "imap  ", imap  , npmax       , 3      )
       call alloc ( "kpart ", kpart , npmax        )
       call alloc ( "mpart0", mpart0, npmax        )
-!      call alloc ( "vrtdsp", vrtdsp, 7           , npmax  )  ! only used for debugging
       call alloc ( "npart0", npart0, npmax        )
       call alloc ( "npart ", npart , npmax        )
       call alloc ( "rbuff ", rbuff , 3           , npmax  )
       call alloc ( "t0buoy", t0buoy, npmax        )
-      call alloc ( "track ", track , 8           , npmax  )
+      call alloc ( "track ", track , 10          , npmax  )
       call alloc ( "mpart ", mpart , npmax        )
       call alloc ( "wsettl", wsettl, npmax        )
       call alloc ( "xa0   ", xa0   , npmax        )
@@ -2174,7 +2181,7 @@
 !     error formats
 !
  2015 format('  Error 1001. Model-type-choice', i5, '; out of range!'  )
- 2022 format('  Error 1101. Time step is not a diviior of time step ',  &
+ 2022 format('  Error 1101. Time step is not a divider of time step ',  &
              '  in hydrodynamic database: interpol. errors will occur' )
  2023 format('  Error 1100. Time step should be less equal than step',  &
               ' in hydrodynamic database '                          )
@@ -2504,17 +2511,17 @@
       call stop_exit(1)
 9302  write(lun2,*) ' Error: reading part FM elease file name!'
       call stop_exit(1)
-9401  write(lun2,*) ' Error: found "IBMmodel" keyword, but this is not a IBM model (modtyp /= 7 (model_ibm)) '
+9401  write(lun2,*) ' Error: found "ABMmodel" keyword, but this is not a ABM model (modtyp /= 7 (model_abm)) '
       call stop_exit(1)
-9402  write(lun2,*) ' Error: expected ibm model name!'
+9402  write(lun2,*) ' Error: expected abm model name!'
       call stop_exit(1)
-9403  write(lun2,*) ' Error: no suitable ibm model name supplied!'
+9403  write(lun2,*) ' Error: no suitable abm model name supplied!'
       call stop_exit(1)
-9404  write(lun2,*) ' Error: expected ibm stage development method name!'
+9404  write(lun2,*) ' Error: expected abm stage development method name!'
       call stop_exit(1)
 9405  write(lun2,*) ' Error: no suitable stage delelopment method name supplied!'
       call stop_exit(1)
-9406  write(lun2,*) ' Error: found "RevChron" keyword, but this is not a IBM model (modtyp /= 7 (model_ibm)) '
+9406  write(lun2,*) ' Error: found "RevChron" keyword, but this is not a ABM model (modtyp /= 7 (model_abm)) '
       call stop_exit(1)
 9407  write(lun2,*) ' Error: expected stage of reversed release!'
       call stop_exit(1)
@@ -2598,7 +2605,6 @@
       character(len=max_len_line)         :: line
       character(len=max_len_key )         :: key
       logical                             :: key_found
-      logical more_data
 
       len_file = len_trim(ini_file)
 
@@ -2679,7 +2685,6 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       character(len=256)                  :: asc_file
       character(len=max_len_key )         :: key
       logical                             :: key_found
-      logical more_data
 
       len_file = len_trim(asc_file)
 
@@ -2713,6 +2718,7 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       call stop_exit(1)
       end subroutine
 
+
       logical function more_data(lun)
 !
 !     programmer : antoon koster
@@ -2724,7 +2730,6 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       integer, parameter           :: max_len_line=200
       integer                      :: nlines, lun, ios, iline
       logical                      :: end_of_file, comment_line
-!      logical                      :: more_data
       character(len=max_len_line)  :: line
 
       nlines      = 0
@@ -2752,24 +2757,5 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       return
       end function more_data
 
-      subroutine open_inifile ( lun, finam)
-      use precision_part       ! flexible size definition
-      implicit none
-
-      character(len=256) :: finam
-!
-!     local scalars
-!
-      integer(ip) :: lun
-!
-      open ( newunit = lun, file = finam, access='stream', form='unformatted', status = 'old', &
-              err = 99)
-!
-      return
-!
- 99   write(*,'(//a,a40)') ' Error on opening file: ',finam
-      write(*,'(  a    )') ' Please check if file exists'
-      write(*,'(  a    )') ' Please check correct file type'
-      call stop_exit(1)
-!
-      end subroutine
+      
+end module m_rdpart

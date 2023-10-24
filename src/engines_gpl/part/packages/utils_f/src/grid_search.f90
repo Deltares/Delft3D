@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -597,152 +597,12 @@ outer2:  do m = 2, mmax
 
       end subroutine part07nm
 
-! -------------------------------------------------------------------------------------
-!     Aux. routine intl2v
-! -------------------------------------------------------------------------------------
-      subroutine intl2v (x , y , x0 , y0 , xl , yl,  memory )
-!
-!
-!                   Deltares
-!
-!                        d e l p a r    v2.01
-!
-!
-!     system administration : m. zeeuw
-!
-!     created      : november 1993, by r.j. vos
-!
-!     modified     : july  1994, by r.j. vos
-!                    switching of x- and y- omitted
-!                    (also part07 was therefore adapted !!!)
-!
-!     function     : determines the natural coordinates in a
-!                    bilinear quadrilateral element when the
-!                    corner coordinates (x,y) are given.
-!
-!     note           natural coordinates    parent domain
-!
-!                                  x 3
-!                    4 x
-!                                           4 .        . 3
-!                         0(x0,y0)
-!                               x 2
-!                     1 x----x----->        1 .---yl-->. 2
-!
-!                    figure:
-!                    local coordinate system according to hughes
-!                    ' the finite element method ',section 3.2
-!                    in parent domain:
-!                    -1 < ex < 1  <=>  ex//xl     0 < xl < 1
-!                    -1 < ey < 1  <=>  ey//yl     0 < yl < 1
-!                     (note: n//y, m//x)
-!
-!
-!     logical unit numbers  : output to screen (6)
-!
-!     subroutines called    : none
-!
-!     functions   called    : none.
-!
-!
-!     parameters            :
-!
-!     name    kind     length     funct.  description
-!     ====    ====     ======     ======  ===========
-!     x       real     memory     input   x of corners of cell(national grid)
-!     y       real     memory     input   y of corners of cell(national grid)
-!     x0      real      1         input   x of location (national grid)
-!     y0      real      1         input   y of location (national grid)
-!     xl      real      1        output   x of location in parent domain
-!     yl      real      1        output   y of location in parent domain
-!     memory  int       1         input   array length (=4)
-!
-!
-      implicit none           !   force explicit typing
-      integer :: memory, i
-      real    :: x0, y0, xl, yl
-      integer, parameter           :: dp = kind(1.0d0)  ! double precision
-      character(len=6), parameter  :: subnam = 'intl2v'
-!
-      real(sp), dimension(:)       :: x, y
-!
-      real(dp)                     :: da0, da1, da2, da3, db0, db1, db2, db3
-      real(dp)                     :: a, b, c, d, discr, tweea, wd
-      real(dp)                     :: ex, ey
-
-      real(dp), parameter          ::  d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "int12v", ithndl )
-!
-      da0 = (  x(1) + x(2) + x(3) + x(4) ) / d4
-      db0 = (  y(1) + y(2) + y(3) + y(4) ) / d4
-      da1 = ( -x(1) + x(2) + x(3) - x(4) ) / d4
-      db1 = ( -y(1) + y(2) + y(3) - y(4) ) / d4
-      da2 = ( -x(1) - x(2) + x(3) + x(4) ) / d4
-      db2 = ( -y(1) - y(2) + y(3) + y(4) ) / d4
-      da3 = (  x(1) - x(2) + x(3) - x(4) ) / d4
-      db3 = (  y(1) - y(2) + y(3) - y(4) ) / d4
-!
-      c =  da1*( db0 - y0 )  +  db1*( x0 - da0 )
-      b =  da3*( db0 - y0 )  +  db3*( x0 - da0 ) + (db2*da1 - db1*da2)
-      a =  db2*da3 - db3*da2
-!
-      if ( abs(a)  < 1.0d-6) then
-!..
-         ey=-c/b
-!
-      else
-!
-         discr = b*b-d4*a*c
-         tweea = d2*a
-         wd    = sqrt(discr)
-         ey    = (-b+wd)/tweea
-         if ( ey  < (-d1 -1.0d-5) .or. ey  >  1.00005d0 )   &
-              ey = (-b-wd)/tweea
-!
-      endif
-!
-      d  =  da1 + da3*ey
-      if ( abs(d)  < 1.0d-6) then
-!
-!..  this should not happen, otherwise you have a different coordinate system
-!
-         write (6,991) subnam
-         call stop_exit(1)
-      else
-         ex = (x0 - da0 - da2*ey) / d
-      endif
-      if ( ex  < (-d1 -1.0d-5) .or. ex  >  1.00005d0 )  then
-         write (6,992)  -d1 -1.0d-5 , ex , 1.00005d0,    &
-                        x0,y0,(x(i),y(i),i=1,4)
-         call stop_exit(1)
-      endif
-!
-!rjv  xl = (ey + d1)/d2
-!rjv  yl = (ex + d1)/d2
-      xl = real((ex + d1)/d2)
-      yl = real((ey + d1)/d2)
-!
-991   format(/,2x,' Error 4301: programming error in routine ',a6,/       &
-                  '             x and y-axis have been switched ? ')
-992   format(/,2x,' Error 4302: point outside parent domain of cell '     &
-             /,2x,'             Check [lower < ex < upper]: ',3es15.7,     &
-             /,2x,'             Check  point  : (x,y)     : ',2es15.7      &
-             /,2x,'             Corner point 1: (x,y)     : ',2es15.7,     &
-             /,2x,'             Corner point 2: (x,y)     : ',2es15.7,     &
-             /,2x,'             Corner point 3: (x,y)     : ',2es15.7,     &
-             /,2x,'             Corner point 4: (x,y)     : ',2es15.7)
-!
-      if ( timon ) call timstop ( ithndl )
-      return
-      end subroutine intl2v
 
 subroutine bilin5(xa        ,ya        ,x0        ,y0        ,w         , &
                 & ier       )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2012-2022.
+!  Copyright (C)  Stichting Deltares, 2012-2023.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -766,8 +626,8 @@ subroutine bilin5(xa        ,ya        ,x0        ,y0        ,w         , &
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------

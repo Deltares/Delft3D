@@ -4,7 +4,7 @@ C     See COPYRIGHT file for conditions of use.
 
 C     This program tests the fortran V2 API with netCDF-4.
 
-C     $Id$
+C     
 
       program ftst_v2
       use netcdf4_f03

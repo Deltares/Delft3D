@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2022.
+// Copyright (C)  Stichting Deltares, 2011-2023.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -396,15 +396,14 @@ static void
 printAbout (
     char * exeName
     ) {
-    char * strout = new char[256];
-    GETFULLVERSIONSTRING (strout, strlen (strout));
+    char * fullversion = getfullversionstring_d_hydro ();
     printf ("\n\
 %s \n\
-Copyright (C)  Stichting Deltares, 2011-2022. \n\
+Copyright (C)  Stichting Deltares, 2011-2023. \n\
 GNU General Public License, see <http://www.gnu.org/licenses/>. \n\n\
-delft3d.support@deltares.nl \n", strout);
-    GETURLSTRING (strout, strlen (strout));
-    printf ("%s\n\n", strout);
+delft3d.support@deltares.nl \n", fullversion);
+    char* urlstr = geturlstring_d_hydro ();
+    printf ("%s\n\n", urlstr);
     }
 
 

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,10 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_calwav
+
+      implicit none
+
+      contains
+
 
       subroutine calwav ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
+      use m_write_error_message
+      use m_evaluate_waq_attribute
+
 !>\file
 !>       Wave characteristics
 
@@ -54,6 +63,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -76,11 +86,9 @@
 !
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
-!     IF (IKMRK2.EQ.0) THEN
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF (IKMRK2.EQ.0 .OR. IKMRK2.EQ.3) THEN
 !
       VWIND   = PMSA(IP1 )
@@ -88,8 +96,7 @@
       DEPTH   = PMSA(IP3 )
       INIDEP  = PMSA(IP4 )
 
-      IF (FETCH .LT. 1E-20 )  CALL ERRSYS ('FETCH in CALWAVE zero', 1)
-!     IF (VWIND .LT. 1E-20 )  CALL ERRSYS ('VWIND in CALTAU zero', 1 )
+      IF (FETCH .LT. 1E-20 )  CALL write_error_message ('FETCH in CALWAVE zero')
 
 !     Initialisation
       H       = 0.0
@@ -102,45 +109,35 @@
 !     Shear stress by wind
       IF (VWIND .LT. 0.0001) GOTO 150
 
-!     dimensieloze strijklengte
+!     Dimensionless fetch length.
       FS   = G * FETCH / VWIND**2
-!     write(*,*) 'FS:', FS
 
-!     dimensieloze diepte
+!     Dimensionless depth.
       DS   = G * INIDEP / VWIND**2
-!     write(*,*) 'DS:', DS
 
-!     bepaal golfhoogte H
+!     Calculate wave height H.
       A1   = 0.710 *( DS**0.763 )
       A2   = 0.855 *( DS**0.365 )
       A3   = 0.0150*( FS**0.450 ) / TANH(A1)
       A4   = 0.0345*( FS**0.370 ) / TANH(A2)
       HS   = 0.240 * TANH( A1) * TANH( A3)
-!     write(*,*) 'HS:', HS
       TS   = 2.0*PI* TANH( A2) * TANH( A4)
-!     write(*,*) 'TS:', TS
+
       H    = HS * ( VWIND * VWIND) / G
-!     write(*,*) 'H:', H
 
-!     bepaal golfperiode T
+!     Calculate wave period T
       T    = TS * VWIND /G
-!     write(*,*) 'T:', T
 
-!     bepaling golflengte (iteratief hier niet opgenomen)
+!     Initialzie variables to calculate the wave length using iteration.
       RL0  = G * T * T / ( 2.0 * PI)
-!     write(*,*) 'L0:', RL0
       A5   = 2.0 * PI * INIDEP / RL0
-
-!     afscherming voor te groot argument functie tanh
-!     voor diepe systemen tov golflengte
-!     A5 groot, tanh=1, rl=rl0, a5=a6,sinh(>9)->0,ubg->fwg->0
-      if (A5 .gt. 9.) then
-         RL  = RL0
-      else
-!     let op sommige documentatie stelt: RL = RL0*SQRT (TANH (A5))
-         RL  = RL0 * TANH(A5)
-      endif
-!     write(*,*) 'L:', RL
+     
+!     Calculation of wave length RL. Iterate to find an accurate approximation.
+      RL = RL0
+      do i =1,15
+          RL  = RL0 * TANH(A5)
+          A5   = 2.0 * PI * INIDEP / RL
+      enddo
 
   150 CONTINUE
 !
@@ -165,3 +162,5 @@
 
       RETURN
       END
+
+      end module m_calwav

@@ -1,7 +1,7 @@
 module m_1d_networkreader
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -25,8 +25,8 @@ module m_1d_networkreader
 !  Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 !-------------------------------------------------------------------------------
 
    use MessageHandling
@@ -57,6 +57,7 @@ module m_1d_networkreader
    use m_hash_search
    use odugrid
    use precision_basics
+   use m_alloc
 
    !in variables
    type(t_network),                             intent(inout) :: network
@@ -249,7 +250,11 @@ module m_1d_networkreader
          localUOffsets(1:linkCount)      = meshgeom%edgeoffsets(firstLink:lastLink)
       end if
 
+      startEndPointMissing(1:2) = .false.
       if (nodesOnBranchVertices==0 .and. linkCount /= 0) then
+         ! Optionally add the start and/or end point on a branch, this may even be necessary for MPI-parallel models.
+         ! Reason: if the first and/or last u-point has no left, resp. right grid point (due to the gridpoint
+         ! lying on a connected branch), then such gridpoint(s) *must* be added to this branch%grd administration.
          if (gridPointsCount > 0) then
             startEndPointMissing(1) = (localUOffsets(1)         < localOffsets(1))
             startEndPointMissing(2) = (localUOffsets(linkCount) > localOffsets(gridPointsCount))
@@ -267,7 +272,15 @@ module m_1d_networkreader
          nodeids(meshgeom%nedge_nodes(2,ibran)), meshgeom%nbranchlengths(ibran), meshgeom%nbranchorder(ibran), gridPointsCount, localGpsX(1:gridPointsCount), &
          localGpsY(1:gridPointsCount),localOffsets(1:gridPointsCount), localUoffsets(1:linkCount), &
          localGpsID(1:gridPointsCount), my_rank_)
-    
+
+      ! Prepare mask array that defines which grd points were in input, and which not (used in admin_branch() later).
+      call realloc(network%brs%branch(ibran)%grd_input, gridPointsCount, keepExisting=.false., fill=1)
+      if (startEndPointMissing(1)) then
+         network%brs%branch(ibran)%grd_input(1) = 0
+      end if
+      if (startEndPointMissing(2)) then
+         network%brs%branch(ibran)%grd_input(gridPointsCount) = 0
+      end if
    enddo
 
    call adminBranchOrders(network%brs)

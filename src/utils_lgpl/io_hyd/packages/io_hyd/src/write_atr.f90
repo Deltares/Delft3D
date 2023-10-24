@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2022.                                
+!  Copyright (C)  Stichting Deltares, 2011-2023.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  
+!  
 
       subroutine write_atr(hyd)
 
@@ -33,6 +33,7 @@
 
       ! global declarations
 
+      use m_evaluate_waq_attribute
       use hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
@@ -77,7 +78,7 @@
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
-                 call dhkmrk( 1, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk1 )
+                 call evaluate_waq_attribute( 1, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk1 )
                  if (ikmrk1 == 0) then
                     kenout(is) = ' 0'
                  else if (ikmrk1 == 1) then
@@ -99,7 +100,7 @@
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
-                 call dhkmrk( 2, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk2 )
+                 call evaluate_waq_attribute( 2, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk2 )
                  if (ikmrk2 == 0) then
                     kenout(is) = ' 0'
                  else if (ikmrk2 == 1) then
@@ -118,7 +119,7 @@
          enddo
          write ( lunatr , '(a)' )  '    0    ; no time dependent attributes'
 
-!         call dhkmrk( 2, iknmrk(i1), ikmrk2 )
+!         call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
       else
          write(lunatr,'(a)') '    1    ; Input option without defaults'
          if ( hyd%nolay .gt. 1 ) then

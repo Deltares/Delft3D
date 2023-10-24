@@ -7,7 +7,7 @@ title run_dimr
     rem Usage example:
     rem Execute in the working directory:
     rem path\to\delft3d\installation\x64\dimr\scripts\run_dimr.bat
-    rem More examples: check run scripts in https://svn.oss.deltares.nl/repos/delft3d/trunk/examples/*
+    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
 
 setlocal enabledelayedexpansion
 
@@ -67,8 +67,8 @@ if  %debugLevel% EQU -1 (
     rem Sets the number of threads if it is not defined
 if defined OMP_NUM_THREADS (
 echo OMP_NUM_THREADS is already defined
-) else ( 
-   rem Getting and setting the number of physical cores  
+) else (
+   rem Getting and setting the number of physical cores
    for /F "tokens=2 delims==" %%C in ('wmic cpu get NumberOfCores /value ^| findstr NumberOfCores') do set NumberOfPhysicalCores=%%C
    set /A OMP_NUM_THREADS=!NumberOfPhysicalCores! - 2
    if /I OMP_NUM_THREADS LEQ 2 ( set OMP_NUM_THREADS=2 )
@@ -87,6 +87,7 @@ set D3DT=%D3D_HOME:~0,-22%
     rem last directory will be the architecture directory
 for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
+set cosumobmidir=%D3D_HOME%\%ARCH%\cosumo_bmi\bin
 set delwaqexedir=%D3D_HOME%\%ARCH%\dwaq\bin
 set dflowfmexedir=%D3D_HOME%\%ARCH%\dflowfm\bin
 set proc_def_dir=%D3D_HOME%\%ARCH%\dflowfm\default
@@ -101,6 +102,7 @@ set swanexedir=%D3D_HOME%\%ARCH%\swan\bin
 set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
 set sharedir=%D3D_HOME%\%ARCH%\share\bin
 set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
+set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
 
 
     rem
@@ -108,7 +110,7 @@ set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
     rem
 
     rem Run
-set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%sharedir%
+set PATH=%cosumobmidir%;%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
 echo executing: "%dimrexedir%\dimr.exe" %debugarg% %dimrConfigFile%
 "%dimrexedir%\dimr.exe" %debugarg% %dimrConfigFile%
 

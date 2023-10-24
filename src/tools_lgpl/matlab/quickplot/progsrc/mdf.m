@@ -14,7 +14,7 @@ function varargout = mdf(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2022 Stichting Deltares.                                     
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1737,34 +1737,38 @@ if ~isempty(ininame)
                 MF.ini.FileType = 'netCDF';
                 netcdf.close(ncid)
             catch
-                %
-                % try restid as trim-dat/def
-                inicond = relpath(md_path,ininame);
-                MF.ini = vs_use(inicond,'quiet');
-                %
-                times = qpread(MF.ini,'water level','times');
-                iMAP  = find(times==rdate);
-                %
-                for ig = 1:length(MF.ini.GrpDat)
-                    g = MF.ini.GrpDat(ig).Name;
-                    g_ = strrep(g,'-','_');
-                    if MF.ini.GrpDat(ig).SizeDim>1
-                        MF.ini.Data.(g_) = vs_let(MF.ini,g,{iMAP},'*','quiet');
-                        MF.ini.GrpDat(ig).SizeDim=1;
-                    else
-                        MF.ini.Data.(g_) = vs_let(MF.ini,g,{1},'*','quiet');
+                try
+                    %
+                    % try restid as trim-dat/def
+                    inicond = relpath(md_path,ininame);
+                    MF.ini = vs_use(inicond,'quiet');
+                    %
+                    times = qpread(MF.ini,'water level','times');
+                    iMAP  = find(times==rdate);
+                    %
+                    for ig = 1:length(MF.ini.GrpDat)
+                        g = MF.ini.GrpDat(ig).Name;
+                        g_ = strrep(g,'-','_');
+                        if MF.ini.GrpDat(ig).SizeDim>1
+                            MF.ini.Data.(g_) = vs_let(MF.ini,g,{iMAP},'*','quiet');
+                            MF.ini.GrpDat(ig).SizeDim=1;
+                        else
+                            MF.ini.Data.(g_) = vs_let(MF.ini,g,{1},'*','quiet');
+                        end
                     end
+                    %
+                    MF.ini.FileName = 'IN MEMORY';
+                    MF.ini.FileType = 'NEFIS';
+                    MF.ini.DatExt = '';
+                    MF.ini.DefExt = '';
+                catch
+                    ui_message('warning','Unable to locate restart file: %s',ininame)
                 end
-                %
-                MF.ini.FileName = 'IN MEMORY';
-                MF.ini.FileType = 'NEFIS';
-                MF.ini.DatExt = '';
-                MF.ini.DefExt = '';
             end
         end
     end
     %
-    if strcmp(MF.ini.FileType,'trirst')
+    if isfield(MF,'ini') && strcmp(MF.ini.FileType,'trirst')
         % plain binary restart file (flow only)
         nfields = length(MF.ini.Data);
         % water level, velocity, constituents, turbulent quantities, u/v mnldf

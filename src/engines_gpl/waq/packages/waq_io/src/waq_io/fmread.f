@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_fmread
+      use m_scale
+
+
+      implicit none
+
+      contains
+
 
       subroutine fmread ( nitem  , item   , nvals  , nfact  , factor ,
      &                    nobrk  , ibrk   , arrin  , dtflg  , dtflg3 ,
@@ -52,6 +60,7 @@
 
       use timers       !   performance timers
       use rd_token       ! for the reading of tokens
+      use m_cnvtim
 
       implicit none
 
@@ -163,3 +172,5 @@
  2080 format (     I10,2X,1P,10E12.4 )
 
       end
+
+      end module m_fmread

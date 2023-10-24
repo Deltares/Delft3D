@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,12 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_caltem
+
+      implicit none
+
+      contains
+
 
       subroutine caltem ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
 !>\file
-!>       Calculation of temperature    
+!>       Calculation of temperature
 
 !
 !     Description of the module :
@@ -38,7 +44,7 @@
 ! Name    T   L I/O  Description                              Units
 ! ----    --- -  -   -------------------                      ----
 ! TEMPF   R   1  I   Temperature from flow model (degC)
-! DTEMP   R   1  I   Change to be applied (degC)                          
+! DTEMP   R   1  I   Change to be applied (degC)
 ! TEMP    R   1  O   Result (degC)
 
 !     Logical Units : -
@@ -49,6 +55,7 @@
 !     ------   -----  ------------
 
       IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
@@ -59,18 +66,17 @@
       IP3  = IPOINT( 3)
 !
       DO 9000 ISEG = 1 , NOSEG
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
+
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
       TEMPF   = PMSA(IP1 )
       DTEMP   = PMSA(IP2 )
-      
+
       TEMP = TEMPF + DTEMP
       TEMP = MIN(TEMP,100.)
       TEMP = MAX(TEMP,  0.)
 
-      PMSA (IP3) = TEMP  
+      PMSA (IP3) = TEMP
 !
       ENDIF
 !
@@ -83,3 +89,5 @@
 
       RETURN
       END
+
+      end module m_caltem

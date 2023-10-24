@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 subroutine setbedlevelfromextfile()    ! setbedlevels()  ! check presence of old cell centre bottom level file
  use timespace_data
@@ -43,8 +43,8 @@ subroutine setbedlevelfromextfile()    ! setbedlevels()  ! check presence of old
  use string_module, only: strcmpi
  use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
  use dfm_error
- 
  use unstruc_netcdf
+ 
  implicit none
 
  logical, external :: timespaceinitialfield_mpi
@@ -224,7 +224,7 @@ bft:do ibathyfiletype=1,2
     call tree_destroy(inifield_ptr)
 
     ! Interpreted values for debugging.
-    if ( md_jasavenet == 1 ) then
+    if ( md_exportnet_bedlevel == 1 ) then
 !      save network
        select case (ibedlevtyp)
           case (3,4,5,6) ! primitime position = netnode, cell corner

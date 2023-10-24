@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_heatfl
+
+      implicit none
+
+      contains
+
 
       subroutine heatfl ( pmsa   , fl     , ipoint , increm, noseg ,
      &                    noflux , iexpnt , iknmrk , noq1  , noq2  ,
@@ -85,6 +91,9 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
       USE PHYSICALCONSTS, ONLY : CtoKelvin
       IMPLICIT NONE
       REAL     PMSA  ( * ) , FL  (*)
@@ -153,13 +162,11 @@
 
 !     Heat exchange only for active water segments
 !
-!!    CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
-!!    IF (IKMRK1.EQ.1) THEN
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !     Heat exchange only for top layer segments
 !
-         CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+         CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
          IF (IKMRK2.EQ.0 .OR. IKMRK2.EQ.1) THEN
 !
             Qsw     = PMSA(IP1 )
@@ -196,6 +203,8 @@
             Qsn = Qsw * (1- Fsw)
 !
 !     ------Long wave atmospheric radiation------
+!
+!           cloud = (100.0 - SunFac) / 100.0
 !
             Psvap = 6.131 + 0.467 * TempAt + 0.0089 *
      j               TempAt ** 2.0 + 0.000527 * TempAt ** 3.0
@@ -395,3 +404,5 @@
 
       RETURN
       END
+
+      end module m_heatfl

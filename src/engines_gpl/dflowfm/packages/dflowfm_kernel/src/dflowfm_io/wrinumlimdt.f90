@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
  subroutine wrinumlimdt()
  use m_flowgeom, only : ndx, xz, yz
@@ -46,3 +46,27 @@
  call doclose(mlim)
 
  end subroutine wrinumlimdt
+
+!> a little bit a general subroutine to write double precision (:,:) data over flow nodes 
+subroutine write_dp_data_over_cells(data_name, idata_begin, idata_end, idata1, idata2, data)
+ use m_flowgeom,        only : ndx, xz, yz
+ use unstruc_model,     only : md_ident, getoutputdir
+ use m_partitioninfo,   only : sdmn
+ 
+ implicit none
+ 
+ character(len=*),                            intent(in) :: data_name
+ integer,                                     intent(in) :: idata_begin, idata_end, idata1, idata2
+ double precision, dimension (idata1,idata2), intent(in) :: data
+  
+ integer :: file_unit, cell_number, index_data
+
+ call newfil(file_unit, trim(getoutputdir()) // trim(md_ident) // '_' // trim(data_name) // '.xyz')
+ 
+ do cell_number = 1, min(ndx,idata2)
+    write(file_unit, *) xz(cell_number), yz(cell_number), (data(index_data,cell_number), index_data = idata_begin, idata_end)
+ enddo
+ 
+ call doclose(file_unit)
+
+ end subroutine write_dp_data_over_cells

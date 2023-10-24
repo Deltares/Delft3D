@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2023.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_valpoi
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE VALPOI ( NOTOT  , NOPA     , NOSFUN , SYNAME , NOCONS ,
      +                    NOFUN  , constants, PANAME , FUNAME , SFNAME ,
@@ -35,7 +41,8 @@
 !
 !     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
-      use dlwq_data
+      use m_zoek
+      use dlwq_hyd_data
 
 !     PARAMETERS          : 13
 !
@@ -67,9 +74,9 @@
 !
 !     Local
 !
-      INTEGER       NZOEK
+      INTEGER       NZOEK, ISYS, ISFUN, IPA, IFUN, ICO
       PARAMETER   ( NZOEK = 20 )
-      PARAMETER   ( NOPRED = 6 )
+      integer, PARAMETER  :: NOPRED = 6
       CHARACTER(NZOEK) PREDEF(NOPRED)
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "valpoi", ithndl )
@@ -150,7 +157,6 @@
 !
 !     as constant ?
 !
-!jvb  call zoek ( valnam , nocons, coname , nzoek , ico    )
       ico = dlwq_find(constants,valnam)
       if ( ico .gt. 0 ) then
          write(line,'(a,i3,a,g13.6)') '       Using constant nr',ico,' with value:',constants%constant(ico)
@@ -167,3 +173,5 @@
       if (timon) call timstop( ithndl )
       RETURN
       END
+
+      end module m_valpoi

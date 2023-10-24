@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
    ! Interpolate flownode-based vector (sx,sy) to edge-based vector (e_sn, e_st)
    subroutine fm_upwbed(lsedtot, sx, sy, sxtot, sytot, e_sn, e_st)
@@ -37,7 +37,7 @@
    use unstruc_messages
    use m_sediment, only: stmpar, jabndtreatment  
    use sediment_basics_module
-   use m_fm_erosed, only: link1, link1sign, kfsed
+   use m_fm_erosed, only: link1, link1sign, tratyp, kfsed
    implicit none
 
    integer,                                  intent(in)  :: lsedtot        !< number of sediment fractions
@@ -72,7 +72,7 @@
          k2 = ln(2,Lf)
                   
          do l=1,lsedtot
-            if (stmpar%sedpar%sedtyp(l) == SEDTYP_COHESIVE) cycle   ! conform with d3d
+            if (.not.has_bedload(tratyp(l))) cycle   ! cycle if this fraction doesn't include bedload
             !
             ! check for active sediment cell
             if (kfsed(k1)*kfsed(k2)==0) then
@@ -147,7 +147,7 @@
             k2 = ln(2,Lf)  ! internal node
             !
             do l=1,lsedtot
-               if (stmpar%sedpar%sedtyp(l) == SEDTYP_COHESIVE) cycle
+               if (.not.has_bedload(tratyp(l))) cycle   ! cycle if this fraction doesn't include bedload
                !
                if (kfsed(k1)*kfsed(k2)==0) then
                   e_sn(Lf,l) = 0d0
@@ -170,14 +170,14 @@
          ! cross-check next statements below with Bert
          else if (hu(Lf)<=epshu) then   ! dry
             do l=1,lsedtot
-               if (stmpar%sedpar%sedtyp(l) == SEDTYP_COHESIVE) cycle
+               if (.not.has_bedload(tratyp(l))) cycle   ! cycle if this fraction doesn't include bedload
                !
                e_sn(Lf,l) = 0d0
                e_st(Lf,l) = 0d0
             end do
          else   ! inflow and wet
             do l=1,lsedtot
-               if (stmpar%sedpar%sedtyp(l) == SEDTYP_COHESIVE) cycle
+               if (.not.has_bedload(tratyp(l))) cycle   ! cycle if this fraction doesn't include bedload
                !
                if (kfsed(k1)*kfsed(k2)==0) then
                   e_sn(Lf,l) = 0d0
