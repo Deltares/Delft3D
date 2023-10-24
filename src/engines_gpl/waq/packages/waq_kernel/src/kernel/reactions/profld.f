@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_profld
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -47,33 +49,33 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes (total)
-!     NFLUX1  INTEGER       1     INPUT   first flux to be dumped
-!     NFLUXP  INTEGER       1     INPUT   number of fluxes to be dumped
-!     IGRID   INTEGER       1     INPUT   Grid number for FLUX array
-!     NOSEG2  INTEGER       1     INPUT   number of segments in IGRID
-!     NOSEG   INTEGER       1     INPUT   number of segments
-!     NDT     INTEGER       1     INPUT   timestep multiplier in fractional step
-!     ISDMP   INTEGER       *     INPUT   Segment to dumped segment pointer
-!     GRDSEG  INTEGER       *     INPUT   Segment to sub-segment pointer for grids
-!     FLUX    REAL          *     INPUT   fluxes at all segments
-!     VOLUME  REAL          *     INPUT   Segment volumes
-!     FLXDMP  REAL    NOFLUX*?    OUTPUT  fluxes at dump segments
+!     NOFLUX  INTEGER(kind=int_32) ::1     INPUT   Nr. of fluxes (total)
+!     NFLUX1  INTEGER(kind=int_32) ::1     INPUT   first flux to be dumped
+!     NFLUXP  INTEGER(kind=int_32) ::1     INPUT   number of fluxes to be dumped
+!     IGRID   INTEGER(kind=int_32) ::1     INPUT   Grid number for FLUX array
+!     NOSEG2  INTEGER(kind=int_32) ::1     INPUT   number of segments in IGRID
+!     NOSEG   INTEGER(kind=int_32) ::1     INPUT   number of segments
+!     NDT     INTEGER(kind=int_32) ::1     INPUT   timestep multiplier in fractional step
+!     ISDMP   INTEGER(kind=int_32) ::*     INPUT   Segment to dumped segment pointer
+!     GRDSEG  INTEGER(kind=int_32) ::*     INPUT   Segment to sub-segment pointer for grids
+!     FLUX    REAL(kind=sp) ::*     INPUT   fluxes at all segments
+!     VOLUME  REAL(kind=sp) ::*     INPUT   Segment volumes
+!     FLXDMP  REAL(kind=sp) ::NOFLUX*?    OUTPUT  fluxes at dump segments
 !
 !     Declaration of arguments
 !
       use timers
 
-      INTEGER NOFLUX, NFLUX1, NFLUXP, IGRID , NOSEG2,
+      INTEGER(kind=int_32) ::NOFLUX, NFLUX1, NFLUXP, IGRID , NOSEG2,
      +        NOSEG , NDT
-      INTEGER ISDMP(NOSEG)       , GRDSEG(NOSEG,*)
-      REAL    FLUX(NOFLUX,NOSEG2), VOLUME(NOSEG)       ,
+      INTEGER(kind=int_32) ::ISDMP(NOSEG)       , GRDSEG(NOSEG,*)
+      REAL(kind=sp) ::FLUX(NOFLUX,NOSEG2), VOLUME(NOSEG)       ,
      +        FLXDMP(NOFLUX,*)
 
 !     local
-      integer iseg, iseg2, ips, iflux
-      real    vol
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::iseg, iseg2, ips, iflux
+      real(kind=sp) ::vol
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "profld", ithandl )
 !
 !     We construeren nu de FLUXDUMPEN

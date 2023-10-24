@@ -21,6 +21,8 @@
 !!  of stichting deltares remain the property of stichting deltares. all
 !!  rights reserved.
       module m_dlwqp0
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -52,27 +54,27 @@
 !     Parameters          :
 !     type     kind  function         name                      description
 
-      integer   (4), intent(in   ) :: nosys                   !< number of transported substances
-      integer   (4), intent(in   ) :: notot                   !< total number of substances
-      integer   (4), intent(in   ) :: noseg                   !< number of computational volumes
-      real      (4), intent(inout) :: conc  (notot ,noseg)    !< concentrations per substance per volume
-      real      (4), intent(inout) :: amass (notot ,noseg)    !< masses per substance per volume
-      real      (4), intent(inout) :: deriv (notot ,noseg)    !< derivatives per substance per volume
-      real      (4), intent(inout) :: volume(noseg )          !< volumes of the segments
-      integer   (4), intent(in   ) :: idt                     !< integration time step size
-      integer   (4), intent(in   ) :: lun                     !< unit number of the monitoring file
-      integer   (4), intent(in   ) :: ivflag                  !< if 1 computational volumes
-      real      (4), intent(in   ) :: surfac(noseg)           !< horizontal surface
+      integer(kind=int_32), intent(in   )  ::nosys                   !< number of transported substances
+      integer(kind=int_32), intent(in   )  ::notot                   !< total number of substances
+      integer(kind=int_32), intent(in   )  ::noseg                   !< number of computational volumes
+      real(kind=sp), intent(inout)  ::conc  (notot ,noseg)    !< concentrations per substance per volume
+      real(kind=sp), intent(inout)  ::amass (notot ,noseg)    !< masses per substance per volume
+      real(kind=sp), intent(inout)  ::deriv (notot ,noseg)    !< derivatives per substance per volume
+      real(kind=sp), intent(inout)  ::volume(noseg )          !< volumes of the segments
+      integer(kind=int_32), intent(in   )  ::idt                     !< integration time step size
+      integer(kind=int_32), intent(in   )  ::lun                     !< unit number of the monitoring file
+      integer(kind=int_32), intent(in   )  ::ivflag                  !< if 1 computational volumes
+      real(kind=sp), intent(in   )  ::surfac(noseg)           !< horizontal surface
 
       ! local declarations
 
-      integer                      :: iseg                    !  segment loop counter
-      integer                      :: i                       !  substance loop counter
-      real                         :: v1                      !  segment volume
-      real                         :: a                       !  segment mass
-      integer, save                :: ivmess = 0              !  count messages on small volumes
+      integer(kind=int_32) ::iseg                    !  segment loop counter
+      integer(kind=int_32) ::i                       !  substance loop counter
+      real(kind=sp) ::v1                      !  segment volume
+      real(kind=sp) ::a                       !  segment mass
+      integer(kind=int_32), save                 ::ivmess = 0              !  count messages on small volumes
 
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl =0
       if ( timon ) call timstrt ( "dlwqp0", ithandl )
 
       ! loop accross the number of computational elements
