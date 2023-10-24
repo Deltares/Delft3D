@@ -28,8 +28,18 @@
 !-------------------------------------------------------------------------------
 
 ! 
-!         
+! 
+module m_poshcheck
+
+  implicit none
+  
+  logical :: is_hu_changed
+  integer :: key_local
+
+end module   m_poshcheck
+        
  subroutine poshcheck(key)
+    use m_poshcheck
     use m_flow
     use m_flowgeom
     use m_flowtimes
@@ -41,15 +51,22 @@
 
     integer,        intent(out) :: key
    
+    double precision, parameter :: SET_VALUE = 0d0
+    logical,          parameter :: IS_MIN_WATER_LEVEL_AT_BOTTOM = .true.
+    logical,          parameter :: IS_AU_TO_BE_REDUCED = .true.
+
     integer                     :: reduced_data(2)
-    logical                     :: is_hu_changed
+
 
     if ( jaGUI == 1 ) then
        call setcol(221) ! white
     end if
    
-    call set_water_level_and_hu_for_dry_cells(s1, hu)
-       
+    call set_water_level_and_hu_for_dry_cells(size(s1), s1, size(hu), hu, &
+        SET_VALUE, IS_MIN_WATER_LEVEL_AT_BOTTOM, IS_AU_TO_BE_REDUCED, jamapFlowAnalysis)
+ 
+    key = key_local 
+      
     if ( jampi == 1 ) then
        reduced_data = (/ key, nodneg /)
 
@@ -78,14 +95,27 @@
     if ( is_hu_changed ) then
        call fill_onlyWetLinks()
     end if
-
-contains
+ 
+ end subroutine poshcheck
  
  !> set_water_level_and_hu_for_dry_cells
- subroutine set_water_level_and_hu_for_dry_cells(water_level, upwind_waterheight)
+ subroutine set_water_level_and_hu_for_dry_cells(size_water_level, water_level, size_upwind_waterheight, upwind_waterheight, &
+     set_value, is_min_water_level_at_bottom, is_au_to_be_reduced, ja_map_flow_analysis)
+    use m_poshcheck
+    use m_flow,           only : au, u1, jposhchk, negativedepths, nodneg, numnodneg, testdryflood, epshu, eps6
+    use m_flowgeom
+    use unstruc_display,  only : jaGUI
 
-    double precision, intent(inout) :: water_level(:)                !< water_level
-    double precision, intent(inout) :: upwind_waterheight(:)         !< upwind_waterheight
+    implicit none
+
+    integer,          intent(in)    :: size_water_level                             !< size_water_level
+    integer,          intent(in)    :: size_upwind_waterheight                      !< size_upwind_waterheight
+    double precision, intent(inout) :: water_level(size_water_level)                !< water_level
+    double precision, intent(inout) :: upwind_waterheight(size_upwind_waterheight)  !< upwind_waterheight
+    double precision, intent(in)    :: set_value                                    !< set_value
+    logical,          intent(in)    :: is_min_water_level_at_bottom                 !< is_min_water_level_at_bottom
+    logical,          intent(in)    :: is_au_to_be_reduced                          !< is_au_to_be_reduced
+    integer,          intent(in)    :: ja_map_flow_analysis                         !< ja_map_flow_analysis
     
     integer                         :: node, link, link_index
     double precision                :: threshold
@@ -94,16 +124,15 @@ contains
     double precision, parameter     :: DELFT3D_MAX = 1d-3
     double precision, parameter     :: REDUCTION_FACTOR = 0.2d0
     integer,          parameter     :: FLAG_REDO_TIMESTEP = 2
-    double precision, parameter     :: SET_VALUE = 0d0
-    integer,          parameter     :: DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS  = 1
 
-    Nodneg        = 0
-    key           = 0
+    Nodneg    = 0
+    key_local = 0
     is_hu_changed = .false.
     
     if (jposhchk == 0) return
 
-    if ( testdryflood == DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS ) then
+    if ( testdryflood == 1 ) then
+    ! The algoritm of Delft3D-FLOW is applied to prevent very thin layers 
        threshold = max(DELFT3D_MIN, min(epshu, DELFT3D_MAX))
     else
        threshold = 0d-0
@@ -120,27 +149,29 @@ contains
                  end if
                  select case(jposhchk)
                     case(-1)                  ! only detect dry cells and return (for Nested Newton restart)
-                       key = FLAG_REDO_TIMESTEP
+                       key_local = FLAG_REDO_TIMESTEP
                     case(1)                   ! only timestep reduction
-                       key = FLAG_REDO_TIMESTEP
+                       key_local = FLAG_REDO_TIMESTEP
                        exit
                     case(2, 3)                ! set dry all attached links
-                       key = FLAG_REDO_TIMESTEP
+                       key_local = FLAG_REDO_TIMESTEP
                        do link_index = 1, nd(node)%lnx
                          link        = iabs(nd(node)%ln(link_index))
-                         upwind_waterheight(link) = SET_VALUE
-                         is_hu_changed            = .true.
+                         upwind_waterheight(link) = set_value
+                         is_hu_changed = .true.
                        end do
                     case(4, 5)                ! reduce links au
                        do link_index = 1, nd(node)%lnx
                           link       = iabs(nd(node)%ln(link_index))
                           if (upwind_waterheight(link) > 0) then
                              if (REDUCTION_FACTOR*au(link) < eps6) then
-                                upwind_waterheight(link) = SET_VALUE
-                                key                      = FLAG_REDO_TIMESTEP
-                                is_hu_changed            = .true.
+                                upwind_waterheight(link) = set_value
+                                key_local     = FLAG_REDO_TIMESTEP
+                                is_hu_changed = .true.
                              end if
-                             au(link) = REDUCTION_FACTOR*au(link)
+                             if ( is_au_to_be_reduced ) then
+                                 au(link) = REDUCTION_FACTOR*au(link)
+                             end if
                           end if
                        end do
                     case(6, 7)                 ! only set dry outflowing links
@@ -148,20 +179,23 @@ contains
                           link       = iabs(nd(node)%ln(link_index))
                           if (nd(node)%ln(link_index) < 0 .and. u1(link) > 0 .or. &
                               nd(node)%ln(link_index) > 0 .and. u1(link) < 0 ) then
-                             upwind_waterheight(link) = SET_VALUE
-                             key                      = FLAG_REDO_TIMESTEP
-                             is_hu_changed            = .true.
+                             upwind_waterheight(link) = set_value
+                             key_local     = FLAG_REDO_TIMESTEP
+                             is_hu_changed = .true.
                           end if
                        end do
                  end select
               end if
 
-              if (jamapFlowAnalysis > 0) then
+              if (ja_map_flow_analysis > 0) then
                  negativeDepths(node) = negativeDepths(node) + 1
               end if
 
-              water_level(node) = bl(node)
-
+              if ( is_min_water_level_at_bottom ) then
+                 water_level(node) = bl(node)
+              else
+                 water_level(node) = set_value
+              end if
            end if
        end if
 
@@ -169,4 +203,4 @@ contains
 
  end subroutine set_water_level_and_hu_for_dry_cells
  
- end subroutine poshcheck
+ 
