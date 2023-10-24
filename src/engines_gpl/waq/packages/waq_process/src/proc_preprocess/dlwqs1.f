@@ -294,6 +294,7 @@
                DO IPERIOD = 1 , NPERIOD
                   ISPROC = ISPROC + 1
                   WRITE(LUNREP,'(3A)') 'For period [',PERNAM(IPERIOD),']:'
+                  write(*,*) 'dlwqs1',KEYNAM2
                   CALL SETPRC ( LUNREP         , NOKEY(ISTAT)   ,
      +                          KEYNAM2(IKSTAT), KEYVAL2(IKSTAT),
      +                          PERNAM(IPERIOD), PERSFX(IPERIOD),
