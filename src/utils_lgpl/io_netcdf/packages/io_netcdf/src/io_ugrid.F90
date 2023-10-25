@@ -1231,8 +1231,6 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'standard_name', 'ocean_sigma_coordinate')
          ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma),     'long_name',     'Sigma coordinate of layer centres')
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), 'long_name',     'Sigma coordinate of layer interfaces')
-         ierr = nf90_put_att(ncid, meshids%varids(mid_layersigma),     '_FillValue',    dmiss)
-         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacesigma), '_FillValue',    dmiss)
          ! See http://cfconventions.org/cf-conventions/cf-conventions.html#dimensionless-vertical-coordinate
          ! and http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_coordinate for info about formula_terms attribute for sigma coordinates.
 
@@ -1257,8 +1255,6 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'long_name',     'Vertical coordinate of layer interfaces')
          ierr = nf90_put_att(ncid, meshids%varids(mid_layerz),     'units',         'm')
          ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), 'units',         'm')
-         ierr = nf90_put_att(ncid, meshids%varids(mid_layerz),     '_FillValue',    dmiss)
-         ierr = nf90_put_att(ncid, meshids%varids(mid_interfacez), '_FillValue',    dmiss)
       endif
       if (layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          ! See http://cfconventions.org/cf-conventions/cf-conventions.html#_ocean_sigma_over_z_coordinate

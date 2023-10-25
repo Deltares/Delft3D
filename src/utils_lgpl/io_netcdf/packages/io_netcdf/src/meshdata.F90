@@ -169,7 +169,7 @@ function convert_meshgeom_to_cptr(meshgeom, c_meshgeom, c_meshgeomdim) result(ie
       c_meshgeomdim%meshname(i) = meshgeom%meshname(i:i)
    end do
 
-   !! array variables
+   !array variables
    if (associated(meshgeom%edge_nodes).and.c_associated(c_meshgeom%edge_nodes)) then
       call c_f_pointer(c_meshgeom%edge_nodes, edge_nodes, shape(meshgeom%edge_nodes))
       edge_nodes = meshgeom%edge_nodes

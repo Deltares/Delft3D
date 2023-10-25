@@ -1756,7 +1756,7 @@ function ionc_get_meshgeom_dll(ioncid, meshid, networkid, c_meshgeom, start_inde
    logical, optional,   intent(in   )          :: includeArrays
    integer                                     :: ierr
    type(t_ug_meshgeom)                         :: meshgeom
-   type (c_t_ug_meshgeomdim)                   :: c_meshgeomDim !currently this is not an output argument, but it could be considered
+   type (c_t_ug_meshgeomdim)                   :: c_meshgeomDim ! currently this is not an output argument, but it could be considered
 
 
    !initialize meshgeom
