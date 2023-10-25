@@ -51,16 +51,16 @@
       use cwd, only: getCWD
       implicit none
 
-!     Parameters          :
+      ! Parameters          :
 
-!     kind           function         name        description
+      ! kind           function         name        description
 
       integer      , intent(inout) :: lun       !< unit number of file to be opened
       character*(*), intent(in   ) :: finam     !< name of the file to be opened
       integer      , intent(in   ) :: nropen    !< Delwaq number of the file to be opened
       integer      , intent(in   ) :: opmode    !< Indicator how file must be opened
       integer      , intent(inout) :: ierr      !< Error flag
-!     Local variables     :
+      ! Local variables     :
 
       integer                         ierr2     !< Error flag
       integer                         ierr_cwd  !< Error flag for obtaining current working directory
@@ -70,7 +70,7 @@
 
 
       
-!     get the correct open statement
+      ! get the correct open statement
 
       select case ( nropen )
          case ( 1 )                           !   common-block file
