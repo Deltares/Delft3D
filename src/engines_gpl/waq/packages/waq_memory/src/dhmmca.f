@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module dhmmca_mod
+      use m_waq_type_definitions
       use m_srstop
 
       contains
@@ -38,7 +39,7 @@
 
 !     Created             : Feb. 1997 by Jan van Beek
 !     Modified            : May  2010 by Leo Postma
-!                           Routine brought in line with real and integer version
+!                           Routine brought in line with real(kind=sp) ::and integer(kind=int_32) ::version
 
 !     Files               : LUNREP - monitoring output file
 
@@ -47,8 +48,8 @@
       use partition_arrays ! module for computing the pointers into the arrays
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
 
       implicit none
@@ -57,18 +58,18 @@
 
 !     kind     function         name        description
 
-      integer      , intent(in   ) :: lunrep    ! logical unitnumber output file
+      integer(kind=int_32), intent(in   )  ::lunrep    ! logical unitnumber output file
       logical      , intent(in   ) :: l_decl    ! Declare memory y/n
-      integer      , intent(inout) :: arrpoi(:) ! Pointer in workarray/FMM reference pointer
-      integer      , intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
-      integer      , intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
-      integer      , intent(inout) :: arrlen(:) ! Length off array
-      integer      , intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
-      integer      , intent(inout) :: arrdm1(:) ! dimension 1
-      integer      , intent(inout) :: arrdm2(:) ! dimension 2
-      integer      , intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
+      integer(kind=int_32), intent(inout)  ::arrpoi(:) ! Pointer in workarray/FMM reference pointer
+      integer(kind=int_32), intent(inout)  ::arrtyp(:) ! Array type ( INT=,REAL(kind=sp) ::=,CHAR= ), see FMM/NEFIS
+      integer(kind=int_32), intent(inout)  ::arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
+      integer(kind=int_32), intent(inout)  ::arrlen(:) ! Length off array
+      integer(kind=int_32), intent(inout)  ::arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+      integer(kind=int_32), intent(inout)  ::arrdm1(:) ! dimension 1
+      integer(kind=int_32), intent(inout)  ::arrdm2(:) ! dimension 2
+      integer(kind=int_32), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
-      integer      , intent(inout) :: itotc     ! Required array space
+      integer(kind=int_32), intent(inout)  ::itotc     ! Required array space
       type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
 
 
@@ -76,13 +77,13 @@
 
       character*20       :: namarr                      ! help variable for array name
 
-      integer            :: iianam, iimnam, iisnam, iidnam, iibnid,
+      integer(kind=int_32) ::iianam, iimnam, iisnam, iidnam, iibnid,
      &                      iibnam, iibtyp, iiwsid, iiwnam, iiwtyp,
      &                      iicnam, iipnam, iifnam, iisfna, iiedit,
      &                      iiprna, iionam, iidina, iivnam, iidana,
      &                      iirnam, iicbuf, iilunt, iiosnm, iiouni,
      &                      iiodsc, iissnm, iisuni, iisdsc
-      integer            :: i_car,  iartyp, iarlen, ip
+      integer(kind=int_32) ::i_car,  iartyp, iarlen, ip
 !
       IIANAM = IASIZE + IJSIZE +  1
       IIMNAM = IASIZE + IJSIZE +  2

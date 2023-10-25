@@ -23,6 +23,7 @@
 
       MODULE WORKSPACE
 
+      use m_waq_type_definitions
       use m_srstop
       USE PARTITION_ARRAYS
       USE DHMMAR_MOD
@@ -61,27 +62,27 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUNREP  INTEGER       1     INPUT   logical unitnumber output file
+!     LUNREP  INTEGER(kind=int_32) ::1     INPUT   logical unitnumber output file
 !     L_DECL  LOGICAL       1     INPUT   Declare memory y/n
-!     A       INTEGER       *     OUTPUT  real workspace array
-!     J       INTEGER       *     OUTPUT  integer workspace array
+!     A       INTEGER(kind=int_32) ::*     OUTPUT  real(kind=sp) ::workspace array
+!     J       INTEGER(kind=int_32) ::*     OUTPUT  integer(kind=int_32) ::workspace array
 !     C       CHAR*20       *     OUTPUT  character workspace array
-!     IMAXA   INTEGER       1     INPUT   Maximum real  array space
-!     IMAXI   INTEGER       1     INPUT   Maximum integer array space
-!     IMAXC   INTEGER       1     INPUT   Maximum character array space
+!     IMAXA   INTEGER(kind=int_32) ::1     INPUT   Maximum real(kind=sp) ::array space
+!     IMAXI   INTEGER(kind=int_32) ::1     INPUT   Maximum integer(kind=int_32) ::array space
+!     IMAXC   INTEGER(kind=int_32) ::1     INPUT   Maximum character array space
 !
-      INTEGER       LUNREP, IMAXA  , IMAXI  , IMAXC
+      INTEGER(kind=int_32) ::LUNREP, IMAXA  , IMAXI  , IMAXC
       LOGICAL       L_DECL
-      REAL, DIMENSION(:), allocatable             :: A
-      INTEGER, DIMENSION(:), allocatable          :: J
+      REAL(kind=sp), DIMENSION(:), allocatable              ::A
+      INTEGER(kind=int_32), DIMENSION(:), allocatable           ::J
       CHARACTER(LEN=*), DIMENSION(:), allocatable :: C
 
-      INTEGER, DIMENSION(:), allocatable               :: JNEW
+      INTEGER(kind=int_32), DIMENSION(:), allocatable                ::JNEW
       CHARACTER(LEN=LEN(C)), DIMENSION(:), allocatable :: CNEW
       CHARACTER(LEN=20),     DIMENSION(:), ALLOCATABLE :: CNAME
 
-      INTEGER                :: K1, K2
-      INTEGER*8              :: ITOT
+      INTEGER(kind=int_32) ::K1, K2
+      INTEGER(kind=int_64) ::ITOT
 
       TYPE(MEMORY_PARTITION) :: PART
 

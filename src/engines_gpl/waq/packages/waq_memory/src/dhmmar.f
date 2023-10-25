@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       MODULE DHMMAR_MOD
+      use m_waq_type_definitions
       use m_srstop
 
       CONTAINS
@@ -42,22 +43,22 @@
       use partition_arrays ! module for computing the pointers into the arrays
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
 !
 !     PARAMETERS          :
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUNREP  INTEGER       1     INPUT   logical unitnumber output file
-!     J       INTEGER       *     OUTPUT  integer workspace array
+!     LUNREP  INTEGER(kind=int_32) ::1     INPUT   logical unitnumber output file
+!     J       INTEGER(kind=int_32) ::*     OUTPUT  integer(kind=int_32) ::workspace array
 !     C       CHAR*20       *     OUTPUT  character workspace array
 !
 !     Declaration of arguments
 !
-      INTEGER       LUNREP
-      INTEGER       J(:)
+      INTEGER(kind=int_32) ::LUNREP
+      INTEGER(kind=int_32) ::J(:)
       CHARACTER*(*) C(:)
       type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
 
