@@ -37,10 +37,13 @@
       end type location
 
       type wasteload
-         type(identifier)                 :: id              ! id and name etc.
-         type(location)                   :: loc             ! location
-         real                             :: flow            ! te actual value discharge flow
-         real , pointer                   :: loads(:)        ! the actual value of the load for the substances
+         type(identifier)                 :: id                ! id and name etc.
+         type(location)                   :: loc               ! location
+         real                             :: flow              ! the actual value discharge flow
+         real                             :: set_factor = 1.0  ! the factor by which to multiply the flow rate (D-RTC)
+         real , pointer                   :: loads(:)          ! the actual value of the load for the substances
       end type wasteload
+
+      type(wasteload),allocatable, save :: wasteloads(:)
 
       end module delwaq_loads

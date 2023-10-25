@@ -3,23 +3,18 @@ set(library_name flow1d_io)
 create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Specify dependencies
-if (UNIX)
-    set(oss_dependencies    deltares_common
-                            ec_module
-                            flow1d_core
-                            gridgeom
-                            io_netcdf)
-endif(UNIX)
-if (WIN32)
+
+
     set(oss_dependencies    deltares_common
                             gridgeom
                             ec_module
                             flow1d_core
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             netcdf4
                             netcdff)
-endif(WIN32)
+
 oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)
@@ -36,4 +31,3 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointe
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/flow1d_library)
-

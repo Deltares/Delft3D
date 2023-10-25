@@ -61,6 +61,7 @@ endif(WIN32)
 if(UNIX)
     target_compile_options(${netcdf_library_name} PRIVATE ${c_compiler_flags})
     target_link_libraries(${netcdf_library_name} ${oss_dependencies})
+    set(Fortran_MODULE_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}) 
 endif()
 
 # Create the folder structure in vfproj

@@ -74,7 +74,7 @@
 !                           ZERO  , zeros an real arrays
 !
       use m_dhisys
-      use grids
+      use dlwqgrid_mod
       use waqmem
       use delwaq2_data
       use timers
@@ -123,7 +123,7 @@
       ftype = filtype
       CALL SPACE  ( LUN(19) , .TRUE.  , buffer%rbuf, buffer%ibuf, buffer%chbuf,
      +              IMAXA   , IMAXI   , IMAXC   )
-      
+
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 !
 !     copy common to (possible) shared array to share these values with
@@ -422,7 +422,7 @@
      &              nosfun   , c(isfna:), a(isfun:), a(iconc:) , a(imass:) ,
      &              j(iknmr:), iknmkv   , j(ixpnt:) )
 
-      
+
 !     temporary for closure error
 
    40 CALL ZOEK20 ( 'CLOSE_ERR ',NOCONS,C(ICNAM),10,INDX )
@@ -433,9 +433,9 @@
          ICFLAG = 0
          WRITE(LUN(19),*) ' Closure error correction disabled'
       ENDIF
-      
+
       end associate
-      
+
       if ( timon ) call timstop ( ithandl )
       RETURN
       END subroutine

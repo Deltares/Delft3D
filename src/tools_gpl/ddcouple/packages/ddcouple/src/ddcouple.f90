@@ -23,7 +23,7 @@
 
 program ddcouple
 
-      use m_ddhyd
+      use hydmod
       use m_getcom
       use m_dhucas
       use merge_step_mod

@@ -29,25 +29,15 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 enable_language(Fortran C CXX)
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     # To be implemented later on
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+    include(compiler_options/intel.cmake)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
+    # To be implemented later on
+else()
+    echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
     include(compiler_options/intel.cmake)
 endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-    # To be implemented later on
-endif()
 
-if (WIN32)
-    message(STATUS "Setting compiler flags in windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
-endif(WIN32)
-
-if (UNIX)
-    message(STATUS "Setting compiler flags in unix")
-    set(CMAKE_Fortran_FLAGS "${compiler_flags}")
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
-endif(UNIX)
 
 
 # Set available build configurations for the .sln file
@@ -58,7 +48,6 @@ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the locat
 
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
-#set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")
 
 
 if (WIN32)
@@ -109,12 +98,8 @@ if (UNIX)
     pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
-
-    # Proj
-    pkg_check_modules(PROJ REQUIRED proj)
 
 endif(UNIX)
 

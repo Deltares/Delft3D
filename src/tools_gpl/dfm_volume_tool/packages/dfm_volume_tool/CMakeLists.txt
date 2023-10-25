@@ -9,9 +9,9 @@ get_fortran_source_files(${src_path} sources)
 set(rc_version_file ${res_path}/dfm_volume_tool_version.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(fortran_version_files ${src_path}/dfm_volume_tool_version.F90
-                          ${src_path}/dfm_volume_tool_static_version_info.F90)  
+                          ${src_path}/dfm_volume_tool_static_version_info.F90)
 set_source_files_properties(${fortran_version_files}
-                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")                          
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 # Define the executable
 set(executable_name dfm_volume_tool)
 add_executable(${executable_name} ${sources} ${rc_version_file})
@@ -21,25 +21,22 @@ if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
 
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
-    set(oss_dependencies deltares_common 
+    set(oss_dependencies deltares_common
                          deltares_common_c
                          dflowfm_kernel
                          gridgeom
                          flow1d_core
-                         io_netcdf 
+                         io_netcdf
+                         io_netcdf_data
                          FLAP
+                         netcdf4
+                         netcdff
                          dfm_api_access)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
     target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         ${oss_dependencies})
 endif(UNIX)
 
 if (WIN32)
@@ -49,6 +46,7 @@ if (WIN32)
                          gridgeom
                          flow1d_core
                          io_netcdf
+                         io_netcdf_data
                          FLAP
                          netcdf4
                          netcdff
@@ -62,9 +60,9 @@ if(UNIX)
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
-    message(STATUS "Setting target_compile_definitions in Unix")    
+    message(STATUS "Setting target_compile_definitions in Unix")
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
-   
+
    include_directories(${version_include_dir}
 					   ${res_path})
 endif(UNIX)
@@ -90,7 +88,7 @@ if (WIN32)
                         ${tecplot_path}
 						${version_include_dir}
 						${res_path})
-                        
+
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
@@ -106,7 +104,7 @@ if (WIN32)
                           "wsock32.lib"
                           "netapi32.lib"
                           "kernel32.lib"
-                          "user32.lib" 
+                          "user32.lib"
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
@@ -134,7 +132,7 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${executable_name})

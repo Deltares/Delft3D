@@ -558,7 +558,8 @@ class TestSetRunner(ABC):
                             Paths().mergeFullPath(
                                 destination_dir,
                                 location.to_path,
-                                config.path,
+                                config.name,
+                                #config.path,
                             )
                         )
                         self.__download_file(
@@ -573,7 +574,7 @@ class TestSetRunner(ABC):
 
                     success = True
 
-                except Exception:
+                except Exception as e:
                     error_message = (
                         f"Unable to download testcase (attempt {attempts + 1})"
                     )
@@ -582,7 +583,7 @@ class TestSetRunner(ABC):
                         logger.warning(error_message)
                     else:
                         logger.error(error_message)
-                        raise TestBenchError("Unable to download testcase")
+                        raise TestBenchError("Unable to download testcase " + str(e))
 
     def __download_file(
         self,

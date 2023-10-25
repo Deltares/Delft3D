@@ -88,7 +88,7 @@
       use m_zoek
       use m_srstop
       use m_open_waq_files
-      use Grids        !   for the storage of contraction grids
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use pointr_mod
       use partmem

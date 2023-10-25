@@ -23,6 +23,7 @@ set(kdtree_wrapper_module ${utils_lgpl_path}/kdtree_wrapper/packages/kdtree_wrap
 
 # io_netcdf
 set(io_netcdf_module ${utils_lgpl_path}/io_netcdf/packages/io_netcdf)
+set(io_netcdf_data_module ${utils_lgpl_path}/io_netcdf/packages/io_netcdf_data)
 
 # ec_module
 set(ec_module ${utils_lgpl_path}/ec_module/packages/ec_module)
@@ -42,6 +43,9 @@ set(nefis_module ${utils_lgpl_path}/nefis/packages/nefis)
 
 # io_hyd
 set(io_hyd_module ${utils_lgpl_path}/io_hyd/packages/io_hyd)
+
+# io_hyd
+set(waq_hyd_data_module ${utils_lgpl_path}/waq_hyd_data)
 
 # D_Hydro_lib
 set(d_hydro_lib_module ${utils_lgpl_path}/d_hydro_lib/packages/d_hydro_lib)

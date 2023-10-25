@@ -45,6 +45,7 @@
  use MessageHandling
  use m_sobekdfm
  use m_subsidence
+ use m_fm_bott3d, only: fm_bott3d
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
 
  implicit none
@@ -304,8 +305,15 @@
     !
     call setucxucy_mor (u1)
     call fm_flocculate()               ! fraction transitions due to flocculation
+    
+    call timstrt('Settling velocity   ', handle_extra(87))
     call fm_fallve()                   ! update fall velocities
+    call timstop(handle_extra(87))
+    
+    call timstrt('Erosed_call         ', handle_extra(88))
     call fm_erosed()                   ! source/sink, bedload/total load
+    call timstop(handle_extra(88))
+    
     if ( jatimer.eq.1 ) call stoptimer(IEROSED)
  end if
 

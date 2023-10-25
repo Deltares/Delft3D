@@ -4441,7 +4441,4 @@ logical function is_not_multiple(time_interval, user_time_step)
 
 end function is_not_multiple
 
-   end module unstruc_model
-
-
-
+end module unstruc_model

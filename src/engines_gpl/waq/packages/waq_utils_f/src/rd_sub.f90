@@ -32,7 +32,6 @@ contains
    subroutine rd_sub(allocated,input_file,nosys,notot,nocons,noout,syname,syunit,coname,covalue,ouname,oudesc,ierr,cerr)
 
    use m_monsys
-   use dlwq_data      ! for definition and storage of data
    use rd_token       ! tokenized reading
 
    implicit none

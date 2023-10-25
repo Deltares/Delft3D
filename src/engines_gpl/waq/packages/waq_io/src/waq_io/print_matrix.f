@@ -36,8 +36,8 @@
 
 !     Global declarations
 
-      use timers       !   performance timers
-      use dlwq_data      ! for definition and storage of data
+      use timers        !   performance timers
+      use dlwq_hyd_data ! for definition and storage of data
       implicit none
 
 !     declaration of arguments

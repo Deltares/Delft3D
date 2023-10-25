@@ -72,7 +72,6 @@
       integer             :: isys
       integer             :: lunrep
       character(len=256)  :: load_routine
-      type(wasteload),pointer, save :: wasteloads(:)
       integer             :: ierr_alloc
       integer(4), save    :: ithandl = 0
       if ( timon ) call timstrt ( "wascal", ithandl )

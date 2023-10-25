@@ -10,8 +10,7 @@ set(library_name waq_utils_f)
 create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Set dependencies
-set(oss_dependencies deltares_common
-                     waq_data)
+set(oss_dependencies deltares_common)
 
 if (UNIX)
     # WARNING: waq_process and waq_util_f are (weakly) circular dependent

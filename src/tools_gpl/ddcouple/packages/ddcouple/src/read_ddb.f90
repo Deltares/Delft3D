@@ -28,10 +28,10 @@
       ! global declarations
 
       use m_monsys
-      use m_ddhyd
+      use hydmod
       use m_write_error_message
       use m_dhfext
-
+      use rd_token       ! tokenized reading
 
       implicit none
 
@@ -41,30 +41,40 @@
 
       ! local declarations
 
-      integer             :: lunrep                 ! report file
-      integer             :: i_domain               ! index in collection
-      type(t_domain)      :: domain                 ! one domain description
-      integer             :: i_dd_bound             ! index in collection
-      type(t_dd_bound)    :: dd_bound               ! one dd_bound description
-      character(len=255)  :: line                   ! line buffer input file
-      character(len=255)  :: ctoken                 ! line buffer input file
-      character(len=255)  :: filext                 ! file extension
-      integer             :: extpos                 ! position file extension
-      integer             :: extlen                 ! length file extension
-      integer             :: i_swap                 ! swap help variable
-      integer             :: ierr                   ! error indicator
-      logical             :: token_used             ! token_used
-      type(inputfilestack):: inpfil                 ! input file strucure with include stack
+      integer             :: lunrep         !< report file
+      integer             :: i_domain       !< index in collection
+      type(t_domain)      :: domain         !< one domain description
+      integer             :: i_dd_bound     !< index in collection
+      type(t_dd_bound)    :: dd_bound       !< one dd_bound description
+      character(len=255)  :: line           !< line buffer input file
+      character(len=255)  :: ctoken         !< line buffer input file
+      character(len=255)  :: filext         !< file extension
+      integer             :: extpos         !< position file extension
+      integer             :: extlen         !< length file extension
+      integer             :: i_swap         !< swap help variable
+      integer             :: int            !< integer token from input
+      real                :: reel           !< real token from input
+      integer             :: itype          !< token type found
+      character(len=20)   :: string         !< String token
+      integer             :: ierr           !< error indicator
+      logical             :: token_used     !< token_used
+      type(t_dlwqfile)    :: file_src       !< hydrodynamics-file
 
-      call getmlu(lunrep)
+      file_src = hyd%file_com
 
-      inpfil%inputf = 0
-      call filestack_add(inpfil,hyd%file_com%name,ierr)
-      if ( ierr .ne. 0 ) then
+      call dlwqfile_open(file_src)
+
+      ilun    = 0
+      ilun(1) = file_src%unit_nr
+      lch (1) = file_src%name
+      npos   = 1000
+      cchar  = ';'
+      ierr = 0
+
+      if (gettoken( string, int, reel, itype, ierr) .ne. 0) then
          write(lunrep,*) ' error opening ddbound file'
          write(lunrep,*) ' file: ',trim(hyd%file_com%name)
       endif
-      inpfil%cchar  = '#'
 
       hyd%domain_coll%cursize = 0
       hyd%domain_coll%maxsize = 0
@@ -77,24 +87,24 @@
 
          ! read first domain
 
-         call dlwq_read_token( inpfil, dd_bound%name1, ierr)
-
-         ! if end of file the exit loop
-
-         if ( ierr .ne. 0 ) exit
+         if (gettoken( dd_bound%name1, ierr) .ne. 0) then
+            ! if end of file the exit loop
+            exit
+        endif
 
          ! read m_begin1, n_begin1, m_end1, n_end1, domain name 2, m_begin2, n_begin2, m_end2, n_end2
 
-         call dlwq_read_token( inpfil, dd_bound%m_begin1, ierr) ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%n_begin1, ierr) ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%m_end1, ierr)   ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%n_end1, ierr)   ; if ( ierr .ne. 0 ) goto 900
 
-         call dlwq_read_token( inpfil, dd_bound%name2, ierr)    ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%m_begin2, ierr) ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%n_begin2, ierr) ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%m_end2, ierr)   ; if ( ierr .ne. 0 ) goto 900
-         call dlwq_read_token( inpfil, dd_bound%n_end2, ierr)   ; if ( ierr .ne. 0 ) goto 900
+         if (gettoken( dd_bound%m_begin1, ierr) .ne. 0 ) goto 900
+         if (gettoken( dd_bound%n_begin1, ierr) .ne. 0 ) goto 900
+         if (gettoken( dd_bound%m_end1, ierr)   .ne. 0 ) goto 900
+         if (gettoken( dd_bound%n_end1, ierr)   .ne. 0 ) goto 900
+
+         if (gettoken( dd_bound%name2, ierr)    .ne. 0 ) goto 900
+         if (gettoken( dd_bound%m_begin2, ierr) .ne. 0 ) goto 900
+         if (gettoken( dd_bound%n_begin2, ierr) .ne. 0 ) goto 900
+         if (gettoken( dd_bound%m_end2, ierr)   .ne. 0 ) goto 900
+         if (gettoken( dd_bound%n_end2, ierr)   .ne. 0 ) goto 900
 
          ! fuzzy: get rid of extension of domain name
 
@@ -133,5 +143,5 @@
       enddo
 
       return
- 900  call write_error_message('error reading dbb file, last line:'//trim(inpfil%linbuf(inpfil%inputf)))
+ 900  call write_error_message('error reading dbb file')
       end subroutine read_ddb

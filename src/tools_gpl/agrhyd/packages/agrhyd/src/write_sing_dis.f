@@ -29,7 +29,7 @@
 
       ! global declarations
 
-      use m_dhnlun
+      use m_file_unit_number
       use hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
@@ -81,7 +81,7 @@
 
       ! open file with names and types
 
-      call dhnlun(761,lun_names)
+      call create_new_file_unit_number(761,lun_names)
       open(lun_names,file=file_names)
 
       write(lun_names,'(i12,a)') nowast_tot,' ; number of wastelaods'

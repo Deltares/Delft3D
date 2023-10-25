@@ -33,7 +33,6 @@ module m_read_roughness
    use m_GlobalParameters
    use m_hash_search
    use m_network
-   use m_readSpatialData
    use m_Roughness
    use m_spatial_data
    use properties
@@ -124,34 +123,9 @@ contains
          count = count+1
       enddo
    
-      ! just to be sure save space for 3 default roughnesses.
-      count = count+3
       call hashfill_init(rgs%hashlist, count)
       call realloc(rgs%hashlist%id_list, count)
-   
-      ! First three roughnesses are 'Main', 'FloodPlain1' and 'FloodPlain2' 
-      rgs%count = 3
       call realloc(rgs)
-      rgs%rough(1)%id = 'Main'
-      rgs%rough(1)%frictionValuesFile = ''
-      rgs%rough(2)%id = 'FloodPlain1'
-      rgs%rough(2)%frictionValuesFile = ''
-      rgs%rough(3)%id = 'FloodPlain2'
-      rgs%rough(3)%frictionValuesFile = ''
-      success = .true.
-      do i = 1, 3
-         if (success) then
-            success = hashsearch_or_add(rgs%hashlist, rgs%rough(i)%id) == i
-            rgs%rough(i)%spd_pos_idx = 0
-            rgs%rough(i)%rgh_type_pos => null()
-            rgs%rough(i)%fun_type_pos => null()
-            rgs%rough(i)%table        => null()
-         endif
-      enddo
-   
-      if (.not. success) then
-         call setmessage(LEVEL_FATAL, 'Internal error in roughness reader')
-      endif
    
       ! now start reading individual files
       do while (len_trim(inputfiles) > 0) 
@@ -166,17 +140,10 @@ contains
          call remove_leading_spaces(trim(file))
          call read_roughnessfile(rgs, brs, spdata, file, default, def_type)
       enddo
-   
-      if (rgs%version == 1) then
-         ! Note: for v>=2 roughness files, the check on valid roughness types is already in the cross section readers.
-         if (rgs%rough(1)%iSection == 1 .and. .not. associated(rgs%rough(1)%fun_type_pos)) then
-            call setmessage(LEVEL_ERROR, 'Obligatory main roughness section for ZW cross sections is missing')
-         elseif (rgs%rough(2)%iSection == 2 .and. .not. associated(rgs%rough(2)%fun_type_pos)) then
-            call setmessage(LEVEL_ERROR, 'roughness section FloodPlain1 is missing, while at least one ZW cross section contains section Floodplain1')
-         elseif (rgs%rough(3)%iSection == 3 .and. .not. associated(rgs%rough(3)%fun_type_pos)) then
-            call setmessage(LEVEL_ERROR, 'roughness section FloodPlain2 is missing, while at least one ZW cross section contains section Floodplain2')
-         endif
-      end if
+
+      if (getMaxErrorLevel() >= LEVEL_ERROR) then
+         call setmessage(LEVEL_FATAL, 'Errors found during reading of roughness files, please review earlier error messages for details')
+      endif
 
       call add_timeseries_to_forcinglist(rgs, network%forcinglist)
    end subroutine roughness_reader
@@ -282,14 +249,14 @@ contains
 
    !> Reads a single roughness file of current version.
    !! File must already have been opened into an ini tree.
-   subroutine scan_roughness_input(tree_ptr, rgs, brs, spdata, inputfile, default, def_type)
+   subroutine scan_roughness_input(tree_ptr, roughness_set, branches, spdata, inputfile, default, def_type)
       use m_tablematrices
       use m_alloc
       use string_module, only: strcmpi
       
       type(tree_data), pointer, intent(in)   :: tree_ptr   !< treedata pointer to input file, must already be created.
-      type(t_roughnessSet), intent(inout)    :: rgs        !< Roughness set
-      type(t_branchSet), intent(in)          :: brs        !< Branches
+      type(t_roughnessSet), intent(inout)    :: roughness_set
+      type(t_branchSet), intent(in)          :: branches
       type(t_spatial_dataSet), intent(inout) :: spdata     !< Spatial data set
       character(len=IdLen), intent(in)      :: inputfile  !< Name of the input file
       double precision, intent(inout)        :: default    !< Default friction parameter
@@ -332,7 +299,7 @@ contains
          elseif (strcmpi(tree_get_name(tree_ptr%child_nodes(i)%node_ptr), 'Branch')) then
             branchdef = .true.
          endif
-      enddo 
+      enddo
       
       if (numsections >=2 .and. branchdef) then
          call setmessage(LEVEL_ERROR, 'In inputfile '//trim(inputfile)// ' more than 1 Global section is found, together with a Branch section, this is not allowed')
@@ -353,33 +320,40 @@ contains
 
          call prop_get_string(tree_ptr, 'General', 'frictionValuesFile', frictionValuesFileName, success)
 
-         irgh = hashsearch_or_add(rgs%hashlist, frictionId)
-         if (irgh > rgs%size) then
-            call realloc(rgs)
+         irgh = hashsearch(roughness_set%hashlist, frictionId)
+         if (irgh /= -1) then
+            call setmessage(LEVEL_ERROR, 'frictionId '''//trim(frictionId)//&
+               ''' in roughness definition file '//trim(inputfile)//&
+               ' was already defined. Please provide a unique frictionId')
+            return
          endif
-         rgh => rgs%rough(irgh)
-         if (irgh == rgs%count+1) then
+         irgh = hashsearch_or_add(roughness_set%hashlist, frictionId)
+         if (irgh > roughness_set%size) then
+            call realloc(roughness_set)
+         endif
+         rgh => roughness_set%rough(irgh)
+         if (irgh == roughness_set%count+1) then
             ! Create a new Roughness section.
-            rgs%count = irgh
+            roughness_set%count = irgh
             rgh%id           = frictionId
-            allocate(rgh%rgh_type_pos(brs%Count))
-            allocate(rgh%fun_type_pos(brs%Count))
-            allocate(rgh%table(brs%Count))
+            allocate(rgh%rgh_type_pos(branches%Count))
+            allocate(rgh%fun_type_pos(branches%Count))
+            allocate(rgh%table(branches%Count))
          else
             ! Initialize an existing Roughness section.
-            if (.not. associated(rgh%rgh_type_pos))   allocate(rgh%rgh_type_pos(brs%Count))
-            if (.not. associated(rgh%fun_type_pos))   allocate(rgh%fun_type_pos(brs%Count))
-            if (.not. associated(rgh%table))          allocate(rgh%table(brs%Count))
+            if (.not. associated(rgh%rgh_type_pos))   allocate(rgh%rgh_type_pos(branches%Count))
+            if (.not. associated(rgh%fun_type_pos))   allocate(rgh%fun_type_pos(branches%Count))
+            if (.not. associated(rgh%table))          allocate(rgh%table(branches%Count))
          endif         
    
          if (.not. associated(rgh%timeSeriesIndexes)) then
-            allocate(rgh%timeSeriesIndexes(brs%Count))
+            allocate(rgh%timeSeriesIndexes(branches%Count))
             rgh%timeSeriesIndexes = -1
          endif
 
          rgh%rgh_type_pos = -1
          rgh%fun_type_pos = -1
-         do i = 1, brs%count
+         do i = 1, branches%count
             rgh%table(i)%lengths = -1
          enddo
       endif
@@ -395,27 +369,27 @@ contains
                call setmessage(LEVEL_ERROR, 'frictionId not found in roughness definition file: '//trim(inputfile))
             endif
             ! Look if section Id is already defined, otherwise add it to the list
-            irgh = hashsearch_or_add(rgs%hashlist, frictionId)
-            if (irgh == rgs%count+1) then
-               rgs%count = irgh
-               if (rgs%count > rgs%size) then
-                  call realloc(rgs)
+            irgh = hashsearch_or_add(roughness_set%hashlist, frictionId)
+            if (irgh == roughness_set%count+1) then
+               roughness_set%count = irgh
+               if (roughness_set%count > roughness_set%size) then
+                  call realloc(roughness_set)
                endif
             endif
             
-            rgs%rough(irgh)%useGlobalFriction  = .not. branchdef
-            rgs%rough(irgh)%frictionValuesFile = frictionValuesFileName
-            rgs%rough(irgh)%id                 = frictionId
+            roughness_set%rough(irgh)%useGlobalFriction  = .not. branchdef
+            roughness_set%rough(irgh)%frictionValuesFile = frictionValuesFileName
+            roughness_set%rough(irgh)%id                 = frictionId
             fricType = ''
             call prop_get_string(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionType', fricType, success)
             if (.not. success) then
                call setmessage(LEVEL_ERROR, 'frictionType not found in roughness definition file '''//trim(inputfile)//''' for frictionId='//trim(frictionId)//'.')
             end if
-            call frictionTypeStringToInteger(fricType, rgs%rough(irgh)%frictionType)
-            if (rgs%rough(irgh)%frictionType < 0) then
+            call frictionTypeStringToInteger(fricType, roughness_set%rough(irgh)%frictionType)
+            if (roughness_set%rough(irgh)%frictionType < 0) then
                call setmessage(LEVEL_ERROR, 'frictionType '''//trim(fricType)//''' invalid in roughness definition file '''//trim(inputfile)//''' for frictionId='//trim(frictionId)//'.')
             end if
-            call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionValue', rgs%rough(irgh)%frictionValue, success)
+            call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionValue', roughness_set%rough(irgh)%frictionValue, success)
             if (.not. success) then
                call setmessage(LEVEL_ERROR, 'frictionValue not found/valid in roughness definition file '''//trim(inputfile)//''' for frictionId='//trim(frictionId)//'.')
             end if
@@ -426,8 +400,8 @@ contains
                cycle
             endif
             
-            ibr = hashsearch(brs%hashlist, branchid)
-            if (ibr <= 0 .or. ibr > brs%count) then
+            ibr = hashsearch(branches%hashlist, branchid)
+            if (ibr <= 0 .or. ibr > branches%count) then
                call setmessage(LEVEL_ERROR, 'branchId '//trim(branchid)//' does not exist in network, see input file: '//trim(inputfile))
                cycle
             endif

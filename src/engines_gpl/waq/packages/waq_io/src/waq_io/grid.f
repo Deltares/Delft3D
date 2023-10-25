@@ -62,7 +62,7 @@
 !     Logical units  : LUN(29) = unit formatted output file
 !                      LUN( 2) = unit intermediate file (system)
 
-      use Grids        !   for the storage of contraction grids
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -289,7 +289,7 @@
 !        Expand with layers in the base grid
 
       do igrid = 1, nogrid
-         
+
          if (igrid .eq. GridPs%bottom_grid) cycle
 
          noseg2 = GridPs%Pointers(igrid)%noseg_lay

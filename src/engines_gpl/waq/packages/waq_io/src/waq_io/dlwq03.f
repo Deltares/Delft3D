@@ -68,7 +68,7 @@
       use m_srstop
       use m_open_waq_files
       use m_evaluate_waq_attribute
-      use grids        !   for the storage of contraction grids
+      use dlwqgrid_mod !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use partmem      !   for PARTicle tracking
       use timers       !   performance timers

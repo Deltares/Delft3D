@@ -361,8 +361,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
     if (masterComponent->onThisRank) {
         chdir(masterComponent->workingDir);
         log->Write(INFO, my_rank, "%s.Initialize(%s)", masterComponent->name, masterComponent->inputFile);
-		// SetKeyVals for settings (before initialize)
-		int nSettingsSet = masterComponent->dllSetKeyVals(masterComponent->settings);
+                // SetKeyVals for settings (before initialize)
+                int nSettingsSet = masterComponent->dllSetKeyVals(masterComponent->settings);
         timerStart(masterComponent);
         masterComponent->result = (masterComponent->dllInitialize) (masterComponent->inputFile);
         if (masterComponent->result != 0)
@@ -376,8 +376,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
             throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
         }
         timerEnd(masterComponent);
-		// SetKeyVals for parameters (after initialize)
-		int nParamsSet = masterComponent->dllSetKeyVals(masterComponent->parameters);
+                // SetKeyVals for parameters (after initialize)
+                int nParamsSet = masterComponent->dllSetKeyVals(masterComponent->parameters);
         (masterComponent->dllGetStartTime) (&cb->subBlocks[cb->masterSubBlockId].tStart);
         (masterComponent->dllGetEndTime) (&cb->subBlocks[cb->masterSubBlockId].tEnd);
         (masterComponent->dllGetTimeStep) (&cb->subBlocks[cb->masterSubBlockId].tStep);
@@ -386,7 +386,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
 
     if (masterComponent->numProcesses < numranks) {
         double dbl4_buf[4];
-        
+
         if (masterComponent->processes[0] == my_rank) {
             dbl4_buf[0] = cb->subBlocks[cb->masterSubBlockId].tStart;
             dbl4_buf[1] = cb->subBlocks[cb->masterSubBlockId].tEnd;
@@ -450,8 +450,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
 
                         chdir(thisComponent->workingDir);
                         log->Write(INFO, my_rank, "%s.Initialize(%s)", thisComponent->name, thisComponent->inputFile);
-						// SetKeyVals for settings (before initialize)
-						int nSettingsSet = thisComponent->dllSetKeyVals(thisComponent->settings);
+                                                // SetKeyVals for settings (before initialize)
+                                                int nSettingsSet = thisComponent->dllSetKeyVals(thisComponent->settings);
                         timerStart(thisComponent);
                         thisComponent->result = (thisComponent->dllInitialize) (thisComponent->inputFile);
                         if (thisComponent->result != 0)
@@ -466,8 +466,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
                         }
                         timerEnd(thisComponent);
-						// SetKeyVals for parameters (after initialize)
-						int nParamsSet = thisComponent->dllSetKeyVals(thisComponent->parameters);
+                                                // SetKeyVals for parameters (after initialize)
+                                                int nParamsSet = thisComponent->dllSetKeyVals(thisComponent->parameters);
                     }
                 }
             }
@@ -747,6 +747,8 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
     // Initialize time parameters
     double* currentTime = &masterComponent->tCur;
 
+    log->Write(INFO, my_rank, "Parallel Update: Current time: %15.5f -- %s -- %d", *currentTime, masterComponent->unit.component->name, tStep);
+
     // already requested in "runParallelInit" ... is this really nessary?
     // masterComponent->tStart : simulation start time as obtained from the masterComponent
     // masterComponent->tEnd   : simulation end   time as obtained from the masterComponent
@@ -809,10 +811,11 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
     //
     while (*currentTime < masterComponent->tNext) {
         //
-        // define tStep, 
+        // define tStep,
         // tStep is the minimum allowed time step over all followers
         // Start with maximum value defined by masterComponent
         double tStep = masterComponent->tNext - *currentTime;
+        log->Write(INFO, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f", tStep, masterComponent->tNext, *currentTime);
         for (int i = 0; i < cb->numSubBlocks; i++) {
             if (i != cb->masterSubBlockId) {
                 // follower.tNext is the next point in time that this follower must be executed
@@ -836,6 +839,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     // This follower is not active yet
                     tStep = min(tStep, tStepFollower);
                 }
+                log->Write(INFO, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f -- %15.5f ", tStep, masterComponent->tNext, cb->subBlocks[i].tNext, tStepFollower);
             }
         }
 
@@ -851,7 +855,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
             if (i == cb->masterSubBlockId) {
                 // masterComponent
                 chdir(masterComponent->unit.component->workingDir);
-                log->Write(INFO, my_rank, "%10.1f:    %s.Update(%10.1f)", *currentTime, masterComponent->unit.component->name, tStep);
+                log->Write(INFO, my_rank, "%10.1f:    %s.Update(%15.5f)", *currentTime, masterComponent->unit.component->name, tStep);
                 timerStart(masterComponent->unit.component);
                 int state = 0; // state returned by local call to component (0 if not called)
                 int state0 = 0; // state returned by call to component by the first thread calling that component
@@ -899,6 +903,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             // This is not the overall tStep!
                             double tUpdate;
                             tUpdate = *currentTime - masterComponent->tStart - cb->subBlocks[i].tCur;
+    log->Write(INFO, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, cb->subBlocks[i].tCur);
                             // Hack: Always call RTCTools.Update with argument -1.0
                             if (cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_RTC) {
                                 tUpdate = -1.0;
@@ -938,10 +943,11 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             // Coupler
                             dimr_coupler* thisCoupler = cb->subBlocks[i].subBlocks[j].unit.coupler;
                             double* transferValuePtr;
-                            log->Write(DEBUG, my_rank, "%10.1f:    %s.communicate", *currentTime, thisCoupler->name);
+                            //log->Write(DEBUG, my_rank, "%10.1f:    %s.communicate (%d)", *currentTime, thisCoupler->name, timeIndexCounter);
 
                             // log netcdf time variable
                             int timeIndexCounter = static_cast<int>(floor((*currentTime - cb->subBlocks[cb->masterSubBlockId].tStart) / tStep));
+                            log->Write(DEBUG, my_rank, "%10.1f:    %s.communicate (%d -- %15.5f, %15.5f)", *currentTime, thisCoupler->name, timeIndexCounter, cb->subBlocks[cb->masterSubBlockId].tStart, tStep);
                             if (thisCoupler->logger != NULL) {
                                 string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
 
@@ -951,7 +957,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             }
 
                             for (int k = 0; k < thisCoupler->numItems; k++) {
-                                log->Write(ALL, my_rank, "    %s -> %s", thisCoupler->items[k].sourceName, thisCoupler->items[k].targetName);
+                                log->Write(ALL, my_rank, "    %s -> %s (%d)", thisCoupler->items[k].sourceName, thisCoupler->items[k].targetName, timeIndexCounter);
 
                                 // Getting and Setting of data is split to enable
                                 // transferring data, possibly inbetween different partitions
@@ -968,7 +974,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                                     getAddress(thisCoupler->items[k].sourceName, thisCoupler->sourceComponent->type, thisCoupler->sourceComponent->dllGetVar, &(thisCoupler->items[k].sourceVarPtr),
                                         thisCoupler->sourceComponent->processes, thisCoupler->sourceComponent->numProcesses, transfer);
                                 }
-                                // Use sourceVarPtr to fill "transfer" and sent it to all ranks, 
+                                // Use sourceVarPtr to fill "transfer" and sent it to all ranks,
                                 // resulting in transferValuePtr pointing to the correct value on all ranks
                                 transferValuePtr = send(thisCoupler->items[k].sourceName, thisCoupler->sourceComponent->type, thisCoupler->items[k].sourceVarPtr,
                                     thisCoupler->sourceComponent->processes, thisCoupler->sourceComponent->numProcesses, &transfer);
@@ -1028,9 +1034,11 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     for (int j = 0; j < cb->subBlocks[i].numSubBlocks; j++) {  // look for the WAVE component (wave-library)
                         if (j != cb->masterSubBlockId && cb->subBlocks[i].subBlocks[j].unit.component != nullptr && cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_WAVE) {
                             cb->subBlocks[i].tCur = *currentTime;
+    log->Write(INFO, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
                         }
                         else {
                             cb->subBlocks[i].tCur = *currentTime - masterComponent->tStart;
+    log->Write(INFO, my_rank, "Parallel Child 2: Current time: %15.5f -- %d", *currentTime, i);
                         }
                     }
                     cb->subBlocks[i].tNext = cb->subBlocks[i].tNext + cb->subBlocks[i].tStep;
@@ -1130,48 +1138,48 @@ void Dimr::receive(const char* name,
 //------------------------------------------------------------------------------
 // set "value" in the component target location
 void Dimr::receive_ptr(const char * name,
-	const char * sourceName,
-	int          compType,
-	BMI_SETVAR   dllSetVar,
-	BMI_GETVAR   dllGetVar,
-	BMI_GETVARSHAPE dllGetVarShape,
-	double     * targetVarPtr,
-	int        * processes,
-	int          nProc,
-	int          targetProcess,
-	double     * sourceVarPtr) {
+        const char * sourceName,
+        int          compType,
+        BMI_SETVAR   dllSetVar,
+        BMI_GETVAR   dllGetVar,
+        BMI_GETVARSHAPE dllGetVarShape,
+        double     * targetVarPtr,
+        int        * processes,
+        int          nProc,
+        int          targetProcess,
+        double     * sourceVarPtr) {
 
-	// First: call GetVarShape("",shapeArr)
-	int shape[6];
-	(dllGetVarShape)(sourceName, shape);
-	// Second: call setvar(name_shape, shape)
-	char nameShape[100];
-	strcpy(nameShape, name);
-	strcat(nameShape, "_shape");
-	(dllSetVar)(nameShape, shape);
-	// Finally: call setvar(name, pointer)
-	(dllSetVar)(name, (void*)sourceVarPtr);
-	
-	// target is a component that uses direct pointer access to the actual variable
-	// When doing a dllSetVar, targetVarPtr is not defined yet. First do a "getAddress" to get it defined
+        // First: call GetVarShape("",shapeArr)
+        int shape[6];
+        (dllGetVarShape)(sourceName, shape);
+        // Second: call setvar(name_shape, shape)
+        char nameShape[100];
+        strcpy(nameShape, name);
+        strcat(nameShape, "_shape");
+        (dllSetVar)(nameShape, shape);
+        // Finally: call setvar(name, pointer)
+        (dllSetVar)(name, (void*)sourceVarPtr);
 
-	if (targetVarPtr == NULL)
-	{
-        double transfer = -999000.0;
-        //here we get the address (e.g. weir levels)
-		getAddress(name, compType, dllGetVar, &targetVarPtr, processes, nProc, transfer);
-		}
+        // target is a component that uses direct pointer access to the actual variable
+        // When doing a dllSetVar, targetVarPtr is not defined yet. First do a "getAddress" to get it defined
 
-	// Now targetVarPtr must be defined
-	if (targetVarPtr == NULL)
-	{
-		if (targetProcess == -1 || targetProcess == my_rank)
-		{
-			// targetProcess=-1: no process can accept this item
-			// targetProcess=my_rank: this process is registered to be able to accept this item but something goes wrong
-			throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
-		}
-	}
+        if (targetVarPtr == NULL)
+        {
+                double transfer = -999000.0;
+                //here we get the address (e.g. weir levels)
+                getAddress(name, compType, dllGetVar, &targetVarPtr, processes, nProc, transfer);
+        }
+
+        // Now targetVarPtr must be defined
+        if (targetVarPtr == NULL)
+        {
+                if (targetProcess == -1 || targetProcess == my_rank)
+                {
+                        // targetProcess=-1: no process can accept this item
+                        // targetProcess=my_rank: this process is registered to be able to accept this item but something goes wrong
+                        throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
+                }
+        }
 }
 
 //------------------------------------------------------------------------------
@@ -1190,7 +1198,7 @@ void Dimr::getAddress(
     log->Write(ALL, my_rank, "Dimr::getAddress (%s)", name);
 
     // These components only return a new pointer to a copy of the double value, so call it each time.
-    std::set<int> second_component_set = { COMP_TYPE_DEFAULT_BMI, COMP_TYPE_RTC, COMP_TYPE_FLOW1D, COMP_TYPE_FLOW1D2D, COMP_TYPE_FM };
+    std::set<int> second_component_set = { COMP_TYPE_DEFAULT_BMI, COMP_TYPE_RTC, COMP_TYPE_FLOW1D, COMP_TYPE_FLOW1D2D, COMP_TYPE_FM, COMP_TYPE_DELWAQ };
 
     // The order is important: first catch the Wanda case:
     // Otherwise the "else if" part might be executed When "*sourceVarPtr==NULL" and "compType==COMP_TYPE_WANDA"
@@ -1205,12 +1213,13 @@ void Dimr::getAddress(
         (dllGetVar)(name, (void**)(*sourceVarPtr));
     }
     else if (second_component_set.find(compType) != second_component_set.end() || *sourceVarPtr == NULL) {
-        // sourceVarPtr=NULL: getVar not yet called for this parameter, probably because "send" is being called
-        //                    via the toplevel "get_var"
-        if (dllGetVar == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: get_var function not defined while processing %s", name);
-        }
-        (dllGetVar)(name, (void**)(sourceVarPtr));
+                // sourceVarPtr=NULL: getVar not yet called for this parameter, probably because "send" is being called
+                //                    via the toplevel "get_var"
+                if (dllGetVar == NULL) {
+                    throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: get_var function not defined while processing %s", name);
+                }
+                log->Write(ALL, my_rank, "Dimr::getAddress -- calling");
+                (dllGetVar)(name, (void**)(sourceVarPtr));
     }
     else
     {
@@ -1853,7 +1862,7 @@ void Dimr::connectLibs(void) {
         }
 
         componentsList.components[i].dllGetTimeStep = (BMI_GETTIMESTEP)GETPROCADDRESS(dllhandle, BmiGetTimeStepEntryPoint);
-        if (componentsList.components[i].dllGetStartTime == NULL) {
+        if (componentsList.components[i].dllGetTimeStep == NULL) {
             throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetStartTimeEntryPoint, lib, GetLastError());
         }
 
@@ -1923,12 +1932,9 @@ void Dimr::connectLibs(void) {
             // Is it possible to set the debugLevel in FM? componentsList.components[i].dllSetVar("debugLevel", (const void *)&level);
         }
 
-        // Not implemented yet in Delwaq:
-        if (componentsList.components[i].type != COMP_TYPE_DELWAQ) {
-            componentsList.components[i].dllGetVar = (BMI_GETVAR)GETPROCADDRESS(dllhandle, BmiGetVarEntryPoint);
-            if (componentsList.components[i].dllGetVar == NULL) {
-                throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetVarEntryPoint, lib, GetLastError());
-            }
+        componentsList.components[i].dllGetVar = (BMI_GETVAR)GETPROCADDRESS(dllhandle, BmiGetVarEntryPoint);
+        if (componentsList.components[i].dllGetVar == NULL) {
+            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetVarEntryPoint, lib, GetLastError());
         }
 
         delete[] lib;

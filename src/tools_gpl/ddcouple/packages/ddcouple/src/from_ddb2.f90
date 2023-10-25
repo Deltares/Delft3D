@@ -27,7 +27,7 @@
 
       ! global declarations
 
-      use m_ddhyd
+      use hydmod
       implicit none
 
       ! declaration of the arguments

@@ -27,10 +27,10 @@
       module delwaq2_data
 
       use hydroset
-      use dlwq_data
+      use dlwq_hyd_data
       use m_waq_data_buffer
       use m_operation_data
-      use grids
+      use dlwqgrid_mod
 
       integer, parameter, private                 :: iisize = 21  ! from sysi.inc
       integer, parameter, private                 :: insize = 72  ! from sysn.inc

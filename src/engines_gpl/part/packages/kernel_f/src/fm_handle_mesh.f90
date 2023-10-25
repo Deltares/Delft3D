@@ -38,7 +38,6 @@ contains
 
 subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
    use hydmod
-   use io_ugrid
    use network_data, only: kn, xk, yk, zk, xzw, yzw, numk, numL, nump, netcell, lnn, lne
    use m_flowgeom, only: Ndxi, Ndx, Lnx, ba, bl, lne2ln
    use m_flow

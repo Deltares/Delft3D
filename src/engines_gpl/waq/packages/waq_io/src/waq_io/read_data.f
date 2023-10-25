@@ -35,7 +35,7 @@
 
 !     global declarations
 
-      use dlwq_data
+      use dlwq_hyd_data
       use rd_token
       use timers       !   performance timers
       use m_cnvtim

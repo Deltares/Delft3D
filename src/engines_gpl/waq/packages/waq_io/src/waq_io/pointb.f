@@ -57,7 +57,7 @@
 !                          LUN( 2) = unit intermediate file (system)
 
       use timers       !   performance timers
-      use grids          ! for the storage of contraction grids
+      use dlwqgrid_mod ! for the storage of contraction grids
       use m_sysn          ! System characteristics
 
 

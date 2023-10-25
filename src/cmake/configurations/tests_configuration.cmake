@@ -38,25 +38,10 @@ if(NOT TARGET flow1d)
 endif()
 
 # Waq
-if(NOT TARGET waq_data)
-    add_subdirectory(${checkout_src_root}/${waq_data_module} waq_data)
-endif()
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_base.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
-if(NOT TARGET waq_utils_c)
-    add_subdirectory(${checkout_src_root}/${waq_utils_c_module} waq_utils_c)
-endif()
 
-if(NOT TARGET waq_utils_f)
-    add_subdirectory(${checkout_src_root}/${waq_utils_f_module} waq_utils_f)
-endif()
-
-if(NOT TARGET waq_process)
-    add_subdirectory(${checkout_src_root}/${waq_process_module} waq_process)
-endif()
-
-if(NOT TARGET wq_processes)
-    add_subdirectory(${checkout_src_root}/${wq_processes_module} wq_processes)
-endif()
 
 # Morphology
 if(NOT TARGET morphology_plugins_c)
@@ -101,11 +86,9 @@ if(NOT TARGET md5)
 endif()
 
 # metis
-if(WIN32)
-    if(NOT TARGET metis)
-        add_subdirectory(${checkout_src_root}/${metis_module} metis)
-    endif()
-endif(WIN32)
+if(NOT TARGET metis)
+    add_subdirectory(${checkout_src_root}/${metis_module} metis)
+endif()
 
 if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
@@ -142,22 +125,22 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-if(WIN32)
-    if(NOT TARGET proj)
-        add_subdirectory(${checkout_src_root}/${proj_module} proj)
-    endif()
-endif(WIN32)
+if(NOT TARGET proj)
+    add_subdirectory(${checkout_src_root}/${proj_module} proj)
+endif()
 
 # netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif(WIN32)
+if(NOT TARGET netcdff)
+    add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
+endif()
 
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
+endif()
+
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
 endif()
 
 # ec_module
@@ -185,10 +168,6 @@ if(NOT TARGET nefis)
     add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
 endif()
 
-# Solvesaphe
-if(NOT TARGET solvesaphe)
-    add_subdirectory(${checkout_src_root}/${solvesaphe_module} solvesaphe)
-endif()
 
 # Test binaries
 add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)

@@ -49,11 +49,11 @@
       use m_dlwqt4
       use m_srstop
       use m_open_waq_files
-      use m_dhnlun
+      use m_file_unit_number
       use timers
       use delwaq2_data
-      use grids
-      use dlwq_data
+      use dlwqgrid_mod
+      use dlwq_hyd_data
       implicit none
 
 !     declaration of the arguments
@@ -146,7 +146,7 @@
                   !
                   ! Some obscure magic going on with LU-numbers - keep it for the moment
                   !
-                  call dhnlun(801,proc_par%lun)
+                  call create_new_file_unit_number(801,proc_par%lun)
                   ftype = 2
                   if ( mod(proc_par%filetype,10) .eq. FILE_UNFORMATTED ) ftype = ftype + 10
                   if ( proc_par%filetype/10 .eq. 1 ) ftype = ftype + 20       ! I am in for a better solution (lp)
