@@ -90,8 +90,13 @@ module m_Storage
       type(t_table), pointer  :: street_area             !< table containing storage area and levels on street level
       logical                 :: use_street_storage      !< flag indicating whether streetstorage is to be used
       double precision        :: x                       !< (optional) x-coordinate
-      double precision        :: y                       !< (optional) y-cooridnate
+      double precision        :: y                       !< (optional) y-coordinate
       logical                 :: use_table               !< flag indicating whether table is to be used
+      type(t_table), pointer  :: angle_loss              !< lookup table that connects an angle to an energy loss coefficient
+      double precision        :: entrance_loss           !< entrance loss coefficient
+      double precision        :: exit_loss               !< exit loss coefficient
+      double precision        :: expansion_loss          !< loss coefficient for expansion or contraction
+      double precision        :: bend_loss               !< bend loss coefficient for the upstream pipe(s)
    end type
    
    type, public :: t_storage_set
@@ -129,6 +134,10 @@ contains
                if (associated(stor_set%stor(i)%street_area)) then
                   call dealloc(stor_set%stor(i)%street_area)
                   stor_set%stor(i)%street_area => null()
+               endif
+               if (associated(stor_set%stor(i)%angle_loss)) then
+                  call dealloc(stor_set%stor(i)%angle_loss)
+                  stor_set%stor(i)%angle_loss => null()
                endif
             enddo
             deallocate(stor_set%stor)
