@@ -144,6 +144,11 @@
 
  integer                           :: jaavgwavquant = 0 !< 0=no time avg'd output for jawave==4; 1=time avg'd output for jawave==4. Avg'ing period = ti_avgwav
 
+ double precision                  :: alfa_uchi_mix = 2d-1  !< mixing parameter Uchiyama emprirical mixing distribution 
+ double precision                  :: alfa_roller   = 1d0   !< proportionality roller dissipation influence on frictional mixing 
+ double precision                  :: beta_roller   = 0.1d0 !< roller surface slope wavemodel=3, for now here
+ double precision                  :: awmx          = 1d0   !< roller surface slope wavemodel=3, for now here
+
  integer                           :: ihorvic           !< 0=no visc, 1=do visc
 
  integer                           :: jacreep           !< Include anti-creep calculation, (0=no, 1=yes)
@@ -740,6 +745,8 @@ subroutine default_flowparameters()
     jawaveSwartDelwaq = 0 !< communicate to Delwaq taucur + tauwave instead of taucur
 
     modind = 0            !< Nr of wave-current bed friction model, 9 = vanrijn, 1 = fredsoe, etc like d3d
+
+    alfa_uchi_mix = 2d-1   !< Uchiyama mixing coefficient
 
     jafrculin = 0     !< do not use linear friction
 

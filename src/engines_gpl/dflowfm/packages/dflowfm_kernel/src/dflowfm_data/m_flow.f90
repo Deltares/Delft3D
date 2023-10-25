@@ -149,6 +149,8 @@
 
  double precision, allocatable     :: asig(:)           !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty
  double precision, allocatable     :: ustb(:)           !< ustar at Lbot, dim=Lnx,
+ double precision, allocatable     :: ustbcw(:)         !< ustar at Lbot, dim=Lnx, wave part for vertical mixing
+ double precision, allocatable     :: ustbww(:)         !< ustar at Lbot, dim=Lnx, wave part for vertical distribution rad stress components Sxw, Syw
  double precision, allocatable     :: ustw(:)           !< ustar at Ltop, dim=Lnx
  double precision, allocatable     :: ustbc(:)          !< ustar at bed at netnodes, dim=numk
 

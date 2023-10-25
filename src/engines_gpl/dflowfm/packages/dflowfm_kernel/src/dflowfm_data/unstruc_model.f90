@@ -1417,8 +1417,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'sediment', 'MasBalMinDep',         botcrit, success)                  ! Minimum depth *after* bottom update for SSC adaptation mass balance
     call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
     call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)             ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
-    call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-    call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)            ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
     
     call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
     call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
@@ -1589,6 +1587,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
     call prop_get_integer(md_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta)     ! Boundary layer formulation. 1: Sana
     call prop_get_integer(md_ptr, 'waves', '3Dwaveforces'        , jawaveforces)    ! Diagnostic mode: apply wave forces (1) or not (0)
+    call prop_get_double(md_ptr,  'waves', '3Dwaveturbpendepth'  , fwavpendep)      ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+    call prop_get_double(md_ptr,  'waves', '3Dwavemixingalfa'    , awmx)      ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
     call prop_get_double(md_ptr,  'waves', '3Dwaveturbpendepth'  , fwavpendep)      ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
     !
     ! safety

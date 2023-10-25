@@ -58,7 +58,7 @@
       elseif (k0h<5d-3) then          ! if very shallow water
          rk = omeg/sqrt(ag*hss)
       else
-         call getwavenr(hss,per,rk)
+         rk = kw(k)
       endif
       if (wlenwav_from_SWAN.eq.1) then
          rlabda(k) = wlenwav(k)

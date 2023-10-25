@@ -46,7 +46,7 @@ subroutine update_verticalprofiles()
 
  use m_flow
  use m_flowgeom
- use m_waves, only: hwav, dwcap, dsurf, gammax, ustokes, vstokes, fbreak, fwavpendep
+ use m_waves, only: hwav, dwcap, dsurf, gammax, ustokes, vstokes, wblt
  use m_partitioninfo
  use m_flowtimes
  use m_ship
@@ -62,7 +62,7 @@ subroutine update_verticalprofiles()
 
  double precision :: hdzb, hdzs, dtiL, hdz, adv, omega1, omega2, omegu, drhodz1, drhodz2, rhomea, sousin
 
- double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
+ double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), Kbr(kmxx), Kfr(kmxx)
 
  double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf 
 
@@ -73,7 +73,7 @@ subroutine update_verticalprofiles()
  double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav,epswv, prsappr
 
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
- integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
+ integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, jadrhodz = 1, kup, ierror, Ltv, ktv 
 
 double precision, external :: setrhofixedp
 
@@ -106,7 +106,7 @@ double precision, external :: setrhofixedp
              dzu(k) = hu(L) - hu(L-1)
           enddo
 
-          call getustbcfuhi( LL,Lb,ustb(LL),cfuhi(LL),hdzb, z00, cfuhi3D)   !Constant
+          call getustbcfuhi( LL,Lb,ustb(LL),cfuhi(LL),hdzb, z00, cfuhi3D, ustbcw(LL),wblt(LL))   !Constant
           advi(Lb) = advi(Lb)+cfuhi3D
           !
           if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
@@ -161,7 +161,7 @@ double precision, external :: setrhofixedp
              dzu(k) = hu(L) - hu(L-1)
           enddo
 
-          call getustbcfuhi( LL,Lb,ustb(LL),cfuhi(LL),hdzb, z00, cfuhi3D)   ! algebraic
+          call getustbcfuhi( LL,Lb,ustb(LL),cfuhi(LL),hdzb, z00, cfuhi3D, ustbcw(LL),wblt(LL))   ! algebraic
           advi(Lb) = advi(Lb)+cfuhi3D
           !
           if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                        ! Ustokes correction at bed
@@ -321,7 +321,11 @@ double precision, external :: setrhofixedp
         dzw(k) = 0.5d0*( dzu(k) + dzu(k+1) )
      enddo
 
-     call getustbcfuhi( LL,Lb,ustb(LL),cfuhi(LL),hdzb,z00,cfuhi3D)      ! K-EPS, K-TAU z00 wave-enhanced roughness for jawave>0
+     call getustbcfuhi( LL,Lb,ustb(LL),cfuhi(LL),hdzb,z00,cfuhi3D, ustbcw(LL),wblt(LL))      ! K-EPS, K-TAU z00 wave-enhanced roughness for jawave>0
+
+     if (jawave>0) then
+        call get_mixing_nguyen(LL, kmxx, ustbcw(LL), wblt(LL), Kbr, Kfr) 
+     end if 
 
      if ( hu(LL) < trsh_u1Lb ) then
         advi(Lb:Lt) = advi(Lb:Lt) + cfuhi3D / dble(Lt-Lb+1)
@@ -329,7 +333,11 @@ double precision, external :: setrhofixedp
         advi(Lb) = advi(Lb)  + cfuhi3D
      endif
 
- 
+     ! JRE with HK move out of subroutine getustb
+     if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then            ! Ustokes correction at bed
+        adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
+     endif
+
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
      tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
 
@@ -368,36 +376,6 @@ double precision, external :: setrhofixedp
      endif
 
      vicu      = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigtkei        !
-
-     ! Calculate turkin source from wave dissipation: preparation
-     if (jawave>0) then
-
-        !JRE with HK move out of subroutine getustb
-        if (jawaveStokes >= 1 .and. .not. flowWithoutWaves) then      ! Ustokes correction at bed
-           adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
-        endif
-
-        k1=ln(1,LL); k2=ln(2,LL)
-        ac1=acl(LL); ac2=1d0-ac1
-        hrmsLL  = min(max(ac1*hwav(k1) + ac2*hwav(k2), 1d-2),gammax*hu(LL))
-        if (hrmsLL>0.0) then
-           call wave_fillsurdis(k1,dis1)
-           call wave_fillsurdis(k2,dis2)
-           surdisLL = ac1*dis1 + ac2*dis2
-           if (surdisLL<1d-2) surdisLL = 0d0
-           rhoLL   = rhomean                             
-           !
-           pkwmag=fbreak*2d0*surdisLL/(rhoLL*fwavpendep*hrmsLL)
-           !
-           ! tke dirichlet boundary condition at surface
-           tkesur = tkesur + (pkwmag*vonkar*fwavpendep*hrmsLL/(30.d0*cde))**(2d0/3d0)
-        else
-           pkwmag=0d0
-        endif
-        pkwav = 0d0
-        wdep = hu(LL) - fwavpendep*hrmsLL
-        whit = 0
-     endif
 
      do L  = Lb, Lt - 1                                               ! Loop over layer interfaces. Doesn't work for kmx==1
         Lu    = L + 1
@@ -556,30 +534,6 @@ double precision, external :: setrhofixedp
         ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
 
      enddo  ! Lb, Lt-1
-     
-     if (jawave>0) then
-        ! check if first layer is thicker than fwavpendep*wave height
-        ! Then use JvK solution
-        if (hu(LL)-hu(Lt-1)>=fwavpendep*hrmsLL) then
-           dk(kxL-1) = dk(kxL-1)+pkwmag*fwavpendep*hrmsLL/(hu(LL)-hu(Lt-1))     ! m2/s3
-        else
-        ! distribute over layers   
-           do L=Lt-1,Lb
-              if (hu(L+1)<wdep) exit
-              k=L-Lb+1
-              if (hu(L)<wdep .and. hu(L+1)>=wdep) then
-                 ! partial contribution
-                 dzwav = hu(LL)-wdep
-                 pkwav(k)=pkwmag*(1.0-dzwav/(fwavpendep*hrmsLL))
-                 dk(k) = dk(k)+pkwav(k)
-                 exit
-              endif 
-              dzwav = hu(LL)-hu(L)
-              pkwav(k)=pkwmag*(1.0-dzwav/(fwavpendep*hrmsLL))
-              dk(k)=dk(k)+pkwav(k)
-           enddo
-        endif
-     endif
      !
      ! Boundary conditions, dirichlet:
      ! TKE at free surface
@@ -787,12 +741,6 @@ double precision, external :: setrhofixedp
 
            sourtu  =  c1e*cmukep*turkin0(L)*dijdij(k)
            !
-           ! Add wave dissipation production term
-           if (jawave>0) then
-              sourtu =  sourtu + pkwav(k)*c1e*tureps0(L)/max(turkin0(L),1d-7)
-              !sourtu = sourtu + c1e*cmukep*turkin0(L)/max(vicwwu(L),vicwminb)*pkwav(k)
-           endif
-
            tkedisL =  0d0 ! tkedis(L)
            sinktu  =  c2e*(tureps0(L) + tkedisL) / turkin1(L)    ! yoeri has here : /turkin0(L)
 
@@ -854,9 +802,6 @@ double precision, external :: setrhofixedp
        bk(kxL) =  1.d0
        ck(kxL) =  0.d0
        dk(kxL) =  4d0*abs(ustw(LL))**3/ (vonkar*dzu(Lt-Lb+1))
-       if (jawave>0) then                 ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
-          dk(kxL) = dk(kxL) + dzu(Lt-Lb+1)*pkwmag/(fwavpendep*hrmsLL)
-       endif
 
        ak(0)  =  0.d0                     ! at the bed:
        bk(0)  =  1.d0
@@ -1012,9 +957,7 @@ double precision, external :: setrhofixedp
           enddo
           epsbot =  tureps1(Lb) + dzu(1)*abs(ustb(LL))**3/(vonkar*hdzb*hdzb)
           epssur =  tureps1(Lt-1) - 4d0*abs(ustw(LL))**3/ (vonkar*dzu(Lt-Lb+1))
-          if (jawave>0) then
-             epssur = epssur - dzu(Lt-Lb+1)*fwavpendep*pkwmag/hrmsLL
-          endif   
+ 
           epsbot = max(epsbot,epseps)
           epssur = max(epssur,epseps)
           tke               = max(epstke,tkesur)
@@ -1038,7 +981,11 @@ double precision, external :: setrhofixedp
     else if (iturbulencemodel == 4) then                      ! k-tau
        vicwwu (Lb0:Lt) = min(vicwmax, cmukep*turkin1(Lb0:Lt)*tureps1(Lb0:Lt) )
     endif
-
+    !
+    if (jawave>0) then
+       vicwwu(Lb0:Lt) = min(vicwmax, vicwwu(Lb0:Lt) + Kfr(Lb0:Lt) + Kbr(Lb0:Lt) )
+    endif
+    !
     vicwwu(Lt)  = min( vicwwu(Lt)  , vicwwu(Lt-1)*Eddyviscositysurfacmax )
     vicwwu(Lb0) = min( vicwwu(Lb0) , vicwwu(Lb)  *Eddyviscositybedfacmax )
 

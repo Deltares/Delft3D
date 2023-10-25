@@ -44,7 +44,7 @@
 
       implicit none
 
-      integer                                     :: k1, k2, k, L
+      integer                                     :: k1, k2, k, L, i
       double precision                            :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
 
       ! Fetch models
@@ -67,7 +67,7 @@
                   else
                      cs = 1d0 ; sn = 0d0
                   endif
-                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)   ! rkw = wave length
                   ustokes(L) = ustt*(csu(L)*cs + snu(L)*sn)
                   vstokes(L) = ustt*(-snu(L)*cs + csu(L)*sn)
                endif
@@ -88,8 +88,12 @@
          hwav = min(hwav, gammax*hs)
          call wave_uorbrlabda()
          if(kmx == 0) then
-            call wave_comp_stokes_velocities()
+            call wave_comp_stokes_velocities_2d()
          end if
+         !
+         if (kmx>0) then
+            call wave_compute_kinematic_pressure()
+         endif
       end if
       !
       if ((jawave==3 .or. jawave==6) .and. flowWithoutWaves) then

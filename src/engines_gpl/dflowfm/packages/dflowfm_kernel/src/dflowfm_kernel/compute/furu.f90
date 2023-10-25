@@ -55,7 +55,7 @@
  double precision :: slopec, hup, hdo, u1L, v2, frL, u1L0, zbndun, zbndu0n
  double precision :: qk0, qk1, dzb, hdzb, z00  !
  double precision :: st2
- double precision :: twot = 2d0/3d0, hb, h23, ustbLL, agp, vLL
+ double precision :: twot = 2d0/3d0, hb, h23, ustbLL, agp, vLL, ustbcwLL, wbltL
  double precision :: fsqrtt,uorbL
 
  integer          :: np, L1     ! pumpstuff
@@ -69,6 +69,9 @@
 
  fsqrtt = sqrt(0.5d0)
  call timstrt('Furu', handle_furu)
+
+ fu = 0d0 ! JRE check
+ ru = 0d0
 
  if (kmx == 0 .or. ifixedweirscheme > 0)  then  ! original 2D coding
 
@@ -309,7 +312,7 @@
        jaustarintsave = jaustarint
        if( jaustarint == 0 .or. jaustarint == 3 ) jaustarint = 1
        vLL = v(LL) ; v(LL) = 0d0
-       call getustbcfuhi( LL,LL,ustbLL,cfuhi(LL),hdzb, z00, cfuhi3D)    ! call with Lb = LL => layer integral profile
+       call getustbcfuhi( LL,LL,ustbLL,cfuhi(LL),hdzb, z00, cfuhi3D, ustbcwLL,wbltL)    ! call with Lb = LL => layer integral profile
        ! JRE with HK, used to be in getustb
        if (jawave>0 .and. jawaveStokes >= 1) then                       ! Ustokes correction at bed
           adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)

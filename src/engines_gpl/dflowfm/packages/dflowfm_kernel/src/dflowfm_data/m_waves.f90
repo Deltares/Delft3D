@@ -92,15 +92,23 @@ module m_waves
 !////////////////////////////////////////////////////////
 ! Arrays for Duoc's 3D wave approach; to be incorporated 
 ! in existing data structure
- double precision, allocatable, dimension(:)  :: kw     ! wave number magnitude CC [rad/m]
- double precision, allocatable, dimension(:)  :: kwL    ! wave number magnitude L [rad/m]
- double precision, allocatable, dimension(:)  :: kwx    ! wave number x component [rad/m]
- double precision, allocatable, dimension(:)  :: kwy    ! wave number y component [rad/m]
- double precision, allocatable, dimension(:)  :: kwn    ! wave number n/u component [rad/m]
- double precision, allocatable, dimension(:)  :: kwt    ! wave number t/v component [rad/m]
- double precision, allocatable, dimension(:)  :: dwb    ! wave breaker dissipation [W/m2/m/s]
- double precision, allocatable, dimension(:)  :: dwf    ! wave bottom dissipation [W/m2/m/s]
- 
+ double precision, allocatable, dimension(:)  :: kw        ! wave number magnitude CC [rad/m]
+ double precision, allocatable, dimension(:)  :: kwL       ! wave number magnitude L [rad/m]
+ double precision, allocatable, dimension(:)  :: kwx       ! wave number x component [rad/m]
+ double precision, allocatable, dimension(:)  :: kwy       ! wave number y component [rad/m]
+ double precision, allocatable, dimension(:)  :: kwn       ! wave number n/u component [rad/m]
+ double precision, allocatable, dimension(:)  :: kwt       ! wave number t/v component [rad/m]
+ double precision, allocatable, dimension(:)  :: dwb       ! wave breaker dissipation [W/m2/m/s]
+ double precision, allocatable, dimension(:)  :: dwf       ! wave bottom dissipation [W/m2/m/s]
+ double precision, allocatable, dimension(:)  :: dasgdx    ! wave amplitude gradient, x-direction [m/m]
+ double precision, allocatable, dimension(:)  :: dasgdy    ! wave amplitude gradient, y-direction [m/m]
+ double precision, allocatable, dimension(:)  :: sjxx      ! Radiation stress components
+ double precision, allocatable, dimension(:)  :: sjyy      
+ double precision, allocatable, dimension(:)  :: sjxy      
+ double precision, allocatable, dimension(:)  :: sjxw      
+ double precision, allocatable, dimension(:)  :: sjyw      
+
+
  
 
 !///////////////////////////////////////////////////////

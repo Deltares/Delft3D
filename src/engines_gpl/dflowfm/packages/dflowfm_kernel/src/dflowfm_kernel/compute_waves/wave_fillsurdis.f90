@@ -33,10 +33,11 @@
    subroutine wave_fillsurdis(k, surdis)
       use m_waves
       use m_xbeach_data, only: DR,D,roller
-      use m_flowparameters, only: jawave
+      use m_flowparameters, only: jawave, alfa_roller, beta_roller
       use m_flow, only: s1, epshu
       use m_flowgeom, only: bl
       use m_sferic
+      use m_physcoef, only: rhomean, ag
 
       implicit none
 
@@ -45,13 +46,22 @@
 
       double precision              :: rk
       double precision              :: hsk
+      double precision              :: erol, crol, drol
+
 
       select case (jawave)
          case (3)
-            surdis = dsurf(k) + dwcap(k)
+            if (twav(k)<1d-1) then
+               surdis = 0d0
+               return
+            endif
+            crol   = kw(k) / twopi * twav(k)
+            erol   = 0.5d0 * rhomean * kw(k) / twopi * hwav(k) * hwav(k)
+            drol   = 2*beta_roller*ag*erol/crol
+            surdis = (1d0 - alfa_roller)*(dsurf(k) + dwcap(k)) + alfa_roller*drol
          case (4)
             if (roller>0) then
-               surdis = DR(k)
+               surdis = (1d0 - alfa_roller)*D(k) + alfa_roller*DR(k)
             else
                surdis = D(k)
             endif

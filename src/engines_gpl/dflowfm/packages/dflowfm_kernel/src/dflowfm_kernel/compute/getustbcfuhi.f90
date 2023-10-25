@@ -30,42 +30,40 @@
    ! 
    ! 
 
-   subroutine getustbcfuhi( LL,Lb,ustbLL,cfuhiLL,hdzb, z00,cfuhi3D)                ! see Uittenbogaard's subroutine USTAR
+   subroutine getustbcfuhi( LL,Lb,ustbLL,cfuhiLL,hdzb, z00,cfuhi3D, ustbcwLL, wbltL)                ! see Uittenbogaard's subroutine USTAR
    use m_flow
-   use m_flowgeom  , only : ln, dxi, csu, snu, acL, lnxi
+   use m_flowgeom  , only : ln, dxi, acL
    use m_flowtimes , only : dti
-   use m_waves     , only : ustokes, vstokes, wblt, hwav
-   use m_sediment  , only : stm_included
+   use m_waves     , only : ustokes, vstokes, hwav, twav, kwL, gammax
    use m_turbulence, only : tkepro
    use m_flowtimes, only: dts
+   use m_sferic, only: twopi
 
    implicit none
    integer,          intent (in)  :: LL, Lb
-   double precision, intent (out) :: ustbLL, cfuhiLL, hdzb, z00
+   double precision, intent (out) :: ustbLL, cfuhiLL, hdzb, z00, ustbcwLL, ustbwwLL, wbltL
    double precision, intent (out) :: cfuhi3D                                       ! 3D bedfriction coeffient, advi(Lb) = advi(Lb) + cfuhi3D
 
-   integer          :: ifrctyp, L
-   double precision :: frcn, sqcf, cz, umod, u1Lb, gsx, ustw2, ustc2, fw, cdrag, abscos, dfuc, costu
-   double precision :: taubpuLL                                ! taubpu = umod*ag/C2 or ypar*(taucur+tauwav)/rho/umod or ustar*ustar/u
-   double precision :: taubxuLL                                ! taubxu = ymxpar*(taucur+tauwav)
+   integer          :: ifrctyp
+   double precision :: frcn, sqcf, cz, umod, u1Lb, gsx, fw
 
-   double precision :: csw, snw                                ! wave direction cosines
-   double precision :: Dfu, Dfu0, Dfu1, htop, dzu              ! wave dissipation by bed friction, / (rhomean*c*deltau)
    double precision :: deltau                                  ! wave dissipation layer thickness
-   double precision :: zbot, ztop, u2dh, frac
-   double precision :: z0urouL, cf, ust, rz, umod1, rhoL, dzuu, uorbu
-   double precision :: cwall
+   double precision :: uorbu
    double precision :: umodeps
+   double precision :: hrmsLL, twavLL
+   double precision :: ks, omeg, aorb, ka, fc, huLL, fc0, tauw, tauwc, tauc0, taub
+   double precision :: asg, shs
 
    integer          :: nit, nitm = 100
+   integer          :: k1, k2
    double precision :: r, rv = 123.8d0, e = 8.84d0 , eps = 1d-2
-   double precision :: s, sd, er, ers, dzb, uu, vv, dzw, alin
-   double precision :: cphi, sphi
-   double precision :: fsqrtt = sqrt(2d0)
-   double precision :: hul1,hul0,hul
+   double precision :: s, sd, er, ers, dzb
+   double precision :: hul
+   double precision :: ac1, ac2
+   double precision, external     :: sinhsafei
 
    cfuhi3D = 0d0
-   ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0
+   ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0; ustbcwLL = 0d0; ustbwwLL=0d0; wbltL = 0d0
 
    umodeps = 1d-4
 
@@ -130,37 +128,45 @@
 
       if (jawave>0 .and. .not. flowWithoutWaves) then
          !
-         ! get stokes drift and some wave parameters
-         call getustwav(LL, z00, umod, uorbu)
          ac1 = acl(LL); ac2 = 1d0-ac1
          k1  = ln(1,LL); k2 = ln(2,LL)
+         !
          ! Overwrite ustbLL with Nguyen version
          hrmsLL = ac1*hwav(k1) + ac2*hwav(k2)
          twavLL = ac1*twav(k1) + ac2*twav(k2)
          omeg   = twopi/twavLL
+         ks     = 30d0*z00
+         hrmsLL = min(hrmsLL,gammax*huL)
+         asg    = 0.5d0*hrmsLL                              ! Wave amplitude = 0.5*Hrms
+         shs    = sinhsafei(kwL(LL)*huL)
+         if (shs > eps10) then
+            uorbu  = omeg*asg*shs                     
+         else
+            uorbu  = 0d0
+         endif
          aorb   = uorbu/omeg
-         kn     = 30d0*z00
          !
          if (hrmsLL<1d-3) then                              !current only
-            deltau = z00*ee
+            wbltL = z00*ee
          elseif (abs(umod).lt.(0.1*uorbu)) then             !wave only
-            deltau = 0.072*aorb*(aorb/kn)**(-0.25)          !Johnsen and Carlsen (1976)
+            wbltL = 0.072*aorb*(aorb/ks)**(-0.25)           !Johnsen and Carlsen (1976)
          else    !wave + current
             !
-            deltau = 0.2*aorb*(aorb/kn)**(-0.25) * (1.+abs(umod/uorbu))                 ! Modified van Rijn 2011 by Nguyen (2021)
+            wbltL = 0.2*aorb*(aorb/ks)**(-0.25) * (1.+abs(umod/uorbu))                  ! Modified van Rijn 2011 by Nguyen (2021)
          endif
-         ka       = 30d0*deltau/ee
+         ka       = 30d0*wbltL/ee
          fc       = 0.242/(log10(12.*huLL/ka))**2
-         fc0      = 0.242/(log10(12.*huLL/kn))**2
+         fc0      = 0.242/(log10(12.*huLL/ks))**2
          tauw     = 0.5d0*rhomean*fw*uorbu**2
-         !     According to Feddersen (2000) (for random waves)
-         tauwc    = 0.5*rhomean*fc*sqrt(umod**2+0.5*(1.16*uorbu)**2)*u1Lb               ! Feddersen (2000) (for random waves)
-         tauc0    = 0.5*rhomean*fc0*umod*u1Lb
+         ! Below: check all directions
+         tauwc    = 0.5*rhomean*fc*sqrt(umod**2+0.5*(1.16*uorbu)**2)*umod  ! u1L             ! Feddersen (2000) (for random waves)
+         tauc0    = 0.5*rhomean*fc0*umod*umod !u1L
          !
-         ustar_c  = sqrt(abs(tauc0)/rhomean)                                            ! should correspond to ustbLL above 
+         ustbLL   = sqrt(abs(tauc0)/rhomean)                                            ! should correspond to ustbLL above 
+         sqcf     = ustbLL/umod                                                         ! update sqcf
          !
          taub     = tauwc*(1d0+1.2d0*(tauw/(tauw+abs(tauwc))**3.2))                     ! Soulsby(1997)
-         ustar_cw = sqrt(abs(taub)/rhomean)-ustar_c
+         ustbcwLL = sqrt(abs(taub)/rhomean)-ustbLL                                      ! ustar for vertical wave induced mixing
       endif
 
       cfuhiLL   = sqcf*sqcf/hu(Lb)                              ! cfuhiLL   = g / (H.C.C) = (g.K.K) / (A.A)
@@ -172,14 +178,14 @@
 
     if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
          adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
-      endif
+    endif
 
     else if (ifrctyp == 10) then                                 ! Hydraulically smooth, glass etc
       nit = 0
       u1Lb = u1(Lb)
       umod  = sqrt( u1Lb*u1Lb + v(Lb)*v(Lb) )
       if (jawave>0) then
-         call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
+         !call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
          !
          if (jawaveStokes >= 1) then
             umod  = sqrt( (u1Lb-ustokes(Lb))*(u1Lb-ustokes(Lb)) + (v(Lb)-vstokes(Lb))*(v(Lb)-vstokes(Lb)) )   ! was ustokes(LL)
