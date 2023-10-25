@@ -37,21 +37,21 @@ subroutine delwaq1(argc, argv, errorcode)
 use m_delwaq1_allocate_workspace
 
 
-!DEC$ ATTRIBUTES DLLEXPORT::delwaq1
+    !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
-!>\file
-!>                    DELWAQ - INPUT PROGRAMME
-!>
-!>                    Reads the DELWAQ inputfiles and generates
-!>                    a consistent set of binairy intermediate files.
-!
-!     SUBROUTINES CALLED :
-!                         delwaq1_init, initializes timer and values
-!                         delwaq1_startup_screen
-!                         delwaq1_allocate_workspace
-!                         delwaq1_read_user_data
-!                         delwaq1_write_messages
-!                         delwaq1_close_lunfiles
+    !>\file
+    !>                    DELWAQ - INPUT PROGRAMME
+    !>
+    !>                    Reads the DELWAQ inputfiles and generates
+    !>                    a consistent set of binairy intermediate files.
+    !
+    !     SUBROUTINES CALLED :
+    !                         delwaq1_init, initializes timer and values
+    !                         delwaq1_startup_screen
+    !                         delwaq1_allocate_workspace
+    !                         delwaq1_read_user_data
+    !                         delwaq1_write_messages
+    !                         delwaq1_close_lunfiles
 
     implicit none
 
@@ -61,7 +61,9 @@ use m_delwaq1_allocate_workspace
 
     errorcode = 0
 
+    ! create the lst, delwaq04.wrk, harmonic.wrk, pointers.wrk, and filenaam.wrk files
     call delwaq1_init(argc, argv)
+    ! 
     call delwaq1_startup_screen()
     call delwaq1_allocate_workspace(argc, argv, errorcode)
     if (errorcode==0) then

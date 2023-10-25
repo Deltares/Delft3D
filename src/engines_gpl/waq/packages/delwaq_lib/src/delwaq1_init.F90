@@ -51,10 +51,10 @@ subroutine delwaq1_init(argc, argv)
     call dhstore_command( argv )
 
     narg = dhstored_number_args()            ! but timer is switched 'off' by default
-    if ( narg .eq. 0 ) narg = iargc() + 1
+    if ( narg == 0 ) narg = iargc() + 1
     do ierr = 1, narg
         call dhgarg ( ierr, arg )
-        if ( arg .eq. "timer" .or. arg .eq. "TIMER" ) then
+        if ( arg == "timer" .or. arg == "TIMER" ) then
           timon = .true.                     ! optionally switch it 'on'
           exit
         endif
@@ -94,7 +94,7 @@ subroutine delwaq1_init(argc, argv)
     GridPs%cursize=0
     GridPs%maxsize=0
 
-    call uniset ( lun    , lchar , nolun , runid )
+    call uniset( lun, lchar, nolun, runid)
 
 
 end subroutine delwaq1_init

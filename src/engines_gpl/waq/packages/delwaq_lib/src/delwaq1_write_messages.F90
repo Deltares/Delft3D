@@ -54,7 +54,7 @@ subroutine delwaq1_write_messages(errorcode)
         itotc = 0
         call space  ( lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                       itota , itoti  , itotc  )
-
+        ! create the delwaq03.wrk file
         call open_waq_files  ( lun(1) , lchar(1) , 1     , 1     , ioerr )
         write ( lun(1) )   in
         write ( lun(1) )   ii

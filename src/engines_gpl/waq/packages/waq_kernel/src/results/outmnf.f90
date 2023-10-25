@@ -29,24 +29,22 @@
       contains
 
 
-      subroutine outmnf ( iout  , lchout, itime , moname, noseg ,
-     +                    notot1, conc1 , synam1, notot2, conc2 ,
-     +                    synam2, iostrt, iostop, iostep, rbuffr,
-     +                    init  )
+      subroutine outmnf ( iout  , lchout, itime , moname, noseg , &
+                         notot1, conc1 , synam1, notot2, conc2 , &
+                         synam2, iostrt, iostop, iostep, rbuffr, &
+                         init  )
 
-!     Deltares        sector waterresources and environment
-!
-!     created            : june 1988  by l. postma (dlwq13)
-!     modified           : june 1992 by m. zeeuw (nefis incorporation)
-!     modified           : aug. 1993 by jan van beek (outmnf)
-!     modified           : dec  2007 by jan van beek (allocatable arrays)
-!
-!     function           : gives map dump to nefis files
-!
-!     subroutines called : dhdelf, deletes a file
-!                          filldm, fills elements dimension array
-!                          putgtc, handles i/o to nefis file for char's
-!                          putget, handles i/o to nefis file for int/real(kind=sp) ::!
+      !     created            : june 1988  by l. postma (dlwq13)
+      !     modified           : june 1992 by m. zeeuw (nefis incorporation)
+      !     modified           : aug. 1993 by jan van beek (outmnf)
+      !     modified           : dec  2007 by jan van beek (allocatable arrays)
+      !
+      !     function           : gives map dump to nefis files
+      !
+      !     subroutines called : dhdelf, deletes a file
+      !                          filldm, fills elements dimension array
+      !                          putgtc, handles i/o to nefis file for char's
+      !                          putget, handles i/o to nefis file for int/real(kind=sp) ::!
 
       use m_srstop
       use m_putgtc
@@ -57,7 +55,7 @@
 
       implicit none
 
-!     declaration of arguments
+      ! declaration of arguments
 
       integer(kind=int_32), intent(in)     ::iout                   ! unit number output file
       integer(kind=int_32), intent(in)     ::itime                  ! present time in clock units
@@ -76,21 +74,7 @@
       character(len=*)     , intent(in)    :: synam1(notot1)         ! names of substances in conc1
       character(len=*)     , intent(in)    :: synam2(notot2)         ! names of substances in conc2
 
-!     local variables
-
-!     itofmx  integer(kind=int_32) ::1       param   size of time_offset element
-!     noelm1  integer(kind=int_32) ::1       param   number of elements in group 1
-!     noelm2  integer(kind=int_32) ::1       local   number of elements in group 2
-!     noparm  integer(kind=int_32) ::1       param   fixed number of elements in file
-!     nelmxx  integer(kind=int_32) ::1       param   maximum number of total elements
-!     elmnms  char*16  nelmxx     local   name of elements on file
-!     grnam1  char*16     1       local   group 1 name (runid,text,dim's)
-!     grnam2  char*16     1       local   group 2 name (time dep data)
-!     celid1  integer(kind=int_32) ::1       local   index of cell group 2
-!     celid2  integer(kind=int_32) ::1       local   index of cell group 1
-!     lwrite  logical     1       local   .true.: write to file
-
-!     declarations for in order to use putget
+      ! declarations for in order to use putget
 
       logical                  , parameter :: lwrite = .true.        ! .true.: write to file
       logical                  , parameter :: lread  = .false.
@@ -105,9 +89,9 @@
       integer(kind=int_32), save  ::celid1 = 1             ! index of cell group 2
       integer(kind=int_32), save  ::celid2 = 1             ! index of cell group 1
       integer(kind=int_32) ::noelm2                 ! number of elements in group 2
-      logical                       , save :: nefis  = .true.
+      logical, save        :: nefis  = .true.
       integer(kind=int_32) ::nosize(6)
-      real(kind=sp) ::window(4)
+      real(kind=sp)        ::window(4)
       integer(kind=int_32), save  ::itoff (7)
       character(len=16)             , save :: grnam1                 ! group 1 name (runid,text,dim's)
       character(len=16)             , save :: grnam2                 ! group 2 name (time dep data)
@@ -135,14 +119,14 @@
       integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "outmnf", ithandl )
 
-!     some init
+      ! some init
 
       notot  = notot1 + notot2
       noelm2 = notot  + 1
       ierrem = 0
       call getmlu(lunout)
 
-!     initialize file
+      !  initialize file
 
       if ( init .eq. 1 ) then
          init = 0
@@ -265,39 +249,39 @@
          ! write all elements to file; all definition and creation of files,
          ! data groups, cells and elements is handled by putget.
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(1), celid1,
-     +               lwrite, ierr  , type  , fd_nef)
+         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(1), celid1, &
+                    lwrite, ierr  , type  , fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(2), celid1,
-     +               lwrite, ierr  , moname, fd_nef)
+         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(2), celid1, &
+                    lwrite, ierr  , moname, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(3), celid1,
-     +               lwrite, ierr  , syname, fd_nef)
+         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(3), celid1, &
+                    lwrite, ierr  , syname, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(4), celid1,
-     +               lwrite, ierr  , duname, fd_nef)
+         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(4), celid1, &
+                    lwrite, ierr  , duname, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(5), celid1,
-     +               lwrite, ierr  , nosize, fd_nef)
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(5), celid1, &
+                    lwrite, ierr  , nosize, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(6), celid1,
-     +               lwrite, ierr  , window, fd_nef)
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(6), celid1, &
+                    lwrite, ierr  , window, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(7), celid1,
-     +               lwrite, ierr  , itoff , fd_nef)
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(7), celid1, &
+                    lwrite, ierr  , itoff , fd_nef)
 
   110    continue
          ierrem = ierr
@@ -311,20 +295,19 @@
          ! update number of cells (records) written
 
          itoff(7) = celid2
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms,
-     +               elmdms, elmpts, nbytsg, elmnms(7), celid1,
-     +               lwrite, ierr  , itoff , fd_nef)
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(7), celid1, &
+                    lwrite, ierr  , itoff , fd_nef)
          if (ierr .ne. 0) goto 310
 
          ! write actual time to cell
 
-         call putget (defnam        , datnam          ,
-     +                grnam2        , noelm2          ,
-     +                elmnms(noparm), elmdms(1,noparm),
-     +                elmpts(noparm), nbytsg(noparm)  ,
-     +                elmnms(noparm), celid2          ,
-     +                lwrite        , ierr            ,
-     +                itime         , fd_nef          )
+         call putget (defnam, datnam, grnam2, noelm2, &
+                     elmnms(noparm), elmdms(1,noparm), &
+                     elmpts(noparm), nbytsg(noparm)  , &
+                     elmnms(noparm), celid2          , &
+                     lwrite        , ierr            , &
+                     itime         , fd_nef          )
          if  (ierr .ne. 0) goto 310
 
          ! fill and write output buffer for every output variable to cell
@@ -348,13 +331,12 @@
 
             ! write buffer
 
-            call putget (defnam             , datnam          ,
-     +                   grnam2             , noelm2          ,
-     +                   elmnms(noparm)     , elmdms(1,noparm),
-     +                   elmpts(noparm)     , nbytsg(noparm)  ,
-     +                   elmnms(noparm+isys), celid2          ,
-     +                   lwrite             , ierr            ,
-     +                   rbuffr             , fd_nef          )
+            call putget (defnam, datnam , grnam2 , noelm2, &
+                        elmnms(noparm)     , elmdms(1,noparm), &
+                        elmpts(noparm)     , nbytsg(noparm)  , &
+                        elmnms(noparm+isys), celid2          , &
+                        lwrite             , ierr            , &
+                        rbuffr             , fd_nef          )
             if  (ierr .ne. 0) goto 310
          enddo
 
