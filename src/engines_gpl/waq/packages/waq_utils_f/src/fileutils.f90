@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_fileutils
+use m_waq_type_definitions
+
 
 implicit none
 
@@ -35,10 +37,10 @@ subroutine close_files( lun )
 
    implicit none
 
-   integer, dimension(*) :: lun !< Array of LU-numbers
+   integer(kind=int_32), dimension(*) ::lun !< Array of LU-numbers
 
    logical :: opflag
-   integer :: i
+   integer(kind=int_32)  ::i
 
    do i=1 , 22
       inquire ( lun(i) , opened = opflag )

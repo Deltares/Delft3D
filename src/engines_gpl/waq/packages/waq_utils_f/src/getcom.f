@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getcom
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -64,9 +66,9 @@
       use m_dhcarg
       use m_dhgarg
 
-      INTEGER        ARGMOD, INTARG, IERR
-      INTEGER        I , I1 , I2 , IA , IF ,  ILEN , ILENC
-      REAL           REAARG
+      INTEGER(kind=int_32) ::ARGMOD, INTARG, IERR
+      INTEGER(kind=int_32) ::I , I1 , I2 , IA , IF ,  ILEN , ILENC
+      REAL(kind=sp) ::REAARG
       LOGICAL        FOUND
       CHARACTER*(*)  COMSTR, CHAARG
 !
@@ -74,7 +76,7 @@
 !
 
       CHARACTER*256  ARGV , ARG , COM
-      integer(4) ithndl /0/
+      integer(kind=int_32) ::ithndl = 0
       if ( timon ) call timstrt( "getcom", ithndl )
 !
       FOUND = .FALSE.

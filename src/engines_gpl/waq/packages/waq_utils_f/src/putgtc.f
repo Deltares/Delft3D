@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_putgtc
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -44,8 +46,8 @@ cf   *                  elmdes    ,elmtps    ,nbytsg    ,elmnam    ,
 cf   *                  celidt    ,wrilog    ,error     ,buffr     )
 !-----------------------------------------------------------------------
 !
-      integer         elmdms( 6, *),nbytsg(    *)
-      integer         celidt,nelems,error,nfid
+      integer(kind=int_32) ::elmdms( 6, *),nbytsg(    *)
+      integer(kind=int_32) ::celidt,nelems,error,nfid
 !
       character*(*)   buffr(*)
       character*(*)   elmnms(nelems),elmtps(nelems)
@@ -56,16 +58,16 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
 !
 !-local declarations
 !
-      integer         start ,stopp ,incr
+      integer(kind=int_32) ::start ,stopp ,incr
       parameter      (start =     1,stopp =    2,incr   =    3)
 !
-      integer         buflen,elmndm
-      integer         i     ,j     ,n
-      integer         ierror
-      integer         lelmnr,ind
+      integer(kind=int_32) ::buflen,elmndm
+      integer(kind=int_32) ::i     ,j     ,n
+      integer(kind=int_32) ::ierror
+      integer(kind=int_32) ::lelmnr,ind
 !
-      integer         fd_nef
-      integer         elmdim(    5),uindex(    3)
+      integer(kind=int_32) ::fd_nef
+      integer(kind=int_32) ::elmdim(    5),uindex(    3)
 !
       character*2     access
       character*1     coding
@@ -77,7 +79,7 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
 !
 !-External Functions
 !
-      integer         clsnef, credat, crenef, defcel, defelm,
+      integer(kind=int_32) ::clsnef, credat, crenef, defcel, defelm,
      *                defgrp, getels, inqelm, neferr, putels
       external        clsnef, credat, crenef, defcel, defelm,
      *                defgrp, getels, inqelm, neferr, putels
