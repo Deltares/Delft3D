@@ -6,7 +6,6 @@ set(waq_root_path ${maptonetcdf_root_path}/../../engines_gpl/waq) # Trace back t
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_maptonetcdf.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -20,20 +19,12 @@ get_fortran_source_files(${src_path} source_files)
 # Define executable
 set(executable_name maptonetcdf)
 add_executable(${executable_name} ${source_files}
-                                  ${rc_version_file}
-                                  ${fortran_version_file_delwaq})
-
-
+                                  ${rc_version_file})
 
 set_source_files_properties(${fortran_version_file_delwaq}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-set(oss_dependencies_general deltares_common
-                             deltares_common_c
-                             io_netcdf
-                             io_netcdf_data
-                             waq_kernel
-                             waq_utils_f)
+set(oss_dependencies_general waq_kernel)
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})

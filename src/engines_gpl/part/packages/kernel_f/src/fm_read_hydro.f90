@@ -34,9 +34,9 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine part_readhydstep(hyd,itime,istat)
-   use m_flow
-   use m_flowgeom, only: ba, ndx, lnx, lne2ln
-   use m_flowtimes, only: time1
+   use m_part_flow
+   use m_part_geom, only: ba, ndx, lnx, lne2ln
+   use m_part_times, only: time1
    use hydmod
    use timers
 
@@ -85,7 +85,7 @@ subroutine part_readhydstep(hyd,itime,istat)
              else
                   q1(iq) = -hyd%flow(iq)
              endif
-  
+
           end do
       end do
       ! vertical exchanges:
@@ -111,7 +111,7 @@ end subroutine part_readhydstep
 !
 subroutine read_hyd_step_fm(hyd,itime,istat)
    use partmem, only: t_hyd, itstrtp, idelt, caltau, vol1, vol2, flow1, flow2m, vdiff1, tau1, salin1, temper1, flow2, rhowatc
-   use m_flowgeom, only: lnx
+   use m_part_geom, only: lnx
    use fileinfo
    use rdhydr_mod, only: rdhydr
 

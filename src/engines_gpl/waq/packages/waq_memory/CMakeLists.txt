@@ -4,11 +4,9 @@ create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Set dependencies
 set(oss_dependencies deltares_common
-                     waq_utils_f
                      waq_data
-                     )
+                     waq_utils_f)
 
-oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties

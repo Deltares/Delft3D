@@ -37,7 +37,7 @@ contains
 !  data definition module(s)
 !
       use partmem, only : iptime, subst, nosubs, mpart, wpart, dfact, decays, nopart
-      use m_flowtimes, only : dts
+      use m_part_times, only : dts
       use fileinfo
       use timers           ! performance timer
 !

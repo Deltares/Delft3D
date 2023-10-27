@@ -58,7 +58,7 @@ if(UNIX)
     target_link_libraries(${library_name}
         ${oss_dependencies}
         PkgConfig::NETCDF)
-    add_definitions(-DHAVE_CONFIG_H)    
+    add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
