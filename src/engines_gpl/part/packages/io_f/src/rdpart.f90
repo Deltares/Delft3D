@@ -56,7 +56,7 @@ contains
       use partmem         ! <== this is the data-block that is filled by this routine
       use m_part_modeltypes       ! part model definitions
       use m_part_regular
-      use m_partmesh
+      use m_part_mesh
       use typos           ! derived types
       use alloc_mod       ! to allocate arrays
       use fileinfo        ! file information for all input/output files
@@ -2757,5 +2757,5 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
       return
       end function more_data
 
-      
+
 end module m_rdpart

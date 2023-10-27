@@ -1,41 +1,41 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2023.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 module m_external_forcings
 
 implicit none
 
 public :: set_external_forcings
-  
+
   abstract interface
      subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
         integer, intent(in) :: number_of_links      !< number of links
@@ -44,7 +44,7 @@ public :: set_external_forcings
   end interface
 
 contains
-    
+
 !> set field oriented boundary conditions
 subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use timers,                 only : timstrt, timstop
@@ -71,7 +71,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS = 3
    integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 4
    integer, parameter              :: DEWPOINT = 5
-  
+
    double precision, parameter     :: SEA_LEVEL_PRESSURE = 101325d0
 
    integer                         :: link, i, first, last
@@ -99,7 +99,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
    end if
-   if (ja_varying_airdensity==1) then 
+   if (ja_varying_airdensity==1) then
       call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm)
       call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
       call get_airdensity(patm, tair, airdensity, ierr)
@@ -111,7 +111,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    if (jawind > 0) then
       if (jawindspeedfac > 0) then
-         where (windspeedfac /= dmiss) 
+         where (windspeedfac /= dmiss)
             wx = wx * windspeedfac
             wy = wy * windspeedfac
          end where
@@ -126,9 +126,9 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
     if (ja_friction_coefficient_time_dependent > 0) then
        call set_friction_coefficient()
    end if
-        
+
    call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
-   
+
    call set_wave_parameters()
 
    call retrieve_rainfall()
@@ -145,7 +145,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    if (npumpsg > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_pump, qpump)
    end if
-   
+
    call update_network_data()
 
    if (nlongculverts > 0) then
@@ -228,12 +228,12 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    ! Update nudging temperature (and salinity)
-   if (item_nudge_tem /= ec_undef_int .and. janudge > 0 ) then 
+   if (item_nudge_tem /= ec_undef_int .and. janudge > 0 ) then
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_tem, irefdate, tzone, tunit, time_in_seconds)
    end if
 
    iresult = DFM_NOERR
-   
+
 contains
 
 !> set_wind_data data
@@ -294,13 +294,13 @@ subroutine set_wind_data()
         end if
     end do
 
-    if (jawindstressgiven > 0) then 
+    if (jawindstressgiven > 0) then
         call get_timespace_value_by_item_and_array(item_stressx, wdsu_x)
         call get_timespace_value_by_item_and_array(item_stressy, wdsu_y)
-    end if   
-   
+    end if
+
     if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then
-        if (jawindstressgiven == 1) then 
+        if (jawindstressgiven == 1) then
             call perform_additional_spatial_interpolation(wdsu_x, wdsu_y)
         else
             call perform_additional_spatial_interpolation(wx, wy)
@@ -316,7 +316,7 @@ subroutine set_wind_data()
             wcharnock(link) = wcharnock(link) + 0.5d0*( ec_charnock(ln(1,link)) + ec_charnock(ln(2,link)) )
         end do
     end if
-        
+
     if (item_atmosphericpressure /= ec_undef_int) then
         where (patm == dmiss)
             patm = SEA_LEVEL_PRESSURE
@@ -326,7 +326,7 @@ subroutine set_wind_data()
     if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
         call tauwavefetch(time_in_seconds)
     end if
-      
+
 end subroutine set_wind_data
 
 !> initialize_array_with_zero
@@ -337,7 +337,7 @@ subroutine initialize_array_with_zero(array)
     if (allocated(array)) then
          array(:) = 0.d0
     end if
-    
+
 end subroutine initialize_array_with_zero
 
 !> ec_number_of_items
@@ -351,7 +351,7 @@ end function get_ec_number_of_items
 integer function get_ec_item_id(i)
 
     integer, intent(in) :: i
-    
+
     get_ec_item_id = ecInstancePtr%ecItemsPtr(i)%ptr%id
 
 end function get_ec_item_id
@@ -371,7 +371,7 @@ subroutine get_timespace_value_by_name(name)
     character(*), intent(in) :: name
 
     success = ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
-    
+
 end subroutine get_timespace_value_by_name
 
 !> get_timespace_value_by_item_and_array
@@ -399,14 +399,14 @@ subroutine perform_additional_spatial_interpolation(array_x, array_y)
 
     double precision, intent(inout) :: array_x(:)
     double precision, intent(inout) :: array_y(:)
-    
+
     do link  = 1, lnx
         array_x(link) = array_x(link) + 0.5d0*( ec_pwxwy_x(ln(1,link)) + ec_pwxwy_x(ln(2,link)) )
         array_y(link) = array_y(link) + 0.5d0*( ec_pwxwy_y(ln(1,link)) + ec_pwxwy_y(ln(2,link)) )
     end do
 
 end subroutine perform_additional_spatial_interpolation
-               
+
 
 !> set_temperature_models
 subroutine set_temperature_models()
@@ -429,7 +429,7 @@ subroutine set_temperature_models()
     end select
 
     foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
-    
+
     if (btempforcingtypH) then
         call get_timespace_value_by_item_and_consider_success_value(item_humidity)
         foundtempforcing = .true.
@@ -456,7 +456,7 @@ subroutine set_temperature_models()
     'No humidity, airtemperature, cloudiness and solar radiation forcing found, setting temperature model [physics:Temperature] = 1 (Only transport)')
         jatem = 1
     end if
-    	   
+
 end subroutine set_temperature_models
 
 !> set friction coeffciient values at this time moment
@@ -470,9 +470,9 @@ end subroutine set_friction_coefficient
 subroutine get_timespace_value_by_name_and_consider_success_value(name)
 
     character(*), intent(in) :: name
-    
+
     success = success .and. ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
-    
+
 end subroutine get_timespace_value_by_name_and_consider_success_value
 
 !> get_timespace_value_by_item_and_consider_success_value
@@ -486,9 +486,9 @@ end subroutine get_timespace_value_by_item_and_consider_success_value
 
 !> set_wave_parameters
 subroutine set_wave_parameters()
-   
+
    logical                                                            :: all_wave_variables                         !< flag indicating whether _all_ wave variables should be mirrored at the boundary
-   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called 
+   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
 
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
       !
@@ -546,11 +546,11 @@ subroutine set_wave_parameters()
          message = dumpECMessageStack(LEVEL_WARN,callback_msg)
          success = .true.
       end if
-      
+
       if(jawave == 7) then
           phiwav = convert_wave_direction_from_nautical_to_cartesian(phiwav)
       end if
-      
+
       ! SWAN data used via module m_waves
       !    Data from FLOW 2 SWAN: s1 (water level), bl (bottom level), ucx (vel. x), ucy (vel. y), FlowElem_xcc, FlowElem_ycc, wx, wy
       !          NOTE: all variables defined @ cell circumcentre of unstructured grid
@@ -559,7 +559,7 @@ subroutine set_wave_parameters()
       !          NOTE:
       !                not necessary are; tmean (Tm01), urms, wavedirpeak
       !
-      ! For badly converged SWAN sums, dwcap and dsurf can be NaN. Put these to 0d0, 
+      ! For badly converged SWAN sums, dwcap and dsurf can be NaN. Put these to 0d0,
       ! as they cause saad errors as a result of NaNs in the turbulence model
       if (.not. flowwithoutwaves) then
           if(allocated(dsurf) .and. allocated(dwcap)) then
@@ -577,10 +577,10 @@ subroutine set_wave_parameters()
                   end where
               end if
           end if
-         
+
          all_wave_variables = .not.(jawave == 7 .and. waveforcing /= 3)
          call select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
-         
+
          ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
          !
          ! velocity boundaries
@@ -603,34 +603,34 @@ subroutine set_wave_parameters()
       end if
 
    end if
-	  
+
 end subroutine set_wave_parameters
 
 
 subroutine get_values_and_consider_jawave6(item)
 
     integer, intent(in) :: item
-    
+
     success_copy = success
     success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
     if (jawave == 6) success = success_copy
-    
+
 end subroutine get_values_and_consider_jawave6
-            
+
 
 !> select_wave_variables_subgroup
 !! select routine depending on whether all or a subgroup of wave variables are allocated
 subroutine select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
-    
+
     logical, intent(in) :: all_wave_variables
     procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values
-    
+
     if (all_wave_variables) then
         fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
     else
         fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
     end if
-    
+
 end subroutine select_wave_variables_subgroup
 
 !> fill_open_boundary_cells_with_inner_values_all
@@ -667,7 +667,7 @@ subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, lin
 
     integer, intent(in) :: number_of_links      !< number of links
     integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
-    
+
     integer             :: link !< link counter
     integer             :: kb   !< cell index of boundary cell
     integer             :: ki   !< cell index of internal cell
@@ -684,20 +684,20 @@ subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, lin
         mxwav(kb)   = mxwav(ki)
         mywav(kb)   = mywav(ki)
     end do
- 
+
 end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
 !> convert wave direction [degrees] from nautical to cartesian meteorological convention
 elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
-    
+
     double precision, intent(in) :: nautical_wave_direction  !< wave direction [degrees] in nautical  convention
     double precision             :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
-    
+
     double precision, parameter  :: MAX_RANGE_IN_DEGREES            = 360d0
     double precision, parameter  :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
-    
+
     cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, MAX_RANGE_IN_DEGREES)
-    
+
 end function convert_wave_direction_from_nautical_to_cartesian
 
 !> retrieve_rainfall
@@ -719,9 +719,9 @@ end subroutine retrieve_rainfall
 subroutine update_network_data()
 
    logical :: success_previous
-    
+
    success_previous = success
-    
+
    if (network%sts%numPumps > 0) then
       call get_timespace_value_by_item(item_pump_capacity)
    end if
@@ -745,7 +745,7 @@ subroutine update_network_data()
       call get_timespace_value_by_item(item_general_structure_crestWidth)
       call get_timespace_value_by_item(item_general_structure_gateOpeningWidth)
    end if
-   
+
 end subroutine update_network_data
 
 !> update_subsidence_and_uplift_data
@@ -764,7 +764,7 @@ subroutine update_subsidence_and_uplift_data()
          subsupl_t0 = subsupl
          sdu_first  = .false.
       end if
-    
+
 end subroutine update_subsidence_and_uplift_data
 
 !> print_error_message
@@ -774,9 +774,9 @@ subroutine print_error_message()
    write(tmpstr,'(f22.11)') time_in_seconds
    call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time=' // trim(tmpstr))
    tmpstr = dumpECMessageStack(LEVEL_WARN,callback_msg)
-   
+
 end subroutine print_error_message
-   
+
 end subroutine set_external_forcings
 
 end module m_external_forcings

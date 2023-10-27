@@ -1,34 +1,34 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2023.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> Write history data in NetCDF format.
 subroutine unc_write_his(tim)            ! wrihis
@@ -59,7 +59,6 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_flowexternalforcings, only: numtracers, trnames
     use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
     use m_structures
-    use m_particles, only: japart
     use m_fm_wq_processes
     use string_module
     use m_dad
@@ -72,7 +71,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_GlobalParameters
     use m_longculverts
     use odugrid
-    
+
     implicit none
 
     double precision, intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
@@ -267,7 +266,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         if (numobs+nummovobs > 0) then
             ierr = unc_addcoordmapping(ihisfile, jsferic)
-            
+
             ierr = nf90_def_dim(ihisfile, 'stations', numobs+nummovobs, id_statdim)
 
             if (nummovobs > 0) then
@@ -470,7 +469,7 @@ subroutine unc_write_his(tim)            ! wrihis
                if (kmx > 0) then
                   ierr = nf90_def_var(ihisfile, 'velocity_magnitude', nf90_double, (/ id_laydim, id_statdim, id_timedim /), id_varumag)
                   ierr = nf90_put_att(ihisfile, id_varumag, 'coordinates', trim(statcoordstring) // ' zcoordinate_c')
-               else 
+               else
                   ierr = nf90_def_var(ihisfile, 'velocity_magnitude', nf90_double, (/ id_statdim, id_timedim /), id_varumag)
                   ierr = nf90_put_att(ihisfile, id_varumag, 'coordinates', statcoordstring)
                endif
@@ -494,8 +493,8 @@ subroutine unc_write_his(tim)            ! wrihis
                   ierr = nf90_def_var(ihisfile, 'discharge_magnitude', nf90_double, (/ id_statdim, id_timedim /), id_varqmag)
                   ierr = nf90_put_att(ihisfile, id_varqmag, 'coordinates', trim(statcoordstring) // ' zcoordinate_c')
                endif
-               
-               ierr = nf90_put_att(ihisfile, id_varqmag, 'standard_name', 'water_volume_transport_in_river_channel') 
+
+               ierr = nf90_put_att(ihisfile, id_varqmag, 'standard_name', 'water_volume_transport_in_river_channel')
                ierr = nf90_put_att(ihisfile, id_varqmag, 'long_name', 'average discharge magnitude')
                ierr = nf90_put_att(ihisfile, id_varqmag, 'units', 'm3 s-1')
                ierr = nf90_put_att(ihisfile, id_varqmag, 'coordinates', statcoordstring)
@@ -575,12 +574,12 @@ subroutine unc_write_his(tim)            ! wrihis
                       ierr = nf90_put_att(ihisfile, id_USTY,   'coordinates'  , trim(statcoordstring) // ' zcoordinate_c')
                       jawrizc = 1
                   endif
-                  
+
                   ierr = nf90_put_att(ihisfile, id_USTX,   'standard_name', 'sea_surface_wave_stokes_drift_x')
                   ierr = nf90_put_att(ihisfile, id_USTX,   'long_name'    , 'Stokes drift, x-component')
                   ierr = nf90_put_att(ihisfile, id_USTX,   'units'        , 'm s-1')
                   ierr = nf90_put_att(ihisfile, id_USTX, '_FillValue', dmiss)
-                  
+
                   ierr = nf90_put_att(ihisfile, id_USTY,   'standard_name', 'sea_surface_wave_stokes_drift_y')
                   ierr = nf90_put_att(ihisfile, id_USTY,   'long_name'    , 'Stokes drift, y-component')
                   ierr = nf90_put_att(ihisfile, id_USTY,   'units'        , 'm s-1')
@@ -589,7 +588,7 @@ subroutine unc_write_his(tim)            ! wrihis
             endif
 
             if (jahistaucurrent>0) then
-               
+
                ierr = nf90_def_var(ihisfile, 'tausx',  nf90_double, ((/ id_statdim, id_timedim /)) , id_TAUX)
                ierr = nf90_put_att(ihisfile, id_TAUX, 'coordinates'  , statcoordstring)
                ierr = nf90_put_att(ihisfile, id_TAUX, 'standard_name', 'mean_bottom_shear_stress vector, x-component')
@@ -597,7 +596,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_TAUX, 'units'        , 'Pa')
                ierr = nf90_put_att(ihisfile, id_TAUX, 'geometry', station_geom_container_name)
                ierr = nf90_put_att(ihisfile, id_TAUX, '_FillValue', dmiss)
-               
+
                ierr = nf90_def_var(ihisfile, 'tausy',  nf90_double, ((/ id_statdim, id_timedim /)) , id_TAUY)
                ierr = nf90_put_att(ihisfile, id_TAUY, 'coordinates'  , statcoordstring)
                ierr = nf90_put_att(ihisfile, id_TAUY, 'standard_name', 'mean_bottom_shear_stress vector, y-component')
@@ -646,14 +645,14 @@ subroutine unc_write_his(tim)            ! wrihis
             if (ja_airdensity > 0 .and. jahis_airdensity > 0) then
                call definencvar(ihisfile,id_airdensity   ,nf90_double,(/ id_statdim, id_timedim /),2, 'rhoair'  , 'air density', 'kg m-3 ', statcoordstring, station_geom_container_name)
             endif
-            
+
             if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                if ( kmx.gt.0 ) then
                   idims(1) = id_laydim
                   idims(2) = id_statdim
                   jawrizc = 1
                   call definencvar(ihisfile,id_varrhop,nf90_double, idims,3,'potential_density'       , 'potential_density'         , 'kg m-3' ,  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
-                  if (idensform > 10) then 
+                  if (idensform > 10) then
                      call definencvar(ihisfile,id_varrho ,nf90_double, idims,3,'density'                 , 'density'                   , 'kg m-3' ,  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
                   endif
                   idims(1) = id_laydimw
@@ -1241,7 +1240,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'coordinates', 'cross_section_name')
                ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'geometry', crs_geom_container_name)
             enddo
-         
+
          endif
 
          ! runup gauges
@@ -1269,7 +1268,7 @@ subroutine unc_write_his(tim)            ! wrihis
             ierr = nf90_put_att(ihisfile, id_varruh, 'coordinates', 'rug_x_coordinate rug_y_coordinate rug_name')
             ierr = nf90_put_att(ihisfile, id_varruh, '_FillValue', dmiss)
          endif
-         
+
          if (jahissourcesink > 0 .and. numsrc > 0) then
             ierr = nf90_def_dim(ihisfile, 'source_sink', numsrc, id_srcdim)
             ierr = nf90_def_dim(ihisfile, 'source_sink_name_len', strlen_netcdf, id_srclendim)
@@ -1820,7 +1819,7 @@ subroutine unc_write_his(tim)            ! wrihis
                end do
             end if
 
-           
+
             ierr = sgeom_def_geometry_variables(ihisfile, weir_geom_container_name, 'weir', 'line', nNodesWeir, id_weirgendim, &
                id_weirgeom_node_count, id_weirgeom_node_coordx, id_weirgeom_node_coordy)
 
@@ -2479,12 +2478,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         ! Size of latest timestep
         ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/ id_timedim /), 'timestep', '',     'latest computational timestep size in each output interval', 's')
-
-        if ( japart.gt.0 ) then
-!          write partiles header to hisfile
-           call unc_write_part_header(ihisfile,id_timedim,id_partdim,id_parttime,id_partx,id_party,id_partz)
-        end if
-
+        
         ierr = nf90_enddef(ihisfile)
         if (timon) call timstop (handle_extra(61))
 
@@ -2700,11 +2694,6 @@ subroutine unc_write_his(tim)            ! wrihis
     ierr = nf90_put_var(ihisfile, id_timestep, dts, (/ it_his /))
     if (timon) call timstop ( handle_extra(64))
 
-!   write particles to hisfile (for now)
-    if ( japart.gt.0 ) then
-       call unc_write_part(ihisfile,it_his,id_parttime,id_partx,id_party,id_partz)
-    end if
-
 !   Observation points (fixed+moving)
 
     ntot = numobs + nummovobs
@@ -2820,7 +2809,7 @@ subroutine unc_write_his(tim)            ! wrihis
                else if (comparereal(tim, ti_hise, eps10) == 0) then
                   ierr = nf90_put_var(ihisfile, id_hwq(i), valobsT(:,IPNT_HWQ1 + (i-1)*kmx+kk-1), start = (/ kk, 1 /), count = (/ 1, ntot, 1/))
                endif
-                enddo       
+                enddo
           end if
           if (IVAL_WQB3D1 > 0) then
              do j = IVAL_WQB3D1,IVAL_WQB3DN   ! enumerators of 3d waqbot output in valobs array (not the pointer)
@@ -2862,7 +2851,7 @@ subroutine unc_write_his(tim)            ! wrihis
           if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
              ierr = nf90_put_var(ihisfile, id_varrhop, valobsT(:,IPNT_RHOP) ,  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
-  
+
        if (IVAL_TRA1 > 0) then
           do j = IVAL_TRA1,IVAL_TRAN   ! enumerators of tracers in valobs array (not the pointer)
             i = j - IVAL_TRA1 + 1
@@ -2962,7 +2951,7 @@ subroutine unc_write_his(tim)            ! wrihis
     if (ja_airdensity > 0 .and. jahis_airdensity> 0) then
        ierr = nf90_put_var(ihisfile, id_airdensity   , valobsT(:,IPNT_AIRDENSITY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
     end if
-   
+
     ! 3d layer interface quantities
     if (kmx > 0 ) then
        do kk = 1, kmx+1
@@ -3144,7 +3133,7 @@ subroutine unc_write_his(tim)            ! wrihis
                 ierr = nf90_put_var(ihisfile, id_const_cum(num), toutput_cum, (/ i, it_his /))
                 ierr = nf90_put_var(ihisfile, id_const(num),     toutput_cur, (/ i, it_his /))
              end do
-     
+
           if( jased == 4 .and. stmpar%lsedtot > 0 ) then
              IP = IPNT_HUA + NUMCONST_MDU + 1
              ierr = nf90_put_var(ihisfile, id_sedbtrans, crs(i)%sumvalcum(IP), (/ i, it_his /))
@@ -3670,7 +3659,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_var(ihisfile, id_weirgeom_node_coordx, geomXWeir,     start = (/ 1 /), count = (/ nNodesWeir /))
                ierr = nf90_put_var(ihisfile, id_weirgeom_node_coordy, geomYWeir,     start = (/ 1 /), count = (/ nNodesWeir /))
                ierr = nf90_put_var(ihisfile, id_weirgeom_node_count,  nodeCountWeir, start = (/ 1 /), count = (/ network%sts%numWeirs /))
-               
+
                if (allocated(geomXWeir))     deallocate(geomXWeir)
                if (allocated(geomYWeir))     deallocate(geomYWeir)
                if (allocated(nodeCountWeir)) deallocate(nodeCountWeir)
@@ -3877,7 +3866,7 @@ subroutine unc_write_his(tim)            ! wrihis
         call unc_write_struc_input_coordinates(ihisfile,n)
       enddo
     endif
-    
+
     if ( jacheckmonitor.eq.1 ) then
       ierr = nf90_put_var(ihisfile, id_checkmon, checkmonitor, start=(/ 1, it_his /))
 

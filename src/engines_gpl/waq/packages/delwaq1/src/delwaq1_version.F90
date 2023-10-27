@@ -26,7 +26,7 @@
 !-------------------------------------------------------------------------------
 
 module delwaq1_version_module
-    use static_version_info
+    use waq_static_version_info
 
     implicit none
 

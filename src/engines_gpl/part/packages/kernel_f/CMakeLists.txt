@@ -10,15 +10,11 @@ set(oss_dependencies deltares_common
                      gridgeom
                      kdtree_wrapper
                      kdtree2
-                     netcdff
-                     io_netcdf
-                     io_netcdf_data
                      io_hyd
+                     io_netcdf
                      waq_hyd_data)
 
-
 target_link_libraries(${library_name} ${oss_dependencies})
-oss_include_libraries(${library_name} oss_dependencies)
 
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/part)
 

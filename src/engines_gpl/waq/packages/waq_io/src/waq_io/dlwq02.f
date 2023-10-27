@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq02
-      use m_timer
+      use m_waq_timer
       use m_rearaa
       use m_readmp
       use m_dlwq0i

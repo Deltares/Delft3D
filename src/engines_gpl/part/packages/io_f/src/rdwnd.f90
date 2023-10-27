@@ -51,7 +51,7 @@ contains
       use precision_part       ! data definitions
       use timers          ! to time this routine
       use alloc_mod       ! to allocate arrays
-      use timespace       ! meteo module ?
+      use m_waq_timespace       ! meteo module ?
 
       implicit none
 

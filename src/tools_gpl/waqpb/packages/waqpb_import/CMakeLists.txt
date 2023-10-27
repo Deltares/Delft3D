@@ -8,7 +8,6 @@ set(waq_root_path ${waqpb_root_path}/../../../engines_gpl/waq) # Trace back to t
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_waqpb_import.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -22,8 +21,7 @@ get_fortran_source_files(${src_path} source_files)
 # Define executable
 set(executable_name waqpb_import)
 add_executable(${executable_name} ${source_files}
-                                  ${rc_version_file}
-                                  ${fortran_version_file_delwaq})
+                                  ${rc_version_file})
 
 # Set dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
