@@ -73,7 +73,7 @@ subroutine update_verticalprofiles()
  double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav,epswv, prsappr
 
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
- integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, jadrhodz = 1, kup, ierror, Ltv, ktv 
+ integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
 double precision, external :: setrhofixedp
 

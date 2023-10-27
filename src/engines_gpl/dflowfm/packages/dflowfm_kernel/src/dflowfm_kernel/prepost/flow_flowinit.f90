@@ -1243,7 +1243,7 @@ subroutine set_wave_modelling()
    !
       call wave_uorbrlabda()                      
       if( kmx == 0 ) then
-         call wave_comp_stokes_velocities()
+         call wave_comp_stokes_velocities_2d()
          call tauwave()
       end if
       call setwavfu()

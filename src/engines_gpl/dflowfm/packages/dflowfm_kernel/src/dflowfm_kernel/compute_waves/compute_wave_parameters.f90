@@ -87,12 +87,13 @@
          endif
          hwav = min(hwav, gammax*hs)
          call wave_uorbrlabda()
-         if(kmx == 0) then
+         if (kmx == 0) then
             call wave_comp_stokes_velocities_2d()
          end if
          !
          if (kmx>0) then
-            call wave_compute_kinematic_pressure()
+            ! to do
+            !call wave_compute_kinematic_pressure()
          endif
       end if
       !

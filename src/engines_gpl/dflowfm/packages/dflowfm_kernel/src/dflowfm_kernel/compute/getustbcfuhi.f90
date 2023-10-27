@@ -41,7 +41,7 @@
 
    implicit none
    integer,          intent (in)  :: LL, Lb
-   double precision, intent (out) :: ustbLL, cfuhiLL, hdzb, z00, ustbcwLL, ustbwwLL, wbltL
+   double precision, intent (out) :: ustbLL, cfuhiLL, hdzb, z00, ustbcwLL, wbltL
    double precision, intent (out) :: cfuhi3D                                       ! 3D bedfriction coeffient, advi(Lb) = advi(Lb) + cfuhi3D
 
    integer          :: ifrctyp
@@ -63,7 +63,7 @@
    double precision, external     :: sinhsafei
 
    cfuhi3D = 0d0
-   ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0; ustbcwLL = 0d0; ustbwwLL=0d0; wbltL = 0d0
+   ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0; ustbcwLL = 0d0; wbltL = 0d0
 
    umodeps = 1d-4
 

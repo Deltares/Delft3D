@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2023.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -978,47 +978,47 @@ subroutine xbeach_wave_instationary()
    endif
    
    !  construct and solve system
-   if (windmodel.eq.1) then
-      if (advecmod.eq.1) then
-          !define
-           ma=ee1/sigt
-           mb=ee1 
-      elseif (advecmod.eq.2) then
-          !define moments
-          ma=ee1
-          mb=sigt*ee1  
-      endif
-      
-      call advec_horz_windmodel(dtmaxwav, snx, csx, limtypw, ma, cgwavt, horadvec)
-      call advec_horz_windmodel(dtmaxwav, snx, csx, limtypw, mb, cgwavt, horadvec2)     
-      call advec_dir(ma, ctheta, thetaadvec)
-      call advec_dir(mb, ctheta, thetaadvec2) 
-
-      do k = 1,ndxi
-         do itheta = 1,ntheta
-            if ( vol1(k) > epshs*ba(k) ) then
-                  ma(itheta,k) = ma(itheta,k) - dtmaxwav*(horadvec(itheta,k)  * bai(k) + thetaadvec(itheta,k))       
-                  mb(itheta,k) = mb(itheta,k) - dtmaxwav*(horadvec2(itheta,k)  * bai(k) + thetaadvec2(itheta,k)) 
-               else
-                  ma(itheta,k)=ee_eps*tt_eps/twopi
-                  mb(itheta,k)=ee_eps
-               endif   
-            enddo
-      enddo
-      
-      if (advecmod.eq.1) then               
-         sigt=min(mb/ma,twopi/tt_eps)
-         ee1=max(mb,ee_eps)     
-         tt1=twopi/sigt
-     else  
-        sigt=min(mb/ma,twopi/tt_eps)
-        ee1=max(ma,ee_eps)
-        tt1=twopi/sigt         
-      endif
-      
-      call xbeach_wave_dispersion(0)
-
-   else !regular xbeach approach, fixed period
+   !if (windmodel.eq.1) then
+   !   if (advecmod.eq.1) then
+   !       !define
+   !        ma=ee1/sigt
+   !        mb=ee1 
+   !   elseif (advecmod.eq.2) then
+   !       !define moments
+   !       ma=ee1
+   !       mb=sigt*ee1  
+   !   endif
+   !   
+   !   call advec_horz_windmodel(dtmaxwav, snx, csx, limtypw, ma, cgwavt, horadvec)
+   !   call advec_horz_windmodel(dtmaxwav, snx, csx, limtypw, mb, cgwavt, horadvec2)     
+   !   call advec_dir(ma, ctheta, thetaadvec)
+   !   call advec_dir(mb, ctheta, thetaadvec2) 
+   !
+   !   do k = 1,ndxi
+   !      do itheta = 1,ntheta
+   !         if ( vol1(k) > epshu*ba(k) ) then
+   !               ma(itheta,k) = ma(itheta,k) - dtmaxwav*(horadvec(itheta,k)  * bai(k) + thetaadvec(itheta,k))       
+   !               mb(itheta,k) = mb(itheta,k) - dtmaxwav*(horadvec2(itheta,k)  * bai(k) + thetaadvec2(itheta,k)) 
+   !            else
+   !               ma(itheta,k)=ee_eps*tt_eps/twopi
+   !               mb(itheta,k)=ee_eps
+   !            endif   
+   !         enddo
+   !   enddo
+   !   
+   !   if (advecmod.eq.1) then               
+   !      sigt=min(mb/ma,twopi/tt_eps)
+   !      ee1=max(mb,ee_eps)     
+   !      tt1=twopi/sigt
+   !  else  
+   !     sigt=min(mb/ma,twopi/tt_eps)
+   !     ee1=max(ma,ee_eps)
+   !     tt1=twopi/sigt         
+   !   endif
+   !   
+   !   call xbeach_wave_dispersion(0)
+   !
+   !else !regular xbeach approach, fixed period
       !
       ! Slopes of water depth
       call getcellcentergradients(hh, dhsdx, dhsdy)
@@ -4273,7 +4273,8 @@ subroutine xbeach_solve_wave_stationary(callType,ierr)
    use m_xbeach_paramsconst, only: TURB_NONE
    use m_xbeach_data, m_xbeach_data_hminlw=>hminlw
    use m_flowgeom
-   use m_flow, only: s1, epshs, kmx
+   use m_flowtimes, only: dnt
+   use m_flow, only: s1, epshu, kmx, flowwithoutwaves
    use network_data, only: xk, yk, numk
    use m_sferic, only: pi, dg2rd, rd2dg
    use m_physcoef, only: ag, rhomean
@@ -4405,7 +4406,7 @@ subroutine xbeach_solve_wave_stationary(callType,ierr)
    ! Solve the directional wave energy balance on an unstructured grid
    call solve_energy_balance2Dstat (xk,yk,numk,w,ds,inner,prev,seapts,noseapts,nmmask,       &
                                     eebc,thetabinlocal,nthetalocal,wavdir,                                    &
-                                    hhstat,kwavstat,cgstat,cthetastat,fwstat,Trep,dtmaximp,rhomean,alpha,gamma,m_xbeach_data_hminlw,                     &
+                                    hhstat,kwavstat,cgstat,cthetastat,fwstat,Hmaxstat,Trep,dtmaximp,rhomean,ag,alpha,gamma,m_xbeach_data_hminlw, maxiter,                    &
                                     Hstat,Dwstat,Dfstat,thetam,uorbstat,eestat)
    call timer(t2)
    !
@@ -4846,6 +4847,17 @@ subroutine solve_energy_balance2Dstat(x,y,mn,w,ds,inner,prev,seapts,noseapts,neu
             endif
          endif
       endif
+   enddo
+
+   do k=1,mn
+      ! Compute directionally integrated parameters
+      ee(:,k)=max(ee(:,k),0.d0)
+      Ek=sum(ee(:,k))*dtheta
+      H(k)=sqrt(8*Ek/rho/ag)
+      call baldock(ag,rho,alfa,gamma,hh(k),H(k),Hmaxstat(k),T,1,Dw(k))
+      uorb(k)=pi*H(k)/T/sinh(min(kwav(k)*hh(k),10d0))
+      Df(k)=0.28d0*rho*fw(k)*uorb(k)**3
+      thetam(k)=atan2(sum(ee(:,k)*sin(theta)),sum(ee(:,k)*cos(theta)))
    enddo
 
 end subroutine solve_energy_balance2Dstat
