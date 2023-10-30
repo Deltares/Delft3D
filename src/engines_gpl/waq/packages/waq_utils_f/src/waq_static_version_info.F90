@@ -23,7 +23,7 @@
 
 #INCLUDE "waq_version.h"
 
-module static_version_info
+module waq_static_version_info
     implicit none
 
     character(*),  public, parameter :: company      = COMPANY_NAME
@@ -43,5 +43,4 @@ module static_version_info
     ! "strings" on Linux can extract it.
     integer, protected, save :: offset = 5
 
-end module static_version_info
-
+end module waq_static_version_info

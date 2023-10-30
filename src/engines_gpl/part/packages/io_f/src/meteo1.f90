@@ -21,16 +21,16 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_itdate
+module m_waq_itdate
 
    character (len=8)                          :: refdat
    integer                                    :: itdate      ! should be user specified for (asc routines)
 
    INTEGER                                    :: jul0, imonth0, iday0, iyear0
 
-end module m_itdate
+end module m_waq_itdate
 
-module timespace_read
+module m_waq_timespace_read
    use precision_part
    use m_stop_exit
    use m_meteo1temphelpers
@@ -982,11 +982,11 @@ end function numbersonline
 
 
 
-end module timespace_read
+end module m_waq_timespace_read
 
-module timespace_data
+module m_waq_timespace_data
   use precision_part
-  use timespace_read
+  use m_waq_timespace_read
   implicit none
 
   ! Deze module doet ruimte/tijdinterpolatie
@@ -2108,7 +2108,7 @@ end function readfourierdims
 
 
 function readfouriercompstim(minp,d0,d1,mx,nx,kx,tim,tread) result(success)
-use m_itdate
+use m_waq_itdate
    !
    ! Read fourier components initially, next generate
    !
@@ -3136,23 +3136,23 @@ subroutine bewvuf(ierrs     ,kcmp      ,mxkc      ,inaam     ,knaam     , &
 end subroutine bewvuf
 
 
-end module timespace_data
+end module m_waq_timespace_data
 
 
-Module M_arcuv                       !plotbuitenbeentje
+Module m_waq_arcuv                       !plotbuitenbeentje
   implicit none
   double precision, allocatable :: arcuv(:,:,:)
-End module M_arcuv
+End module m_waq_arcuv
 
 
 
 
 
-module timespace_triangle
+module m_waq_timespace_triangle
 
     use precision_part
-    use timespace_data
- use m_alloc
+    use m_waq_timespace_data
+    use m_alloc
 
     implicit none
 
@@ -4138,14 +4138,14 @@ subroutine polyindexweight( xe, ye, xen, yen, xs, ys, kcs, ns, k1, rl)
  end if
 end subroutine polyindexweight
 
- 
 
-end module timespace_triangle                           ! met leading dimensions 3 of 4
-module timespace
+end module m_waq_timespace_triangle      ! with leading dimensions 3 of 4
+
+module m_waq_timespace
    use precision_part
 
-   use timespace_data
-   use timespace_triangle
+   use m_waq_timespace_data
+   use m_waq_timespace_triangle
    implicit none
 
 contains
@@ -4643,7 +4643,7 @@ end function updateprovider
 
 
 function gettimespacevalue(idom, qid, time, z) result(success)
-use m_arcuv
+use m_waq_arcuv
 implicit none
 
   logical :: success
@@ -5183,4 +5183,4 @@ subroutine bilin5(xa        ,ya        ,x0        ,y0        ,w         , &
 99999 continue
 end subroutine bilin5
 
-end module timespace
+end module m_waq_timespace

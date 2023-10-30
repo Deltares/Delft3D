@@ -54,7 +54,7 @@ contains
       use m_stop_exit
       use precision_part    ! single/double precision
       use timers
-      use timespace    ! meteo module ?
+      use m_waq_timespace    ! meteo module ?
 
       implicit none    ! force explicit typing
 

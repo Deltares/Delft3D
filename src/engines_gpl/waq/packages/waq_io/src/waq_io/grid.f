@@ -20,7 +20,8 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_grid
+      module m_waq_grid
+
       use m_read_sub_procgrid
       use m_read_proc_time
       use m_read_nobottomlay
@@ -434,4 +435,4 @@
 
       end
 
-      end module m_grid
+      end module m_waq_grid

@@ -13,9 +13,7 @@ set(oss_dependencies deltares_common
                      waq_utils_f
                      delwaq_lib
                      waq_hyd_data
-                     waq_data
                      waq_kernel)
-oss_include_libraries(${executable_name} oss_dependencies)
 
 # Link libraries
 target_link_libraries(${executable_name} ${oss_dependencies})

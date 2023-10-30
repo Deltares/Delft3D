@@ -8,13 +8,10 @@ set(oss_dependencies deltares_common
                      part_data_f
                      part_utils_f
                      waq_utils_f
-                     netcdff
-                     io_netcdf_data
                      waq_hyd_data)
 
 
 target_link_libraries(${library_name} ${oss_dependencies})
-oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)
     target_link_libraries(${library_name} ${oss_dependencies})

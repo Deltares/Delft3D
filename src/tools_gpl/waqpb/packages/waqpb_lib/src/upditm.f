@@ -31,6 +31,7 @@
      j                    grp   , io_mes, iitem , c20   , newfrm,
      j                    bodem )
       use m_zoek
+      use m_validate_units
 
       include 'data.inc'
       character*10 c10, naam
@@ -44,7 +45,7 @@
       integer      nitem0
       save         nitem0
       data         nitem0 /-999/
-
+      
       if ( nitem0 .lt. 0 ) nitem0 = nitem
 
 c     segmnt = 1: item defined within segment
@@ -139,8 +140,10 @@ c                 ihulp = max(ihulp,31)
                   itemnm(jndex) = c50l
               endif
 c             end existing format
-	    endif
+          endif
       endif
+
+      call validate_units(itemun(jndex))
 
 c     Actions below ONLY for new items
 
@@ -195,8 +198,7 @@ c     Set item number
 
       iitem = jndex
 
-      return
-      end
+      end subroutine upd_p2
 
 
       subroutine upd_p3 ( c10 , newtab , io_mes )
@@ -217,4 +219,4 @@ c     Set item number
       endif
  1000 format ('Subroutine ',a10,' added to table P3')
       return
-      end
+      end subroutine upd_p3

@@ -1,35 +1,35 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2023.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 module m_external_forcings
 implicit none
 public :: set_external_forcings
@@ -43,7 +43,7 @@ public :: calculate_wind_stresses
   end interface
 
 contains
-    
+
 !> set field oriented boundary conditions
 subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use timers,                 only : timstrt, timstop
@@ -96,7 +96,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
    end if
-   if (ja_varying_airdensity==1) then 
+   if (ja_varying_airdensity==1) then
       call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm)
       call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
       call get_airdensity(patm, tair, airdensity, ierr)
@@ -136,7 +136,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    if (npumpsg > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_pump, qpump)
    end if
-   
+
    call update_network_data()
 
    if (nlongculverts > 0) then
@@ -220,12 +220,12 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    ! Update nudging temperature (and salinity)
-   if (item_nudge_tem /= ec_undef_int .and. janudge > 0 ) then 
+   if (item_nudge_tem /= ec_undef_int .and. janudge > 0 ) then
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_tem, irefdate, tzone, tunit, time_in_seconds)
    end if
 
    iresult = DFM_NOERR
-   
+
 contains
 
 
@@ -260,7 +260,7 @@ subroutine set_temperature_models()
     end select
 
     foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
-    
+
     if (btempforcingtypH) then
         call get_timespace_value_by_item_and_consider_success_value(item_humidity)
         foundtempforcing = .true.
@@ -287,7 +287,7 @@ subroutine set_temperature_models()
     'No humidity, airtemperature, cloudiness and solar radiation forcing found, setting temperature model [physics:Temperature] = 1 (Only transport)')
         jatem = 1
     end if
-    	   
+
 end subroutine set_temperature_models
 
 !> set friction coefficient values at this time moment
@@ -318,7 +318,7 @@ end subroutine get_timespace_value_by_item_and_consider_success_value
 !> set_wave_parameters
 subroutine set_wave_parameters()
    logical                                                            :: all_wave_variables                         !< flag indicating whether _all_ wave variables should be mirrored at the boundary
-   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called 
+   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
 
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
       !
@@ -389,24 +389,24 @@ subroutine set_wave_parameters()
       !          NOTE:
       !                not necessary are; tmean (Tm01), urms, wavedirpeak
       !
-      ! For badly converged SWAN sums, dwcap and dsurf can be NaN. Put these to 0d0, 
+      ! For badly converged SWAN sums, dwcap and dsurf can be NaN. Put these to 0d0,
       ! as they cause saad errors as a result of NaNs in the turbulence model
       if (.not. flowwithoutwaves) then
-         if(allocated(dsurf) .and. allocated(dwcap)) then
-            if (any(isnan(dsurf)) .or. any(isnan(dwcap))) then
-               write (msgbuf, '(a)') 'Surface dissipation fields from SWAN contain NaN values, which have been converted to 0d0. &
-                                 & Check the correctness of the wave results before running the coupling.'
-               call warn_flush() ! No error, just warning and continue
-               !
-               where (isnan(dsurf))
-                  dsurf = 0d0
-               end where
-               !
-               where (isnan(dwcap))
-                  dwcap = 0d0
-               end where
-            end if
-         end if
+          if(allocated(dsurf) .and. allocated(dwcap)) then
+              if (any(isnan(dsurf)) .or. any(isnan(dwcap))) then
+                  write (msgbuf, '(a)') 'Surface dissipation fields from SWAN contain NaN values, which have been converted to 0d0. &
+                                       & Check the correctness of the wave results before running the coupling.'
+                  call warn_flush() ! No error, just warning and continue
+                  !
+                  where (isnan(dsurf))
+                      dsurf = 0d0
+                  end where
+                  !
+                  where (isnan(dwcap))
+                      dwcap = 0d0
+                  end where
+              end if
+          end if
 
          all_wave_variables = .not.(jawave == 7 .and. waveforcing /= 3)
          call select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
@@ -444,7 +444,7 @@ subroutine get_values_and_consider_jawave6(item)
     success_copy = success
     success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
     if (jawave == 6) success = success_copy
-    
+
 end subroutine get_values_and_consider_jawave6
 
 
@@ -452,15 +452,14 @@ end subroutine get_values_and_consider_jawave6
 !! select routine depending on whether all or a subgroup of wave variables are allocated
 subroutine select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
 
-   logical, intent(in) :: all_wave_variables
-   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values
+    logical, intent(in) :: all_wave_variables
+    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values
 
-   if (all_wave_variables) then
-       fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
-   else
-
-       fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
-   end if
+    if (all_wave_variables) then
+        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
+    else
+        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
+    end if
 
 end subroutine select_wave_variables_subgroup
 
@@ -497,38 +496,38 @@ end subroutine fill_open_boundary_cells_with_inner_values_all
 !> fill_open_boundary_cells_with_inner_values_fewer
 subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
 
-   integer, intent(in) :: number_of_links      !< number of links
-   integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
+    integer, intent(in) :: number_of_links      !< number of links
+    integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
 
-   integer             :: link !< link counter
-   integer             :: kb   !< cell index of boundary cell
-   integer             :: ki   !< cell index of internal cell
+    integer             :: link !< link counter
+    integer             :: kb   !< cell index of boundary cell
+    integer             :: ki   !< cell index of internal cell
 
-   do link = 1, number_of_links
-       kb   = link2cell(1,link)
-       ki   = link2cell(2,link)
-       hwavcom(kb) = hwavcom(ki)
-       twav(kb)    = twav(ki)
-       phiwav(kb)  = phiwav(ki)
-       uorbwav(kb) = uorbwav(ki)
-       sxwav(kb)   = sxwav(ki)
-       sywav(kb)   = sywav(ki)
-       mxwav(kb)   = mxwav(ki)
-       mywav(kb)   = mywav(ki)
-   end do
+    do link = 1, number_of_links
+        kb   = link2cell(1,link)
+        ki   = link2cell(2,link)
+        hwavcom(kb) = hwavcom(ki)
+        twav(kb)    = twav(ki)
+        phiwav(kb)  = phiwav(ki)
+        uorbwav(kb) = uorbwav(ki)
+        sxwav(kb)   = sxwav(ki)
+        sywav(kb)   = sywav(ki)
+        mxwav(kb)   = mxwav(ki)
+        mywav(kb)   = mywav(ki)
+    end do
 
 end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
 !> convert wave direction [degrees] from nautical to cartesian meteorological convention
 elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
 
-   double precision, intent(in) :: nautical_wave_direction  !< wave direction [degrees] in nautical  convention
-   double precision             :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
+    double precision, intent(in) :: nautical_wave_direction  !< wave direction [degrees] in nautical  convention
+    double precision             :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
 
-   double precision, parameter  :: MAX_RANGE_IN_DEGREES            = 360d0
-   double precision, parameter  :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
+    double precision, parameter  :: MAX_RANGE_IN_DEGREES            = 360d0
+    double precision, parameter  :: CONVERSION_PARAMETER_IN_DEGREES = 270d0
 
-   cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, MAX_RANGE_IN_DEGREES)
+    cartesian_wave_direction = modulo(CONVERSION_PARAMETER_IN_DEGREES - nautical_wave_direction, MAX_RANGE_IN_DEGREES)
 
 end function convert_wave_direction_from_nautical_to_cartesian
 
@@ -577,7 +576,7 @@ subroutine update_network_data()
       call get_timespace_value_by_item(item_general_structure_crestWidth)
       call get_timespace_value_by_item(item_general_structure_gateOpeningWidth)
    end if
-   
+
 end subroutine update_network_data
 
 !> update_subsidence_and_uplift_data
