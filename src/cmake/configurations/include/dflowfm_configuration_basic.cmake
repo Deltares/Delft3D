@@ -193,13 +193,20 @@ endif()
 # Unit tests for dflowfm
 # Only for the version without interacter
 if(NOT WITH_INTERACTER)
-
     if(NOT TARGET ftnunit)
         add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
     endif()
 
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
+    endif()
+    
+    if(NOT TARGET test_deltares_common)
+        add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
+    endif()
+    
+    if(NOT TARGET test_ec_module)
+        add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()
 endif(NOT WITH_INTERACTER)
 

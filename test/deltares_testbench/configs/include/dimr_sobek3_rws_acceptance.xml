@@ -1,7 +1,7 @@
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c01_sobek-maas-j18_5-v2" ref="skillbed_default">
-            <path>e111_sobek3_suite/f01_rws_acceptance_models/c01_sobek-maas-j18_5-v2</path>
+        <testCase name="e111_f01_c01_sobek-maas-j19_5-v3" ref="sobek3_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c01_sobek-maas-j19_5-v3</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
                     <parameters>
@@ -87,8 +87,8 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c02_sobek-markermeer-j10_5-v2_rvw2011" ref="skillbed_default">
-            <path>e111_sobek3_suite/f01_rws_acceptance_models/c02_sobek-markermeer-j10_5-v2_rvw2011</path>
+        <testCase name="e111_f01_c02_sobek-markermeer-j10_5-v2_rvw2007" ref="sobek3_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c02_sobek-markermeer-j10_5-v2_rvw2007</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
                     <parameters>
@@ -105,7 +105,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c03_sobek-nzk_ark-j15_5-v4" ref="skillbed_default">
+        <testCase name="e111_f01_c03_sobek-nzk_ark-j15_5-v4" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c03_sobek-nzk_ark-j15_5-v4</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -156,7 +156,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c04_sobek-ovd-j14_5-v2" ref="skillbed_default">
+        <testCase name="e111_f01_c04_sobek-ovd-j14_5-v2" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c04_sobek-ovd-j14_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -197,7 +197,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c05_sobek-ovd_dv-j14_5-v2" ref="skillbed_default">
+        <testCase name="e111_f01_c05_sobek-ovd_dv-j14_5-v2" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c05_sobek-ovd_dv-j14_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -238,7 +238,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c06_sobek-rijn-j17_5-v3" ref="skillbed_default">
+        <testCase name="e111_f01_c06_sobek-rijn-j17_5-v3" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c06_sobek-rijn-j17_5-v3</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -291,61 +291,114 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c07_sobek-rijn-j17_5-w1_LW2009" ref="skillbed_default">
-            <path>e111_sobek3_suite/f01_rws_acceptance_models/c07_sobek-rijn-j17_5-w1_LW2009</path>
+        <testCase name="e111_f01_c06_sobek-rijn-j22_v1a1_D16000" ref="dimr_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c06_sobek-rijn-j22_v1a1_D16000</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
                     <parameters>
                         <parameter name="water_discharge" toleranceAbsolute="0.1"  />
                         <parameter name="water_level" toleranceAbsolute="0.001" />
-                        <parameter name="water_discharge" location="LMW.Lobith" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.PanKop" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Nijmegenhave" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.TielWaal" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Zaltbommel" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Vuren" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Drielboven" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Drielbeneden" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Amerongenbov" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Amerongenben" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Culemborgbrug" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Hagesteinboven" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Hagesteinben" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Schoonhoven" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.IJsselkop" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Doesburgbrug" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Zutphennoord" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Olst" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.Katerveer" toleranceAbsolute="0.1"  />
-                        <parameter name="water_discharge" location="LMW.KampenHaven" toleranceAbsolute="0.1"  />
-                        <parameter name="water_level" location="LMW.Lobith" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.PanKop" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Nijmegenhave" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.TielWaal" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Zaltbommel" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Vuren" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Drielboven" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Drielbeneden" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Amerongenbov" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Amerongenben" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Culemborgbrug" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Hagesteinboven" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Hagesteinben" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Schoonhoven" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.IJsselkop" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Doesburgbrug" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Zutphennoord" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Olst" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.Katerveer" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LMW.KampenHaven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_discharge" location="BR_862.2_R_LMW-H_Lobith" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="BR_867.2_L_LMW-H_Pannerdensche-kop" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_884.9_L_LMW-H_Nijmegen-haven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_913.3_R_LMW-H_Tiel-Waal" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_934.8_L_LMW-H_Zaltbommel" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_951.8_R_LMW-H_Vuren" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_891.2_R_LMW-H_Driel-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_891.7_R_LMW-H_Driel-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_922.0_R_LMW-H_Amerongen-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_922.5_R_LMW-H_Amerongen-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_939.8_L_LMW-H_Culemborg-brug" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_946.6_R_LMW-H_Hagestein-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_947.1_R_LMW-H_Hagestein-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_971.6_R_LMW-H_Schoonhoven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="PK_878.5_R_LMW-H_IJsselkop" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_903.0_R_LMW-H_Doesburg-brug" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_929.3_L_LMW-H_Zutphen-noord" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_957.1_R_LMW-H_Olst" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_980.8_R_LMW-H_Katerveer" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_994.5_L_LMW-H_Kampen-bovenhaven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_level" location="BR_862.2_R_LMW-H_Lobith" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="BR_867.2_L_LMW-H_Pannerdensche-kop" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_884.9_L_LMW-H_Nijmegen-haven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_913.3_R_LMW-H_Tiel-Waal" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_934.8_L_LMW-H_Zaltbommel" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_951.8_R_LMW-H_Vuren" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_891.2_R_LMW-H_Driel-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_891.7_R_LMW-H_Driel-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_922.0_R_LMW-H_Amerongen-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_922.5_R_LMW-H_Amerongen-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_939.8_L_LMW-H_Culemborg-brug" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_946.6_R_LMW-H_Hagestein-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_947.1_R_LMW-H_Hagestein-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_971.6_R_LMW-H_Schoonhoven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="PK_878.5_R_LMW-H_IJsselkop" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_903.0_R_LMW-H_Doesburg-brug" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_929.3_L_LMW-H_Zutphen-noord" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_957.1_R_LMW-H_Olst" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_980.8_R_LMW-H_Katerveer" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_994.5_L_LMW-H_Kampen-bovenhaven" toleranceAbsolute="0.001"  />
                     </parameters>
                 </file>
             </checks>
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c08_sobek-rmm-vozo-j15_5-v2" ref="skillbed_default">
-            <path>e111_sobek3_suite/f01_rws_acceptance_models/c08_sobek-rmm-vozo-j15_5-v2</path>
+        <testCase name="e111_f01_c07_sobek-rijn-j22_v1a1_S1020" ref="dimr_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c07_sobek-rijn-j22_v1a1_S1020</path>
+            <checks>
+                <file name="dflow1d/output/observations.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="water_discharge" toleranceAbsolute="0.1"  />
+                        <parameter name="water_level" toleranceAbsolute="0.001" />
+                        <parameter name="water_discharge" location="BR_862.2_R_LMW-H_Lobith" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="BR_867.2_L_LMW-H_Pannerdensche-kop" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_884.9_L_LMW-H_Nijmegen-haven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_913.3_R_LMW-H_Tiel-Waal" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_934.8_L_LMW-H_Zaltbommel" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_951.8_R_LMW-H_Vuren" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_891.2_R_LMW-H_Driel-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_891.7_R_LMW-H_Driel-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_922.0_R_LMW-H_Amerongen-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_922.5_R_LMW-H_Amerongen-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_939.8_L_LMW-H_Culemborg-brug" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_946.6_R_LMW-H_Hagestein-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_947.1_R_LMW-H_Hagestein-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_971.6_R_LMW-H_Schoonhoven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="PK_878.5_R_LMW-H_IJsselkop" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_903.0_R_LMW-H_Doesburg-brug" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_929.3_L_LMW-H_Zutphen-noord" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_957.1_R_LMW-H_Olst" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_980.8_R_LMW-H_Katerveer" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_994.5_L_LMW-H_Kampen-bovenhaven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_level" location="BR_862.2_R_LMW-H_Lobith" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="BR_867.2_L_LMW-H_Pannerdensche-kop" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_884.9_L_LMW-H_Nijmegen-haven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_913.3_R_LMW-H_Tiel-Waal" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_934.8_L_LMW-H_Zaltbommel" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_951.8_R_LMW-H_Vuren" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_891.2_R_LMW-H_Driel-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_891.7_R_LMW-H_Driel-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_922.0_R_LMW-H_Amerongen-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_922.5_R_LMW-H_Amerongen-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_939.8_L_LMW-H_Culemborg-brug" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_946.6_R_LMW-H_Hagestein-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_947.1_R_LMW-H_Hagestein-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_971.6_R_LMW-H_Schoonhoven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="PK_878.5_R_LMW-H_IJsselkop" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_903.0_R_LMW-H_Doesburg-brug" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_929.3_L_LMW-H_Zutphen-noord" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_957.1_R_LMW-H_Olst" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_980.8_R_LMW-H_Katerveer" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_994.5_L_LMW-H_Kampen-bovenhaven" toleranceAbsolute="0.001"  />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e111_f01_c08_sobek-rmm-vozo-j15_5-v3" ref="sobek3_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c08_sobek-rmm-vozo-j15_5-v3</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
                     <parameters>
@@ -378,41 +431,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c09_sobek-rmm-vozo-j15_5-v2_JS18" ref="skillbed_default" ignore="true">
-            <path>e111_sobek3_suite/f01_rws_acceptance_models/c09_sobek-rmm-vozo-j15_5-v2_JS18</path>
-            <checks>
-                <file name="dflow1d/output/observations.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="water_level" toleranceAbsolute="0.001" />
-                        <parameter name="water_level" location="HARVT10" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="HKVHLD" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="MAASSS" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="VLAARDGN" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="ROTTDM" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="KRIMPADIJSL" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="KRIMPADLK" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="DORDT" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="SPIJKNSE" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="GOIDSOD" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="MOERDK" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="RAKND" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="HELLVSS" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="SCHOONHVN" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="HAGSBNDN" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="WERKDBTN" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="VURN" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="ZALTBML" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="TIELWL" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="KEIZVR" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="HEESBN" toleranceAbsolute="0.001"  />
-                        <parameter name="water_level" location="LITHDP" toleranceAbsolute="0.001"  />
-                    </parameters>
-                </file>
-            </checks>
-            <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
-        </testCase>
-        <!-- ======================================================================== -->
-        <testCase name="e111_f01_c10_sobek-twentekanaal_j10_5-v2" ref="skillbed_default">
+        <testCase name="e111_f01_c10_sobek-twentekanaal_j10_5-v2" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c10_sobek-twentekanaal_j10_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -463,7 +482,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c11_sobek-vrm-j10_5-v2" ref="skillbed_default">
+        <testCase name="e111_f01_c11_sobek-vrm-j10_5-v2" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c11_sobek-vrm-j10_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -484,7 +503,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c12_sobek-ym_ijd-j16_5-v3_rvw2007" ref="skillbed_default">
+        <testCase name="e111_f01_c12_sobek-ym_ijd-j16_5-v3_rvw2007" ref="sobek3_default">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c12_sobek-ym_ijd-j16_5-v3_rvw2007</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -578,10 +597,146 @@
                         <parameter name="water_level" location="MARO" toleranceAbsolute="0.001"  />
                         <parameter name="water_level" location="GRWI" toleranceAbsolute="0.001"  />
                         <parameter name="water_level" location="PLOT" toleranceAbsolute="0.001"  />
-
                     </parameters>
                 </file>
             </checks>
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
-    </testCases>
+        <!-- ======================================================================== -->
+        <testCase name="e111_f01_c14_sobek-rmm-vzm-j15_5-v4" ref="sobek3_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c14_sobek-rmm-vzm-j15_5-v4</path>
+            <checks>
+                <file name="dflow1d/output/observations.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="water_level" toleranceAbsolute="0.001" />
+                        <parameter name="water_level" location="HARVT10" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="HKVHLD" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="MAASSS" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="VLAARDGN" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="ROTTDM" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="KRIMPADIJSL" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="KRIMPADLK" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="DORDT" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="SPIJKNSE" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="GOIDSOD" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="MOERDK" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="RAKND" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="HELLVSS" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="SCHOONHVN" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="HAGSBNDN" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WERKDBTN" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="VURN" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="ZALTBML" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="TIELWL" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="KEIZVR" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="HEESBN" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LITHDP" toleranceAbsolute="0.001"  />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e111_f01_c15_sobek-rijn-j22_v1a1" ref="dimr_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c15_sobek-rijn-j22_v1a1</path>
+            <checks>
+                <file name="dflow1d/output/observations.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="water_discharge" toleranceAbsolute="0.1"  />
+                        <parameter name="water_level" toleranceAbsolute="0.001" />
+                        <parameter name="water_discharge" location="BR_862.2_R_LMW-H_Lobith" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="BR_867.2_L_LMW-H_Pannerdensche-kop" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_884.9_L_LMW-H_Nijmegen-haven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_913.3_R_LMW-H_Tiel-Waal" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_934.8_L_LMW-H_Zaltbommel" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="WL_951.8_R_LMW-H_Vuren" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_891.2_R_LMW-H_Driel-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_891.7_R_LMW-H_Driel-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_922.0_R_LMW-H_Amerongen-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NR_922.5_R_LMW-H_Amerongen-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_939.8_L_LMW-H_Culemborg-brug" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_946.6_R_LMW-H_Hagestein-boven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_947.1_R_LMW-H_Hagestein-beneden" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LE_971.6_R_LMW-H_Schoonhoven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="PK_878.5_R_LMW-H_IJsselkop" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_903.0_R_LMW-H_Doesburg-brug" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_929.3_L_LMW-H_Zutphen-noord" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_957.1_R_LMW-H_Olst" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_980.8_R_LMW-H_Katerveer" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="IJ_994.5_L_LMW-H_Kampen-bovenhaven" toleranceAbsolute="0.1"  />
+                        <parameter name="water_level" location="BR_862.2_R_LMW-H_Lobith" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="BR_867.2_L_LMW-H_Pannerdensche-kop" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_884.9_L_LMW-H_Nijmegen-haven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_913.3_R_LMW-H_Tiel-Waal" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_934.8_L_LMW-H_Zaltbommel" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="WL_951.8_R_LMW-H_Vuren" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_891.2_R_LMW-H_Driel-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_891.7_R_LMW-H_Driel-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_922.0_R_LMW-H_Amerongen-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NR_922.5_R_LMW-H_Amerongen-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_939.8_L_LMW-H_Culemborg-brug" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_946.6_R_LMW-H_Hagestein-boven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_947.1_R_LMW-H_Hagestein-beneden" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LE_971.6_R_LMW-H_Schoonhoven" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="PK_878.5_R_LMW-H_IJsselkop" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_903.0_R_LMW-H_Doesburg-brug" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_929.3_L_LMW-H_Zutphen-noord" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_957.1_R_LMW-H_Olst" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_980.8_R_LMW-H_Katerveer" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="IJ_994.5_L_LMW-H_Kampen-bovenhaven" toleranceAbsolute="0.001"  />
+                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- ======================================================================== -->
+        <testCase name="e111_f01_c16_sobek-lsm3-j18_5-v6" ref="dimr_default">
+            <path>e111_sobek3_suite/f01_rws_acceptance_models/c16_sobek-lsm3-j18_5-v6</path>
+            <checks>
+                <file name="dflow1d/output/observations.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="water_discharge" location="Drongelens_Kanaal" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="GatVanKampen_2" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="HKVHLD" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LMW.Borgh_Julkan" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LMW.Grave_bov" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LMW.Heesbeen" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="LMW.Lith_dorp" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="Maasmond" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="NZ_mGAARKEUKEN_BOV" toleranceAbsolute="0.1"  />
+                        <parameter name="water_discharge" location="RakNoord" toleranceAbsolute="0.1"  />
+                        <parameter name="water_level" location="Drongelens_Kanaal" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="GatVanKampen_2" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="HKVHLD" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LMW.Borgh_Julkan" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LMW.Grave_bov" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LMW.Heesbeen" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="LMW.Lith_dorp" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="Maasmond" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="NZ_mGAARKEUKEN_BOV" toleranceAbsolute="0.001"  />
+                        <parameter name="water_level" location="RakNoord" toleranceAbsolute="0.001"  />
+                        <parameter name="water_salinity" location="Drongelens_Kanaal" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="GatVanKampen_2" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="HKVHLD" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="LMW.Borgh_Julkan" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="LMW.Grave_bov" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="LMW.Heesbeen" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="LMW.Lith_dorp" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="Maasmond" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="NZ_mGAARKEUKEN_BOV" toleranceAbsolute="0.1"  />
+                        <parameter name="water_salinity" location="RakNoord" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="Drongelens_Kanaal" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="GatVanKampen_2" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="HKVHLD" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="LMW.Borgh_Julkan" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="LMW.Grave_bov" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="LMW.Heesbeen" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="LMW.Lith_dorp" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="Maasmond" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="NZ_mGAARKEUKEN_BOV" toleranceAbsolute="0.1"  />
+                        <parameter name="water_temperature" location="RakNoord" toleranceAbsolute="0.1"  />                    </parameters>
+                </file>
+            </checks>
+            <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+        </testCase>
+   	</testCases>

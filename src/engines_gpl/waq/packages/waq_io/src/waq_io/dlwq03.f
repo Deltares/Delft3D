@@ -25,7 +25,7 @@
       use m_read_hydfile
       use m_opt1
       use m_opt0
-      use m_grid
+      use m_waq_grid
 
 
       implicit none
@@ -34,7 +34,7 @@
 
 
       subroutine dlwq03 ( lun    , lchar  , filtype, nrftot , nrharm ,
-     &                    ivflag , dtflg1 , iwidth , dtflg3 , 
+     &                    ivflag , dtflg1 , iwidth , dtflg3 ,
      &                    ioutpt , gridps , syname , ierr   , iwar   ,
      &                    has_hydfile     , nexch                    )
 
@@ -237,7 +237,7 @@
                   end if
                   write ( lunut , 2550 ) trim(mesh_name)
                endif
-   
+
                if (meshid1d > 0 ) then
                   inc_error = nf90_inquire_variable( ncid, meshid1d, mesh_name )
                   if (inc_error /= nf90_noerr ) then
@@ -681,7 +681,7 @@
       ! Check the contents of the volumes file: id the time step compatible?
       !
       subroutine check_volume_time( lunut, filvol, noseg, ierr2 )
-      
+
       use m_sysi          ! Timer characteristics
 
 

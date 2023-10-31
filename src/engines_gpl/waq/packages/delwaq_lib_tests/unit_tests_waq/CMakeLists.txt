@@ -14,7 +14,6 @@ set(oss_dependencies delwaq_lib
                      waq_kernel
                      waq_definition
                      )
-oss_include_libraries(${executable_name} oss_dependencies)
 
 # Link libraries
 target_link_libraries(${executable_name} ${oss_dependencies})

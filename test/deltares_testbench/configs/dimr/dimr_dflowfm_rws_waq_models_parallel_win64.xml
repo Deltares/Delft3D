@@ -87,7 +87,7 @@
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/default</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
             </environments>
         </program>
         <program name="dimr4" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -103,7 +103,7 @@
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/default</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
             </environments>
         </program>
         <program name="dfmoutput" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">

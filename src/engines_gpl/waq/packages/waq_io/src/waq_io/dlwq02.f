@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq02
       use m_waq_type_definitions
-      use m_timer
+      use m_waq_timer
       use m_rearaa
       use m_readmp
       use m_dlwq0i

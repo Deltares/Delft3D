@@ -6,7 +6,6 @@ set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the WAQ pa
 set(waq_version_path ${waq_root_path}/version)
 set(waq_data_path ${waq_root_path}/include)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_delwaq1.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -23,32 +22,13 @@ get_fortran_source_files(${src_path} source_files)
 set(executable_name delwaq1)
 add_executable(${executable_name} ${source_files}
                                   ${icon_file}
-                                  ${rc_version_file}
-                                  ${fortran_version_file_delwaq})
-
-set_source_files_properties(${fortran_version_file} ${fortran_version_file_delwaq}
-                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+                                  ${rc_version_file})
 
 # Add dependencies
-set(oss_dependencies deltares_common
-                     deltares_common_c
-                     io_netcdf
-                     io_netcdf_data
-                     delwaq_lib
-                     waq_hyd_data
-                     waq_io
-                     waq_validation
-                     waq_data
-                     waq_kernel
-                     waq_process
-                     waq_utils_c
-                     waq_utils_f
-                     waq_definition
-                     )
+set(oss_dependencies delwaq_lib)
 
 
 target_link_libraries(${executable_name} ${oss_dependencies})
-oss_include_libraries(${executable_name} oss_dependencies)
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")

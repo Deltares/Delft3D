@@ -49,8 +49,8 @@ contains
 !!
 subroutine reconst_vel_coeffs_fmx()
 
-   use m_partrecons
-   use m_partmesh
+   use m_part_recons
+   use m_part_mesh
    use m_alloc
    use m_sferic
    use geometry_module, only: dbdistance, gaussj
@@ -178,10 +178,10 @@ end subroutine reconst_vel_coeffs_fmx
 !!
 subroutine reconst_vel(q, h0, h1)
    use partmem, only: hyd
-   use m_flowgeom, only: Ndx, Lnx, bl
-   use m_flowparameters, only: epshs
-   use m_partrecons
-   use m_partmesh
+   use m_part_geom, only: Ndx, Lnx, bl
+   use m_part_parameters, only: epshs
+   use m_part_recons
+   use m_part_mesh
    use m_sferic
    use geometry_module, only: dbdistance
    use timers
@@ -302,8 +302,8 @@ end subroutine reconst_vel
 !!
 subroutine set_fluxes(Lnx,q,qe)
    use partmem, only: hyd
-   use m_partmesh
-   use m_partfluxes
+   use m_part_mesh
+   use m_part_fluxes
    use timers
 
    implicit none
@@ -340,8 +340,8 @@ end subroutine set_fluxes
 !! Part of the grid administration
 !!
 subroutine comp_fluxcoeffs()
-   use m_partmesh
-   use m_partfluxes
+   use m_part_mesh
+   use m_part_fluxes
    use m_alloc
    use MessageHandling
    use geometry_module, only: gaussj
@@ -518,8 +518,8 @@ end subroutine comp_fluxcoeffs
 !> (Re)allocate arrays for storing flux coefficients
 !!
 subroutine realloc_partfluxes()
-   use m_partmesh
-   use m_partfluxes
+   use m_part_mesh
+   use m_part_fluxes
    use m_alloc
    use m_missing
    implicit none
@@ -536,7 +536,7 @@ end subroutine realloc_partfluxes
 !> Deallocate arrays for flux coefficients
 !!
 subroutine dealloc_partfluxes()
-   use m_partfluxes
+   use m_part_fluxes
    implicit none
 
    if ( allocated(iflux2link) ) deallocate(iflux2link)
@@ -549,8 +549,8 @@ end subroutine dealloc_partfluxes
 !!
 subroutine realloc_partrecons()
    use partmem, only: hyd
-   use m_partmesh
-   use m_partrecons
+   use m_part_mesh
+   use m_part_recons
    use m_alloc
    use m_missing
    use m_sferic, only: jsferic
@@ -574,7 +574,7 @@ end subroutine realloc_partrecons
 
 !> Deallocate flux_coeffs
 subroutine dealloc_partrecons()
-   use m_partrecons
+   use m_part_recons
    implicit none
 
    if ( allocated(qe) ) deallocate(qe)
@@ -613,7 +613,7 @@ end function icommonval
 !!
 subroutine alloc_auxfluxes()
    use m_particles
-   use m_flowgeom, only: Ndx, Lnx
+   use m_part_geom, only: Ndx, Lnx
    use m_alloc
    implicit none
 

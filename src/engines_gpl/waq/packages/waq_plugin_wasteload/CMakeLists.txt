@@ -32,7 +32,6 @@ set(oss_dependencies waq_definition
                      )
 
 
-oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties

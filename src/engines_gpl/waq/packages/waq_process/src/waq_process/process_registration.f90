@@ -92,7 +92,7 @@ module process_registration
     use m_dlalg
     use m_extina
     use m_dsptra
-    use m_dredge
+    use m_dredge_process
     use m_secchi
     use m_npps12
     use m_staqtl
@@ -399,7 +399,7 @@ subroutine pronrs( pronam, imodul )
         process_routine(136) = process_routine_info( 'NPPS12', NPPS12 )
         process_routine(137) = process_routine_info( 'DEBGRZ', DEBGRZ )
         process_routine(138) = process_routine_info( 'FLOCEQ', FLOCEQ )
-        process_routine(139) = process_routine_info( 'DREDGE', DREDGE )
+        process_routine(139) = process_routine_info( 'DREDGE', dredge_process )
         process_routine(140) = process_routine_info( 'RESPUP', RESPUP )
         process_routine(141) = process_routine_info( 'RESBUF', RESBUF )
         process_routine(142) = process_routine_info( 'SEDIM ', SEDIM  )

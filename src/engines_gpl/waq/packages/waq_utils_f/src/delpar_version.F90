@@ -29,8 +29,9 @@
 
 module delpar_version_module
 
+
     use m_waq_type_definitions
-    use static_version_info
+    use waq_static_version_info
 
     implicit none
 

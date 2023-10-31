@@ -38,7 +38,7 @@ subroutine unc_init_trk()
    use netcdf
    use m_partfm_trk_netcdf
    use fileinfo, only: filebase
-   use m_flowtimes
+   use m_part_times
    use MessageHandling
 
    implicit none
@@ -65,7 +65,7 @@ end subroutine unc_init_trk
 
 subroutine unc_write_trk()
 
-   use m_flowtimes
+   use m_part_times
    use netcdf
    use m_partfm_trk_netcdf
    use MessageHandling
@@ -79,7 +79,7 @@ subroutine unc_write_trk()
    data ithndl / 0 /
    if ( timon ) call timstrt( "unc_write_trk", ithndl )
 
-   ! Increment output counters in m_flowtimes.
+   ! Increment output counters in m_part_flowtimes.
    time_trk = nint(time1)
    it_trk   = it_trk + 1
    ierr = nf90_put_var(itrkfile, id_trk_time, time_trk, [ it_trk ])
@@ -114,8 +114,8 @@ subroutine unc_init_map(crs, meshgeom, nosegl, nolay)
    use fileinfo, only: filebase
    use netcdf
    use io_ugrid
-   use m_flowtimes
-   use m_flowgeom
+   use m_part_times
+   use m_part_geom
    use m_alloc
    use m_missing
 
@@ -219,10 +219,10 @@ end subroutine unc_init_map
 subroutine unc_write_map()
 
    use partmem, only: nosubs, hyd
-   use m_flowtimes
-   use m_flowgeom
-   use m_transport
-   use m_flow, only: h1
+   use m_part_times
+   use m_part_geom
+   use m_part_transport
+   use m_part_flow, only: h1
    use m_particles, only: part_iconst
    use netcdf
    use m_partfm_map_netcdf
@@ -237,7 +237,7 @@ subroutine unc_write_map()
    data ithndl / 0 /
    if ( timon ) call timstrt( "unc_write_map", ithndl )
 
-   ! Increment output counters in m_flowtimes.
+   ! Increment output counters in m_part_flowtimes.
    time_map = nint(time1)
    it_map   = it_map + 1
    ierr = nf90_put_var(imapfile, id_map_time, time_map, [it_map])
@@ -294,7 +294,7 @@ subroutine unc_write_part_header(ifile, id_timedim, id_trk_partdim, id_trk_partt
               id_trk_partx, id_trk_party, id_trk_partz)
    use m_particles
    use netcdf
-   use m_flow, only: kmx
+   use m_part_flow, only: kmx
    use m_sferic, only: jsferic
    use MessageHandling
    use m_missing
@@ -362,13 +362,13 @@ end subroutine unc_write_part_header
 !> write particles to netcdf file
 subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_party, id_trk_partz)
    use partmem, only: nopart, hyd, mpart
-   use m_partmesh
+   use m_part_mesh
    use m_particles, laypart => kpart
    use netcdf
    use m_sferic
    use m_sferic_part, only: ptref
-   use m_flow, only: kmx, h1
-   use m_flowgeom, only: bl
+   use m_part_flow, only: kmx, h1
+   use m_part_geom, only: bl
    use geometry_module, only: cart3Dtospher
    use m_missing
    use MessageHandling
@@ -501,7 +501,7 @@ end subroutine unc_addglobalatts
 !> Sets the UDUnit timestring based on current model time settings.
 !! Module variable Tudunitstr can the be used in various output routines.
 subroutine setTUDUnitString()
-   use m_flowtimes
+   use m_part_times
 
    implicit none
 
@@ -523,10 +523,10 @@ end subroutine setTUDUnitString
 subroutine comp_concentration(h, nconst, iconst, c)
    use partmem, only: mpart, wpart, oil, nfract, nopart, hyd
    use m_particles, laypart => kpart
-   use m_partmesh
-   use m_flowgeom, only : Ndx, ba, bl
-   use m_flowparameters, only: epshs
-   use m_flow, only: Ndkx, kmx
+   use m_part_mesh
+   use m_part_geom, only : Ndx, ba, bl
+   use m_part_parameters, only: epshs
+   use m_part_flow, only: Ndkx, kmx
    use timers
 
    implicit none

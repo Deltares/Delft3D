@@ -9,8 +9,7 @@ set(executable_name test_waqlib_multi)
 add_executable(${executable_name} ${source_files}) 
 
 # Extra dependencies
-set(oss_dependencies delwaq_lib waq_definition)
-oss_include_libraries(${executable_name} oss_dependencies)
+set(oss_dependencies delwaq_lib)
 
 # Link libraries
 target_link_libraries(${executable_name} ${oss_dependencies})

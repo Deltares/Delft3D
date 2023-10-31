@@ -20,9 +20,8 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_timer
+      module m_waq_timer
       use m_waq_type_definitions
-
 
       implicit none
 
@@ -164,4 +163,4 @@
  2040 format ( /' ERROR: String is not a valid absolute timer :',A)
       end
 
-      end module m_timer
+      end module m_waq_timer

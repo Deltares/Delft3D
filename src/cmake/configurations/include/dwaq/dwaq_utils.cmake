@@ -31,3 +31,7 @@ endif()
 if(NOT TARGET io_hyd)
     add_subdirectory(${checkout_src_root}/${io_hyd_module} io_hyd)
 endif()
+
+if(NOT TARGET waq_hyd_data)
+    add_subdirectory(${checkout_src_root}/${waq_hyd_data_module} waq_hyd_data)
+endif()
