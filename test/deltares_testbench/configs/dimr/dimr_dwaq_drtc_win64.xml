@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
     <!--
     Basic Windows configuration file: For "wes" (Wind Enhanced Scheme)
     -->
@@ -51,7 +54,7 @@
             <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>dimr/bin/dimr.exe</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -79,12 +82,14 @@
             <programs>
                 <program ref="dimr">
                     <arguments>
-                        <argument>dimr.xml</argument>
+                        <argument>-m</argument>
+                        <argument>dimr_config.xml</argument>
                     </arguments>
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>win64</from>
+                <!-- Yes, point to the Linux references. Since using CMake, the Windows results look more like the Linux results -->
+                <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -95,7 +100,8 @@
         <testCase name="dummy">
             <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro -->
             <location ref="reference_results" type="reference">
-                <from>win64</from>
+                <!-- Yes, point to the Linux references. Since using CMake, the Windows results look more like the Linux results -->
+                <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -107,31 +113,5 @@
     <!--
     testCases
     -->
-    <testCases>
-        <testCase name="e03_f09_c60_sedimentation_fluff_model_1d" ref="dwaq_default">
-            <path>e03_waq/f09_validation_water_quality_delwaq/c60_sedimentation_fluff_model_1d</path>
-            <checks>
-                <file name="dwaq/sediment_val.ada" type="NEFIS">
-                    <parameters name="DELWAQ_RESULTS">
-                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    </parameters>
-                </file>
-                <file name="dwaq/sediment_val.hda" type="NEFIS">
-                    <parameters name="DELWAQ_RESULTS">
-                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                        <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    </parameters>
-                </file>
-            </checks>
-        </testCase>
-    </testCases>
+    <xi:include href="../include/dwaq_drtc_combination.xml"/>
 </deltaresTestbench_v3>

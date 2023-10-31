@@ -583,4 +583,21 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f09_c107_determination_shear_stress_max_nelson_criterium" ref="dwaq_default">
+        <path>e03_waq/f09_validation_water_quality_delwaq/c107_determination_shear_stress_max_nelson_criterium</path>
+        <checks>
+            <file name="dwaq/max_nelson_4_separate_segments.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-07" toleranceRelative="1.0e-09"/>
+                </parameters>
+            </file>
+            <file name="dwaq/max_nelson_4_separate_segments.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-07" toleranceRelative="1.0e-09"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
 </testCases>
