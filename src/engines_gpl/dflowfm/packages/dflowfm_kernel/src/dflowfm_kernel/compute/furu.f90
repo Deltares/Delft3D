@@ -45,6 +45,7 @@
  use m_trachy, only: trachy_resistance
  use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
  use m_flowparameters, only: ifixedWeirScheme1d2d
+ use fm_manhole_losses, only: calculate_manhole_losses
 
  implicit none
 
@@ -128,12 +129,12 @@
              st2  = sin(dg2rd*yu(L))**2
              agp  = 9.7803253359*(1d0+0.00193185265241*st2)/sqrt(1d0-0.00669437999013*st2)
           endif
-          gdxi  = agp*dxi(L) 
+          gdxi  = agp*dxi(L) ! g/dx
           if (jarhoxu >= 2) then
              gdxi = gdxi*rhomean/rhou(L)
           endif
 
-          cu    = gdxi*teta(L)
+          cu    = gdxi*teta(L) !g/dx * impliciet/expliciet factor = 1/s^2
           du    = dti*u0(L) - adve(L) + gdxi*slopec
           ds    = s0(k2) - s0(k1)
           if (teta(L) /= 1d0) then
@@ -189,8 +190,8 @@
               frL = cfuhi(L)*sqrt(u1L*u1L + v2)      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
           endif
 
-          bui   = 1d0 / ( dti + advi(L) + frL )
-          fu(L) = cu*bui
+          bui   = 1d0 / ( dti + advi(L) + frL ) ! advi = 1/s => bui = s
+          fu(L) = cu*bui ! u = fu(1/s)*ds(m) + ru(m/s) , cu = 1/s^2
           ru(L) = du*bui
           u1L0  = u1L
           u1L   = ru(L) - fu(L)*ds
@@ -202,8 +203,10 @@
        endif
 
     enddo
-    !$OMP END PARALLEL DO   ! todo check difference
+    !$OMP END PARALLEL DO
 
+    call calculate_manhole_losses(network%storS,advi)
+    
     if (npump > 0) then ! model has at least one pump link
     do np = 1,npumpsg  ! loop over pump signals, sethu
        qp    = qpump(np)
