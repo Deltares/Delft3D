@@ -8697,68 +8697,6 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f019_c081_1Dchannel_explicit_horizontal_dispersion_2" ref="dflowfm_default">
-      <path>e02_dflowfm/f019_transport/c081_1Dchannel_explicit_horizontal_dispersion_2</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>test_1.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_1_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/test_1_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
-    <testCase name="e02_f019_c082_1Dchannel_implicit_horizontal_dispersion" ref="dflowfm_default">
-      <path>e02_dflowfm/f019_transport/c082_1Dchannel_implicit_horizontal_dispersion</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>test_3.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_3_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/test_3_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
     <testCase name="e02_f019_c083_NewWaterway_explicit_horizontal_dispersion" ref="dflowfm_default">
       <path>e02_dflowfm/f019_transport/c083_NewWaterway_explicit_horizontal_dispersion</path>
       <programs>

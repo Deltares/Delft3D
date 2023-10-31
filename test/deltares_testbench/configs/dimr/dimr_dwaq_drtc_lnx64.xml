@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns:xi="http://www.w3.org/2001/XInclude" 
-         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
     <config>
         <localPaths>
             <testCasesDir>./data/cases</testCasesDir>
@@ -10,17 +10,17 @@
             <referenceDir>./data/reference_results</referenceDir>
         </localPaths>
         <locations>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+            </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
                 <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
-            </location>
-            <location name="reference_engines">
-                <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
@@ -53,17 +53,24 @@
                 <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
             </environments>
         </program>
-        <program name="execute_singularity" logOutputToFile="true" programStringRemoveQuotes="true">
+        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <location ref="reference_engines" type="reference">
                 <from>lnx64</from>
             </location>
             <location ref="local" type="check">
-                <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
-            <path>execute_singularity.sh</path>
+            <path>bin/run_dimr.sh</path>
             <environments>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="OMP_NUM_THREADS_SWAN" type="raw">1</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            </environments>
+        </program>
+        <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <shell ref="command_prompt"/>
+            <path>thirdparty/vs/lnx64/vs</path>
+            <environments>
+                <environment name="PAGER" type="raw">more</environment>
             </environments>
         </program>
     </programs>
@@ -71,13 +78,10 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr_trunk">
+        <testCase name="dwaq_default">
             <programs>
-                <program ref="execute_singularity">
+                <program ref="dimr">
                     <arguments>
-                        <argument>-p</argument>
-                        <argument>2</argument>
-                        <argument>run_dimr.sh</argument>
                         <argument>-m</argument>
                         <argument>dimr_config.xml</argument>
                     </arguments>
@@ -89,11 +93,23 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="dummy">
+            <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro -->
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
         </testCase>
     </defaultTestCases>
     <!--
     testCases
     -->
-    <xi:include href="../../include/dimr_dflowfm_dwaves.xml"/>
- </deltaresTestbench_v3>
+    <xi:include href="../include/dwaq_drtc_combination.xml"/>
+</deltaresTestbench_v3>

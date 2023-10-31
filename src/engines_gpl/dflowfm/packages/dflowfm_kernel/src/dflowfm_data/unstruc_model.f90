@@ -1112,8 +1112,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'jposhchk'       , jposhchk)
     call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme'  , ifixedweirscheme, success)
     ifixedweirscheme_input = ifixedweirscheme
-    call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme1d2d'  , ifixedweirscheme1D2D, success)
-    call prop_get_double(md_ptr, 'numerics', 'FixedWeir1d2d_dx'     , lat_fix_weir_dx )
+    call prop_get_integer(md_ptr, 'numerics', 'FixedweirScheme1d2d'  , ifixedweirscheme1D2D, success)
+    call prop_get_double(md_ptr, 'numerics', 'Fixedweir1d2d_dx'     , lat_fix_weir_dx )
     call prop_get_double( md_ptr, 'numerics', 'FixedWeirContraction' , Fixedweircontraction, success)
 
     call prop_get_integer(md_ptr, 'numerics', 'Fixedweirfrictscheme'  , ifxedweirfrictscheme)
