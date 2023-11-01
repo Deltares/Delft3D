@@ -45,10 +45,10 @@ module m_array_predicates
 
    !> Test if the array never contains decreasing values.
    pure function is_monotonically_increasing_double(array, end_index, start_index) result(res)
-      logical                                      :: res         !> Whether the array elements increase monotonically
-      double precision, dimension(:),  intent(in)  :: array       !> The array to test
-      integer, optional,               intent(in)  :: end_index   !> If present, only test for the subarray ending at end_index
-      integer, optional,               intent(in)  :: start_index !> If present, only test for the subarray starting at start_index
+      logical                                      :: res         !< Whether the array elements increase monotonically
+      double precision, dimension(:),  intent(in)  :: array       !< The array to test
+      integer, optional,               intent(in)  :: end_index   !< If present, only test for the subarray ending at end_index
+      integer, optional,               intent(in)  :: start_index !< If present, only test for the subarray starting at start_index
 
       integer :: local_end_index
       integer :: local_start_index

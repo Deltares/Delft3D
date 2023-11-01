@@ -29,7 +29,7 @@
 !> Utility routines for memory (re)allocation.
 module m_alloc
 implicit none
-private 
+private
 
 public realloc, reallocP, aerr, allocSize
 
@@ -63,7 +63,7 @@ public realloc, reallocP, aerr, allocSize
 !!   allocate(itens(10,20,30))
 !!   call realloc(itens, (/ 100, 200, 300 /), fill = 0)
 !! \endcode
-!! 
+!!
 !! \param[in,out] arr Array (up to rank 4) to be reallocated.
 !! \param[in]     uindex Desired new size (upper index) for array, scalar
 !!      when arr has rank 1, or rank 1 array with size ra when arr
@@ -368,26 +368,26 @@ end subroutine reallocPInt
 !===============================================================================
 subroutine reallocInt(arr, uindex, lindex, stat, fill, shift, keepExisting)
    implicit none
-   integer, allocatable, intent(inout)             :: arr(:)
-   integer, intent(in)                          :: uindex
-   integer, intent(in), optional                :: lindex
-   integer, intent(out), optional               :: stat
-   integer, intent(in), optional                   :: fill
-   integer, intent(in), optional                :: shift
-   logical, intent(in), optional                :: keepExisting
+   integer, allocatable, intent(inout) :: arr(:)
+   integer, intent(in)                 :: uindex
+   integer, intent(in), optional       :: lindex
+   integer, intent(out), optional      :: stat
+   integer, intent(in), optional       :: fill
+   integer, intent(in), optional       :: shift
+   logical, intent(in), optional       :: keepExisting
 
-   integer, allocatable                            :: b(:)
-   integer        :: uind, lind, muind, mlind, lindex_, shift_
-
-   integer        :: localErr
-   logical        :: docopy
-   logical        :: equalSize
+   integer, allocatable                :: temp(:)
+   integer                             :: original_l_index, original_u_index, data_l_index, data_u_index, new_l_index, new_u_index, shift_
+   integer                             :: local_err
+   logical                             :: do_copy
+   logical                             :: equal_bounds
 
    if (present(lindex)) then
-      lindex_ = lindex
+      new_l_index = lindex
    else
-      lindex_ = 1
+      new_l_index = 1
    endif
+   new_u_index = uindex
 
    if (present(shift)) then
       shift_ = shift
@@ -396,39 +396,45 @@ subroutine reallocInt(arr, uindex, lindex, stat, fill, shift, keepExisting)
    endif
 
    if (present(keepExisting)) then
-      docopy = keepExisting
+      do_copy = keepExisting
    else
-      docopy = .true.
-   end if
+      do_copy = .true.
+   endif
 
-   if (present(stat)) stat = 0
-   localErr = 0
+   local_err = 0
    if (allocated(arr)) then
-      uind = ubound(arr,1)
-      lind = lbound(arr,1)
-      equalSize = (uindex == uind) .and. (lindex_ == lind)
-      if (equalSize .and. (docopy .or. .not. present(fill)) .and. shift_==0) then
+      original_l_index = lbound(arr, dim=1)
+      original_u_index = ubound(arr, dim=1)
+      equal_bounds = (new_l_index == original_l_index) .and. (new_u_index == original_u_index)
+      if (equal_bounds .and. (do_copy .or. .not. present(fill)) .and. shift_ == 0) then
          goto 999 ! output=input
-      end if
-!
-      if (docopy) then
-         mlind = max(lind + shift_, lindex_)
-         muind = min(uind + shift_, uindex)
-         allocate (b(mlind:muind))
-        b(mlind:muind) = arr(mlind-shift_:muind-shift_)
       endif
-      if (.not.equalSize) deallocate(arr, stat = localErr)
    endif
-   if (.not.allocated(arr) .and. localErr==0) then
-       allocate(arr(lindex_:uindex), stat = localErr)
+
+   allocate(temp(new_l_index : new_u_index), stat=local_err)
+   if (local_err /= 0) then
+      goto 999
    endif
-   if (present(fill) .and. localErr==0) arr = fill
-   if (allocated(b) .and. localErr==0 .and. size(b)>0) then
-      arr(mlind:muind) = b(mlind:muind)
-      deallocate(b, stat = localErr)
+
+   if (do_copy .and. allocated(arr)) then
+      data_l_index = max(original_l_index + shift_, new_l_index)
+      data_u_index = min(original_u_index + shift_, new_u_index)
+      ! arr access below is safe, because:
+      ! data_l_index - shift_ >= (original_l_index + shift_) - shift_ = original_l_index
+      ! data_u_index - shift_ <= (original_u_index + shift_) - shift_ = original_u_index
+      temp(data_l_index : data_u_index) = arr(data_l_index - shift_ : data_u_index - shift_)
+      if (present(fill)) then
+         temp(new_l_index : data_l_index - 1) = fill
+         temp(data_u_index + 1 : new_u_index) = fill
+      endif
+   elseif (present(fill)) then
+      temp = fill
    endif
+   call move_alloc(temp, arr)
 999 continue
-   if (present(stat)) stat = localErr
+   if (present(stat)) then
+      stat = local_err
+   endif
 end subroutine reallocInt
 !
 !
