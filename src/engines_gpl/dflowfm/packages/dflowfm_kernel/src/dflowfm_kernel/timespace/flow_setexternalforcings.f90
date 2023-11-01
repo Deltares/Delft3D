@@ -774,7 +774,8 @@ end subroutine print_error_message
    
 end subroutine set_external_forcings
 
-!=============================================================================== not contained in set_external_forcings
+
+
 !> select_wave_variables_subgroup
 !! select routine depending on whether all or a subgroup of wave variables are allocated
 subroutine select_wave_variables_subgroup(all_wave_variables)
