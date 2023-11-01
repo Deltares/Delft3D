@@ -71,6 +71,7 @@ module m_tables
 
    interface realloc
       module procedure reallocTable
+      module procedure reallocTableSet
    end interface
 
    interface dealloc
@@ -187,6 +188,24 @@ contains
 
    end subroutine ShiftValuesTbl
 
+   !> Reallocates a table's internal memory such that it can store a particular table length.
+   !!
+   !! @See setTable for setting actual new values into this table.
+   subroutine reallocTable(table, new_length)
+
+      ! Input/output parameters
+      type(t_table), pointer       :: table      !< Table to reallocate; any existing data will be preserved.
+      integer,       intent(in   ) :: new_length !< Desired new length of the table arrays. Note that the length attribute will not be changed, as no new values will added yet.
+
+      if (.not. associated(table)) then
+         allocate(table)
+      end if
+      
+      call reallocP(table%x, new_length, keepExisting = .true.)
+      call reallocP(table%y, new_length, keepExisting = .true.)
+      
+   end subroutine reallocTable
+
    subroutine deallocTable(table)
       ! Modules
 
@@ -207,7 +226,7 @@ contains
 
    end subroutine deallocTable
 
-   subroutine reallocTable(tbs)
+   subroutine reallocTableSet(tbs)
       ! Modules
    
       implicit none
@@ -239,7 +258,7 @@ contains
       endif
       tbs%Size = tbs%Size+tbs%growsBy
    
-   end subroutine realloctable
+   end subroutine realloctableSet
    
    subroutine dealloctableSet(tbs)
       ! Modules
