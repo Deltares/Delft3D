@@ -96,10 +96,11 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
    end if
-   if (ja_varying_airdensity==1) then
+   if (ja_varying_airdensity==1) then 
       call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm)
       call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
-      call get_airdensity(patm, tair, airdensity, ierr)
+      call get_timespace_value_by_item_array_consider_success_value(item_humidity, rhum)
+      call get_airdensity(patm, tair, rhum, airdensity, ierr)
    end if
 
 

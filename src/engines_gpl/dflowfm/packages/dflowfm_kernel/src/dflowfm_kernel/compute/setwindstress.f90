@@ -113,7 +113,7 @@
                 roa  = roair(k)
              endif
           endif
-          if (ja_airdensity > 0 .or. ja_varying_airdensity > 0) then
+          if (ja_airdensity + ja_varying_airdensity > 0) then
              k = ln(2,L)
              row = rho(ktop(k))
              roa = airdensity(k)

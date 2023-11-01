@@ -642,7 +642,7 @@ subroutine unc_write_his(tim)            ! wrihis
                endif
             endif
 
-            if (ja_airdensity > 0 .and. jahis_airdensity > 0) then
+            if (ja_airdensity + ja_varying_airdensity > 0 .and. jahis_airdensity > 0) then
                call definencvar(ihisfile,id_airdensity   ,nf90_double,(/ id_statdim, id_timedim /),2, 'rhoair'  , 'air density', 'kg m-3 ', statcoordstring, station_geom_container_name)
             endif
 
@@ -2948,7 +2948,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
     end if ! jamapheatflux > 0! jatem > 0
 
-    if (ja_airdensity > 0 .and. jahis_airdensity> 0) then
+    if (ja_airdensity + ja_varying_airdensity > 0 .and. jahis_airdensity> 0) then
        ierr = nf90_put_var(ihisfile, id_airdensity   , valobsT(:,IPNT_AIRDENSITY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
     end if
 

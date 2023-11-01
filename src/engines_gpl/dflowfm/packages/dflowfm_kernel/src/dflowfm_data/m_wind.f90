@@ -104,7 +104,7 @@ integer                           :: japatm              !< use patm yes or no
 integer                           :: jaspacevarcharn     !< use space and time varying Charnock coefficients yes or no
 integer                           :: jawindstressgiven   !< wind given as stress, no conversion needed
 integer                           :: jastresstowind      !< if jawindstressgiven==1, convert stress to wind yes/no 1/0 
-integer                           :: ja_varying_airdensity !< if jatair=1 and japatm=1, compute airdensity yes/no 1/0
+integer                           :: ja_varying_airdensity !< compute airdensity yes/no 1/0
 integer                           :: jarain              !< use rain yes or no
 integer                           :: jaevap              !< use evap yes or no
 integer                           :: jatair              !< use air temperature   yes or no

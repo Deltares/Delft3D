@@ -5438,7 +5438,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
          endif
       endif
 
-      if (ja_airdensity > 0 .and. jamap_airdensity > 0) then
+      if (ja_airdensity + ja_varying_airdensity > 0 .and. jamap_airdensity > 0) then
          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_airdensity   , nc_precision, UNC_LOC_S, 'rhoair' , 'air_density'      , 'Air density'     , 'kg m-3', jabndnd=jabndnd_)
       endif
 
@@ -7058,7 +7058,7 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
 
    endif
 
-   if (ja_airdensity > 0 .and. jamap_airdensity /= 0) then
+   if (ja_airdensity + ja_varying_airdensity > 0 .and. jamap_airdensity > 0) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_airdensity  , UNC_LOC_S, airdensity, jabndnd=jabndnd_)
    endif
 
