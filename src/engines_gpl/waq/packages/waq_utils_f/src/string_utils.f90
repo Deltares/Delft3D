@@ -73,19 +73,20 @@ module m_string_utils
     end function contains_any
 
     logical function contains_only_valid_chars(names_array, valid_characters)
+        !< Returns .true. if all characters in each string name of <names_array> is contained in the string <valid_characters>.
+        !< Otherwise, it returns .false.
         character(*), dimension(:), intent(in) :: names_array      !< Array with all names to validate
         character(*), intent(in)               :: valid_characters !< Characters permitted in names
     
-        integer       :: i, j
+        integer                            :: i, j
         character(len=len(names_array(1))) :: arrows_invalid_chars
-        logical       :: current_name_is_valid
+        logical                            :: current_name_is_valid
 
         contains_only_valid_chars = .true.
         do i = 1, size(names_array)
             arrows_invalid_chars = repeat(' ', len(names_array(1)))
             current_name_is_valid = .true.
             do j=1, len(trim(names_array(i)))
-                !idx =  verify(names_array(i)(j:j), valid_characters)
                 if (verify(names_array(i)(j:j), valid_characters)/=0) then
                     arrows_invalid_chars(j:j) = '^'
                     current_name_is_valid = .false.

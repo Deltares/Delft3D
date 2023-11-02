@@ -53,6 +53,8 @@ module m_validate_input
     end subroutine validate_units
 
     subroutine validate_names(names_array)
+        !< Validates if all characters in an array of names (strings) <names_array> are valid.
+        !< If not, detailed information is sent to the user screen, and the program stops.
         character(*), dimension(:), intent(in) :: names_array !< Array with all names to validate
 
         character(67) :: valid_characters = & 
