@@ -31,7 +31,7 @@ module m_string_utils
     implicit none
 
     private
-    public join_strings, contains_any
+    public join_strings, contains_any, contains_only_valid_chars
 
     contains
 
@@ -71,5 +71,33 @@ module m_string_utils
         end if
             
     end function contains_any
+
+    logical function contains_only_valid_chars(names_array, valid_characters)
+        character(*), dimension(:), intent(in) :: names_array      !< Array with all names to validate
+        character(*), intent(in)               :: valid_characters !< Characters permitted in names
+    
+        integer       :: i, j
+        character(len=len(names_array(1))) :: arrows_invalid_chars
+        logical       :: current_name_is_valid
+
+        contains_only_valid_chars = .true.
+        do i = 1, size(names_array)
+            arrows_invalid_chars = repeat(' ', len(names_array(1)))
+            current_name_is_valid = .true.
+            do j=1, len(trim(names_array(i)))
+                !idx =  verify(names_array(i)(j:j), valid_characters)
+                if (verify(names_array(i)(j:j), valid_characters)/=0) then
+                    arrows_invalid_chars(j:j) = '^'
+                    current_name_is_valid = .false.
+                end if
+            end do
+            if (.not.current_name_is_valid) then
+                contains_only_valid_chars = .false.
+                write(*,*) "Error: invalid characters found in the name:"
+                write(*,*) names_array(i)
+                write(*,*) arrows_invalid_chars
+            end if
+        end do
+    end function contains_only_valid_chars
 
 end module m_string_utils

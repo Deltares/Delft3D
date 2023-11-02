@@ -27,13 +27,13 @@
 !  
 !  
 
-subroutine readdb ( lu_inp, lu_mes)
+subroutine readdb(lu_inp, lu_mes)
     use m_zoek
-    use m_validate_units
+    use m_validate_input   ! , only: validate_names, validate_units
     use m_waqpb_data
     
-    integer, intent(in)  :: lu_inp  !< Logical unit number for input
-    integer, intent(in)  :: lu_mes  !< Logical unit number for messages (logging)
+    integer  :: lu_inp  !< Logical unit number for input
+    integer  :: lu_mes  !< Logical unit number for messages (logging)
 
     character*255 c255
     character*10 chkcnf(nconfm),c10
@@ -44,7 +44,7 @@ subroutine readdb ( lu_inp, lu_mes)
     !Read database containing Processes Library
 
     !Read Table P1
-    open(newunit=lu_inp, file='grpsub.csv')
+    open(newunit = lu_inp, file='grpsub.csv')
     read(lu_inp, *)
     nsgrp = 0
   5 if (nsgrp+1>nsgrpm) stop 'dimension NSGRPM'
@@ -71,6 +71,7 @@ subroutine readdb ( lu_inp, lu_mes)
     goto 10
  11 close(lu_inp)
     write(lu_mes,'(i5,'' lines read from ITEMS.CSV'')') nitem
+    call validate_names(itemid(1:nitem))
 
 
     !Read Table P3
@@ -320,7 +321,7 @@ end subroutine readdb
 
 subroutine writdb(lu)
     use m_waqpb_data
-    integer intent(in) :: lu !< logical unit number
+    integer :: lu !< logical unit number
 
     integer iproc, iconf, i
     character*10 c10

@@ -26,15 +26,15 @@
 !-------------------------------------------------------------------------------
 !
 !
-module m_validate_units
+module m_validate_input
 
-    use m_string_utils, only: join_strings, contains_any
+    use m_string_utils, only: join_strings, contains_any, contains_only_valid_chars
 
     implicit none
 
     private
     
-    public validate_units
+    public validate_units, validate_names
 
     contains
     subroutine validate_units(units)
@@ -52,4 +52,18 @@ module m_validate_units
         end if
     end subroutine validate_units
 
-end module m_validate_units
+    subroutine validate_names(names_array)
+        character(*), dimension(:), intent(in) :: names_array !< Array with all names to validate
+
+        character(63) :: valid_characters = & 
+        "abcdefghijklmnopqrstuvwxyz" // &
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // &
+        "0123456789_"                       !< Characters permitted in names
+
+
+        if (.not. contains_only_valid_chars(names_array, valid_characters)) then
+            stop "Program stopped. Invalid characters found. Only the following characters are allowed:" // valid_characters
+        end if
+    end subroutine validate_names
+
+end module m_validate_input
