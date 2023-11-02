@@ -45,12 +45,13 @@ module m_readStorageNodes
 
    public readStorageNodes
    
-   ! Storage nodes file current version: 2.01
+   ! Storage nodes file current version: 2.02
    integer, parameter :: storgNodesFileMajorVersion = 2
-   integer, parameter :: storgNodesFileMinorVersion = 1
+   integer, parameter :: storgNodesFileMinorVersion = 2
    
    ! History storage nodes file versions:
 
+   ! 2.02 (2023-11-01): added various manhole loss coefficients for nodeType=compartment, both [Global] and per [StorageNode].
    ! 2.01 (2022-05-11): added branchId+chainage as possible location.
    ! 2.00 (2019-08-27): renamed to storage nodes, added x/y as possible location, added storage table option.
    ! 1.00 (2018-08-13): initial "urban" version of storage nodes ('retentions').
@@ -167,6 +168,9 @@ module m_readStorageNodes
                call warn_flush()
             endif
             jageneral = 1
+            cycle
+         else if (strcmpi(blockname, 'Global')) then
+            ! [Global] block was already separately read.
             cycle
          else if (strcmpi(blockname,'StorageNode')) then   ! Read [StorageNode] block
 
@@ -416,7 +420,8 @@ module m_readStorageNodes
          type(tree_data),               pointer       :: tree_ptr       !< The input tree to read from.
          character(len=*),              intent(in)    :: chapter_name   !< Which chapter to read from (use 'Global' for global reading, or '' when tree_ptr already contains a single specific storage node).
          character(len=*),              intent(in)    :: section_string !< Character string used only in error messages, describing in which input section faulty input was read.
-         type(t_table),                 pointer       :: angle_loss     !< Table with angle-loss coefficient values, will be allocated to correct length.
+         type(t_table),                 pointer       :: angle_loss     !< Table with angle-loss coefficient values, will be pointed to newly allocated memory of correct length.
+                                                                        !< Any table data originally pointed to will intentionally be left intact, as that may be the [Global] table.
          double precision             , intent(inout) :: entrance_loss  !< Value for the entrance loss coefficient
          double precision             , intent(inout) :: exit_loss      !< Value for the exit loss coefficient
          double precision             , intent(inout) :: expansion_loss !< Value for the loss coefficient for expansion or contraction
@@ -424,6 +429,7 @@ module m_readStorageNodes
          logical,                       intent(  out) :: success        !< Success status (.false. if something went wrong, check log messages)
 
          integer :: num_angles
+         type(t_table), pointer :: new_angle_loss !< New table with angle-loss coefficient values, the dummy angle_loss table will be re-pointered to this new one.
 
          success = .true.
 
@@ -435,28 +441,32 @@ module m_readStorageNodes
 
          call prop_get(tree_ptr, chapter_name, 'angleCount', num_angles)
          if (num_angles > 0) then
-            call realloc(angle_loss, num_angles)
+            nullify(new_angle_loss)
+            call realloc(new_angle_loss, num_angles)
 
-            call prop_get(tree_ptr, chapter_name, 'angles', angle_loss%x, num_angles, success)
+            call prop_get(tree_ptr, chapter_name, 'angles', new_angle_loss%x, num_angles, success)
             if (.not. success) then
                write(msgbuf, '(a,a,a,a,a,i0,a)') 'Incorrect input for angles in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Expecting ', num_angles, ' values.'
                call err_flush()
                goto 888
             endif
-            if (.not. is_monotonically_increasing(angle_loss%x, num_angles)) then
+            if (.not. is_monotonically_increasing(new_angle_loss%x, num_angles)) then
                write(msgbuf, '(a)') 'Incorrect input for [Global] angles in '''//trim(storgNodesFile)//'. Angles should be monotonically increasing.'
                call err_flush()
                goto 888
             endif
 
-            call prop_get(tree_ptr, chapter_name, 'angleLossCoefficient', angle_loss%y, num_angles, success)
+            call prop_get(tree_ptr, chapter_name, 'angleLossCoefficient', new_angle_loss%y, num_angles, success)
             if (.not. success) then
                write(msgbuf, '(a,a,a,a,a,i0,a)') 'Incorrect input for angleLossCoefficient in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Expecting ', num_angles, ' values.'
                call err_flush()
                goto 888
             endif
             
-            angle_loss%length = num_angles
+            new_angle_loss%length = num_angles
+            
+            ! Angle loss table successfully read, direct the input table pointer to the new one.
+            angle_loss => new_angle_loss
          end if
 
          call prop_get(tree_ptr, chapter_name, 'entranceLossCoefficient',  entrance_loss)
