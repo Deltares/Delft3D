@@ -2,7 +2,7 @@
 
 setlocal enabledelayedexpansion
 set prepareonly=1
-set config=dflowfm
+set config=all
 set generator=
 set vs=
 set -vs=0
