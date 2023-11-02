@@ -55,10 +55,10 @@ module m_validate_input
     subroutine validate_names(names_array)
         character(*), dimension(:), intent(in) :: names_array !< Array with all names to validate
 
-        character(63) :: valid_characters = & 
+        character(67) :: valid_characters = & 
         "abcdefghijklmnopqrstuvwxyz" // &
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // &
-        "0123456789_"                       !< Characters permitted in names
+        "0123456789_+-*/"                       !< Characters permitted in names
 
 
         if (.not. contains_only_valid_chars(names_array, valid_characters)) then
