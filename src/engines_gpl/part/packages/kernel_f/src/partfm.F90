@@ -50,7 +50,7 @@ use m_fm_write_unc
    use precision_part
    use MessageHandling
    use partmem
-   use m_partmesh
+   use m_part_mesh
    use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart
    use part10fm_mod
    use oildspfm_mod
@@ -58,7 +58,7 @@ use m_fm_write_unc
    use alloc_mod
    use m_alloc
    use fileinfo  , lun=> lunit    ! logical unit numbers for files
-   use m_flowtimes
+   use m_part_times
    use timers
    use m_sferic_part, only: ptref
    use m_sferic, only: jsferic
@@ -141,7 +141,7 @@ use m_fm_write_unc
    call realloc(xrpart, npmax)
    call realloc(yrpart, npmax)
    call realloc(zrpart, npmax)
-    
+
    call realloc_particles(npmax, .true., ierror)
    irpart = 1
    ptref = 0.0D0

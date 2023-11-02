@@ -24,6 +24,7 @@ add_library(${library_name} ${meteo_sources} ${sources})
                          kdtree2
                          kdtree_wrapper
                          io_netcdf
+                         io_netcdf_data
                          netcdf4
                          netcdff)
 
@@ -48,9 +49,9 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/ec_module)
 # EC_MODULE_DLL
 ###############
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
-if ( ${configuration_type} STREQUAL "DFLOWFM" OR 
-     ${configuration_type} STREQUAL "DELFT3D4" OR 
-     ${configuration_type} STREQUAL "ALL" OR 
+if ( ${configuration_type} STREQUAL "DFLOWFM" OR
+     ${configuration_type} STREQUAL "DELFT3D4" OR
+     ${configuration_type} STREQUAL "ALL" OR
      ${configuration_type} STREQUAL "TOOLS" )
 
     set(library_name ec_module_dll)
@@ -60,7 +61,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     include_directories(${version_include_dir})
     set(oss_dependencies deltares_common kdtree2 kdtree_wrapper gridgeom io_netcdf ec_module)
     oss_include_libraries(${library_name} oss_dependencies)
-	
+
 	target_link_libraries(${library_name} ${oss_dependencies})
 
     # Set additional compilation properties, specific for Debug mode
@@ -76,9 +77,9 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     set(build_dir ${CMAKE_BINARY_DIR})
 
     post_build_target (${library_name}
-                       ${install_dir} 
-                       ${build_dir} 
-                       ${checkout_src_root} 
+                       ${install_dir}
+                       ${build_dir}
+                       ${checkout_src_root}
                        ${library_name})
     install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)
 endif()

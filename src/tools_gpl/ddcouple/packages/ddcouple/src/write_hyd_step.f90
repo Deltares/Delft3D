@@ -23,7 +23,7 @@
 
       subroutine write_hyd_step(hyd, itime)
 
-      use m_ddhyd
+      use hydmod
       implicit none
 
       type(t_hyd)         :: hyd           ! description of the hydrodynamics

@@ -106,7 +106,7 @@
       use m_dlwq13
       use m_zero
       use m_fileutils
-      use grids
+      use dlwqgrid_mod
       use timers
       use waqmem
       use delwaq2_data

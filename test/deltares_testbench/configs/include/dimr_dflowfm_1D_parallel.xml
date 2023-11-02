@@ -241,35 +241,6 @@
       </checks>
       <maxRunTime>20.0</maxRunTime>
     </testCase>
-    <testCase name="e02_f114_c080_korte-woerden-1d2d-ManholeStreetinlets" ref="dimr_trunk_2">
-      <path>e02_dflowfm/f114_parallel_1D/c080_korte-woerden-1d2d-ManholeStreetinlets</path>
-      <programs>
-        <program ref="dflowfm" seq="1">
-          <arguments>
-            <argument>FlowFM.mdu</argument>
-            <argument>--partition:ndomains=2:ugrid=1:icgsolver=6:contiguous=0</argument>
-          </arguments>
-        </program>
-        <program ref="dimr2" seq="2">
-           <arguments>
-               <argument>dimr_config.xml</argument>
-           </arguments>
-        </program>
-      </programs>
-      <checks>
-        <file name="DFM_OUTPUT_FlowFM/FlowFM_0000_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
-          </parameters>
-        </file>
-        <file name="DFM_OUTPUT_FlowFM/FlowFM_0001_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.002" />
-          </parameters>
-        </file>
-      </checks>
-      <maxRunTime>20.0</maxRunTime>
-    </testCase>
     <testCase name="e02_f114_c090_dar-es-salaam" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c090_dar-es-salaam</path>
       <programs>

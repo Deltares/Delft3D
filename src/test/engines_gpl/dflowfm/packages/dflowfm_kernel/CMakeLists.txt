@@ -28,6 +28,7 @@ if(UNIX)
                             ftnunit
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             interacter_stub
                             kdtree_wrapper
                             kdtree2
@@ -79,6 +80,7 @@ if(WIN32)
                          ftnunit
                          gridgeom
                          io_netcdf
+                         io_netcdf_data
                          kdtree_wrapper
                          kdtree2
                          fortrangis
@@ -117,7 +119,7 @@ target_link_libraries(${executable_name} ${oss_dependencies}
                           "wsock32.lib"
                           "netapi32.lib"
                           "kernel32.lib"
-                          "user32.lib" 
+                          "user32.lib"
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
@@ -148,10 +150,9 @@ set(build_dir ${CMAKE_BINARY_DIR})
 set(build_project ${executable_name})
 
 post_build_target( ${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${build_project} )
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-

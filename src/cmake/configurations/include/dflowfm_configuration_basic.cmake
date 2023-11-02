@@ -34,25 +34,11 @@ if(NOT TARGET flow1d)
 endif()
 
 # Waq
-if(NOT TARGET waq_data)
-    add_subdirectory(${checkout_src_root}/${waq_data_module} waq_data)
-endif()
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_base.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
-if(NOT TARGET waq_utils_c)
-    add_subdirectory(${checkout_src_root}/${waq_utils_c_module} waq_utils_c)
-endif()
 
-if(NOT TARGET waq_utils_f)
-    add_subdirectory(${checkout_src_root}/${waq_utils_f_module} waq_utils_f)
-endif()
 
-if(NOT TARGET waq_process)
-    add_subdirectory(${checkout_src_root}/${waq_process_module} waq_process)
-endif()
-
-if(NOT TARGET wq_processes)
-    add_subdirectory(${checkout_src_root}/${wq_processes_module} wq_processes)
-endif()
 
 # Morphology
 if(NOT TARGET morphology_plugins_c)
@@ -172,6 +158,10 @@ if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
 endif()
 
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
+endif()
+
 # ec_module
 if(NOT TARGET ec_module)
     add_subdirectory(${checkout_src_root}/${ec_module} ec_module)
@@ -199,21 +189,24 @@ if(NOT TARGET nefis)
     add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
 endif()
 
-# Solvesaphe
-if(NOT TARGET solvesaphe)
-    add_subdirectory(${checkout_src_root}/${solvesaphe_module} solvesaphe)
-endif()
 
 # Unit tests for dflowfm
 # Only for the version without interacter
 if(NOT WITH_INTERACTER)
-
     if(NOT TARGET ftnunit)
         add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
     endif()
 
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
+    endif()
+    
+    if(NOT TARGET test_deltares_common)
+        add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
+    endif()
+    
+    if(NOT TARGET test_ec_module)
+        add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()
 endif(NOT WITH_INTERACTER)
 

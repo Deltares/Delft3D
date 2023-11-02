@@ -8,10 +8,10 @@ set(oss_dependencies deltares_common
                      nefis
                      solvesaphe
                      waq_data
+                     waq_hyd_data
                      waq_utils_c
                      waq_utils_f)
 
-oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
 
 

@@ -40,8 +40,8 @@
       use m_read_block
       use m_check
       use m_srstop
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use dlwqgrid_mod          ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
 

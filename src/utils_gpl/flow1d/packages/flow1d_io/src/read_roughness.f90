@@ -33,7 +33,6 @@ module m_read_roughness
    use m_GlobalParameters
    use m_hash_search
    use m_network
-   use m_readSpatialData
    use m_Roughness
    use m_spatial_data
    use properties

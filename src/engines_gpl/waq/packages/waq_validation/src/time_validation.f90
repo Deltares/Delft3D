@@ -31,13 +31,12 @@
 ! Will return an errormessage if data does not adhere to required format.
 
 module m_time_validation
-    
-  use static_version_info
-  use dlwq_data
-  
+
+  use dlwq_hyd_data
+
   implicit none
-  
-  
+
+
   contains
   ! Routine to check if a time series in input is strictly increasing. If not, write an error message.
   ! Input:
@@ -47,13 +46,13 @@ module m_time_validation
   ! Output:
   ! - ierror
     subroutine validate_time_series_strictly_increasing(lun, data_block, ierror)
-  
+
       integer               , intent(in   ) :: lun         ! logical unit number for logging error message, if required
       type(t_dlwqdata)      , intent(in   ) :: data_block  ! data block containing time series to validate
       integer               , intent(inout) :: ierror      ! local error count
       character(:), allocatable             :: errformat   ! format for error message
       integer                               :: i
-  
+
       errformat = "(/' ERROR: time value ',I0.1,' not larger than previous time value ',I0.1, '.')"
       do i = 2, size(data_block%times)
         if (data_block%times(i) <= data_block%times(i-1)) then
@@ -62,5 +61,5 @@ module m_time_validation
         end if
       end do
     end subroutine validate_time_series_strictly_increasing
-    
+
 end module m_time_validation

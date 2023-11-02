@@ -50,8 +50,8 @@
       use m_opt1
       use m_compute_matrix
       use m_getcom
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use dlwqgrid_mod          ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
 
@@ -581,9 +581,9 @@
 
                call read_data( data_buffer, itfact, dtflg1, dtflg3, ierr2 )
                if ( ierr2 .ne. 0 ) goto 100
-               
+
                call validate_time_series_strictly_increasing(lunut,data_buffer, ierr2)
-               
+
                call compute_matrix ( lunut , data_param , data_loc   , waq_param, waq_loc,
      +                               amiss , data_buffer, data_block )
                deallocate(data_buffer%times,data_buffer%values)

@@ -9,7 +9,7 @@ add_library(${library_name} ${source_files})
 
 # Set the dependencies of this library
 set(oss_dependencies    deltares_common
-                        io_netcdf
+                        io_netcdf_data
                         kdtree_wrapper
                         kdtree2
                         triangle_c)

@@ -35,8 +35,9 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
              viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
    use m_flowgeom,  only: Ndx, Lnx, Lnxi, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx  ! static mesh information
    use m_flowtimes, only: dts, dnt
-   use m_flowparameters, only: cflmx, ja_vis_diff_limit
-   use m_flow,      only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, hu, epshu
+   use m_flowparameters, only: cflmx
+   use m_flow,      only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, hu, epshu, &
+                          number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
    use m_transport, only: ISALT, ITEMP
    use m_missing
    use MessageHandling
@@ -370,8 +371,9 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
          end do
       end do
       !$OMP END PARALLEL DO
-      if ( number_limited_links > 0 .and. ja_vis_diff_limit == 1) then
-         write(msgbuf,'(a,i0,a)') 'Flux was limited for ', number_limited_links,' links.'
+      if ( number_limited_links > 0 .and. number_steps_limited_visc_flux_links <= MAX_PRINTS_LIMITED_VISC_FLUX_LINKS) then
+          number_steps_limited_visc_flux_links = number_steps_limited_visc_flux_links + 1
+         write(msgbuf,'(a,i0,a)') 'Horizontal transport flux was limited for ', number_limited_links,' links.'
          call mess(LEVEL_WARN, msgbuf)
       end if
    end if

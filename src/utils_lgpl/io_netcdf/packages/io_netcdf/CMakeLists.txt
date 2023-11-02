@@ -14,7 +14,6 @@ if(UNIX)
 endif()
 
 
-            
 set(src_path src)
 get_fortran_source_files(${src_path} sources)
 
@@ -38,9 +37,10 @@ if(UNIX)
 
     # Add dependency
     set(oss_dependencies deltares_common
+                         io_netcdf_data
                          fortrangis
                          netcdff)
-    target_compile_definitions(${library_name} PRIVATE LINUX64)    
+    target_compile_definitions(${library_name} PRIVATE LINUX64)
     oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies}
          PkgConfig::NETCDF)
@@ -55,6 +55,7 @@ if (WIN32)
     # Add dependency
     set(oss_dependencies deltares_common
                         fortrangis
+                        io_netcdf_data
                         netcdf4
                         netcdff)
     target_compile_definitions(${library_name} PRIVATE WIN64)
@@ -82,16 +83,16 @@ set_source_files_properties(${fortran_version_file}
 # IO_NETCDF_DLL
 ###############
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
-if ( ${configuration_type} STREQUAL "DFLOWFM" OR 
-     ${configuration_type} STREQUAL "DELFT3D4" OR 
-     ${configuration_type} STREQUAL "ALL" OR 
+if ( ${configuration_type} STREQUAL "DFLOWFM" OR
+     ${configuration_type} STREQUAL "DELFT3D4" OR
+     ${configuration_type} STREQUAL "ALL" OR
      ${configuration_type} STREQUAL "TOOLS" )
     set(library_name io_netcdf_dll)
     set(library_renamed libio_netcdf.so)
     # Add dynamic io_netcdf library
     add_library(${library_name} SHARED ${src_path}/io_netcdf_api.F90 ${rc_version_file})
     include_directories(${version_include_dir})
-	
+
     set(oss_dependencies io_netcdf)
     oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies})
@@ -109,10 +110,9 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     set(build_dir ${CMAKE_BINARY_DIR})
 
     post_build_target (${library_name}
-                       ${install_dir} 
-                       ${build_dir} 
-                       ${checkout_src_root} 
+                       ${install_dir}
+                       ${build_dir}
+                       ${checkout_src_root}
                        ${library_name})
     install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)
 endif()
-

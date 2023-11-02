@@ -42,6 +42,10 @@ use netcdf
 use messagehandling
 use coordinate_reference_system
 use meshdata
+use m_ug_meta
+use m_ug_mesh
+use m_ug_network
+use m_ug_contacts
 
 implicit none
 
@@ -60,21 +64,6 @@ character(len=16), parameter :: UG_CONV_DELTARES = 'Deltares-0.10' !< Version of
 ! 0.8 (2017-04-21): Initial version for 1D network extension to regular UGRID.
 
 
-
-!! Meta data
-type ::t_ug_meta
-   character(len=ug_strLenMeta) :: institution
-   character(len=ug_strLenMeta) :: source
-   character(len=ug_strLenMeta) :: references
-   character(len=ug_strLenMeta) :: version
-   character(len=ug_strLenMeta) :: modelname
-end type t_ug_meta
-
-!! Meta data for string info
-type :: t_ug_charinfo
-    character(len=ug_idsLen)            :: ids
-    character(len=ug_idsLongNamesLen)   :: longnames
-end type t_ug_charinfo
 !! Error codes
 integer, parameter :: UG_NOERR                 = NF90_NOERR !< No error, success. It is convenient to have this identical to NF90_NOERR (==0).
 integer, parameter :: UG_SOMEERR               = -1010 !< Some unspecified error.
@@ -133,160 +122,6 @@ type t_face
    integer, allocatable           :: nod(:)          !< node nrs
    integer, allocatable           :: lin(:)          !< link nrs, kn(1 of 2,netcell(n)%lin(1)) =  netcell(n)%nod(1)
 end type t_face
-
-!mesh dimensions
-enum, bind(C)
-enumerator::mdim_start = 1
-enumerator mdim_node                       !< Dimension ID for nodes.
-enumerator mdim_edge                       !< Dimension ID for edges.
-enumerator mdim_face                       !< Dimension ID for faces.
-enumerator mdim_1dbranches                 !< Dimension ID for 1d network branches
-enumerator mdim_1dnodes                    !< Dimension ID for 1d network nodes
-enumerator mdim_1dgeopoints                !< Dimension ID for 1d network geometry points
-enumerator mdim_maxfacenodes               !< Dimension ID for max nr of nodes per face.
-enumerator mdim_two                        !< Dimension ID for two
-enumerator mdim_layer                      !< Dimension ID for layer centers.
-enumerator mdim_interface                  !< Dimension ID for layer interfaces.
-enumerator mdim_idstring                   !< Dimension ID for the string id
-enumerator mdim_longnamestring             !< Dimension ID for the string longnames
-enumerator mdim_1dedgenodes                !< Dimension ID for 1d sourcetargets arrays
-enumerator mdim_node_original              !< Dimension ID for nodes (before merging).
-enumerator mdim_end
-end enum
-
-!mesh variables
-enum, bind(C)
-enumerator::mid_start = 1
-!1d variables
-enumerator mid_1dtopo                     !< The network used by this topology
-enumerator mid_1dnodebranch               !< Variable ID for 1d branch indexes of each mesh point
-enumerator mid_1dnodeoffset               !< Coordinate variable ID for mesh point offsets on branches
-enumerator mid_1dedgebranch               !< Variable ID for 1d branch indexes of each mesh edge
-enumerator mid_1dedgeoffset               !< Coordinate variable ID for mesh edge offsets on branches
-!2d variables
-enumerator mid_meshtopo                    !< Top-level variable ID for mesh topology, collects all related variable names via attributes.
-enumerator mid_edgenodes                   !< Variable ID for edge-to-node mapping table.
-enumerator mid_facenodes                   !< Variable ID for face-to-node mapping table.
-enumerator mid_edgefaces                   !< Variable ID for edge-to-face mapping table (optional, can be -1).
-enumerator mid_faceedges                   !< Variable ID for face-to-edge mapping table (optional, can be -1).
-enumerator mid_facelinks                   !< Variable ID for face-to-face mapping table (optional, can be -1).
-!mesh ids variables
-enumerator mid_node_ids                    !< Variable ID for node ids (optional, can be -1).
-enumerator mid_edge_ids                    !< Variable ID for edge ids (optional, can be -1).
-enumerator mid_face_ids                    !< Variable ID for face ids (optional, can be -1).
-enumerator mid_node_longnames              !< Variable ID for node longnames (optional, can be -1).
-enumerator mid_edge_longnames              !< Variable ID for edge longnames (optional, can be -1).
-enumerator mid_face_longnames              !< Variable ID for face longnames (optional, can be -1).
-!Coordinate variables
-enumerator mid_nodex                       !< Coordinate variable ID for node x-coordinate.
-enumerator mid_nodey                       !< Coordinate variable ID for node y-coordinate.
-enumerator mid_nodez                       !< Coordinate variable ID for node z-coordinate.
-enumerator mid_nodelon                     !< Coordinate variable ID for node longitude coordinate.
-enumerator mid_nodelat                     !< Coordinate variable ID for node latitude coordinate.
-enumerator mid_edgex                       !< Coordinate variable ID for edge x-coordinate.
-enumerator mid_edgey                       !< Coordinate variable ID for edge y-coordinate.
-enumerator mid_edgexbnd                    !< Coordinate variable ID for edge boundaries' x-coordinate.
-enumerator mid_edgeybnd                    !< Coordinate variable ID for edge boundaries' y-coordinate.
-enumerator mid_edgelon                     !< Coordinate variable ID for edge longitude coordinate.
-enumerator mid_edgelat                     !< Coordinate variable ID for edge latitude coordinate.
-enumerator mid_edgelonbnd                  !< Coordinate variable ID for edge boundaries' longitude coordinate.
-enumerator mid_edgelatbnd                  !< Coordinate variable ID for edge boundaries' latitude coordinate.
-enumerator mid_facex                       !< Coordinate variable ID for face x-coordinate.
-enumerator mid_facey                       !< Coordinate variable ID for face y-coordinate.
-enumerator mid_facexbnd                    !< Coordinate variable ID for face boundaries' x-coordinate.
-enumerator mid_faceybnd                    !< Coordinate variable ID for face boundaries' y-coordinate.
-enumerator mid_facelon                     !< Coordinate variable ID for face longitude coordinate.
-enumerator mid_facelat                     !< Coordinate variable ID for face latitude coordinate.
-enumerator mid_facelonbnd                  !< Coordinate variable ID for face boundaries' longitude coordinate.
-enumerator mid_facelatbnd                  !< Coordinate variable ID for face boundaries' latitude coordinate.
-enumerator mid_layerzs                     !< Coordinate variable ID for fixed z/sigma layer center vertical coordinate
-enumerator mid_layerz                      !< Coordinate variable ID for fixed z layer center vertical coordinate
-enumerator mid_layersigma                  !< Coordinate variable ID for fixed sigma layer center vertical coordinate
-enumerator mid_interfacezs                 !< Coordinate variable ID for fixed z/sigma layer interface vertical coordinate
-enumerator mid_interfacez                  !< Coordinate variable ID for fixed z layer interface vertical coordinate
-enumerator mid_interfacesigma              !< Coordinate variable ID for fixed sigma layer interface vertical coordinate
-enumerator mid_sigmazdepth                 !< Coordinate variable ID for transition depth from sigma above to z below
-enumerator mid_node_ids_original           !< Variable storing the original ids
-enumerator mid_node_mapping_original       !< Variable storing the ids - current nodes mapping
-enumerator mid_end
-end enum
-
-!contact dimension
-enum, bind(C)
-enumerator::cdim_start = 1
-enumerator cdim_ncontacts                 !< Dimension ID for contacts.
-enumerator cdim_idstring                  !< Dimension ID for the string id
-enumerator cdim_longnamestring            !< Dimension ID for the string longnames
-enumerator cdim_two                       !< Dimension ID for two
-enumerator cdim_end
-end enum
-
-!contact variables
-enum, bind(C)
-enumerator::cid_start = 1
-enumerator cid_contacttopo                !< Top-level variable ID for contact topology
-enumerator cid_contactids                 !< Variable ID for contacts ids
-enumerator cid_contactlongnames           !< Variable ID for contacts longnames
-enumerator cid_contacttype                !< Variable ID for contact types
-enumerator cid_compositemesh             !< Top-level variable ID for composite mesh
-enumerator cid_meshes
-enumerator cid_mesh_contact
-enumerator cid_end
-end enum
-
-!network dimension
-enum, bind(C)
-enumerator::ntdim_start = 1
-enumerator ntdim_1dnodes                    !< Dimension ID for the number of network nodes
-enumerator ntdim_1dgeopoints                !< Dimension ID for the geometry points
-enumerator ntdim_1dedges                    !< Dimension ID for 1d network edges (i.e., branches)
-enumerator ntdim_idstring                   !< Dimension ID for the string id
-enumerator ntdim_longnamestring             !< Dimension ID for the string longnames
-enumerator ntdim_two
-enumerator ntdim_end
-end enum
-
-!network variables
-enum, bind(C)
-enumerator::ntid_start = 1
-enumerator ntid_1dtopo                     !< Top-level variable for 1d network topology
-enumerator ntid_1dgeometry                 !< Variable ID for 1d geometry points
-enumerator ntid_1dbranchids                !< Variable ID for 1d branches ids
-enumerator ntid_1dbranchlongnames          !< Variable ID for 1d branches long names
-enumerator ntid_1dbranchlengths            !< Variable ID for 1d branches lengths
-enumerator ntid_1dgeopointsperbranch       !< Variable ID for number of geometry points per branch
-enumerator ntid_1dgeox                     !< Coordinate variable ID for 1d geometry points x-coordinate
-enumerator ntid_1dgeoy                     !< Coordinate variable ID for 1d geometry points y-coordinate
-enumerator ntid_1dnodex
-enumerator ntid_1dnodey
-enumerator ntid_1dnodids
-enumerator ntid_1dnodlongnames
-enumerator ntid_1dedgenodes
-enumerator ntid_1dbranchorder              !< Coordinate variable for the branch order
-enumerator ntid_1dbranchtype              !< Coordinate variable for the branch order
-enumerator ntid_end
-end enum
-
-!mesh type, it will expand with the commented componentes to accomodate composite meshes
-type t_ug_mesh
-integer::dimids(mdim_end) = -1
-integer::varids(mid_end)  = -1
-!t_ug_mesh,allocatable::meshes(:)
-!t_composite:: compositeType
-!integer,allocatable::contacts_idx(:)
-end type t_ug_mesh
-
-!contacts types
-type t_ug_contacts
-integer::dimids(cdim_end) = -1
-integer::varids(cid_end)  = -1
-end type t_ug_contacts
-
-!network types
-type t_ug_network
-integer::dimids(ntdim_end) = -1
-integer::varids(ntid_end)  = -1
-end type t_ug_network
 
 type t_ug_file
    character(len=256)               :: filename
@@ -1030,7 +865,7 @@ function ug_write_mesh_struct(ncid, meshids, networkids, crs, meshgeom, nnodeids
    ierr = ug_write_mesh_arrays(ncid, meshids, meshgeom%meshName, meshgeom%dim, UG_LOC_ALL2D, meshgeom%numNode, meshgeom%numEdge, meshgeom%numFace, meshgeom%maxNumFaceNodes, &
                                meshgeom%edge_nodes, meshgeom%face_nodes, meshgeom%edge_faces, meshgeom%face_edges, meshgeom%face_links, meshgeom%nodex, meshgeom%nodey, & ! meshgeom%nodez, &
                                meshgeom%edgex, meshgeom%edgey, meshgeom%facex, meshgeom%facey, &
-                               crs, -999, -999d0, meshgeom%start_index, meshgeom%numlayer, meshgeom%layertype, meshgeom%layer_zs, meshgeom%interface_zs, &
+                               crs, -999, -999d0, meshgeom%start_index, meshgeom%num_layers, meshgeom%layertype, meshgeom%layer_zs, meshgeom%interface_zs, &
                                networkids, network1dname, meshgeom%nnodex, meshgeom%nnodey, nnodeids, nnodelongnames, &
                                meshgeom%nedge_nodes(1,:), meshgeom%nedge_nodes(2,:), nbranchids, nbranchlongnames, meshgeom%nbranchlengths, meshgeom%nbranchgeometrynodes, meshgeom%nbranches, &
                                meshgeom%ngeopointx, meshgeom%ngeopointy, meshgeom%ngeometry, &
@@ -1046,7 +881,7 @@ end function ug_write_mesh_struct
 !! This only writes the mesh variables, not the actual data variables that are defined ON the mesh.
 function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, numEdge, numFace, maxNumNodesPerFace, &
                               edge_nodes, face_nodes, edge_faces, face_edges, face_links, xn, yn, xe, ye, xf, yf, &
-                              crs, imiss, dmiss, start_index, numLayer, layerType, layer_zs, interface_zs, &
+                              crs, imiss, dmiss, start_index, num_layers, layerType, layer_zs, interface_zs, &
                               networkids, network1dname, nnodex, nnodey, nnodeids, nnodelongnames, &
                               sourceNodeId, targetNodeId, nbranchids, nbranchlongnames, nbranchlengths, nbranchgeometrynodes, nbranches, &
                               ngeopointx, ngeopointy, ngeometry, &
@@ -1079,12 +914,12 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
    integer,          intent(in) :: imiss    !< Fill value used for integer values (e.g. in edge/face_nodes arrays).
    real(kind=dp),    intent(in) :: dmiss    !< Fill value used for double precision values (e.g. in face_x_bnd variable).
    integer,          intent(in) :: start_index     !< The base index of the provided arrays (0 if this function writes array from C/C++/C#, 1 for Fortran)
-   integer, optional,intent(in) :: numLayer  !< Number of vertical layers in the mesh. Optional.
-   integer, optional,intent(in) :: layerType !< Type of vertical layering in the mesh. One of LAYERTYPE_* parameters. Optional, only used if numLayer >= 1.
+   integer, optional,intent(in) :: num_layers  !< Number of vertical layers in the mesh. Optional.
+   integer, optional,intent(in) :: layerType !< Type of vertical layering in the mesh. One of LAYERTYPE_* parameters. Optional, only used if num_layers >= 1.
    integer, optional,intent(in) :: nsigma_opt   !< Number of sigma layers
 
-   real(kind=dp), optional, pointer, intent(in) :: layer_zs(:)     !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if numLayer >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
-   real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< Vertical coordinates of the mesh layers' interface (z or sigma or z-sigma combined). Optional, only used if numLayer >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
+   real(kind=dp), optional, pointer, intent(in) :: layer_zs(:)     !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
+   real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< Vertical coordinates of the mesh layers' interface (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
    real(kind=dp), optional, pointer, intent(in) :: zn(:)           !< z-coordinates of the mesh nodes.
    character(len=*), optional                   :: waterlevelname  !< Water level variable name for sigma and sigma-z coordinates, should be without "mesh2d_" prefix, for example. Default: "s1".
    character(len=*), optional                   :: bldepthname     !< Bed level depth variable name for sigma and sigma-z coordinates, should be without "mesh2d_" prefix, for example. Default: "bldepth".
@@ -1146,8 +981,8 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
       if (layerType == LAYERTYPE_OCEAN_SIGMA_Z .and. present(nsigma_opt)) then
          nsigma = nsigma_opt
       else if (layerType == LAYERTYPE_OCEANSIGMA) then
-         ! Code below depends on correctly set nsigma. For plain sigma layering: nsigma==numlayer.
-         nsigma = numLayer
+         ! Code below depends on correctly set nsigma. For plain sigma layering: nsigma==num_layers.
+         nsigma = num_layers
       end if
    end if
 
@@ -1156,8 +991,8 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
    add_face_face_connectivity = associated(face_links)
    add_layer_dim = .false.
 
-   if (present(numLayer) .and. present(layerType) .and. present(layer_zs) .and. present(interface_zs)) then
-      add_layer_dim = numLayer >= 1
+   if (present(num_layers) .and. present(layerType) .and. present(layer_zs) .and. present(interface_zs)) then
+      add_layer_dim = num_layers >= 1
    end if
 
    if (present(writeopts)) then
@@ -1215,8 +1050,8 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
             ierr = UG_INVALID_LAYERS
             goto 888
          end if
-         ierr = nf90_def_dim(ncid, prefix//'_nLayers',     numLayer,     meshids%dimids(mdim_layer))
-         ierr = nf90_def_dim(ncid, prefix//'_nInterfaces', numLayer + 1, meshids%dimids(mdim_interface))
+         ierr = nf90_def_dim(ncid, prefix//'_nLayers',     num_layers,     meshids%dimids(mdim_layer))
+         ierr = nf90_def_dim(ncid, prefix//'_nInterfaces', num_layers + 1, meshids%dimids(mdim_interface))
       end if
 
       ! Nodes
@@ -1688,7 +1523,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
    if (add_layer_var) then
 
       if (associated(interface_zs) .and. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
-         depth_c = -interface_zs(numLayer + 1 - nsigma) ! z pos -> depth pos down
+         depth_c = -interface_zs(num_layers + 1 - nsigma) ! z pos -> depth pos down
       end if
 
       if (associated(interface_zs).and.(meshids%varids(mid_sigmazdepth).ne.-1).and.(nsigma.gt.0)) then
@@ -1700,36 +1535,39 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
       ! "zlev(k) is defined for the nlayer - nsigma deeper layers"
       ! "The parameter sigma(k) is defined only for the nsigma layers nearest the ocean surface"
 
-      if (numLayer > 0) then
+      if (num_layers > 0) then
          if (associated(layer_zs)) then
             if (meshids%varids(mid_layerzs) > 0) then
-               ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(1:numLayer-nsigma), start = (/ 1 /))
-               ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(numLayer-nsigma+1:numlayer)*depth_c, start=(/numlayer-nsigma+1/))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(1:num_layers-nsigma), start = (/ 1 /))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layerzs), layer_zs(num_layers-nsigma+1:num_layers)*depth_c, start=(/num_layers-nsigma+1/))
             endif
             if (meshids%varids(mid_layerz) > 0) then
-               ierr = nf90_put_var(ncid, meshids%varids(mid_layerz),  layer_zs(1:numLayer-nsigma))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layerz),  layer_zs(1:num_layers-nsigma))
             endif
             if (meshids%varids(mid_layersigma) > 0) then
-               ierr = nf90_put_var(ncid, meshids%varids(mid_layersigma), layer_zs(numLayer-nsigma+1:numlayer),start=(/numlayer-nsigma+1/))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_layersigma), layer_zs(num_layers-nsigma+1:num_layers), start=(/num_layers-nsigma+1/))
             endif
          endif ! layer_zs
 
          if (associated(interface_zs)) then
             if (meshids%varids(mid_interfacezs) > 0) then
                ! Combined z-sigma variable
-               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(1:numLayer + 1-nsigma), start = (/ 1 /))
-               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(numLayer + 2-nsigma:numlayer+1)*depth_c, start=(/numLayer + 2-nsigma/))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(1:num_layers-nsigma+1), start = (/ 1 /))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacezs), interface_zs(num_layers-nsigma+2:num_layers+1)*depth_c, start=(/num_layers-nsigma+2/))
             endif
             if (meshids%varids(mid_interfacez) > 0) then
                ! Z-layers (also partly, when in combined ocean_sigma_z)
-               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacez), interface_zs(1:numLayer + 1-nsigma))
+               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacez),  interface_zs(1:num_layers-nsigma+1))
             endif
             if (meshids%varids(mid_interfacesigma) > 0) then
-               ! sigma-layers (also partly, when in combined ocean_sigma_z)
-               ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(numLayer + 2-nsigma:numlayer+1),start=(/numLayer + 2-nsigma/))
+               if (num_layers .eq. nsigma) then ! only sigma-layers
+                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(1:num_layers+1), start=(/ 1 /))
+               else ! sigma-layers (also partly, when in combined ocean_sigma_z)
+                  ierr = nf90_put_var(ncid, meshids%varids(mid_interfacesigma), interface_zs(num_layers-nsigma+2:num_layers+1), start=(/num_layers-nsigma+2/))
+               endif
             endif
          endif ! interface_zs
-      endif ! numLayer
+      endif ! num_layers
 
    end if
 

@@ -38,7 +38,7 @@ subroutine update_particles(q,h0,h1,Dt)
    use precision_part
    use partmem, only: nopart, mpart
    use m_particles
-   use m_flowgeom, only: Ndx, Lnx
+   use m_part_geom, only: Ndx, Lnx
    use m_sferic
    use m_sferic_part, only: ptref
    use geometry_module, only: Cart3Dtospher
@@ -118,11 +118,11 @@ subroutine update_particles_in_cells(numremaining, ierror)
    use partmem, only: nopart, mpart, hyd
    use m_fm_aux_routines
    use m_particles, laypart => kpart
-   use m_partrecons
-   use m_partmesh
+   use m_part_recons
+   use m_part_mesh
    use MessageHandling
    use m_sferic, only: jsferic
-   use m_flowgeom, only: lnx
+   use m_part_geom, only: lnx
    use timers
 
    implicit none

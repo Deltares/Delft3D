@@ -104,7 +104,7 @@
       use m_delpar01
       use m_move
       use m_fileutils
-      use grids
+      use dlwqgrid_mod
       use timers
       use delwaq2_data
       use m_openda_exchange_items, only : get_openda_buffer

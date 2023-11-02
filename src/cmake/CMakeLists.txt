@@ -38,17 +38,6 @@ else()
     include(compiler_options/intel.cmake)
 endif()
 
-if (WIN32)
-    message(STATUS "Setting compiler flags in windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
-endif(WIN32)
-
-if (UNIX)
-    message(STATUS "Setting compiler flags in unix")
-    set(CMAKE_Fortran_FLAGS "${compiler_flags}")
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
-endif(UNIX)
 
 
 # Set available build configurations for the .sln file
@@ -57,9 +46,11 @@ set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 
+# Set Fortran module files location (needed for dependency bubbling on Linux)
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
+
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
-#set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")
 
 
 if (WIN32)

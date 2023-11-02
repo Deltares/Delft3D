@@ -44,7 +44,7 @@
       use m_monsys
       use m_dhrmis
       use timers       !   performance timers
-      use dlwq_data
+      use dlwq_hyd_data
       use processet
       use output
       implicit none

@@ -150,6 +150,7 @@ module m_ec_parameters
    integer, parameter :: operand_replace         = 2
    integer, parameter :: operand_replace_element = 3
    integer, parameter :: operand_add_element     = 4
+   integer, parameter :: operand_replace_if_value= 5
    !
    ! enumeration for tEcConverter types
    integer, parameter :: convType_undefined = 0

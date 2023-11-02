@@ -51,23 +51,26 @@ real(kind=hp), parameter :: e_0 = 611.21_hp           !< water vapor saturation 
 ! part IV: PHYSICAL PROCESSES, Chapter 7
 real(kind=hp), parameter :: a_3 = 17.502_hp           !< parameter for saturation over water, Buck (1981)
 real(kind=hp), parameter :: a_4 = 32.19_hp            !< parameter for saturation over water, Buck (1981)
+
 contains
 
 !> Fills values array with air density computed as specified in
 !! IFS documentation, part IV, section 12.6
-subroutine get_airdensity(p, T, air_density, ierror)
+subroutine get_airdensity(p, T, T_dewpoint, air_density,  ierror)
    use m_alloc,         only: aerr
    use MessageHandling, only: mess, LEVEL_WARN
 
-   real(kind=hp), intent(inout) :: p(:)           !< total atmospheric pressure (Pa)
+   real(kind=hp), intent(in)    :: p(:)           !< total atmospheric pressure (Pa)
    real(kind=hp), intent(in)    :: T(:)           !< temperature [degrees_Celsius]
-   real(kind=hp), intent(inout) :: air_density(:) !< air density [kg m-1]
+   real(kind=hp), intent(in)    :: T_dewpoint(:)  !< dewpoint [degrees_Celsius]
+   real(kind=hp), intent(out)   :: air_density(:) !< air density [kg m-1]
    integer,       intent(out)   :: ierror         !< error (1) or not (0)
 
    real(kind=hp), allocatable :: e_sat(:)     !< water vapour saturation pressure
    real(kind=hp), allocatable :: q_v(:)       !< specific humidity
    real(kind=hp), allocatable :: T_virtual(:) !< virtual temperature
    real(kind=hp), allocatable :: T_kelvin(:)  !< temperature [K]
+   real(kind=hp), allocatable :: Td_kelvin(:) !< temperature [K]
    
    integer :: nelem                           !< number of elements in array
    integer :: ierr                            !< error code
@@ -88,9 +91,12 @@ subroutine get_airdensity(p, T, air_density, ierror)
    call aerr('T_virtual ', ierr, nelem)
    allocate(T_kelvin(nelem), stat=ierr)
    call aerr('T_kelvin ', ierr, nelem)
+   allocate(Td_kelvin(nelem), stat=ierr)
+   call aerr('Td_kelvin ', ierr, nelem)
 
    T_kelvin(1:nelem) = T(1:nelem) + CtoKelvin
-
+   Td_kelvin(1:nelem) = T_dewpoint(1:nelem) + CtoKelvin
+   
    call get_saturation_pressure
    call get_specific_humidity
    call get_virtual_temperature
@@ -101,13 +107,14 @@ subroutine get_airdensity(p, T, air_density, ierror)
    deallocate(q_v)
    deallocate(T_virtual)
    deallocate(T_kelvin)
+   deallocate(Td_kelvin)
    
 contains
 
 !< returns water vapour saturation pressure over water [Pa]
 !! cf section 7.2.1 of IFS documentation
 subroutine get_saturation_pressure
-   e_sat(1:nelem) = e_0*exp(a_3*((T_Kelvin(1:nelem)-T_0)/(T_Kelvin(1:nelem)-a_4)))
+   e_sat(1:nelem) = e_0*exp(a_3*((Td_kelvin(1:nelem)-T_0)/(Td_kelvin(1:nelem)-a_4)))
 end subroutine get_saturation_pressure
 
 !< returns the specific humidity [g kg-1] = 

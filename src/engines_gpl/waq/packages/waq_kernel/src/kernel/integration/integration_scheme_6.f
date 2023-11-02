@@ -97,7 +97,7 @@
       use m_delmat
       use m_zero
       use m_fileutils
-      use grids
+      use dlwqgrid_mod
       use timers
       use delwaq2_data
       use m_openda_exchange_items, only : get_openda_buffer

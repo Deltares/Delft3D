@@ -35,7 +35,14 @@
     use iso_c_binding
     character,intent(in)    :: c_key
     character,intent(in)    :: c_value
-    end function  set_var
+    end function set_var
+
+!    We should use get_var_ptr as that is the function used by DIMR
+!    integer(c_int) function get_value(c_key, real_value) bind(C, name="get_value")
+!    use iso_c_binding
+!    character,intent(in)    :: c_key
+!    real, intent(out)       :: real_value
+!    end function get_value
 
     integer(c_int) function initialize(c_config_file) bind(C, name="initialize")
     use iso_c_binding
@@ -76,22 +83,26 @@
 
     integer :: dummy
 
-    character(len=1023)     :: version_string
-    character(len=1023)     :: key
-    character(len=1023)     :: value
-    character(len=1023)     :: runid
-    character(len=1023)     :: resfile
+    character(len=1023)    :: version_string
+    character(len=1023)    :: key
+    character(len=1023)    :: value
+    character(len=1023)    :: runid
+    character(len=1023)    :: resfile
     integer                :: itimestamp
+    real                   :: p_value
     real(kind=kind(1.0d0)) :: startTime, stopTime, currentTime
-    integer                :: i ,status, found, lunlog
-    logical                :: log = .false.
+    integer                :: i ,status, found, lunlog, k
+    logical                :: log = .true.
 
     if (log) open(newunit=lunlog, file='dimr_test.log',status='replace')
 
     version_string = ' '
     call get_version_string(version_string)
+    k = index( version_string, char(0) )
+    version_string(k:) = ' '
+
     if (log) write(lunlog,'(A)') 'dll version string:'
-    if (log) write(lunlog,'(A200)') trim(version_string)
+    if (log) write(lunlog,'(A)') version_string ! trim(version_string)
 
     key = '-waq'
     value = ' '
@@ -108,26 +119,43 @@
         stop
     endif
     if (log) write(lunlog,'(A)') 'run id:'
-    if (log) write(lunlog,'(A200)') trim(runid)
+    if (log) write(lunlog,'(A)') runid ! trim(runid)
 
     dummy = initialize(runid)
 
+    write( lunlog, * ) 'Start of calculation:'
+    
+!    This fragment must be updated!
+!    do i = 1000, 40000, 1000
+!        write( key, "(i10,a20)" ) i, "IM1"
+!        dummy = get_value( key, p_value )
+!        write( lunlog, * ) i, p_value
+!    enddo
+
     call get_start_time(startTime)
-    if (log) write(lunlog,'(A)') 'run id:'
-    if (log) write(lunlog,'(A)') runid
+    if (log) write(lunlog,'(A)') 'start time:'
+    if (log) write(lunlog,'(g17.6)') starttime
 
     call get_end_time(stopTime)
-    if (log) write(lunlog,'(A)') 'run id:'
-    if (log) write(lunlog,'(A)') runid
+    if (log) write(lunlog,'(A)') 'stop time:'
+    if (log) write(lunlog,'(g17.6)') stoptime
 
     call get_current_time(currentTime)
-    if (log) write(lunlog,'(A)') 'currentTime:'
-    if (log) write(lunlog,'(E17.6)') currentTime
+    if (log) write(lunlog,'(A)') 'current time:'
+    if (log) write(lunlog,'(g17.6)') currentTime
 
     dummy = update(stopTime-startTime)
     call get_current_time(currentTime)
-    if (log) write(lunlog,'(A)') 'currentTime:'
-    if (log) write(lunlog,'(E17.6)') currentTime
+    if (log) write(lunlog,'(A)') 'current time:'
+    if (log) write(lunlog,'(g17.6)') currentTime
+
+    write( lunlog, * ) 'End of calculation:'
+!    This fragment must be updated
+!    do i = 1000, 40000, 1000!
+!        write( key, "(i10,a20)" ) i, "IM1"
+!        dummy = get_value( key, p_value )
+!        write( lunlog, * ) i, p_value
+!    enddo
 
     dummy = finalize()
 

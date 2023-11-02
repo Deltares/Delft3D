@@ -7,9 +7,9 @@ set(res_path res)
 set(rc_version_file ${res_path}/dfmoutput_version.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(fortran_version_files ${src_path}/dfmoutput_version.F90
-                          ${src_path}/dfmoutput_static_version_info.F90)  
+                          ${src_path}/dfmoutput_static_version_info.F90)
 set_source_files_properties(${fortran_version_files}
-                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")   
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 # Gather the source files
 get_fortran_source_files(${src_path} sources)
 
@@ -22,8 +22,9 @@ if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
 
-    set(oss_dependencies deltares_common 
-                         io_netcdf 
+    set(oss_dependencies deltares_common
+                         io_netcdf
+                         io_netcdf_data
                          FLAP
                          netcdf4
                          netcdff)
@@ -37,6 +38,7 @@ endif(UNIX)
 if (WIN32)
     set(oss_dependencies deltares_common
                          io_netcdf
+                         io_netcdf_data
                          FLAP
                          netcdf4
                          netcdff)
@@ -49,9 +51,9 @@ if(UNIX)
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
-    message(STATUS "Setting target_compile_definitions in Unix")    
+    message(STATUS "Setting target_compile_definitions in Unix")
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
-   
+
       include_directories(${version_include_dir}
 					      ${res_path})
 endif(UNIX)
@@ -74,7 +76,7 @@ if (WIN32)
                         ${tecplot_path}
 						${version_include_dir}
 					    ${res_path})
-                        
+
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
@@ -90,7 +92,7 @@ if (WIN32)
                           "wsock32.lib"
                           "netapi32.lib"
                           "kernel32.lib"
-                          "user32.lib" 
+                          "user32.lib"
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
@@ -118,7 +120,7 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${executable_name})

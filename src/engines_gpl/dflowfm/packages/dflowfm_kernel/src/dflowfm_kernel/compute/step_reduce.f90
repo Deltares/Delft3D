@@ -305,8 +305,15 @@
     !
     call setucxucy_mor (u1)
     call fm_flocculate()               ! fraction transitions due to flocculation
+    
+    call timstrt('Settling velocity   ', handle_extra(87))
     call fm_fallve()                   ! update fall velocities
+    call timstop(handle_extra(87))
+    
+    call timstrt('Erosed_call         ', handle_extra(88))
     call fm_erosed()                   ! source/sink, bedload/total load
+    call timstop(handle_extra(88))
+    
     if ( jatimer.eq.1 ) call stoptimer(IEROSED)
  end if
 

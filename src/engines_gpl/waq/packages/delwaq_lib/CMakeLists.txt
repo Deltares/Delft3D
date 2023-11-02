@@ -22,18 +22,14 @@ add_library(${library_name} SHARED ${source_files}
                                    ${rc_version_file})
 
 # Set dependencies
-set(oss_dependencies deltares_common
-                     deltares_common_c
-                     waq_data
+set(oss_dependencies waq_hyd_data
                      waq_io
                      waq_memory
                      waq_kernel
+                     waq_data
                      waq_process
-                     waq_validation
-                     waq_utils_c
                      waq_utils_f)
 
-oss_include_libraries(${library_name} oss_dependencies)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies})

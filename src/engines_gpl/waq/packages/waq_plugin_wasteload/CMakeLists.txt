@@ -26,9 +26,9 @@ set_source_files_properties(${fortran_version_file}
 # Set dependencies
 set(oss_dependencies deltares_common
                      deltares_common_c
+                     waq_data
                      waq_utils_f)
 
-oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties

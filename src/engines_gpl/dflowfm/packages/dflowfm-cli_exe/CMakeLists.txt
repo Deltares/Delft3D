@@ -1,8 +1,8 @@
 # Set directories
 # Set the directory of where the source code is located.
-set(src_path src) 
+set(src_path src)
 
-# Set the DFlow FM component path 
+# Set the DFlow FM component path
 set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 set(dflowfm_cli_path "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
@@ -19,7 +19,7 @@ if(WITH_INTERACTER)
     find_library (lib_interacter intmwi64.lib
               HINTS ENV INTERACTER_DIR
                   PATHS "${checkout_src_root}/third_party/interacter/bin/win32/x64")
-    
+
     if(NOT lib_interacter)
        message(CHECK_FAIL "not found")
        message(SEND_ERROR "Required Interacter library is missing.")
@@ -55,6 +55,7 @@ if(UNIX)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             interacter_stub
                             kdtree_wrapper
                             kdtree2
@@ -77,6 +78,7 @@ if(UNIX)
                             triangle_c
                             wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
                             dflowfm_kernel)
@@ -98,6 +100,7 @@ if(WIN32)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             kdtree_wrapper
                             kdtree2
                             fortrangis
@@ -120,6 +123,7 @@ if(WIN32)
                             triangle_c
                             wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
                             dflowfm_kernel)
@@ -140,8 +144,8 @@ oss_include_libraries(${executable_name} oss_dependencies)
 if(UNIX)
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
-    message(STATUS "Setting target_compile_definitions in Unix")    
+
+    message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
@@ -149,7 +153,7 @@ endif(UNIX)
 
 if(WIN32)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)   
+    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)
 endif(WIN32)
 
 
@@ -167,7 +171,7 @@ if (WIN32)
                         ${tecplot_path}
                         ${version_include_dir}
                         ${dflowfm_version_path})
-                        
+
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
@@ -184,7 +188,7 @@ if (WIN32)
                           "wsock32.lib"
                           "netapi32.lib"
                           "kernel32.lib"
-                          "user32.lib" 
+                          "user32.lib"
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
@@ -230,9 +234,9 @@ set(build_dir ${CMAKE_BINARY_DIR})
 set(build_project dflowfm-cli)
 
 post_build_target( ${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${build_project} )
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
@@ -249,4 +253,3 @@ if (WIN32)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm_processes.bat DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfmoutput.bat         DESTINATION bin)
 endif(WIN32)
-

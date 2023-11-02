@@ -99,7 +99,7 @@
       use m_delpar01
       use m_move
       use m_fileutils
-      use grids
+      use dlwqgrid_mod
       use timers
       use waqmem          ! module with the more recently added arrays
       use delwaq2_data

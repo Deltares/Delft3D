@@ -6111,7 +6111,7 @@ contains
    
    ! b = factor*b + offset ! todo doorplussen
    
-   if (operand == 'O') then              ! Override, regardless of what was specified before 
+   if (operand == 'O' .or. operand == 'V') then              ! Override, regardless of what was specified before 
       a = b
    else if (operand == 'A') then         ! Add, means: only if nothing was specified before   
       if (a == dmiss_default ) then 
@@ -6930,6 +6930,8 @@ module m_meteo
       select case (operand)
          case ('O')
             ec_operand = operand_replace
+         case ('V')
+            ec_operand = operand_replace_if_value
          case ('+')
             ec_operand = operand_add
          case default

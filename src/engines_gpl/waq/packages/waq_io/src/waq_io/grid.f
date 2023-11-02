@@ -20,7 +20,8 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_grid
+      module m_waq_grid
+
       use m_read_sub_procgrid
       use m_read_proc_time
       use m_read_nobottomlay
@@ -62,7 +63,7 @@
 !     Logical units  : LUN(29) = unit formatted output file
 !                      LUN( 2) = unit intermediate file (system)
 
-      use Grids        !   for the storage of contraction grids
+      use dlwqgrid_mod        !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -289,7 +290,7 @@
 !        Expand with layers in the base grid
 
       do igrid = 1, nogrid
-         
+
          if (igrid .eq. GridPs%bottom_grid) cycle
 
          noseg2 = GridPs%Pointers(igrid)%noseg_lay
@@ -434,4 +435,4 @@
 
       end
 
-      end module m_grid
+      end module m_waq_grid

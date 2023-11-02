@@ -42,8 +42,8 @@
       use m_getloc
       use m_getdim
       use m_zoek
-      use dlwq_data      ! for definition and storage of data
-      use timers       !   performance timers
+      use dlwq_hyd_data   ! for definition and storage of data
+      use timers          !   performance timers
       use m_sysi          ! Timer characteristics
       use time_module
 

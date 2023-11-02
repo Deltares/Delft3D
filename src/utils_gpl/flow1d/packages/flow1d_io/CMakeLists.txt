@@ -11,6 +11,7 @@ create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
                             flow1d_core
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             netcdf4
                             netcdff)
 
@@ -30,4 +31,3 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointe
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/flow1d_library)
-

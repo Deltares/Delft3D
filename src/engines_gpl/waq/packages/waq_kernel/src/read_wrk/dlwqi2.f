@@ -56,7 +56,7 @@
 
       use m_srstop
       use timers
-      use grids
+      use dlwqgrid_mod
       use delwaq2_data
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics

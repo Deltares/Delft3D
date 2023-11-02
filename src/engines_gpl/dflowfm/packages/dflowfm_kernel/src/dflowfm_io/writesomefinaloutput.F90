@@ -185,6 +185,12 @@
        call msg_flush()
     endif 
  end if
+ 
+ if ( number_steps_limited_visc_flux_links > 0 ) then
+      msgbuf = ' ' ; call msg_flush()
+      write(msgbuf,'(a)') 'Viscosity coefficient/Horizontal transport flux were limited on some links in the course of computation.' 
+      call msg_flush()
+ end if 
 
  do k = 1,3
     msgbuf = ' ' ; call msg_flush()

@@ -10,7 +10,6 @@ add_executable(${executable_name} ${source_files})
 
 # Extra dependencies
 set(oss_dependencies delwaq_lib)
-oss_include_libraries(${executable_name} oss_dependencies)
 
 # Link libraries
 target_link_libraries(${executable_name} ${oss_dependencies})

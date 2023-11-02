@@ -2,7 +2,7 @@
    module gridoperations
 
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR, LEVEL_WARN
-   use meshdata, only: t_ug_meshgeom
+   use m_ug_meshgeom
    implicit none
 
    !new functions
@@ -3731,7 +3731,6 @@
    !< converter function
    function ggeo_convert(meshgeom, start_index) result(ierr)
 
-   use meshdata
    use network_data
    use m_missing, only : dmiss
 
