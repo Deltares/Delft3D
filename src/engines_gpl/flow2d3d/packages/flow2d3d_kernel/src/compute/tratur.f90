@@ -412,42 +412,42 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                 maskval = 0
                 rhslax  = 0.0_fp
                 !
-                if (kfs(nmd) = 1) then
+                if (kfs(nmd) == 1) then
                    ztopl = s1(nmd) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nmd) + real(dps(nmd),fp))
                    ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
                    zbotl = s1(nmd) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nmd) + real(dps(nmd),fp))
                    zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
-                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                   if (ztopl>=zbotr .or. ztopr>zbotl)then
                       rhslax  = rhslax + rtur0(nmd,k,l)
                       maskval = maskval + 1
                    endif
                 endif
-                if (kfs(ndm) = 1) then
+                if (kfs(ndm) == 1) then
                    ztopl = s1(ndm) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(ndm) + real(dps(ndm),fp))
                    ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
                    zbotl = s1(ndm) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(ndm) + real(dps(ndm),fp))
                    zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
-                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                   if (ztopl>=zbotr .or. ztopr>zbotl)then
                       rhslax  = rhslax + rtur0(ndm,k,l)
                       maskval = maskval + 1
                    endif
                 endif
-                if (kfs(nmu) = 1) then
+                if (kfs(nmu) == 1) then
                    ztopl = s1(nmu) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nmu) + real(dps(nmu),fp))
                    ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
                    zbotl = s1(nmu) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nmu) + real(dps(nmu),fp))
                    zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
-                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                   if (ztopl>=zbotr .or. ztopr>zbotl)then
                       rhslax  = rhslax + rtur0(nmu,k,l)
                       maskval = maskval + 1
                    endif
                 endif
-                if (kfs(num) = 1) then
+                if (kfs(num) == 1) then
                    ztopl = s1(num) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(num) + real(dps(num),fp))
                    ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
                    zbotl = s1(ndm) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(num) + real(dps(num),fp))
                    zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
-                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                   if (ztopl>=zbotr .or. ztopr>zbotl)then
                       rhslax  = rhslax + rtur0(num,k,l)
                       maskval = maskval + 1
                    endif
