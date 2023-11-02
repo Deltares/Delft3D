@@ -59,7 +59,7 @@
             <path>dimr/bin/dimr.exe</path>
             <shell ref="command_prompt"/>
             <environments>
-                <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
+                <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
                 <environment name="OMP_NUM_THREADS_SWAN" type="raw">1</environment>
