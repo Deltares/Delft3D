@@ -82,6 +82,7 @@ if [ "$3" == '' ]; then
     usage
     exit
 fi
+echo "loc1"
 srcfile=$1
 destfile=$2
 wfile=$3
@@ -94,6 +95,7 @@ else
         addflags=''
     fi
 fi
+echo "loc2"
 
 defaultflags=--ignore_unmapped
 arguments="$defaultflags $addflags -s $srcfile -d $destfile -w $wfile"
@@ -105,6 +107,7 @@ fi
 if [ -f PET0.RegridWeightGen.Log ]; then
     rm -f PET0.RegridWeightGen.Log
 fi
+echo "loc3"
     # Check whether needed files exist
 if [ ! -f $srcfile ]; then
     error1
