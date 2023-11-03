@@ -31,7 +31,7 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
-set_target_properties (${executable_name} PROPERTIES FOLDER tests/utils_lpgl/io_netcdf)
+set_target_properties (${executable_name} PROPERTIES FOLDER tests/utils_lgpl/io_netcdf)
 
 # post-build
 set(install_dir ${CMAKE_BINARY_DIR})
