@@ -71,3 +71,24 @@
     !$OMP END PARALLEL DO
  endif
  end subroutine linkstocenters
+
+ subroutine linkstocenters2Donly(vnod,vlin)        ! set flow node value based on flow link values scalar
+
+ use m_flow
+ use m_netw
+ use m_flowgeom
+
+ implicit none
+
+ double precision       :: vlin(lnx)
+ double precision       :: vnod(ndx)
+ integer                :: L, k1, k2, LL, Lb, Lt, kk, kb, kt, k
+
+ vnod = 0d0
+
+ do L   = 1,lnx
+    k1  = ln  (1,L) ; k2 = ln  (2,L)
+    vnod(k1) = vnod(k1) + vlin(L)*wcL(1,L)
+    vnod(k2) = vnod(k2) + vlin(L)*wcL(2,L)
+ enddo
+ end subroutine linkstocenters2Donly

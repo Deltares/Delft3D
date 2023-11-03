@@ -200,7 +200,7 @@ subroutine load_displaysettings(filename)
     use M_RAAITEK
     use M_isoscaleunit
     use m_transport, only: iconst_cur
-    USE M_FLOW, only: kplot, nplot, kplotfrombedorsurface, kplotordepthaveraged
+    USE M_FLOW, only: kplot, nplot, Lplot, kplotfrombedorsurface, kplotordepthaveraged
     use m_observations, only : jafahrenheit
     use m_sferic
 !   use unstruc_opengl    ! circular dependency
@@ -243,7 +243,7 @@ subroutine load_displaysettings(filename)
     double precision :: tsize
     COMMON /TEXTSIZE/   TSIZE
      
-    integer          :: jaopengl_loc
+    integer          :: jaopengl_loc, minp
     double precision :: x, y, dy, asp
 
 
@@ -398,6 +398,7 @@ subroutine load_displaysettings(filename)
 
     call prop_get_integer (dis_ptr, '*', 'kplot', kplot, success)
     call prop_get_integer (dis_ptr, '*', 'nplot', nplot, success) 
+    call prop_get_integer (dis_ptr, '*', 'Lplot', Lplot, success) 
     
     call prop_get_integer (dis_ptr, '*', 'jaFahrenheit', jaFahrenheit, success)
 
@@ -428,6 +429,11 @@ subroutine load_displaysettings(filename)
         ndraw(10) = 1
     end if
 
+    inquire(file = 'showrai.pli', exist=jawel)
+    if (jawel) then 
+       call oldfil(minp, 'showrai.pli' )
+       call reapol(minp, 0) 
+    endif
     
 end subroutine load_displaysettings
 
@@ -639,6 +645,7 @@ subroutine save_displaysettings(filename)
     call prop_set(dis_ptr, '*', 'scaleprofs', jascaleprofs)
     call prop_set(dis_ptr, '*', 'kplot', kplot)
     call prop_set(dis_ptr, '*', 'nplot', nplot)
+    call prop_set(dis_ptr, '*', 'Lplot', Lplot)
     
     call prop_set(dis_ptr, '*', 'jaFahrenheit', jaFahrenheit)
     

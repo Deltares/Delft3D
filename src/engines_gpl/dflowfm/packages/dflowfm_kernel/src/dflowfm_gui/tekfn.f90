@@ -97,22 +97,21 @@
 
       Fx1 =  1.0D20
       Fx2 = -1.0D20
-      DO I = 1,N
-         Fx1 = MIN(X(I),Fx1)
-         Fx2 = MAX(X(I),Fx2)
-      ENDDO
-
       Fy1 =  1.0D20
       Fy2 = -1.0D20
+
       DO I = 1,N
-         Fy1 = MIN(y(I),Fy1)
-         Fy2 = MAX(y(I),Fy2)
+         if (y(i) >= y1 .and. y(i) <= y2) then  
+            Fx1 = MIN(X(I),Fx1)
+            Fx2 = MAX(X(I),Fx2)
+            Fy1 = MIN(y(I),Fy1)
+            Fy2 = MAX(y(I),Fy2)
+         endif 
       ENDDO
 
       IF (JAUTO .EQ. 1) THEN
          X1 = Fx1
          X2 = max(Fx2, Fx1 + 1d-4)
-
          if (fy1 < 2d0*y1-y2) return
          if (fy2 > 2d0*y2-y1) return
          if (fx1 < 2d0*x1-x2) return

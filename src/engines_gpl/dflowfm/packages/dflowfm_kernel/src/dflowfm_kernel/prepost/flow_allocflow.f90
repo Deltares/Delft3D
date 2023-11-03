@@ -910,6 +910,14 @@ endif
     allocate ( vicwws   (ndkx) , stat= ierr )
     call aerr('vicwws   (ndkx)', ierr, ndkx ) ; vicwws    = 0d0
 
+    if (iturbulencemodel == 5 .or. iturbulencemodel == 6) then
+       if (allocated(turkinws) ) deallocate(turepsws, turkinws) 
+       allocate ( turkinws (ndkx) , stat= ierr )
+       call aerr('turkinws (ndkx)', ierr, ndkx ) ; turkinws = epstke
+       allocate ( turepsws (ndkx) , stat= ierr )
+       call aerr('turepsws (ndkx)', ierr, ndkx ) ; turepsws = epseps
+    endif 
+
     if (allocated (turkinepsws) ) then
        deallocate (turkinepsws)
     endif
@@ -925,6 +933,15 @@ endif
     call aerr('tqcu(Ndkx)', ierr, ndkx ) ; tqcu = 0
     allocate ( eqcu(Ndkx) , stat= ierr )
     call aerr('eqcu(Ndkx)', ierr, ndkx ) ; eqcu = 0
+
+    if (iturbulencemodel > 4) then 
+       if (allocated(ustbs)) deallocate (ustbs,ustws)
+       allocate ( ustbs(Ndx) , stat= ierr )
+       call aerr('ustbs(Ndx)', ierr, ndx ) ; ustbs = 0
+       allocate ( ustws(Ndx) , stat= ierr )
+       call aerr('ustws(Ndx)', ierr, ndx ) ; ustws = 0
+    endif
+
  endif
 
  call realloc( z0ucur,lnx  , stat=ierr, keepExisting = .false., fill = epsz0)  !1d-10

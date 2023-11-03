@@ -134,7 +134,11 @@
                     if (ierr /= 0) goto 777
                 else if (nkol == 3) then
                     READ(REC,*,iostat=ierr) XX,YY,ZZ
-                    if (ierr /= 0) goto 777
+                    if (ierr /= 0) then         ! there is a character or nothing
+                       if (janampl .ne. 0) then ! only error if trying to read nampli  
+                           goto 777
+                       endif
+                    endif
                 else
                     READ(REC,*,iostat=ierr) XX,YY
                     if (ierr /= 0) goto 777

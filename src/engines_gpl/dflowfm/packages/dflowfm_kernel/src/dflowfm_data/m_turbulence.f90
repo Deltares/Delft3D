@@ -117,6 +117,9 @@
  double precision, allocatable     :: vicwwu   (:)      ! vertical eddy viscosity (m2/s) at layer interface at u point
  double precision, allocatable, target :: vicwws   (:)  !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
 
+ double precision, allocatable     :: turkinws (:)      ! k   (m2/s2)  , at layer interface at s 
+ double precision, allocatable     :: turepsws (:)      ! eps (1/s)    , at layer interface at s
+
  !real            , allocatable    :: tkepro   (:)      ! vertical production t
  !real            , allocatable    :: tkedis   (:)      ! vertical dissipation
  double precision, allocatable, target     :: rho      (:)      ! density at cell centres (kg/m3)
@@ -137,6 +140,8 @@
  double precision, allocatable     :: eqcu(:)           ! sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
  double precision, allocatable     :: sqcu(:)           ! sum of q          at layer interface at cupw , horizontal transport of k and eps
 
+ double precision, allocatable     :: ustbs(:)          ! ustb in cell centre (m/s) only iturbulencemodel 5,6
+ double precision, allocatable     :: ustws(:)          ! ustw in cell centre (m/s) only iturbulencemodel 5,6
 
  double precision, allocatable     :: tttu(:), ttqc(:), tttc(:) ! test12
 

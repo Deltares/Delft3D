@@ -36,11 +36,8 @@
  use unstruc_display
  implicit none
  integer :: k, nn
- if (klprof > 0 .and. nplot.gt.0 ) then
-     call cirr(xz(nplot), yz(nplot), ncolblack) !klprof)
-
-     ! k    = nplot
-     ! nn   = size( nd(k)%x )
-     ! call PFILLER(nd(k)%x, nd(k)%y, nn, klprof, klprof)
+ if (klprof > 0) then
+     if (Lplot > 0) call cirr(xu(Lplot), yu(Lplot), ncolwhite) 
+     if (nplot > 0) call cirr(xz(nplot), yz(nplot), ncolblack) 
  endif
  end subroutine tekprofpoint

@@ -60,7 +60,7 @@
 
   double precision :: VMAX2,VMIN2,DV2,VAL2
   integer          :: NCOLS2,NV2,NIS2,NIE2,JAAUTO2, is, Ls, LLs, Lbs, Lts
-  integer          :: iconst, jabruv
+  integer          :: iconst, jabruv, kxL
 
   integer          :: ndraw
   COMMON /DRAWTHIS/ ndraw(50)
@@ -76,20 +76,26 @@
      return                  ! for less than 2 layers
   endif
 
-  uLx = 0d0
+  kxL = 0
   LL  = 0
   do kk = 1, nd(n)%lnx
      L  = nd(n)%ln(kk)
      La = iabs(L)
-     Lb = Lbot(La)
-     is = 1 ; if (L < 0) is = -1
-     if ( is*u1(Lb) > uLx ) then ! search link with highest outflow velocity
-        LL  = La
-        uLx = is*u1(Lb)
+     if (La == Lplot) then      ! if Lplot in cell, use Lplot
+        LL = Lplot 
+        exit
      endif
   enddo
   if (LL == 0) then
-     LL = La
+     do kk = 1, nd(n)%lnx
+        L  = nd(n)%ln(kk)
+        La = iabs(L)
+        if ( kmxL(La) > kxL ) then ! link with max nr of layers
+           kxL = kmxL(La) 
+           LL  = La
+           Lplot = LL
+        endif
+     enddo
   endif
   if (hu(LL) < epshu) then
      LL = 0
@@ -116,7 +122,7 @@
   zmax = 1.1d0*h0 ! + 1d0
 
   if (zmaxrai .ne. dmiss .and. zminrai .ne. dmiss) then
-      zmax = zmaxrai - zminrai
+      zmin = h0 + zminrai ; zmax = h0 + zmaxrai
   endif
 
   km    = kt - kb + 1

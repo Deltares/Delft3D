@@ -114,27 +114,33 @@
             call isflownode1D2D(xp, yp, KK)
             if (kk > 0) then
                nplot = kk
-               call tekprofs()
-               call textflow()
+               key = 3
+               !call tekprofs()
+               !call textflow()
             endif
             CALL DISND(KK, 1)
          ELSE IF (NPUT .EQ. 52 .or. NPUT .EQ. 57 ) THEN   ! LINK mode
             call isflowlink(xp, yp, LL)
-
-            if (nput == 57 .and. LL > 0 ) then
-                zp = iadv(LL)
-                CALL TYPEVALUE(zp,KEY)
-                iadv(LL) = int(zp)
-            endif
-            if ( nput.eq.52 .and. LL.gt.0 ) then
-               call plotklnup(LL)
-
-               if (abs(kcu(LL)) /= 2) then
-                  idisLink = LL ! Save the link index for later display
-                  call dis_info_1d_link(LL)
-                  nhlFlowLink = LL
-                  call highlight_nodesnlinks()
-               end if
+            if (LL > 0) then
+               key = 3
+               !call tekprofs()
+               !call textflow()
+               if (nput == 57) then
+                  zp = iadv(LL)
+                  CALL TYPEVALUE(zp,KEY)
+                  iadv(LL) = int(zp)
+               else 
+                  Lplot = LL 
+                  if (nplot .ne. ln(1,LL) .and. nplot .ne. ln(2,LL) ) then 
+                      nplot = ln(1,LL)
+                  endif
+!                  if (abs(kcu(LL)) /= 2) then
+                     idisLink = LL ! Save the link index for later display
+                     call dis_info_1d_link(LL)
+                     nhlFlowLink = LL
+                     call highlight_nodesnlinks()
+!                  end if
+               endif 
             end if
 
          ENDIF

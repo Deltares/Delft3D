@@ -58,6 +58,7 @@
  integer                           :: mxlays            !< max nr of sigma layers in flow domain
  integer                           :: kplot             !< layer nr to be plotted
  integer                           :: nplot             !< vertical profile to be plotted at node nr
+ integer                           :: Lplot=0           !< Last indicated flow link, used in tekprofs if in cell kplot
  integer                           :: kplotfrombedorsurface = 2 !< up or down k
  integer                           :: kplotordepthaveraged  = 1 !< 1 = kplot, 2 = averaged
  integer                           :: layertype         !< 1= all sigma, 2 = all z, 3 = left sigma, 4 = left z
