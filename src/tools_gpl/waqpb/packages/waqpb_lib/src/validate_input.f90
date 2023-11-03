@@ -68,10 +68,12 @@ module m_validate_input
         "0123456789_"                       !< Characters permitted in names
 
          if (.not.starts_with_valid_char(names_array, valid_start_characters)) then
-            stop "Program stopped. Invalid characters found at start of name. Only the following characters are allowed:" // valid_start_characters
+            write(*,*) "Program stopped. Only the following characters may start a name:"
+            stop valid_start_characters
          end if
         if (.not. contains_only_valid_chars(names_array, valid_characters)) then
-            stop "Program stopped. Invalid characters found. Only the following characters are allowed:" // valid_characters
+            write(*,*) "Program stopped. Only the following characters are allowed:"
+            stop valid_characters
         end if
     end subroutine validate_names
 

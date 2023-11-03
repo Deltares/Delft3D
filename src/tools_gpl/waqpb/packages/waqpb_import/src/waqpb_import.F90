@@ -163,7 +163,7 @@
 !         transport code
           read ( io_asc , * ) jndex
           if ( nproc+1 .gt. nprocm ) stop 'DIMENSION NPROCM'
-          call validate_names([c10, c10a]) ! process name and fortran name
+          call validate_names([c10a]) ! process Fortran name
           nproc = nproc + 1
           procid(nproc) = c10
           procnm(nproc) = c50
@@ -183,7 +183,6 @@
                   read ( io_asc , FMT21) c10,value,c1,c50
                 c20 = ' ' 
               endif
-              call validate_names([c10]) ! input item name
               call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
               ninpu = ninpu + 1
               if ( ninpu .gt. ninpum ) then

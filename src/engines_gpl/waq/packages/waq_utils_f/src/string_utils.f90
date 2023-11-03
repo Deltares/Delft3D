@@ -113,7 +113,7 @@ module m_string_utils
         do i = 1, size(names_array)
             if (verify(names_array(i)(1:1), valid_start_characters)/=0) then
                 starts_with_valid_char = .false.
-                write(*,*) "Error: invalid character found at the start of:"
+                write(*,*) "Error: invalid character found at the start of name:"
                 write(*,*) names_array(i)
                 write(*,*) '^'
             end if
