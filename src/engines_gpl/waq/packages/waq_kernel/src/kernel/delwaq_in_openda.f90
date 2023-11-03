@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_openda_quantities
+module m_waq_openda_quantities
 ! quantity-id's : in (from delwaq to openDA)
 
 integer, parameter :: accepting = 0
@@ -55,13 +55,13 @@ subroutine openda_quantities_initialize(notot,nobnd)
 
 end subroutine openda_quantities_initialize
 
-end module m_openda_quantities
+end module m_waq_openda_quantities
 
 !-----------------------------------
 
-module m_openda_exchange_items
+module m_waq_openda_exchange_items
 
-use m_openda_quantities
+use m_waq_openda_quantities
 
 logical, save :: l_ei(max_location_ids,max_quantity_ids) = .false.
 
@@ -106,7 +106,7 @@ contains
   subroutine get_openda_buffer(quantity, loc_from_waq, dim1, dim2, qarray)
 
   use m_sysn          ! System characteristics
-  
+
   implicit none
 
   integer, intent(in)    :: dim1, dim2, loc_from_waq
@@ -167,6 +167,4 @@ contains
    end subroutine openda_buffer_initialize
 
 !--------------------------
-end module m_openda_exchange_items
-
-
+end module m_waq_openda_exchange_items

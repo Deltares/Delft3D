@@ -110,7 +110,7 @@
       use timers
       use waqmem
       use delwaq2_data
-      use m_openda_exchange_items, only : get_openda_buffer
+      use m_waq_openda_exchange_items, only : get_openda_buffer
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
