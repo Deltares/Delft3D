@@ -2,6 +2,9 @@
 
 message(STATUS "swan omp:")
 
+# Don't put the Fortran modules of the SWAN OpenMP executable build in a central location
+unset(CMAKE_Fortran_MODULE_DIRECTORY)
+
 # Set directory which contains all source files
 set(src_path ../src)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
