@@ -38,8 +38,6 @@ else()
     include(compiler_options/intel.cmake)
 endif()
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 
 # Set available build configurations for the .sln file
