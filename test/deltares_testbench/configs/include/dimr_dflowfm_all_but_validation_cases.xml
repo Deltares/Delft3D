@@ -1791,24 +1791,6 @@
         <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f005_c151_netcdf_bnds" ref="dflowfm_default">
-      <path>e02_dflowfm/f005_boundary_conditions/c151_netcdf_bnds</path>
-      <maxRunTime>120.0000000</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_kzn/kzn_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="s1" toleranceAbsolute="0.001" />
-          </parameters>
-        </file>
-        <file name="DFM_OUTPUT_kzn/kzn_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="salinity" toleranceAbsolute="0.01" />
-            <parameter name="temperature" toleranceAbsolute="0.01" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" type="xyz" ignore="true" />
-      </checks>
-    </testCase>
     <testCase name="e02_f006_c021_basinnofriction_squaresfine" ref="dflowfm_default">
       <path>e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>

@@ -1604,7 +1604,7 @@ integer function ModelInitialize ()
     use delwaq2_global_data
     use waq_omi_utils
     use dhcommand
-    use m_openda_exchange_items, only : openda_buffer_initialize
+    use m_waq_openda_exchange_items, only : openda_buffer_initialize
     use m_actions
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
@@ -2239,7 +2239,7 @@ integer function ModelInitialize_By_Id( runid_given )
     use delwaq2_global_data
     use waq_omi_utils
     use dhcommand
-    use m_openda_exchange_items, only : openda_buffer_initialize
+    use m_waq_openda_exchange_items, only : openda_buffer_initialize
     use m_actions
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
