@@ -143,7 +143,7 @@ c             end existing format
           endif
       endif
 
-      call validate_units(itemun(jndex))
+      call validate_units(itemun(jndex), io_mes)
 
 c     Actions below ONLY for new items
 

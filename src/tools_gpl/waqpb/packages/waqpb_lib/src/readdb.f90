@@ -65,7 +65,7 @@ subroutine readdb(lu_inp, lu_mes)
         itemde(nitem+1), itemun(nitem+1), itemnm(nitem+1), &
         itemag(nitem+1), itemda(nitem+1), itemwk(nitem+1), &
         itemgr(nitem+1)
-    call validate_units(itemun(nitem+1))
+    call validate_units(itemun(nitem+1), lu_mes)
     nitem = nitem + 1
     item_i(nitem) = nitem
     goto 10
@@ -85,7 +85,7 @@ subroutine readdb(lu_inp, lu_mes)
     goto 15
  16 close(lu_inp)
     write(lu_mes,'(i5,'' lines read from FORTRAN.CSV'')') nfort
-    call validate_names(fortid(1:nfort))
+    call validate_names(fortid(1:nfort), lu_mes)
 
 
     !Read Table P4
@@ -101,7 +101,7 @@ subroutine readdb(lu_inp, lu_mes)
     goto 20
  21 close(lu_inp)
     write(lu_mes,'(i5,'' lines read from PROCES.CSV'')') nproc
-    call validate_names(procfo(1:nproc))
+    call validate_names(procfo(1:nproc), lu_mes)
 
 
     !Read table P5

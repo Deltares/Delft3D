@@ -30,7 +30,7 @@
 
 !     Program to decompose a PROCES.ASC file into tables
 
-      use m_validate_input, only: validate_names, validate_units
+      use m_validate_input, only: validate_names
       include 'data_ff.inc'
       
       character*1  c1
@@ -69,9 +69,8 @@
       pdffil = 'proces.asc'
       do i=1, command_argument_count()
             call get_command_argument (i,argument)
-            if (len_trim(argument) == 0) exit
             if (argument(:4) == '-pdf') then
-                pdffil = trim(argument(5:))
+                read(argument(5:), *) pdffil
             endif
             if (trim(argument) == '-duprol') duprol = .true.
             if (trim(argument) =='-newtab') newtab = .true.
@@ -163,7 +162,7 @@
 !         transport code
           read ( io_asc , * ) jndex
           if ( nproc+1 .gt. nprocm ) stop 'DIMENSION NPROCM'
-          call validate_names([c10a]) ! process Fortran name
+          call validate_names([c10a], io_mes) ! process Fortran name
           nproc = nproc + 1
           procid(nproc) = c10
           procnm(nproc) = c50

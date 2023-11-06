@@ -64,14 +64,11 @@
 
       do i=1,command_argument_count()
             call get_command_argument(i,argument)
-            if (len_trim(argument)==0) exit
             if (argument(:8) == '-version') then
-                c20 = trim(argument(9:))
-                read (c20,'(f20.0)',iostat=status) version
+                read(argument(9:), '(f20.0)', iostat=status) version
             endif
             if (argument(:7)=='-serial') then
-                c20 = trim(argument(8:))
-                read (c20,'(i20)',iostat=status) serial
+                read(argument(8:), '(i20)',iostat=status) serial
             endif
             if (trim(argument) == '-newfrm') newfrm = .true.
             if (trim(argument) == '-oldfrm') newfrm = .false.
