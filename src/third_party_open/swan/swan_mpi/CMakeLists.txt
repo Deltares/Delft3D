@@ -33,7 +33,6 @@ if (WIN32)
     set(exe_dependencies netcdf4
                          netcdff)
 
-    add_dependencies(${executable_name} swan)
     oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
@@ -73,7 +72,6 @@ if(UNIX)
          PkgConfig::NETCDF
          netcdff)
 
-    add_dependencies(${executable_name} swan)
     target_include_directories(${executable_name} PUBLIC netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
