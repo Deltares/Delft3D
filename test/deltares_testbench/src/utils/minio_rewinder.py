@@ -4,6 +4,7 @@ from collections import defaultdict
 from minio import Minio
 from pytz import timezone
 from datetime import datetime, timezone
+from typing import List, Dict
 
 
 class Rewinder:
@@ -98,7 +99,7 @@ class Rewinder:
     def __download_objects(
         self,
         bucket: str,
-        downloads: list[dict[str, str]],
+        downloads: List[Dict[str, str]],
         source_path: str,
         destination_directory: str,
     ):
