@@ -955,28 +955,31 @@ subroutine readMDUFile(filename, istat)
            iStrchType = -1
        endif
 
+       call prop_get_integer( md_ptr, 'geometry', 'Numtopsig'        , Numtopsig)
+       call prop_get_integer( md_ptr, 'geometry', 'Numtopsiguniform' , JaNumtopsiguniform)
+       call prop_get_double ( md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
+       call prop_get_double ( md_ptr, 'geometry', 'Dztopuniabovez'   , dztopuniabovez )
+       call prop_get_double ( md_ptr, 'geometry', 'Dztop'            , Dztop )
+       call prop_get_double ( md_ptr, 'geometry', 'Toplayminthick'   , Toplayminthick)
+       call prop_get_double ( md_ptr, 'geometry', 'Floorlevtoplay'   , Floorlevtoplay )
+       call prop_get_integer( md_ptr, 'geometry', 'OrgFloorlevtoplaydef'   , jaorgFloorlevtoplaydef )
+       call prop_get_double ( md_ptr, 'geometry', 'Tsigma'           , Tsigma )
+       call prop_get_double ( md_ptr, 'geometry', 'ZlayBot'          , zlaybot )
+       call prop_get_double ( md_ptr, 'geometry', 'ZlayTop'          , zlaytop )
+   
+       call prop_get_integer( md_ptr, 'geometry', 'StretchType'      , iStrchType)
+   
+       if (Dztop > 0d0) then  ! hk claims back original functionality
+           iStrchType = -1
+       endif
+   
        if( iStrchType == STRCH_USER ) then
-          call realloc(laycof, kmx)
-          call prop_get_doubles( md_ptr, 'geometry', 'StretchCoef', laycof, kmx )
-          sumlaycof = sum(laycof)
-          if (comparereal(sumlaycof, 100d0, tolSumLay) /= 0) then
-             call realloc(tmpdouble, maxLayers, fill=0d0)
-             call prop_get_doubles( md_ptr, 'geometry', 'StretchCoef', tmpdouble, maxLayers )
-             n = 0
-             do i = 1, maxLayers
-                if (.not.(tmpdouble(i) > 0)) then
-                   exit
-                endif
-                n = n + 1
-             end do
-             if ( kmx /= n ) then
-                call mess(LEVEL_ERROR, 'The number of values specified in "StretchCoef" is inconsistent with "Kmx"!')
-             else
-                call mess(LEVEL_ERROR, 'The values specified in "StretchCoef" do not add up to 100! We got: ', sumlaycof)
-             endif
-          endif
+          if( allocated(laycof) ) deallocate( laycof )
+          allocate( laycof(kmx) )
+          call prop_get_doubles( md_ptr, 'geometry', 'StretchCoef'   , laycof, kmx )
        else if( iStrchType == STRCH_EXPONENT ) then
-          call realloc(laycof, 3)
+          if( allocated(laycof) ) deallocate( laycof )
+          allocate( laycof(3) )
           call prop_get_doubles( md_ptr, 'geometry', 'StretchCoef', laycof, 3)
        endif
 

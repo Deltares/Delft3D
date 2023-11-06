@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
+! $Id: wrihistek.f90 142568 2023-02-21 10:51:14Z buwalda $
+! $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20230210_DFM_Dev_Course/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_io/wrihistek.f90 $
 
    subroutine wrihistek(tim)
    use m_observations
@@ -98,26 +98,24 @@
       Te = 2*400/ue
 
       !write(mxls,'(13f14.6)') tim/Te ,  ucx(kobs(1)) / ue !   , s1(kobs(1)) - bl(kobs(1))
-      if (numobs >= 2 .and. ncrs >= 1) then ! Hardcoded quantities below require at least 2 obs points and 1 crossection.
-   
+      if (numobs > 0 .and. kobs(1) > 0 ) then
+
          k1   = kobs(1)                                 ; k2  = kobs(2)
-         if (k1 > 0 .and. k2 > 0) then
-            ft   = 0.3048 ; dinch = 0.0254d0               ; wid = 6d0*dinch
-            h1   = hs(k1)                                  ; h2  = hs(k2)
-            AA1  = h1*wid                                  ; AA2 = h2*wid
-            QQ   = crs(1)%sumvalcur(1)
-            vv1  = sqrt( ucx(k1)**2 + ucy(k1)**2 )         ; vv2 = sqrt( ucx(k2)**2 + ucy(k2)**2 ) ! centre value
-            vv1  = QQ/AA1                                  ; vv2 = QQ/AA2                          ! average value
-            eh1  = vv1*vv1/(2d0*ag)                        ; ee1 = s1(k1) + eh1
-            eh2  = vv2*vv2/(2d0*ag)                        ; ee2 = s1(k2) + eh2
-            RR1  = AA1 / (wid + 2*h1)                      ; RR2 = AA2 / (wid + 2*h2)
-            xl1  = 1.43d0                                  ; xl2 = 1.59d0
-            df1  = xL1*0.01*0.01*vv1*vv1/(RR1**1.333333)   ; df2 = xL2*0.01*0.01*vv2*vv2/(RR2**1.333333)
-            hb   = ee1 - ee2 - (df1+df2)
-            s12  = s1(k1) - s1(k2)
-            Froude2 = vv2/sqrt(ag*h2)
-            write(mxls,'(15F8.4)') tim/60d0,  h1, h2, s12, hb, hb/max(eh1,0.001d0), hb/max(eh2,0.001d0), (df1+df2), eh1, QQ/wid, bl(k1) - bl(k2), froude2
-         end if
+         ft   = 0.3048 ; dinch = 0.0254d0               ; wid = 6d0*dinch
+         h1   = hs(k1)                                  ; h2  = hs(k2)
+         AA1  = h1*wid                                  ; AA2 = h2*wid
+         QQ   = crs(1)%sumvalcur(1)
+         vv1  = sqrt( ucx(k1)**2 + ucy(k1)**2 )         ; vv2 = sqrt( ucx(k2)**2 + ucy(k2)**2 ) ! centre value
+         vv1  = QQ/AA1                                  ; vv2 = QQ/AA2                          ! average value
+         eh1  = vv1*vv1/(2d0*ag)                        ; ee1 = s1(k1) + eh1
+         eh2  = vv2*vv2/(2d0*ag)                        ; ee2 = s1(k2) + eh2
+         RR1  = AA1 / (wid + 2*h1)                      ; RR2 = AA2 / (wid + 2*h2)
+         xl1  = 1.43d0                                  ; xl2 = 1.59d0
+         df1  = xL1*0.01*0.01*vv1*vv1/(RR1**1.333333)   ; df2 = xL2*0.01*0.01*vv2*vv2/(RR2**1.333333)
+         hb   = ee1 - ee2 - (df1+df2)
+         s12  = s1(k1) - s1(k2)
+         Froude2 = vv2/sqrt(ag*h2)
+         write(mxls,'(15F8.4)') tim/60d0,  h1, h2, s12, hb, hb/max(eh1,0.001d0), hb/max(eh2,0.001d0), (df1+df2), eh1, QQ/wid, bl(k1) - bl(k2), froude2
       endif
    endif
 
