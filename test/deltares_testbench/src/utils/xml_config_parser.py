@@ -11,6 +11,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from lxml import etree
 
 from src.config.credentials import Credentials
+from src.config.dependency import Dependency
 from src.config.file_check import FileCheck
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
@@ -21,7 +22,6 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
 from src.config.types.presence_type import PresenceType
-from src.config.dependency import Dependency
 
 
 def loop(dictionary: Dict[str, Any], key: str) -> List:
@@ -467,10 +467,10 @@ class XmlConfigParser(object):
 
         if "dependency" in element:
             tag = element["dependency"][0]
-            local_dir_data = tag['local_dir']
-            cases_path = tag["txt"]
+            local_dir = str(tag["local_dir"][0])
+            cases_path = str(tag["txt"])
 
-            test_case.dependency = Dependency(str(local_dir_data[0]), str(cases_path))
+            test_case.dependency = Dependency(local_dir, cases_path)
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
