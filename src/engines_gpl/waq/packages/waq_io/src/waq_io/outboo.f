@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_outboo
+
+      implicit none
+
+      contains
+
 
       subroutine outboo ( noutp  , nrvar  , igrdou , isrtou , noseg  ,
      &                    nodump , nx     , ny     , nrvart , nbufmx ,
@@ -155,3 +161,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_outboo

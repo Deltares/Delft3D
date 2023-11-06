@@ -1,3 +1,10 @@
+module m_fm_reconst_vel
+
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -42,8 +49,8 @@
 !!
 subroutine reconst_vel_coeffs_fmx()
 
-   use m_partrecons
-   use m_partmesh
+   use m_part_recons
+   use m_part_mesh
    use m_alloc
    use m_sferic
    use geometry_module, only: dbdistance, gaussj
@@ -171,10 +178,10 @@ end subroutine reconst_vel_coeffs_fmx
 !!
 subroutine reconst_vel(q, h0, h1)
    use partmem, only: hyd
-   use m_flowgeom, only: Ndx, Lnx, bl
-   use m_flowparameters, only: epshs
-   use m_partrecons
-   use m_partmesh
+   use m_part_geom, only: Ndx, Lnx, bl
+   use m_part_parameters, only: epshs
+   use m_part_recons
+   use m_part_mesh
    use m_sferic
    use geometry_module, only: dbdistance
    use timers
@@ -182,8 +189,8 @@ subroutine reconst_vel(q, h0, h1)
    implicit none
 
    double precision, dimension(Lnx), intent(in)  :: q    !< flowlink-based discharge (m3/s)
-   double precision, dimension(Ndx), intent(in)  :: h0   !< flownode-based water level (m) at begin of interval
-   double precision, dimension(Ndx), intent(in)  :: h1   !< flownode-based water level (m) at end of interval
+   double precision, dimension(Ndx), intent(in)  :: h0   !< layer thickness (m) at begin of interval
+   double precision, dimension(Ndx), intent(in)  :: h1   !< layer thickness (m) at end of interval
 
    integer,                          parameter   :: N = 4
 
@@ -203,6 +210,7 @@ subroutine reconst_vel(q, h0, h1)
    ! initialize
    u0x = 0d0
    u0y = 0d0
+   u0w = 0d0
    if ( jsferic.eq.1 ) then
       u0z = 0d0
    end if
@@ -266,6 +274,26 @@ subroutine reconst_vel(q, h0, h1)
       end do
    end do
 
+   !
+   ! Fill the array for the vertical motion. It has a different unit (1/s) than
+   ! the others, as we use relative coordinates for the position within a layer
+   ! Note:
+   ! The array u0w holds the relative vertical velocity for the interface
+   ! between layer L and L+1. The flow array holds the flow rate between
+   ! these layers L and L+1. The calculation of the indices and the loop
+   ! bounds are influenced by this.
+   !
+   u0w = 0.0
+   do lay = 1,hyd%nolay-1
+      do icell=1,numcells
+         k       = abs(cell2nod(icell)) + (lay-1) * hyd%nosegl
+         L3d     = hyd%noq1 + k
+         icell3d = icell + (lay-1) * numcells
+
+         u0w(icell3d) = hyd%flow(L3d) / hyd%volume(k)
+      end do
+   end do
+
    if ( timon ) call timstop ( ithndl )
 end subroutine reconst_vel
 
@@ -274,8 +302,8 @@ end subroutine reconst_vel
 !!
 subroutine set_fluxes(Lnx,q,qe)
    use partmem, only: hyd
-   use m_partmesh
-   use m_partfluxes
+   use m_part_mesh
+   use m_part_fluxes
    use timers
 
    implicit none
@@ -312,8 +340,8 @@ end subroutine set_fluxes
 !! Part of the grid administration
 !!
 subroutine comp_fluxcoeffs()
-   use m_partmesh
-   use m_partfluxes
+   use m_part_mesh
+   use m_part_fluxes
    use m_alloc
    use MessageHandling
    use geometry_module, only: gaussj
@@ -335,8 +363,6 @@ subroutine comp_fluxcoeffs()
    double precision                         :: areasum, dlen
 
    integer                                  :: i, im1, ip1, j, j2, k, L, L3, Lf
-
-   integer, external                        :: icommonval
 
    integer(4) ithndl              ! handle to time this subroutine
    data ithndl / 0 /
@@ -492,8 +518,8 @@ end subroutine comp_fluxcoeffs
 !> (Re)allocate arrays for storing flux coefficients
 !!
 subroutine realloc_partfluxes()
-   use m_partmesh
-   use m_partfluxes
+   use m_part_mesh
+   use m_part_fluxes
    use m_alloc
    use m_missing
    implicit none
@@ -510,7 +536,7 @@ end subroutine realloc_partfluxes
 !> Deallocate arrays for flux coefficients
 !!
 subroutine dealloc_partfluxes()
-   use m_partfluxes
+   use m_part_fluxes
    implicit none
 
    if ( allocated(iflux2link) ) deallocate(iflux2link)
@@ -523,8 +549,8 @@ end subroutine dealloc_partfluxes
 !!
 subroutine realloc_partrecons()
    use partmem, only: hyd
-   use m_partmesh
-   use m_partrecons
+   use m_part_mesh
+   use m_part_recons
    use m_alloc
    use m_missing
    use m_sferic, only: jsferic
@@ -535,6 +561,7 @@ subroutine realloc_partrecons()
    call realloc(cell_closed_edge, numedges, keepExisting=.false., fill=0)
    call realloc(u0x, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
    call realloc(u0y, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
+   call realloc(u0w, numcells*hyd%nolay, keepExisting=.false., fill=DMISS) ! AM: question: nolay or nolay-1
    if ( jsferic.eq.1 ) then
       call realloc(u0z, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
    end if
@@ -547,7 +574,7 @@ end subroutine realloc_partrecons
 
 !> Deallocate flux_coeffs
 subroutine dealloc_partrecons()
-   use m_partrecons
+   use m_part_recons
    implicit none
 
    if ( allocated(qe) ) deallocate(qe)
@@ -555,6 +582,7 @@ subroutine dealloc_partrecons()
    if ( allocated(u0x) ) deallocate(u0x)
    if ( allocated(u0y) ) deallocate(u0y)
    if ( allocated(u0z) ) deallocate(u0z)
+   if ( allocated(u0w) ) deallocate(u0w)
    if ( allocated(alphafm) ) deallocate(alphafm)
 
    if ( allocated(ireconst) ) deallocate(ireconst)
@@ -585,7 +613,7 @@ end function icommonval
 !!
 subroutine alloc_auxfluxes()
    use m_particles
-   use m_flowgeom, only: Ndx, Lnx
+   use m_part_geom, only: Ndx, Lnx
    use m_alloc
    implicit none
 
@@ -605,3 +633,5 @@ subroutine dealloc_auxfluxes()
 
    if ( allocated(qfreesurf) ) deallocate(qfreesurf)
 end subroutine dealloc_auxfluxes
+
+end module m_fm_reconst_vel

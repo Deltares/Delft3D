@@ -169,7 +169,7 @@
 		</program>
 		<program name="vs">
 			<shell ref="command_prompt"/>
-			<path>thirdparty\vs\win64\vs.exe</path>
+			<path>thirdparty\vs\win32\vs.exe</path>
 			<environments>
 				<environment name="PAGER" type="raw">more</environment>
 			</environments>

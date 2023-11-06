@@ -319,7 +319,6 @@ end subroutine api_loadmodel
    if (jampi == 1) then
       call updateValuesOnCrossSections_mpi(time1)
       call updateValuesOnRunupGauges_mpi()
-      call reduce_particles()
    endif
    call timstop(inner_timerhandle)
     

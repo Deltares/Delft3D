@@ -27,7 +27,7 @@
       contains
 
 
-      SUBROUTINE RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , VRSION ,
+      SUBROUTINE RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  ,
      +                    ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 ,
      +                    DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  ,
      +                    KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX ,
@@ -81,7 +81,6 @@
       INTEGER       LUNREP , IPOSR  , NPOS   , LSTACK , IOUTPT ,
      +              IERR   , NOSTAT , NKEY
       LOGICAL       DTFLG1 , DTFLG3
-      REAL          VRSION
       INTEGER       ILUN(*)
       CHARACTER*(*) LCH  (*)
       CHARACTER*1   CCHAR
@@ -148,10 +147,8 @@
          IF ( IERR2 .EQ. 2 ) GOTO 500
          IF ( IERR2 .EQ. 3 .AND. NOSTAT .EQ. 0 ) GOTO 500
          IF ( IERR2 .EQ. 3 ) THEN
-            IF (VRSION.GE.0.0) THEN
-               WRITE(LUNREP,*) 'ERROR : closing delimiter block 10 not found'
-               IERR = IERR + 1
-            ENDIF
+            WRITE(LUNREP,*) 'ERROR : closing delimiter block 10 not found'
+            IERR = IERR + 1
             GOTO 500
          ENDIF
          IF ( IERR2 .NE. 0 ) THEN

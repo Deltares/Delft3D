@@ -60,7 +60,7 @@
                 <from>teamcity_artifacts/x64</from>
             </location>
             <environments>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/default</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
             </environments>
         </program>
         <program name="vs">

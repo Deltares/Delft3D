@@ -2,8 +2,7 @@
 set(src_path src)
 
 # Gather source files
-set(source  ${src_path}/f902c.cpp
-            ${src_path}/getuuid.c)
+set(source  ${src_path}/fortran_to_c_interfacing.cpp)
 
 add_library(waq_utils_c ${source})
 

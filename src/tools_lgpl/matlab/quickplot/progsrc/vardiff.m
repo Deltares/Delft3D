@@ -172,7 +172,7 @@ switch pflag
                 if isequal(d1_str,d2_str) || size(d1_str,1)>1 || size(d2_str,1)>1
                     myfprintf(fid,'\\STRUT %s & \\multicolumn{2}{c}{%s} \\\\ \\hline\n',substr,'data differs');
                 else
-                    myfprintf(fid,'\\STRUT %s & %s & %s \\\\ \\hline\n',substr,d1_str,d2_str);
+                    myfprintf(fid,'\\STRUT %s & %s & %s \\\\ \\hline\n',substr,protect_string(d1_str),protect_string(d2_str));
                 end
             otherwise
                 myfprintf(fid,['Data of %s%s differs from data contained in %s%s.' br],var1,substr,var2,substr);
@@ -414,6 +414,44 @@ else  % some numeric type of equal size
     if DiffFound
         printdiff(fid,br,'data',formatflag,s1,s2,substr);
     end
+end
+
+function str = protect_string(str)
+special = str>127 | str=='^' | str=='_' | str=='\';
+if any(special)
+    cstr = num2cell(str);
+    for i = 1:length(str)
+        switch cstr{i}
+            case '^'
+                cstr{i} = '\^{}';
+            case '_'
+                cstr{i} = '\^{}';
+            case '\'
+                cstr{i} = '\textbackslash{}';
+            case char(176)
+                cstr{i} = '\textdegree{}';
+            case char(178)
+                cstr{i} = '\textsuperscript{2}';
+            case char(179)
+                cstr{i} = '\textsuperscript{3}';
+            case char(183)
+                cstr{i} = '$\cdot$';
+            case char(237)
+                cstr{i} = '\''i';
+            case char(244)
+                cstr{i} = '\^o';
+            case char(248)
+                cstr{i} = '\o{}';
+            case char(65533)
+                cstr{i} = '$\square$';
+            otherwise
+                if special(i)
+                    cstr{i} = sprintf('[\\#%d]',abs(cstr{i}));
+                
+                end
+        end
+    end
+    str = [cstr{:}];
 end
 
 function myfprintf(fid,varargin)

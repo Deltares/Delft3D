@@ -97,7 +97,7 @@ if isfield(data,'XYZ')
     slice2DV = false;
 end
 %
-if strcmpi(Ops.thinningmode,'none')
+if strcmpi(Ops.thinningmode,'none') || strcmpi(Ops.thinningmode,'dynamic')
     return
 end
 
@@ -110,7 +110,6 @@ else
 end
 
 switch lower(Ops.thinningmode)
-    case 'none'
     case 'uniform'
         for d = 1:length(data)
             if isfield(data,'Val')
@@ -224,7 +223,7 @@ switch lower(Ops.thinningmode)
         end
         %
         tmpa = zeros(ntim,tnpnt);
-        for fcell = {'X','Y','Z','XComp','YComp','ZComp','Val'}
+        for fcell = {'X','Y','Z','XComp','YComp','ZComp','Val','dX_tangential','dY_tangential'}
             f = fcell{1};
             if isfield(data,f)
                 tmpf = tmpa;
@@ -239,12 +238,6 @@ switch lower(Ops.thinningmode)
                 else
                     data(1).(f) = tmpf(I);
                 end
-            end
-        end
-        for fcell = {'dX_tangential','dY_tangential'}
-            f = fcell{1};
-            if isfield(data,f)
-                data = rmfield(data,f);
             end
         end
         data(2:end) = [];

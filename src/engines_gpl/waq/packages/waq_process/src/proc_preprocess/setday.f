@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_setday
+      USE ProcesSet
 
       implicit none
 
@@ -61,7 +62,7 @@
       use m_zoek
       use m_srstop
       use m_dhslen
-      USE ProcesSet
+      
       use timers       !   performance timers
       use m_cnvper
       use m_cnvtim
@@ -70,7 +71,7 @@
 !
 !     Declaration of arguments
 !
-      INTEGER       LUNREP, NOKEY , IPROC , IERR  , NOWARN
+      INTEGER       LUNREP, NOKEY , IPROC , IERR  , NOWARN, item_ind
       LOGICAL       DTFLG1 , DTFLG3
       CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
@@ -81,8 +82,9 @@
       INTEGER       IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
       integer       istart , iperiod
       INTEGER,      ALLOCATABLE :: ISUSED(:)
-      CHARACTER*20  KEY       , SUFFIX  , NAME
-      REAL          PERIOD
+      CHARACTER*20  KEY       , SUFFIX  , NAME, item_name
+      CHARACTER*50  item_desc
+      REAL          PERIOD, default_value 
       type(ItemProp)        :: aItemProp            ! one item
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "setday", ithndl )
@@ -103,16 +105,16 @@
          ISUSED(IKEY) = 1
       ENDIF
 !
-!     Fill the Propces Properties
+!     Fill the Proces Properties
 !
       aProcesProp%name       = 'STADAY'
       WRITE(aProcesProp%name(7:10),'(I4.4)') IPROC
       aProcesProp%routine    = 'STADAY'
-      aProcesProp%text       = 'periodic average'
+      aProcesProp%text       = 'periodic average, periodic minimum, periodic maximum'
       aProcesProp%swtransp   = 123
       aProcesProp%type       = PROCESTYPE_OUTPUT
-      aProcesProp%no_input      = 7
-      aProcesProp%no_output     = 3
+      aProcesProp%no_input      = 9
+      aProcesProp%no_output     = 7
       aProcesProp%no_FluxOutput = 0
       aProcesProp%no_FluxStochi = 0
       aProcesProp%no_DispStochi = 0
@@ -168,17 +170,12 @@
             CALL CNVTIM ( istart, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
-      aItemProp%name    = KEY(1:10)//aProcesProp%name(1:10)
-      aItemProp%default = istart
-      aItemProp%text    = 'start time for statistics'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%input_item(2)%name=aItemProp%name
-      aProcesProp%input_item(2)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(2)%actdef=istart
-      aProcesProp%input_item(2)%indx  = 2
-      aProcesProp%input_item(2)%ip_val  = 0
+
+      item_desc = 'start time for statistics'
+      item_ind = 2
+      item_name = KEY(1:10)//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, 
+     + IOTYPE_SEGMENT_INPUT)
 !
       KEY = 'PERIOD'
       CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
@@ -197,17 +194,12 @@
             CALL CNVTIM ( iperiod, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
-      aItemProp%name    = KEY(1:10)//aProcesProp%name(1:10)
-      aItemProp%default = iperiod
-      aItemProp%text    = 'period of time averaged output'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%input_item(3)%name=aItemProp%name
-      aProcesProp%input_item(3)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(3)%actdef=iperiod
-      aProcesProp%input_item(3)%indx  = 3
-      aProcesProp%input_item(3)%ip_val  = 0
+      
+      item_desc = 'period of time averaged output'
+      item_ind = 3
+      item_name = KEY(1:10)//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name,
+     + IOTYPE_SEGMENT_INPUT)
 !
       aItemProp%name    = 'ITIME'
       iret = ItemPropCollFind( AllItems, aItemProp )
@@ -224,7 +216,11 @@
       aProcesProp%input_item(4)%indx  = 4
       aProcesProp%input_item(4)%ip_val  = 0
 !
-      aItemProp%name    = 'IDT'
+      item_desc = 'time step'
+      item_ind = 5
+      item_name =  'IDT'
+
+      aItemProp%name = item_name
       iret = ItemPropCollFind( AllItems, aItemProp )
       if ( iret .le. 0 ) then
          aItemProp%default = -999.
@@ -232,24 +228,18 @@
          aItemProp%waqtype = WAQTYPE_DEFAULT
          iret = ItemPropCollAdd( AllItems, aItemProp )
       endif
-      aProcesProp%input_item(5)%name=aItemProp%name
-      aProcesProp%input_item(5)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(5)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(5)%actdef=-999.
-      aProcesProp%input_item(5)%indx  = 5
-      aProcesProp%input_item(5)%ip_val  = 0
+
+      aProcesProp%input_item(item_ind)%name=item_name
+      aProcesProp%input_item(item_ind)%type=IOTYPE_SEGMENT_INPUT
+      aProcesProp%input_item(item_ind)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%input_item(item_ind)%actdef=-999.
+      aProcesProp%input_item(item_ind)%indx  = item_ind
+      aProcesProp%input_item(item_ind)%ip_val  = 0
 !
-      aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
-      aItemProp%default = 0.0
-      aItemProp%text    = 'time step counter'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%input_item(6)%name=aItemProp%name
-      aProcesProp%input_item(6)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%input_item(6)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(6)%actdef=0.0
-      aProcesProp%input_item(6)%indx  = 6
-      aProcesProp%input_item(6)%ip_val  = 0
+      item_desc = 'time step counter'
+      item_ind = 6
+      item_name =  'TCOUNT    '//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, 0.0, item_desc, item_ind, item_name, IOTYPE_SEGMENT_WORK)
 !
       KEY = 'SUFFIX'
       CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
@@ -278,6 +268,41 @@
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
      +                   '] created with periodic average from [',aProcesProp%input_item(1)%name,']'
 !
+      !     work array in input and in output
+      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+         aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      ELSE
+         aItemProp%name    = 'TMIN_'//aProcesProp%input_item(1)%name
+      ENDIF
+      aItemProp%default = -999.
+      aItemProp%text    = 'periodic minimum '//aProcesProp%input_item(1)%name
+      aItemProp%waqtype = WAQTYPE_NONE
+      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aProcesProp%output_item(2)%name=aItemProp%name
+      aProcesProp%output_item(2)%type=IOTYPE_SEGMENT_OUTPUT
+      aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(2)%indx= 2
+      aProcesProp%output_item(2)%ip_val= 0
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
+     +                  '] created with periodic minimum from [',aProcesProp%input_item(1)%name,']'
+!
+      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+         aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      ELSE
+         aItemProp%name    = 'TMAX_'//aProcesProp%input_item(1)%name
+      ENDIF
+      aItemProp%default = -999.
+      aItemProp%text    = 'periodic maximum '//aProcesProp%input_item(1)%name
+      aItemProp%waqtype = WAQTYPE_NONE
+      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aProcesProp%output_item(3)%name=aItemProp%name
+      aProcesProp%output_item(3)%type=IOTYPE_SEGMENT_OUTPUT
+      aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(3)%indx= 3
+      aProcesProp%output_item(3)%ip_val= 0
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
+     +                  '] created with periodic maximum from [',aProcesProp%input_item(1)%name,']'
+!
 !     work array in input and in output
 !
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
@@ -289,17 +314,64 @@
       aItemProp%text    = 'work array '//aProcesProp%input_item(1)%name
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(2)%name=aItemProp%name
-      aProcesProp%output_item(2)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(2)%indx= 2
-      aProcesProp%output_item(2)%ip_val= 0
+      aProcesProp%output_item(4)%name=aItemProp%name
+      aProcesProp%output_item(4)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%output_item(4)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(4)%indx= 4
+      aProcesProp%output_item(4)%ip_val= 0
       aProcesProp%input_item(7)%name=aItemProp%name
       aProcesProp%input_item(7)%type=IOTYPE_SEGMENT_WORK
       aProcesProp%input_item(7)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%input_item(7)%actdef=-999.
       aProcesProp%input_item(7)%indx  = 7
       aProcesProp%input_item(7)%ip_val  = 0
+!
+!     work array in input and in output
+!
+      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+         aItemProp%name    = 'MINDYN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      ELSE
+         aItemProp%name    = 'MINDYN_'//aProcesProp%input_item(1)%name
+      ENDIF
+      aItemProp%default = -999.
+      aItemProp%text    = 'work array '//aProcesProp%input_item(1)%name
+      aItemProp%waqtype = WAQTYPE_NONE
+      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aProcesProp%output_item(5)%name=aItemProp%name
+      aProcesProp%output_item(5)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%output_item(5)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(5)%indx= 5
+      aProcesProp%output_item(5)%ip_val= 0
+      aProcesProp%input_item(8)%name=aItemProp%name
+      aProcesProp%input_item(8)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%input_item(8)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%input_item(8)%actdef=-999.
+      aProcesProp%input_item(8)%indx  = 8
+      aProcesProp%input_item(8)%ip_val  = 0
+
+!
+!     work array in input and in output
+!
+      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+         aItemProp%name    = 'MAXDYN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      ELSE
+         aItemProp%name    = 'MAXDYN_'//aProcesProp%input_item(1)%name
+      ENDIF
+      aItemProp%default = -999.
+      aItemProp%text    = 'work array '//aProcesProp%input_item(1)%name
+      aItemProp%waqtype = WAQTYPE_NONE
+      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aProcesProp%output_item(6)%name=aItemProp%name
+      aProcesProp%output_item(6)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%output_item(6)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(6)%indx= 6
+      aProcesProp%output_item(6)%ip_val= 0
+      aProcesProp%input_item(9)%name=aItemProp%name
+      aProcesProp%input_item(9)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%input_item(9)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%input_item(9)%actdef=-999.
+      aProcesProp%input_item(9)%indx  = 9
+      aProcesProp%input_item(9)%ip_val  = 0
 
       ! Add the companion for the TCOUNT input item
       aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
@@ -307,11 +379,11 @@
       aItemProp%text    = 'time step counter (work array)'
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(3)%name=aItemProp%name
-      aProcesProp%output_item(3)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(3)%indx= 3
-      aProcesProp%output_item(3)%ip_val= 0
+      aProcesProp%output_item(7)%name=aItemProp%name
+      aProcesProp%output_item(7)%type=IOTYPE_SEGMENT_OUTPUT
+      aProcesProp%output_item(7)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(7)%indx= 7
+      aProcesProp%output_item(7)%ip_val= 0
 
 !
 !     check the use of the key words
@@ -331,5 +403,50 @@
       RETURN
  2000 FORMAT(5A)
       END
+
+      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, 
+     + item_type)
+!
+!     FUNCTION            : Update process properties
+!
+!     SUBROUTINES CALLED  : 
+!
+!
+!     PARAMETERS          :
+!
+!     NAME    KIND      LENGTH  FUNCT.  DESCRIPTION
+!     ----    -----     ------  ------- -----------
+!     all_items                  IN/OUT  all items known to the proces system
+!     process_prop               IN/OUT  properties for this proces
+!     item_prop                  IN/OUT  one item
+!     default_value              INPUT   keyword value
+!     item_desc                  INPUT   item description
+!     item_ind                   INPUT   item index
+!     item_name                  INPUT   item name
+!
+         
+         TYPE(ItemPropColl), INTENT(IN) :: all_items  ! all items of the proces system
+         TYPE(ItemProp), INTENT(OUT) :: item_prop  ! one item
+         TYPE(ProcesProp), INTENT(OUT) :: process_prop ! output statistical proces definition
+         CHARACTER(LEN=20), INTENT(IN) :: item_name
+         CHARACTER(LEN=50), INTENT(IN) :: item_desc
+         INTEGER, INTENT(IN) :: item_ind, item_type
+         INTEGER :: iret
+         REAL, INTENT(IN) :: default_value 
+
+         item_prop%name    = item_name
+         item_prop%default = default_value
+         item_prop%text    = item_desc
+         item_prop%waqtype = WAQTYPE_NONE
+
+         iret = ItemPropCollAdd( all_items, item_prop )
+         process_prop%input_item(item_ind)%name = item_name
+         process_prop%input_item(item_ind)%type = item_type
+         process_prop%input_item(item_ind)%item => all_items%ItemPropPnts(iret)%pnt
+         process_prop%input_item(item_ind)%actdef = default_value
+         process_prop%input_item(item_ind)%indx  = item_ind
+         process_prop%input_item(item_ind)%ip_val  = 0
+
+      END SUBROUTINE update_process_properties
 
       end module m_setday

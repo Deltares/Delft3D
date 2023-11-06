@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_uniset
+
+      implicit none
+
+      contains
+
 
       subroutine uniset ( lun    , lchar  , nolun  , runid  )
 
@@ -150,3 +156,5 @@
      &         /' Does not exist.',
      &         /' EXECUTION HALTED !!!!!!!!!!!!!')
       end
+
+      end module m_uniset

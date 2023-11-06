@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_get_index
+
+implicit none
+
+contains
+
 
       integer function get_index(nosubs,subst,fract)
 !
@@ -54,3 +60,5 @@
       return
       end function get_index
 
+
+end module m_get_index

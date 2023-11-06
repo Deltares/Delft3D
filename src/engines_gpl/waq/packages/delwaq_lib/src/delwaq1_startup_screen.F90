@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_startup_screen
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -41,3 +47,4 @@ subroutine delwaq1_startup_screen()
     write(*,'(A9,A)') '  runid: ',trim(runid)
     write(*,*)
 end subroutine delwaq1_startup_screen
+end module m_delwaq1_startup_screen

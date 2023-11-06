@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_header
+
+      implicit none
+
+      contains
+
 
       subroutine read_header( waq_param, data_param, nocol , itfact, dtflg1,
      &                        dtflg3   , ierr      , iwar  )
@@ -30,8 +36,9 @@
 
 !     Global declarations
 
+      use m_compact_usefor
       use m_zoek
-      use dlwq_data      ! for definition and storage of data
+      use dlwq_hyd_data ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
 
@@ -141,3 +148,5 @@
  1000 format ( ' column:',i3,' contains: ',a40,' status: ',a8)
 
       end
+
+      end module m_read_header

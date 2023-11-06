@@ -31,8 +31,8 @@ class ConsoleLogger(IMainLogger):
         self.__base_log_message(message, logging.DEBUG)
 
     def log(self, message: str, log_level: LogLevel):
-        log_level = self.__get_internal_log_level(log_level)
-        self.__base_log_message(message, log_level)
+        internal_log_level = self.__get_internal_log_level(log_level)
+        self.__base_log_message(message, internal_log_level)
 
     def create_test_case_logger(self, test_case_id: str) -> ITestLogger:
         return FileTestLogger(test_case_id)

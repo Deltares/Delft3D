@@ -15,6 +15,14 @@ if(UNIX)
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
+# Set additional compilation properties, specific for Debug mode
+target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
+target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
+
+# Create the folder structure in vfproj
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
+set_target_properties (${executable_name} PROPERTIES FOLDER tests/utils_lgpl/deltares_common)
+
 # post-build
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})

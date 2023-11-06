@@ -33,6 +33,10 @@ module m_missing_meteo
 end module m_missing_meteo
 
 
+module m_meteo1temphelpers
+   implicit none 
+
+   contains
 !> Opens an existing file for reading.
 !!
 !! When file does not exist or is already open, program stops with
@@ -44,7 +48,6 @@ implicit none
 
     integer                        :: istat_
     integer                        :: i
-    integer,external                        :: ifirstchar
     integer                        :: l2,l1
     integer                        :: l3
     logical                        :: jawel
@@ -93,11 +96,9 @@ subroutine newfil(minp, filename)!, istat)
 implicit none
     integer,           intent(out) :: minp     !< New file pointer to opened file.
     character(*),      intent(in)  :: filename !< Name of the file to open.
-!    integer, optional, intent(out) :: istat
 
     integer                        :: istat_
     integer                        :: i
-    integer,external                        :: ifirstchar
     integer                        :: l2,l1
     integer                        :: l3
     character(*) RW*20
@@ -283,7 +284,6 @@ subroutine ilocatestring(rec,i1,i2)
 implicit none
 character(len=*), intent(in)  :: rec
 integer,          intent(out) :: i1, i2
-integer,external                        :: ifirstchar
 
 i1 = ifirstchar(rec)
 i2 = index(rec(i1:), ' ')
@@ -334,7 +334,6 @@ end subroutine ilocatestring
       double precision :: sm
       double precision, intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
       double precision :: x21, y21, x31, y31, x43, y43, xcr, ycr
-      double precision, external :: getdx, getdy
 
       ! Set defaults for no crossing at all:
       JACROS = 0
@@ -421,7 +420,6 @@ end subroutine ilocatestring
  double precision :: x1, y1, x2, y2
  ! locals
  double precision :: ddx, ddy, rr
- double precision, external :: getdx, getdy
 
  ddx = getdx(x1,y1,x2,y2)
  ddy = getdy(x1,y1,x2,y2)
@@ -500,3 +498,5 @@ end subroutine ilocatestring
       IF (jins .EQ. 0) INSIDE = 1 - INSIDE
       RETURN
       END SUBROUTINE PINPOK
+
+      end module m_meteo1temphelpers

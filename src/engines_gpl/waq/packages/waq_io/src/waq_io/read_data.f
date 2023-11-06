@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_data
+
+      implicit none
+
+      contains
+
 
       subroutine read_data( data_block , itfact, dtflg1, dtflg3, ierr  )
 
@@ -29,7 +35,7 @@
 
 !     global declarations
 
-      use dlwq_data
+      use dlwq_hyd_data
       use rd_token
       use timers       !   performance timers
       use m_cnvtim
@@ -218,3 +224,4 @@
  9999 if (timon) call timstop( ithndl )
 
       end subroutine read_data
+      end module m_read_data

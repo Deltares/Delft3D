@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_items
+
+      implicit none
+
+      contains
+
 
       subroutine read_items( lunrep    , inpfil   , ioutpt   , chkflg   , callr ,
      +                       waq_item  , data_item, name_item, type_item, noits ,
@@ -32,7 +38,7 @@
 !     global declarations
 
       use m_zoek
-      use dlwq_data
+      use dlwq_hyd_data
       use rd_token
       use timers       !   performance timers
 
@@ -538,3 +544,5 @@
  1220 FORMAT (  ' Maximum value is: ',E15.6 )
 !
       END
+
+      end module m_read_items

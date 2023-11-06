@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_diffus
+
+implicit none
+
+contains
+
 
       real function diffus( densb  , denst  , pblay   , depth  ,  &
                             diff0  , ufric  , gamma  )
@@ -147,3 +153,5 @@
       end function
 
 
+
+end module m_diffus

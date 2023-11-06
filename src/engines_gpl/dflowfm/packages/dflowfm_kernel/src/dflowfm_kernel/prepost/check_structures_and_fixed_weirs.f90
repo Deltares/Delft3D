@@ -38,65 +38,58 @@ subroutine check_structures_and_fixed_weirs()
    use unstruc_messages
    implicit none
 
-   character(len=128)                 :: msg
+   integer, dimension(:), allocatable :: links_used_by_structures
+   integer, dimension(:), allocatable :: links_used_by_weirs
 
-   integer, dimension(:), allocatable :: L2struct
-   integer, dimension(:), allocatable :: L2weir
-
-   integer                            :: Lf, n, k
+   integer                            :: flow_link, fixed_weir, general_structure, k
    integer                            :: nummulti
    integer                            :: numweir
+   integer, parameter                 :: FREE = 0 
 
-!  allocate flowlink -> structure array
-   allocate(L2struct(Lnx))
-   L2struct = 0
-!  allocate flowlink -> weir array
-   allocate(L2weir(Lnx))
-   L2weir = 0
+   allocate(links_used_by_structures(Lnx))
+   links_used_by_structures = FREE
+   allocate(links_used_by_weirs(Lnx))
+   links_used_by_weirs = FREE
 
-!  fill flowlink -> fixed weir array
-   do n=1,nfxw
-      Lf = lnfxw(n)
-      L2weir(Lf) = n
+   do fixed_weir = 1, nfxw
+      flow_link  = lnfxw(fixed_weir)
+      links_used_by_weirs(flow_link) = fixed_weir
    end do
 
    nummulti = 0
-   numweir = 0
+   numweir  = 0
 !  loop over structures
-   do n = ncgensg, 1, -1
+   do general_structure = ncgensg, 1, -1
 !     loop over flowlinks of structure
-      do k = L1cgensg(n), L2cgensg(n)
-!        get flowlink
-         Lf = kcgen(3,k)
+      do k = L1cgensg(general_structure), L2cgensg(general_structure)
+         flow_link = kcgen(3,k)
 
-!        check if this flowlink is free
-         if ( L2struct(Lf).eq.0 ) then
-!           flowlink is free
-            L2struct(Lf) = n
+         if ( links_used_by_structures(flow_link) == FREE ) then
+            links_used_by_structures(flow_link) = general_structure
          else
-!           flowlink is not free
-            nummulti = nummulti+1
-            write(msg, "('Flowlink ', I0, ' found in structure ', A, ' already claimed by structure ', A, '.')") Lf, trim(cgen_ids(n)), trim(cgen_ids(L2struct(Lf)))
-            call mess(LEVEL_WARN, trim(msg))
+            nummulti = nummulti + 1
+            write(msgbuf, "('Flowlink ', I0, ' found in general structure ', A, ' already claimed by general structure ', A, '.')") &
+                flow_link, trim(cgen_ids(general_structure)), trim(cgen_ids(links_used_by_structures(flow_link)))
+            call mess(LEVEL_WARN, trim(msgbuf))
          end if
 
-!        check if this flowlink is not associated with a fixed weir
-         if ( L2weir(Lf).ne.0 ) then
-!           flowlink is associated with fixed weir
-            numweir = numweir+1
-            write(msg, "('Flowlink ', I0, ' found in structure ', A, ' already claimed by fixed weir.')") Lf, trim(cgen_ids(n))
-            call mess(LEVEL_WARN, trim(msg))
+         if ( links_used_by_weirs(flow_link) /= FREE ) then
+            numweir = numweir + 1
+            write(msgbuf, &
+                "('Flowlink ',I0,' found in general structure ', A,' is also used by a fixed weir. It may lead to a wrong solution.')") &
+                flow_link, trim(cgen_ids(general_structure))
+            call mess(LEVEL_WARN, trim(msgbuf))
          end if
       end do
    end do
 
-   if ( nummulti.gt.0 ) then
+   if ( nummulti > 0 ) then
       call mess(LEVEL_ERROR, 'multiple general structures defined on one or more flowlink(s), see preceding message(s).')
    end if
 
 !  deallocate
-   if ( allocated(L2struct) ) deallocate(L2struct)
-   if ( allocated(L2weir) )   deallocate(L2weir)
+   if ( allocated(links_used_by_structures) ) deallocate(links_used_by_structures)
+   if ( allocated(links_used_by_weirs) )   deallocate(links_used_by_weirs)
 
    return
 end subroutine check_structures_and_fixed_weirs

@@ -32,9 +32,18 @@ function outdata = qp_plotmanager(cmd,UD,logfile,logtype,cmdargs)
 %   $Id$
 
 mfig = findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
-UD=getappdata(mfig,'QPHandles');
-Inactive = UD.Inactive;
-Active = UD.Active;
+if nargin<2 || isempty(UD)
+    if ~isempty(mfig)
+        UD = getappdata(mfig,'QPHandles');
+    else
+        UD = [];
+    end
+end
+if ~isempty(UD)
+    Inactive=UD.Inactive;
+    Active=UD.Active;
+end
+
 if nargin<3
     logfile=0;
     logtype=0;
@@ -533,50 +542,7 @@ switch cmd
                 qp_plotmanager refreshaxes
                 qp_plotmanager refreshfigprop
             else
-                Items=allchild(Ax);
-                if iscell(Items)
-                    Items(:,2)={0};
-                    Items(end,2)={[]};
-                    Items=Items';
-                    Items=cat(1,Items{:});
-                end
-                Types=cget(Items,'type');
-                null = strcmp(Types,'root');
-                %
-                Tags=cget(Items,'tag');
-                for t=find(null)'
-                    Tags(t)={sprintf('QPPlotTag---%i',t)};
-                end
-                UserDatas=cget(Items,'userdata');
-                UserDatas(null)={'---'};
-                %---
-                TUDvalid=~cellfun('isempty',Tags) & ~cellfun('isempty',UserDatas);
-                Items=Items(TUDvalid);
-                Tags=Tags(TUDvalid);
-                UserDatas=UserDatas(TUDvalid);
-                %---
-                QPTag=strncmp('QPPlotTag',Tags,9);
-                Items=Items(QPTag);
-                Tags=Tags(QPTag);
-                UserDatas=UserDatas(QPTag);
-                %---
-                [Tags,I]=unique(Tags);
-                [I,Isort]=sort(I);
-                Tags=Tags(Isort);
-                Items=Items(I);
-                UserDatas=UserDatas(I);
-                %---
-                while ~isempty(Items) && Items(end)==0
-                    Items(end)=[];
-                    UserDatas(end)=[];
-                    Tags(end)=[];
-                end
-                %---
-                while ~isempty(Items) && Items(1)==0
-                    Items(1)=[];
-                    UserDatas(1)=[];
-                    Tags(1)=[];
-                end
+                [Items, UserDatas, Tags] = qp_get_items(Ax);
                 %---
                 separator='------';
                 if isempty(Items)
@@ -1746,10 +1712,7 @@ switch cmd
             das = get(ax,'dataaspectratio');
             das = das/das(1);
             dasmode = get(ax,'dataaspectratiomode');
-            hda_forced = getappdata(ax,'haspectenforced');
-            if isempty(hda_forced)
-                hda_forced = false;
-            end
+            hordasdefaultvalue = getappdata(ax,'haspectdefaultvalue');
             %
             XYZ = 'XYZ';
             for d = 1:3
@@ -1786,30 +1749,28 @@ switch cmd
                 else
                     set(PM.(X).All,'enable','on')
                     set(PM.(X).AxisName,'string',axesNames{d})
-                    if X~='X'
-                        if X=='Y' && hda_forced
-                            set([PM.(X).AspectAuto], ...
-                                'enable','off', ...
-                                'value',0)
-                            set([PM.(X).AspectValue], ...
-                                'string',num2str(1/das(d)), ...
-                                'userdata',1/das(d), ...
-                                'enable','off', ...
-                                'backgroundcolor',Inactive)
-                        elseif isequal(dasmode,'auto')
+                    if ~strcmp(X,'X')
+                        if isequal(dasmode,'auto')
                             set([PM.(X).AspectAuto], ...
                                 'value',1)
                             set([PM.(X).AspectValue], ...
-                                'string',num2str(1/das(d)), ...
+                                'string','', ...
                                 'userdata',1/das(d), ...
                                 'enable','off', ...
+                                'uicontextmenu',[], ...
                                 'backgroundcolor',Inactive)
                         else
+                            if strcmp(X,'Y') && ~isempty(hordasdefaultvalue)
+                                useUCM = {'UIContextMenu',PM.YAspectContextMenu};
+                            else
+                                useUCM = {};
+                            end
                             set([PM.(X).AspectAuto], ...
                                 'value',0)
                             set([PM.(X).AspectValue], ...
                                 'string',num2str(1/das(d)), ...
                                 'userdata',1/das(d), ...
+                                useUCM{:}, ...
                                 'backgroundcolor',Active)
                         end
                     end

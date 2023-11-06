@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getdim
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETDIM ( FNAME  , ITYPE  , DIM    , IPRDEP , ITMDEP ,
      *                             LOCDEP , NDIM   , IERROR , OPTION )
@@ -64,12 +70,16 @@
 
       CHARACTER*256 FNAME(3) , OPTION
       CHARACTER*3   DIM
-      DIMENSION     NDIM(5)
+      DIMENSION     NDIM(3)
       character*256         :: ext     ! file extension
       integer               :: extpos  ! position of extension
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
       integer               :: lun
+      integer               :: NODUMP, NOTOT
+      integer               :: k, NTT, ierror, idummy, notim, ndim, itype
+      real                  :: adummy
+      integer               :: iprdep, itmdep, locdep
 
 !
 !         Open the DELWAQ .HIS file
@@ -129,3 +139,5 @@ cjvb  NTT = 0
       RETURN
 !
       END
+
+      end module m_getdim

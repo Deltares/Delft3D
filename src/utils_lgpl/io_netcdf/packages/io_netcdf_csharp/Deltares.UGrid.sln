@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29926.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deltares.UGrid", "src\Deltares.UGrid\Deltares.UGrid.csproj", "{7F1399E8-FE58-4147-9341-B58A44230B84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deltares.UGrid.Tests", "test\Deltares.UGrid.Tests\Deltares.UGrid.Tests.csproj", "{67FD6F16-07C5-4601-89E5-C74F59A7942D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FD85A1B9-4287-4009-B35C-A8AEA6C87FDE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{629DE94A-E58B-407A-B395-2EC12C245B9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Debug|x64.Build.0 = Debug|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Release|x64.ActiveCfg = Release|Any CPU
+		{7F1399E8-FE58-4147-9341-B58A44230B84}.Release|x64.Build.0 = Release|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Debug|x64.Build.0 = Debug|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Release|x64.ActiveCfg = Release|Any CPU
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7F1399E8-FE58-4147-9341-B58A44230B84} = {FD85A1B9-4287-4009-B35C-A8AEA6C87FDE}
+		{67FD6F16-07C5-4601-89E5-C74F59A7942D} = {629DE94A-E58B-407A-B395-2EC12C245B9B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A24CFC28-9E15-475E-90D0-DFCC91FF0B79}
+	EndGlobalSection
+EndGlobal

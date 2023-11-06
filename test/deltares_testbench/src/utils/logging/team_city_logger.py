@@ -21,7 +21,7 @@ class TeamCityLogger(ConsoleLogger):
         ConsoleLogger.__base_log_message(self, message_to_log, log_level)
 
     def __create_console_handler(self, log_level: int) -> logging.Handler:
-        format_str = "##teamcity[message text='%(levelname)s - %(module)s.%(funcName)s : %(message)s']"
+        format_str = "##teamcity[message text='%(levelname)s : %(message)s']"
 
         handler = logging.StreamHandler()
         handler.setLevel(log_level)

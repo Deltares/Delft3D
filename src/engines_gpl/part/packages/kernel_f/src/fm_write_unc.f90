@@ -1,3 +1,9 @@
+module m_fm_write_unc
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -32,7 +38,7 @@ subroutine unc_init_trk()
    use netcdf
    use m_partfm_trk_netcdf
    use fileinfo, only: filebase
-   use m_flowtimes
+   use m_part_times
    use MessageHandling
 
    implicit none
@@ -59,7 +65,7 @@ end subroutine unc_init_trk
 
 subroutine unc_write_trk()
 
-   use m_flowtimes
+   use m_part_times
    use netcdf
    use m_partfm_trk_netcdf
    use MessageHandling
@@ -73,10 +79,10 @@ subroutine unc_write_trk()
    data ithndl / 0 /
    if ( timon ) call timstrt( "unc_write_trk", ithndl )
 
-   ! Increment output counters in m_flowtimes.
+   ! Increment output counters in m_part_flowtimes.
    time_trk = nint(time1)
    it_trk   = it_trk + 1
-   ierr = nf90_put_var(itrkfile, id_trk_time, time_trk, (/ it_trk /))
+   ierr = nf90_put_var(itrkfile, id_trk_time, time_trk, [ it_trk ])
 
    call unc_write_part(itrkfile,it_trk,id_trk_parttime,id_trk_partx,id_trk_party,id_trk_partz)
 
@@ -108,8 +114,8 @@ subroutine unc_init_map(crs, meshgeom, nosegl, nolay)
    use fileinfo, only: filebase
    use netcdf
    use io_ugrid
-   use m_flowtimes
-   use m_flowgeom
+   use m_part_times
+   use m_part_geom
    use m_alloc
    use m_missing
 
@@ -213,10 +219,10 @@ end subroutine unc_init_map
 subroutine unc_write_map()
 
    use partmem, only: nosubs, hyd
-   use m_flowtimes
-   use m_flowgeom
-   use m_transport
-   use m_flow, only: h1
+   use m_part_times
+   use m_part_geom
+   use m_part_transport
+   use m_part_flow, only: h1
    use m_particles, only: part_iconst
    use netcdf
    use m_partfm_map_netcdf
@@ -231,7 +237,7 @@ subroutine unc_write_map()
    data ithndl / 0 /
    if ( timon ) call timstrt( "unc_write_map", ithndl )
 
-   ! Increment output counters in m_flowtimes.
+   ! Increment output counters in m_part_flowtimes.
    time_map = nint(time1)
    it_map   = it_map + 1
    ierr = nf90_put_var(imapfile, id_map_time, time_map, [it_map])
@@ -288,7 +294,7 @@ subroutine unc_write_part_header(ifile, id_timedim, id_trk_partdim, id_trk_partt
               id_trk_partx, id_trk_party, id_trk_partz)
    use m_particles
    use netcdf
-   use m_flow, only: kmx
+   use m_part_flow, only: kmx
    use m_sferic, only: jsferic
    use MessageHandling
    use m_missing
@@ -316,8 +322,8 @@ subroutine unc_write_part_header(ifile, id_timedim, id_trk_partdim, id_trk_partt
    ierr = nf90_def_var(ifile, 'particles_time', nf90_double, id_timedim, id_trk_parttime)
    ierr = nf90_put_att(ifile, id_trk_parttime, 'long_name', 'particles time')
 
-   ierr = nf90_def_var(ifile, 'particles_x_coordinate', nf90_double, (/ id_trk_partdim, id_timedim /), id_trk_partx)
-   ierr = nf90_def_var(ifile, 'particles_y_coordinate', nf90_double, (/ id_trk_partdim, id_timedim /), id_trk_party)
+   ierr = nf90_def_var(ifile, 'particles_x_coordinate', nf90_double, [ id_trk_partdim, id_timedim ], id_trk_partx)
+   ierr = nf90_def_var(ifile, 'particles_y_coordinate', nf90_double, [ id_trk_partdim, id_timedim ], id_trk_party)
    if (jsferic == 0) then
       ierr = nf90_put_att(ifile, id_trk_partx, 'units',         'm')
       ierr = nf90_put_att(ifile, id_trk_party, 'units',         'm')
@@ -340,8 +346,9 @@ subroutine unc_write_part_header(ifile, id_timedim, id_trk_partdim, id_trk_partt
 
 
    if ( kmx.gt.0 ) then
-      ierr = nf90_def_var(ifile, 'particle_z_coordinate', nf90_double, (/ id_trk_partdim, id_timedim /), id_trk_partz)
-      ierr = nf90_put_att(ifile, id_trk_partz, 'long_name', 'z-coordinate of particle')
+      ierr = nf90_def_var(ifile, 'particles_z_coordinate', nf90_double, (/ id_trk_partdim, id_timedim /), id_trk_partz)
+      ierr = nf90_put_att(ifile, id_trk_partz, 'long_name', 'z-coordinate of particles')
+      ierr = nf90_put_att(ifile, id_trk_partz, '_FillValue', dmiss)
    end if
 
    ! Leave the dataset in the same mode as we got it.
@@ -354,12 +361,14 @@ end subroutine unc_write_part_header
 
 !> write particles to netcdf file
 subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_party, id_trk_partz)
-   use partmem, only: nopart
-   use m_particles
+   use partmem, only: nopart, hyd, mpart
+   use m_part_mesh
+   use m_particles, laypart => kpart
    use netcdf
    use m_sferic
    use m_sferic_part, only: ptref
-   use m_flow, only: kmx
+   use m_part_flow, only: kmx, h1
+   use m_part_geom, only: bl
    use geometry_module, only: cart3Dtospher
    use m_missing
    use MessageHandling
@@ -374,7 +383,7 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
 
    double precision                            :: dis2
 
-   integer                                     :: i, i0, ii, iglb
+   integer                                     :: i, i0, ii, iglb, k, lay, kl, klp1, layacc
    integer                                     :: ierr
 
    double precision,                 parameter :: dtol = 1d-8
@@ -401,11 +410,11 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
       end do
    end if
 
-   ierr = nf90_put_var(ifile, id_trk_parttime, timepart, (/ itime /))
+   ierr = nf90_put_var(ifile, id_trk_parttime, timepart, [ itime ])
    if ( ierr == 0 ) then
-      ierr = nf90_put_var(ifile, id_trk_partx, xx, start=(/ 1,itime /), count=(/ NopartTot,1 /) )
+      ierr = nf90_put_var(ifile, id_trk_partx, xx, start=[ 1,itime ], count=[ NopartTot,1 ])
       if ( ierr == 0 ) then
-         ierr = nf90_put_var(ifile, id_trk_party, yy, start=(/ 1,itime /), count=(/ NopartTot,1 /) )
+         ierr = nf90_put_var(ifile, id_trk_party, yy, start=[ 1,itime ], count=[ NopartTot,1 ])
       endif
    endif
 
@@ -413,8 +422,29 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
    ! Compute the height of the particles in the water from the layer (laypart)
    ! and the position within the layer. Then write it to the file
    !
+   ! Beware: translate from the computational, refined grid to the original
+   ! underlying hydrodynamic grid via the array cell2nod
+   !
    if ( kmx > 0 ) then
-      ierr = nf90_put_var(ifile, id_trk_partz, zz, start=(/ 1,itime /), count=(/ NopartTot,1 /) )
+      do i = 1,NopartTot
+         k     = mpart(i)
+         lay   = laypart(i)
+
+         zz(i) = 0.0
+         if ( k > 0 .and. lay > 0 ) then
+            k     = abs(cell2nod(k))
+            zz(i) = bl(k)
+            do layacc = hyd%nolay,lay+1,-1
+               kl    = k + (layacc-1) * hyd%nosegl
+               zz(i) = zz(i) + h1(kl)
+            enddo
+
+            kl    = k + (lay-1) * hyd%nosegl
+            zz(i) = zz(i) + (1.0 - hpart(i)) * h1(kl)
+         endif
+      enddo
+
+      ierr = nf90_put_var(ifile, id_trk_partz, zz, start=[ 1,itime ], count=[ NopartTot,1 ] )
    end if
 
    !  error handling
@@ -471,7 +501,7 @@ end subroutine unc_addglobalatts
 !> Sets the UDUnit timestring based on current model time settings.
 !! Module variable Tudunitstr can the be used in various output routines.
 subroutine setTUDUnitString()
-   use m_flowtimes
+   use m_part_times
 
    implicit none
 
@@ -493,10 +523,10 @@ end subroutine setTUDUnitString
 subroutine comp_concentration(h, nconst, iconst, c)
    use partmem, only: mpart, wpart, oil, nfract, nopart, hyd
    use m_particles, laypart => kpart
-   use m_partmesh
-   use m_flowgeom, only : Ndx, ba, bl
-   use m_flowparameters, only: epshs
-   use m_flow, only: Ndkx, kmx
+   use m_part_mesh
+   use m_part_geom, only : Ndx, ba, bl
+   use m_part_parameters, only: epshs
+   use m_part_flow, only: Ndkx, kmx
    use timers
 
    implicit none
@@ -520,7 +550,7 @@ subroutine comp_concentration(h, nconst, iconst, c)
       k = mpart(i)
       if ( k.eq.0 ) cycle
 
-      k   = iabs(cell2nod(k))
+      k   = abs(cell2nod(k))
       lay = laypart(i)
 
       c(iconst,k,lay) = c(iconst,k,lay) + wpart(iconst, i)
@@ -531,11 +561,12 @@ subroutine comp_concentration(h, nconst, iconst, c)
       do k=1,hyd%nosegl
          if ( h(k,lay) .gt. epshs ) then
             kl = k + (lay-1) * hyd%nosegl
-            c(iconst,k,lay) = c(iconst,k,lay) / (ba(kl)*(h(k,lay)-bl(kl)))
+            c(iconst,k,lay) = c(iconst,k,lay) / (ba(kl)*h(k,lay))
+
             if (oil) then
                do ifract = 1 , nfract
-                  c(1 + 3 * (ifract - 1), k, lay) =  c(1 + 3 * (ifract - 1), k, lay) * (h(k,lay)-bl(kl))  ! surface floating oil per m2
-                  c(3 + 3 * (ifract - 1), k, lay) =  c(3 + 3 * (ifract - 1), k, lay) * (h(k,lay)-bl(kl))  ! surface floating oil per m2
+                  c(1 + 3 * (ifract - 1), k, lay) =  c(1 + 3 * (ifract - 1), k, lay) * h(k,lay) ! surface floating oil per m2
+                  c(3 + 3 * (ifract - 1), k, lay) =  c(3 + 3 * (ifract - 1), k, lay) * h(k,lay) ! surface floating oil per m2
                end do
             endif
          endif
@@ -545,3 +576,5 @@ subroutine comp_concentration(h, nconst, iconst, c)
    if ( timon ) call timstop ( ithndl )
 
 end subroutine comp_concentration
+
+end module m_fm_write_unc

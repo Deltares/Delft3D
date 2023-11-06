@@ -1,4 +1,4 @@
-function outfile = sim2ugrid(filename,ntimesReq)
+function outfile = sim2ugrid(varargin)
 %SIM2UGRID transfers simulation results to netCDF UGRID file.
 %   NCFILENAME = SIM2UGRID(FILENAME, N)
 %   transfers the results of the last N time steps of the specified file to
@@ -53,35 +53,68 @@ if isstandalone
     fprintf(1, 'Repository <GITREPO>\n');
     fprintf(1, 'Source hash <GITHASH>\n');
     fprintf(1, '--------------------------------------------------------------------------------\n');
+    fprintf(1, '');
 end
 
-if nargin == 0
-    fprintf(1, '');
-elseif nargin < 2
-    ntimesReq = 1;
+filenames = varargin;
+ntimesReq = 1;
+for i = length(filenames):-1:1
+    if isnumeric(filenames{i})
+        ntimesReq = filenames{i};
+        filenames(i) = [];
+    elseif strcmp(filenames{i},':')
+        ntimesReq = filenames{i};
+        filenames(i) = [];
+    elseif ~isnan(str2double(filenames{i}))
+        ntimesReq = str2double(filenames{i});
+        filenames(i) = [];
+    end
+end
+
+if isempty(filenames)
+    fprintf(1, 'Usage:');
+    fprintf(1, '   SIM2UGRID <inputFile> {<inputFile>} {N}');
+    fprintf(1, '   Transfers the data from the input files to a new netCDF file with the name');
+    fprintf(1, '   <basename>_map.nc where <basename>.<ext> is the name of the first input file.');
+    fprintf(1, '   The data of the last N time steps is transferred (N=1 by default).');
 elseif ischar(ntimesReq)
     ntimesReq = sscanf(ntimesReq,'%i');
 end
 
 %% Opening the file
-fprintf(1, 'Opening %s ...\n', filename);
-simOrg = qpfopen(filename);
+nFiles = length(filenames);
+simOrg = cell(1,nFiles);
+for i = 1:nFiles    
+    fprintf(1, 'Opening %s ...\n', filenames{i});
+    simOrg{i} = qpfopen(filenames{i});
+end
 
 %% Processing the time-independent data
+simData = cell(1,nFiles);
 fprintf(1, 'Processing the time-independent data ...\n');
-[ncfile,xnode,ynode,faces,zb,zb_loc,face_active,ntimes,modelname,prehistory,has_chezy,tunits] = get_const(simOrg);
-nfaces = size(faces, 1);
-nnodes = length(xnode);
-%
+for i = 1:nFiles
+    simData{i} = get_const(simOrg{i});
+end
+
+has_chezy = all(cellfun(@(x)x.has_chezy,simData));
 if ~has_chezy
     warning('No Chezy information found. Converted file not suitable for D-FAST Bank Erosion.')
 end
+zb_locs = unique(cellfun(@(x)x.zb_loc,simData,'uniformoutput',false));
+if length(zb_locs)>1
+    error('Inconsistent bed level locations across files.')
+end
+zb_loc = zb_locs{1};
 if ~strcmp(zb_loc,'node')
     warning('Bed levels defined at faces. Converted file not suitable for D-FAST Bank Erosion.')
 end
-
+    
 %% Checking time steps ...
 fprintf(1, 'Checking available time steps ...\n');
+ntimes = unique(cellfun(@(x)x.ntimes,simData));
+if length(ntimes)>1
+    error('Inconsistent number of times across files.')
+end
 if ischar(ntimesReq) && strcmp(ntimesReq, ':')
     time_steps = 1:ntimes;
 elseif ntimes < ntimesReq
@@ -89,17 +122,29 @@ elseif ntimes < ntimesReq
 else
     time_steps = (ntimes-ntimesReq+1):ntimes;
 end
+tunits = unique(cellfun(@(x)x.tunits,simData,'uniformoutput',false));
+if length(tunits)>1
+    error('Inconsistent time units across files')
+else
+    tunits = tunits{1};
+end
+
+%% Counting faces and nodes
+nfaces = cellfun(@(x)size(x.faces,1),simData);
+nnodes = cellfun(@(x)length(x.xnode),simData);
+total_nfaces = sum(nfaces);
+total_nnodes = sum(nnodes);
 
 %% Write netCDF file ...
+ncfile = simData{1}.ncfile;
 fprintf(1, 'Creating %s ...\n', ncfile);
 ncid = netcdf.create(ncfile, 'NETCDF4');
-Err = [];
 
 % define dimensions, variables and attributes
-success = true;
+Err = [];
 try
-    inodes = netcdf.defDim(ncid, 'mesh2d_nnodes', nnodes);
-    ifaces = netcdf.defDim(ncid, 'mesh2d_nfaces', nfaces);
+    inodes = netcdf.defDim(ncid, 'mesh2d_nnodes', total_nnodes);
+    ifaces = netcdf.defDim(ncid, 'mesh2d_nfaces', total_nfaces);
     imaxfn = netcdf.defDim(ncid, 'mesh2d_nmax_face_nodes', 4);
     itimes = netcdf.defDim(ncid, 'time', netcdf.getConstant('UNLIMITED'));
     %
@@ -172,39 +217,76 @@ try
     end
     %
     iglobal = netcdf.getConstant('GLOBAL');
-    history = [sprintf('%s: sim2ugrid.m "%s"\n', datestr(now, sim2ugrid_dateformat), protect(filename)), prehistory];
+    pfilenames = protect(filenames);
+    files = sprintf('"%s" ',pfilenames{:});
+    history = [sprintf('%s: sim2ugrid.m %s\n', datestr(now, sim2ugrid_dateformat), files(1:end-1)), simData{1}.prehistory];
     netcdf.putAtt(ncid, iglobal, 'history', history)
-    netcdf.putAtt(ncid, iglobal, 'converted_from', modelname)
+    netcdf.putAtt(ncid, iglobal, 'converted_from', simData{1}.modelname)
     netcdf.putAtt(ncid, iglobal, 'Conventions', 'CF-1.8 UGRID-1.0 Deltares-0.10')
 catch Err
-    success = false;
+    % failure --> throw Err again after closing the netCDF file
 end
 
 %% write time-independent data
 fprintf(1, 'Writing time-independent data ...\n');
-if success
+if isempty(Err)
     try
+        % get arrays
+        xnode = cellfun(@(x)x.xnode,simData,'uniformoutput',false);
+        ynode = cellfun(@(x)x.ynode,simData,'uniformoutput',false);
+        faces = cellfun(@(x)x.faces,simData,'uniformoutput',false);
+        zb = cellfun(@(x)x.zb,simData,'uniformoutput',false);
+        % correct indices
+        nodeOffsets = cumsum(nnodes);
+        for i = 2:nFiles
+            faces{i} = faces{i} + nodeOffsets(i-1);
+        end
+        % concatenate arrays
+        xnode = cat(1,xnode{:});
+        ynode = cat(1,ynode{:});
+        faces = cat(1,faces{:});
+        zb = cat(1,zb{:});
+        % write arrays
         netcdf.putVar(ncid, ix, xnode)
         netcdf.putVar(ncid, iy, ynode)
         netcdf.putVar(ncid, ifnc, faces')
         netcdf.putVar(ncid, izb, zb)
     catch Err
-        success = false;
+        % failure --> throw Err again after closing the netCDF file
     end
 end
 
 %% transfer time-dependent data
-if success
-    i = 0;
+if isempty(Err)
+    iTime = 0;
     for iOrg = time_steps
         fprintf(1, 'Transferring data for time step %i ...\n', iOrg);
         % get time dependent data
-        [t,zw,h,ucx,ucy,czs] = get_time_dependent(simOrg,iOrg,face_active,has_chezy);
+        timData = cell(1,nFiles);
+        for i = 1:nFiles
+            timData{i} = get_time_dependent(simOrg{i},iOrg,simData{i}.face_active,has_chezy);
+        end
+        % collect and check data
+        t = unique(cellfun(@(x)x.t,timData));
+        if length(t) > 1
+            error('Inconsistent output times across files.')
+        end
+        zw = cellfun(@(x)x.zw,timData,'uniformoutput',false);
+        h = cellfun(@(x)x.h,timData,'uniformoutput',false);
+        ucx = cellfun(@(x)x.ucx,timData,'uniformoutput',false);
+        ucy = cellfun(@(x)x.ucy,timData,'uniformoutput',false);
+        czs = cellfun(@(x)x.czs,timData,'uniformoutput',false);
+        % concatenate data
+        zw = cat(1,zw{:});
+        h = cat(1,h{:});
+        ucx = cat(1,ucx{:});
+        ucy = cat(1,ucy{:});
+        czs = cat(1,czs{:});
         % write time dependent data
-        start = [0, i];
-        count = [nfaces, 1];
+        start = [0, iTime];
+        count = [total_nfaces, 1];
         try
-            netcdf.putVar(ncid, it, i, 1, t)
+            netcdf.putVar(ncid, it, iTime, 1, t)
             netcdf.putVar(ncid, izw, start, count, zw)
             netcdf.putVar(ncid, ih, start, count, h)
             netcdf.putVar(ncid, iucx, start, count, ucx)
@@ -213,17 +295,17 @@ if success
                 netcdf.putVar(ncid, iczs, start, count, czs)
             end
         catch Err
-            %success = false;
+            % failure --> throw Err again after closing the netCDF file
             break
         end
-        i = i + 1;
+        iTime = iTime + 1;
     end
 end
 
 %% Close
 netcdf.close(ncid)
 if ~isempty(Err)
-    fprintf(1, 'Error encounterdd during data transfer.\n');
+    fprintf(1, 'Error encountered during data transfer.\n');
     rethrow(Err)
 else
     fprintf(1, 'Data transfer completed successfully.\n');
@@ -235,129 +317,126 @@ end
 
 
 function str = protect(str)
-str = strrep(str, '\', '\\');
+if iscellstr(str)
+    for i = 1:numel(str)
+        str{i} = protect(str{i});
+    end
+else
+    str = strrep(str, '\', '\\');
+end
 
 
-function [ncfile,xnode,ynode,faces,zb,zb_loc,face_active,ntimes,modelname,prehistory,has_chezy,tunits] = get_const(simOrg)
+function data = get_const(simOrg)
+data = [];
 switch simOrg.FileType
     case 'SIMONA SDS FILE'
         filename = simOrg.FileName;
-        ncfile = [filename, '_map.nc'];
+        data.ncfile = [filename, '_map.nc'];
         [xd, yd] = waquaio(simOrg, '', 'dgrid');
-        zb = waquaio(simOrg, '', 'height');
-        zb_loc = 'node';
+        data.zb = waquaio(simOrg, '', 'height');
+        data.zb_loc = 'node';
         %
         Info = waqua('read', simOrg, '', 'SOLUTION_FLOW_SEP', []);
-        ntimes = length(Info.SimTime);
-        last_time = ntimes;
+        data.ntimes = length(Info.SimTime);
+        last_time = data.ntimes;
         zw = waquaio(simOrg, '', 'wlvl', last_time);
         %
         node_active = ~isnan(xd(:));
-        xnode = xd(node_active);
-        ynode = yd(node_active);
-        zb = zb(node_active);
-        nnodes = length(xnode);
+        data.xnode = xd(node_active);
+        data.ynode = yd(node_active);
+        data.zb = data.zb(node_active);
+        nnodes = length(data.xnode);
         %
-        nodes = xd;
+        nodes = zeros(size(xd));
         nodes(node_active) = 1:nnodes;
-        faces = cat(3, nodes([1 1:end-1], [1 1:end-1]), ...
-                       nodes(:, [1 1:end-1]), ...
-                       nodes, ...
-                       nodes([1 1:end-1], :));
-        face_active = all(~isnan(faces), 3) & ~isnan(zw);
+        data.faces = face_node_connectivity(nodes);
+        data.face_active = all(~isnan(data.faces), 3) & ~isnan(zw);
+        data.faces = reshape(data.faces, numel(xd), 4);
+        data.faces = data.faces(data.face_active, :);
         %
-        faces = reshape(faces, numel(xd), 4);
-        faces = faces(face_active, :);
-        %
-        has_chezy = true;
+        data.has_chezy = true;
         %
         refdate = waquaio(simOrg, '', 'refdate');
         [Y,M,D,h,m,s] = datevec(refdate);
         dimen = waqua('readsds',simOrg,'','MESH01_GENERAL_DIMENSIONS');
         tzone = dimen(13);
-        tunits = 'days';
-        tunits = sprintf('%s since %4i-%2.2i-%2.2i %2i:%2.2i:%2.2i %+i:00',tunits,Y,M,D,h,m,s,tzone);
+        data.tunits = 'days';
+        data.tunits = sprintf('%s since %4i-%2.2i-%2.2i %2i:%2.2i:%2.2i %+i:00',data.tunits,Y,M,D,h,m,s,tzone);
         %
-        modelname = 'SIMONA';
+        data.modelname = 'SIMONA';
         nmodifiers = length(simOrg.WriteProg);
         cprehistory = cell(1,nmodifiers);
         for i = 1:nmodifiers
             cprehistory{nmodifiers - i + 1} = [datestr(simOrg.WriteProg(i).Date, sim2ugrid_dateformat), ': ', simOrg.WriteProg(i).Name];
         end
-        prehistory = [sprintf('%s-',cprehistory{1:end-1}) cprehistory{end}];
+        data.prehistory = [sprintf('%s-',cprehistory{1:end-1}) cprehistory{end}];
     case 'NEFIS'
         switch simOrg.SubType
             case 'Delft3D-trim'
                 filename = simOrg.DatExt;
                 [p,f] = fileparts(filename);
-                ncfile = [p, filesep, f, '_map.nc'];
+                data.ncfile = [p, filesep, f, '_map.nc'];
                 xd = vs_get(simOrg, 'map-const', 'XCOR', 'quiet');
                 yd = vs_get(simOrg, 'map-const', 'YCOR', 'quiet');
-                face_active = vs_get(simOrg, 'map-const', 'KCS', 'quiet') == 1;
-                node_active = face_active | face_active([2:end end],:) | face_active(:,[2:end end]) | face_active([2:end end],[2:end end]);
+                data.face_active = vs_get(simOrg, 'map-const', 'KCS', 'quiet') == 1;
+                node_active = data.face_active | data.face_active([2:end end],:) | data.face_active(:,[2:end end]) | data.face_active([2:end end],[2:end end]);
                 %
                 Info = vs_disp(simOrg, 'map-series', []);
-                ntimes = Info.SizeDim;
-                last_time = ntimes;
+                data.ntimes = Info.SizeDim;
+                last_time = data.ntimes;
                 ITDATE = vs_get(simOrg, 'map-const', 'ITDATE', 'quiet');
                 [Y,M,D,h,m,s] = tdelft3d(ITDATE);
                 tzone = vs_get(simOrg, 'map-const', 'TZONE', 'quiet');
-                tunits = vs_get(simOrg, 'map-const', 'TUNIT', 'quiet');
-                switch tunits
+                data.tunits = vs_get(simOrg, 'map-const', 'TUNIT', 'quiet');
+                switch data.tunits
                     case 1 % seconds
-                        tunits = 'seconds';
+                        data.tunits = 'seconds';
                     case 60 % minutes
-                        tunits = 'minutes';
+                        data.tunits = 'minutes';
                     case 3600 % hours
-                        tunits = 'hours';
+                        data.tunits = 'hours';
                 end
-                tunits = sprintf('%s since %4i-%2.2i-%2.2i %2i:%2.2i:%2.2i %+i:00',tunits,Y,M,D,h,m,s,tzone);
+                data.tunits = sprintf('%s since %4i-%2.2i-%2.2i %2i:%2.2i:%2.2i %+i:00',data.tunits,Y,M,D,h,m,s,tzone);
                 %
                 [dps, success] = vs_get(simOrg, 'map-sed-series', {last_time}, 'DPS', 'quiet');
                 if success
-                    zb = -dps;
-                    zb_loc = 'face';
+                    data.zb = -dps;
+                    data.zb_loc = 'face';
                 else
                     dp = vs_get(simOrg, 'map-const', 'DP0', 'quiet');
-                    zb = -dp;
+                    data.zb = -dp;
                     dpsopt = vs_get(simOrg, 'map-const', 'DRYFLP', 'quiet');
                     if isequal(lower(deblank(dpsopt)), 'dp')
-                        zb_loc = 'face';
+                        data.zb_loc = 'face';
                     else
-                        zb_loc = 'node';
+                        data.zb_loc = 'node';
                     end
                 end
                 %
-                zw = vs_get(simOrg, 'map-series', {last_time}, 'S1', 'quiet');
-                %
                 info = vs_disp('map-series','CFUROU');
-                has_chezy = isstruct(info);
+                data.has_chezy = isstruct(info);
                 %
-                xnode = xd(node_active);
-                ynode = yd(node_active);
-                nnodes = length(xnode);
+                data.xnode = xd(node_active);
+                data.ynode = yd(node_active);
+                nnodes = length(data.xnode);
                 %
-                nodes = xd;
+                nodes = zeros(size(xd));
                 nodes(node_active) = 1:nnodes;
-                faces = cat(3, nodes([1 1:end-1], [1 1:end-1]), ...
-                    nodes(:, [1 1:end-1]), ...
-                    nodes, ...
-                    nodes([1 1:end-1], :));
+                data.faces = face_node_connectivity(nodes);
+                data.faces   = reshape(data.faces, numel(xd), 4);
+                data.faces   = data.faces(data.face_active, :);
                 %
-                switch zb_loc
+                switch data.zb_loc
                     case 'face'
-                        zb = zb(face_active);
+                        data.zb = data.zb(data.face_active);
                     case 'node'
-                        zb = zb(node_active);
+                        data.zb = data.zb(node_active);
                 end
                 %
-                faces   = reshape(faces, numel(xd), 4);
-                faces   = faces(face_active, :);
-                %
-                modelname = 'Delft3D';
+                data.modelname = 'Delft3D';
                 simdat = vs_get(simOrg, 'map-version', 'FLOW-SIMDAT', 'quiet');
                 simdat = datenum(sscanf(simdat,'%4d%2d%2d %2d%2d%2d',[1 6]));
-                prehistory = [datestr(simdat, sim2ugrid_dateformat), ': Delft3D-FLOW'];
+                data.prehistory = [datestr(simdat, sim2ugrid_dateformat), ': Delft3D-FLOW'];
             otherwise
                 error('NEFIS %s files are not (yet) supported by SIM2UGRID.', simOrg.SubType)
         end
@@ -366,7 +445,15 @@ switch simOrg.FileType
 end
 
 
-function [t,zw,h,ucx,ucy,czs] = get_time_dependent(simOrg,it,face_active,has_chezy)
+function faces = face_node_connectivity(nodes)
+faces = cat(3, ...
+    nodes([1 1:end-1], [1 1:end-1]), ...
+    nodes(:, [1 1:end-1]), ...
+    nodes, ...
+    nodes([1 1:end-1], :));
+
+
+function data = get_time_dependent(simOrg,it,face_active,has_chezy)
 zw = [];
 switch simOrg.FileType
     case 'SIMONA SDS FILE'
@@ -414,6 +501,12 @@ end
 if isempty(zw)
     error('%s files are not (yet) supported in the time dependent part of SIM2UGRID.', simOrg.FileType)
 end
+data.t = t;
+data.zw = zw;
+data.h = h;
+data.ucx = ucx;
+data.ucy = ucy;
+data.czs = czs;
 
 
 function format = sim2ugrid_dateformat

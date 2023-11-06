@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module part09fm_mod
+use m_stop_exit
+
 !
 contains
       subroutine part09fm ( lun2   , itime  , nodye  , nwaste , mwaste ,  &

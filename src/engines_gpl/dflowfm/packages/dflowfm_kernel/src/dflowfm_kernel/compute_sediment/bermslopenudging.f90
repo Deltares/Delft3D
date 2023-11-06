@@ -88,7 +88,7 @@ subroutine bermslopenudging(error)
       !
       ! Transports positive outgoing
       !
-      slope  = hypot(e_dzdn(L),e_dzdt(L))
+      slope  = max(hypot(e_dzdn(L),e_dzdt(L)),1d-8)
       slpfac = bermslopefac*(-e_dzdn(L) + bermslope*e_dzdn(L)/slope) / max(morfac,1d0)
       do lsd = 1,lsedtot
          !

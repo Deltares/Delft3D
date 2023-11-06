@@ -1,3 +1,9 @@
+module m_fm_particles_in_grid
+
+implicit none
+
+contains
+
 !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
@@ -48,7 +54,7 @@ end subroutine add_particles
 
 !> calculate where the particles are within the grid
 subroutine calculate_position_in_grid(Nadd, xadd, yadd, np, xcrd, ycrd, zcrd, kcrd)
-   use m_partmesh
+   use m_part_mesh
    use m_alloc
    use m_sferic, only: jsferic
    use geometry_module, only: sphertocart3D
@@ -134,7 +140,7 @@ end subroutine calculate_position_in_grid
 
 !> find in which cells particles are located
 subroutine part_findcellsingle(xxpart, yypart, kpart, ierror)
-   use m_partmesh
+   use m_part_mesh
    use MessageHandling
    use kdtree2Factory
    use m_alloc
@@ -346,20 +352,22 @@ end subroutine dealloc_particles
 
 !> initialize particles
 subroutine ini_part(partfile, partrelfile, starttime_loc, timestep_loc, threeDtype_loc)
+   use m_fm_aux_routines
    use hydmod
    use partmem, only: xwaste, ywaste, zwaste, &
         radius, wparm, iwtime, ictime, amassd, amassc, nodye, nocont, ndprt, nopart, npmax, nosubs
 
    use m_particles
    use m_samples
-   use m_flow
-   use m_flowgeom, only: Ndx
-   use m_transport, only: constituents !, numconst
-   use m_flowtimes, only: tstart_user
+   use m_part_flow
+   use m_part_geom, only: Ndx
+   use m_part_transport, only: constituents !, numconst
+   use m_part_times, only: tstart_user
    use m_missing
    use m_alloc
    use MessageHandling
    use timers
+   use m_meteo1temphelpers
 
    implicit none
 
@@ -433,6 +441,7 @@ subroutine read_particles_release_file(partrelfile)
    use m_missing
    use m_alloc
    use MessageHandling
+   use m_meteo1temphelpers
    implicit none
 
    character(len=255), intent(in) :: partrelfile   !< release particle file
@@ -507,12 +516,11 @@ end subroutine read_particles_release_file
 
 !> add released particles
 subroutine add_particles_from_release_file(time0)
-   use m_julian
    use precision_part
    use partmem, only: nopart, mpart
    use partmem, only: iptime
    use m_particles
-   use m_partmesh
+   use m_part_mesh
    use m_sferic, only: jsferic
    use geometry_module, only: sphertocart3D
    use timers
@@ -662,3 +670,5 @@ subroutine part06fm ( lun    , nodye  , nocont , xwaste ,      &
  1020 format( '  Total number of errors regarding waste loads: ', i0 )
 
 end subroutine part06fm
+
+end module m_fm_particles_in_grid

@@ -20,11 +20,21 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq06
+      use m_opt1
+      use m_opt0
+      use m_dlwq5a
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq06 ( lun    , lchar  , filtype, icmax  , car    ,
      &                    iimax  , iar    , irmax  , rar    , notot  ,
      &                    noseg  , sname  , nowst  , nowtyp , nrftot ,
-     &                    nrharm , dtflg1 , dtflg3 , iwidth , vrsion ,
+     &                    nrharm , dtflg1 , dtflg3 , iwidth ,
      &                    ioutpt , chkpar , ierr   , iwar            )
 
 !       Deltares Software Centre
@@ -61,6 +71,7 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(15) = unit intermediate file (waste load)
 
+      use m_check
       use m_zoek
       use m_srstop
       use rd_token
@@ -70,7 +81,7 @@
 !     Parameters    :
 !     type     kind  function         name             description
 
-      integer  ( 4), intent(in   ) :: lun    (*)     !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun    (*)     !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
       integer  ( 4), intent(inout) :: filtype(*)     !< type of binary files
       integer  ( 4), intent(in   ) :: icmax          !< size of the character workspace
@@ -89,7 +100,6 @@
       logical      , intent(in   ) :: dtflg1         !< if true then 'date'-format for 2nd time scale
       logical      , intent(in   ) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
       integer  ( 4), intent(in   ) :: iwidth         !< width of the output file
-      real     ( 4), intent(in   ) :: vrsion         !< Input file version number
       integer  ( 4), intent(in   ) :: ioutpt         !< Degree of output in report file
       logical      , intent(out   ) :: chkpar(2)     !< Check for parameters SURF and LENGTH
       integer  ( 4), intent(inout) :: ierr           !< cumulative error count
@@ -120,6 +130,7 @@
       integer  (  4)                 ifound          !  help variable in searches
       integer  (  4)                 ifound2         !  help variable in searches
       logical                        ldummy          !  dummy logical
+      integer                        idummy          !  dummy integer
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dlwq06", ithndl )
 
@@ -208,13 +219,9 @@
                if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
          end select
 
-         if ( vrsion .ge. 4.90 ) then           ! read also name and type
-            if ( gettoken( wstname     (i), ierr2 ) .gt. 0 ) goto 20
-            if ( gettoken( wsttype_long(i), ierr2 ) .gt. 0 ) goto 20
-         else
-            wstname(i)      = ' '
-            wsttype_long(i) = ' '
-         endif
+         if ( gettoken( wstname     (i), ierr2 ) .gt. 0 ) goto 20
+         if ( gettoken( wsttype_long(i), ierr2 ) .gt. 0 ) goto 20
+
 
          if ( wstid_long(i)  .eq. ' ' ) write ( wstid_long(i), '(''waste-load id'',i7)' ) i
          if ( wstname(i)     .eq. ' ' ) write ( wstname(i), '(''waste-load name '',i7)' ) i
@@ -325,27 +332,16 @@
 
 !          now get the values
 
-      if ( vrsion .ge. 4.90 ) then           ! new input processing
-         allocate( drar(irmax) )             ! this array is 100 mb lp
-         call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax  ,
-     &                 car    , iimax  , iar    , irmax  , rar    ,
-     &                 sname  , wstid  , wsttype, nowst  , notot+1,
-     &                 nowtyp , drar   , dtflg1 , dtflg3 , vrsion ,
-     &                 ioutpt , ierr2  , ierr   , iwar   )
-         deallocate( drar )
-         if ( ierr2 .eq.  0 ) then
-            deallocate( wstid, wsttype )
-            goto 30
-         endif
-      else                                   ! old input processing
-         ierr2 = -2
-         ldummy = .false.
-         call opt0   ( lun    , 15     , 0        , 0        , nowst,
-     &                 notot+1, notot+1, nrftot(9), nrharm(9), 1    ,
-     &                 dtflg1 , ldummy , ldummy   , iwidth   , lchar,
-     &                 filtype, dtflg3 , vrsion   , ioutpt   , ierr2,
-     &                 iwar   , .false.)
-     &
+      allocate( drar(irmax) )             ! this array is 100 mb lp
+      call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax  ,
+     &              car    , iimax  , iar    , irmax  , rar    ,
+     &              sname  , wstid  , wsttype, nowst  , notot+1,
+     &              nowtyp , drar   , dtflg1 , dtflg3 , 
+     &              ioutpt , ierr2  , ierr   , iwar   )
+      deallocate( drar )
+      if ( ierr2 .eq.  0 ) then
+         deallocate( wstid, wsttype )
+         goto 30
       endif
       deallocate( wstid, wsttype )
       ierr = ierr + ierr2
@@ -401,3 +397,5 @@
      &gment function LENGTH required' )
 
       end
+
+      end module m_dlwq06

@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_getdps
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
 subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
                     nosegl , dps    , cellpnt, ltrack )
@@ -105,3 +113,5 @@ subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
       if ( timon ) call timstop ( ithndl )
 
 end subroutine
+
+end module m_getdps

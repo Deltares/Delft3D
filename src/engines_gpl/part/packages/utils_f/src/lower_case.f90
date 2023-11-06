@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_lower_case
+
+implicit none
+
+contains
+
 
       subroutine lower_case(string)
       use timers
@@ -42,3 +48,5 @@
       if ( timon ) call timstop ( ithndl )
       return
       end subroutine lower_case
+
+end module m_lower_case

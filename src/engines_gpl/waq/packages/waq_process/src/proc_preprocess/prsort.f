@@ -36,7 +36,7 @@
       ! sort processes according to input - output relation, simpel linear sort at the moment
 
       use m_zoek
-      use dlwq_data
+      use dlwq_hyd_data
       use ProcesSet
       use timers       !   performance timers
 

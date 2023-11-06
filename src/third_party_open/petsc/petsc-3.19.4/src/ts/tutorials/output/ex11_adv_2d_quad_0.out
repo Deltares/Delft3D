@@ -1,0 +1,11 @@
+  0  time        0  |x|     3.75  
+  1  time    0.225  |x|    3.075  
+  2  time     0.45  |x|    2.353  
+  3  time    0.675  |x|    1.969  
+  4  time      0.9  |x|    1.993  
+  5  time    1.125  |x|    1.998  
+  6  time     1.35  |x|        2  
+  7  time    1.575  |x|        2  
+  8  time      1.8  |x|        2  
+  9  time    2.025  |x|        2  
+CONVERGED_TIME at time 2.025 after 9 steps

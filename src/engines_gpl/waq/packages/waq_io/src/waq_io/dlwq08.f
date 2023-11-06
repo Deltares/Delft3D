@@ -20,9 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq08
+      use m_read_initials
+      use m_opt2
+      use m_opt1
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq08 ( lun    , lchar  , filtype, noseg  , notot  ,
-     &                    syname , iwidth , vrsion , ioutpt , inpfil ,
+     &                    syname , iwidth , ioutpt , inpfil ,
      &                    gridps , ierr   , iwar   )
 
 !       Deltares Software Centre
@@ -64,10 +74,11 @@
 !                           lun(29) = unit formatted output file
 !                           lun(18) = unit intermediate file (initials)
 
+      use m_check
       use m_srstop
       use m_open_waq_files
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use dlwqgrid_mod   ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token
       use timers         ! performance timers
       use string_module  ! string manipulation tools
@@ -84,7 +95,6 @@
       integer           ( 4), intent(in   ) :: notot         !< nr of delwaq + delpar state variables
       character         (20), intent(in   ) :: syname(notot) !< names of the substances
       integer           ( 4), intent(in   ) :: iwidth        !< width of the output file
-      real              ( 4), intent(in   ) :: vrsion        !< version of input
       integer           ( 4), intent(in   ) :: ioutpt        !< option for extent of output
       type(inputfilestack)  , intent(inout) :: inpfil        !< input file strucure with include stack and flags
       type(gridpointercoll) , intent(in)    :: gridps        !< collection off all grid definitions
@@ -307,3 +317,5 @@
  2110 format (  /,' WARNING: Binary initials file is assumed to have bed substances in mass/gridcell!' )
 
       end
+
+      end module m_dlwq08

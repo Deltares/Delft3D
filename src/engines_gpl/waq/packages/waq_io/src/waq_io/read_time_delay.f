@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_time_delay
+
+      implicit none
+
+      contains
+
 
       subroutine read_time_delay ( ierr  )
 
@@ -46,7 +52,7 @@
 
 !     Global declarations
 
-      use m_julian
+      use time_module
       use rd_token       ! for definition and storage of data
       use timers         ! performance timers
       use m_sysi          ! Timer characteristics
@@ -134,7 +140,7 @@
 
 !     compute the Julian time of the result
 
-      deltim = julian ( idate , itime )
+      deltim = julian_with_leapyears ( idate , itime )
 
 !       write meaningfull message to check procedure
 
@@ -158,3 +164,5 @@
      &          ' a valid value string for the delay !'/' 2 integers',
      &          ' are expected in YYMMDD and HHMMSS format !')
       end
+
+      end module m_read_time_delay

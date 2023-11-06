@@ -1,0 +1,121 @@
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 -1
+[0] 5 -1
+[0] 6 -1
+[0] 7 -1
+[0] 8 4
+[0] 9 5
+[0] 10 6
+[0] 11 7
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:2 0:2
+[0] 2:4 2:4
+[0] 4:6 -2:0
+[0] 6:8 -2:0
+[0] 8:10 4:6
+[0] 10:12 6:8
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:4 0:4
+[0] 4:8 -4:0
+[0] 8:12 4:8
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:2 0:2
+[0] 2:4 2:4
+[0] 4:6 -2:0
+[0] 6:8 -2:0
+[0] 8:10 4:6
+[0] 10:12 6:8
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 -1
+[0] 5 -1
+[0] 6 -1
+[0] 7 -1
+[0] 8 4
+[0] 9 5
+[0] 10 6
+[0] 11 7
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 4
+[0] 5 5
+[0] 6 -1
+[0] 7 -1
+[0] 8 -1
+[0] 9 -1
+[0] 10 -1
+[0] 11 -1
+[0] 12 6
+[0] 13 7
+[0] 14 8
+[0] 15 9
+[0] 16 10
+[0] 17 11
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:3 0:3
+[0] 3:6 3:6
+[0] 6:9 -3:0
+[0] 9:12 -3:0
+[0] 12:15 6:9
+[0] 15:18 9:12
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:6 0:6
+[0] 6:12 -6:0
+[0] 12:18 6:12
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:3 0:3
+[0] 3:6 3:6
+[0] 6:9 -3:0
+[0] 9:12 -3:0
+[0] 12:15 6:9
+[0] 15:18 9:12
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 4
+[0] 5 5
+[0] 6 -1
+[0] 7 -1
+[0] 8 -1
+[0] 9 -1
+[0] 10 -1
+[0] 11 -1
+[0] 12 6
+[0] 13 7
+[0] 14 8
+[0] 15 9
+[0] 16 10
+[0] 17 11
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:5 0:5
+[0] 5:10 5:10
+ISLocalToGlobalMapping Object: 1 MPI process
+  type not yet set
+[0] 0:2 0:2
+[0] 2:4 2:4
+[0] 4:6 4:6
+[0] 6:8 6:8
+[0] 8:10 8:10

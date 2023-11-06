@@ -27,7 +27,9 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use dlwq_hyd_data                   ! module contains everything for the hydrodynamics
+      use hydmod
+
       implicit none
 
       ! declaration of the arguments

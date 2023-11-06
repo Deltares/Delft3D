@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dmpare
+
+      implicit none
+
+      contains
+
 
       subroutine dmpare ( lun     , ndmpar  , ntdmps  , noq     , noseg   ,
      &                    nobnd   , ipoint  , ntdmpq  , ndmpq   , ndmps   ,
@@ -409,3 +415,5 @@
      &          /' exchamge number :',I15 )
 
       end
+
+      end module m_dmpare

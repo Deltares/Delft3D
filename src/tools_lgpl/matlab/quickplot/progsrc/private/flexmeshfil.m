@@ -106,8 +106,8 @@ fidx=find(DimFlag);
 idx(fidx(1:length(varargin)))=varargin;
 
 if strcmp(FI.FileType,'Gmsh')
-    Faces = FI.Element.Node';
-    NodeCoor = FI.Nodes.XYZ';
+    Faces = FI.Element.Nodes';
+    NodeCoor = FI.Node.Coords';
 else
     if isfield(Props,'ElmLayer')
         Faces = FI.Faces(FI.ElmLyr==Props.ElmLayer,:);
@@ -218,14 +218,14 @@ sz=[0 0 0 0 0];
 if strcmp(FI.FileType,'Gmsh')
     switch Props.Geom
         case 'UGRID2D-NODE'
-            sz(M_) = size(FI.Nodes.XYZ,2);
+            sz(M_) = size(FI.Node.Coords,2);
         case 'UGRID2D-FACE'
-            sz(M_) = size(FI.Element.Node,2);
+            sz(M_) = size(FI.Element.Nodes,2);
     end
 else
     switch Props.Geom
         case 'UGRID2D-NODE'
-            % to do
+            sz(M_) = size(FI.NodeCoor,1);
         case 'UGRID2D-FACE'
             if isfield(Props,'ElmLayer')
                 sz(M_) = sum(FI.ElmLyr==Props.ElmLayer);

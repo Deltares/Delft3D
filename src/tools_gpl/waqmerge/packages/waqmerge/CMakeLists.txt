@@ -6,7 +6,6 @@ set(waq_root_path ${waqmerge_root_path}/../../engines_gpl/waq) # Trace back to t
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_waqmerge.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -20,38 +19,34 @@ get_fortran_source_files(${src_path} source_files)
 # Define executable
 set(executable_name waqmerge)
 add_executable(${executable_name} ${source_files}
-                                  ${rc_version_file}
-                                  ${fortran_version_file_delwaq})
+                                  ${rc_version_file})
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(oss_dependencies deltares_common
-                         deltares_common_c
                          io_netcdf
+                         io_netcdf_data
                          io_hyd
+                         waq_hyd_data
                          waq_utils_f)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         netcdf
+         netcdff)
 endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies deltares_common
                          deltares_common_c
                          io_netcdf
+                         io_netcdf_data
                          io_hyd
+                         waq_hyd_data
                          netcdf4
                          netcdff
                          waq_utils_f)

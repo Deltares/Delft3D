@@ -11,13 +11,13 @@ from src.suite.reference_runner import ReferenceRunner
 from src.suite.test_bench_settings import TestBenchSettings
 from src.suite.test_set_runner import TestSetRunner
 from src.utils.common import log_header, log_separator_with_name
-from src.utils.logging.i_logger import ILogger
+from src.utils.logging.i_main_logger import IMainLogger
 
 
 class TestBench:
     """Testbench instance"""
 
-    def __init__(self, run_settings: TestBenchSettings, logger: ILogger) -> None:
+    def __init__(self, run_settings: TestBenchSettings, logger: IMainLogger) -> None:
         self.settings = run_settings
         self.logger = logger
 
@@ -47,7 +47,9 @@ class TestBench:
             if runner:
                 runner.run()
                 log_separator_with_name(
-                    "Testbench run finished normally", self.logger, char="*"
+                    f"Testbench run finished normally {runner.duration}",
+                    self.logger,
+                    char="*",
                 )
 
         except Exception as e:

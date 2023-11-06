@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_dlwqfl
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
       subroutine dlwqfl ( lunin  , lunout , itime  , idtime , itime1 ,    &
      &                    itime2 , ihdel  , nftot  , nrtot  , array1 ,    &
@@ -193,3 +201,5 @@
                ' time in file:      ',i5,'d ',i2,'h ',i2,'m ',i2,'s !')
 
       end subroutine
+
+end module m_dlwqfl

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_getloc
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETLOC ( FNAME  , ITYPE  , LOCDEF , MAXDEF , IPRDEP ,
      *                    ITMDEP , MAXLST , LOCLST , LOCTYP , LOCNR  ,
@@ -70,6 +76,9 @@
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
       integer               :: lun
+      integer               :: k, i1, i2, i3, NOTOT, ierror, nodump, idummy
+      integer               :: itype, itmdep, iprdep, nrlst, maxk, nbase
+      integer               :: locnr, loctyp, maxdef, maxlst
 !
 !         Open the DELWAQ .HIS file
 !
@@ -147,3 +156,5 @@
   200 CLOSE ( lun )
       RETURN
       END
+
+      end module m_getloc

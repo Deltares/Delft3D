@@ -41,6 +41,18 @@ if ishandle(obj)
 else
     ax = evd.AffectedObject;
 end
+
+Items = qp_get_items(ax);
+for i = 1:length(Items)
+    refreshAction = getappdata(Items(i),'axesRefresh');
+    if ~isempty(refreshAction)
+        refreshArgs = getappdata(Items(i),'axesRefreshArguments');
+        if ~isempty(refreshArgs)
+            refreshAction(refreshArgs{:})
+        end
+    end
+end
+
 setappdata(ax,'xlimmode','manual')
 setappdata(ax,'ylimmode','manual')
 if ~isempty(ax)

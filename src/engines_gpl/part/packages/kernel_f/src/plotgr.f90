@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_plotgr
+
+implicit none
+
+contains
+
 
       subroutine plotgrp( npgrid , pg     , nmax   , mmax   , lgrid  ,               &
                           lgrid2 , xb     , yb     )
@@ -130,3 +136,5 @@
       if ( timon ) call timstop ( ithndl )
       return
       end subroutine
+
+end module m_plotgr

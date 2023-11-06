@@ -20,6 +20,22 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_read_input_data
+use m_dlwq09
+use m_dlwq08
+use m_dlwq07
+use m_dlwq06
+use m_dlwq05
+use m_dlwq04
+use m_dlwq03
+use m_dlwq02
+use m_dlwq01
+
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -54,7 +70,7 @@ subroutine delwaq1_read_input_data()
     lunut   = lun(29)
     call dlwq01 ( lun     , psynam  , nosys   , notot   , nomult  , &
                   multp   , iwidth  , otime   , isfact  , refday  , &
-                  vrsion  , ioutpt  , ierr    , iwar    )
+                  ioutpt  , ierr    , iwar    )
 
     if ( ierr .ne. 0 ) then
         write ( lunrep , '(A)') " ERROR: reading system names"
@@ -86,7 +102,7 @@ subroutine delwaq1_read_input_data()
                   npoins  , dtflg1  , dtflg2  , nodump  , iopt    , &
                   noint   , iwidth  , dtflg3  , ndmpar  , ntdmps  , &
                   noraai  , ntraaq  , nosys   , notot   , nototp  , &
-                  vrsion  , ioutpt  , nsegdmp , isegdmp , nexcraai, &
+                  ioutpt  , nsegdmp , isegdmp , nexcraai, &
                   iexcraai, ioptraai, ierr    , iwar    )
 
     if ( mod(intopt,16) .gt. 7 ) then
@@ -96,7 +112,7 @@ subroutine delwaq1_read_input_data()
     endif
 
     call dlwq03 ( lun     , lchar   , filtype , nrftot  , nrharm  , &
-                  ivflag  , dtflg1  , iwidth  , dtflg3  , vrsion  , &
+                  ivflag  , dtflg1  , iwidth  , dtflg3  , &
                   ioutpt  , gridps  , syname  , ierr    , iwar    , &
                   has_hydfile       , nexch   )
 
@@ -108,7 +124,7 @@ subroutine delwaq1_read_input_data()
     if ( .not. associated(ioptraai) ) allocate(ioptraai(1))
     call dlwq04 ( lun     , lchar   , filtype , nrftot  , nrharm  , &
                   ilflag  , dtflg1  , iwidth  , intsrt  , dtflg3  , &
-                  vrsion  , ioutpt  , nsegdmp , isegdmp , nexcraai, &
+                  ioutpt  , nsegdmp , isegdmp , nexcraai, &
                   iexcraai, ioptraai, gridps  , ierr    , iwar    , &
                   has_hydfile       , nexch   )
     if ( associated(nsegdmp)  ) deallocate(nsegdmp)
@@ -122,7 +138,7 @@ subroutine delwaq1_read_input_data()
                   rar    , nrftot , nrharm , nobnd  , nosys  , &
                   notot  , nobtyp , rmax   , imax   , dtflg1 , &
                   iwidth , intsrt , ierr   , dtflg3 , syname , &
-                  icmak  , vrsion , ioutpt , iwar   )
+                  icmak  , ioutpt , iwar   )
 
     deltim = otime
 
@@ -130,7 +146,7 @@ subroutine delwaq1_read_input_data()
     call dlwq06 ( lun    , lchar  , filtype, icmak  , car(k) , &
                   imax   , iar    , rmax   , rar    , notot  , &
                   nosss  , syname , nowst  , nowtyp , nrftot , &
-                  nrharm , dtflg1 , dtflg3 , iwidth , vrsion , &
+                  nrharm , dtflg1 , dtflg3 , iwidth , &
                   ioutpt , chkpar , ierr   , iwar   )
 
     novec = 50
@@ -138,7 +154,6 @@ subroutine delwaq1_read_input_data()
     inpfil%dtflg2 = dtflg2
     inpfil%dtflg3 = dtflg3
     inpfil%itfact = itfact
-    inpfil%vrsion = vrsion
 
     nrharm(10) = 0
     deltim     = otime
@@ -154,15 +169,15 @@ subroutine delwaq1_read_input_data()
     close ( lun(2) )
 
     call dlwq08 ( lun    , lchar  , filtype, nosss  , notot  , &
-                  syname , iwidth , vrsion , ioutpt , inpfil , &
+                  syname , iwidth , ioutpt , inpfil , &
                   gridps , ierr   , iwar   )
 
     call dlwq09 ( lun    , lchar  , filtype, car    , iar    , &
-                  icmak  , iimax  , iwidth , ibflag , vrsion , &
+                  icmak  , iimax  , iwidth , ibflag , &
                   ioutpt , ioutps , outputs, ierr   , iwar   )
 
     call dlwqs1 ( lunrep       , npos         , &
-                  cchar        , vrsion       , &
+                  cchar        , &
                   ilun         , lch          , &
                   lstack       , ioutpt       , &
                   dtflg1       , dtflg3       , &
@@ -187,3 +202,5 @@ subroutine delwaq1_read_input_data()
 
 
 end subroutine delwaq1_read_input_data
+
+end module m_delwaq1_read_input_data

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_wq_processes_derivatives
+
+implicit none
+
+contains
+
 
       subroutine wq_processes_derivatives (deriv , notot , noflux, stochi, nflux1, &
                                            nfluxp, flux  , noseg , volume, ndt)
@@ -62,3 +68,5 @@
       return
 !
       end
+
+end module m_wq_processes_derivatives

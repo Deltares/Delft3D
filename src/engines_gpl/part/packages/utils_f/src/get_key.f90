@@ -23,6 +23,7 @@
 
 module get_key_mod
 !
+      use m_lower_case
       use timers
 implicit none   ! force explicit typing
 !

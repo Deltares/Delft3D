@@ -1,9 +1,9 @@
 # Set directories
 # Set the directory of where the source code is located.
-set(src_path src) 
+set(src_path src)
 set(include_path include)
 
-# Set the DFlow FM component path 
+# Set the DFlow FM component path
 set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
 # Set the directory referring to the ref folder
@@ -35,10 +35,6 @@ add_library(${library_name} SHARED  ${source}
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
     set(oss_dependencies    deltares_common
@@ -51,6 +47,7 @@ if (UNIX)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             interacter_stub
                             kdtree_wrapper
                             kdtree2
@@ -58,30 +55,31 @@ if (UNIX)
                             libsigwatch
                             md5digest
                             md5
+                            metis
                             metisoptions
                             morphology_data
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
                             nefis
+                            netcdf4
+                            netcdff
                             polypack
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
-                            wq_processes
                             dflowfm_kernel)
 
     oss_include_libraries(${library_name} oss_dependencies)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
-         PkgConfig::PETSC
-         "metis")
+         PkgConfig::PETSC)
 endif(UNIX)
 
 if (WIN32)
@@ -95,6 +93,7 @@ if (WIN32)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             interacter_stub
                             kdtree_wrapper
                             kdtree2
@@ -116,10 +115,11 @@ if (WIN32)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
-                            wq_processes
                             dflowfm_kernel)
 
     oss_include_libraries(${library_name} oss_dependencies)
@@ -132,16 +132,16 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "Setting target_compile_definitions in Unix")    
+    message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${library_name} PRIVATE "HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
 endif(UNIX)
 
 if(WIN32)
     message(STATUS "Setting target_compile_definitions in windows")
-    target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL")  
+    target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL")
 endif(WIN32)
 
-    
+
 # Define additional compilation flags
 set_source_files_properties(${source}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
@@ -151,7 +151,7 @@ if (WIN32)
 
     target_include_directories(${library_name} PRIVATE  ${include_path}
                                                         ${mpi_include_path}
-                                                        ${petsc_path}
+                                                        ${petsc_libdir}
                                                         ${tecplot_path})
 
     # Set linker properties
@@ -160,17 +160,17 @@ if (WIN32)
                             PRIVATE
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/lib/x64/Release"
+                            "${petsc_libdir}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
 
-    target_link_libraries(${library_name}   
+    target_link_libraries(${library_name}
                             "comctl32.lib"
                             "wsock32.lib"
                             "netapi32.lib"
                             "kernel32.lib"
-                            "user32.lib" 
+                            "user32.lib"
                             "Shlwapi.lib"
                             "Gdi32.lib"
                             "Winspool.lib"
@@ -199,10 +199,9 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${library_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${library_name})
 
 install(TARGETS ${library_name} DESTINATION lib)
-

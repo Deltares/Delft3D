@@ -650,6 +650,10 @@ SGrid  = {nc.Dataset(iSGrid).Name};
 UGrid  = {nc.Dataset(iUGrid).Name};
 iSGrid = find(iSGrid);
 iUGrid = find(iUGrid);
+ugridDims = {};
+for i = 1:length(iUGrid)
+    ugridDims = cat(2,ugridDims,nc.Dataset(iUGrid(i)).Mesh(5:end));
+end
 gridLoc = {'node','edge','face','volume'};
 scalarDimWarnings = {};
 for ivar = 1:nvars
@@ -837,16 +841,35 @@ for ivar = 1:nvars
     end
     if ~isempty(Info.Time)
         iTime = abs(Info.Time);
+        % remove time dimensions that match UGRID dimensions.
+        %
+        % This is a tricky path. Should a 1D dataset with X(i), Y(i), T(i)
+        % be interpreted as a track or a 1D spatial quantity with varying
+        % time? We do the former, but if the dimension is also associated
+        % with UGRID then it will be a spatial dimension. Use case: D-Flow
+        % FM fourier file with time at which maximum/minimum is observed.
+        for it = length(iTime):-1:1
+            if length(nc.Dataset(iTime(it)).Dimid)>1
+                iTime(it) = [];
+            else
+                dimName = nc.Dimension(nc.Dataset(iTime(it)).Dimid+1).Name;
+                if ismember(dimName,ugridDims)
+                    iTime(it) = [];
+                end
+            end
+        end
         %
         % Assumption: time is always unique and coordinate dimension.
         %
-        if length(iTime)>1 || length(nc.Dataset(iTime).Dimid)>1
-            ui_message('error','Unsupported case encountered: multiple time coordinates encountered.')
-        end
-        Info.Time = iTime(1);
-        %
-        if ~isempty(nc.Dataset(Info.Time).Dimid)
-            Info.TSMNK(1) = nc.Dataset(Info.Time).Dimid;
+        if ~isempty(iTime)
+            if length(iTime)>1 || length(nc.Dataset(iTime).Dimid)>1
+                ui_message('error','Unsupported case encountered: multiple time coordinates encountered.')
+            end
+            Info.Time = iTime(1);
+            %
+            if ~isempty(nc.Dataset(Info.Time).Dimid)
+                Info.TSMNK(1) = nc.Dataset(Info.Time).Dimid;
+            end
         end
     end
     %
@@ -1140,8 +1163,8 @@ for ivar = 1:nvars
     % we prefer such vertical coordinates over Z variables that don't.
     %
     if iscell(Info.Mesh) && isequal(Info.Mesh{1},'ugrid')
-        ugridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
-        nonmatchUgridDims = setdiff(ugridDims,Info.Dimension);
+        localUgridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
+        nonmatchUgridDims = setdiff(localUgridDims,Info.Dimension);
         for z = 1:length(nc.Dataset)
             if strncmp(nc.Dataset(z).Type,'z-coordinate',12)
                 nmDim = setdiff(nc.Dataset(z).Dimension,Info.Dimension);
@@ -1235,8 +1258,8 @@ for ivar = 1:nvars
             end
             % ... and dimensions associated with other UGRID dimensions
             if iscell(Info.Mesh) && isequal(Info.Mesh{1},'ugrid')
-                ugridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
-                iUDims = find(ismember({nc.Dimension.Name},ugridDims));
+                localUgridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
+                iUDims = find(ismember({nc.Dimension.Name},localUgridDims));
                 ZDims = setdiff(ZDims,iUDims);
             end
         end
@@ -2046,6 +2069,14 @@ for mesh = NumMeshes:-1:1
     merged_mesh(mesh).FaceNodeConnect = glbFNC;
     merged_mesh(mesh).faceDMask  = faceMask;
     merged_mesh(mesh).faceGIndex = iFaces;
+    %
+    if ~isempty(efcVar)
+        glbEFC = zeros(nGlbEdges,2);
+        for p = 1:nPart
+            glbEFC(iEdges{p},:) = efc{p};
+        end
+        merged_mesh(mesh).EdgeFaceConnect = glbEFC;
+    end
 end
 
 

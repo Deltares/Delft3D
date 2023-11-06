@@ -255,7 +255,7 @@ if ~isempty(Info.Attribute)
                 Data(Data<=-32767)=NaN;
             case 'int'
                 Data(Data<=-2147483647)=NaN;
-            case {'float','double'}
+            case {'single','double'}
                 Data(Data>=9.9692099683868690e+36)=NaN;
         end
     end

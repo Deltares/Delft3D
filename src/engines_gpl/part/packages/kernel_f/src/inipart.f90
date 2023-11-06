@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_inipart
+
+implicit none
+
+contains
+
 
       subroutine inipart( lgrid   , lgrid2  , nmax    , mmax    , xcor    ,     &
                           ycor    , nopart  , nosubs  , subst   , ini_file,     &
@@ -53,12 +59,15 @@
 !                  the oil patch is supposed to be floating oil, so located
 !                  at z=0.0 of the top layer (k=1)
 !
+      use m_skip_comments
       use precision_part ! single/double precision
       use timers
       use get_key_mod
       use grid_search_mod
       use pinpok_mod
       use random_generator
+      use m_stop_exit
+      use m_get_index
 
       implicit none ! force explicit typing
 
@@ -121,7 +130,6 @@
 !     local scalars
 !
       integer(ip) :: ipol, len_file, len_fract
-      integer(ip) :: get_index
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "inipart", ithndl )
@@ -311,3 +319,5 @@
       call stop_exit(1)
 
       end subroutine inipart
+
+end module m_inipart

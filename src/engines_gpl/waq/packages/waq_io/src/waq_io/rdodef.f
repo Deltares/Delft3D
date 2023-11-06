@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_rdodef
+
+      implicit none
+
+      contains
+
 
       subroutine rdodef ( noutp  , nrvar  , nrvarm , isrtou , ounam  ,
      &                    infile , nx     , ny     , nodump , ibflag ,
      &                    lmoutp , ldoutp , lhoutp , lncout , ierr   ,
-     &                    igrdou , ndmpar , vrsion )
+     &                    igrdou , ndmpar )
 
 !       Deltares Software Centre
 
@@ -63,7 +69,6 @@
       integer  ( 4), intent(inout) :: ierr                  !< Cumulative error count
       integer  ( 4), intent(in   ) :: igrdou(4)             !< Output grid indication
       integer  ( 4), intent(in   ) :: ndmpar                !< number of dump areas
-      real     ( 4), intent(in   ) :: vrsion                !< input file version number
 
 !     Local
 
@@ -123,28 +128,15 @@
                   endif
                   if ( igrdou(io) .eq. igsub ) then
                      max2 = nrvarm/2
-                     if ( vrsion .gt. 4.29 ) then
-                        if ( gettoken( nrv, ierr2 ) .gt. 0 ) goto 100
-                        do ivar = 1, min(nrv,max2)
-                            if ( gettoken( ounam(ivar    ,io), ierr2 ) .gt. 0 ) goto 100
-                            if ( gettoken( ounam(ivar+nrv,io), ierr2 ) .gt. 0 ) goto 100
-                        enddo
-                        do ivar = 1, nrv-max2
-                            if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 100
-                            if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 100
-                        enddo
-                     else
-                        if ( gettoken( nrv, ierr2 ) .gt. 0 ) goto 100
-                        do ivar = 1, min(nrv,max2)
-                            if ( gettoken( ounam(ivar    ,io), ierr2 ) .gt. 0 ) goto 100
-                        enddo
-                        do ivar = 1, nrv-max2
-                            if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 100
-                        enddo
-                        do ivar = 1 , min(nrv,max2)
-                           ounam(nrv+ivar,io) = ' '
-                        enddo
-                     endif
+                     if ( gettoken( nrv, ierr2 ) .gt. 0 ) goto 100
+                     do ivar = 1, min(nrv,max2)
+                           if ( gettoken( ounam(ivar    ,io), ierr2 ) .gt. 0 ) goto 100
+                           if ( gettoken( ounam(ivar+nrv,io), ierr2 ) .gt. 0 ) goto 100
+                     enddo
+                     do ivar = 1, nrv-max2
+                           if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 100
+                           if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 100
+                     enddo
                      if ( nrv .lt. 0 ) then
                         write (lunut,2100)
                         ierr = ierr + 1
@@ -492,3 +484,5 @@
      &           '     Chunksize:       ',I0, ' - 0 means no chunking',/,
      &           '     Shuffling:       ',A)
       end
+
+      end module m_rdodef

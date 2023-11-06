@@ -75,7 +75,7 @@
    call realloc(usty_cc, ndkx, stat=ierr, keepExisting = .false., fill = 0d0)
    call aerr('usty_cc  (ndkx)', ierr, ndkx)
 
-   if (jawave==3 .or. jawave==4 .or. jawave==6) then
+   if (jawave == 3 .or. jawave == 4 .or. jawave == 6 .or. jawave == 7) then
       call realloc(wavfu, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavfu  (lnkx)', ierr, lnkx)
       call realloc(wavfv, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
@@ -84,13 +84,15 @@
       call aerr('sxwav  (ndx)', ierr, ndx)
       call realloc(sywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('sywav  (ndx)', ierr, ndx)
-      call realloc(sbxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('sbxwav  (ndx)', ierr, ndx)
-      call realloc(sbywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('sbywav  (ndx)', ierr, ndx)
+      if(jawave /= 7 .or. waveforcing == 3) then
+          call realloc(sbxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('sbxwav  (ndx)', ierr, ndx)
+          call realloc(sbywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('sbywav  (ndx)', ierr, ndx)
+      endif
    endif
 
-   if (jawave==3) then
+   if (jawave == 3 .or. jawave == 7) then
       call realloc(wavmubnd, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavmubnd  (lnkx)', ierr, lnkx)
       call realloc(uorbwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
@@ -102,12 +104,13 @@
       call aerr('mxwav(ndx)', ierr, ndx)
       call realloc(mywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('mywav(ndx)', ierr, ndx)
-
-      call realloc(dsurf, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('dsurf(ndx)', ierr, ndx)
-      call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('dwcap(ndx)', ierr, ndx)
-   end if
+      if(jawave /= 7 .or. waveforcing == 3) then
+          call realloc(dsurf, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('dsurf(ndx)', ierr, ndx)
+          call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('dwcap(ndx)', ierr, ndx)
+      endif
+   endif
    !
    if  (jawave > 0) then
       call realloc( hwavcom,   ndx, stat=ierr, keepExisting = .false., fill = hwavuni)

@@ -113,6 +113,11 @@
                 roa  = roair(k)
              endif
           endif
+          if (ja_airdensity + ja_varying_airdensity > 0) then
+             k = ln(2,L)
+             row = rho(ktop(k))
+             roa = airdensity(k)
+          endif
           tuwi    = roa*cdw*uwi
           if (jamapwindstress > 0) then
              wdsu_x(L) = tuwi*wxL

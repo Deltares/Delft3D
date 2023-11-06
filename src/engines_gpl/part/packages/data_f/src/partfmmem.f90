@@ -26,31 +26,16 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_part_parameters
+   use precision_part
 
-
-!   module partfmmem
-!   use m_flowparameters
-!   use m_flow
-!   use m_flowgeom
-!   use m_flowtimes
-!   use m_transport
-!   use m_particles
-!   use m_partrecons
-!   use m_partfluxes
-!   use m_partmesh
-!   end module partfmmem
-
-
-   module m_flowparameters
    implicit none
    ! parameters controlling flooding/drying/solving
-   double precision                  :: epshs = 0.2d-4            !< minimum waterdepth for setting cfu
-   end module m_flowparameters
+   real(kind=dp) :: epshs = 0.2d-4            !< minimum waterdepth for setting cfu
 
-   !&&&&&
-   module m_flow
+end module m_part_parameters
+
+module m_part_flow
 
    implicit none
 
@@ -67,32 +52,24 @@
    integer, parameter                :: LAYTP_LEFTSIGMA = 3
    integer, parameter                :: LAYTP_LEFTZ     = 4
 
-
-
    ! flow arrays
 
    ! node related, dim = ndx
-   double precision, allocatable :: h0(:)       !< [m] waterdepth    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: h1(:)       !< [m] waterdepth    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: s0(:)       !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable :: s1(:)       !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: h0(:)       !< [m] layer thickness at start of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: h1(:)       !< [m] layer thickness at end   of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: s0(:)       !< [m] waterlevel    at start of timestep {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: s1(:)       !< [m] waterlevel    at end   of timestep {"location": "face", "shape": ["ndx"]}
    double precision, allocatable :: vol0(:)     !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
    double precision, allocatable :: vol1(:)     !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
 
-
-
-
    double precision, allocatable     :: qw    (:)   !< vertical flux through interface (m3/s)
-
 
    double precision, allocatable     :: q0(:)   !< [m3/s] discharge     (m3/s) for current time step (makes vol0 -> vol1)
    double precision, allocatable     :: q1(:)   !< [m3/s] discharge     (m3/s) for next time time step
 
+end module m_part_flow
 
-   end module m_flow
-
-
-   module m_flowgeom
+module m_part_geom
 
    implicit none
 
@@ -106,11 +83,11 @@
    double precision, allocatable     :: wu(:)          !< [m] link initial width (m), if < 0 pointer to convtab {"location": "edge", "shape": ["lnx"]}
    integer,          allocatable     :: lne2ln(:)      !< netlink to flowlink nr dim = numL
 
-   end module m_flowgeom
+end module m_part_geom
 
 
-   !> this module contains the real flow times, only to be managed by setting times in module m_usertimes
-   module m_flowtimes
+!> this module contains the real flow times, only to be managed by setting times in module m_usertimes
+module m_part_times
    implicit none
 
    character (len=8)                 :: refdat      !< Reference date (e.g., '20090101'). All times (tstart_user, tend_user, etc.) are w.r.t. to this date.
@@ -123,18 +100,18 @@
    double precision                  :: dts         !< internal computational timestep (s)
    double precision                  :: time0       !< current   julian (s) of s0
    double precision                  :: time1       !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
-   end module m_flowtimes
+end module m_part_times
 
-   module m_transport
+module m_part_transport
    integer, parameter :: NAMLEN = 128
    integer                                          :: NUMCONST       ! Total number of constituents
    double precision, dimension(:,:,:), allocatable  :: constituents    ! constituents, dim(NUMCONST,Ndkx,kmx)
 
    character(len=NAMLEN), dimension(:), allocatable :: const_names    ! constituent names
-   character(len=NAMLEN), dimension(:), allocatable :: const_units    ! constituent unitsmodule m_pa                                             rticles
-   end module m_transport
+   character(len=NAMLEN), dimension(:), allocatable :: const_units    ! constituent unitsmodule m_particles
+end module m_part_transport
 
-   module m_particles
+module m_particles
    integer                                        :: japart       !< particles (1) or not (0)
 
    !! AM integer                                        :: Nopart       !< number of particles - defined twice
@@ -178,29 +155,30 @@
    double precision, dimension(:),    allocatable :: qpart       !< cummulative fluxes from begin of time interval, dim(Lnx)
 
    double precision, dimension(:),    allocatable :: qfreesurf       !< free surface flux (for threeDtype=1)
-   end module m_particles
+end module m_particles
 
-   module m_partrecons
+module m_part_recons
    integer                                        :: nqzero         ! number of zeros in qe (no flux)
    double precision,  dimension(:),   allocatable :: qe             !< fluxes at all edges, including internal, and q0 where there is no discharge
    integer,           dimension(:),   allocatable :: qbnd           !< edges where there is no discharge
    integer,           dimension(:),   allocatable :: cell_closed_edge ! cells that have a closed edge (may be temporary eg dry due to dry cells)
    double precision,  dimension(:),   allocatable :: u0x, u0y, alphafm !< reconstruction of velocity fiels in cells, dim(numcells)
-   double precision,  dimension(:),   allocatable :: u0z          !< reconstruction of velocity fiels in cells, dim(numcells), for spherical models
+   double precision,  dimension(:),   allocatable :: u0z          !< reconstruction of velocity field in cells, dim(numcells), for spherical models
+   double precision,  dimension(:),   allocatable :: u0w          !< reconstruction of velocity field in cells, dim(numcells), for 3D models (represents vertical motion in water column)
    double precision                               :: xref, yref ! reference point around cartesian area if model is sferical
 
    integer,           dimension(:),   allocatable :: ireconst    !< sparse storage of velocity reconstructin, edges,        dim(jreconst(numcells+1)-1)
    integer,           dimension(:),   allocatable :: jreconst    !< sparse storage of velocity reconstructin, startpointer, dim(numcells+1)
    double precision,  dimension(:,:), allocatable :: Areconst    !< sparse storage of velocity reconstructin, [ucx, ucy, (ucz,) alpha] dim(jreconst(3 (4), numcells+1)-1)
-   end module m_partrecons
+end module m_part_recons
 
-   module m_partfluxes
+module m_part_fluxes
    integer,          dimension(:),    allocatable :: iflux2link   !< sparse storage of edge-based flux to flowlink-based flux (prescribed), flowlinks, dim(jflux2link(numedges+1)-1)
    integer,          dimension(:),    allocatable :: jflux2link   !< sparse storage of edge-based flux to flowlink-based flux (prescribed), startpointer, dim(numedges+1)
    double precision, dimension(:),    allocatable :: Aflux2link   !< sparse storage of edge-based flux to flowlink-based flux (prescribed), coefficients, dim(jflux2link(numedges+1)-1)
-   end module m_partfluxes
+end module m_part_fluxes
 
-   module m_partmesh
+module m_part_mesh
    !  mesh data
    integer                                         :: numnodes    !< number of nodes, >= numk
    integer                                         :: numedges    !< number of edges, >= numL
@@ -233,9 +211,9 @@
    double precision, dimension(:),     allocatable :: w            !< edge width, dim(numedges)
 
    integer,                            parameter :: MAXSUBCELLS=10
-   end module m_partmesh
+end module m_part_mesh
 
-   module m_partfm_trk_netcdf
+module m_partfm_trk_netcdf
 
    character(len=255)   :: trkncfilename
    integer              :: itrkfile
@@ -248,11 +226,12 @@
    integer              :: id_trk_partz
    integer              :: it_trk
 
-   end module m_partfm_trk_netcdf
+end module m_partfm_trk_netcdf
 
-   module m_partfm_map_netcdf
+module m_partfm_map_netcdf
 
-   use io_ugrid
+   use m_ug_mesh
+   use m_ug_network
 
    character(len=255)   :: mapncfilename
    integer              :: imapfile
@@ -269,4 +248,4 @@
 
    double precision, allocatable, target :: work(:)   !< Work array
 
-   end module m_partfm_map_netcdf
+end module m_partfm_map_netcdf

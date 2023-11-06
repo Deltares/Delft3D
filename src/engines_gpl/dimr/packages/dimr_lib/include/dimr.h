@@ -121,7 +121,7 @@ class Dimr {
 		void           timerFinish(void);
         void           receive(const char *, int, BMI_SETVAR, BMI_GETVAR, double *, int *, int, int, const void *);
         void           receive_ptr(const char *, const char *, int, BMI_SETVAR, BMI_GETVAR, BMI_GETVARSHAPE , double *, int *, int, int, double *);
-        void           getAddress(const char * name, int compType, BMI_GETVAR dllGetVar, double ** sourceVarPtr, int * processes, int nProc, double * transfer);
+        void           getAddress(const char * name, int compType, BMI_GETVAR dllGetVar, double ** sourceVarPtr, int * processes, int nProc, double& transfer);
         double *       send(const char * name, int compType, double* sourceVarPtr, int* processes, int nProc, double* transfer);
 		
     public:
@@ -179,6 +179,8 @@ class Dimr {
         dimr_component * getComponent     (const char *);
 
         dimr_coupler *   getCoupler       (const char *);
+
+        bool           IsCouplerItemTypePTR(int couplerItem);
 
         void           char_to_ints       (char *, int **, int *);
 

@@ -66,6 +66,7 @@
 
  endif
 
+ 
  if (nonlin == 0) then
 
     do n = ndx2d+1, ndxi

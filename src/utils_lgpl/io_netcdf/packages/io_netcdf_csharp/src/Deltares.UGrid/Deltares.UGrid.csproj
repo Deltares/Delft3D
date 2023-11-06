@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{7F1399E8-FE58-4147-9341-B58A44230B84}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Deltares.UGrid</RootNamespace>
+    <AssemblyName>Deltares.UGrid</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\bin\$(Configuration)</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>..\..\bin\$(Configuration)\Deltares.UGrid.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\..\bin\$(Configuration)</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>..\..\bin\$(Configuration)\Deltares.UGrid.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\protobuf-net.2.4.0\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBufRemote, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cef13554f3ca1f2d, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ProtoBufRemote.1.0.11\lib\net40\ProtoBufRemote.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Api\DataSetConventions.cs" />
+    <Compile Include="Api\Disposable1DMeshGeometry.cs" />
+    <Compile Include="Api\Disposable2DMeshGeometry.cs" />
+    <Compile Include="Api\DisposableLinksGeometry.cs" />
+    <Compile Include="Api\DisposableMeshObject.cs" />
+    <Compile Include="Api\DisposableNetworkGeometry.cs" />
+    <Compile Include="Api\GridLocationType.cs" />
+    <Compile Include="Api\IoNetCdfNativeError.cs" />
+    <Compile Include="Api\IUGridApi.cs" />
+    <Compile Include="Api\OpenMode.cs" />
+    <Compile Include="Entities\NetcdfOpenMode.cs" />
+    <Compile Include="Api\StringBufferSizeAttribute.cs" />
+    <Compile Include="Api\UGridApi.cs" />
+    <Compile Include="Api\FileMetaData.cs" />
+    <Compile Include="Api\UGridMeshType.cs" />
+    <Compile Include="Entities\InteropMetadata.cs" />
+    <Compile Include="Entities\IoNetCfdImports.cs" />
+    <Compile Include="Entities\LinksGeometry.cs" />
+    <Compile Include="Entities\LinksGeometryDimensions.cs" />
+    <Compile Include="Entities\Mesh1DGeometry.cs" />
+    <Compile Include="Entities\Mesh1DGeometryDimensions.cs" />
+    <Compile Include="Entities\Mesh2DGeometry.cs" />
+    <Compile Include="Entities\Mesh2DGeometryDimensions.cs" />
+    <Compile Include="Entities\Network1DGeometry.cs" />
+    <Compile Include="Entities\Network1DGeometryDimensions.cs" />
+    <Compile Include="Helpers\IntPtrExtensions.cs" />
+    <Compile Include="Helpers\NativeLibrary.cs" />
+    <Compile Include="Helpers\StringUtilityExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Lib\*.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="packages.config" />
+    <None Include="UML\Overview.cd" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Lib\hdf5.dll" />
+    <Content Include="Lib\hdf5_hl.dll" />
+    <Content Include="Lib\io_netcdf_dll.dll" />
+    <Content Include="Lib\libifcoremd.dll" />
+    <Content Include="Lib\libmmd.dll" />
+    <Content Include="Lib\netcdf.dll" />
+    <Content Include="Lib\ucrtbase.dll" />
+    <Content Include="Lib\vcruntime140.dll" />
+    <Content Include="Lib\zlib1.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_boombounce
+
+implicit none
+
+contains
+
 
       subroutine boombounce( xold, yold, xnew, ynew, nboom, xboom, &
                                     yboom, xcatch, ycatch, catch, xbounce, ybounce, bounce, leftside)
@@ -220,3 +226,4 @@
       return
       end subroutine boombounce      
 	  
+end module m_boombounce

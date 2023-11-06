@@ -33,7 +33,7 @@
       use m_evaluate_waq_attribute
 
 !>\file
-!>       Periodic (day) average of a given substance
+!>       Periodic (day) average, minimum and maximum of a given substance
 
 !
 !     Description of the module :
@@ -43,16 +43,21 @@
 !
 ! CONC           I    Concentration of the substance            1
 ! TINIT         I/O   Initial time (reset at end period)        2
-! PERIOD         I    Period of te periodic average             3
+! PERIOD         I    Period of the periodic average            3
 ! TIME           I    Time in calculation                       4
 ! DELT           I    Timestep                                  5
 !
 ! TCOUNT         O    Count of times (must be imported!)        6
 ! AVCUM          O    Work array for summing over time          7
-! AVPERD         O    Periodic average (calcuated at the end)   8
+! MINDYN         O    Dynamic minimum over period               8
+! MAXDYN         O    Dynamic maximum over period               9
+! AVPERD         O    Periodic average (calculated at the end)  10
+! MINPERD        O    Periodic minimum (given at the end)       11
+! MAXPERD        O    Periodic maximum (given at the end)       12
 !
 ! Note: to prevent strange results, the actual output parameter is
 !       AVPERD. This is updated once in a while!
+! Note: The result (unit 10, 11 and 12) is of the previous day.
 !
 
 !     Logical Units : -
@@ -69,9 +74,11 @@
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
       INTEGER  IP1   , IP2   , IP3   , IP4   , IP5   ,
-     +         IP6   , IP7   , IP8   ,
+     +         IP6   , IP7   , IP8   , IP9   , IP10  ,
+     +         IP11  , IP12  ,
      +         IN1   , IN2   , IN3   , IN4   , IN5   ,
-     +         IN6   , IN7   , IN8
+     +         IN6   , IN7   , IN8   , IN9   , IN10  ,
+     +         IN11  , IN12
       INTEGER  IKMRK , ISEG
       INTEGER  IACTION
       INTEGER  ATTRIB
@@ -88,6 +95,10 @@
       IP6 = IPOINT(6)
       IP7 = IPOINT(7)
       IP8 = IPOINT(8)
+      IP9 = IPOINT(9)
+      IP10= IPOINT(10)
+      IP11= IPOINT(11)
+      IP12= IPOINT(12)
 
       IN1 = INCREM(1)
       IN2 = INCREM(2)
@@ -97,6 +108,10 @@
       IN6 = INCREM(6)
       IN7 = INCREM(7)
       IN8 = INCREM(8)
+      IN9 = INCREM(9)
+      IN10= INCREM(10)
+      IN11= INCREM(11)
+      IN12= INCREM(12)
 
       TINIT  = PMSA(IP2)
       PERIOD = PMSA(IP3)
@@ -124,8 +139,12 @@
             DO ISEG=1,NOSEG
                IP6       = IPOINT(6) + (ISEG-1) * INCREM(6)
                IP7       = IPOINT(7) + (ISEG-1) * INCREM(7)
+               IP8       = IPOINT(8) + (ISEG-1) * INCREM(8)
+               IP9       = IPOINT(9) + (ISEG-1) * INCREM(9)
                PMSA(IP6) = 0.0
                PMSA(IP7) = 0.0
+               PMSA(IP8) = HUGE(1.0)
+               PMSA(IP9) = -HUGE(1.0)
             ENDDO
          ENDIF
       ENDIF
@@ -138,6 +157,8 @@
 
       IP6    = IPOINT(6)
       IP7    = IPOINT(7)
+      IP8    = IPOINT(8)
+      IP9    = IPOINT(9)
 
       DO 9000 ISEG=1,NOSEG
          IF (BTEST(IKNMRK(ISEG),0)) THEN
@@ -149,7 +170,9 @@
             TCOUNT    = PMSA(IP6) + DELT
             PMSA(IP6) = TCOUNT
 
-            PMSA(IP7)  = PMSA(IP7) + PMSA(IP1) * DELT
+            PMSA(IP7) = PMSA(IP7) + PMSA(IP1) * DELT
+            PMSA(IP8) = MIN( PMSA(IP8), PMSA(IP1) )
+            PMSA(IP9) = MAX( PMSA(IP9), PMSA(IP1) )
 
          ENDIF
 !
@@ -158,15 +181,20 @@
 
          IF ( IACTION .EQ. 3 ) THEN
             IF ( TCOUNT .GT. 0.0 ) THEN
-               PMSA(IP8) = PMSA(IP7) / TCOUNT
+               PMSA(IP10) = PMSA(IP7) / TCOUNT
+               PMSA(IP11) = PMSA(IP8)
+               PMSA(IP12) = PMSA(IP9)
             ELSE
-               PMSA(IP8) = 0.0
+               PMSA(IP10)= 0.0
+               PMSA(IP11)= 0.0
+               PMSA(IP12)= 0.0
+
 
                IF ( NOWARN < MAXWARN ) THEN
                   CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB )
                   IF ( ATTRIB .NE. 0 ) THEN
                      NOWARN = NOWARN + 1
-                     WRITE(*,'(a,i0)') 'Periodic average could not be determined for segment ', ISEG
+                     WRITE(*,'(a,i0)') 'Periodic average, minimum and maximum could not be determined for segment ', ISEG
                      WRITE(*,'(a)')    '    - segment was not active. Average set to zero'
 
                      IF ( NOWARN == MAXWARN ) THEN
@@ -181,13 +209,20 @@
 !
             PMSA(IP6) = 0.0
             PMSA(IP7) = 0.0
+            PMSA(IP8) = HUGE(1.0)
+            PMSA(IP9) = -HUGE(1.0)
+         
          ENDIF
 
          IP1  = IP1  + IN1
          IP6  = IP6  + IN6
          IP7  = IP7  + IN7
          IP8  = IP8  + IN8
-
+         IP9  = IP9  + IN9
+         IP10 = IP10 + IN10
+         IP11 = IP11 + IN11
+         IP12 = IP12 + IN12
+         
  9000 CONTINUE
 
 !

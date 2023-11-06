@@ -20,10 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq01
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq01 ( lun    , syname , nosys  , notot  , nomult ,
      &                    multp  , iwidth , otime  , isfact , refday ,
-     &                    vrsion , ioutpt , ierr   , iwar   )
+     &                    ioutpt , ierr   , iwar   )
 
 !       Deltares Software Centre
 
@@ -45,7 +51,7 @@
 !                            9 November 2010 by L. Postma  : Multiple substances, F90 look and feel
 !                           13 April    2011 by L. Postma  : Further streamlining tokenized reading
 
-!       Subroutines called: rdvers  read version number from user input file
+!       Subroutines called: read_version_number  read version number from user input file
 !                           check   for end of data block
 !                           srstop  stop processing with return code
 !                           zoek    to find previous occurences of the same name
@@ -55,10 +61,11 @@
 !                           lun(29) = unit formatted output file
 !                           lun( 2) = unit system-intermediate file
 
+      use m_check
       use m_zoek
       use m_srstop
-      use m_rdvers
-      use m_julian
+      use m_read_version_number
+      use time_module
       use rd_token     !   tokenized reading
       use dlwq0t_data
       use timers       !   performance timers
@@ -80,7 +87,6 @@
       real     ( 8), intent(  out) :: otime             !< Offset of the system time (Julian)
       integer  ( 4), intent(  out) :: isfact            !< Units (in sec) of the system clock
       integer  ( 4), intent(  out) :: refday            !< reference day, varying from 1 till 365
-      real     ( 4), intent(  out) :: vrsion            !< version number of this input
       integer  ( 4), intent(  out) :: ioutpt            !< flag for more or less output
       integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
       integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
@@ -108,6 +114,7 @@
       integer  ( 4)   :: ifound                            !  help variable for name search
       integer  ( 4)   :: nosyss                            !  help variable for transported substance
       integer  ( 4)   :: notots                            !  help variable for total substance
+      real     ( 4)   :: input_version_number              !  version number of this input
       integer  ( 4), allocatable :: imult(:)            !  help array for number of substances
       character(20), allocatable :: sname(:)            !  help array for substance names
       integer(4) :: ithndl = 0
@@ -131,8 +138,9 @@
 
 !     Read version number and initialize position on start of new line
 
-      call rdvers ( ilun(1), lch(1) , lunut  , npos   , vrsion  ,
+      call read_version_number ( ilun(1), lch(1) , lunut  , npos   , input_version_number  ,
      &                                                  ioutpt  )
+      call compare_version_number_to_lower_limit(input_version_number, lunut)
       iposr = 0
 
 !     Read model documentation strings
@@ -172,7 +180,7 @@
          read ( runid2(31:38) , '(i8)' ) isfact
          idate  = iyear*10000+imonth*100+iday
          itime  = ihour*10000+iminut*100+isecnd
-         otime  = JULIAN ( idate , itime )
+         otime  = julian_with_leapyears ( idate , itime )
          if ( isfact .gt. 0 ) then
             write ( lunut  , 2050 )  isfact
          else
@@ -360,3 +368,5 @@
  2170 format ( /' ERROR encountered invalid repeat count - should start with an asterisk (*): ',A )
 
       end
+
+      end module m_dlwq01

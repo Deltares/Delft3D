@@ -28,139 +28,145 @@
 !-------------------------------------------------------------------------------
 
 ! 
-! 
-
+!         
  subroutine poshcheck(key)
- use m_flow                                          ! when entering this subroutine, s1=s0, u1=u0, etc
- use m_flowgeom
- use m_flowtimes
- use m_partitioninfo
- use m_timer
- use unstruc_display, only: jaGUI
-
- implicit none
-
- integer :: key
-
- integer :: n, L, LL, LLL, jaHuChanged
-
- integer, dimension(2) :: idum
- double precision      :: dtrsh=0d-0
-
- Nodneg = 0 ; key = 0
-
- if ( jaGUI.eq.1 ) then
-      call setcol(221) ! white
- end if
-
- if ( testdryflood == 1 ) then
-    !
-    ! In this test implementation the algoritm of Delft3D-FLOW is applied to prevent very thin layers 
-    ! 
-    dtrsh = max(1d-9, min(epshu, 1d-3))
- endif
- 
- if (jposhchk == 0) return
-
- jaHuChanged = 0
- do n = 1,ndxi                                                  ! check result
-
+    use m_flow
+    use m_flowgeom
+    use m_flowtimes
+    use m_partitioninfo
+    use m_timer
+    use unstruc_display,  only : jaGUI
     
-    if (abs(kfs(n)) /= 0) then ! Also check ghost nodes for posh/setbacks
-       if ( s1(n) < bl(n) + dtrsh ) then
-           if ( s1(n) < bl(n) + dtrsh - 1d-10 ) then                     ! if ( s1(n) < bl(n) ) then
+    implicit none
 
-              nodneg = n ; numnodneg = numnodneg + 1
-              if ( jaGUI.eq.1 ) then
-                 call rcirc( xz(n), yz(n) )
+    integer,        intent(out) :: key
+   
+    integer                     :: reduced_data(2)
+    logical                     :: is_hu_changed
+
+    if ( jaGUI == 1 ) then
+       call setcol(221) ! white
+    end if
+   
+    call set_water_level_and_hu_for_dry_cells(s1, hu)
+       
+    if ( jampi == 1 ) then
+       reduced_data = (/ key, nodneg /)
+
+       if ( jatimer == 1 ) call starttimer(IMPIREDUCE)
+       call reduce_int_max(2,reduced_data)
+       if ( jatimer == 1 ) call stoptimer(IMPIREDUCE)
+
+       key    = reduced_data(1)
+       nodneg = reduced_data(2)
+    end if
+
+    if (nodneg /= 0 .and. jposhchk /= -1) then
+       if (jposhchk == 1 .or. jposhchk == 3 .or. jposhchk == 5 .or. jposhchk == 7) then
+          dts = 0.7d0*dts
+       end if
+       dsetb  = dsetb + 1                               ! total nr of setbacks
+       s1     = s0
+       vol1   = vol0
+       if (dts < dtmin) then
+          s1 = max(s1,bl)                              ! above bottom
+          call okay(0)
+          key = 1                                      ! for easier mouse interrupt
+       end if
+    end if
+ 
+    if ( is_hu_changed ) then
+       call fill_onlyWetLinks()
+    end if
+
+contains
+ 
+ !> set_water_level_and_hu_for_dry_cells
+ subroutine set_water_level_and_hu_for_dry_cells(water_level, upwind_waterheight)
+
+    double precision, intent(inout) :: water_level(:)                !< water_level
+    double precision, intent(inout) :: upwind_waterheight(:)         !< upwind_waterheight
+    
+    integer                         :: node, link, link_index
+    double precision                :: threshold
+    double precision, parameter     :: WATER_LEVEL_TOLERANCE = 1d-10
+    double precision, parameter     :: DELFT3D_MIN = 1d-9
+    double precision, parameter     :: DELFT3D_MAX = 1d-3
+    double precision, parameter     :: REDUCTION_FACTOR = 0.2d0
+    integer,          parameter     :: FLAG_REDO_TIMESTEP = 2
+    double precision, parameter     :: SET_VALUE = 0d0
+    integer,          parameter     :: DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS  = 1
+
+    Nodneg        = 0
+    key           = 0
+    is_hu_changed = .false.
+    
+    if (jposhchk == 0) return
+
+    if ( testdryflood == DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS ) then
+       threshold = max(DELFT3D_MIN, min(epshu, DELFT3D_MAX))
+    else
+       threshold = 0d-0
+    end if
+ 
+    do node = 1, ndxi
+       if (abs(kfs(node)) /= 0) then ! Also check ghost nodes for posh/setbacks
+          if ( water_level(node) < bl(node) + threshold ) then
+              if ( water_level(node) < bl(node) + threshold - WATER_LEVEL_TOLERANCE ) then
+                 nodneg    = node
+                 numnodneg = numnodneg + 1
+                 if ( jaGUI == 1 ) then
+                    call rcirc( xz(node), yz(node) )
+                 end if
+                 select case(jposhchk)
+                    case(-1)                  ! only detect dry cells and return (for Nested Newton restart)
+                       key = FLAG_REDO_TIMESTEP
+                    case(1)                   ! only timestep reduction
+                       key = FLAG_REDO_TIMESTEP
+                       exit
+                    case(2, 3)                ! set dry all attached links
+                       key = FLAG_REDO_TIMESTEP
+                       do link_index = 1, nd(node)%lnx
+                         link        = iabs(nd(node)%ln(link_index))
+                         upwind_waterheight(link) = SET_VALUE
+                         is_hu_changed            = .true.
+                       end do
+                    case(4, 5)                ! reduce links au
+                       do link_index = 1, nd(node)%lnx
+                          link       = iabs(nd(node)%ln(link_index))
+                          if (upwind_waterheight(link) > 0) then
+                             if (REDUCTION_FACTOR*au(link) < eps6) then
+                                upwind_waterheight(link) = SET_VALUE
+                                key                      = FLAG_REDO_TIMESTEP
+                                is_hu_changed            = .true.
+                             end if
+                             au(link) = REDUCTION_FACTOR*au(link)
+                          end if
+                       end do
+                    case(6, 7)                 ! only set dry outflowing links
+                       do link_index = 1, nd(node)%lnx
+                          link       = iabs(nd(node)%ln(link_index))
+                          if (nd(node)%ln(link_index) < 0 .and. u1(link) > 0 .or. &
+                              nd(node)%ln(link_index) > 0 .and. u1(link) < 0 ) then
+                             upwind_waterheight(link) = SET_VALUE
+                             key                      = FLAG_REDO_TIMESTEP
+                             is_hu_changed            = .true.
+                          end if
+                       end do
+                 end select
               end if
 
-              if (jposhchk == -1) then                           ! only detect dry cells and return (for Nested Newton restart)
-                 key = 2
-              else if (jposhchk == 1) then                       ! only timestep reduction
-                 key = 2                                         ! flag redo timestep
-                 exit
+              if (jamapFlowAnalysis > 0) then
+                 negativeDepths(node) = negativeDepths(node) + 1
+              end if
 
-              else if (jposhchk == 2 .or. jposhchk == 3) then    ! set dry all attached links
+              water_level(node) = bl(node)
 
-                 key = 2                                         ! flag redo setkfs
-
-                 do LL  = 1, nd(n)%lnx
-                    L   = iabs(nd(n)%ln(LL))
-                    hu(L) = 0d0
-                    jaHuChanged = 1
-                 enddo
-
-              else if (jposhchk == 4 .or. jposhchk == 5) then    ! reduce links au
-
-                 do LL  = 1, nd(n)%lnx
-                    LLL = nd(n)%ln(LL); L = iabs(LLL)
-                    if (hu(L) > 0) then
-                       au(L) = 0.2d0*au(L)
-                       if (au(L) < eps6) then
-                          hu(L) = 0d0 ;  key = 2                 ! flag redo setkfs
-                          jaHuChanged = 1
-                       endif
-                    endif
-                 enddo
-
-              else if (jposhchk == 6 .or. jposhchk == 7) then    ! only set dry outflowing links
-
-                 do LL  = 1, nd(n)%lnx
-                    LLL = nd(n)%ln(LL); L = iabs(LLL)
-                    if (LLL < 0 .and. u1(L) > 0 .or. &
-                        LLL > 0 .and. u1(L) < 0 ) then
-                        hu(L) = 0d0   ; key = 2                  !  flag redo setkfs
-                        jaHuChanged = 1
-                    endif
-                 enddo
-
-
-              endif
-
-
-           endif
-
-           if (jamapFlowAnalysis > 0) then
-              negativeDepths(n) = negativeDepths(n) + 1
            end if
+       end if
 
-           s1(n) = bl(n)
-        endif
-    endif
+    end do
 
- enddo
-
- if ( jampi.eq.1 ) then
-!   reduce nodneg and key
-    idum = (/ key, nodneg /)
-
-    if ( jatimer.eq.1 ) call starttimer(IMPIREDUCE)
-!    call reduce_key(key)
-    call reduce_int_max(2,idum)
-    if ( jatimer.eq.1 ) call stoptimer(IMPIREDUCE)
-
-    key = idum(1)
-    nodneg = idum(2)
- end if
-
- if (nodneg /= 0 .and. jposhchk /= -1) then
-    if (jposhchk == 1 .or. jposhchk == 3   .or. jposhchk == 5 .or. jposhchk == 7) then
-        dts = 0.7d0*dts
-    endif
-    dsetb  = dsetb + 1                               ! total nr of setbacks
-    s1     = s0
-    vol1 = vol0
-    if (dts .lt. dtmin) then
-        s1 = max(s1,bl)                              ! above bottom
-        call okay(0)
-        key = 1                                      ! for easier mouse interrupt
-    endif
- endif
-
- ! If hu is changed, then re-fill array onlyWetLinks
- if (jaHuChanged > 0) then
-    call fill_onlyWetLinks()
- end if
-
+ end subroutine set_water_level_and_hu_for_dry_cells
+ 
  end subroutine poshcheck

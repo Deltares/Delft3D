@@ -128,7 +128,11 @@ sz = getsize(FI,idom,Props);
 allidx=zeros(size(sz));
 for i=1:length(sz)
     if DimFlag(i)
-        if isempty(idx{i}) || isequal(idx{i},0) || isequal(idx{i},1:sz(i))
+        if i == T_ && isempty(idx{i})
+            idx{T_}=sz(T_);
+        elseif i == ST_ && isempty(idx{i})
+            % skip --> nothing
+        elseif  isempty(idx{i}) || isequal(idx{i},0) || isequal(idx{i},1:sz(i))
             idx{i}=1:sz(i);
             allidx(i)=1;
         end

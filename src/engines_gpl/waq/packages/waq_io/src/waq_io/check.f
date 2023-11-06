@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_check
+
+      implicit none
+
+      contains
+
 
       subroutine check  ( cdummy , iwidth , iblock , ierr2  , ierr   )
 
@@ -136,3 +142,5 @@
  2060 format (/1X,109('*'),' B L O C K -',I2,' ',5('*')/)
 
       end
+
+      end module m_check

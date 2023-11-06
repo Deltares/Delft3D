@@ -26,8 +26,7 @@
       use m_zoek
       use m_srstop
       use m_open_waq_files
-      use m_dhnolay
-      use delwaq_loads
+      use delwaq_loads, wsl => wasteloads   ! This will be available via the argument list
       use waq_plugin_wasteload_version_module
 
       contains
@@ -42,19 +41,20 @@
 
       ! arguments declarations
 
-      integer                             :: nowst                  ! number of wasteloads
-      type(wasteload), pointer            :: wasteloads(:)          ! array of all wasteloads (structure)
-      integer                             :: notot                  ! total number of substances
-      integer                             :: nosys                  ! number of active substances
-      integer                             :: noseg                  ! number of segments
-      integer                             :: itime                  ! system time
-      real                                :: conc(notot,noseg)      ! concentration array
-      character(len=*)                    :: syname(notot)          ! substance names
+      integer, intent(in)                 :: nowst                  ! number of wasteloads
+      type(wasteload), intent(inout)      :: wasteloads(:)          ! array of all wasteloads (structure)
+      integer, intent(in)                 :: notot                  ! total number of substances
+      integer, intent(in)                 :: nosys                  ! number of active substances
+      integer, intent(in)                 :: noseg                  ! number of segments
+      integer, intent(in)                 :: itime                  ! system time
+      real, intent(in)                    :: conc(:,:)              ! concentration array
+      character(len=*), intent(in)        :: syname(:)              ! substance names
+
       character(len=120)                  :: idstr                  ! waq_plugin_wasteload version number
 
       ! local declarations
 
-      integer, save       :: ifirst = 1
+      logical, save       :: first = .true.
       integer, save       :: lunrep
       integer             :: ierr
       integer             :: iwst
@@ -62,8 +62,8 @@
 
       ! the inlet outlet coupling
 
-      if (ifirst == 1) then
-         ifirst = 0
+      if (first) then
+         first = .false.
 
          call open_waq_files (lunrep, 'delwaq_user_wasteloads.mon', 19, 1, ierr)
          if (ierr .ne. 0) then
@@ -75,6 +75,17 @@
          call getfullversionstring_waq_plugin_wasteload(idstr)
          write ( lunrep , * ) idstr
       endif
+
+      ! control by D-RTC
+      ! Note:
+      ! We need to call this routine first to ensure that the control by D-RTC
+      ! (turning a waste load on or off works properly even in the case of
+      ! inlet/outlet pairs.)
+
+      call delwaq_user_drtc_control ( nowst , wasteloads, notot , nosys , noseg ,
+     &                                itime , conc      , syname, lunrep)
+
+      ! inlet/outlet pairs - match waste loads by name
 
       call delwaq_user_inlet_outlet ( nowst , wasteloads, notot , nosys , noseg ,
      +                                itime , conc      , syname, lunrep)
@@ -104,14 +115,14 @@
 
 !       arguments declarations
 
-      integer                  :: nowst             ! number of wasteloads
-      type(wasteload), pointer :: wls(:)            ! array of all wasteloads (structure)
-      integer                  :: notot             ! total number of substances
-      integer                  :: nosys             ! number of active substances
-      integer                  :: noseg             ! number of segments
-      integer                  :: itime             ! system time
-      real                     :: conc(notot,noseg) ! concentration array
-      character(len=IDLEN)     :: syname(notot)     ! substance names
+      integer, intent(in)                  :: nowst             ! number of wasteloads
+      type(wasteload), intent(inout)       :: wls(:)            ! array of all wasteloads (structure)
+      integer, intent(in)                  :: notot             ! total number of substances
+      integer, intent(in)                  :: nosys             ! number of active substances
+      integer, intent(in)                  :: noseg             ! number of segments
+      integer, intent(in)                  :: itime             ! system time
+      real, intent(in)                     :: conc(:,:)         ! concentration array
+      character(len=*), intent(in)         :: syname(:)         ! substance names
 
 !       local declarations
 
@@ -237,18 +248,18 @@
 
       ! arguments declarations
 
-      integer                             :: nowst                  ! number of wasteloads
-      type(wasteload), pointer            :: wasteloads(:)          ! array of all wasteloads (structure)
-      integer                             :: notot                  ! total number of substances
-      integer                             :: nosys                  ! number of active substances
-      integer                             :: noseg                  ! number of segments
-      integer                             :: itime                  ! system time
-      real                                :: conc(notot,noseg)      ! concentration array
-      character(len=*)                    :: syname(notot)          ! substance names
+      integer, intent(in)                  :: nowst                  ! number of wasteloads
+      type(wasteload), intent(inout)       :: wasteloads(:)          ! array of all wasteloads (structure)
+      integer, intent(in)                  :: notot                  ! total number of substances
+      integer, intent(in)                  :: nosys                  ! number of active substances
+      integer, intent(in)                  :: noseg                  ! number of segments
+      integer, intent(in)                  :: itime                  ! system time
+      real, intent(in)                     :: conc(:,:)              ! concentration array
+      character(len=*), intent(in)         :: syname(:)              ! substance names
 
       ! local declarations
 
-      integer, save       :: ifirst = 1                       ! initialisation indicator
+      logical, save       :: first = .true.                   ! initialisation indicator
       integer             :: lunrep                           ! report file
       integer             :: luninout                         ! inlet/outlet file
       logical             :: l_exi                            ! file exists or not
@@ -278,8 +289,8 @@
 
       ! test if there are inlet outlet combinations
 
-      if ( ifirst .eq. 1 ) then
-         ifirst = 0
+      if ( first ) then
+         first = .false.
          write(lunrep,*)
          write(lunrep,2000)
 
@@ -395,7 +406,7 @@
          ! function to find a wasteload on id in an array of wasteloads
 
          character(len=*)                    :: waste_id               ! wasteload id to be found
-         type(wasteload), pointer            :: wasteloads(:)          ! array of all wasteloads (structure)
+         type(wasteload)                     :: wasteloads(:)          ! array of all wasteloads (structure)
          integer                             :: iwst                   ! on return if found wasteload number, otherwise zero
 
          ! local declarations
@@ -463,6 +474,15 @@
 
       end function find_string
 
+      integer function get_number_of_layers()
+         ! gets the number of layers (from m_sysn)
+
+         use m_sysn
+
+         get_number_of_layers = nolay
+
+      end function get_number_of_layers
+
       subroutine delwaq_user_walking_discharges ( nowst , wasteloads, notot , nosys , noseg ,
      +                                            itime , conc      , syname, lunrep)
 
@@ -474,26 +494,26 @@
 
       ! arguments declarations
 
-      integer                             :: nowst                  ! number of wasteloads
-      type(wasteload), pointer            :: wasteloads(:)          ! array of all wasteloads (structure)
-      integer                             :: notot                  ! total number of substances
-      integer                             :: nosys                  ! number of active substances
-      integer                             :: noseg                  ! number of segments
-      integer                             :: itime                  ! system time
-      real                                :: conc(notot,noseg)      ! concentration array
-      character(len=*)                    :: syname(notot)          ! substance names
+      integer, intent(in)                  :: nowst                  ! number of wasteloads
+      type(wasteload), intent(inout)       :: wasteloads(:)          ! array of all wasteloads (structure)
+      integer, intent(in)                  :: notot                  ! total number of substances
+      integer, intent(in)                  :: nosys                  ! number of active substances
+      integer, intent(in)                  :: noseg                  ! number of segments
+      integer, intent(in)                  :: itime                  ! system time
+      real, intent(in)                     :: conc(:,:)              ! concentration array
+      character(len=*), intent(in)         :: syname(:)              ! substance names
 
       ! local variables
 
       logical, save                       :: first = .true.
-      integer, save                       :: nowalk                 ! number of walking discharges
-      integer, save                       :: next_time_in_file      ! next time to read the locations
-      integer, save                       :: time_offset            ! time offset because of rewinding
-      integer, save                       :: timestep               ! timestep, anticipate next time
-      integer, save                       :: period                 ! period covered in the file
-      integer, save                       :: nosegl                 ! number of segments per layer
-      integer, save                       :: nolay                  ! number of layers
-      integer, dimension(:,:), allocatable, save :: lgrid           ! matrix with segment numbers
+      integer, save                       :: nowalk                 !< number of walking discharges
+      integer, save                       :: next_time_in_file      !< next time to read the locations
+      integer, save                       :: time_offset            !< time offset because of rewinding
+      integer, save                       :: timestep               !< timestep, anticipate next time
+      integer, save                       :: period                 !< period covered in the file
+      integer, save                       :: nosegl                 !< number of segments per layer
+      integer, save                       :: nolay                  !< number of layers
+      integer, dimension(:,:), allocatable, save :: lgrid           !< matrix with segment numbers
 
       integer                             :: newsegment
       integer                             :: i
@@ -533,7 +553,7 @@
                    return
                endif
 
-               call dhnolay( nolay )
+               nolay = get_number_of_layers()
 
                allocate( lgrid(mmax,nmax) )
                read( lunlga ) lgrid
@@ -687,5 +707,48 @@
       end subroutine reposition_file
 
       end subroutine delwaq_user_walking_discharges
+
+      subroutine delwaq_user_drtc_control ( nowst  , wls    , notot  , nosys  , noseg  ,
+     &                                      itime  , conc   , syname , lunrep)
+
+!       routine to allow D-RTC to control the waste load
+!       Note:
+!       As we do not know if D-RTC is part o fhte calculation or has set anything,
+!       we cannot rely on the values to be anything useful. This means:
+!       * The default value of the scale factor is part of the derived type definition.
+!       * If D-RTC sets nothing, the factor is 1, so there is no net effect.
+!
+
+!       global declarations
+
+      implicit none
+
+!       arguments declarations
+
+      integer, intent(in)                  :: nowst             ! number of wasteloads
+      type(wasteload), intent(inout)       :: wls(:)            ! array of all wasteloads (structure)
+      integer, intent(in)                  :: notot             ! total number of substances
+      integer, intent(in)                  :: nosys             ! number of active substances
+      integer, intent(in)                  :: noseg             ! number of segments
+      integer, intent(in)                  :: itime             ! system time
+      real, intent(in)                     :: conc(:,:)         ! concentration array
+      character(len=*), intent(in)         :: syname(:)         ! substance names
+      integer, intent(in)                  :: lunrep            ! logical unit of report file
+
+!       local declarations
+
+      integer                  :: i
+
+      do i = 1,nowst
+          if ( wls(i)%set_factor /= 0.0 ) then
+              wls(i)%flow = wls(i)%flow * wls(i)%set_factor
+          else
+              wls(i)%flow     = 1.0e-20   ! Avoid zero, because then the waste load magic kicks in
+              wls(i)%loads(:) = 0.0       ! Set the concentrations in the waste load to zero, so
+                                          ! definitely nothing is released or taken up.
+          endif
+      enddo
+
+      end subroutine delwaq_user_drtc_control
 
       end module delwaq_user_wasteloads

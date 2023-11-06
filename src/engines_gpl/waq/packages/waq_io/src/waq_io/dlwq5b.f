@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq5b
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ5B ( LUNUT  , IPOSR  , NPOS   , CCHAR  , CAR    ,
      *                    IAR    , ICMAX  , IIMAX  , ANAME  , ATYPE  ,
-     *                    NTITM  , NTTYPE , NOITM  , NOITS  , CHKFLG ,
-     *                    CALLR  , ILUN   , LCH    , LSTACK , VRSION ,
+     *                    NTITM  , NTTYPE , NOITM  , NOITS  ,
+     *                    CALLR  , ILUN   , LCH    , LSTACK ,
      *                    ITYPE  , RAR    , NCONST , ITMNR  , CHULP  ,
      *                                      IOUTPT , IERR   , iwar   )
 !
@@ -58,12 +64,10 @@
 !     NTTYPE  INTEGER    1         INPUT   number of bound/waste types
 !     NOITM   INTEGER    1         OUTPUT  number of items read
 !     NOITS   INTEGER    1         OUTPUT  number of items for SCALE
-!     CHKFLG  INTEGER    1         INPUT   check on input or add items
 !     CALLR   CHAR*(6)   1         INPUT   calling subject
 !     ILUN    INTEGER   LSTACK     IN/OUT  unitnumb include stack
 !     LCH     CHAR*(*)  LSTACK     IN/OUT  file name stack, 4 deep
 !     LSTACK  INTEGER    1         INPUT   include file stack size
-!     VRSION  REAL       1         INPUT   Input file version number
 !     ITYPE   INTEGER    1         OUTPUT  Type of the token at exit
 !     RAR     REAL       *         OUTPUT  Array with real values
 !     NCONST  REAL       *         OUTPUT  Number of those values
@@ -78,13 +82,19 @@
       use m_movchr
       use timers       !   performance timers
 
-      INTEGER       ICMAX   , IIMAX    , CHKFLG
+      INTEGER       ICMAX   , IIMAX
       CHARACTER*(*) CAR(*)  , ANAME(*) , ATYPE(*) , LCH(LSTACK) ,
      *              CHULP
       CHARACTER*1   CCHAR*1 , CALLR*10
-      DIMENSION     IAR(*)  , ILUN(LSTACK), RAR(*)
       LOGICAL       USEFOR, SETNAM, COMPUT, SIGNON
       integer(4) :: ithndl = 0
+      integer    :: I, ihulp, ierr, iabs, iar(:), ifound, i2
+      integer    :: namset, ioutpt, icm, ntitm, nttype, iwar, lstack
+      real       :: vrsion
+      integer    :: itmnr, ioff, ioffc, nconst, itype, lunut, ilun(LSTACK)
+      integer    :: iposr, npos, noitm, noits, ioffi
+      real       :: rar(:), rhulp
+
       if (timon) call timstrt( "dlwq5b", ithndl )
 
 !
@@ -298,14 +308,6 @@
             GOTO 10
          ENDIF
 !
-!              fill in a string value if an empty string is provided
-!
-         IF ( CHKFLG      .EQ. -1 .AND.
-     *        CHULP(1:20) .EQ. '                    ' ) THEN
-            CHULP = 'Item-'
-            WRITE ( CHULP(6:12) , '(I7)' ) NOITM+1
-         ENDIF
-!
 !              FLOW is only valid as CONCENTR. and item number is 0
 !
          CALL ZOEK(CHULP,1,(/'FLOW                '/),20,IFOUND)
@@ -376,54 +378,21 @@
 !                     this is the place for an error massage
 !              JVB stick to just a warning keep on reading IAR = 0?, or used for flow??
 !
-         IF ( CHKFLG .EQ. 1 ) THEN
-            NOITM = NOITM + 1
-            NOITS = NOITS + 1
-            ITMNR = ITMNR + 1
-            ICM = ITMNR + NOITM + IOFF
-            CALL MOVINT ( IAR   , ITMNR       , ITMNR+NOITM*2 )
-            CALL MOVINT ( IAR   , ITMNR+NOITM , ITMNR+NOITM*2 )
-            CALL MOVCHR ( CAR   , ITMNR+IOFF  , ICM   )
-            IAR ( ITMNR ) = -1300000000
-            IAR ( ITMNR + NOITM ) = 1300000000
-            IAR ( ITMNR + NOITM + NOITM ) = NOITS
-            CAR ( ITMNR + IOFF  ) = CHULP
-            CAR ( ITMNR + NOITM + IOFF ) = CHULP
-            IF ( USEFOR ) SETNAM = .TRUE.
-            WRITE ( LUNUT , 1040 ) CALLR, ITMNR, CHULP
-            iwar = iwar + 1
-            GOTO 10
-CJVB        WRITE ( LUNUT , 1050 ) CHULP
-CJVB        GOTO 40
-         ELSE
-!
-!              Now a new name is added to the list of names
-!                     the rest is moved upward since it is all 1 array
-!
-            NTITM = NTITM + 1
-            IOFF  = IOFF  + 1
-            ICM   = ICMAX + NTITM
-            CALL MOVCHR ( ANAME , NTITM  , ICM  )
-            ANAME(NTITM) = CHULP
-!              Plus normal procedure
-            NOITM = NOITM + 1
-            NOITS = NOITS + 1
-            ITMNR = ITMNR + 1
-            ICM = ITMNR + NOITM + IOFF
-            CALL MOVINT ( IAR   , ITMNR       , ITMNR+NOITM*2 )
-            CALL MOVINT ( IAR   , ITMNR+NOITM , ITMNR+NOITM*2 )
-            CALL MOVCHR ( CAR   , ITMNR+IOFF  , ICM   )
-            IAR ( ITMNR ) = NTITM
-            IAR ( ITMNR + NOITM ) = ITMNR
-            IAR ( ITMNR + NOITM + NOITM ) = NOITS
-            CAR ( ITMNR + IOFF  ) = CHULP
-            CAR ( ITMNR + NOITM + IOFF ) = CHULP
-            IF ( USEFOR ) SETNAM = .TRUE.
-            IF ( IOUTPT .GE. 3 .AND. .NOT. USEFOR )
-     *                   WRITE ( LUNUT , 1020 ) CALLR, ITMNR, CALLR,
-     *                                          NTITM, ANAME(NTITM)
-            GOTO 10
-         ENDIF
+         NOITM = NOITM + 1
+         NOITS = NOITS + 1
+         ITMNR = ITMNR + 1
+         ICM = ITMNR + NOITM + IOFF
+         CALL MOVINT ( IAR   , ITMNR       , ITMNR+NOITM*2 )
+         CALL MOVINT ( IAR   , ITMNR+NOITM , ITMNR+NOITM*2 )
+         CALL MOVCHR ( CAR   , ITMNR+IOFF  , ICM   )
+         IAR ( ITMNR ) = -1300000000
+         IAR ( ITMNR + NOITM ) = 1300000000
+         IAR ( ITMNR + NOITM + NOITM ) = NOITS
+         CAR ( ITMNR + IOFF  ) = CHULP
+         CAR ( ITMNR + NOITM + IOFF ) = CHULP
+         IF ( USEFOR ) SETNAM = .TRUE.
+         WRITE ( LUNUT , 1050 ) CHULP
+         GOTO 40
       ENDIF
 !
 !              No item name was given, but an item number
@@ -495,8 +464,6 @@ CJVB        GOTO 40
  1030 FORMAT (  ' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with type: ',
      *          A20 )
  1035 FORMAT (  ' ERROR: no reserved keyword expected: ', A20 )
- 1040 FORMAT (  ' WARNING: Input ',A,' nr:',I5,' with name: ',A20,
-     *          ' is not a valid ID, data ignored' )
  1050 FORMAT ( /' ERROR: string is no valid item ID: ',A )
  1060 FORMAT (  ' ERROR: number: ',I5,' is not a valid item number !' )
  1070 FORMAT (  ' ERROR: multiplication is only allowed in USEFOR',
@@ -523,3 +490,5 @@ CJVB        GOTO 40
  1220 FORMAT (  ' Maximum value is: ',E15.6 )
 !
       END
+
+      end module m_dlwq5b

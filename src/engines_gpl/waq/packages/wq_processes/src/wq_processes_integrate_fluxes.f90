@@ -20,6 +20,12 @@
 !!  all indications and logos of, and references to registered trademarks
 !!  of stichting deltares remain the property of stichting deltares. all
 !!  rights reserved.
+module m_wq_processes_integrate_fluxes
+
+implicit none
+
+contains
+
 
       subroutine wq_processes_integrate_fluxes ( conc   , amass  , deriv  , volume , dts    , &
                                                  nosys  , notot  , noseg  , surfac )
@@ -42,7 +48,7 @@
       real      (4), intent(inout) :: conc  (notot ,noseg)    !< concentrations per substance per volume
       real      (8), intent(inout) :: amass (notot ,noseg)    !< masses per substance per volume
       real      (8), intent(inout) :: deriv (noseg, notot)    !< derivatives per substance per volume
-      real      (8), intent(inout) :: volume(noseg )          !< volumes of the segments
+      real      (8), intent(in   ) :: volume(noseg )          !< volumes of the segments
       real      (8), intent(in   ) :: dts                     !< integration time step size
       real      (4), intent(in   ) :: surfac(noseg)           !< horizontal surface
 
@@ -84,3 +90,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+end module m_wq_processes_integrate_fluxes

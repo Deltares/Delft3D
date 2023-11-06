@@ -104,7 +104,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    integer :: ifacefile, ifacein, ifaceout, ifacec
    integer :: inodefile, netedgecount2
    integer :: id_nodex, id_nodey, id_edgex, id_edgey
-   integer :: intmiss = -2147483647 ! integer fillvalue
+   integer :: intmiss = -999 ! integer fillvalue
    double precision :: dmiss = -999d0, intfillv
    integer :: ja1DCNVar = 0
 !netface_g2c(:)

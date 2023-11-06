@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
     rem
     rem Set the config file
     rem
-set argfile= 
+set argfile=
 if [%1] EQU [] (
     goto usage
 ) else (
@@ -76,13 +76,13 @@ goto loop
 
 set waqdir=%D3D_HOME%\%ARCH%\dwaq\bin
 if [%userprocfile%] EQU [none] (
-    set procfile=%D3D_HOME%\%ARCH%\dwaq\default\proc_def
+    set procfile=%D3D_HOME%\%ARCH%\dwaq\resources\proc_def
     ) else (
        set procfile=%userprocfile%
     )
 if [%eco%] EQU [true] (
     if [%userspefile%] EQU [none] (
-       set spefile=%D3D_HOME%\%ARCH%\dwaq\default\bloom.spe
+       set spefile=%D3D_HOME%\%ARCH%\dwaq\resources\bloom.spe
        ) else (
           set spefile=%userspefile%
        )
@@ -101,7 +101,7 @@ if [%only2%] EQU [true] goto delwaq2
     rem
     rem Run delwaq 1
     rem
-echo executing: "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches% 
+echo executing: "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches%
 "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches%
 
 if %ERRORLEVEL% neq 0 (
@@ -109,22 +109,22 @@ if %ERRORLEVEL% neq 0 (
     echo Delwaq1 did not run correctly, ending calculation
     goto end
 )
-echo. 
+echo.
 echo Delwaq1 did run without errors.
 echo.
 
 :delwaq2
     rem Run delwaq 2
     rem
-echo executing: "%waqdir%\delwaq2.exe" "%argfile%" %switches% 
-"%waqdir%\delwaq2.exe" "%argfile%" %switches% 
+echo executing: "%waqdir%\delwaq2.exe" "%argfile%" %switches%
+"%waqdir%\delwaq2.exe" "%argfile%" %switches%
 
 if %ERRORLEVEL% neq 0 (
     echo.
     echo Delwaq2 did not run correctly
     goto end
 )
-echo. 
+echo.
 echo Delwaq2 did run without errors.
 
 

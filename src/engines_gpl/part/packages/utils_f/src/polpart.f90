@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_polpart
+
+implicit none
+
+contains
+
 
       subroutine polpart( pol_file, nrowsmax, xpol, ypol, nrows, lunpr   )
 
@@ -31,8 +37,10 @@
 !
 !     method     : read a single polygon from a tekal formated file (only the first is used!)
 !
+      use m_skip_comments
       use precision_part ! single/double precision
       use timers
+      use m_stop_exit
 
       implicit none ! force explicit typing
 
@@ -133,3 +141,5 @@
       call stop_exit(1)
 
       end subroutine polpart
+
+end module m_polpart

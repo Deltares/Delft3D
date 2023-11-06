@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_proc_time
+
+      implicit none
+
+      contains
+
 
       subroutine read_proc_time( notot  , syname , isyst  , ierr   )
 
@@ -126,3 +132,5 @@
  2050 format ( ' Timestep multiplier for these substances is: ',I10)
 
       end
+
+      end module m_read_proc_time

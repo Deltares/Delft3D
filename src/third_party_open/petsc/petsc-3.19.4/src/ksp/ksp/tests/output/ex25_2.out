@@ -1,0 +1,14 @@
+
+ Load dataset ...
+
+ CG: 
+Number of iterations =   2
+Residual norm: 482.026;  Error norm: 11.7481.
+
+ MINRES: 
+Number of iterations =  12
+Residual norm: 1.43381;  Error norm: 2.01976.
+
+ SYMMLQ: 
+Number of iterations =  40
+Residual norm: 0.0357377;  Error norm: 1.53365.

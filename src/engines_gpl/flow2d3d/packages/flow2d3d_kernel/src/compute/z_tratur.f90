@@ -351,7 +351,9 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    if (ltur == 2) then
+       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    endif
     !
     ! advective transport
     !
@@ -385,7 +387,9 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    if (ltur == 2) then
+       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    endif
     !
     do n = nmax, 1, -1
        do m = mmax, 1, -1
@@ -414,7 +418,9 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    if (ltur == 2) then
+       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    endif
     !
     do n = 1, nmax, 1
        do m = mmax, 1, -1
@@ -443,7 +449,9 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    if (ltur == 2) then
+       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    endif
     !
     do n = nmax, 1, -1
        do m = 1, mmax, 1
@@ -472,7 +480,9 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    if (ltur == 2) then
+       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
+    endif
     !
     ! production term (only vertical gradients)
     !

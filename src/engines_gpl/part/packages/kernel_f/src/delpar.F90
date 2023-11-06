@@ -20,6 +20,24 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delpar
+use m_wrttrk
+use m_plotgr
+use m_partzp
+use m_partvs
+use m_part17
+use m_part15
+use m_part08
+use m_part06
+use m_part01
+use m_inipart_asc
+use m_inipart
+
+
+implicit none
+
+contains
+
 
 !
 !
@@ -299,12 +317,21 @@
       !
       !  module declarations
       !
+      use m_stop_exit
+      use m_part11
+      use m_report_date_time
+      use m_rdpart
+      use m_rdlgri
+      use m_rdfnam
+      use m_rdccol
+      use m_getdps
       use m_monsys
       use precision_part                  ! single/double precision
       use timers
       use fileinfo  , lun=> lunit    ! logical unit numbers for files
       use spec_feat_par
       use normal_mod
+      use m_partfm
       !
       !  module procedure(s)
       !
@@ -981,3 +1008,5 @@
 
       end subroutine delpar
 
+
+end module m_delpar

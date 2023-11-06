@@ -20,9 +20,10 @@ if (WIN32)
                                 kdtree_wrapper
                                 kdtree2
                                 io_netcdf
+                                io_netcdf_data
                                 netcdf4
                                 netcdff
-                                ) 
+                                )
 
     oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
@@ -41,12 +42,13 @@ if(UNIX)
                                 kdtree_wrapper
                                 kdtree2
                                 io_netcdf
+                                io_netcdf_data
                                 )
-                                
+
     oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
-    
+
     #target_link_options(${library_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 
@@ -61,9 +63,9 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${library_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${library_name})
 
 install(TARGETS ${library_name} DESTINATION lib)

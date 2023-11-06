@@ -1763,7 +1763,7 @@
    return
 
 1  format (a',',a',',a',',a',')
-2  format (a,es16.8e3,',',es16.8e3,',',es16.8e3)
+2  format (a,es16.8e3,',',es16.8e3)
 3  format (a,a',',a',',es16.8e3,',',es16.8e3,',',es16.8e3)
 
    end subroutine mba_write_csv_time_step

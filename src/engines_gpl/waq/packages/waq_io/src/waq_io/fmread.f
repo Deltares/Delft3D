@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_fmread
+      use m_scale
+
+
+      implicit none
+
+      contains
+
 
       subroutine fmread ( nitem  , item   , nvals  , nfact  , factor ,
      &                    nobrk  , ibrk   , arrin  , dtflg  , dtflg3 ,
@@ -164,3 +172,5 @@
  2080 format (     I10,2X,1P,10E12.4 )
 
       end
+
+      end module m_fmread

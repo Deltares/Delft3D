@@ -31,6 +31,11 @@
 
 !> Utilities for the routines here (effectively a private module)
 module waq_omi_utils
+    use m_dmpare
+    use m_dlwq0i
+    use m_dlwq0f
+    use m_dlwq09
+    use m_delwaq2_main
     use m_dlwqp1
     use m_open_waq_files
 
@@ -467,11 +472,11 @@ logical function SetCurrentValueScalarRun(name, value)
 
     call find_index( name, procparam_const, idx )
     if ( idx > 0 ) then
-        dlwqd%rbuf(icons+idx-1) = value
+        dlwqd%buffer%rbuf(icons+idx-1) = value
     else
         call find_index( name, procparam_param, idx )
         if ( idx > 0 ) then
-            dlwqd%rbuf(iparm+idx-1:iparm+idx-1+nopa*noseg-1:nopa) = value
+            dlwqd%buffer%rbuf(iparm+idx-1:iparm+idx-1+nopa*noseg-1:nopa) = value
         else
             call SetMessage(LEVEL_ERROR, &
                 'Name not found (not a process parameter): ' // name)
@@ -515,7 +520,7 @@ logical function SetCurrentValueFieldRun(name, value)
 
     call find_index( name, procparam_param, idx )
     if ( idx > 0 ) then
-        dlwqd%rbuf(iparm+idx-1:iparm+idx-1+nopa*noseg-1:nopa) = value(1:noseg)
+        dlwqd%buffer%rbuf(iparm+idx-1:iparm+idx-1+nopa*noseg-1:nopa) = value(1:noseg)
     else
         call SetMessage(LEVEL_ERROR, &
             'Name not found (not a process parameter): ' // name)
@@ -559,13 +564,13 @@ logical function GetCurrentValue(name, value)
     call find_index( name, substance_name, idx )
     if ( idx > 0 ) then
         do i = 1,noseg
-            value(i) = dlwqd%rbuf(iconc+idx-1+(i-1)*notot)
+            value(i) = dlwqd%buffer%rbuf(iconc+idx-1+(i-1)*notot)
         enddo
     else
         call find_index( name, procparam_const, idx )
         if ( idx > 0 ) then
             do i = 1,noseg
-                value(i) = dlwqd%rbuf(iconc+idx-1+(i-1)*notot)
+                value(i) = dlwqd%buffer%rbuf(iconc+idx-1+(i-1)*notot)
             enddo
         else
             call SetMessage(LEVEL_ERROR, &
@@ -673,6 +678,7 @@ logical function DefineWQSchematisation(number_segments, pointer_table, number_e
 
     use delwaq2_global_data
     use m_sysn
+    use m_dlwq0f
 
     implicit none
 
@@ -1255,9 +1261,9 @@ logical function SetFlowData( volume, area, flow )
 
     SetFlowData = .false.
 
-    dlwqd%rbuf(ivol2:ivol2+noseg-1) = volume
-    dlwqd%rbuf(iarea:iarea+noq-1) = area
-    dlwqd%rbuf(iflow:iflow+noq-1) = flow
+    dlwqd%buffer%rbuf(ivol2:ivol2+noseg-1) = volume
+    dlwqd%buffer%rbuf(iarea:iarea+noq-1) = area
+    dlwqd%buffer%rbuf(iflow:iflow+noq-1) = flow
 
     SetFlowData = .true.
 
@@ -1285,7 +1291,7 @@ logical function SetFlowDataVolume( volume )
 
     SetFlowDataVolume = .false.
 
-    dlwqd%rbuf(ivol2:ivol2+noseg-1) = volume
+    dlwqd%buffer%rbuf(ivol2:ivol2+noseg-1) = volume
 
     SetFlowDataVolume = .true.
 
@@ -1308,7 +1314,7 @@ logical function SetFlowDataVelocity( velocity )
 
     SetFlowDataVelocity = .false.
 
-    dlwqd%rbuf(ivelo:ivelo+noq-1) = velocity
+    dlwqd%buffer%rbuf(ivelo:ivelo+noq-1) = velocity
 
     SetFlowDataVelocity = .true.
 
@@ -1365,21 +1371,21 @@ integer function CorrectVolumeSurface( volume, surf, mass_per_m2 )
         ioff  = imass + (iseg-1)*notot - 1
         ip    = iparm + (iseg-1)*nopa  + isurf - 1
 
-        if ( abs(dlwqd%rbuf(ivol+iseg-1)) > 1.0e-20 ) then
-            ratio = volume(iseg) / dlwqd%rbuf(ivol+iseg-1)
+        if ( abs(dlwqd%buffer%rbuf(ivol+iseg-1)) > 1.0e-20 ) then
+            ratio = volume(iseg) / dlwqd%buffer%rbuf(ivol+iseg-1)
             do isys = 1,nosubs
-                dlwqd%rbuf(ioff+isys) = dlwqd%rbuf(ioff+isys) * ratio
+                dlwqd%buffer%rbuf(ioff+isys) = dlwqd%buffer%rbuf(ioff+isys) * ratio
             enddo
-            dlwqd%rbuf(ivol+iseg-1) = volume(iseg)
+            dlwqd%buffer%rbuf(ivol+iseg-1) = volume(iseg)
         else
             error_count = error_count + 1
         endif
 
         if ( isurf > 0 ) then
-            if ( abs(dlwqd%rbuf(ip)) > 1.0e-20 ) then
-                ratio = surf(iseg) / dlwqd%rbuf(ip)
+            if ( abs(dlwqd%buffer%rbuf(ip)) > 1.0e-20 ) then
+                ratio = surf(iseg) / dlwqd%buffer%rbuf(ip)
                 do isys = nosubs+1,notot
-                    dlwqd%rbuf(ioff+isys) = dlwqd%rbuf(ioff+isys) * ratio
+                    dlwqd%buffer%rbuf(ioff+isys) = dlwqd%buffer%rbuf(ioff+isys) * ratio
                 enddo
             else
                 error_count = error_count + 1
@@ -1430,7 +1436,7 @@ logical function SetWasteLoadValues( idx, value )
         return
     endif
 
-    dlwqd%rbuf(iwste+(idx-1)*(notot+1):iwste+idx*(notot+1)-1) = value
+    dlwqd%buffer%rbuf(iwste+(idx-1)*(notot+1):iwste+idx*(notot+1)-1) = value
 
     if ( reporting ) then
         write( lunlst, '(a,i5,a,i10)' ) 'Waste loads for discharge ', idx, ' - at time: ', dlwqd%itime
@@ -1487,7 +1493,7 @@ logical function SetBoundaryConditions( idx, value )
         return
     endif
 
-    dlwqd%rbuf(ibset+(idx-1)*nosys:ibset+idx*nosys-1) = value
+    dlwqd%buffer%rbuf(ibset+(idx-1)*nosys:ibset+idx*nosys-1) = value
 
     if ( reporting ) then
         write( lunlst, '(a,i5,a,i10)' ) 'Conditions for boundary cell ', idx, ' - at time: ', dlwqd%itime
@@ -1510,6 +1516,7 @@ integer function ModelPerformTimeStep ()
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MODELPERFORMTIMESTEP' :: ModelPerformTimeStep
 
     use delwaq2_global_data
+    use m_delwaq2_main
     use m_actions
 
     implicit none
@@ -1574,10 +1581,10 @@ integer function WriteRestartFile ( lcharmap )
 
     call open_waq_files ( lun(23), lcharmap, 23    , 1     , ierr  )
     if ( ierr == 0 ) then
-      write ( lun(23) ) (dlwqd%chbuf(imnam+k-1) , k=1,160 )
+      write ( lun(23) ) (dlwqd%buffer%chbuf(imnam+k-1) , k=1,160 )
       write ( lun(23) ) notot, noseg
       write ( lun(23) ) ( substance_name(k) , k=1,notot )
-      write ( lun(23) ) dlwqd%itime , ((dlwqd%rbuf(iconc+(k-1)+(i-1)*notot), k=1,notot ), i=1, noseg )
+      write ( lun(23) ) dlwqd%itime , ((dlwqd%buffer%rbuf(iconc+(k-1)+(i-1)*notot), k=1,notot ), i=1, noseg )
       close ( lun(23) )
       WriteRestartFile = 0
     else
@@ -1597,7 +1604,7 @@ integer function ModelInitialize ()
     use delwaq2_global_data
     use waq_omi_utils
     use dhcommand
-    use m_openda_exchange_items, only : openda_buffer_initialize
+    use m_waq_openda_exchange_items, only : openda_buffer_initialize
     use m_actions
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
@@ -1724,9 +1731,7 @@ subroutine write_delwaq03( name )
 
 
     integer                                 :: imaxa, imaxi, imaxc
-    real,             dimension(:), pointer :: rbuf  => null()
-    integer,          dimension(:), pointer :: ibuf  => null()
-    character(len=1), dimension(:), pointer :: chbuf => null()
+    type(waq_data_buffer)                   :: buffer
     integer                                 :: lunwrk
 
 
@@ -1736,7 +1741,7 @@ subroutine write_delwaq03( name )
     imaxi = 0
     imaxc = 0
 
-    call space( lunrep, .false., rbuf, ibuf, chbuf, imaxa, imaxi, imaxc )
+    call space( lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, imaxa, imaxi, imaxc )
 
     open( newunit = lunwrk, file = trim(name) // '-delwaq03.wrk', form = 'unformatted',access='stream' )
     write( lunwrk ) in
@@ -1748,17 +1753,13 @@ subroutine write_delwaq03( name )
     write( lunwrk ) filtype(1:nolun)
     close( lunwrk )
 
-    if ( associated(rbuf)  ) deallocate( rbuf )
-    if ( associated(ibuf)  ) deallocate( ibuf )
-    if ( associated(chbuf) ) deallocate( chbuf )
-
 end subroutine write_delwaq03
 
 ! write_delwaq04 --
 !     Write the second DELWAQ system intermediate file
 !
 subroutine write_delwaq04( name )
-    use Grids
+    use dlwqgrid_mod
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics
 
@@ -2028,7 +2029,7 @@ subroutine handle_processes( name )
     lch (1) = trim(name) // '.inp'
 
     call dlwq09( lun, lchar, filtype, car, iar, icmax, &
-             iimax, iwidth, ibflag, version,           &
+             iimax, iwidth, ibflag,                    &
              ioutpt, ioutps, outputs, ierr, iwar )
 
     close(  9 ) ! TODO: status = 'delete'
@@ -2208,7 +2209,7 @@ integer function ModelFinalize( )
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MODELFINALIZE' :: ModelFinalize
 
     use delwaq2_global_data
-!    use m_delwaq_2_openda
+    use m_delwaq2_main
     use m_actions
 
     implicit none
@@ -2238,7 +2239,7 @@ integer function ModelInitialize_By_Id( runid_given )
     use delwaq2_global_data
     use waq_omi_utils
     use dhcommand
-    use m_openda_exchange_items, only : openda_buffer_initialize
+    use m_waq_openda_exchange_items, only : openda_buffer_initialize
     use m_actions
     use m_sysn          ! System characteristics
     use m_sysi          ! Timer characteristics

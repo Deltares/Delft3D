@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdccol
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
       subroutine rdccol ( nmax   , mmax   , lun    , fnam   ,   &
                           lgrid  , xbott  , ybott  , lun2   )
@@ -119,3 +127,5 @@
       return
 
       end subroutine
+
+end module m_rdccol

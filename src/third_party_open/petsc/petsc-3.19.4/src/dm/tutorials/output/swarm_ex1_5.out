@@ -1,0 +1,72 @@
+DM Object: Particles 4 MPI processes
+  type: swarm
+Particles in 0 dimensions:
+  Number of particles per rank: 5 6 7 8
+rank[0] before(5,26) after(3,26)
+rank[1] before(6,26) after(9,26)
+rank[2] before(7,26) after(7,26)
+rank[3] before(8,26) after(7,26)
+Vec Object: DMSwarmSharedField_viscosity 4 MPI processes
+  type: mpi
+Process [0]
+11.5
+11.2
+11.3
+Process [1]
+111.1
+111.2
+111.3
+111.4
+111.5
+111.6
+11.1
+11.4
+311.3
+Process [2]
+211.1
+211.2
+211.3
+211.4
+211.5
+211.6
+211.7
+Process [3]
+311.1
+311.2
+311.8
+311.4
+311.5
+311.6
+311.7
+Vec Object: DMSwarmSharedField_strain 4 MPI processes
+  type: mpi
+Process [0]
+0.024
+0.021
+0.022
+Process [1]
+1.02
+1.021
+1.022
+1.023
+1.024
+1.025
+0.02
+0.023
+3.022
+Process [2]
+2.02
+2.021
+2.022
+2.023
+2.024
+2.025
+2.026
+Process [3]
+3.02
+3.021
+3.027
+3.023
+3.024
+3.025
+3.026

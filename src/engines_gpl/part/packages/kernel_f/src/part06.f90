@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part06
+
+implicit none
+
+contains
+
 
       subroutine part06 ( lun    , lgrid  , lgrid2 , nmax   , mmax   ,      &
                           xb     , yb     , nodye  , nocont , xwaste ,      &
@@ -122,3 +128,5 @@
  1020 format( '  Total number of waste load warnings = ', i3 )
 
       end subroutine
+
+end module m_part06

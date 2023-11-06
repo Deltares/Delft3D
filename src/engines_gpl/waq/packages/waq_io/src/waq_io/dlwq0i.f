@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq0i
+
+      implicit none
+
+      contains
+
 
       subroutine dlwq0i ( keynam , intopt , lunut  , ierr2 )
 
@@ -137,3 +143,5 @@
  1000 format ( ' Keyword (',i2,') detected: ',a )
 
       end
+
+      end module m_dlwq0i

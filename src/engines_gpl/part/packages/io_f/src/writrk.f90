@@ -29,7 +29,7 @@ module writrk_mod
 !  data definition module(s)
 !
 use precision_part       ! single and double precision
-      use timers
+use timers
 !
 !  module procedure(s)
 !
@@ -220,7 +220,6 @@ contains
       data       ithndl / 0 /
       if ( timon ) call timstrt( "writrk", ithndl )
 
-!      external int
 !-----------------------------------------------------------------------
 !-----initialisation
 !-----------------------------------------------------------------------

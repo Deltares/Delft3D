@@ -4905,20 +4905,6 @@ end subroutine partition_make_globalnumbers
       return
    end subroutine generate_partition_pol_from_idomain
    
-!> reduce error level, note that it is assumed that DFM_NOERR=0 and that all error levels >=0 
-   subroutine reduce_error(ierror) 
-      implicit none 
-      integer, intent(inout) :: ierror
-      
-      integer, dimension(1)  :: idum
-      
-      idum(1) = ierror
-      call reduce_int_max(1, idum)
-      ierror = idum(1)
-
-      return 
-   end subroutine reduce_error 
-   
 !> Gathers integer data from all processes and delivers it to a speicified root process.
 !! Note: the same number of data from each subdomain are sent.
 subroutine gather_int_data_mpi_same(ndata_send, data_send, ndata_gat, data_gat, ndata_recv, root, ierror)

@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdwnd
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
       subroutine rdwnd ( lunut  , sfile  , nmax   , mmax  , noseg  ,      &
      &                   xb     , yb     , lgrida , ierr  )
@@ -43,7 +51,7 @@
       use precision_part       ! data definitions
       use timers          ! to time this routine
       use alloc_mod       ! to allocate arrays
-      use timespace       ! meteo module ?
+      use m_waq_timespace       ! meteo module ?
 
       implicit none
 
@@ -187,3 +195,5 @@
  1060 format( ' ERROR: setting up interpolation for y-wind meteo !' )
 
       end
+
+end module m_rdwnd

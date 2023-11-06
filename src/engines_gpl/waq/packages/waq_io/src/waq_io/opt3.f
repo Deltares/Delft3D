@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_opt3
+      use m_rwfunc
+
+
+      implicit none
+
+      contains
+
 
       subroutine opt3 ( lun    , lchar  , is     , nitem  , nvals  ,
      &                  nscal  , ifact  , dtflg  , dtflg3 , nrfunc ,
@@ -83,6 +91,9 @@
 !                          lun( 4) = unit binary intermediate file for pointers
 !                          lun(is) = unit binary intermediate file for function
 
+      use m_rdpoin
+      use m_matrix
+      use m_fmread
       use m_open_waq_files
       use timers       !   performance timers
       use rd_token
@@ -354,3 +365,5 @@
      &          /,' Filename is: ',A )
 
       end
+
+      end module m_opt3

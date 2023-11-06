@@ -312,7 +312,7 @@ double precision            :: tmp_x(2), tmp_y(2)
       
       !! add shapes
       i = 0
-      do L = L1cgensg(n), L2cgensg(n)
+      do L = L1cgensg(igen), L2cgensg(igen)
          write(lenobj_loc, '(I4.4)') i
          objectid = trim(cgen_ids(igen))//'_'//lenobj_loc
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
@@ -1028,6 +1028,7 @@ end subroutine unc_write_shp_fxw
 subroutine unc_write_shp_src()
 use m_flowexternalforcings, only: ksrc, numsrc, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
 use m_flowgeom, only: xz, yz
+use m_transportdata, only : NUMCONST
 implicit none
 
 integer, parameter          :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)
@@ -1036,7 +1037,7 @@ type(shpobject)             :: shpobj
 integer                     :: i, j, k1, k2, ishape, maxnr
 character(len=lencharattr)  :: filename, objectid
 integer                     :: id_objectid, id_area, id_origxsnk, id_origysnk, id_origxsrc, id_origysrc
-double precision            :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy, tmp_qsrc
+double precision            :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy
    if (jampi .eq. 0) then
       call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for source-sinks.')
    else
@@ -1141,8 +1142,7 @@ double precision            :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy, tmp_q
          endif
          
          ! determine source and sink points
-         tmp_qsrc = qstss(3*(i-1)+1)
-         if (tmp_qsrc > 0) then
+         if (qstss((NUMCONST+1)*(i-1)+1) > 0) then
             snkx = xsrc(i,1)
             snky = ysrc(i,1)
             srcx = xsrc(i,maxnr)
@@ -1588,6 +1588,106 @@ double precision            :: tmp_x(2), tmp_y(2)
    call shpclose(shphandle)
 
 end subroutine unc_write_shp_genstruc
+
+
+!> Write a shape file for dam breaks
+subroutine unc_write_shp_dambreak()
+use m_flowexternalforcings, only: ndambreaksg, dambreak_ids, L1dambreaksg, L2dambreaksg, kdambreak
+use network_data, only: kn, xk, yk
+use m_flowgeom, only: ln2lne
+implicit none
+
+integer, parameter          :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)
+type(shpfileobject)         :: shphandle
+type(shpobject)             :: shpobj
+integer                     :: i, ii, ishape, j, k, k1, k2, L, La, Lf, n, nshp
+character(len=lencharattr)  :: filename, objectid
+character(len=6)            :: lenobj_loc
+integer                     :: id_objectid, id_flowlinknr
+double precision            :: tmp_x(2), tmp_y(2)
+
+   if (jampi .eq. 0) then
+      call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dam breaks.')
+   else
+      call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dam breaks for subdomain:', my_rank)
+   endif
+   
+   ! create a new shapefile object with data of type tshp and associate it to a file, filename does not include extension
+   filename = defaultFilename('shpdambreak')
+   shphandle = shpcreate(trim(filename), tshp)
+   ! error check
+   if (shpfileisnull(shphandle) .OR. dbffileisnull(shphandle)) then
+     call mess(LEVEL_ERROR, 'SHAPEFILE: Could not open shape file '''//trim(filename)//''' for writing.')
+     return
+   endif
+   
+   ! add 2 dbf fields: ObjectID, FLOWLINKNR
+   id_objectid = dbfaddfield(shphandle, 'ObjectID', ftstring, lencharattr, 0)
+   if (id_objectid /= 0) then
+     call mess(LEVEL_ERROR, 'SHAPEFILE: Could not add field "ObjectID" to shape file '''//trim(filename)//'''.')
+     return
+   endif
+   
+   id_flowlinknr = dbfaddfield(shphandle, 'FLOWLINKNR', ftinteger, 10, 0)
+   if (id_flowlinknr /= 1) then
+     call mess(LEVEL_ERROR, 'SHAPEFILE: Could not add field "FLOWLINKNR" to shape file '''//trim(filename)//'''.')
+     return
+   endif
+   
+   do n = 1, ndambreaksg
+      
+      !! add shapes
+      i = 0
+      do L = L1dambreaksg(n), L2dambreaksg(n)
+         ! create a shape object with the "simple" method, for each shape 2 components are added x, y
+         Lf = kdambreak(3,L)
+         if (Lf == 0) cycle
+         
+         write(lenobj_loc, '(I4.4)') i
+         objectid = trim(dambreak_ids(n))//'_'//lenobj_loc
+         !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
+         
+         La = abs( Lf )
+         k = ln2lne(La)  ! netnode
+         k1 = kn(1,k)
+         k2 = kn(2,k)
+         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
+      
+         ! write the shape object to the shapefile object as i-th element, -1 = append
+         ishape = shpwriteobject(shphandle, -1, shpobj)
+         if (ishape == -1) then
+           call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write '''//trim(objectid)//'''shape object to shapefile object.')
+           return
+         endif
+         
+         ! destroy the shape object to avoid memory leaks
+         call shpdestroyobject(shpobj)
+         
+         ! write the attributes of different types for the i-th shape object to the shapefile object
+         ! write ObjectID
+         j = dbfwriteattribute(shphandle, ishape, id_objectid, trim(objectid))
+         if (j /= 1) then
+           call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write attribute "ObjectID" to shape'''//trim(objectid)//'''.')
+           return
+         endif
+         
+         ! write flowlink nr.
+         j = dbfwriteattribute(shphandle, ishape, id_flowlinknr, Lf)
+         if (j /= 1) then
+           call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write attribute "FLOWLINKNR" to shape'''//trim(objectid)//'''.')
+           return
+         endif
+         
+         i = i + 1
+      enddo
+   enddo
+   
+   ! close the shapefile object
+   call shpclose(shphandle)
+
+end subroutine unc_write_shp_dambreak
 #endif
 
 end module unstruc_shapefile

@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module oildspfm_mod
+use m_stop_exit
+
 
    contains
         subroutine oildspfm (itime)
@@ -135,14 +137,14 @@ module oildspfm_mod
 
       use precision_part         ! single/double precision
       use partmem
-      use m_transport
+      use m_part_transport
       use m_particles, laypart => kpart
-      use m_flow
-      use m_flowtimes
+      use m_part_flow
+      use m_part_times
       use timers            ! to time the performance
       use fileinfo, lun=> lunit
       use grid_search_mod   ! explicit interface
-      use m_partmesh
+      use m_part_mesh
       use alloc_mod         ! to allocate arrays
       use pinpok_mod        ! determine if particle is in polygon
       use typos

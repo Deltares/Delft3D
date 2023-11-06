@@ -71,10 +71,12 @@ if nargout==1
     if length(valo)==1
         valo = valo{1};
     end
+elseif isequal(param,'<DEFAULT>')
+    Settings = inifile('new');
 elseif isequal(param,'<SAVE>')
-    Settings=qp_write_settings(Settings,qppref);
+    Settings = qp_write_settings(Settings,qppref);
 else
-    Settings=inifile('set',Settings,grp,param,val);
+    Settings = inifile('set',Settings,grp,param,val);
 end
 
 

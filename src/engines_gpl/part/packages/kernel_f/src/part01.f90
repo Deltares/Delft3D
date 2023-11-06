@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part01
+
+implicit none
+
+contains
+
 
       subroutine part01 ( lgrid  , lgrid2 , xp     , yp     , dx     ,  &
                           dy     , area   , angle  , nmax   , mmax   )
@@ -113,16 +119,8 @@
             dxb = 0.5*(xp(n0) - xp(n1) + xp(n2) - xp(n3))
             dyb = 0.5*(yp(n0) - yp(n1) + yp(n2) - yp(n3))
             dy1 = sqrt(dxb**2 + dyb**2)
-!
-!            if (dxa  /=  0.0) then
-!              a1 = atan(dya / dxa)
-!              if (dxa  < 0.0) then
-!                a1 = a1 + sign(pi, dya)
-!              endif
-!            else
-!              a1 = 0.5*sign(pi, dya)
-!            endif
-!
+
+            !
 !           supposed unit for angle (see part10) is degrees.
 !
             if (dxa  /=  0.0) then
@@ -147,3 +145,5 @@
       return
 !
       end subroutine
+
+end module m_part01

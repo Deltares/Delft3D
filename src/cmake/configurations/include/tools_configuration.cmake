@@ -25,6 +25,10 @@ if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
 endif()
 
+if(NOT TARGET gridgeom_dll)
+    add_subdirectory(${checkout_src_root}/${gridgeom_dll_module} gridgeom_dll)
+endif()
+
 # Third party libraries
 # kdtree2
 if(NOT TARGET kdtree2)
@@ -91,6 +95,10 @@ endif(WIN32)
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
+endif()
+
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
 endif()
 
 # Nefis

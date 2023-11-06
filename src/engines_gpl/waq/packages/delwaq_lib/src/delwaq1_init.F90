@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_init
+use m_uniset
+
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -90,3 +98,4 @@ subroutine delwaq1_init(argc, argv)
 
 
 end subroutine delwaq1_init
+end module m_delwaq1_init

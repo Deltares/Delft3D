@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_write_messages
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -46,7 +52,7 @@ subroutine delwaq1_write_messages(errorcode)
         itota = 0
         itoti = 0
         itotc = 0
-        call space  ( lunrep, .false., abuf   , ibuf   , chbuf  , &
+        call space  ( lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                       itota , itoti  , itotc  )
 
         call open_waq_files  ( lun(1) , lchar(1) , 1     , 1     , ioerr )
@@ -67,3 +73,4 @@ subroutine delwaq1_write_messages(errorcode)
     close ( lunrep )
 
 end subroutine delwaq1_write_messages
+end module m_delwaq1_write_messages

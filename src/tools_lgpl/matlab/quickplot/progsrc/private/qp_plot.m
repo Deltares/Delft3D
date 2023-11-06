@@ -346,12 +346,37 @@ if isfield(Ops,'plotcoordinate')
     % TODO: take into account the EdgeGeometry length ...
     switch Ops.plotcoordinate
         case {'path distance','reverse path distance'}
-            if isfield(data,'EdgeNodeConnect')
-                iNode = data.EdgeNodeConnect([1 size(data.EdgeNodeConnect,1)+(1:size(data.EdgeNodeConnect,1))]);
-                data.X = data.X(iNode);
-                data.Y = data.Y(iNode);
+            if isfield(data,'FaceNodeConnect') || isfield(data,'EdgeNodeConnect')
+                switch data.ValLocation
+                    case 'FACE'
+                        % here we should actually identify the point at
+                        % which we go from one face to the next. Such that
+                        % we get N data and N+1 coordinates.
+                        data.X = mean(data.X(data.FaceNodeConnect),2);
+                        data.Y = mean(data.Y(data.FaceNodeConnect),2);
+                    case 'EDGE'
+                        iNode = stitch_edges(data.EdgeNodeConnect);
+                        nodeMask = iNode==0;
+                        iNode(nodeMask) = 1;
+                        data.X = data.X(iNode);
+                        data.Y = data.Y(iNode);
+                        if any(nodeMask)
+                            data.X(nodeMask) = NaN;
+                            data.Y(nodeMask) = NaN;
+                            edgeMask = nodeMask(1:end-1) | nodeMask(2:end);
+                            data.Val(~edgeMask) = data.Val;
+                            data.Val(edgeMask) = NaN;
+                        end
+                    case 'NODE'
+                        % data.X/Y already contains the node coordinates
+                end
                 x = data.X;
                 y = data.Y;
+                for fld = {'FaceNodeConnect','EdgeNodeConnect','ValLocation'}
+                    if isfield(data,fld{1})
+                        data = rmfield(data,fld{1});
+                    end
+                end
             elseif isfield(data,'Y')
                 if size(data.X,2)==2 && size(data.X,1)>2
                     % The following lines are not valid for geographic coordinates!
@@ -414,6 +439,7 @@ if isfield(Ops,'plotcoordinate')
             data = rmfield(data,'YUnits');
         end
     end
+    data.Geom = 'sSEG';
 end
 
 if strcmp(Ops.presentationtype,'vector') || ...
@@ -1440,3 +1466,52 @@ for i = 1:numel(X)
     x(i) = xg(j) + fac * (xg(j+1) - xg(j));
     y(i) = yg(j) + fac * (yg(j+1) - yg(j));
 end
+
+
+function iNode = stitch_edges(EdgeNodeConnect)
+nEdges = size(EdgeNodeConnect,1);
+if nEdges == 1
+    iNode = EdgeNodeConnect;
+    return
+end
+iNode = zeros(1,3*nEdges);
+% identify match forward
+match = ismember(EdgeNodeConnect(1,:),EdgeNodeConnect(2,:));
+if sum(match) == 1 && find(match) == 1
+    iNode(2:-1:1) = EdgeNodeConnect(1,:);
+else
+    iNode(1:2) = EdgeNodeConnect(1,:);
+end
+iN = 2;
+iE = 2;
+while iE <= nEdges
+    % identify match backwards
+    match = EdgeNodeConnect(iE,:) == iNode(iN);
+    switch sum(match)
+        case 0
+            % no match ... skip one index
+            iN = iN+1;
+            % identify match forward
+            if iE < nEdges
+                match = ismember(EdgeNodeConnect(iE,:),EdgeNodeConnect(iE+1,:));
+            else
+                match = 0;
+            end
+            if sum(match) == 1 && find(match) == 1
+                iNode(iN+(2:-1:1)) = EdgeNodeConnect(iE,:);
+            else
+                iNode(iN+(1:2)) = EdgeNodeConnect(iE,:);
+            end
+            iN=iN+2;
+        case 1
+            % great ... one match as expected ... extend to not match index.
+            iN = iN+1;
+            iNode(iN) = EdgeNodeConnect(iE,~match);
+        case 2
+            % both match ... edge starts and ends at same node
+            iN = iN+1;
+            iNode(iN) = iNode(iN-1);
+    end
+    iE = iE+1;
+end
+iNode = iNode(1:iN);

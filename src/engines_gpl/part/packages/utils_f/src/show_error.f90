@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_show_error
+
+implicit none
+
+contains
+
 
       subroutine error ( mess )
 
@@ -28,6 +34,7 @@
 !>\file
 !>                          prints an error message and stops the run with condition 1
 
+      use m_stop_exit
       use fileinfo       ! file information for all input/output files
 
       implicit none
@@ -49,3 +56,5 @@
       return
 
       end
+
+end module m_show_error

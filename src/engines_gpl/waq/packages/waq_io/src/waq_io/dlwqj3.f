@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwqj3
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQJ3 ( LUNWR  , LUNUT  , IWIDTH , NOBRK  , IAR    ,
      *                    RAR    , RMAT   , NOITM  , NODIM  , IORDER ,
@@ -77,16 +83,24 @@ cjvb  ook voor constanten hebben we in delwaq2 initieel werkruimte nodig als dez
 !     IOUTPT  INTEGER     1       INPUT   output file option
 !
 !
+      use m_dlwqj2
+      use m_conver
       use timers       !   performance timers
 
-      DIMENSION     IAR(*) , RAR(*) , RMAT(*)
-      LOGICAL       SCALE  , ODS    , BINFIL , DEFLTS
-      LOGICAL       DTFLG1 , DTFLG3
-      CHARACTER*(*) STRNG1 , STRNG2 , STRNG3 , CAR(*)
+      LOGICAL               ::  SCALE  , ODS    , BINFIL , DEFLTS
+      LOGICAL               ::  DTFLG1 , DTFLG3
+      CHARACTER*(*)         :: STRNG1 , STRNG2 , STRNG3 , CAR(*)
+      integer               :: NODIM
+      integer               :: k, ie, IE2, NOITM, i1, i2
+      integer               :: nodi2, iorder, lunut, lunwr, iar(:), iopt, ipro
+      integer               :: ifilsz, jfilsz, nobrk, ioffb, ioffi, ioffs
+      integer               :: iskip, iskp2, notot, iss, ioutpt, iwidth
+      integer               :: itel2, itfact, i1dum, i2dum
+      integer               :: itels, itel, i3
+      real                  :: rar(:), rmat(:)
 !
 !     Local declarations
-!
-      CHARACTER*20  CAR_OF_DUM
+
       integer(4) :: ithndl = 0
       if (timon) call timstrt( "dlwqj3", ithndl )
 !
@@ -110,9 +124,7 @@ cjvb  ook voor constanten hebben we in delwaq2 initieel werkruimte nodig als dez
      *                   NOITM, ( IAR(K) , K=NODIM+1,NODIM+NOITM ) ,
      *                   IOPT , IPRO
       ENDIF
-cjvb  IF ( IOPT .NE. 0 .AND. .NOT. BINFIL )
-cjvb1 IF ( IOPT .NE. 0 )
-cjvb1*                   IFILSZ = IFILSZ + NOITM + MAX(0,NODIM) + 5
+
                          IFILSZ = IFILSZ + NOITM + MAX(0,NODIM) + 5
 cjvb1
 !
@@ -175,7 +187,7 @@ cjvb1
       IF ( NOBRK .GT. 1 ) THEN
          IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1040 ) STRNG3, NOBRK
          IF ( .NOT. ODS )
-     *          CALL CONVER ( IAR(IOFFB), NOBRK, ITFACT, DTFLG1, DTFLG3)
+     *          CALL CONVER ( IAR(IOFFB:), NOBRK, ITFACT, DTFLG1, DTFLG3)
          IF ( DEFLTS .AND. IOUTPT .GE. 4 ) WRITE ( LUNUT , 1050 )
       ELSE
          IF ( DEFLTS ) THEN
@@ -190,7 +202,7 @@ cjvb1
       IF ( LUNWR .GT. 0 ) THEN
          I1DUM = 0
          I2DUM = 0
-         CALL DLWQJ2 ( LUNWR , NOBRK , NOTOT  , 1      , IAR(IOFFB) ,
+         CALL DLWQJ2 ( LUNWR , NOBRK , NOTOT  , 1      , IAR(IOFFB:) ,
      *                                 RMAT   , I1DUM  , I2DUM      )
 cjvb1    IF ( IOPT .NE. 0 ) THEN
             IFILSZ = IFILSZ + I1DUM
@@ -271,3 +283,5 @@ cjvb1    ENDIF
       ENDIF
       RETURN
       END
+
+      end module m_dlwqj3

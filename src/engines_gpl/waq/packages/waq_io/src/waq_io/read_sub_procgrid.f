@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_sub_procgrid
+
+      implicit none
+
+      contains
+
 
       subroutine read_sub_procgrid( notot  , syname , GridPs , isysg  , ierr   )
 
@@ -39,7 +45,7 @@
 !     global declarations
 
       use m_zoek
-      use grids
+      use dlwqgrid_mod
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
 
@@ -128,3 +134,5 @@
  2050 format ( ' Processgrid for these substances is: ',A)
 
       end
+
+      end module m_read_sub_procgrid

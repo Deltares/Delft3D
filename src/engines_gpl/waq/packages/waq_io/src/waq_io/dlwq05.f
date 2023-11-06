@@ -20,12 +20,21 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwq05
+      use m_opt0
+      use m_dlwq5a
+
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQ05 ( LUN    , LCHAR  , filtype, CAR    , IAR    ,
      &                    RAR    , NRFTOT , NRHARM , NOBND  , NOSYS  ,
      &                    NOTOT  , NOBTYP , IRMAX  , IIMAX  , DTFLG1 ,
      &                    IWIDTH , INTSRT , IERR   , DTFLG3 , SNAME  ,
-     &                    ICMAX  , VRSION , IOUTPT , iwar   )
+     &                    ICMAX  , IOUTPT , iwar   )
 
 !       Deltares Software Centre
 
@@ -37,14 +46,6 @@
 !>                             - the Tatcher-Harleman time lags
 !>                             - the Open boundary concentrations
 
-!      Created            : April '88  BY M.E. Sileon / L. Postma
-
-!      Modified           : ??????                Boundary names
-!                           April '96  L. Postma: Version support
-!                           April '96  L. Postma: Version 4.90:
-!                                                 run time boundaries
-!                         : April '97 by R. Bruinsma
-!                           Tokenized input data file reading added
 
 !      Subroutines called : CONVER
 !                           OPT0
@@ -59,6 +60,8 @@
 !                           LUN( 4) = unit intermediate file (pointers)
 !                           LUN(14) = unit intermediate file (boundaries)
 
+      use m_conver
+      use m_check
       use m_zoek
       use m_srstop
       use m_getcom
@@ -69,7 +72,7 @@
 !     kind           function         name                Descriptipon
 
       integer  ( 4), intent(in   ) :: irmax             !< size of the real workspace
-      integer  ( 4), intent(in   ) :: lun   (*)         !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
       character( *), intent(inout) :: lchar (*)         !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
       character( *), intent(inout) :: car   (*)         !< character workspace
@@ -91,13 +94,12 @@
       character(20), intent(in   ) :: sname(*)          !< array with substance names
       integer  ( 4), intent(in   ) :: icmax             !< size of the character workspace
       integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
-      real     ( 4), intent(in   ) :: vrsion            !< version number of this input
 
       integer       idef
 !
       CHARACTER*1   CDUMMY
       CHARACTER*255 CHULP
-      LOGICAL       DISPER   , VOLUME
+      LOGICAL       DISPER
       CHARACTER(LEN=20) , ALLOCATABLE :: BNDID(:)               ! boundary id's 20 character
       CHARACTER(LEN=40) , ALLOCATABLE :: BNDNAME(:)             ! boundary names
       CHARACTER(LEN=20) , ALLOCATABLE :: BNDTYPE(:)             ! boundary types
@@ -108,13 +110,18 @@
       logical                         :: no_id_check            ! command line argument to skip double ID check
       real                            :: rdummy                 ! dummy real in argument list
       integer                         :: idummy                 ! dummy integer in argument list
+      integer                         :: VOLUME
       integer(4) :: ithndl = 0
+      integer               :: k, I, IERR_ALLOC
+      integer               :: ifact, lunwr, ierr2, iwar2, ifound, ityp2
+      integer               :: iaropt, nover, mxover, ibnd, it, nosubs
+      integer               :: ierrh, ihulp, rhulp, ifound2, l, itype
       if (timon) call timstrt( "dlwq05", ithndl )
 !
 !     Init
 !
       DISPER  = .FALSE.
-      VOLUME  = .FALSE.
+      VOLUME  = 0
       IFACT   =  1
       LUNUT   = LUN(29)
       LUNWR   = LUN( 2)
@@ -163,32 +170,29 @@
          BNDID_LONG(I)   = ' '
          BNDNAME(I)      = ' '
          BNDTYPE_LONG(I) = ' '
-         IF ( VRSION .GT. 3.99 ) THEN
 
-            ! read ID, do not truncate yet
+         ! read ID, do not truncate yet
 
-            ITYPE = 1
-            CALL RDTOK1 ( LUNUT , ILUN  , LCH          , LSTACK, CCHAR ,
-     *                    IPOSR , NPOS  , BNDID_LONG(I), IHULP , RHULP ,
-     *                    ITYPE , IERR2 )
-            IF ( IERR2 .GT. 0 ) GOTO 170
-         ENDIF
-         IF ( VRSION .GE. 4.90 ) THEN
+         ITYPE = 1
+         CALL RDTOK1 ( LUNUT , ILUN  , LCH          , LSTACK, CCHAR ,
+     *                 IPOSR , NPOS  , BNDID_LONG(I), IHULP , RHULP ,
+     *                 ITYPE , IERR2 )
+         IF ( IERR2 .GT. 0 ) GOTO 170
 
-            ! read also name and type
 
-            ITYPE = 1
-            CALL RDTOK1 ( LUNUT , ILUN , LCH       , LSTACK, CCHAR ,
-     *                    IPOSR , NPOS , BNDNAME(I), IHULP , RHULP ,
-     *                    ITYPE , IERR2)
-            IF ( IERR2 .GT. 0 ) GOTO 170
-            ITYPE = 1
-            CALL RDTOK1 ( LUNUT , ILUN , LCH            , LSTACK, CCHAR ,
-     *                    IPOSR , NPOS , BNDTYPE_LONG(I), IHULP , RHULP ,
-     *                    ITYPE , IERR2)
-            IF ( IERR2 .GT. 0 ) GOTO 170
+         ! read also name and type
 
-         ENDIF
+         ITYPE = 1
+         CALL RDTOK1 ( LUNUT , ILUN , LCH       , LSTACK, CCHAR ,
+     *                 IPOSR , NPOS , BNDNAME(I), IHULP , RHULP ,
+     *                 ITYPE , IERR2)
+         IF ( IERR2 .GT. 0 ) GOTO 170
+         ITYPE = 1
+         CALL RDTOK1 ( LUNUT , ILUN , LCH            , LSTACK, CCHAR ,
+     *                 IPOSR , NPOS , BNDTYPE_LONG(I), IHULP , RHULP ,
+     *                 ITYPE , IERR2)
+         IF ( IERR2 .GT. 0 ) GOTO 170
+
 
          IF ( BNDID_LONG(I)  .EQ. ' ' ) WRITE ( BNDID_LONG(I), '(''Boundary-ID'',I7)' ) I
          IF ( BNDNAME(I)     .EQ. ' ' ) WRITE ( BNDNAME(I), '(''Boundary name '',I7)' ) I
@@ -444,25 +448,24 @@
 !           This IF block stands for the new input processing
 !
   160 WRITE ( LUNUT , 2260 )
-      IF ( VRSION .GE. 4.90 ) THEN
-         K = NOBND+1
-         L = NOBND+NOBTYP+1
-         allocate( drar(irmax) )             ! this array is 100 mb lp
-         call dlwq5a ( lun    , lchar  , 14     , iwidth , icmax  ,
-     &                 car    , iimax  , iar    , irmax  , rar    ,
-     &                 sname  , bndid  , bndtype, nobnd  , nosys  ,
-     &                 nobtyp , drar   , dtflg1 , dtflg3 , vrsion ,
-     &                 ioutpt , ierr2  , ierr   , iwar   )
-         deallocate( drar )
-         deallocate( bndid, bndtype )
+      K = NOBND+1
+      L = NOBND+NOBTYP+1
+      allocate( drar(irmax) )             ! this array is 100 mb lp
+      call dlwq5a ( lun    , lchar  , 14     , iwidth , icmax  ,
+     &              car    , iimax  , iar    , irmax  , rar    ,
+     &              sname  , bndid  , bndtype, nobnd  , nosys  ,
+     &              nobtyp , drar   , dtflg1 , dtflg3 , 
+     &              ioutpt , ierr2  , ierr   , iwar   )
+      deallocate( drar )
+      deallocate( bndid, bndtype )
 
-         IF ( IERR2 .EQ.  0 ) goto 180
-         IF ( IERR2 .GT.  0 ) THEN
-            IERR  = IERR + IERR2
-            IERR2 = 0
-            GOTO 170
-         ENDIF
+      IF ( IERR2 .EQ.  0 ) goto 180
+      IF ( IERR2 .GT.  0 ) THEN
+         IERR  = IERR + IERR2
+         IERR2 = 0
+         GOTO 170
       ENDIF
+
       IF ( INTSRT .EQ. 6 .OR. INTSRT .EQ. 7 ) THEN
          NOSUBS = NOTOT
       ELSE
@@ -473,7 +476,7 @@
       call opt0   ( lun    , 14     , 0        , 0        , nobnd  ,
      &              nosubs , nosubs , nrftot(8), nrharm(8), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &              filtype, dtflg3 , vrsion   , ioutpt   , ierrh  ,
+     &              filtype, dtflg3 , ioutpt   , ierrh  ,
      &              iwar   , .false.)
       IERR = IERR + IERRH
 !
@@ -550,3 +553,5 @@
  2310 FORMAT (    ' number of boundaries             :',I7)
 !
       END
+
+      end module m_dlwq05

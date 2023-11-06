@@ -29,6 +29,7 @@
 
       subroutine readdb ( lu_inp, lu_mes )
       use m_zoek
+      use m_validate_units
 
       integer    lu_inp, lu_mes
       include 'data.inc'
@@ -66,6 +67,8 @@ c     Read Table P2
      j  itemde(nitem+1), itemun(nitem+1), itemnm(nitem+1),
      j  itemag(nitem+1), itemda(nitem+1), itemwk(nitem+1),
      j  itemgr(nitem+1)
+
+      call validate_units(itemun(nitem+1))
       nitem = nitem + 1
       item_i(nitem) = nitem
       goto 10

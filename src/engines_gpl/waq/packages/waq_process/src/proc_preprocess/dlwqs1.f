@@ -35,7 +35,7 @@
 
 
       SUBROUTINE DLWQS1 ( LUNREP       , NPOS     ,
-     +                    CCHAR        , VRSION   ,
+     +                    CCHAR        , 
      +                    ILUN         , LCH      ,
      +                    LSTACK       , IOUTPT   ,
      +                    DTFLG1       , DTFLG3   ,
@@ -70,7 +70,6 @@
       integer  ( 4), intent(in   ) :: lunrep            !< unit nr of output report file
       integer  ( 4), intent(in   ) :: npos              !< significant line length of input file
       character( 1), intent(in   ) :: cchar             !< comment character
-      real     ( 4), intent(in   ) :: vrsion            !< version number of this input
       integer  ( 4), intent(inout) :: ilun (*)          !< unitnumber include stack
       character( *), intent(inout) :: lch  (*)          !< filename include stack for input
       integer  ( 4), intent(in   ) :: lstack            !< include file stack size
@@ -125,7 +124,7 @@
 !
       WRITE(LUNREP,2000)
       IPOSR = 0
-      CALL RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , VRSION ,
+      CALL RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  ,
      +              ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 ,
      +              DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  ,
      +              KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX ,
@@ -340,9 +339,7 @@
       NSPROC = ISPROC
 !
   500 CONTINUE
-      IF(VRSION.GE.0.0) THEN
-         WRITE ( LUNREP , 3000 ) 10
-      END IF
+      WRITE ( LUNREP , 3000 ) 10
 !
       if ( timon ) call timstop( ithndl )
       RETURN

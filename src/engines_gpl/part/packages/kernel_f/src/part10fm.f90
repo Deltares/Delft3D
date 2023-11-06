@@ -22,6 +22,8 @@
 !!  rights reserved.
 
 module part10fm_mod
+use m_fm_particles_in_grid
+
 
       implicit none
 !
@@ -36,11 +38,11 @@ contains
 !     system administration : frank kleissen
       use precision_part
       use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, abuoy, t0buoy, ldiffh, nosubs, mpart
-      use m_partmesh
+      use m_part_mesh
       use m_particles
-      use m_flowtimes
-      use m_partrecons
-      use m_transport
+      use m_part_times
+      use m_part_recons
+      use m_part_transport
       use m_sferic
       use m_sferic_part, only: ptref
       use geometry_module, only: Cart3Dtospher, sphertocart3D
@@ -268,12 +270,12 @@ contains
 !     system administration : frank kleissen
       use partmem
       use m_particles
-      use m_flowtimes
-      use m_partrecons
+      use m_part_times
+      use m_part_recons
       use m_sferic
       use m_sferic_part,only: ptref
 
-      use m_partmesh, only: xzwcell, yzwcell, zzwcell
+      use m_part_mesh, only: xzwcell, yzwcell, zzwcell
       use geometry_module, only: Cart3Dtospher, sphertocart3D
       use physicalconsts, only: earth_radius
       use mathconsts, only: raddeg_hp
@@ -425,12 +427,12 @@ contains
       end subroutine
 
       subroutine checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)
-      use m_flowtimes, only: dts, time0
+      use m_part_times, only: dts, time0
       use m_particles
-      use m_partrecons
-      use m_partmesh
+      use m_part_recons
+      use m_part_mesh
       use partmem, only: mpart, hyd
-      use m_flowgeom
+      use m_part_geom
       use MessageHandling
       use m_sferic_part, only: jsferic
       use timers

@@ -87,7 +87,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>win64</from>
+                <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -98,7 +98,7 @@
         <testCase name="dummy">
             <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro -->
             <location ref="reference_results" type="reference">
-                <from>win64</from>
+                <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>

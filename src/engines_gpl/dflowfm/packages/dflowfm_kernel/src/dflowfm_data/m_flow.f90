@@ -176,7 +176,6 @@
  double precision, allocatable         :: voldhu(:)   !< node volume based on downwind hu
 
  double precision, allocatable         :: s1m(:)      !< waterlevel   pressurized nonlin minus part
- double precision, allocatable         :: s1mini(:)   !< initial of s1m
  double precision, allocatable         :: a1m(:)      !< surface area pressurized nonlin minus part
 
  double precision, allocatable         :: negativeDepths(:)                 !< Number of negative depths during output interval at nodes.
@@ -346,6 +345,8 @@
  double precision, allocatable, target :: wdsu_x(:) !< windstress u point  (N/m2) x-component
  double precision, allocatable, target :: wdsu_y(:) !< windstress u point  (N/m2) y-component
  double precision, allocatable     :: wavmubnd (:)  !< wave-induced mass flux (on open boundaries)
+ integer                           :: number_steps_limited_visc_flux_links = 0   !< number of steps with limited viscosity/flux on links
+ integer,          PARAMETER       :: MAX_PRINTS_LIMITED_VISC_FLUX_LINKS   = 10  !< number of messages in dia file on limited viscosity/flux links
  real            , allocatable     :: vicLu   (:) !< horizontal eddy viscosity coefficient at u point (m2/s)  (limited only if ja_timestep_auto_visc==0)
  real            , allocatable     :: viu   (:)   !< horizontal eddy viscosity coefficient at u point (m2/s), modeled part of viscosity = vicLu - viusp
  double precision, allocatable, target    :: viusp(:)   !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}

@@ -6,11 +6,12 @@ Copyright (C)  Stichting Deltares, 2023
 
 
 # Test case configuration
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from src.config.file_check import FileCheck
 from src.config.location import Location
 from src.config.program_config import ProgramConfig
+from src.config.dependency import Dependency
 
 
 class TestCaseConfig:
@@ -18,6 +19,7 @@ class TestCaseConfig:
     def __init__(self):
         self.__name: str = ""
         self.__path: str = ""
+        self.__dependency: Optional[Dependency] = None
         self.__locations: List[Location] = []
         self.__shell: Optional[ProgramConfig] = None
         self.__shell_arguments = []
@@ -50,6 +52,15 @@ class TestCaseConfig:
     @path.setter
     def path(self, value: str):
         self.__path = value
+
+    @property
+    def dependency(self) -> Optional[Dependency]:
+        """Data that the testcase depends on"""
+        return self.__dependency
+
+    @dependency.setter
+    def dependency(self, value: Optional[Dependency]):
+        self.__dependency = value
 
     @property
     def locations(self) -> List[Location]:

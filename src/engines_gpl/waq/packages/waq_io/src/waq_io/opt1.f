@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_opt1
+
+      implicit none
+
+      contains
+
 
       subroutine opt1 ( iopt1  , lun    , is     , lchar  , filtype,
      &                  dtflg1 , dtflg3 , nitem  , ierr   , iwar   ,
@@ -337,3 +343,5 @@
  2150 format (/' ERROR: Not a valid token at this position: ',A)
 
       end
+
+      end module m_opt1

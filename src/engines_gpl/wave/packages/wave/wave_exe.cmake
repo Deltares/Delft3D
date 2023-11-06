@@ -44,8 +44,7 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
 
     set(exe_dependencies    wave_data
                             delftio
@@ -62,6 +61,7 @@ if(UNIX)
                             triangle_c
                             swan
                             esmfsm
+                            netcdff
                             )
     
     oss_include_libraries(${executable_name} exe_dependencies)
@@ -69,7 +69,7 @@ if(UNIX)
     target_link_libraries(${executable_name}
          ${exe_dependencies}
          PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         )
 endif(UNIX)
 
 include_directories(${mpi_include_path} ${version_include_dir})

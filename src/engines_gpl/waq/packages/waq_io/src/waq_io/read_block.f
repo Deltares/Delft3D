@@ -20,6 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_read_block
+      use m_read_time_delay
+      use m_read_items
+      use m_read_header
+      use m_read_data_ods
+      use m_time_validation
+
+
+      implicit none
+
+      contains
+
 
       subroutine read_block ( lun       , lchar     , filtype   , inpfil    , ioutpt   ,
      &                        iwidth    , substances, constants , parameters, functions,
@@ -33,9 +45,13 @@
 
 !     Global declarations
 
+      use m_read_data
+      use m_print_matrix
+      use m_opt1
+      use m_compute_matrix
       use m_getcom
-      use grids          ! for the storage of contraction grids
-      use dlwq_data      ! for definition and storage of data
+      use dlwqgrid_mod          ! for the storage of contraction grids
+      use dlwq_hyd_data  ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
 
@@ -45,13 +61,13 @@
 
 !     declaration of arguments
 
-      integer               , intent(in)    :: lun(*)       !< unit numbers used
+      integer               , intent(inout) :: lun(*)       !< unit numbers used
       character(len=*)      , intent(inout) :: lchar(*)     !< filenames
       integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       !< input file strucure with include stack and flags
       integer               , intent(in)    :: ioutpt       !< level of reporting to ascii output file
       integer               , intent(in)    :: iwidth       !< width of output
-      type(t_dlwq_item)     , intent(in)    :: substances   !< delwaq substances list
+      type(t_dlwq_item)     , intent(inout) :: substances   !< delwaq substances list
       type(t_dlwq_item)     , intent(inout) :: constants    !< delwaq constants list
       type(t_dlwq_item)     , intent(inout) :: parameters   !< delwaq parameters list
       type(t_dlwq_item)     , intent(inout) :: functions    !< delwaq functions list
@@ -565,13 +581,9 @@
 
                call read_data( data_buffer, itfact, dtflg1, dtflg3, ierr2 )
                if ( ierr2 .ne. 0 ) goto 100
-               
-               call check_if_time_increases(data_buffer, ierr2)
-               if (ierr2 .ne. 0 ) then
-                  write ( lunut , 2130 )
-                  goto 100
-               endif
-               
+
+               call validate_time_series_strictly_increasing(lunut,data_buffer, ierr2)
+
                call compute_matrix ( lunut , data_param , data_loc   , waq_param, waq_loc,
      +                               amiss , data_buffer, data_block )
                deallocate(data_buffer%times,data_buffer%values)
@@ -657,8 +669,6 @@
  2110 FORMAT( ' Harmonics or Fouriers not allowed with binary files !' )
  2120 FORMAT( ' ERROR during processing of CONSTANT or FUNCTION',
      *        ' names !' )
- 2130 FORMAT(/' ERROR: Times are not strictly increasing.',
-     *        ' Time series is not in ascending order!'/  )
  2150 FORMAT( ' ERROR during processing of PARAMETERS or',
      *        ' SEG_FUNCTIONS names !' )
  2160 FORMAT( ' ERROR: A recognizable keyword is expected !' )
@@ -797,24 +807,4 @@
       end function get_original_noseg
       end subroutine read_block
 
-
-
-
-      ! Routine to check if time series in input is increasing. If not give error message
-      subroutine check_if_time_increases( data_block, ierr2 )
-      
-        use dlwq_data
-        implicit none
-      
-        type(t_dlwqdata)      , intent(in)    :: data_block   ! data block
-        integer               , intent(inout) :: ierr2        ! local error count
-        integer                               :: i
-
-
-        do i = 2, size(data_block%times)
-          if (data_block%times(i) <= data_block%times(i-1)) then
-            ierr2 = ierr2 + 1
-          end if
-        end do
-
-      end subroutine check_if_time_increases
+      end module m_read_block

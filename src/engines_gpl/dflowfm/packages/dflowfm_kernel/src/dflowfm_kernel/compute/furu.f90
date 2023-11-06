@@ -43,6 +43,8 @@
  use unstruc_channel_flow
  use m_sferic
  use m_trachy, only: trachy_resistance
+ use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
+ use m_flowparameters, only: ifixedWeirScheme1d2d
 
  implicit none
 
@@ -71,7 +73,7 @@
  if (kmx == 0 .or. ifixedweirscheme > 0)  then  ! original 2D coding
 
     !$OMP PARALLEL DO                       &
-    !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp)
+    !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp,uorbL)
     do L  = 1,lnx
 
        if (hu(L) > 0) then
@@ -126,7 +128,11 @@
              st2  = sin(dg2rd*yu(L))**2
              agp  = 9.7803253359*(1d0+0.00193185265241*st2)/sqrt(1d0-0.00669437999013*st2)
           endif
-          gdxi  = agp*dxi(L)
+          gdxi  = agp*dxi(L) 
+          if (jarhoxu >= 2) then
+             gdxi = gdxi*rhomean/rhou(L)
+          endif
+
           cu    = gdxi*teta(L)
           du    = dti*u0(L) - adve(L) + gdxi*slopec
           ds    = s0(k2) - s0(k1)
@@ -388,6 +394,9 @@
  endif
 ! END DEBUG
 
+ if (ifixedWeirScheme1d2d ==1) then
+    call compfuru_1d2d_fixedweirs()
+ endif
  call timstop(handle_furu)
 
  end subroutine furu

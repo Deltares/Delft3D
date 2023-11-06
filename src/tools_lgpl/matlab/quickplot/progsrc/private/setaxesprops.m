@@ -40,17 +40,24 @@ if ~ishandle(hAx) || isempty(FullAxesType)
     return
 end
 %
-AxesType=full2basic_axestype(FullAxesType);
+BasicAxesType = full2basic_axestype(FullAxesType);
 %
 currentFullAxesType = getappdata(hAx,'AxesType');
-%currentAxesType     = getappdata(hAx,'BasicAxesType');
-if  ischar(currentFullAxesType) && ~isequal(currentFullAxesType,FullAxesType)
-    warning('AxesType mismatch: %s (set) vs. %s (new).',currentFullAxesType,FullAxesType)
-    FullAxesType = currentFullAxesType;
-    AxesType     = full2basic_axestype(FullAxesType);
+if ~ischar(currentFullAxesType)
+    currentFullAxesType = getappdata(hAx,'BasicAxesType');
+end
+newAxesSettings = true;
+if  ischar(currentFullAxesType)
+    if ~isequal(currentFullAxesType,FullAxesType)
+        warning('AxesType mismatch: %s (set) vs. %s (new).',currentFullAxesType,FullAxesType)
+        FullAxesType = currentFullAxesType;
+        BasicAxesType = full2basic_axestype(FullAxesType);
+    else
+        newAxesSettings = false;
+    end
 end
 %
-Axes  = splitcellstr(AxesType,'-');
+Axes  = splitcellstr(BasicAxesType,'-');
 %
 if nargin<3
     dimension = {};
@@ -59,7 +66,7 @@ if nargin<4
     unit = {};
 end
 %
-switch AxesType
+switch BasicAxesType
     case 'legend'
         set_2d_axes_behavior(hAx)
         sethscale(hAx,1)
@@ -67,25 +74,25 @@ switch AxesType
     case {'analog clock','digital clock','calendar page'}
         set_2d_axes_behavior(hAx)
         sethscale(hAx,1)
-        md_clock(hAx,AxesType,floor(now))
-        set(hAx,'tag',AxesType)
+        md_clock(hAx,BasicAxesType,floor(now))
+        set(hAx,'tag',BasicAxesType)
     case 'text'
         set_2d_axes_behavior(hAx)
         set(hAx,'visible','off', ...
             'xlim',[0 1], ...
             'ylim',[0 1])
     otherwise
-        generaltype(hAx, Axes, dimension, unit)
+        generaltype(hAx, Axes, dimension, unit, newAxesSettings)
 end
 %
-if ~isequal(FullAxesType,AxesType)
+if ~isequal(FullAxesType,BasicAxesType)
     setappdata(hAx,'AxesType',FullAxesType)
 end
-setappdata(hAx,'BasicAxesType',AxesType)
+setappdata(hAx,'BasicAxesType',BasicAxesType)
 update_axesprops(hAx)
 
 
-function generaltype(hAx, Axes, dimension, unit)
+function generaltype(hAx, Axes, dimension, unit, newAxesSettings)
 nAxes = length(Axes);
 X = 'xyz';
 if nAxes==2
@@ -94,9 +101,9 @@ end
 if nAxes>=2
     if isequal(Axes(1:2),{'Lon','Lat'})
         setappdata(hAx,'LonLat',1)
-        sethscale_lonlat(hAx)
+        sethscale_lonlat(hAx,newAxesSettings)
     elseif isequal(Axes(1:2),{'X','Y'}) && numel(unit)>=2 && isequal(unit{1},unit{2})
-        sethscale(hAx,1)
+        sethscale(hAx,1,newAxesSettings)
     end
 end
 if length(dimension)<nAxes
@@ -162,7 +169,7 @@ for i = 1:nAxes
 end
 
 
-function sethscale_lonlat(hAx)
+function sethscale_lonlat(hAx,newAxesSettings)
 ylimv=get(hAx,'ylim');
 if ylimv(1)<-90
     ylimv(1)=-90;
@@ -178,19 +185,31 @@ if ylimv(2)>90
 end
 lat=mean(ylimv);
 lat=min(max(lat,-89),89);
-sethscale(hAx,cos(lat*pi/180))
+sethscale(hAx,cos(lat*pi/180),newAxesSettings)
 xlim=get(hAx,'xlim'); % force both xlimmode and ylimmode to manual
 set(hAx,'ylim',ylimv,'xlim',xlim)
 
 
-function sethscale(hAx,ratio)
-setappdata(hAx,'haspectenforced',true)
-if strcmp(get(hAx,'dataaspectratiomode'),'auto')
-    set(hAx,'dataaspectratio',[1 ratio 1/30])
+function sethscale(hAx,ratio,newAxesSettings)
+if newAxesSettings
+    setappdata(hAx,'haspectdefaultvalue',ratio)
+    if strcmp(get(hAx,'dataaspectratiomode'),'manual')
+        da = get(hAx,'dataaspectratio');
+        da(2) = da(1)*ratio;
+        set(hAx,'dataaspectratio',da)
+    else
+        set(hAx,'dataaspectratio',[1 ratio 1/30])
+    end
 else
-    da = get(hAx,'dataaspectratio');
-    da(2) = da(1)*ratio;
-    set(hAx,'dataaspectratio',da)
+    oldratio = getappdata(hAx,'haspectdefaultvalue');
+    setappdata(hAx,'haspectdefaultvalue',ratio)
+    if strcmp(get(hAx,'dataaspectratiomode'),'manual')
+        da = get(hAx,'dataaspectratio');
+        if isequal(da(2),da(1)*oldratio)
+            da(2) = da(1)*ratio;
+            set(hAx,'dataaspectratio',da)
+        end
+    end
 end
 
 
@@ -206,7 +225,7 @@ end
 
 function update_axesprops(hAx)
 if isequal(getappdata(hAx,'LonLat'),1)
-    sethscale_lonlat(hAx)
+    sethscale_lonlat(hAx,false)
 end
 % axes2d = isequal(getappdata(hAx,'axes2d'),true);
 % if axes2d

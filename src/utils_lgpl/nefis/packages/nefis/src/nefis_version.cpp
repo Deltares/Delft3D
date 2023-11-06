@@ -30,30 +30,28 @@
 #include "nefis_version.h"
 
 #if defined(W32)
-static char nefis_version [] = {NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Win32)"};
-static char nefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Win32), " __DATE__ ", " __TIME__ ""};
+static char libnefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Win32), " __DATE__ ", " __TIME__ ""};
 #elif defined(W64)
-static char nefis_version [] = {NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Win64)"};
-static char nefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Win64), " __DATE__ ", " __TIME__ ""};
+static char libnefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Win64), " __DATE__ ", " __TIME__ ""};
 #elif defined(LINUX64)
-static char nefis_version [] = {NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Linux64)"};
-static char nefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Linux64), " __DATE__ ", " __TIME__ ""};
+static char libnefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Linux64), " __DATE__ ", " __TIME__ ""};
 #else
-static char nefis_version [] = {NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Unknown)"};
-static char nefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Unknown), " __DATE__ ", " __TIME__ ""};
+static char libnefis_version_id [] = {"@(#)Deltares, " COMPONENT_NAME " Version " NEFIS_MAJOR "." NEFIS_MINOR "." NEFIS_REVISION "." BUILD_NR " (Unknown), " __DATE__ ", " __TIME__ ""};
 #endif
+static char nefis_file_version [] = {"5.00.00"};
+static char nefis_company_name [] = {"Deltares"};
 
 extern "C" {
     char * getfullversionstring_nefis(void)
     {
-        return nefis_version_id;
+        return libnefis_version_id;
     };
     char * getfileversionstring_nefis(void)
     {
-        return nefis_version;
+        return nefis_file_version;
     };
     char * getcompanystring_nefis(void)
     {
-        return COMPANY_NAME;
+        return nefis_company_name;
     };
 }

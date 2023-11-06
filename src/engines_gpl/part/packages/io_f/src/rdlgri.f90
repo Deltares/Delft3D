@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_rdlgri
+use m_stop_exit
+
+
+implicit none
+
+contains
+
 
       subroutine rdlgri ( nfiles , lunit  , fname   )
 
@@ -57,7 +65,7 @@
       use rd_token                ! tokenized reading like in DELWAQ
       use partmem
       use m_part_regular
-      use rdhyd_mod
+      use m_rdhyd
       use alloc_mod
       use dd_prepare_mod
       use openfl_mod
@@ -363,3 +371,5 @@
      &        '     No. of layers                         :',i13)
 
       end subroutine
+
+end module m_rdlgri

@@ -22,6 +22,8 @@
 !!  rights reserved.
 
       program delpar_main
+      use m_stop_exit
+      use m_delpar
 
       implicit none
 

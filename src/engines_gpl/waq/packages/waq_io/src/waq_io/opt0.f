@@ -20,11 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_opt0
+      use m_opt3
+      use m_opt2
+
+
+      implicit none
+
+      contains
+
 
       subroutine opt0   ( lun    , is     , noql1  , noql2  , noql3  ,
      &                    ndim2  , ndim3  , nrftot , nrharm , ifact  ,
      &                    dtflg1 , disper , volume , iwidth , lchar  ,
-     &                    filtype, dtflg3 , vrsion , ioutpt , ierr   ,
+     &                    filtype, dtflg3 , ioutpt , ierr   ,
      &                    iwar   , dont_read   )
 
 !       Deltares Software Centre
@@ -47,13 +56,6 @@
 !>                          Dlwq08 is a sort of dedicated verion of this routine
 !>                          to read initial conditions
 
-!     Created            : May   1988  by M.E. Sileon / Leo Postma
-
-!     Modified           : April 1996  by Leo Postma : Support version 4.90 for bounds and wastes
-!                        : April 1997  by R. Bruinsma: Tokenized input data file reading added
-!                          July  2002  by Leo Postma : Call to Opt1 changed. File option -4
-!                                                      allowed for composite hydrodynamics
-!                          May   2011  by Leo Postma : Fortran90 look and feel
 
 !     Subroutines called : opt1    get & open include file
 !                          opt2    read constants ( << (include) file)
@@ -70,6 +72,7 @@
 !                          lun( 4) = unit intermediate file (pointers)
 !                          lun(is) = unit intermediate file (items)
 
+      use m_opt1
       use m_open_waq_files
       use timers       !   performance timers
       use rd_token
@@ -99,7 +102,6 @@
       character( *), intent(inout) :: lchar  (*)    !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)    !< type of binary file
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion        !< version number of the input file
       integer  ( 4), intent(in   ) :: ioutpt        !< how extensive is output ?
       integer  ( 4), intent(inout) :: ierr          !< cumulative error count
       integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
@@ -285,3 +287,5 @@
  2090 format (  /,' ERROR. This keyword is not allowed here: ',A )
 
       end
+
+      end module m_opt0

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_partzp
+
+implicit none
+
+contains
+
 
       subroutine partzp (lunpr, nopart, nmax, mmax, mnmax2, nolay, mpart, npart, kpart, zpart, &
                          lgrid, laytopp, laytop, locdepp, locdep, itime, itstrtp)
@@ -144,3 +150,5 @@
       if ( timon ) call timstop ( ithndl )
       return
       end subroutine
+
+end module m_partzp

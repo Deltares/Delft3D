@@ -27,8 +27,11 @@ module partfl_mod
 !
 !  data definition module(s)
 !
+use m_stop_exit
 use precision_part               ! single/double precision
-      use timers
+use timers
+use m_densty
+use m_diffus
 !
 !  module procedure(s)
 !
@@ -85,9 +88,6 @@ contains
 !
 !     subroutines called  : stop_exit.
 !
-!
-!     functions   called  : diffus,
-!                           densty.
 !
 !     parameters          :
 !
@@ -165,8 +165,8 @@ contains
       integer(ip) :: i     , icvdf  , icvdf2 , inocns , lun2
       integer(ip) :: max   , nosubc , ic
       integer(ip) :: min   , mnmaxk , nocons , nolay  , nosubs
-      real   (sp) :: alpha , depth  , diff0  , diffus , ufric
-      real   (sp) :: densb , densmn , densty , denst  , gamma
+      real   (sp) :: alpha , depth  , diff0  , ufric
+      real   (sp) :: densb , densmn , denst  , gamma
       real   (sp) :: pblay , ptlay  , salamb , tempb  , tempt  , tex
       real   (sp) :: tmpamb, tpycn  , uwstar
 

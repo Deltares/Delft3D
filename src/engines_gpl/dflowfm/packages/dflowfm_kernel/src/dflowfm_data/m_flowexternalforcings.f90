@@ -367,6 +367,11 @@
  double precision, allocatable           :: dambreakLinksEffectiveLength(:)       !< dambreak maximum flow widths
  double precision, allocatable           :: dambreakLinksActualLength(:)          !< dambreak actual flow widths
  integer        , allocatable            :: dambreaks(:)                          !< store the dambreaks indexes among all structures
+ integer        , parameter              :: DBW_SYMM       = 1                    !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
+ integer        , parameter              :: DBW_PROP       = 2                    !< dambreak wideining proportional to left/right dam length
+ integer        , parameter              :: DBW_SYMM_ASYMM = 3                    !< symmetrical dambreak widening until left/right runs out of space then continues one sided
+ integer                                 :: dambreakWidening = DBW_SYMM_ASYMM     !< method for dambreak widening
+ character(len=128)                      :: dambreakWideningString = 'symmetric-asymmetric'  !< method for dambreak widening (string for input processing)
  integer                                 :: ndambreak                             !< nr of dambreak links
  integer                                 :: ndambreaksg                           !< nr of dambreak signals
  integer         , allocatable           :: L1dambreaksg(:)                       !< first dambreak link for each signal
@@ -453,7 +458,6 @@
  double precision, allocatable     :: zsrc2(:,:)        !< vertical level (m) top (optional)
  double precision, allocatable     :: srsn (:,:)        !< 2*(1+numvalssrc),numsrc, to be reduced
  integer, allocatable              :: jamess(:)         !< issue message mess for from or to point, 0, 1, 2
- integer, allocatable, target      :: kdss (:)          !< helper for multiple_uni_discharge_salinity_temperature
  double precision, allocatable, target :: qstss(:)      !< array to catch multiple_uni_discharge_salinity_temperature
  character(len=255), allocatable   :: srcname(:)        !< sources/sinks name (numsrc)
  double precision, allocatable     :: vsrccum(:)        !< cumulative volume at each source/sink from Tstart to now

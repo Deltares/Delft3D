@@ -1,14 +1,14 @@
 # Set version file variables
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 
-# Set the DFlow FM component path 
+# Set the DFlow FM component path
 set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 
 # Include directories that are required as references
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Set the directory of where the source code is located
-set(src_path src) 
+set(src_path src)
 
 # Gather the source files
 set(headers include/blasfm.h)
@@ -19,10 +19,10 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(dflowfm_version_path ${src_path}/dflowfm_version)
 set(fortran_version_files ${dflowfm_version_path}/dflowfm_version.F90
                           ${dflowfm_version_path}/static_version_info.F90)
-						  
+
 set_source_files_properties(${fortran_version_files}
-                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")						  
-						  
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+
 set(dflowfm_data_path ${src_path}/dflowfm_data)
 get_fortran_source_files(${dflowfm_data_path} dflowfm_data)
 
@@ -38,7 +38,6 @@ list(REMOVE_ITEM dflowfm_io ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/io_op
 set(dflowfm_kernel_path ${src_path}/dflowfm_kernel)
 set(dflowfm_kernel_compute_path ${dflowfm_kernel_path}/compute)
 set(dflowfm_kernel_compute_hydrology_path ${dflowfm_kernel_path}/compute_hydrology)
-set(dflowfm_kernel_compute_particles_path ${dflowfm_kernel_path}/compute_particles)
 set(dflowfm_kernel_compute_sediment_path ${dflowfm_kernel_path}/compute_sediment)
 set(dflowfm_kernel_compute_sediment_netnode_based_path ${dflowfm_kernel_path}/compute_sediment/netnode_based)
 set(dflowfm_kernel_compute_transport_path ${dflowfm_kernel_path}/compute_transport)
@@ -55,7 +54,6 @@ set(dflowfm_kernel_timespace_path ${dflowfm_kernel_path}/timespace)
 get_fortran_source_files(${dflowfm_kernel_path} dflowfm_kernel)
 get_fortran_source_files(${dflowfm_kernel_compute_path} dflowfm_kernel_compute)
 get_fortran_source_files(${dflowfm_kernel_compute_hydrology_path} dflowfm_kernel_compute_hydrology)
-get_fortran_source_files(${dflowfm_kernel_compute_particles_path} dflowfm_kernel_compute_particles)
 get_fortran_source_files(${dflowfm_kernel_compute_sediment_path} dflowfm_kernel_compute_sediment)
 get_fortran_source_files(${dflowfm_kernel_compute_sediment_netnode_based_path} dflowfm_kernel_compute_sediment_netnode_based)
 get_fortran_source_files(${dflowfm_kernel_compute_transport_path} dflowfm_kernel_compute_transport)
@@ -99,7 +97,6 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_kernel}
                             ${dflowfm_kernel_compute}
                             ${dflowfm_kernel_compute_hydrology}
-                            ${dflowfm_kernel_compute_particles}
                             ${dflowfm_kernel_compute_sediment}
                             ${dflowfm_kernel_compute_sediment_netnode_based}
                             ${dflowfm_kernel_compute_transport}
@@ -124,13 +121,7 @@ add_library(${library_name} ${library_source_list})
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
-
 
     set(oss_dependencies    deltares_common
                             deltares_common_c
@@ -142,31 +133,34 @@ if (UNIX)
                             flow1d_io
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             kdtree_wrapper
                             kdtree2
                             fortrangis
                             libsigwatch
                             md5digest
                             md5
+                            metis
                             metisoptions
                             morphology_data
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
+                            netcdf4
+                            netcdff
                             polypack
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            wq_processes
                             waq_process
+                            waq_hyd_data
                             waq_utils_c
                             waq_utils_f
-                            wq_processes
                             interacter_stub)
 
     oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN
          PkgConfig::PETSC
          uuid)
 
@@ -183,6 +177,7 @@ set(oss_dependencies    deltares_common
                         flow1d_io
                         gridgeom
                         io_netcdf
+                        io_netcdf_data
                         kdtree_wrapper
                         kdtree2
                         fortrangis
@@ -203,6 +198,7 @@ set(oss_dependencies    deltares_common
                         trachytopes_kernel
                         triangle_c
                         waq_process
+                        waq_hyd_data
                         waq_utils_c
                         waq_utils_f
                         wq_processes)
@@ -225,7 +221,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${version_include_dir}
                         ${dflowfm_version_path}
                         ${dflowfm_version_header_path})
-						
+
 # Define additional compilation flags
 
 set_source_files_properties(${fortran_version_files}
@@ -240,8 +236,6 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_his.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_shp.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_path}/filter.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_particles_path}/sendrecv_particledata.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_particles_path}/update_particles.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_surfbeat_path}/xbeach_filefunctions.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/flow_modelinit.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/inidat.F90
@@ -270,7 +264,7 @@ set_source_files_properties(${fortran_version_files}
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
-# Define preprocessor definitions 
+# Define preprocessor definitions
 if (WIN32)
     set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
@@ -289,4 +283,3 @@ endif(UNIX)
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_source_list})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
-

@@ -31,52 +31,78 @@ function qp_validate(varargin)
 %   $HeadURL$
 %   $Id$
 
+%% default reporting setting
+finish = 'default';
+teamcity = false;
 log_style('latex')
-baseini='validation.ini';
 val_dir = '';
-finish = 'openlog';
-extra_files = {'summary','crashed_cases','reading_failed_cases','script_failed_cases','all_cases'};
-sametype('');
 
+%% auto switch on teamcity when MATLAB runs in batch mode
+if matlabversionnumber >= 9.06 && batchStartupOptionUsed
+    teamcity = true;
+end
+
+%% process input arguments: finish, report style, and validation directory
 i = 0;
-while i<nargin
+while i < nargin
     i = i+1;
     switch lower(varargin{i})
-        case 'openlog'
-            i = i+1;
-            if varargin{i}
-                finish = 'openlog';
-            else
-                finish = 'none';
-            end
         case 'finish'
             i = i+1;
             switch lower(varargin{i})
-                case {'openlog','none','buildpdf'}
+                case {'openlog','none','buildpdf','exit'}
                     finish = lower(varargin{i});
             end
+        case 'teamcity'
+            teamcity = true;
+        case 'no-teamcity'
+            teamcity = false;
         case {'latex','html'}
             log_style(lower(varargin{i}))
         otherwise
             val_dir = varargin{i};
     end
 end
+if strcmp(finish,'default')
+    if teamcity
+        finish = 'exit';
+    else
+        finish = 'openlog';
+    end
+end
+
+%% set validation directory
+baseini='validation.ini';
 if isempty(val_dir)
     %
     % Would prefer to use uigetdir, but that doesn't compile.
     %
-    [~,val_dir]=uigetfile(baseini,'Select directory containing validation cases');
-    if ~ischar(val_dir)
-        return
+    if matlabversionnumber >= 9.06 && batchStartupOptionUsed
+        val_dir = '.';
+    else
+        [~,val_dir]=uigetfile(baseini,'Select directory containing validation cases');
+        if ~ischar(val_dir)
+            return
+        end
     end
+else
+    val_dir = absfullfile(val_dir);
 end
 
-if ~isstandalone
+%% add QUICKPLOT path and switch on diary when runnning stand alone on TeamCity
+if isstandalone
+    if teamcity
+        diary on % will be inserted into build log when QUICKPLOT finishes
+    end
+else
     qp_path=which('d3d_qp');
     qp_path=fileparts(qp_path);
     addpath(qp_path)
 end
 
+%% prepare validation process
+extra_files = {'summary','crashed_cases','reading_failed_cases','script_failed_cases','all_cases'};
+sametype('');
 currdir=pwd;
 TC1 = 1;
 includes = {};
@@ -146,12 +172,11 @@ ssz=qp_getscreen;
 set(Hpb,'position',[ssz(1)+10 ssz(2)+ssz(4)-pHpb(4)-30 pHpb(3) pHpb(4)])
 %
 UserInterrupt=0;
-if matlabversionnumber>=7.02
-    saveops={'-v6' '-mat'};
-elseif matlabversionnumber>=7
-    saveops={'-NOUNICODE' '-mat'};
+if matlabversionnumber<7.03
+    error('MATLAB versions older than 7.3 are no longer supported.')
 else
-    saveops={'-mat'};
+    saveops={'-v7.3', '-mat'};
+    fprintf('The default character set on this system is %s\n',feature('DefaultCharacterSet'))
 end
 %
 % Allow for a large number of messages
@@ -200,7 +225,7 @@ try
     cd(val_dir)
     d=dir('*');
     for i=length(d):-1:1
-        if ~d(i).isdir || any(strcmp(d(i).name,{'.','..','common'}))
+        if ~d(i).isdir || any(strcmp(d(i).name,{'.','..','common','.svn','.git'}))
             d(i)=[];
         end
     end
@@ -218,6 +243,7 @@ try
     % this dialog affects the timing.
     %
     d3d_qp('hideplotmngr');
+    d3d_qp('set','<DEFAULT>');
     new_procdef = fullfile(val_dir,'proc_def.dat');
     if exist(new_procdef,'file')
         current_procdef = qp_settings('delwaq_procdef');
@@ -250,10 +276,18 @@ try
     tot_dt = max(1,acc_dt + sum(case_dt)); % at least a second
     %
     includes = repmat({''},length(d),2);
+    %if teamcity
+    %    fprintf('##teamcity[testSuiteStarted name=''quickplot tests'']\n');
+    %end
+    %% loop over validation test cases
     for i=1:length(d)
         progressbar(acc_dt/tot_dt,Hpb,'title',d(i).name);
         ui_message('',['Case: ',d(i).name])
-        fprintf('----- %s %s\n', d(i).name, repmat('-',1,93 - length(d(i).name)));
+        if teamcity
+            fprintf('##teamcity[testStarted name=''%s'']\n', d(i).name);
+        else
+            fprintf('----- %s %s\n', d(i).name, repmat('-',1,93 - length(d(i).name)));
+        end
         includes{i,1} = [d(i).name '/'];
         includes{i,2} = logname;
         NTested=NTested+1;
@@ -266,6 +300,8 @@ try
         lgresult = NOTAPP;
         logid2=[];
         TC2=1;
+        t2=[];
+        dt2_old=0;
         Crash = [];
         try
             cd(fullfile(val_dir,d(i).name));
@@ -405,78 +441,83 @@ try
                                     % Check for differences in the datafields
                                     Prop = Props{dm};
                                     PropRef = PrevProps{dm};
-                                    pName = {Prop.Name};
-                                    pNameRef = {PropRef.Name};
-                                    pnAdded = setdiff(pName,pNameRef);
-                                    pnRemoved = setdiff(pNameRef,pName);
-                                    if length(Props)>1
-                                        write_log_domain(logid2,Dms{dm});
-                                    end
-                                    if ~isempty(pnAdded)
-                                        pnAdded = protected(pnAdded);
-                                        write_log(logid2,'New datafields:');
-                                        write_list(logid2,pnAdded);
-                                        Prop(ismember(pName,pnAdded)) = [];
-                                        pName = {Prop.Name};
-                                    end
-                                    if ~isempty(pnRemoved)
+                                    if isempty(PropRef)
+                                        write_log(logid2,'Old datafields record is empty.');
                                         JustAddedData=0;
-                                        pnRemoved = protected(pnRemoved);
-                                        write_log(logid2,'Deleted datafields:');
-                                        write_list(logid2,pnRemoved);
-                                        PropRef(ismember(pNameRef,pnRemoved)) = [];
+                                    else
+                                        pName = {Prop.Name};
                                         pNameRef = {PropRef.Name};
-                                    end
-                                    %
-                                    % Make sure that the datafields are in the same order
-                                    if ~isequal(pName,pNameRef)
-                                        write_log(logid2,'Order of datafields changed.');
-                                        [~,iProp] = unique(pName);
-                                        [~,iPropRef] = unique(pNameRef);
-                                        Prop = Prop(iProp);
-                                        PropRef = PropRef(iPropRef);
-                                    end
-                                    %
-                                    % Check for differences in the property field names
-                                    fProp = fieldnames(Prop);
-                                    fPropRef = fieldnames(PropRef);
-                                    fAdded = setdiff(fProp,fPropRef);
-                                    fRemoved = setdiff(fPropRef,fProp);
-                                    if ~isempty(fAdded)
-                                        fAdded = protected(fAdded);
-                                        write_log(logid2,'New property fields:');
-                                        write_list(logid2,fAdded);
-                                        Prop = rmfield(Prop,fAdded);
+                                        pnAdded = setdiff(pName,pNameRef);
+                                        pnRemoved = setdiff(pNameRef,pName);
+                                        if length(Props)>1
+                                            write_log_domain(logid2,Dms{dm});
+                                        end
+                                        if ~isempty(pnAdded)
+                                            pnAdded = protected(pnAdded);
+                                            write_log(logid2,'New datafields:');
+                                            write_list(logid2,pnAdded);
+                                            Prop(ismember(pName,pnAdded)) = [];
+                                            pName = {Prop.Name};
+                                        end
+                                        if ~isempty(pnRemoved)
+                                            JustAddedData=0;
+                                            pnRemoved = protected(pnRemoved);
+                                            write_log(logid2,'Deleted datafields:');
+                                            write_list(logid2,pnRemoved);
+                                            PropRef(ismember(pNameRef,pnRemoved)) = [];
+                                            pNameRef = {PropRef.Name};
+                                        end
+                                        %
+                                        % Make sure that the datafields are in the same order
+                                        if ~isequal(pName,pNameRef)
+                                            write_log(logid2,'Order of datafields changed.');
+                                            [~,iProp] = unique(pName);
+                                            [~,iPropRef] = unique(pNameRef);
+                                            Prop = Prop(iProp);
+                                            PropRef = PropRef(iPropRef);
+                                        end
+                                        %
+                                        % Check for differences in the property field names
                                         fProp = fieldnames(Prop);
-                                    end
-                                    if ~isempty(fRemoved)
-                                        JustAddedFields=0;
-                                        fRemoved = protected(fRemoved);
-                                        write_log(logid2,'Deleted property fields:');
-                                        write_list(logid2,fRemoved);
-                                        PropRef = rmfield(PropRef,fRemoved);
                                         fPropRef = fieldnames(PropRef);
-                                    end
-                                    %
-                                    % Make sure that the property fields are in the same order
-                                    if ~isequal(fProp,fPropRef)
-                                        write_log(logid2,'Order of property fields changed.');
-                                        [~,iProp] = sort(fProp);
-                                        [~,iPropRef] = sort(fPropRef);
-                                        fProp = fProp(iProp);
+                                        fAdded = setdiff(fProp,fPropRef);
+                                        fRemoved = setdiff(fPropRef,fProp);
+                                        if ~isempty(fAdded)
+                                            fAdded = protected(fAdded);
+                                            write_log(logid2,'New property fields:');
+                                            write_list(logid2,fAdded);
+                                            Prop = rmfield(Prop,fAdded);
+                                            fProp = fieldnames(Prop);
+                                        end
+                                        if ~isempty(fRemoved)
+                                            JustAddedFields=0;
+                                            fRemoved = protected(fRemoved);
+                                            write_log(logid2,'Deleted property fields:');
+                                            write_list(logid2,fRemoved);
+                                            PropRef = rmfield(PropRef,fRemoved);
+                                            fPropRef = fieldnames(PropRef);
+                                        end
                                         %
-                                        cProp = struct2cell(Prop);
-                                        cProp = cProp(iProp,:);
-                                        Prop = cell2struct(cProp,fProp,1);
-                                        %
-                                        cPropRef = struct2cell(PropRef);
-                                        cPropRef = cPropRef(iPropRef,:);
-                                        PropRef = cell2struct(cPropRef,fProp,1);
+                                        % Make sure that the property fields are in the same order
+                                        if ~isequal(fProp,fPropRef)
+                                            write_log(logid2,'Order of property fields changed.');
+                                            [~,iProp] = sort(fProp);
+                                            [~,iPropRef] = sort(fPropRef);
+                                            fProp = fProp(iProp);
+                                            %
+                                            cProp = struct2cell(Prop);
+                                            cProp = cProp(iProp,:);
+                                            Prop = cell2struct(cProp,fProp,1);
+                                            %
+                                            cPropRef = struct2cell(PropRef);
+                                            cPropRef = cPropRef(iPropRef,:);
+                                            PropRef = cell2struct(cPropRef,fProp,1);
+                                        end
                                     end
                                     %
                                     if vardiff(Prop,PropRef)>1
                                         JustAddedData=0;
-                                        if log_style == 'latex'
+                                        if isequal(log_style,'latex')
                                             vardiff(Prop,PropRef,logid2,'latex-longtable','new','reference');
                                         else
                                             vardiff(Prop,PropRef,logid2,log_style,'new','reference');
@@ -499,6 +540,7 @@ try
                         write_log(logid2,'Conclusion: %s',sc3{DiffMessage});
                     else
                         localsave(RefFile,Props,saveops);
+                        localsave(WrkFile,Props,saveops);
                     end
                     if DiffFound
                         frcolor=Color.Failed;
@@ -650,6 +692,7 @@ try
                                             end
                                         else
                                             localsave(RefFile,Data,saveops);
+                                            localsave(WrkFile,Data,saveops);
                                             write_table2_line(logid2,[],[],[],CREATED,'');
                                             emptyTable2 = false;
                                             if isequal(frresult,PASSED)
@@ -816,25 +859,45 @@ try
                     write_log(logid2,color_write(protected(stack_cellstr{istack}),Color.Failed,true));
                 end
             end
-            [dt2,dt2_str,slower] = write_footer(logid2,d(i).name,Color,t2,dt2_old);
+            if ~isempty(t2)
+                [dt2,dt2_str,slower] = write_footer(logid2,d(i).name,Color,t2,dt2_old);
+            end
             fclose(logid2);
             logid2=[];
             %
             if isnan(dt2_old)
-                timid = fopen('../reference/timing.txt','w','n','US-ASCII');
+                timid = fopen([sref,'timing.txt'],'w','n','US-ASCII');
+                fprintf(timid,'%5.1f',dt2);
+                fclose(timid);
+                timid = fopen([swrk,'timing.txt'],'w','n','US-ASCII');
                 fprintf(timid,'%5.1f',dt2);
                 fclose(timid);
             end
         elseif ~isempty(Crash)
             result  = [result Crash.message];
-            dt2     = (now-t2)*86400;
-            dt2_str = duration(dt2);
-            slower  = dt2>dt2_old;
+            if ~isempty(t2)
+                dt2 = (now-t2)*86400;
+                dt2_str = duration(dt2);
+                slower  = dt2>dt2_old;
+            else
+                dt2 = 0;
+                dt2_str = duration(dt2);
+                slower = false;
+            end
         end
         CaseReadFailed = strncmp(FAILED,frresult,5);
         CaseScriptFailed = strncmp(FAILED,lgresult,5);
         CaseCrashed = strncmp(FAILED,result,5) & ~(CaseReadFailed | CaseScriptFailed);
         CaseFailed = CaseReadFailed | CaseScriptFailed | CaseCrashed;
+        if teamcity && CaseFailed
+            if CaseCrashed
+                fprintf('##teamcity[testFailed name=''%s'' message=''case crashed.'']\n', d(i).name)
+            elseif CaseReadFailed
+                fprintf('##teamcity[testFailed name=''%s'' message=''differences when checking data.'']\n', d(i).name)
+            elseif CaseScriptFailed
+                fprintf('##teamcity[testFailed name=''%s'' message=''differences when running script.'']\n', d(i).name)
+            end
+        end
         NReadFailed = NReadFailed + CaseReadFailed;
         NScriptFailed = NScriptFailed + CaseScriptFailed;
         NCrashed = NCrashed + CaseCrashed;
@@ -860,6 +923,9 @@ try
             TC1=3-TC1;
         end
         flush(logid1);
+        if teamcity
+            fprintf('##teamcity[testFinished name=''%s'']\n', d(i).name)
+        end
         if UserInterrupt
             break
         end
@@ -872,8 +938,13 @@ catch err
     if logid1>0
         write_table_error(logid1,extlog,Color,err)
         AnyFail=1;
+    else
+        write_table_error(logid1,[],Color,err)
     end
 end
+%if teamcity
+%    fprintf('##teamcity[testSuiteFinished name=''quickplot tests'']\n');
+%end
 if ishandle(Hpb)
     delete(Hpb);
 end
@@ -895,19 +966,6 @@ end
 fclose('all');
 if AnyFail
     ui_message('error','Testbank failed on %i out of %i cases! Check log file.\n',NFailed,NTested)
-    %
-    switch finish
-        case 'openlog'
-            if matlabversionnumber>5
-                ops={'-browser'};
-            else
-                ops={};
-            end
-            try
-                web(full_ln,ops{:});
-            catch
-            end
-    end
 else
     ui_message('','Testbank completed successfully (%i cases).\n',NTested)
 end
@@ -916,6 +974,16 @@ qp_settings('defaultfigurecolor',DefFigProp.defaultfigurecolor)
 qp_settings('defaultaxescolor',DefFigProp.defaultaxescolor)
 qp_settings('boundingbox',DefFigProp.boundingbox)
 switch finish
+    case 'openlog'
+        if matlabversionnumber>5
+            ops={'-browser'};
+        else
+            ops={};
+        end
+        try
+            web(full_ln,ops{:});
+        catch
+        end
     case 'buildpdf'
         try
             ui_message('','Building PDF of validation report.')
@@ -937,6 +1005,8 @@ switch finish
             qp_error('Catch while building PDF of validation report:',Ex,'qp_validate')
         end
         cd(currdir)
+    case 'exit'
+        exit
 end
 
 
@@ -988,14 +1058,10 @@ if isstandalone
     stalone=' (standalone)';
 end
 c = clock;
-versionstr = d3d_qp('version'); % returns "source code version" or "vA.B.revsion (64bit)"
-if versionstr(1)=='v'
-    version = sscanf(versionstr,'v%d.%d.%d');
-    revision = version(3);
-    % insert QUICKPLOT revision number into SVN revision string of the report
-    versionstr = sprintf('%d.%d',version(1:2));
-else
-    revision = 999999;
+versionstr = d3d_qp('version'); % returns "source code version" or "vA.B.hash (64bit)"
+if versionstr(1) == 'v'
+    % remove the leading v
+    versionstr = versionstr(2:end);
 end
 switch log_style
     case 'latex'
@@ -1006,16 +1072,6 @@ switch log_style
             fprintf(logid,'%s\n','\usepackage{pifont}% http://ctan.org/pkg/pifont');
             fprintf(logid,'%s\n','\newcommand{\cmark}{\ding{51}}%');
             fprintf(logid,'%s\n','\newcommand{\xmark}{\ding{55}}%');
-            % insert QUICKPLOT revision number into SVN revision string of the report
-            fn = fopen(logid);
-            [~,f,e] = fileparts(fn);
-            str = '$Id$';
-            if str(1) == '$'
-                dollar = '';
-            else
-                dollar = '$';
-            end
-            fprintf(logid,'%s%s%s%s%s\n','\svnid{', dollar, str, dollar, '}');
             fprintf(logid,'\n');
             fprintf(logid,'%s\n','\begin{document}');
             fprintf(logid,'%% %s\n','\pagestyle{empty}');
@@ -1107,7 +1163,13 @@ fprintf(logid,'%s\n','\endlastfoot');
 
 function write_table_error(logid,extlog,Color,err)
 msg = stack2str(err.stack);
+if isempty(extlog)
+    log_style('cmd')
+end
 switch log_style
+    case 'cmd'
+        fprintf('The test bench execution failed unexpectedly with the following message:\n');
+        fprintf('%s\n',err.message,msg{:});
     case 'latex'
         message = protected(err.message);
         msg = protected(msg);
@@ -1710,12 +1772,4 @@ if isequal(type,previous_type)
     type = '';
 else
     previous_type = type;
-end
-
-function str = getsvnline()
-str = '$Id$';
-if str(1) == '$' % the original svn version
-    str = str(2:end-1);
-else % the distributed version
-    % str is as needed
 end

@@ -29,25 +29,16 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 enable_language(Fortran C CXX)
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     # To be implemented later on
-endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+    include(compiler_options/intel.cmake)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
+    # To be implemented later on
+else()
+    echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
     include(compiler_options/intel.cmake)
 endif()
-if(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-    # To be implemented later on
-endif()
 
-if (WIN32)
-    message(STATUS "Setting compiler flags in windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
-endif(WIN32)
 
-if (UNIX)
-    message(STATUS "Setting compiler flags in unix")
-    set(CMAKE_Fortran_FLAGS "${compiler_flags}")
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
-endif(UNIX)
 
 # Set available build configurations for the .sln file
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -55,9 +46,11 @@ set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 
+# Set Fortran module files location (needed for dependency bubbling on Linux)
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
+
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
-#set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")
 
 
 if (WIN32)
@@ -80,8 +73,14 @@ if (WIN32)
     # Set the Tecplot path 
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     
-    # Set the petsc path
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
+    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
+        # Set the petsc path
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
+    else()
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+    endif()
+    #also set PETSC library directory
+    set (petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
 
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
@@ -102,12 +101,8 @@ if (UNIX)
     pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
-
-    # Proj
-    pkg_check_modules(PROJ REQUIRED proj)
 
 endif(UNIX)
 

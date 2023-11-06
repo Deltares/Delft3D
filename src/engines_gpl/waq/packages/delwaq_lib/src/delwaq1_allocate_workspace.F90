@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_delwaq1_allocate_workspace
+use m_delwaq1_write_messages
+
+
+implicit none
+
+contains
+
 
 
 !>\file
@@ -28,15 +36,15 @@
 subroutine delwaq1_allocate_workspace(argc, argv, errorcode)
     use m_getcom
     use m_delwaq1_data
-      
+
     implicit none
-      
+
     integer, intent(in)                           :: argc
     character(len=*), dimension(argc), intent(in) :: argv
     integer, intent(inout)                        :: errorcode
-    
 
-      
+
+
     !
     !     allocate workspace
     !
@@ -47,7 +55,7 @@ subroutine delwaq1_allocate_workspace(argc, argv, errorcode)
         else
           write(lunrep,'(A)') " ERROR: interpreting command line argument -IMAX, size of integer work array:"
           ierr = 1
-          call delwaq1_write_messages(argc, argv, errorcode)
+          call delwaq1_write_messages(errorcode)
           return
         endif
     else
@@ -60,7 +68,7 @@ subroutine delwaq1_allocate_workspace(argc, argv, errorcode)
         else
           write(lunrep,'(A)') " ERROR: interpreting command line argument -RMAX, size of real work array:"
           ierr = 1
-          call delwaq1_write_messages(argc, argv, errorcode)
+          call delwaq1_write_messages(errorcode)
           return
         endif
     else
@@ -73,7 +81,7 @@ subroutine delwaq1_allocate_workspace(argc, argv, errorcode)
         else
           write(lunrep,'(A)') " ERROR: interpreting command line argument -CMAX, size of character work array:"
           ierr = 1
-          call delwaq1_write_messages(argc, argv, errorcode)
+          call delwaq1_write_messages(errorcode)
           return
         endif
     else
@@ -83,22 +91,23 @@ subroutine delwaq1_allocate_workspace(argc, argv, errorcode)
     if ( ierr_alloc .ne. 0 ) then
         write ( lunrep , '(A,I6,A,I12)') " ERROR: allocating integer work array:",ierr_alloc," with length:",imax
         ierr = 1
-        call delwaq1_write_messages(argc, argv, errorcode)
+        call delwaq1_write_messages(errorcode)
         return
     endif
     allocate(rar(rmax),stat=ierr_alloc)
     if ( ierr_alloc .ne. 0 ) then
         write ( lunrep , '(A,I6,A,I12)') " ERROR: allocating real work array:",ierr_alloc," with length:",rmax
         ierr = 1
-        call delwaq1_write_messages(argc, argv, errorcode)
+        call delwaq1_write_messages(errorcode)
         return
     endif
     allocate(car(cmax),stat=ierr_alloc)
     if ( ierr_alloc .ne. 0 ) then
         write ( lunrep , '(A,I6,A,I12)') " ERROR: allocating character work array:",ierr_alloc," with length:",cmax
         ierr = 1
-        call delwaq1_write_messages(argc, argv, errorcode)
+        call delwaq1_write_messages(errorcode)
         return
     endif
 
 end subroutine delwaq1_allocate_workspace
+end module m_delwaq1_allocate_workspace

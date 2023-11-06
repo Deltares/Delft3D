@@ -20,51 +20,25 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_evaluate_waq_attribute
 
-      implicit none
+module m_evaluate_waq_attribute
 
-      contains
+    implicit none
 
-
-      SUBROUTINE evaluate_waq_attribute ( IKNMRK , KENMRK , KNMRKI )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     FUNCTION            : utility that evaluates an attribute (sometimes referred to as kenmerk)
-!                           from the "feature" integer. Used for D-Waq
-!                           For example: cell is at bottom, surface or in the middle. Cell is active or not
-!
-!     PARAMETERS          :
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     IKNMRK  INTEGER     1       INPUT   Index of feature
-!     KENMRK  INTEGER     1       INPUT   feature
-!     KNMRKI  INTEGER     1       OUTPUT  evaluated feature
-!
-      INTEGER IKNMRK, KENMRK, KNMRKI
-!
-!     Local
-!
-      INTEGER DHIMIS
-!
-      IF ( IKNMRK .EQ. 1 ) THEN
-         KNMRKI = MOD(KENMRK,10)
-      ELSEIF ( IKNMRK .EQ. 2 ) THEN
-         KNMRKI = KENMRK / 10
-         KNMRKI = MOD(KNMRKI,10)
-      ELSEIF ( IKNMRK .EQ. 3 ) THEN
-         KNMRKI = KENMRK / 100
-         KNMRKI = MOD(KNMRKI,10)
-      ELSEIF ( IKNMRK .LE. 0 .OR. IKNMRK .GT. 9      ) THEN
-         DHIMIS = -999.
-         KNMRKI = DHIMIS
-      ELSE
-         KNMRKI = KENMRK / 10**(IKNMRK-1)
-         KNMRKI = MOD(KNMRKI,10)
-      ENDIF
-!
-      RETURN
-      END
-      end module m_evaluate_waq_attribute
+    contains
+    subroutine evaluate_waq_attribute (position_digit , attribute , value_digit)
+        !< Extracts the value of the digit in "attribute" located at "position_digit" (from right to left).
+        !< For example: if attribute = 1234, and position_digit = 2, then value_digit = 3.
+        !< The second digit from the right in attribute is number 3.
+        !< The indices in attribute are used, for example, to indicate if a cell is at the bottom, at the surface or in the middle. 
+        !< Also if a cell is active or not.
+        integer, intent(in)  :: position_digit !< position (from right to left) of the digit to be extracted
+        integer, intent(in)  :: attribute      !< attribute containing multiple digits (each with a different meaning)
+        integer, intent(out) :: value_digit    !< digit located at the desired position in attribute
+        if (position_digit < 0 .OR. position_digit > 9) then
+            value_digit = -999.
+        else
+            value_digit = mod(attribute / 10**(position_digit-1), 10)
+        end if
+    end subroutine evaluate_waq_attribute
+end module m_evaluate_waq_attribute

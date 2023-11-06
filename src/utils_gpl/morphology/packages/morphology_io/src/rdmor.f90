@@ -343,7 +343,7 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     character(len=*)                       , intent(in)     :: filmor
     character(11)                          , intent(in)     :: fmttmp !< Format file ('formatted  ')
     integer                                , intent(in)     :: nto
-    logical                       , pointer, intent(in)     :: anymud
+    logical                                , intent(in)     :: anymud
     integer                                , intent(in)     :: lundia  !<  Description and declaration in inout.igs
     real(fp)                               , intent(out)    :: fwfac
     logical                                , intent(out)    :: error
@@ -643,7 +643,7 @@ subroutine read_morsys_parameters(mor_ptr, morpar, filmor, lsec, islope, lundia,
     type(morpar_type)             , pointer, intent(inout)  :: morpar
     character(len=*)                       , intent(in)     :: filmor
     integer                                , intent(in)     :: lsec
-    integer                       , pointer, intent(in)     :: islope
+    integer                                , intent(inout)  :: islope
     integer                                , intent(in)     :: lundia  !<  Description and declaration in inout.igs
     logical                                , intent(out)    :: error  
     
@@ -774,6 +774,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get_logical(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
     call prop_get_logical(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
     call prop_get_logical(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
+    call prop_get_double(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     fluxlimstring = ' '
     call prop_get_string(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
     call str_lower(fluxlimstring)

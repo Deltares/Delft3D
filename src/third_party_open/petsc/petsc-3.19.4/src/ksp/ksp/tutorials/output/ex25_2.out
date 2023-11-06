@@ -1,0 +1,248 @@
+  0 KSP Residual norm 0.0443241 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 2.33385 
+      1 KSP Residual norm 0.149578 
+      2 KSP Residual norm 1.22679 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 1.23503 
+      1 KSP Residual norm 0.0794808 
+      2 KSP Residual norm 0.648684 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 1.78001 
+    1 KSP Residual norm 0.105963 
+    2 KSP Residual norm 0.937442 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.340912 
+      1 KSP Residual norm 0.0213783 
+      2 KSP Residual norm 0.17921 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.179876 
+      1 KSP Residual norm 0.0100323 
+      2 KSP Residual norm 0.0948167 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.874599 
+    1 KSP Residual norm 0.0478285 
+    2 KSP Residual norm 0.461302 
+  1 KSP Residual norm 0.0185809 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.114582 
+      1 KSP Residual norm 0.012349 
+      2 KSP Residual norm 0.0594869 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.0591948 
+      1 KSP Residual norm 0.00584115 
+      2 KSP Residual norm 0.0309345 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.993391 
+    1 KSP Residual norm 0.0537321 
+    2 KSP Residual norm 0.523741 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.0192774 
+      1 KSP Residual norm 0.00266358 
+      2 KSP Residual norm 0.00984219 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.00893108 
+      1 KSP Residual norm 0.00111185 
+      2 KSP Residual norm 0.0046294 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.523143 
+    1 KSP Residual norm 0.0273265 
+    2 KSP Residual norm 0.276048 
+  2 KSP Residual norm 0.000795661 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.998379 
+      1 KSP Residual norm 0.0737639 
+      2 KSP Residual norm 0.523585 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.518305 
+      1 KSP Residual norm 0.0343328 
+      2 KSP Residual norm 0.273078 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.401463 
+    1 KSP Residual norm 0.0509673 
+    2 KSP Residual norm 0.203322 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.149823 
+      1 KSP Residual norm 0.0151393 
+      2 KSP Residual norm 0.0784378 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.0721186 
+      1 KSP Residual norm 0.00488792 
+      2 KSP Residual norm 0.0379712 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.12669 
+    1 KSP Residual norm 0.0190126 
+    2 KSP Residual norm 0.0636628 
+  3 KSP Residual norm 3.98257e-05 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.47043 
+      1 KSP Residual norm 0.092957 
+      2 KSP Residual norm 0.234014 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.239915 
+      1 KSP Residual norm 0.0468276 
+      2 KSP Residual norm 0.11874 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 1.16151 
+    1 KSP Residual norm 0.191695 
+    2 KSP Residual norm 0.560581 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.133266 
+      1 KSP Residual norm 0.0357375 
+      2 KSP Residual norm 0.0628862 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.0524995 
+      1 KSP Residual norm 0.00991596 
+      2 KSP Residual norm 0.0264384 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.485175 
+    1 KSP Residual norm 0.0798161 
+    2 KSP Residual norm 0.23725 
+  4 KSP Residual norm 2.40449e-06 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.635269 
+      1 KSP Residual norm 0.140149 
+      2 KSP Residual norm 0.312191 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.358238 
+      1 KSP Residual norm 0.0742635 
+      2 KSP Residual norm 0.174384 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.838294 
+    1 KSP Residual norm 0.107736 
+    2 KSP Residual norm 0.433668 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.201841 
+      1 KSP Residual norm 0.042807 
+      2 KSP Residual norm 0.0951668 
+      Residual norms for mg_levels_1_ solve.
+      0 KSP Residual norm 0.0819979 
+      1 KSP Residual norm 0.0177626 
+      2 KSP Residual norm 0.0403337 
+    Residual norms for mg_levels_2_ solve.
+    0 KSP Residual norm 0.412919 
+    1 KSP Residual norm 0.054804 
+    2 KSP Residual norm 0.212956 
+  5 KSP Residual norm 1.35943e-07 
+KSP Object: 2 MPI processes
+  type: fgmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  right preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 2 MPI processes
+  type: mg
+    type is FULL, levels=3 cycles=v
+      Not using Galerkin computed coarse grid matrices
+  Coarse grid solver -- level 0 -------------------------------
+    KSP Object: (mg_coarse_) 2 MPI processes
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (mg_coarse_) 2 MPI processes
+      type: redundant
+        First (color=0) of 2 PCs follows
+        KSP Object: (mg_coarse_redundant_) 1 MPI process
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (mg_coarse_redundant_) 1 MPI process
+          type: lu
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
+            matrix ordering: nd
+            factor fill ratio given 5., needed 1.60209
+              Factored matrix follows:
+                Mat Object: (mg_coarse_redundant_) 1 MPI process
+                  type: seqaij
+                  rows=128, cols=128
+                  package used to perform factorization: petsc
+                  total: nonzeros=612, allocated nonzeros=612
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI process
+            type: seqaij
+            rows=128, cols=128
+            total: nonzeros=382, allocated nonzeros=382
+            total number of mallocs used during MatSetValues calls=0
+              not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: 2 MPI processes
+        type: mpiaij
+        rows=128, cols=128
+        total: nonzeros=382, allocated nonzeros=768
+        total number of mallocs used during MatSetValues calls=0
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (mg_levels_1_) 2 MPI processes
+      type: chebyshev
+        Chebyshev polynomial of first kind
+        eigenvalue targets used: min 0.141423, max 1.55565
+        eigenvalues estimated via gmres: min 0.0186576, max 1.41423
+        eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
+        KSP Object: (mg_levels_1_esteig_) 2 MPI processes
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=2, nonzero initial guess
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using UNPRECONDITIONED norm type for convergence test
+    PC Object: (mg_levels_1_) 2 MPI processes
+      type: sor
+        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      linear system matrix = precond matrix:
+      Mat Object: 2 MPI processes
+        type: mpiaij
+        rows=255, cols=255
+        total: nonzeros=763, allocated nonzeros=1530
+        total number of mallocs used during MatSetValues calls=0
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  Down solver (pre-smoother) on level 2 -------------------------------
+    KSP Object: (mg_levels_2_) 2 MPI processes
+      type: chebyshev
+        Chebyshev polynomial of first kind
+        eigenvalue targets used: min 0.141422, max 1.55565
+        eigenvalues estimated via gmres: min 0.00388229, max 1.41422
+        eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
+        KSP Object: (mg_levels_2_esteig_) 2 MPI processes
+          type: gmres
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=2, nonzero initial guess
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using UNPRECONDITIONED norm type for convergence test
+    PC Object: (mg_levels_2_) 2 MPI processes
+      type: sor
+        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      linear system matrix = precond matrix:
+      Mat Object: 2 MPI processes
+        type: mpiaij
+        rows=509, cols=509
+        total: nonzeros=1525, allocated nonzeros=3054
+        total number of mallocs used during MatSetValues calls=0
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 2 MPI processes
+    type: mpiaij
+    rows=509, cols=509
+    total: nonzeros=1525, allocated nonzeros=3054
+    total number of mallocs used during MatSetValues calls=0
+Residual norm 6.6474e-08

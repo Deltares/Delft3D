@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_part08
+
+implicit none
+
+contains
+
 
       subroutine part08 ( lun    , nodye  , nocont , ictmax , amassd ,  &
                           ictime , amassc , aconc  , tmass  , tmassc ,  &
@@ -238,3 +244,5 @@
  1035 format (6x,a,e15.6,' kg')
 !
       end subroutine
+
+end module m_part08
