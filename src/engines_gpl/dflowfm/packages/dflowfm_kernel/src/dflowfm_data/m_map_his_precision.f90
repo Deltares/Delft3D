@@ -1,4 +1,4 @@
-!----lAGPL --------------------------------------------------------------------
+!----AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
@@ -35,5 +35,5 @@ module m_map_his_precision
     integer            :: md_nc_his_precision  !< NetCDF data precision in his files (0: double, 1: float)
     integer, parameter :: SINGLE_PRECISION = 1
 
- end module m_map_his_precision
+end module m_map_his_precision
     
