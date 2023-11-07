@@ -2940,7 +2940,7 @@ endif
        call prop_set(prop_ptr, 'geometry', 'Layertype' ,        Layertype,         'Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)')
        call prop_set(prop_ptr, 'geometry', 'Numtopsig' ,        Numtopsig,         'Number of sigma layers in top of z-layer model')
        if (writeall .or. janumtopsiguniform .ne. 1) then
-           call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform' , jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth).')
+           call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform' , jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
        endif
 
        call prop_set(prop_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor, 'Layer thickness growth factor from bed up')
