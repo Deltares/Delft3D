@@ -21,6 +21,7 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
 from src.config.types.presence_type import PresenceType
+from src.config.dependency import Dependency
 
 
 def loop(dictionary: Dict[str, Any], key: str) -> List:
@@ -437,6 +438,10 @@ class XmlConfigParser(object):
                 test_case.program_configs = []
 
         test_case.name = str(element["name"][0])
+        if "version" in element:
+            test_case.version = str(element["version"][0])
+        else:
+            test_case.version = ""
 
         if "ignore" in element:
             if str(element["ignore"][0]).lower() == "true":
@@ -461,7 +466,11 @@ class XmlConfigParser(object):
                 test_case.path = str(element["path"][0]["txt"])
 
         if "dependency" in element:
-            test_case.dependency = str(element["dependency"][0]["txt"])
+            tag = element["dependency"][0]
+            local_dir_data = tag['local_dir']
+            cases_path = tag["txt"]
+
+            test_case.dependency = Dependency(str(local_dir_data[0]), str(cases_path))
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])

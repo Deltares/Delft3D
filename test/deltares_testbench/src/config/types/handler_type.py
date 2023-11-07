@@ -17,3 +17,4 @@ class HandlerType(Enum):
     FTP = 3
     NET = 4
     PATH = 5
+    MINIO = 6

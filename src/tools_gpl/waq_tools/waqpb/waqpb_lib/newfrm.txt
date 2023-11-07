@@ -1,0 +1,17 @@
+Dit is een beschrijving van het nieuwe format.
+
+Een veld voor de eenheden toegevoegd tov oude formaat (kolom 86-115) KLAAR
+
+Hieronder een lijst van niet standaard items.
+
+We kunnen geen link tussen de processen en 1 of meer configs maken (nu voor duprol op default gezet)
+De oude import liet dat ook niet toe
+Hoe doet Leo dit in de openpb??
+
+Zelfde verhaal voor relatie tussen stoffen en config
+
+Of een item een stof is ja of nee blijkt nu alleen uit de aanwezigheid van fluxen.
+Daarvoor extra blokken?? JA, maar niet binnen het proces
+
+En de relatie tussen stoffen en groepen
+
