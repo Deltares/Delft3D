@@ -1,7 +1,7 @@
 import os
 import sys
 from os.path import abspath, dirname, join
-from test.Utils.test_logger import TestLogger
+from test.utils.test_logger import TestLogger
 
 import pytest
 
