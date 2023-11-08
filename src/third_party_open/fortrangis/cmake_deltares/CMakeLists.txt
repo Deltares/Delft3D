@@ -66,7 +66,7 @@ if (WIN32)
     target_link_libraries(${fortrangis_library_name} INTERFACE "gdal_i.lib")
     target_link_libraries(${fortrangis_library_name} INTERFACE "proj.lib" "sqlite3.lib" "ole32.lib" "shell32.lib")
 
-    target_include_directories(${fortrangis_library_name} INTERFACE ${proj_path}/include ${sqlite3_path}/include ${gisinternals_path})
+    target_include_directories(${fortrangis_library_name} INTERFACE ${gisinternals_path})
     target_link_directories(${fortrangis_library_name} INTERFACE ${proj_path}/lib ${sqlite3_path}/lib ${gisinternals_path})
 endif(WIN32)
 
