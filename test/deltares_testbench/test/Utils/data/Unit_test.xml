@@ -14,12 +14,6 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
   <!-- Modification date: 2018-08-15-12:01-->								
 								<config>
     <!-- CRITICAL, ERROR, WARNING, INFO, DEBUG -->
-    <credentials>
-      <credential name="deltares">
-        <username>smyrniou</username>
-        <password>Evapla21!</password>
-      </credential>
-    </credentials>
     <localPaths>
       <testCasesDir>.\data\cases</testCasesDir>
       <enginesDir>.\data\engines</enginesDir>
