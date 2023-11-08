@@ -801,8 +801,8 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream_WAQ</path>
+    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -997,8 +997,8 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream_WAQ</path>
+    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow_WAQ" ref="dwaq_default">
+        <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
