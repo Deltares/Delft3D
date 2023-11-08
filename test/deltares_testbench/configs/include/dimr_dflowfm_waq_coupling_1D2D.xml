@@ -527,7 +527,7 @@
     </testCase>
 
     <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c502_junction-advection-deceleration-equidistant</path>
+        <path>e02_dflowfm/f029_hyd_file/c502_junction-advection-deceleration-equidistant_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -802,7 +802,7 @@
 
 
     <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream</path>
+        <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -998,7 +998,7 @@
     </testCase>
 
     <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream</path>
+        <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -1277,7 +1277,7 @@
     </testCase>
 
     <testCase name="e02_f029_c516_curved-channel-junction-advection-reference_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c516_curved-channel-junction-advection-reference</path>
+        <path>e02_dflowfm/f029_hyd_file/c516_curved-channel-junction-advection-reference_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -1856,7 +1856,7 @@
     </testCase>
 
     <testCase name="e02_f029_c601_Weir_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c601_Weir</path>
+        <path>e02_dflowfm/f029_hyd_file/c601_Weir_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -1957,7 +1957,7 @@
     </testCase>
 
     <testCase name="e02_f029_c602_Orifice_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c602_Orifice</path>
+        <path>e02_dflowfm/f029_hyd_file/c602_Orifice_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -2147,7 +2147,7 @@
     </testCase>
 
     <testCase name="e02_f029_c604_Pump_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c604_Pump</path>
+        <path>e02_dflowfm/f029_hyd_file/c604_Pump_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -2343,7 +2343,7 @@
     </testCase>
 
     <testCase name="e02_f029_c606_Universal_Weir_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c606_Universal_Weir</path>
+        <path>e02_dflowfm/f029_hyd_file/c606_Universal_Weir_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>
@@ -2942,7 +2942,7 @@
     </testCase>
 
     <testCase name="e02_f029_c622_pump_urban_WAQ" ref="dwaq_default">
-        <path>e02_dflowfm/f029_hyd_file/c622_pump_urban</path>
+        <path>e02_dflowfm/f029_hyd_file/c622_pump_urban_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
           </program>

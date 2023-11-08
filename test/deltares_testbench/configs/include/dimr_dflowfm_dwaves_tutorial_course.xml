@@ -365,27 +365,6 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c17" ref="dimr_trunk" ignore="true">
-            <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c17_5_flow_wave_coupling</path>
-            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
-            <checks>
-                <file name="dwaves/wavh-wad.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="Hsig" toleranceAbsolute="0.001" />
-                        <parameter name="RTpeak" toleranceAbsolute="0.001" />
-                    </parameters>
-                </file>
-                <file name="dwaves/wavm-wad.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="hsign" toleranceAbsolute="0.001" />
-                        <parameter name="period" toleranceAbsolute="0.001" />
-                        <parameter name="steepw" toleranceAbsolute="0.0001" />
-                        <parameter name="wlength" toleranceAbsolute="0.01" />
-                    </parameters>
-                </file>
-            </checks>              
-        </testCase>
-        <!-- ======================================================================== -->
         <testCase name="e100_f08_c18" ref="dimr_trunk">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c18_01b_straight_coast_triangles</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
