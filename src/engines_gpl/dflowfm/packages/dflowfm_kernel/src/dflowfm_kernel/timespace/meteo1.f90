@@ -7215,7 +7215,7 @@ module m_meteo
             itemPtr1 => item_fy
             dataPtr1 => sywav
             jamapwav_sywav = 1
-         case ('wsbu')
+        case ('wsbu')
             itemPtr1 => item_wsbu
             dataPtr1 => sbxwav
             jamapwav_sxbwav = 1
@@ -7223,11 +7223,11 @@ module m_meteo
             itemPtr1 => item_wsbv
             dataPtr1 => sbywav
             jamapwav_sybwav = 1
-         case ('mx','xwaveinducedvolumeflux')
+         case ('mx')
             itemPtr1 => item_mx
             dataPtr1 => mxwav
             jamapwav_mxwav = 1
-         case ('my','ywaveinducedvolumeflux')
+         case ('my')
             itemPtr1 => item_my
             dataPtr1 => mywav
             jamapwav_mywav = 1
@@ -7239,7 +7239,7 @@ module m_meteo
             itemPtr1 => item_diswcap
             dataPtr1 => dwcap
             jamapwav_dwcap = 1
-         case ('ubot','bottomorbitalvelocity')
+         case ('ubot')
             itemPtr1 => item_ubot
             dataPtr1 => uorbwav            
             jamapwav_uorb = 1
@@ -8013,10 +8013,8 @@ module m_meteo
                 ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
                 fileReaderPtr%one_time_field = .true.
             endif
-         case ( 'wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce',                     &
-                'xwaveinducedvolumeflux','ywaveinducedvolumeflux','freesurfacedissipation','whitecappingdissipation',   &
-                'bottomorbitalvelocity','totalwaveenergydissipation','bottomdissipation')
-             !BS OWC: wsbu,wsbv might be included here with more appropriate names. 'totalwaveenergydissipation','bottomdissipation': included for now, might be removed if unused
+            case ('wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce', &
+                  'freesurfacedissipation','whitecappingdissipation', 'totalwaveenergydissipation')
              ! the name of the source item created by the file reader will be the same as the ext.force. quant name
             sourceItemName = varname
          case ('airpressure', 'atmosphericpressure')

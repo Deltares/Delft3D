@@ -76,6 +76,8 @@ Steps:
 Several packages need to have a pkgconfig file setup to be able to find the package. These include netcdf-fortran, proj and sqlite3. To do this, make a folder pkgconfig, and place there the following files:
 
 netcdf-fortran.pc
+
+
     prefix=/usr/local/netcdf-ifort/4.6.1/
     exec_prefix=${prefix}
     libdir=${exec_prefix}/lib
@@ -83,7 +85,6 @@ netcdf-fortran.pc
     fmoddir=${includedir}
     ccompiler=icc
     fcompiler=ifort
-
     Name: netcdf-fortran23
     Description: NetCDF Client Library for Fortran
     URL: https://www.unidata.ucar.edu/netcdf
@@ -93,13 +94,16 @@ netcdf-fortran.pc
     Libs.private: -L${libdir} -lnetcdff -lnetcdf
     Cflags: -I${includedir} -I${fmoddir}
 
+
+
 proj.pc
+
+
     prefix=/usr
     libdir=${prefix}/lib64
     includedir=${prefix}/include
     datarootdir=${prefix}/share
     datadir=${datarootdir}/proj
-
     Name: PROJ
     Description: Coordinate transformation software library
     Requires:
@@ -109,12 +113,15 @@ proj.pc
     Requires.private: sqlite3 libtiff-4 libcurl
     Cflags: -I${includedir}
 
+
+
 sqlite3.pc
+
+
     prefix=/usr
     exec_prefix=${prefix}
     libdir=${exec_prefix}/lib
     includedir=${prefix}/include
-
     Name: SQLite
     Description: SQL database engine
     Version: 3.41.2

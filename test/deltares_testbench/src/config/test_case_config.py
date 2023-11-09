@@ -11,14 +11,16 @@ from typing import List, Optional
 from src.config.file_check import FileCheck
 from src.config.location import Location
 from src.config.program_config import ProgramConfig
+from src.config.dependency import Dependency
 
 
 class TestCaseConfig:
     # constructor: initialize variables
     def __init__(self):
         self.__name: str = ""
+        self.__version: str = ""
         self.__path: str = ""
-        self.__dependency: str = ""
+        self.__dependency: Optional[Dependency] = None
         self.__locations: List[Location] = []
         self.__shell: Optional[ProgramConfig] = None
         self.__shell_arguments = []
@@ -44,6 +46,15 @@ class TestCaseConfig:
         self.__name = value
 
     @property
+    def version(self) -> str:
+        """version of the test case"""
+        return self.__version
+
+    @version.setter
+    def version(self, value: str):
+        self.__version = value
+
+    @property
     def path(self) -> str:
         """relative paths for test case"""
         return self.__path
@@ -53,12 +64,12 @@ class TestCaseConfig:
         self.__path = value
 
     @property
-    def dependency(self) -> str:
-        """relative paths for test case"""
+    def dependency(self) -> Optional[Dependency]:
+        """Data that the testcase depends on"""
         return self.__dependency
 
     @dependency.setter
-    def dependency(self, value: str):
+    def dependency(self, value: Optional[Dependency]):
         self.__dependency = value
 
     @property

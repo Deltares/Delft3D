@@ -1,4 +1,4 @@
-!----lAGPL --------------------------------------------------------------------
+!----AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
@@ -25,8 +25,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-! 
+!
 ! 
 
 !> Manages the unstruc model definition for the active problem.
@@ -274,7 +273,6 @@ implicit none
     integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    integer                                   :: md_nc_map_precision  !< NetCDF data precision in map files (0: double, 1: float)
     integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
     integer, private                          :: ifixedweirscheme_input  !< input value of ifixedweirscheme in mdu file
@@ -739,6 +737,7 @@ subroutine readMDUFile(filename, istat)
     use m_waves, only: hwavuni, twavuni, phiwavuni
     use m_sedtrails_data, only: sedtrails_analysis
     use unstruc_display,  only: jaGUI 
+    use m_map_his_precision
 
     character(*), intent(in)  :: filename !< Name of file to be read (the MDU file must be in current working directory).
     integer,      intent(out) :: istat    !< Return status (0=success)
@@ -880,7 +879,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer( md_ptr, 'geometry', 'Uniformtyp1Dstreetinlets'       , iproftypuni5      , success)
 
     call prop_get_double ( md_ptr, 'geometry', 'Uniformwidth1Droofgutterpipes'  , wu1Duni7          , success)
-    call prop_get_double ( md_ptr, 'geometry', 'Uniformheight1roofgutterpipes'  , hh1Duni7          , success)
+    call prop_get_double ( md_ptr, 'geometry', 'Uniformheight1Droofgutterpipes' , hh1Duni7          , success)
     call prop_get_integer( md_ptr, 'geometry', 'Uniformtyp1Droofgutterpipes'  , iproftypuni7      , success)
     call prop_get_string ( md_ptr, 'geometry', '1D2DLinkFile' ,     md_1d2dlinkfile , success)
 
@@ -1100,7 +1099,7 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'numerics', 'Jarhoxu' , Jarhoxu)
     if (Jarhoxu > 0) then
-        call mess(LEVEL_INFO, 'WARNING: Jarhoxu=0 is strongly advised and other values are discouraged', '.')
+        call mess(LEVEL_WARN, 'Jarhoxu=0 is strongly advised and other values are discouraged.')
     end if
 
     call prop_get_integer(md_ptr, 'numerics', 'Icgsolver'       , Icgsolver)
@@ -1355,6 +1354,9 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'physics', 'IniWithNudge', jainiwithnudge)
 
     call prop_get_integer(md_ptr, 'physics', 'Jadelvappos'       , Jadelvappos)
+    if (Jadelvappos .ne. 0) then
+        call mess(LEVEL_WARN, 'Jadelvappos=0 is strongly advised and other values are discouraged.')
+    end if
 
     call prop_get_double (md_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity)
     call prop_get_double (md_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature)
@@ -1529,7 +1531,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'wind' , 'Wind_eachstep'            , update_wind_stress_each_time_step )
     call prop_get_integer(md_ptr, 'wind' , 'computedAirdensity'       , ja_varying_airdensity)
 
-
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
     if (jawave /= 7 .and. waveforcing /= 0) then
@@ -1542,11 +1543,9 @@ subroutine readMDUFile(filename, istat)
           md_surfbeatfile = 'params.txt'
        end if
     end if
-    if (jawave == 5) then
-       call prop_get_double(md_ptr, 'waves', 'Hwavuni'    , Hwavuni)
-       call prop_get_double(md_ptr, 'waves', 'Twavuni'    , Twavuni)
-       call prop_get_double(md_ptr, 'waves', 'Phiwavuni'  , Phiwavuni)
-    endif
+    call prop_get_double(md_ptr, 'waves', 'Hwavuni'    , Hwavuni)
+    call prop_get_double(md_ptr, 'waves', 'Twavuni'    , Twavuni)
+    call prop_get_double(md_ptr, 'waves', 'Phiwavuni'  , Phiwavuni)
 
     call prop_get_string (md_ptr,   'waves', 'Rouwav'           , rouwav)
     if (jawave > 0 .and. .not. flowWithoutWaves) then
@@ -1826,6 +1825,8 @@ subroutine readMDUFile(filename, istat)
     call unc_set_ncformat(md_ncformat)
     md_nc_map_precision = 0
     call prop_get_integer(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+    md_nc_his_precision = 0
+    call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
     call prop_get_integer(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
@@ -2706,6 +2707,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use m_xbeach_data, only: swave
     use unstruc_channel_flow
     use m_sedtrails_data
+    use m_map_his_precision
 
     integer, intent(in)  :: mout  !< File pointer where to write to.
     logical, intent(in)  :: writeall !< Write all fields, including default values
@@ -2843,10 +2845,10 @@ endif
     if (writeall .or. bedslope .ne. 0d0) then
        call prop_set(prop_ptr, 'geometry', 'Bedslope',      bedslope,               'Bed slope inclination if BedlevType > 2')
     endif
-    if (writeall .or. bedwaveamplitude .ne. 0d0) then
+    if (bedwaveamplitude .ne. 0d0) then
        call prop_set(prop_ptr, 'geometry', 'Bedwaveamplitude', bedwaveamplitude,    'Bed testcases')
     endif
-    if (writeall .or. bedwavelength .ne. 0d0) then
+    if (bedwavelength .ne. 0d0) then
        call prop_set(prop_ptr, 'geometry', 'Bedwavelength',    bedwavelength,       'Bed testcases')
     endif
 
@@ -2940,7 +2942,7 @@ endif
        call prop_set(prop_ptr, 'geometry', 'Layertype' ,        Layertype,         'Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)')
        call prop_set(prop_ptr, 'geometry', 'Numtopsig' ,        Numtopsig,         'Number of sigma layers in top of z-layer model')
        if (writeall .or. janumtopsiguniform .ne. 1) then
-           call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform' , jaNumtopsiguniform,         'Number of sigma layers above z-layers in a z-sigma model')
+           call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform' , jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
        endif
 
        call prop_set(prop_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor, 'Layer thickness growth factor from bed up')
@@ -2977,7 +2979,7 @@ endif
        if (writeall .or. dztopuniabovez .ne. dmiss) then
           call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez,'Above this level layers will have uniform Dztop, below we use SigmaGrowthFactor')
        endif
-       if (writeall .or. Tsigma .ne. 100d0) then
+       if (Tsigma .ne. 100d0) then
           call prop_set(prop_ptr, 'geometry', 'Tsigma', Tsigma ,'Sigma Adaptation period for Layertype==4 (s)')
        endif
 
@@ -2990,11 +2992,11 @@ endif
        endif
 
        if (writeall .or. ihuz .ne. 4) then
-           call prop_set(prop_ptr, 'geometry', 'Ihuz'  , ihuz, 'if keepzlayeratbed>=2 : 1=central from bed til second, 2=all central, 3=from bed till highest equal levels')
+           call prop_set(prop_ptr, 'geometry', 'Ihuz'  , ihuz, 'if keepzlayeringatbed>=2 : 1=central from bed til second, 2=all central, 3=from bed till highest equal levels')
        endif
 
        if (writeall .or. ihuzcsig .ne. 3) then
-           call prop_set(prop_ptr, 'geometry', 'ihuzcsig'  , ihuzcsig, 'if keepzlayeratbed>=2 : 1,2,3=av,mx,mn of Leftsig,Rightsig,4=uniform')
+           call prop_set(prop_ptr, 'geometry', 'ihuzcsig'  , ihuzcsig, 'if keepzlayeringatbed>=2 : 1,2,3=av,mx,mn of Leftsig,Rightsig,4=uniform')
        endif
 
        if (writeall .or. jaZlayeratubybob .ne. 0 .and. layertype .ne. 1) then
@@ -3384,8 +3386,12 @@ endif
        call prop_set(prop_ptr, 'numerics', 'Oceaneddyxoff'       , Oceaneddyxoff)
     endif
 
-    call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood,   'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
-    call prop_set(prop_ptr, 'numerics', 'Testfixedweirs', testfixedweirs, 'Test for fixed weir algoritms (0 = Sieben2010, 1 = Sieben2007 )')
+    if (testdryflood .ne. 0) then
+        call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
+    endif
+    if (testfixedweirs .ne. 0) then
+        call prop_set(prop_ptr, 'numerics', 'Testfixedweirs', testfixedweirs, 'Test for fixed weir algoritms (0 = Sieben2010, 1 = Sieben2007)')
+    endif
 
 ! Physics
     call prop_set(prop_ptr, 'physics', 'UnifFrictCoef',     frcuni,      'Uniform friction coefficient (0: no friction)')
@@ -3456,7 +3462,9 @@ endif
        call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
     endif
 
-    ! call prop_set(prop_ptr, 'physics', 'Jadelvappos'     , Jadelvappos, 'Only positive forced evaporation fluxes')           ! RL666
+    if (Jadelvappos .ne. 0) then
+        call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
+    endif 
 
     call prop_set(prop_ptr, 'physics', 'Temperature'     , jatem,       'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
     if (writeall .or. (jatem > 0)) then
@@ -3675,7 +3683,7 @@ endif
        
     endif
 
-    if (writeall .or. jasedtrails>0) then
+    if (jasedtrails > 0) then
        call prop_set(prop_ptr, 'sedtrails', 'SedtrailsGrid',  trim(md_sedtrailsfile), 'Grid file for sedtrails output locations on corners')
        call prop_set(prop_ptr, 'sedtrails', 'SedtrailsAnalysis',  trim(sedtrails_analysis), 'Sedtrails analysis. Should be all, transport, flowvelocity or soulsby.')
        ti_st_array(1) = ti_st
@@ -3880,8 +3888,9 @@ endif
 
     call prop_set(prop_ptr, 'output', 'NcFormat',  md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 
-    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: float)')
-    
+    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: single)')
+    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision',  md_nc_his_precision, 'Precision for NetCDF data in his files (0: double, 1: single)')
+
     if (writeall .or. unc_nounlimited /= 0) then
        call prop_set(prop_ptr, 'output', 'NcNoUnlimited',  unc_nounlimited, 'Write full-length time-dimension instead of unlimited dimension (1: yes, 0: no). (Might require NcFormat=4.)')
     end if
@@ -4109,7 +4118,7 @@ endif
     if(ITRA1 > 0 .and. (writeall .or. jamapconst /= 1) ) then
         call prop_set(prop_ptr, 'output', 'Wrimap_constituents', jamapconst, 'Write constituents to map file (1: yes, 0: no)')
     endif
-    if(jatrt > 0 .and. (writeall .or. jamaptrachy /= 1)) then
+    if (writeall .or. jamaptrachy /= 1) then
         call prop_set(prop_ptr, 'output', 'Wrimap_trachytopes', jamaptrachy, 'Write trachytope roughnesses to map file (1: yes, 0: no)')
     endif
     if(jacali > 0 .and. (writeall .or. jamapcali /= 1)) then
@@ -4182,7 +4191,7 @@ endif
        call prop_set(prop_ptr, 'output', 'Wrimap_sal_potential', jamapselfal, 'Write self attraction and loading potential to map file (1: yes, 0: no)')
     end if
 
-    if (jaFrcInternalTides2D > 0 .and. (writeall .or. jamapIntTidesDiss /=1 )) then
+    if (writeall .or. jamapIntTidesDiss /=1) then
        call prop_set(prop_ptr, 'output', 'Wrimap_internal_tides_dissipation', jamapIntTidesDiss, 'Write internal tides dissipation to map file (1: yes, 0: no)')
     end if
 
@@ -4259,7 +4268,6 @@ endif
    call prop_set_string (prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
    call prop_set_double (prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
    call prop_set_double (prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
-   call prop_set_double (prop_ptr, 'processes', 'DtMassBalance', md_dt_waqbal, 'waq mass balance output time step')
    call prop_set_integer(prop_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, 'Process fluxes integration option (1: WAQ, 2: D-Flow FM)')
    call prop_set_integer(prop_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, 'Write 3D water quality bottom variables (1: yes, 0: no)')
    call prop_set_double (prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')

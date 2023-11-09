@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 from os.path import abspath, dirname, isfile, join
-from test.Utils.test_logger import TestLogger
+from test.utils.test_logger import TestLogger
 
 import pytest
 

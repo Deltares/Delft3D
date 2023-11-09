@@ -35,13 +35,15 @@ implicit none
 public :: set_external_forcings
 public :: calculate_wind_stresses
 
+  procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
+  
   abstract interface
      subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
         integer, intent(in) :: number_of_links      !< number of links
         integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
      end subroutine
   end interface
-
+  
 contains
 
 !> set field oriented boundary conditions
@@ -318,54 +320,33 @@ end subroutine get_timespace_value_by_item_and_consider_success_value
 
 !> set_wave_parameters
 subroutine set_wave_parameters()
-   logical                                                            :: all_wave_variables                         !< flag indicating whether _all_ wave variables should be mirrored at the boundary
-   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
-
+   !
+   logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
+   
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
-      !
-      ! This part must be skipped during initialization
-      if (.not. initialization) then
-         if (jawave == 3) then
-            ! Finally the delayed external forcings can be initialized
-            success = flow_initwaveforcings_runtime()
-         end if
-         if (allocated (hwavcom) ) then
-            success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-         end if
-         if (allocated (twav) ) then
-            success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-         end if
-         if (allocated (phiwav) ) then
-             call get_values_and_consider_jawave6(item_dir)
-         end if
-         if (allocated (sxwav) ) then
-            call get_values_and_consider_jawave6(item_fx)
-         end if
-         if (allocated (sywav) ) then
-             call get_values_and_consider_jawave6(item_fy)
-         end if
-         if (allocated (sbxwav) ) then
-            call get_values_and_consider_jawave6(item_wsbu)
-         end if
-         if (allocated (sbywav) ) then
-            call get_values_and_consider_jawave6(item_wsbv)
-         end if
-         if (allocated (mxwav) ) then
-            call get_values_and_consider_jawave6(item_mx)
-         end if
-         if (allocated (mywav) ) then
-            call get_values_and_consider_jawave6(item_my)
-         end if
-         if (allocated (dsurf) ) then
-            call get_values_and_consider_jawave6(item_dissurf)
-         end if
-         if (allocated (dwcap) ) then
-            call get_values_and_consider_jawave6(item_diswcap)
-         end if
-         if (allocated (uorbwav) ) then
-            call get_values_and_consider_jawave6(item_ubot)
-         end if
-      end if
+       
+       if (.not. initialization) then
+           !
+           if (     jawave == 7 .and. waveforcing == 1 ) then
+               !
+               call set_parameters_for_radiation_stress_driven_forces()
+               !
+           elseif ( jawave == 7 .and. waveforcing == 2 ) then
+               !
+               call set_parameters_for_dissipation_driven_forces()
+               !
+           elseif ( jawave == 7 .and. waveforcing == 3 ) then
+               !
+               call set_parameters_for_3d_dissipation_driven_forces()               
+           else
+               !
+               call set_all_wave_parameters()
+           end if
+           !
+       end if
+       
+       ! NB: choose whether to keep if(.not. initialization) hidden in initialize_wave_parameters or in set_wave_parameters
+       
       if (.not. success) then
          !
          ! success = .false. : Most commonly, WAVE data has not been written to the com-file yet:
@@ -410,8 +391,8 @@ subroutine set_wave_parameters()
           end if
 
          all_wave_variables = .not.(jawave == 7 .and. waveforcing /= 3)
-         call select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
-
+         call select_wave_variables_subgroup(all_wave_variables)
+         
          ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
          !
          ! velocity boundaries
@@ -426,13 +407,13 @@ subroutine set_wave_parameters()
          !  tangential-velocity boundaries
          call fill_open_boundary_cells_with_inner_values(nbndt, kbndt)
       end if
-
+   
       if (jawave>0) then
          ! this call  is needed for bedform updates with van Rijn 2007 (cal_bf, cal_ksc below)
          ! These subroutines need uorb, rlabda
          call compute_wave_parameters()
       end if
-
+   
    end if
 
 end subroutine set_wave_parameters
@@ -449,75 +430,106 @@ subroutine get_values_and_consider_jawave6(item)
 end subroutine get_values_and_consider_jawave6
 
 
-!> select_wave_variables_subgroup
-!! select routine depending on whether all or a subgroup of wave variables are allocated
-subroutine select_wave_variables_subgroup(all_wave_variables, fill_open_boundary_cells_with_inner_values)
-
-    logical, intent(in) :: all_wave_variables
-    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values
-
-    if (all_wave_variables) then
-        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
-    else
-        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
+!> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
+subroutine set_all_wave_parameters()
+    ! This part must be skipped during initialization
+    if (jawave == 3) then
+        ! Finally the delayed external forcings can be initialized
+        success = flow_initwaveforcings_runtime()
     end if
 
-end subroutine select_wave_variables_subgroup
+    if ( allocated (hwavcom) ) then
+        success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
+    end if
+    if ( allocated (twav)    ) then
+        success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
+    end if
+    if ( allocated (phiwav)  ) then
+        call get_values_and_consider_jawave6(item_dir)
+    end if
+    if ( allocated (sxwav)   ) then
+        call get_values_and_consider_jawave6(item_fx)
+    end if
+    if ( allocated (sywav)   ) then
+        call get_values_and_consider_jawave6(item_fy)
+    end if
+    if ( allocated (sbxwav)  ) then
+        call get_values_and_consider_jawave6(item_wsbu)
+    end if
+    if ( allocated (sbywav)  ) then
+        call get_values_and_consider_jawave6(item_wsbv)
+    end if
+    if ( allocated (mxwav)   ) then
+        call get_values_and_consider_jawave6(item_mx)
+    end if
+    if ( allocated (mywav)   ) then
+        call get_values_and_consider_jawave6(item_my)
+    end if
+    if ( allocated (uorbwav) ) then
+        call get_values_and_consider_jawave6(item_ubot)
+    end if
+    if ( allocated (dsurf)   ) then
+        call get_values_and_consider_jawave6(item_dissurf)
+    end if
+    if ( allocated (dwcap)   ) then
+        call get_values_and_consider_jawave6(item_diswcap)
+    end if
+
+end subroutine set_all_wave_parameters 
+
+!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
+subroutine set_parameters_for_radiation_stress_driven_forces()
+
+    success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_tp  , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_dir , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_fx  , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_fy  , ecTime)
+    mxwav  (:) = 0d0
+    mywav  (:) = 0d0
+    uorbwav(:) = 0d0
+
+    call mess(LEVEL_WARN, 'Incomplete functionality. Wave forces set to zero when Wavemodelnr = 7.')
+
+end subroutine set_parameters_for_radiation_stress_driven_forces
+!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via averaged dissipation) 
+subroutine set_parameters_for_dissipation_driven_forces()
+
+    success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_tp  , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_dir , ecTime)
+    sxwav  (:) = 0d0
+    sywav  (:) = 0d0
+    mxwav  (:) = 0d0
+    mywav  (:) = 0d0
+    uorbwav(:) = 0d0
+
+    call mess(LEVEL_WARN, 'Incomplete functionality. Wave forces set to zero when Wavemodelnr = 7.')
+
+end subroutine set_parameters_for_dissipation_driven_forces
+
+!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation)
+subroutine set_parameters_for_3d_dissipation_driven_forces()
 
 
-!> fill_open_boundary_cells_with_inner_values_all
-subroutine fill_open_boundary_cells_with_inner_values_all(number_of_links, link2cell)
+success = success .and. ecGetValues(ecInstancePtr, item_hrms   , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_tp     , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_dir    , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_fx     , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_fy     , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime) 
+    success = success .and. ecGetValues(ecInstancePtr, item_diswcap, ecTime)
+    sbxwav (:) = 0d0
+    sbywav (:) = 0d0
+    mxwav  (:) = 0d0
+    mywav  (:) = 0d0
+    uorbwav(:) = 0d0
 
-   integer, intent(in) :: number_of_links      !< number of links
-   integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
+    call mess(LEVEL_WARN, 'Incomplete functionality. Wave forces set to zero when Wavemodelnr = 7.')
 
-   integer             :: link !< link counter
-   integer             :: kb   !< cell index of boundary cell
-   integer             :: ki   !< cell index of internal cell
-
-   do link = 1, number_of_links
-       kb   = link2cell(1,link)
-       ki   = link2cell(2,link)
-       hwavcom(kb) = hwavcom(ki)
-       twav(kb)    = twav(ki)
-       phiwav(kb)  = phiwav(ki)
-       uorbwav(kb) = uorbwav(ki)
-       sxwav(kb)   = sxwav(ki)
-       sywav(kb)   = sywav(ki)
-       mxwav(kb)   = mxwav(ki)
-       mywav(kb)   = mywav(ki)
-       sbxwav(kb)  = sbxwav(ki)
-       sbywav(kb)  = sbywav(ki)
-       dsurf(kb)   = dsurf(ki)
-       dwcap(kb)   = dwcap(ki)
-   end do
-
-end subroutine fill_open_boundary_cells_with_inner_values_all
-
-!> fill_open_boundary_cells_with_inner_values_fewer
-subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
-
-    integer, intent(in) :: number_of_links      !< number of links
-    integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
-
-    integer             :: link !< link counter
-    integer             :: kb   !< cell index of boundary cell
-    integer             :: ki   !< cell index of internal cell
-
-    do link = 1, number_of_links
-        kb   = link2cell(1,link)
-        ki   = link2cell(2,link)
-        hwavcom(kb) = hwavcom(ki)
-        twav(kb)    = twav(ki)
-        phiwav(kb)  = phiwav(ki)
-        uorbwav(kb) = uorbwav(ki)
-        sxwav(kb)   = sxwav(ki)
-        sywav(kb)   = sywav(ki)
-        mxwav(kb)   = mxwav(ki)
-        mywav(kb)   = mywav(ki)
-    end do
-
-end subroutine fill_open_boundary_cells_with_inner_values_fewer
+end subroutine set_parameters_for_3d_dissipation_driven_forces
+    
+  
 
 !> convert wave direction [degrees] from nautical to cartesian meteorological convention
 elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
@@ -841,5 +853,77 @@ subroutine calculate_wind_stresses(time_in_seconds, iresult)
    iresult = DFM_NOERR
 
 end subroutine calculate_wind_stresses
+
+
+
+!> select_wave_variables_subgroup
+!! select routine depending on whether all or a subgroup of wave variables are allocated
+subroutine select_wave_variables_subgroup(all_wave_variables)
+    
+    logical, intent(in) :: all_wave_variables
+    
+    if (all_wave_variables) then
+        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
+    else
+        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
+    end if
+    
+end subroutine select_wave_variables_subgroup
+
+!> fill_open_boundary_cells_with_inner_values_all
+subroutine fill_open_boundary_cells_with_inner_values_all(number_of_links, link2cell)
+    use m_waves
+
+    integer, intent(in) :: number_of_links      !< number of links
+    integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
+    
+    integer             :: link !< link counter
+    integer             :: kb   !< cell index of boundary cell
+    integer             :: ki   !< cell index of internal cell
+
+    do link = 1, number_of_links
+        kb   = link2cell(1,link)
+        ki   = link2cell(2,link)
+        hwavcom(kb) = hwavcom(ki)
+        twav(kb)    = twav(ki)
+        phiwav(kb)  = phiwav(ki)
+        uorbwav(kb) = uorbwav(ki)
+        sxwav(kb)   = sxwav(ki)
+        sywav(kb)   = sywav(ki)
+        mxwav(kb)   = mxwav(ki)
+        mywav(kb)   = mywav(ki)
+        sbxwav(kb)  = sbxwav(ki)
+        sbywav(kb)  = sbywav(ki)
+        dsurf(kb)   = dsurf(ki)
+        dwcap(kb)   = dwcap(ki)
+    end do
+
+end subroutine fill_open_boundary_cells_with_inner_values_all
+
+!> fill_open_boundary_cells_with_inner_values_fewer
+subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
+    use m_waves
+
+    integer, intent(in) :: number_of_links      !< number of links
+    integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
+    
+    integer             :: link !< link counter
+    integer             :: kb   !< cell index of boundary cell
+    integer             :: ki   !< cell index of internal cell
+
+    do link = 1, number_of_links
+        kb   = link2cell(1,link)
+        ki   = link2cell(2,link)
+        hwavcom(kb) = hwavcom(ki)
+        twav(kb)    = twav(ki)
+        phiwav(kb)  = phiwav(ki)
+        uorbwav(kb) = uorbwav(ki)
+        sxwav(kb)   = sxwav(ki)
+        sywav(kb)   = sywav(ki)
+        mxwav(kb)   = mxwav(ki)
+        mywav(kb)   = mywav(ki)
+    end do
+ 
+end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
 end module m_external_forcings
