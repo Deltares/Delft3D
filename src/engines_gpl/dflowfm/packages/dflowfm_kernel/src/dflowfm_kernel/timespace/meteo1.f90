@@ -7194,7 +7194,10 @@ module m_meteo
             dataPtr1 => nudge_tem
          case ('discharge_salinity_temperature_sorsin')
             itemPtr1 => item_discharge_salinity_temperature_sorsin
-            dataPtr1 => qstss
+            ! Do not point to array qstss here.
+            ! qstss might be reallocated after initialization (when coupled to Cosumo) 
+            ! and must be an argument when calling ec_gettimespacevalue.
+            nullify(dataPtr1)
          case ('hrms', 'wavesignificantheight')
             itemPtr1 => item_hrms
             dataPtr1 => hwavcom

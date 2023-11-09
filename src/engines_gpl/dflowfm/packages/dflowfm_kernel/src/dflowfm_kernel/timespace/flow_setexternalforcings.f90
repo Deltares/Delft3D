@@ -164,7 +164,9 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    if (numsrc > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds)
+      ! qstss must be an argument when calling ec_gettimespacevalue.
+      ! It might be reallocated after initialization (when coupled to Cosumo).
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, qstss)
    end if
 
    if (jasubsupl > 0) then
