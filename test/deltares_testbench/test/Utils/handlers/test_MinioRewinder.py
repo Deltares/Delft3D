@@ -47,28 +47,17 @@ class TestMinioRewinder:
                 rewinder_instance = Rewinder(minio_instance, version)
 
     @staticmethod
-    def create_mock_object(
-        name: str, version_id: str, last_modified: datetime, is_delete_marker: bool
-    ):
-        mock_object = Mock()
-        mock_object._object_name = name
-        mock_object.version_id = version_id
-        mock_object._last_modified = last_modified
-        mock_object._is_delete_marker = is_delete_marker
-        return mock_object
-
-    @staticmethod
     def test_rewind_download_delete_marker():
         # Create a Mock for the Minio client
         mock_minio_client = Mock()
 
-        object1 = TestMinioHandler.create_mock_object(
+        object1 = TestMinioRewinder.create_mock_object(
             "object1_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
             False,
         )
-        object2 = TestMinioHandler.create_mock_object(
+        object2 = TestMinioRewinder.create_mock_object(
             "object2_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
@@ -96,13 +85,13 @@ class TestMinioRewinder:
         # Create a Mock for the Minio client
         mock_minio_client = Mock()
 
-        object1 = TestMinioHandler.create_mock_object(
+        object1 = TestMinioRewinder.create_mock_object(
             "object1_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
             False,
         )
-        object2 = TestMinioHandler.create_mock_object(
+        object2 = TestMinioRewinder.create_mock_object(
             "object2_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
@@ -128,13 +117,13 @@ class TestMinioRewinder:
         # Create a Mock for the Minio client
         mock_minio_client = Mock()
 
-        object1 = TestMinioHandler.create_mock_object(
+        object1 = TestMinioRewinder.create_mock_object(
             "object1_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
             False,
         )
-        object2 = TestMinioHandler.create_mock_object(
+        object2 = TestMinioRewinder.create_mock_object(
             "object2_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
@@ -172,13 +161,13 @@ class TestMinioRewinder:
         # Create a Mock for the Minio client
         mock_minio_client = Mock()
 
-        object1 = TestMinioHandler.create_mock_object(
+        object1 = TestMinioRewinder.create_mock_object(
             "object1_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
             False,
         )
-        object2 = TestMinioHandler.create_mock_object(
+        object2 = TestMinioRewinder.create_mock_object(
             "object2_name",
             "version1",
             datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
@@ -198,3 +187,14 @@ class TestMinioRewinder:
             rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
             mock_minio_client.fget_object.assert_not_called()
+
+    @staticmethod
+    def create_mock_object(
+        name: str, version_id: str, last_modified: datetime, is_delete_marker: bool
+    ):
+        mock_object = Mock()
+        mock_object._object_name = name
+        mock_object.version_id = version_id
+        mock_object._last_modified = last_modified
+        mock_object._is_delete_marker = is_delete_marker
+        return mock_object

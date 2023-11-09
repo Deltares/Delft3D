@@ -760,6 +760,7 @@ subroutine readMDUFile(filename, istat)
     double precision, parameter :: tolSumLay = 1d-12
     integer, parameter :: maxLayers = 300
     integer            :: major, minor
+    integer            :: ignore_value
     external           :: unstruc_errorhandler
     istat = 0 ! Success
 
@@ -1180,6 +1181,9 @@ subroutine readMDUFile(filename, istat)
     if (jaorgbarockeywords == 1) then
        call prop_get_integer(md_ptr, 'numerics', 'Barocterm' , jabarocterm)
        call prop_get_integer(md_ptr, 'numerics', 'Baroctimeint' , jabaroctimeint)
+    else
+       call prop_get_integer(md_ptr, 'numerics', 'Barocterm' , ignore_value)
+       call prop_get_integer(md_ptr, 'numerics', 'Baroctimeint' , ignore_value)
     endif
     call prop_get_integer(md_ptr, 'numerics', 'Baroczlaybed'   , jabaroczlaybed)
     call prop_get_integer(md_ptr, 'numerics', 'Barocponbnd'    , jaBarocponbnd)
