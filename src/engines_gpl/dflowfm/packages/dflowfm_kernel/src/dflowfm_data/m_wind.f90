@@ -104,7 +104,7 @@ integer                           :: japatm              !< use patm yes or no
 integer                           :: jaspacevarcharn     !< use space and time varying Charnock coefficients yes or no
 integer                           :: jawindstressgiven   !< wind given as stress, no conversion needed
 integer                           :: jastresstowind      !< if jawindstressgiven==1, convert stress to wind yes/no 1/0 
-integer                           :: ja_varying_airdensity !< if jatair=1 and japatm=1, compute airdensity yes/no 1/0
+integer                           :: ja_varying_airdensity !< compute airdensity yes/no 1/0
 integer                           :: jarain              !< use rain yes or no
 integer                           :: jaevap              !< use evap yes or no
 integer                           :: jatair              !< use air temperature   yes or no
@@ -116,7 +116,7 @@ integer                           :: jalongwave = 0      !< >0 longwaveradiation
 integer                           :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
 integer                           :: jaQext              !< use Qin externally provided yes or no
 integer                           :: jaqin               !< use qin , sum of all in fluxes
-
+integer                           :: update_wind_stress_each_time_step = 0 !< if 1, update wind (and air pressure) in each computational time step, else in externalforcings (default)
 double precision                  :: windxav, windyav  !< average wind for plotting
 
 double precision                  :: windsp

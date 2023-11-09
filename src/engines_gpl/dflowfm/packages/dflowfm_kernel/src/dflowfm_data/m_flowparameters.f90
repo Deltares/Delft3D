@@ -455,6 +455,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jalogtransportsolverlimiting    !< log transport solver limiting message bloat (default 0, preferable 0)
  
  integer                           :: jadpuopt                  !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean. 
+ integer                           :: jaextrapbl                !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions. 
 
  ! written to his file yes or no
  integer                           :: jahisbal                  !< Write mass balance/volume totals to his file, 0: no, 1: yes
@@ -1062,6 +1063,7 @@ subroutine default_flowparameters()
     implicitdiffusion2D         = 0
     
     jadpuopt = 1
+    jaextrapbl = 0
 
     call reset_flowparameters()
 end subroutine default_flowparameters

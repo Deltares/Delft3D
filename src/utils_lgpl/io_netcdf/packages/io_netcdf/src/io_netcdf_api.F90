@@ -1740,7 +1740,7 @@ function ionc_get_meshgeom_dim_dll(ioncid, meshid, networkid, c_meshgeomdim) res
    c_meshgeomdim%numedge         = meshgeom%numedge
    c_meshgeomdim%numface         = meshgeom%numface
    c_meshgeomdim%maxnumfacenodes = meshgeom%maxnumfacenodes
-   c_meshgeomdim%numlayer        = meshgeom%numlayer
+   c_meshgeomdim%num_layers      = meshgeom%num_layers
    c_meshgeomdim%layertype       = meshgeom%layertype
    c_meshgeomdim%nnodes          = meshgeom%nnodes
    c_meshgeomdim%nbranches       = meshgeom%nbranches
@@ -1756,7 +1756,7 @@ function ionc_get_meshgeom_dll(ioncid, meshid, networkid, c_meshgeom, start_inde
    logical, optional,   intent(in   )          :: includeArrays
    integer                                     :: ierr
    type(t_ug_meshgeom)                         :: meshgeom
-   type (c_t_ug_meshgeomdim)                   :: c_meshgeomDim !currently this is not an output argument, but it could be considered
+   type (c_t_ug_meshgeomdim)                   :: c_meshgeomDim ! currently this is not an output argument, but it could be considered
 
 
    !initialize meshgeom

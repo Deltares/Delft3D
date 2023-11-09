@@ -498,7 +498,7 @@ subroutine fill_valobs()
             valobs(IPNT_RAIN,i) = rain(k)
          end if
          
-         if (ja_airdensity > 0 .and. jahis_airdensity > 0) then
+         if (allocated(airdensity) .and. jahis_airdensity > 0) then
             valobs(IPNT_AIRDENSITY,i) = airdensity(k)
          end if
 

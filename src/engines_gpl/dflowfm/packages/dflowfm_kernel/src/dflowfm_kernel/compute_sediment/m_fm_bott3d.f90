@@ -69,7 +69,7 @@ public :: fm_bott3d
    use m_flowgeom , only: ndxi, ndx
    use m_flowparameters, only: eps10, jawave 
    use m_flowexternalforcings, only: nopenbndsect
-   use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds
+   use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
    use m_transport, only: ised1
    use unstruc_files, only: mdia
    use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
@@ -77,6 +77,7 @@ public :: fm_bott3d
    use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
    use m_fm_morstatistics, only: morstats, morstatt0
    use m_tables, only: interpolate
+   use Timers
 
    implicit none
 
@@ -86,8 +87,10 @@ public :: fm_bott3d
    
    double precision, parameter                 :: DAY2SEC = 86400.0d0 !< seconds in a day  
    double precision, parameter                 :: H2SEC   = 3600.0d0  !< seconds in an hour 
-   logical, parameter                          :: DO_AVALANCHE = .true.
-   logical, parameter                          :: NOT_AVALANCHE = .false.
+   logical, parameter                          :: AVALANCHE_ON  = .true.
+   logical, parameter                          :: AVALANCHE_OFF = .false.
+   logical, parameter                          :: SLOPECOR_ON  = .true.
+   logical, parameter                          :: SLOPECOR_OFF = .false.
    
    !!
    !! Local variables
@@ -115,7 +118,7 @@ public :: fm_bott3d
    !!
    !! Execute
    !!
-
+   call timstrt('Bott3d_call   ', handle_extra(89))
    if (.not. allocated(bl_ave0)) then
       allocate(bl_ave0(1:ndx),stat=ierror)
       bl_ave0(:) = 0d0
@@ -126,7 +129,7 @@ public :: fm_bott3d
    timhr = time1 / H2SEC
    blchg(:) = 0d0
    e_ssn(:,:) = 0d0
-   
+
    call fm_suspended_sand_correction()
       
    call fm_total_face_normal_suspended_transport()
@@ -140,11 +143,13 @@ public :: fm_bott3d
          call write_error(errmsg, unit=mdia)
       end if
    endif
+   call timstop(handle_extra(89))
    !
    ! BEGIN: Moved parts from `fm_erosed`
    !
+   call timstrt('Erosed_call   ', handle_extra(88))
    if (bed > 0.0_fp) then
-      call fm_adjust_bedload(e_sbcn, e_sbct, DO_AVALANCHE)
+      call fm_adjust_bedload(e_sbcn, e_sbct, AVALANCHE_ON, SLOPECOR_ON)
    endif
    !
    !See: UNST-7367
@@ -154,14 +159,14 @@ public :: fm_bott3d
    ! wave-related bed load transport
    !
    if (bedw>0.0_fp .and. jawave > 0) then
-      call fm_adjust_bedload(e_sbwn, e_sbwt, NOT_AVALANCHE)
+      call fm_adjust_bedload(e_sbwn, e_sbwt, AVALANCHE_OFF, SLOPECOR_ON)
    endif
    !
    ! Sediment availability effects for
    ! wave-related suspended load transport
    !
    if (susw>0.0_fp .and. jawave > 0) then
-      call fm_adjust_bedload(e_sswn, e_sswt, NOT_AVALANCHE)
+      call fm_adjust_bedload(e_sswn, e_sswt, AVALANCHE_OFF, SLOPECOR_OFF)
    endif
    !
    if (duneavalan) then
@@ -174,10 +179,14 @@ public :: fm_bott3d
    !
    call sum_current_wave_transport_links()
    !
+   call timstop(handle_extra(88))
+   !
    ! END: Moved parts from `fm_erosed`
    !
    !
    ! if bed composition computations have started
+   !
+   call timstrt('Bott3d_call   ', handle_extra(89))
    !
    if (time1 >= tstart_user + tcmp * tfac) then   ! tmor/tcmp in tunit since start of computations, time1 in seconds since reference date
        
@@ -218,7 +227,7 @@ public :: fm_bott3d
          !
          ! Update layers and obtain the depth change
          !
-		 !See: UNST-7369
+		   !See: UNST-7369
          if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             write(errmsg,'(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
@@ -261,11 +270,13 @@ public :: fm_bott3d
    
    call fm_update_bed_level(dtmor)
 
-   !!
-   !! Deallocate
-   !!
+   !
+   ! Deallocate
+   !
    
    deallocate(bl_ave0)
+   !
+   call timstop(handle_extra(89))
    
    end subroutine fm_bott3d
 

@@ -120,7 +120,7 @@
         </program>
         <program ref="python" seq="3">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>dflowfm/resultaten/Q10165_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -129,7 +129,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -137,7 +137,7 @@
       <checks>
         <file name="timing.result" type="ASCII">
           <parameters>
-            <parameter name="timing" toleranceRelative="0.1"/>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
           </parameters>
         </file>
       </checks>
@@ -159,7 +159,7 @@
         </program>
         <program ref="python" seq="3">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_DCSM_kort/DCSM_kort_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -168,7 +168,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -176,7 +176,7 @@
       <checks>
         <file name="timing.result" type="ASCII">
           <parameters>
-            <parameter name="timing" toleranceRelative="0.1"/>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
           </parameters>
         </file>
       </checks>
@@ -198,7 +198,7 @@
         </program>
         <program ref="python" seq="3">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>resultaten/Maas_kort_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -207,7 +207,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -215,7 +215,7 @@
       <checks>
         <file name="timing.result" type="ASCII">
           <parameters>
-            <parameter name="timing" toleranceRelative="0.1"/>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
           </parameters>
         </file>
       </checks>
@@ -238,7 +238,7 @@
         </program>
         <program ref="python" seq="3">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>Results/rijn_WBI_kort_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -247,7 +247,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -255,7 +255,7 @@
       <checks>
         <file name="timing.result" type="ASCII">
           <parameters>
-            <parameter name="timing" toleranceRelative="0.1"/>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
           </parameters>
         </file>
       </checks>
@@ -278,7 +278,7 @@
         </program>
         <program ref="python" seq="3">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>Results/RMM_kort_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -287,7 +287,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -295,7 +295,165 @@
       <checks>
         <file name="timing.result" type="ASCII">
           <parameters>
-            <parameter name="timing" toleranceRelative="0.1"/>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f091_c02_waal_10165_2D" ref="dflowfm_default">
+      <path>e02_dflowfm/f091_rws_acceptance/c02_waal_10165_2D</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>--partition:ndomains=4:icgsolver=6 waal_Q10165.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+          <arguments>
+            <argument>-c 4 -n 1 -m dimr_config.xml -d 9</argument>
+            <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="3">
+          <arguments>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>output/waal_Q10165_0000.dia</argument>
+            <argument>timing.out</argument>
+            <argument>"total computation time \(s\)"</argument>
+            <argument>0</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="4">
+          <arguments>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="timing.result" type="ASCII">
+          <parameters>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f091_c03_waal_10165_3D" ref="dflowfm_default">
+      <path>e02_dflowfm/f091_rws_acceptance/c03_waal_10165_3D</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>--partition:ndomains=4:icgsolver=6 waal_Q10165.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+          <arguments>
+            <argument>-c 4 -n 1 -m dimr_config.xml -d 9</argument>
+            <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="3">
+          <arguments>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>output/waal_Q10165_0000.dia</argument>
+            <argument>timing.out</argument>
+            <argument>"total computation time \(s\)"</argument>
+            <argument>0</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="4">
+          <arguments>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="timing.result" type="ASCII">
+          <parameters>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f091_c04_maas_D4118" ref="dflowfm_default">
+      <path>e02_dflowfm/f091_rws_acceptance/c04_maas_D4118</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+		  <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
+          <arguments>
+            <argument>--partition:ndomains=4:icgsolver=6 Maas.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+		  <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
+          <arguments>
+            <argument>-c 4 -n 1 -m dimr_config.xml -d 9</argument>
+            <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="3">
+          <arguments>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>computations/test/JAMM/D4118-restart-6jan2023/results/Maas_0000.dia</argument>
+            <argument>timing.out</argument>
+            <argument>"total computation time \(s\)"</argument>
+            <argument>0</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="4">
+          <arguments>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="timing.result" type="ASCII">
+          <parameters>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f091_c05_san_francisco_bay_2D" ref="dflowfm_default">
+      <path>e02_dflowfm/f091_rws_acceptance/c05_san_francisco_bay_2D</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>--partition:ndomains=4:icgsolver=6 wy2011-wy2012_2D_defaults.mdu</argument>
+          </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+          <arguments>
+            <argument>-c 4 -n 1 -m dimr_config.xml -d 9</argument>
+            <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="3">
+          <arguments>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>output/wy2011-wy2012_2D_defaults_0000.dia</argument>
+            <argument>timing.out</argument>
+            <argument>"total computation time \(s\)"</argument>
+            <argument>0</argument>
+          </arguments>
+        </program>
+        <program ref="python" seq="4">
+          <arguments>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="timing.result" type="ASCII">
+          <parameters>
+            <parameter name="timing" toleranceAbsolute="0.1"/>
           </parameters>
         </file>
       </checks>

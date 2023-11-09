@@ -46,7 +46,8 @@ end subroutine tests_compute_airdensity
 subroutine test_get_airdensity
 
    real(kind=hp) :: p(3)               !< total atmospheric pressure [Pa]
-   real(kind=hp) :: T2m(3)             !< temperature [K]
+   real(kind=hp) :: T(3)               !< temperature [Celsius]
+   real(kind=hp) :: Td(3)              !< dewpoint temperature {Celsius]
    real(kind=hp) :: rhoair(3)          !< air density [kg m-1]
    real(kind=hp) :: rhoair_expected(3) !< air density [kg m-1]
    integer :: i                        !< loop counter
@@ -56,10 +57,11 @@ subroutine test_get_airdensity
    ! as input for a testcase to be added for issue UNST-6593.
    ! These are measurements for the area around Bonaire.
    rhoair_expected = (/ 1.1594_hp, 1.1597_hp, 1.1604_hp /)
-   p = (/101243.1719_hp, 101249.3_hp, 101251.2_hp /)
-   T2m = (/27.7369_hp, 27.6104_hp, 27.5713_hp /) ![Celsius]
+   p = (/101243.1719_hp, 101249.3272_hp, 101251.1668_hp /)
+   T = (/27.7369_hp, 27.6104_hp, 27.5713_hp /) 
+   Td = (/ 23.4096_hp, 23.0495_hp, 22.9202_hp /) 
 
-   call get_airdensity(p, T2m, rhoair, ierr)
+   call get_airdensity(p, T, Td, rhoair, ierr)
    call assert_equal(ierr, DFM_NOERR, 'Something wrong in call get_airdensity().')
    do i = 1,size(rhoair) 
       ! computation - measurement < 0.01 is in accordance with previous investigation in Matlab
@@ -73,21 +75,22 @@ subroutine test_get_airdensity
 subroutine test_get_airdensity_exact
 
    real(kind=hp) :: p(2)               !< total atmospheric pressure [Pa]
-   real(kind=hp) :: T2m(2)             !< temperature [K]
+   real(kind=hp) :: T(2)               !< temperature [Celsius]
+   real(kind=hp) :: Td(2)              !< dewpoint temperature {Celsius]
    real(kind=hp) :: rhoair(2)          !< air density [kg m-1]
    real(kind=hp) :: rhoair_expected(2) !< air density [kg m-1]
    integer :: i                        !< loop counter
    integer :: ierr                     !< error flag
    
    ! synthetic data 
-   rhoair_expected = (/  1.21718616275321_hp, 1.21246286454429_hp /)
+   rhoair_expected = (/  1.22098713820860_hp, 1.21676446091927_hp /)
    p = (/101325.0_hp, 101325.0_hp /)
-   T2m = (/15.0_hp, 16.0_hp /) ![Celsius]
-
-   call get_airdensity(p, T2m, rhoair, ierr)
+   T = (/15.0_hp, 16.0_hp /)
+   Td = (/ 5.0_hp, 5.0_hp /)
+   
+   call get_airdensity(p, T, Td, rhoair, ierr)
    call assert_equal(ierr, DFM_NOERR, 'Something wrong in call get_airdensity().')
-   do i = 1,size(rhoair) 
-      write(*,*) rhoair(i), rhoair_expected(i)
+   do i = 1,size(rhoair)
       call assert_comparable(rhoair(i), rhoair_expected(i), tolerance, 'compute air density, point value')
    enddo
 
@@ -98,14 +101,16 @@ subroutine test_get_airdensity_exact
 subroutine test_check_arraysizes
 
    real(kind=hp) :: p(2)               !< total atmospheric pressure [Pa]
-   real(kind=hp) :: T2m(3)             !< temperature [K]
+   real(kind=hp) :: T(3)               !< temperature [Celcius]
+   real(kind=hp) :: Td(4)              !< temperature [Celcius]   
    real(kind=hp) :: rhoair(3)          !< air density [kg m-1]
    integer :: ierr                     !< error flag
 
    p = 0._hp   
-   T2m= 274.15_hp
+   T = 20.0_hp
+   Td = 3.0_hp
              
-   call get_airdensity(p, T2m, rhoair, ierr)
+   call get_airdensity(p, T, Td, rhoair, ierr)
    call assert_equal(ierr, DFM_GENERICERROR, 'Arrays of unequal size were not detected.')
 
    end subroutine test_check_arraysizes

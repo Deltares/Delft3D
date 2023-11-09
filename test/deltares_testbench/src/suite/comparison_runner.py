@@ -75,7 +75,7 @@ class ComparisonRunner(TestSetRunner):
         if len(test_result.results) == 0:
             logger.warning("No results to display")
             logger.test_Result(TestResultType.Empty)
-            run_data.set_duration()
+            run_data.end_time = datetime.now()
             return test_result
 
         # Step 3: Write the results to a .txt file in the test case directory.

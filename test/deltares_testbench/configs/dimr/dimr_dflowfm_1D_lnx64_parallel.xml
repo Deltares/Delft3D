@@ -85,19 +85,6 @@
             <path>bin/run_dimr.sh</path>
             <shell ref="mpi"/>
         </program>
-        <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true">
-            <location ref="reference_engines" type="reference">
-                <from>lnx64</from>
-            </location>
-            <location ref="local" type="check">
-                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
-            </location>
-            <path>bin/run_dflowfm.sh</path>
-            <shell ref="mpi"/>
-            <environments>
-                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-            </environments>
-        </program>
         <program name="dimr2" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
                 <from>lnx64</from>

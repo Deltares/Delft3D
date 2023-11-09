@@ -98,6 +98,10 @@ class TeamcityTestLogger(ITestLogger):
             escaped_message = stripEscapeCharacters(message)
             tc_message += f"text='{escaped_message}' "
 
+        if command == "testFailed" and message:
+            escaped_message = stripEscapeCharacters(message)
+            tc_message += f"message='{escaped_message}' "
+
         tc_message += "]"
 
         sys.stdout.write(tc_message)

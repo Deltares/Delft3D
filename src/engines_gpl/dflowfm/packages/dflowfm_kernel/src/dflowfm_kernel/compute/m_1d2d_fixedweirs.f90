@@ -16,6 +16,7 @@ module m_1d2d_fixedweirs
    integer, public                        :: n_1d2d_fixedweirs       !< Number of 1d2d fixed weirs
    integer, allocatable, dimension(:)     :: index_1d2d_fixedweirs   !< L-indexes for the 1d2d fixed weirs
 
+   double precision, allocatable, public ::  dx_i(:)        !< Flow width of the 1d2d link. Note: can be smaller than wu(:), for partially closed links.
    double precision, allocatable, public ::  b0_1ds(:)      !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual", 
                                                             !< Paragraph iterative 1d2d links.
    double precision, allocatable, public ::  b0_1dq(:)      !< Coefficient, for a comprehensive explanation please refer to the "Technical Reference Manual", 
@@ -79,6 +80,8 @@ module m_1d2d_fixedweirs
       use m_alloc
       
       call realloc(index_1d2d_fixedweirs, n_1d2d_fixedweirs, keepexisting = .true.)
+      call realloc(dx_i,               n_1d2d_fixedweirs, keepExisting = .false., fill = 0d0)
+      dx_i = 0d0
       call realloc(b0_1ds,             n_1d2d_fixedweirs, keepExisting = .false., fill = 0d0)
       b0_1ds = 0d0
       call realloc(b0_1dq,             n_1d2d_fixedweirs, keepExisting = .false., fill = 0d0)
@@ -197,7 +200,7 @@ module m_1d2d_fixedweirs
       use m_flow,             only : fu, ru, hu, s0, s1, u0, au
       use m_flowtimes,        only : dts
       use m_flowgeom,         only : bob, bob0, dx, ln, teta, wu
-      use m_flowparameters,   only : epshu
+      use m_flowparameters,   only : epshu   
       implicit none
 
       double precision ::  f
@@ -207,7 +210,6 @@ module m_1d2d_fixedweirs
       double precision ::  beta0_2d
       double precision ::  zs
       double precision ::  dx_uI
-      double precision ::  dx_I
       double precision ::  q_1d2d
       double precision ::  s1p_1d
       double precision ::  s0_up
@@ -230,7 +232,6 @@ module m_1d2d_fixedweirs
 
          
          zs = bob(1,L)
-         dx_i    = wu(L)
          
          s1p_1d = s1(k1d)
          if (comparereal(b0_2dv(i), 0d0)) then
@@ -251,7 +252,6 @@ module m_1d2d_fixedweirs
          endif
       
          if ( hu(L) > 0 ) then
-            
             dx_ui   = dx(L) 
             dx_1d2d = lat_fix_weir_dx
             Q_1d2d  = qzeta_1d2d(i) *s1p_1d + qlat_1d2d(i)
@@ -286,7 +286,7 @@ module m_1d2d_fixedweirs
       
             elseif ( (s0(k2d) -zs >= 3d0/2d0 * (s0(k1d) - zs)) .or. ( s0(k1d) -  zs > 3d0/2d0*(s0(k2d)-zs) ) ) then
                ! Free flow condition
-               b_i(i) = au(L)**2*u_c/((2d0/3d0)**3*dx_ui*(dx_i*ce*cw*(s0_up - zs))**2)
+               b_i(i) = au(L)**2*u_c/((2d0/3d0)**3*dx_ui*(dx_i(i)*ce*cw*(s0_up - zs))**2)
                f = (3d0*dx_1d2d/dx_ui + dts*b_i(i))*dx_ui/(ag*dts)
             
                if (s0(k2d) -zs >= 3d0/2d0 * (s0(k1d) - zs)) then
@@ -321,10 +321,10 @@ module m_1d2d_fixedweirs
                endif
 
                Q_1d2d  = qzeta_1d2d(i) *s1p_1d + qlat_1d2d(i)
-               CFL(i) = sqrt(teta(L)*dts*au(L)*fu(L)/(dx_uI*dx_I))
+               CFL(i) = sqrt(teta(L)*dts*au(L)*fu(L)/(dx_uI*dx_I(i)))
                alfa0_1d = 1d0
                alfa0_2d = 1d0
-               b_i(i) = au(L)**2*u_c/(2d0*dx_ui*(dx_i*ce*cw*(s0_down - zs))**2)
+               b_i(i) = au(L)**2*u_c/(2d0*dx_ui*(dx_i(i)*ce*cw*(s0_down - zs))**2)
 
                f = (dx_1d2d/dx_ui + dts*b_i(i))*dx_ui/(ag*dts)
                
@@ -498,6 +498,11 @@ module m_1d2d_fixedweirs
          L = index_1d2d_fixedweirs(i)
          k1d = kindex(1,i)
          k2d = kindex(2,i)
+         
+         if(hu(L) > 0d0) then
+            dx_i(i) = au(L)/hu(L)
+         endif
+         
          if (comparereal(b0_2dv(i), 0d0)==0d0) then
             s0_2dv(i) = s0(k2d)
          else

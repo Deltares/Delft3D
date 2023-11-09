@@ -52,4 +52,4 @@ include: yum
         && rpm -i /opt/tmp/delft3dfm-cli-hmwq_*.rpm --nofiledigest \
         && ln -s /opt/delft3dfm_$VERSION /opt/delft3dfm_latest \
         && rm /opt/delft3dfm_latest/lnx64/lib/libmpi* \
-        && rm -rf /opt/tmp/delft3dfm*.rpm
+        && rm -rf /opt/tmp/

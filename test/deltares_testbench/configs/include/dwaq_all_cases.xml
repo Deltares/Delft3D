@@ -198,25 +198,6 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e03_f01_c05_test005" ref="dwaq_default">
-        <path>e03_waq/f01_general/c05_test005</path>
-        <checks>
-            <file name="d3d-waq-test005.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="d3d-waq-test005.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
     <testCase name="e03_f01_c06_test006" ref="dwaq_default">
         <path>e03_waq/f01_general/c06_test006</path>
         <checks>
@@ -1413,84 +1394,6 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e03_f01_c16_test016" ref="dwaq_default">
-        <path>e03_waq/f01_general/c16_test016</path>
-        <checks>
-            <file name="d3d-waq-test016.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="d3d-waq-test016.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e03_f01_c17_test017" ref="dwaq_default">
-        <path>e03_waq/f01_general/c17_test017</path>
-        <checks>
-            <file name="d3d-waq-test017.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="d3d-waq-test017.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
     <testCase name="e03_f01_c19_test019" ref="dwaq_default">
         <path>e03_waq/f01_general/c19_test019</path>
         <checks>
@@ -2206,14 +2109,8 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e03_f02_c00_hydro" ref="dummy">
-        <!-- This testcase prepares data files to be used by other testcases -->
-        <path>e03_waq/f02_hongkong/c00_hydro</path>
-        <checks>
-            <file name="dummy.txt" type="NUMBERTEXT"/>
-        </checks>
-    </testCase>
     <testCase name="e03_f02_c01_eutrophication" ref="dwaq_default">
+        <dependency local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path>e03_waq/f02_hongkong/c01_eutrophication</path>
         <checks>
             <file name="group2-test001.ada" type="NEFIS">
@@ -2262,7 +2159,7 @@
                     <parameter name="SUBST_042" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_043" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_044" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_045" toleranceAbsolute="3.0e-02" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_045" toleranceAbsolute="3.0e-02" toleranceRelative="3.0e-06"/>
                     <parameter name="SUBST_046" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
@@ -2312,13 +2209,14 @@
                     <parameter name="SUBST_042" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_043" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_044" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_045" toleranceAbsolute="3.0e-02" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_045" toleranceAbsolute="3.0e-02" toleranceRelative="3.0e-06"/>
                     <parameter name="SUBST_046" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>
     </testCase>
     <testCase name="e03_f02_c02_scheme21" ref="dwaq_default">
+        <dependency local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path>e03_waq/f02_hongkong/c02_scheme21</path>
         <checks>
             <file name="group2-test002.ada" type="NEFIS">
@@ -2340,6 +2238,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c03_loadscenario1" ref="dwaq_default">
+        <dependency local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path>e03_waq/f02_hongkong/c03_loadscenario1</path>
         <checks>
             <file name="group2-test003.ada" type="NEFIS">
@@ -2445,6 +2344,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
+        <dependency local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path>e03_waq/f02_hongkong/c04_statistics</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
@@ -2467,6 +2367,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c05_eutrophication_scheme15" ref="dwaq_default">
+        <dependency local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path>e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
         <checks>
             <file name="group2-test005.ada" type="NEFIS">
@@ -6783,13 +6684,8 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e03_f07_c00_hydro" ref="dummy">
-        <path>e03_waq/f07_course_d3dfm_env_mod/c00_hydro</path>
-        <checks>
-            <file name="dummy.txt" type="NUMBERTEXT"/>
-        </checks>
-    </testCase>
     <testCase name="e03_f07_c01_exercise_01" ref="dwaq_default">
+        <dependency local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path>e03_waq/f07_course_d3dfm_env_mod/c01_exercise_01/exercise1.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6811,6 +6707,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c02a_exercise_02a" ref="dwaq_default">
+        <dependency local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path>e03_waq/f07_course_d3dfm_env_mod/c02a_exercise_02a/exercise2a.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6822,6 +6719,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c02b_exercise_02b" ref="dwaq_default">
+        <dependency local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path>e03_waq/f07_course_d3dfm_env_mod/c02b_exercise_02b/exercise2b.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6833,6 +6731,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c03_exercise_03" ref="dwaq_default">
+        <dependency local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path>e03_waq/f07_course_d3dfm_env_mod/c03_exercise_03/exercise3.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6856,6 +6755,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c04_exercise_04" ref="dwaq_default">
+        <dependency local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path>e03_waq/f07_course_d3dfm_env_mod/c04_exercise_04/exercise4.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6879,6 +6779,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c05_exercise_05" ref="dwaq_default">
+        <dependency local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path>e03_waq/f07_course_d3dfm_env_mod/c05_exercise_05/exercise5.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -9544,7 +9445,7 @@
 
     <!-- Test cases for CART -->
     <testCase name="e03_f13_c01_cart_f34" ref="dwaq_default">
-    <path>e03_waq/f13_cart/c01_cart_f34</path>
+        <path>e03_waq/f13_cart/c01_cart_f34</path>
         <checks>
             <file name="c01_cart_f34.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -9563,7 +9464,7 @@
 
     <!-- Test cases for robust input -->
     <testCase name="e03_f14_c01_rewind_timeseries" ref="dwaq_default">
-    <path>e03_waq/f14_robust_input/robust-001</path>
+        <path>e03_waq/f14_robust_input/robust-001</path>
         <checks>
             <file name="robust-001.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">

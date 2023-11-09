@@ -50,9 +50,6 @@
           <location ref="engines_to_compare" type="check">
               <from>teamcity_artifacts/x64</from>
           </location>
-          <environments>
-              <environment name="PATH" type="path">[environment(PATH)];[programGlobals(TestBenchRoot)]\thirdparty\wanda\x64</environment>
-          </environments>
       </program>
       <program name="dimr_parallel" logOutputToFile="true" programStringRemoveQuotes="true" ignoreStandardError="true" ignoreReturnValue="true">
           <path>dimr/scripts/run_dimr_parallel.bat</path>
@@ -63,9 +60,6 @@
           <location ref="engines_to_compare" type="check">
               <from>teamcity_artifacts/x64</from>
           </location>
-          <environments>
-              <environment name="PATH" type="path">[environment(PATH)];[programGlobals(TestBenchRoot)]\thirdparty\wanda\x64</environment>
-          </environments>
       </program>
     </programs>
     <defaultTestCases>

@@ -11,17 +11,17 @@ set(dfm_api_access_module "${tools_gpl_path}/dfm_volume_tool/packages/dfm_api_ac
 # Mormerge
 set(mormerge_module "${tools_gpl_path}/mormerge/packages/mormerge")
 
-# Waqpb 
-set(waqpb_module_path "${tools_gpl_path}/waqpb/packages/")
+# Waqpb
+set(waqpb_module_path ${tools_gpl_path}/waq_tools/waqpb)
 set(waqpb_lib_module ${waqpb_module_path}/waqpb_lib)
 set(waqpb_import_module ${waqpb_module_path}/waqpb_import)
 set(waqpb_export_module ${waqpb_module_path}/waqpb_export)
 
 # Waqmerge
-set(waqmerge_module ${tools_gpl_path}/waqmerge/packages/waqmerge)
+set(waqmerge_module ${tools_gpl_path}/waq_tools/waqmerge)
 
 # Ddcouple
-set(ddcouple_module ${tools_gpl_path}/ddcouple/packages/ddcouple)
+set(ddcouple_module ${tools_gpl_path}/waq_tools/ddcouple)
 
 
 # Duprol2delwaq
@@ -55,10 +55,10 @@ set(nesthd2_module ${nesthd2_module_path}/nesthd2)
 
 
 # Agrhyd
-set(agrhyd_module ${tools_gpl_path}/agrhyd/packages/agrhyd)
+set(agrhyd_module ${tools_gpl_path}/waq_tools/agrhyd)
 
 # Maptonetcdf
-set(maptonetcdf_module ${tools_gpl_path}/maptonetcdf/packages/maptonetcdf)
+set(maptonetcdf_module ${tools_gpl_path}/waq_tools/maptonetcdf)
 
 # cosumo_bmi
 set(cosumo_bmi_module "${tools_gpl_path}/cosumo_bmi")

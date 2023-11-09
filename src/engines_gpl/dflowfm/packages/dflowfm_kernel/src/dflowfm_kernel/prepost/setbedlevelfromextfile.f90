@@ -43,8 +43,8 @@ subroutine setbedlevelfromextfile()    ! setbedlevels()  ! check presence of old
  use string_module, only: strcmpi
  use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
  use dfm_error
- 
  use unstruc_netcdf
+ 
  implicit none
 
  logical, external :: timespaceinitialfield_mpi

@@ -78,7 +78,6 @@ class TestSetRunner(ABC):
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
-        self.__settings.configs = self.__settings.configs
         results = (
             self.run_tests_in_parallel()
             if self.__settings.parallel
@@ -507,14 +506,11 @@ class TestSetRunner(ABC):
         """
         logger.info(f"Updating case: {config.name}")
 
-        if len(config.locations) == 0:
-            error_message: str = (
-                f"Could not update case {config.name}," + " no network paths given"
-            )
-            raise TestBenchError(error_message)
+        if not config.locations:
+            raise TestBenchError(f"Could not update case {config.name}, no network paths given")
 
         for location in config.locations:
-            if location.root == "" or location.from_path == "":
+            if not location.root or not location.from_path:
                 error_message: str = (
                     f"Could not update case {config.name}"
                     + f", invalid network input path part (root:{location.root},"
@@ -523,12 +519,7 @@ class TestSetRunner(ABC):
                 raise TestBenchError(error_message)
 
             # Build the path to download from: Root+From+testcasePath:
-            # Root: https://repos.deltares.nl/repos/DSCTestbench/cases
-            # From: trunk/win32_hp
-            # testcasePath: e01_d3dflow\f01_general\c03-f34
-            remote_path = Paths().mergeFullPath(
-                location.root, location.from_path, config.path
-            )
+            remote_path = Paths().mergeFullPath(location.root, location.from_path, config.path)
 
             if Paths().isPath(remote_path):
                 remote_path = os.path.abspath(remote_path)
@@ -538,8 +529,10 @@ class TestSetRunner(ABC):
             # When trying a second time it normally works. Safe side: try 3 times.
             success = False
             attempts = 0
+            
             while attempts < 3 and not success:
                 attempts += 1
+                
                 try:
                     destination_dir = None
                     input_description = ""
@@ -547,8 +540,7 @@ class TestSetRunner(ABC):
                     if location.type == PathType.INPUT:
                         destination_dir = self.__settings.local_paths.cases_path
                         input_description = "input of case"
-
-                    if location.type == PathType.REFERENCE:
+                    elif location.type == PathType.REFERENCE:
                         destination_dir = self.__settings.local_paths.reference_path
                         input_description = "reference result"
 
@@ -558,22 +550,26 @@ class TestSetRunner(ABC):
                             Paths().mergeFullPath(
                                 destination_dir,
                                 location.to_path,
-                                config.path,
+                                config.name,
+                                #config.path,
                             )
                         )
-                        self.__download_file(
-                            location, remote_path, localPath, input_description, logger
-                        )
+
+                        handler_type = ResolveHandler.detect(remote_path, logger, location.credentials)
+
+                        if handler_type == HandlerType.MINIO:
+                            self.__SetupVersionForDownload(config, location)
+
+                        self.__download_file(location, remote_path, localPath, input_description, logger)
 
                         if location.type == PathType.INPUT:
                             config.absolute_test_case_path = localPath
-
-                        if location.type == PathType.REFERENCE:
+                        elif location.type == PathType.REFERENCE:
                             config.absolute_test_case_reference_path = localPath
 
                     success = True
 
-                except Exception:
+                except Exception as e:
                     error_message = (
                         f"Unable to download testcase (attempt {attempts + 1})"
                     )
@@ -582,7 +578,11 @@ class TestSetRunner(ABC):
                         logger.warning(error_message)
                     else:
                         logger.error(error_message)
-                        raise TestBenchError("Unable to download testcase")
+                        raise TestBenchError("Unable to download testcase " + str(e))
+
+    def __SetupVersionForDownload(self, config, location):
+        if location.version is None and config.version is not None:
+            location.version = config.version
 
     def __download_file(
         self,
@@ -625,7 +625,7 @@ class TestSetRunner(ABC):
             Paths().mergeFullPath(
                 destination_dir,
                 location.to_path,
-                config.dependency,
+                config.dependency.local_dir,
             )
         )
 
@@ -633,6 +633,6 @@ class TestSetRunner(ABC):
             return
 
         remote_path = Paths().mergeFullPath(
-            location.root, location.from_path, config.dependency
+            location.root, location.from_path, config.dependency.cases_path
         )
         self.__download_file(location, remote_path, localPath, "dependency", logger)

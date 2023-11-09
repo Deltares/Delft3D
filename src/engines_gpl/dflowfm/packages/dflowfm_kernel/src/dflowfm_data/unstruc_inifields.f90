@@ -489,7 +489,9 @@ subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filenam
    if (.not. retVal) then
       operand = 'O'
    else
-      if ((.not.strcmpi(operand, 'O')) .and. (.not.strcmpi(operand, 'A')) .and. (.not.strcmpi(operand, '+')) .and. (.not.strcmpi(operand, '*')) .and. (.not.strcmpi(operand, 'X')) .and. (.not.strcmpi(operand, 'N'))) then
+      if ((.not.strcmpi(operand, 'O')) .and. (.not.strcmpi(operand, 'A')) .and. (.not.strcmpi(operand, '+')) .and. &
+          (.not.strcmpi(operand, '*')) .and. (.not.strcmpi(operand, 'X')) .and. (.not.strcmpi(operand, 'N')) .and. &
+          (.not.strcmpi(operand, 'V'))) then
          write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand)//'''. Ignoring this block.'
          call warn_flush()
          goto 888
@@ -954,7 +956,7 @@ subroutine set_friction_type_values()
 
    integer :: link
 
-   if (transformcoef(3) /= -999d0 .and. int(transformcoef(3)) /= ifrctypuni .and. operand == 'O') then
+   if (transformcoef(3) /= -999d0 .and. int(transformcoef(3)) /= ifrctypuni .and. (operand == 'O' .or. operand == 'V' )) then
       do link = 1, lnx
          if (frcu(link) /= dmiss) then
             ! type array only must be used if different from uni

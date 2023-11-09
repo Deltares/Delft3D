@@ -14,7 +14,12 @@ install_*/**
 *__genmod.f*
 
 # folders to exclude
-/src/**/obj/**
+src/**/obj/**
+
+# ignore files generated when running unit tests
+src/test/**/ftnunit.run
+src/test/**/ftnunit.html
+src/test/**/DFM_OUTPUT_/**
 
 # ignore files created by updating process definition files
 src/engines_gpl/waq/resources/csvFiles/*

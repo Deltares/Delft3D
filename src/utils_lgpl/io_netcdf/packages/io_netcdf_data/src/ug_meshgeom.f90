@@ -40,9 +40,9 @@ module m_ug_meshgeom
       integer                   :: numedge         = -1    !< Number of mesh edges (size of kn)
       integer                   :: numface         = -1    !< Number of mesh faces.
       integer                   :: maxnumfacenodes = -1    !< Maximum of number of face nodes.
-      integer                   :: numlayer        = -1    !< Number of mesh layers (num interfaces == numlayer + 1), numlayer = 0 means "no layers".
+      integer                   :: num_layers      = -1    !< Number of mesh layers (num interfaces == num_layers + 1), num_layers = 0 means "no layers".
       integer                   :: numtopsig       = -1    !< Number of top sigma layers in the case of z-sigma coordinates.
-      integer                   :: layertype       = -1    !< Type of vertical layer definition (only if numlayer >= 1), one of LAYERTYPE_* parameters.
+      integer                   :: layertype       = -1    !< Type of vertical layer definition (only if num_layers >= 1), one of LAYERTYPE_* parameters.
       integer                   :: nnodes          = -1    !< Number of branches
       integer                   :: nbranches       = -1    !< Number of branches
       integer                   :: ngeometry       = -1    !< Number of geometrical points

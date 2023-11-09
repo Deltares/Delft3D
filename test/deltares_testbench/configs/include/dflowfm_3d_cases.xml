@@ -1168,7 +1168,7 @@
     </testCase>
 
     <testCase name="e02_f202_c001_conservation_sigma" ref="dflowfm_default">
-      <path>e02_dflowfm/f202_3D_z_sigma/c001_conservation_sigma</path>
+      <path>e02_dflowfm/f202_3D_z_sigma/c001_conservation_sigma/dflowfm</path>
       <programs>
         <program ref="DFlowFM">
           <arguments>
@@ -1179,7 +1179,7 @@
       </programs>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfm/dflowfmoutput/csv_sigma_map.nc" type="netCDF">
+        <file name="dflowfmoutput/csv_sigma_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />

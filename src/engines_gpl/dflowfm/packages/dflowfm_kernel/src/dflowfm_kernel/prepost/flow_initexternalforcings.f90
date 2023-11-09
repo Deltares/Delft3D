@@ -1974,46 +1974,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
                   success = .false.
                endif
-           else if (trim(qid) == "wsbu") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
-                  success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
-                  success = .false.
-               endif
-           else if (trim(qid) == "wsbv") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
-                  success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
-                  success = .false.
-               endif
-           else if (trim(qid) == "xwaveinducedvolumeflux") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
-                  success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
-                  success = .false.
-               endif
-           else if (trim(qid) == "ywaveinducedvolumeflux") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
-                  success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
-                  success = .false.
-               endif
-           else if (trim(qid) == "bottomorbitalvelocity") then
-               if (jawave == 7 .and. waveforcing /= 1) then ! not yet possible to use this QUANTITY
-                  success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
-                  success = .false.
-               endif
            else
               call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown QUANTITY '//trim(qid) )
               call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'getting unknown QUANTITY ', trim(qid) )
@@ -2492,11 +2452,11 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    endif
 
    if (ja_varying_airdensity == 1) then
-      if (japatm == 0 .or. jatair == 0) then
-         call mess(LEVEL_ERROR, 'Quantities airpressure and airtemperature in ext-file expected in combination keyword varyingAirdensity in MDU ')
+      if (japatm == 0 .or. jatair == 0 .or. jarhum ==0) then
+         call mess(LEVEL_ERROR, 'Quantities airpressure and airtemperature and dewpoint in ext-file expected in combination keyword computedAirdensity in MDU ')
       else
          if (ja_airdensity == 1) then
-            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword varyingAirdensity in MDU ')
+            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity in MDU ')
          else
             allocate ( airdensity(ndx) , stat=ierr)
             call aerr('airdensity(ndx)', ierr, ndx)

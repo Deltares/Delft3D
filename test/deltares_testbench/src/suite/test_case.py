@@ -18,7 +18,6 @@ from src.utils.paths import Paths
 # Test case handler (compare or reference)
 class TestCase(object):
     __errors = []
-    __programs: List[Tuple[int, Program]] = []
 
     # constructor
     # input: test case configuration
@@ -26,6 +25,7 @@ class TestCase(object):
         self.__config = config
         self.__logger = logger
         self.__maxRunTime: float = self.__config.max_run_time
+        self.__programs: List[Tuple[int, Program]] = []
 
         logger.debug(
             f"Initializing test case ({self.__config.name}), max runtime : {str(self.__maxRunTime)}"
