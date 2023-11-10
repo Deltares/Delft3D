@@ -72,12 +72,12 @@
 !     kind           function         name                Descriptipon
 
       integer  ( 4), intent(in   ) :: irmax             !< size of the real workspace
-      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
-      character( *), intent(inout) :: lchar (*)         !< array with file names of the files
+      integer  ( 4), intent(inout) :: lun(*)            !< array with unit numbers
+      character( *), intent(inout) :: lchar(*)          !< array with file names of the files
       integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
-      character( *), intent(inout) :: car   (*)         !< character workspace
-      integer  ( 4), intent(inout) :: iar   (*)         !< integer workspace ( dump locations at entrance )
-      real     ( 4), intent(inout) :: rar   (irmax)     !< real    workspace
+      character( *), intent(inout) :: car(*)            !< character workspace
+      integer  ( 4), intent(inout) :: iar(*)            !< integer workspace ( dump locations at entrance )
+      real     ( 4), intent(inout) :: rar(irmax)        !< real    workspace
       integer  ( 4), intent(inout) :: nrftot(*)         !< number of function items
       integer  ( 4), intent(inout) :: nrharm(*)         !< number of harmonic items
       integer  ( 4), intent(in   ) :: nobnd             !< number of open model boundaries
@@ -91,7 +91,7 @@
       integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
       integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      character(20), intent(in   ) :: sname(*)          !< array with substance names
+      character(20), intent(inout) :: sname(*)          !< array with substance names
       integer  ( 4), intent(in   ) :: icmax             !< size of the character workspace
       integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
 

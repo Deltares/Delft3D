@@ -31,7 +31,7 @@ module m_string_utils
     implicit none
 
     private
-    public join_strings, contains_any, location_of
+    public join_strings, contains_any, index_in_array
 
     contains
 
@@ -72,19 +72,19 @@ module m_string_utils
             
     end function contains_any
 
-    function location_of(string_to_find, items, case_sensitive) result(location)
+    function index_in_array(string_to_find, array_of_strings, case_sensitive) result(location)
         use string_module
 
         character(len=*), intent(in) :: string_to_find
-        character(len=*), dimension(:), intent(in) :: items
+        character(len=*), dimension(:), intent(in) :: array_of_strings
         logical, intent(in), optional :: case_sensitive
         integer :: i, location
         logical :: found
-        do i = 1, size(items)
+        do i = 1, size(array_of_strings)
             if (present(case_sensitive) .and. case_sensitive) then
-                found = string_to_find == items(i)
+                found = string_to_find == array_of_strings(i)
             else
-                found = index(str_tolower(string_to_find), str_tolower(items(i))) > 0
+                found = index(str_tolower(string_to_find), str_tolower(array_of_strings(i))) > 0
             end if
             if (found) then
                 location = i
@@ -92,6 +92,6 @@ module m_string_utils
             end if
         end do
         location = -1
-    end function location_of 
+    end function index_in_array 
 
 end module m_string_utils

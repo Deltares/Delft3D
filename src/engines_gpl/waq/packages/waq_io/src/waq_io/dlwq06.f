@@ -78,34 +78,33 @@
       use timers       !   performance timers
       implicit none
 
-!     Parameters    :
-!     type     kind  function         name             description
+!     Arguments:
 
-      integer  ( 4), intent(inout) :: lun    (*)     !< array with unit numbers
-      character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
+      integer  ( 4), intent(inout) :: lun(*)         !< array with unit numbers
+      character( *), intent(inout) :: lchar(*)       !< Filenames for the items
       integer  ( 4), intent(inout) :: filtype(*)     !< type of binary files
       integer  ( 4), intent(in   ) :: icmax          !< size of the character workspace
-      character(20), intent(inout) :: car   (icmax)  !< local character workspace
+      character(20), intent(inout) :: car(icmax)     !< local character workspace
       integer  ( 4), intent(in   ) :: iimax          !< size of the integer   workspace
-      integer  ( 4), intent(inout) :: iar   (iimax)  !< local integer   workspace
+      integer  ( 4), intent(inout) :: iar(iimax)     !< local integer   workspace
       integer  ( 4), intent(in   ) :: irmax          !< size of the real      workspace
-      real     ( 4), intent(inout) :: rar   (irmax)  !< local real      workspace
+      real     ( 4), intent(inout) :: rar(irmax)     !< local real      workspace
       integer  ( 4), intent(in   ) :: notot          !< total number of substances
       integer  ( 4), intent(in   ) :: noseg          !< number of computational volumes
-      character(20), intent(in   ) :: sname (notot)  !< IDs of the substances
+      character(20), intent(inout) :: sname(notot)   !< IDs of the substances
       integer  ( 4), intent(  out) :: nowst          !< number of waste loads
       integer  ( 4), intent(  out) :: nowtyp         !< number of waste load types
-      integer  ( 4), intent(inout) :: nrftot( 11 )   !< number of function items per kind
-      integer  ( 4), intent(inout) :: nrharm( 11 )   !< number of harmonic items per kind
+      integer  ( 4), intent(inout) :: nrftot(11)     !< number of function items per kind
+      integer  ( 4), intent(inout) :: nrharm(11)     !< number of harmonic items per kind
       logical      , intent(in   ) :: dtflg1         !< if true then 'date'-format for 2nd time scale
       logical      , intent(in   ) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
       integer  ( 4), intent(in   ) :: iwidth         !< width of the output file
       integer  ( 4), intent(in   ) :: ioutpt         !< Degree of output in report file
-      logical      , intent(out   ) :: chkpar(2)     !< Check for parameters SURF and LENGTH
+      logical      , intent(out  ) :: chkpar(2)      !< Check for parameters SURF and LENGTH
       integer  ( 4), intent(inout) :: ierr           !< cumulative error count
       integer  ( 4), intent(inout) :: iwar           !< cumulative warning count
 
-!     local
+!     Locals
 
       character( 40)                 chulp       (3) !  Help for reading
       character(255)                 cdummy          !  Help for reading

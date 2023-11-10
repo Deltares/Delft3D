@@ -102,7 +102,7 @@
 
       implicit none
 
-      integer  ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
+      integer  ( 4), intent(inout) :: lun(*)      !< array with unit numbers
       character( *), intent(inout) :: lchar(*)      !< filenames
       integer  ( 4), intent(in   ) :: iu            !< index in LUN array of workfile
       integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
@@ -112,8 +112,8 @@
       integer  ( 4), intent(inout) :: iar  (iimax)  !< integer workspace
       integer  ( 4), intent(in   ) :: irmax         !< maximum size of real workspace
       real     ( 4), intent(inout) :: rar  (irmax)  !< real workspace
-      character( *), intent(in   ) :: sname(*)      !< substances names
-      character( *), intent(in   ) :: aname(*)      !< ID's of the boundaries/wastes
+      character( *), intent(inout) :: sname(*)      !< substances names
+      character( *), intent(inout) :: aname(*)      !< ID's of the boundaries/wastes
       character( *), intent(in   ) :: atype(*)      !< Types of the boundaries/wastes
       integer  ( 4), intent(in   ) :: ntitm         !< number of bounds/wastes
       integer  ( 4), intent(in   ) :: ntdim         !< number of substances

@@ -27,32 +27,21 @@ module m_dlwq5b
     contains
 
 
-    subroutine dlwq5b (lunut  , iposr  , npos   , cchar  , car    ,&
-                          iar    , icmax  , iimax  , aname  , atype  ,&
-                          ntitm  , nttype , noitm  , noits  , chkflg ,&
-                          callr  , ilun   , lch    , lstack ,&
-                          itype  , rar    , nconst , itmnr  , chulp  ,&
-                                            ioutpt , ierr   , iwar)
-!     Logical Units      : Lunut   = Unit Formatted Output File
-!
+    subroutine dlwq5b(lunut , iposr , npos , cchar , car    ,&
+                      iar   , icmax , iimax, aname , atype  ,&
+                      ntitm , nttype, noitm, noits , chkflg ,&
+                      callr , ilun  , lch  , lstack, itype  ,&
+                      rar   , nconst, itmnr, chulp , ioutpt, &
+                      ierr  , iwar)
 !     Parameters    :
 !
 !     Name    Kind     Length     Funct.  Description
 !     ---------------------------------------------------------
-!     iposr   integer    1         in/out  Start position on input line
-!     npos    integer    1         input   Nr of significant characters
-!     cchar   char*1     1         input   Comment character
-!     car     character  *         output  Character workspace
-!     iar     integer  iimax       output  Integer   workspace
-!     icmax   integer    1         input   Max. Char workspace dimension
-!     iimax   integer    1         input   Max. Int. Workspace dimension
 !     aname   char*20    *         input   Id's of the boundaries/wastes
-!     atype   char*20    *         input   Types of the boundaries/wastes
 !     ntitm   integer    1         input   Number of bounds/wastes
 !     nttype  integer    1         input   Number of bound/waste types
 !     noitm   integer    1         output  Number of items read
 !     noits   integer    1         output  Number of items for scale
-!     chkflg  integer    1         input   Check on input or add items
 !     callr   char*(6)   1         input   Calling subject
 !     ilun    integer   lstack     in/out  Unitnumb include stack
 !     lch     char*(*)  lstack     in/out  File name stack, 4 deep
@@ -66,30 +55,66 @@ module m_dlwq5b
 !     iwar    integer    1         output  Cumulative warning count
 !
 !
-    use m_string_utils, only: location_of
+    use m_string_utils, only: index_in_array, join_strings
 
     use m_movint
     use m_movchr
     use timers       !   performance timers
 
-    integer       icmax   , iimax    , chkflg
-    character*(*) car(*)  , aname(*) , atype(*) , lch(lstack) ,&
-                  chulp
-    character*1   cchar*1 , callr*10
+    integer, intent(in   ) :: icmax  !< Max. Char workspace dimension
+    integer, intent(in   ) :: iimax  !< Max. Int. Workspace dimension
+    integer, intent(in   ) :: chkflg !< Check on input or add items
+    integer, intent(in   ) :: lunut  !< Unit Formatted Output File
+    integer, intent(inout) :: iposr  !< Start position on input line
+    integer, intent(in   ) :: npos   !< Nr of significant characters
+    integer, intent(  out) :: iar(:) !< Integer workspace
+    !integer, intent(in   ) :: ntitm  !< Number of bounds/wastes 
+    
+    character(1), intent(in   ) :: cchar    !< Comment character
+    character(*), intent(  out) :: car(*)   !< Character workspace
+    character(*), intent(inout) :: aname(*) !< Id's of the boundaries/wastes
+    character(*), intent(in) :: atype(*) !< Types of the boundaries/wastes
+
+    character(*) lch(lstack) , chulp
+    character*1   callr*10
     logical       usefor, setnam, comput, signon
     integer(4) :: ithndl = 0
-    integer    :: i, ihulp, ierr, iabs, iar(:), ifound, i2
-    integer    :: namset, ioutpt, icm, ntitm, nttype, iwar, lstack
+    integer    :: i, ihulp, ierr, iabs, ifound, i2
+    integer    :: namset, ioutpt, icm, nttype, iwar, lstack
     real       :: vrsion
-    integer    :: itmnr, ioff, ioffc, nconst, itype, lunut, ilun(lstack)
-    integer    :: iposr, npos, noitm, noits, ioffi
+    integer    :: itmnr, ioff, ioffc, ntitm, nconst, itype, ilun(lstack)
+    integer    :: noitm, noits, ioffi
     real       :: rar(:), rhulp
+    character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
+    character(*), parameter :: keywords(24) = ['BLOCK'       ,&
+                                              'LINEAR'       ,&
+                                              'ITEM'         ,&
+                                              'IDENTICALITEM',&
+                                              'USEDATA_ITEM' ,&
+                                              'FORITEM'      ,&
+                                              'DATA_ITEM'    ,&
+                                              'CONCEN'       ,&
+                                              'DATA'         ,&
+                                              'TIME_DELAY'   ,&
+                                              'ODS_FILE'     ,&
+                                              'BINARY_FILE'  ,&
+                                              'ABSOLUTE'     ,&
+                                              'TIME'         ,&
+                                              'HARMONICS'    ,&
+                                              'FOURIERS'     ,&
+                                              'SCALE'        ,&
+                                              'DEFAULTS'     ,&
+                                              'ALL'          ,&
+                                              'SEGMENTS'     ,&
+                                              'CONSTANTS'    ,&
+                                              'PARAMETERS'   ,&
+                                              'FUNCTIONS'    ,&
+                                              'SEG_FUNCTIONS' ]
 
     if (timon) call timstrt("dlwq5b", ithndl)
 
     !
     ! some initialisations
-
     usefor = .false.
     setnam = .false.
     comput = .false.
@@ -102,41 +127,17 @@ module m_dlwq5b
     ioffi  = 0
     nconst = 0
     !
-    !          Get a token string (and return if something else was found)
+    ! Get a token string (and return if something else was found)
 10  itype = -3
     if (signon .or. (usefor .and. setnam)) itype = 0
-    call rdtok1 (lunut  , ilun   , lch    , lstack , cchar  ,&
-                    iposr  , npos   , chulp  , ihulp  , rhulp  ,&
-                                               itype  , ierr)
+    call rdtok1(lunut, ilun, lch  , lstack, cchar,&
+                iposr, npos, chulp, ihulp , rhulp,&
+                itype, ierr)
     if (ierr .ne. 0) goto 9999
 
     
     ! if a keyword was met
-    if (iabs(itype) == 1 .and. &
-        (any(['BLOCK'        ,&
-              'LINEAR'       ,&
-              'ITEM'         ,&
-              'IDENTICALITEM',&
-              'USEDATA_ITEM' ,&
-              'FORITEM'      ,&
-              'DATA_ITEM'    ,&
-              'CONCEN'       ,&
-              'DATA'         ,&
-              'TIME_DELAY'   ,&
-              'ODS_FILE'     ,&
-              'BINARY_FILE'  ,&
-              'ABSOLUTE'     ,&
-              'TIME'         ,&
-              'HARMONICS'    ,&
-              'FOURIERS'     ,&
-              'SCALE'        ,&
-              'DEFAULTS'     ,&
-              'ALL'          ,&
-              'SEGMENTS'     ,&
-              'CONSTANTS'    ,&
-              'PARAMETERS'   ,&
-              'FUNCTIONS'    ,&
-              'SEG_FUNCTIONS' ] == trim(chulp)))) then
+    if (iabs(itype) == 1 .and. (any(keywords == trim(chulp)))) then
         if (usefor) then
             write (lunut, 1035) chulp
             goto 40
@@ -146,8 +147,7 @@ module m_dlwq5b
     end if
 
     ! if computation
-    if (iabs(itype) == 1 .and.&
-           (any(['*', '/', '+', '-', 'MIN', 'MAX'] == trim(chulp)))) then
+    if (iabs(itype) == 1 .and. (any(operations == trim(chulp)))) then
         if (.not. comput) then
             write (lunut , 1070)
             goto 40
@@ -182,7 +182,7 @@ module m_dlwq5b
     if (iabs(itype) == 1 .and. signon) then
         do 15 i=1, itmnr-1
             if (iar(i) == -1300000000) goto 15
-            ifound = location_of(chulp, car(i+ioff:i+ioff))
+            ifound = index_in_array(chulp, car(i+ioff:i+ioff))
             if (ifound == 1) then
                 noits = noits - 1
                 i2 = iar(itmnr+noitm)
@@ -331,7 +331,7 @@ module m_dlwq5b
             write (chulp(6:12) , '(I7)') noitm+1
         end if
         ! FLOW is only valid as CONCENTR. and item number is 0
-        ifound = location_of(chulp, ['FLOW                '])
+        ifound = index_in_array(chulp, ['FLOW                '])
         if (ifound == 1 .and. callr == 'CONCENTR. ') then
             noitm = noitm + 1
             noits = noits + 1
@@ -352,7 +352,7 @@ module m_dlwq5b
         end if
 
         ! CHULP equals an item-NAME
-        i2 = location_of(chulp, aname(1:ntitm))
+        i2 = index_in_array(chulp, aname(1:ntitm))
         if (i2 >= 1) then
             noitm = noitm + 1
             noits = noits + 1
@@ -374,7 +374,7 @@ module m_dlwq5b
         end if
 
         ! CHULP equals an item-TYPE. IAR now is negative.
-        i2 = location_of(chulp,atype(1:nttype))
+        i2 = index_in_array(chulp,atype(1:nttype))
         if (i2 >= 1) then
             noitm = noitm + 1
             noits = noits + 1
