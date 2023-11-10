@@ -66,7 +66,8 @@ module m_dlwq5b
 !     iwar    integer    1         output  Cumulative warning count
 !
 !
-    use m_zoek
+    use m_string_utils, only: location_of
+
     use m_movint
     use m_movchr
     use timers       !   performance timers
@@ -109,7 +110,7 @@ module m_dlwq5b
                                                itype  , ierr)
     if (ierr .ne. 0) goto 9999
 
-    !
+    
     ! if a keyword was met
     if (iabs(itype) == 1 .and. &
         (any(['BLOCK'        ,&
@@ -181,7 +182,7 @@ module m_dlwq5b
     if (iabs(itype) == 1 .and. signon) then
         do 15 i=1, itmnr-1
             if (iar(i) == -1300000000) goto 15
-            call zoek (chulp, 1,car(i+ioff),20,ifound)
+            ifound = location_of(chulp, car(i+ioff:i+ioff))
             if (ifound == 1) then
                 noits = noits - 1
                 i2 = iar(itmnr+noitm)
@@ -330,7 +331,7 @@ module m_dlwq5b
             write (chulp(6:12) , '(I7)') noitm+1
         end if
         ! FLOW is only valid as CONCENTR. and item number is 0
-        call zoek(chulp,1,(/'FLOW                '/),20,ifound)
+        ifound = location_of(chulp, ['FLOW                '])
         if (ifound == 1 .and. callr == 'CONCENTR. ') then
             noitm = noitm + 1
             noits = noits + 1
@@ -351,7 +352,7 @@ module m_dlwq5b
         end if
 
         ! CHULP equals an item-NAME
-        call zoek(chulp,ntitm,aname,20,i2)
+        i2 = location_of(chulp, aname(1:ntitm))
         if (i2 >= 1) then
             noitm = noitm + 1
             noits = noits + 1
@@ -373,7 +374,7 @@ module m_dlwq5b
         end if
 
         ! CHULP equals an item-TYPE. IAR now is negative.
-        call zoek(chulp,nttype,atype,20,i2)
+        i2 = location_of(chulp,atype(1:nttype))
         if (i2 >= 1) then
             noitm = noitm + 1
             noits = noits + 1
