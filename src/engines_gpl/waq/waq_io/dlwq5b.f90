@@ -76,19 +76,21 @@ module m_dlwq5b
     integer    :: itmnr, ioff, ioffc, ioffi
     real       :: rhulp
     character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
-    character(*), parameter :: keywords(25) = ['BLOCK'        ,&
+    character(*), parameter :: keywords(26) = ['BLOCK'        ,&
+                                              'BINARY_FILE'   ,&
+                                              'CONCEN'        ,&
+                                              'CONCENTRATIONS',&
+                                              'CONCENTRATION' ,&
+                                              'CONSTANTS'     ,&
+                                              'DATA'          ,&
+                                              'DATA_ITEM'     ,&
                                               'LINEAR'        ,&
                                               'ITEM'          ,&
                                               'IDENTICALITEM' ,&
                                               'USEDATA_ITEM'  ,&
                                               'FORITEM'       ,&
-                                              'DATA_ITEM'     ,&
-                                              'CONCEN'        ,&
-                                              'CONCENTRATIONS',&
-                                              'DATA'          ,&
                                               'TIME_DELAY'    ,&
                                               'ODS_FILE'      ,&
-                                              'BINARY_FILE'   ,&
                                               'ABSOLUTE'      ,&
                                               'TIME'          ,&
                                               'HARMONICS'     ,&
@@ -97,7 +99,6 @@ module m_dlwq5b
                                               'DEFAULTS'      ,&
                                               'ALL'           ,&
                                               'SEGMENTS'      ,&
-                                              'CONSTANTS'     ,&
                                               'PARAMETERS'    ,&
                                               'FUNCTIONS'     ,&
                                               'SEG_FUNCTIONS'  ]
