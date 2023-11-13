@@ -1,5 +1,5 @@
 import pytest
-
+import os
 from unittest.mock import Mock, patch
 from src.utils.handlers.handler_factory import HandlerFactory
 
@@ -16,7 +16,7 @@ class TestMinioHandler:
         logger = Mock()
         programs = []
 
-        # Mock Minio and Rewinder
+        # Arrange
         with patch('src.utils.handlers.minio_handler.Minio') as MockMinio, patch('src.utils.handlers.minio_handler.Rewinder') as MockRewinder:
             minio_instance = Mock()
             rewinder_instance = Mock()
@@ -25,6 +25,7 @@ class TestMinioHandler:
             MockRewinder.return_value = rewinder_instance
             minio_instance.list_objects.return_value = [{'key': 'path_to_object'}]
 
+            # Act
             HandlerFactory.download(
                 from_path,
                 "test/data",
@@ -34,4 +35,6 @@ class TestMinioHandler:
                 "2023.10.20T09:00",
             )
 
-            rewinder_instance.download.assert_called_once_with(expected_bucket_name, from_path, 'test\\data')
+            # Assert
+            expected_path = os.path.join('test', 'data')
+            rewinder_instance.download.assert_called_once_with(expected_bucket_name, from_path, expected_path)

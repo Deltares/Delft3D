@@ -166,10 +166,10 @@ def PlotDifferencesMap(right_path, x, y, yval1, yval2, allowed_diff, case_name, 
     # save the figure
     logging.debug("Plotting map, variable: " + parameter + " and location name: " + location)
     outfilename = '{parameter}_{location}_{file_type}.pdf'.format(location=location, parameter=parameter, file_type=file_type)
-    outfilename = os.path.join(right_path, outfilename)
     outfilename = outfilename.replace(r'/', '-')
     outfilename = outfilename.replace(r':', '')
     outfilename = outfilename.replace(r' ', '_')
+    outfilename = os.path.join(right_path, outfilename)
     plt.savefig(outfilename)
     plt.clf()
     plt.close('all')
