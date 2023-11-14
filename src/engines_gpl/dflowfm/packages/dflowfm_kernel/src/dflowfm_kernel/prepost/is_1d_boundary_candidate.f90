@@ -44,10 +44,8 @@ pure logical function is_1d_boundary_candidate(L,i)
 
     logical                 :: isEndNode
 
-    is_1d_boundary_candidate = nmk(kn(i,L)) == 1 .and. nmk(kn(3-i,L)) == 2 .and. lne(i,L) < 0
-    if (jaAllowBndAtBifurcation == 1) then
-        is_1d_boundary_candidate = nmk(kn(i,L)) == 1 .and. nmk(kn(3-i,L)) >= 2 .and. lne(i,L) < 0
-    endif
+    is_1d_boundary_candidate = nmk(kn(i,L)) == 1 .and. lne(i,L) < 0 .and. &
+       (nmk(kn(3-i,L)) == 2 .or. jaAllowBndAtBifurcation == 1)
 
     return
 end function is_1d_boundary_candidate
