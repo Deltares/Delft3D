@@ -50,6 +50,7 @@ else
      module load gdal/3.6.3_intel2023.1.0
      module load gcc/12.2.0_gcc12.2.0
      module load patchelf/0.17.2_intel2023.1.0
+     module load ninja/1.11.1_gcc12.2.0
      #This has to be replaced by a module load eventually
      export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/apps/petsc/3.19.0_intel2023.1.0/arch-linux-c-opt/lib/pkgconfig/
 fi
