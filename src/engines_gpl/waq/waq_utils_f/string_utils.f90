@@ -124,9 +124,10 @@ module m_string_utils
     function index_in_array(string_to_find, array_of_strings, case_sensitive) result(location)
         use string_module
 
-        character(len=*), intent(in) :: string_to_find
+        character(len=*), intent(in)               :: string_to_find
         character(len=*), dimension(:), intent(in) :: array_of_strings
-        logical, intent(in), optional :: case_sensitive
+        logical, intent(in), optional              :: case_sensitive
+
         integer :: i, location
         logical :: found
 

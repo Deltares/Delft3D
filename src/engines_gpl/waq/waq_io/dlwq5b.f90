@@ -34,7 +34,7 @@ module m_dlwq5b
                       rar  , nconst, itmnr, chulp , ioutpt, &
                       error_ind , iwar)
 
-                      use m_string_utils, only: index_in_array, join_strings
+    use m_string_utils, only: index_in_array, join_strings
     use m_movint
     use m_movchr
     use timers
@@ -76,11 +76,9 @@ module m_dlwq5b
     integer    :: itmnr, ioff, ioffc, ioffi
     real       :: rhulp
     character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
-    character(*), parameter :: keywords(26) = ['BLOCK'        ,&
+    character(*), parameter :: keywords(24) = ['BLOCK'        ,&
                                               'BINARY_FILE'   ,&
-                                              'CONCEN'        ,&
                                               'CONCENTRATIONS',&
-                                              'CONCENTRATION' ,&
                                               'CONSTANTS'     ,&
                                               'DATA'          ,&
                                               'DATA_ITEM'     ,&
