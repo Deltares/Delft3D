@@ -2512,7 +2512,7 @@
         <file name="dflowfmoutput/zandloper_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />

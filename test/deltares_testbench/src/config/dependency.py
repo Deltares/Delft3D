@@ -8,9 +8,9 @@ Copyright (C)  Stichting Deltares, 2023
 class Dependency:
     """Class for registering dependencies of tests"""
 
-    def __init__(self):
-        self.__cases_path: str
-        self.__local_dir: str
+    def __init__(self, local_dir: str, case_path: str):
+        self.__cases_path: str = case_path
+        self.__local_dir: str = local_dir
 
     @property
     def cases_path(self) -> str:

@@ -76,6 +76,7 @@ if(UNIX)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            waq_definition
                             wq_processes
                             waq_process
                             waq_hyd_data
@@ -121,6 +122,7 @@ if(WIN32)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            waq_definition
                             wq_processes
                             waq_process
                             waq_hyd_data

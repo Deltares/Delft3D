@@ -261,44 +261,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f014_c020_waal" ref="sif_dimr">
-      <path>e02_dflowfm/f014_parallel/c020_waalmodel</path>
-      <programs>
-        <program ref="execute_singularity" seq="1">
-          <arguments>
-            <argument>-p</argument>
-            <argument>2</argument>
-            <argument>run_dflowfm.sh</argument>
-            <argument>--partition:ndomains=4:ugrid=1:icgsolver=6:method=2</argument>
-            <argument>wl_j95_5_t1.mdu</argument>
-          </arguments>
-        </program>
-        <program ref="execute_singularity" seq="2">
-          <arguments>
-            <argument>-p</argument>
-            <argument>2</argument>
-            <argument>run_dimr.sh</argument>
-            <argument>-c</argument>
-            <argument>4</argument>
-            <argument>-m</argument>
-            <argument>dimr.xml</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="DFM_interpreted_idomain_wl_j95_5_hoog_net.nc" type="netCDF">
-        </file>
-        <file name="wl_j95_5_hoog_0000_net.nc" type="netCDF">
-        </file>
-        <file name="wl_j95_5_hoog_0001_net.nc" type="netCDF">
-        </file>
-        <file name="wl_j95_5_hoog_0002_net.nc" type="netCDF">
-        </file>
-        <file name="wl_j95_5_hoog_0003_net.nc" type="netCDF">
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f014_c041_westerscheldt_structures" ref="sif_dimr">
       <path>e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
       <programs>

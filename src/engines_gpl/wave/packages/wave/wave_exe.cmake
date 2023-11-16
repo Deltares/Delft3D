@@ -128,4 +128,5 @@ post_build_target (${executable_name}
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/wave/scripts/run_dwaves.sh  DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION bin)
 endif(UNIX)

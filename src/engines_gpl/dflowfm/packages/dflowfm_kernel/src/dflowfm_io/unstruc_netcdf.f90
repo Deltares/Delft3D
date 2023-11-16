@@ -4862,12 +4862,11 @@ end subroutine unc_write_rst_filepointer
 !! If file exists, it will be overwritten. Therefore, only use this routine
 !! for separate snapshots, the automated map file should be filled by calling
 !! unc_write_map_filepointer directly instead!
-subroutine unc_write_map(filename, md_nc_map_precision, iconventions)
+subroutine unc_write_map(filename, iconventions)
     use m_flowparameters, only: jamapbnd
     implicit none
 
     character(len=*),  intent(in) :: filename
-    integer,           intent(in) :: md_nc_map_precision !< NetCDF data precision in map files (0: double, 1: float)
     integer, optional, intent(in) :: iconventions        !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
 
     type(t_unc_mapids) :: mapids
@@ -4890,7 +4889,7 @@ subroutine unc_write_map(filename, md_nc_map_precision, iconventions)
     if (iconv == UNC_CONV_UGRID) then
        jabndnd = 0
        if (jamapbnd > 0) jabndnd = 1
-       call unc_write_map_filepointer_ugrid(mapids, 0d0, md_nc_map_precision, jabndnd)
+       call unc_write_map_filepointer_ugrid(mapids, 0d0, jabndnd)
     else
        call unc_write_map_filepointer(mapids%ncid, 0d0, 1)
     endif
@@ -4901,7 +4900,7 @@ end subroutine unc_write_map
 
 !> Writes map/flow data to an already opened netCDF dataset. NEW version according to UGRID conventions + much cleanup.
 !! The netnode and -links have been written already.
-subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jabndnd) ! wrimap
+subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    use m_flow
    use m_flowtimes
    use m_flowgeom
@@ -4926,12 +4925,12 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
    use m_hydrology_data, only : jadhyd, ActEvap, PotEvap, interceptionmodel, DFM_HYD_NOINTERCEPT, InterceptHs
    use m_subsidence, only: jasubsupl, subsout, subsupl, subsupl_t0
    use Timers
+   use m_map_his_precision
 
    implicit none
 
    type(t_unc_mapids), intent(inout) :: mapids               !< Set of file and variable ids for this map-type file.
    real(kind=hp),      intent(in)    :: tim
-   integer,            intent(in)    :: md_nc_map_precision  !< NetCDF data precision in map files (0: double, 1: float)
    integer, optional,  intent(in)    :: jabndnd              !< Whether to include boundary nodes (1) or not (0). Default: no.
 
    integer                           :: jabndnd_             !< Flag specifying whether boundary nodes are to be written.
@@ -4980,7 +4979,6 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
    double precision, dimension(:,:,:), allocatable :: work3d, work3d2
 
    integer            :: nc_precision
-   integer, parameter :: SINGLE_PRECISION = 1
    integer, parameter :: FIRST_ARRAY = 1
    integer, parameter :: SECOND_ARRAY = 2
 
@@ -17251,7 +17249,11 @@ subroutine definencvar(ncid, idq, itype, idims, n, name, desc, unit, namecoord, 
    endif
 
    if (present(fillVal)) then
-      ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
+       if ( itype == nf90_double ) then
+          ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
+       else if ( itype == nf90_float ) then
+          ierr = nf90_put_att(ncid, idq, '_FillValue', SNGL(fillVal))
+       end if
    endif
 
 
