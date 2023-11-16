@@ -34,27 +34,20 @@ class ResolveHandler(ABC):
             HandlerType: Detected handler type
         """
         logger.debug(f"detecting handler for {path}")
-        # assume network path starts with either [//] or [\\]
-        match = re.search(r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path)
-        if match:
+
+        if re.search(r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path):  # assume network path starts with either [//] or [\\]
             return HandlerType.NET
-
-        # assume local path handler [X:\] or [/]
-        match = re.search(r"[A-Za-z]{1}\:\\|^\/{1}[A-Za-z0-9]|\.\.", path)
-        if match:
+        elif re.search(r"[A-Za-z]{1}\:\\|^\/{1}[A-Za-z0-9]|\.\.", path):  # assume local path handler [X:\] or [/]
             return HandlerType.PATH
-
-        # identify ftp handler
-        match = re.search(r"^ftp(s)?://", path)
-        if match:
+        elif re.search(r"^ftp(s)?://", path):
             return HandlerType.FTP
-
-        return cls.__detect_by_opening_url(path, logger, credentials)
+        elif re.match(r"^https://minio", path) or re.match(r"^https://s3.deltares.nl", path):
+            return HandlerType.MINIO
+        else:
+            return cls.__detect_by_opening_url(path, logger, credentials)
 
     @classmethod
-    def __detect_by_opening_url(
-        cls, path: str, logger: ILogger, credentials: Optional[Credentials]
-    ) -> HandlerType:
+    def __detect_by_opening_url(cls, path: str, logger: ILogger, credentials: Optional[Credentials]) -> HandlerType:
         """Try to open http connections to detect protocol header
         (recursive analysis to root of path)
 

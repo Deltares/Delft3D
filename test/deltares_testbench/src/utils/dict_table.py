@@ -1,3 +1,4 @@
+import numpy as np
 from typing import Dict, List
 
 
@@ -10,9 +11,22 @@ class DictTable:
     def headers(self) -> List[str]:
         return list(self.__values_dict.keys())
 
+    @staticmethod
+    def format_value(value) -> str:
+        if isinstance(value, float) or type(value) in {
+            np.float16,
+            np.float32,
+            np.float64,
+        }:
+            return f"{value:.3e}"
+        else:
+            return str(value)
+
     def max_column_width(self, key: str) -> int:
         default_width = len(key)
-        max_value_width = max([len(str(v)) for v in self.__values_dict[key]])
+        max_value_width = max(
+            [len(self.format_value(v)) for v in self.__values_dict[key]]
+        )
 
         return max(default_width, max_value_width)
 

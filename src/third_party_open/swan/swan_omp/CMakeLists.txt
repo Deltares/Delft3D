@@ -2,6 +2,9 @@
 
 message(STATUS "swan omp:")
 
+# Don't put the Fortran modules of the SWAN OpenMP executable build in a central location
+unset(CMAKE_Fortran_MODULE_DIRECTORY)
+
 # Set directory which contains all source files
 set(src_path ../src)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
@@ -30,7 +33,6 @@ if (WIN32)
     set(exe_dependencies netcdf4
                          netcdff)
 
-    add_dependencies(${executable_name} swan_mpi)
     oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
@@ -62,10 +64,9 @@ if(UNIX)
          PkgConfig::NETCDF
          netcdff)
 
-    add_dependencies(${executable_name} swan_mpi)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
-                        ${CMAKE_BINARY_DIR}/netcdff)
+                        ${CMAKE_BINARY_DIR}/fortran_module_dir)
 
     add_definitions(-DHAVE_CONFIG_H=1)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})

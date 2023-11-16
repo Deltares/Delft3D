@@ -19,6 +19,7 @@ from src.utils.handlers.i_handler import IHandler
 from src.utils.handlers.local_net_handler import LocalNetHandler
 from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.handlers.svn_handler import SvnHandler
+from src.utils.handlers.minio_handler import MinIOHandler
 from src.utils.logging.i_logger import ILogger
 from src.utils.paths import Paths
 from src.utils.unzipper import Unzipper
@@ -66,6 +67,9 @@ class HandlerFactory(ABC):
         if handler_type == HandlerType.NET or handler_type == HandlerType.PATH:
             logger.debug(f"using LocalNet handler for {to_path}")
             handler = LocalNetHandler()
+        if handler_type == HandlerType.MINIO:
+            logger.debug(f"using MinIO handler for {to_path}")
+            handler = MinIOHandler()
         if handler_type == HandlerType.NONE:
             raise AttributeError("upload :: no type specified")
 
