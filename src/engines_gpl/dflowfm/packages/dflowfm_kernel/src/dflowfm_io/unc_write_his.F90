@@ -150,6 +150,7 @@ subroutine unc_write_his(tim)            ! wrihis
     integer, allocatable, save :: id_hwqb3d(:)
     integer, allocatable, save :: id_const(:), id_const_cum(:), id_voltot(:)
     integer, allocatable, save :: id_sedbtransfrac(:)
+    integer, allocatable, save :: id_sedstransfrac(:)
     double precision, allocatable, save :: valobsT(:,:)
     integer :: maxlocT, maxvalT !< row+column count of valobsT
 
@@ -1249,7 +1250,18 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'coordinates', 'cross_section_name')
                ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'geometry', crs_geom_container_name)
             enddo
-
+            if (.not. allocated(id_sedstransfrac)) then
+               allocate(id_sedstransfrac(stmpar%lsedsus))
+               id_sedstransfrac = 0
+            endif
+            do lsed = 1,stmpar%lsedsus    ! Making suspended load on crosssections per fraction
+               ierr = nf90_def_var(ihisfile, 'cross_section_suspended_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), nc_precision, &
+                   (/ id_crsdim, id_timedim /), id_sedstransfrac(lsed))
+               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'long_name', 'cumulative suspended load sediment transport per fraction')
+               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'units', 'kg')
+               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'coordinates', 'cross_section_name')
+               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'geometry', crs_geom_container_name)
+            enddo
          endif
 
          ! runup gauges
@@ -3150,9 +3162,13 @@ subroutine unc_write_his(tim)            ! wrihis
                 IP = IP + 1
                 ierr = nf90_put_var(ihisfile, id_sedstrans, crs(i)%sumvalcum(IP), (/ i, it_his /))
              endif
-             do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+             do lsed = 1,stmpar%lsedtot    ! bed load on crosssections per fraction
                 IP = IP + 1
                 ierr = nf90_put_var(ihisfile, id_sedbtransfrac(lsed), crs(i)%sumvalcum(IP), (/ i, it_his /))
+             enddo
+             do lsed = 1,stmpar%lsedsus    ! suspended load on crosssections per fraction
+                IP = IP + 1
+                ierr = nf90_put_var(ihisfile, id_sedstransfrac(lsed), crs(i)%sumvalcum(IP), (/ i, it_his /))
              enddo
           endif
        end do

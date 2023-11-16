@@ -85,18 +85,22 @@ subroutine sumvalueOnCrossSections(resu, numvals)
  
            if( jased == 4 .and. stmpar%lsedtot > 0 ) then ! todo, loop korter tot lsedsus.
               IP = IPNT_HUA + NUMCONST_MDU + 1 ! TODO: mourits/dam_ar: check whether all uses of NUMCONST versus NUMCONST_MDU are now correct.
-              do lsed = 1,stmpar%lsedtot
+              do lsed = 1,stmpar%lsedtot  ! sum of bed load 
                  resu(IP,icrs) = resu(IP,icrs) + sedtra%e_sbn(L,lsed) * wu_mor(L) * dble(sign(1, Lf))
               enddo
               if( stmpar%lsedsus > 0 ) then
                  IP = IP + 1
-                 do lsed = 1,stmpar%lsedsus
+                 do lsed = 1,stmpar%lsedsus ! sum of suspended load 
                     resu(IP,icrs) = resu(IP,icrs) + sedtra%e_ssn(L,lsed) * wu(L) * dble(sign(1, Lf))
                  enddo
               endif
-              do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+              do lsed = 1,stmpar%lsedtot    ! Making bed load on crosssections per fraction
                  IP = IP + 1
                  resu(IP,icrs) = resu(IP,icrs) + sedtra%e_sbn(L,lsed) * wu_mor(L) * dble(sign(1, Lf))
+              enddo
+              do lsed = 1,stmpar%lsedsus    ! Making suspended load on crosssections per fraction
+                 IP = IP + 1
+                 resu(IP,icrs) = resu(IP,icrs) + sedtra%e_ssn(L,lsed) * wu_mor(L) * dble(sign(1, Lf))
               enddo
            endif
        end do
