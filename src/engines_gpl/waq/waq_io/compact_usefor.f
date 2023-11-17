@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_compact_usefor
+      use m_waq_precision
+
 
       implicit none
 
@@ -42,23 +44,23 @@
 
 !     declaration of arguments
 
-      integer               , intent(in)    :: lunut        ! report file
+      integer(kind=int_wp), intent(in) ::  lunut         ! report file
       type(t_dlwq_item)     , intent(inout) :: waq_param    ! list of param items to be set in this block ( substances etc )
       type(t_dlwq_item)     , intent(inout) :: data_param   ! list of param items in the data
-      integer               , intent(in)    :: i            ! item index
-      integer               , intent(inout) :: icnt         ! shift in item index
+      integer(kind=int_wp), intent(in) ::  i             ! item index
+      integer(kind=int_wp), intent(inout) ::  icnt          ! shift in item index
 
       ! local declaration
 
       character(len=20)                     :: chulp        ! item name
-      integer                               :: nitm         ! number of items in data
-      integer                               :: ishft        ! number of items shifted in data
-      integer                               :: i1           ! item index
-      integer                               :: i2           ! item index
-      integer                               :: i3           ! item index
-      integer                               :: i4           ! item index
-      integer                               :: i5           ! item index
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  nitm          ! number of items in data
+      integer(kind=int_wp) ::  ishft         ! number of items shifted in data
+      integer(kind=int_wp) ::  i1            ! item index
+      integer(kind=int_wp) ::  i2            ! item index
+      integer(kind=int_wp) ::  i3            ! item index
+      integer(kind=int_wp) ::  i4            ! item index
+      integer(kind=int_wp) ::  i5            ! item index
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "compact_usefor", ithndl )
 
       ! write message

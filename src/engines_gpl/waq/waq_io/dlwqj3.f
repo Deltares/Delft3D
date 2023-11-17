@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqj3
+      use m_waq_precision
+
 
       implicit none
 
@@ -90,18 +92,18 @@ cjvb  ook voor constanten hebben we in delwaq2 initieel werkruimte nodig als dez
       LOGICAL               ::  SCALE  , ODS    , BINFIL , DEFLTS
       LOGICAL               ::  DTFLG1 , DTFLG3
       CHARACTER*(*)         :: STRNG1 , STRNG2 , STRNG3 , CAR(*)
-      integer               :: NODIM
-      integer               :: k, ie, IE2, NOITM, i1, i2
+      integer(kind=int_wp) ::  NODIM
+      integer(kind=int_wp) ::  k, ie, IE2, NOITM, i1, i2
       integer               :: nodi2, iorder, lunut, lunwr, iar(:), iopt, ipro
-      integer               :: ifilsz, jfilsz, nobrk, ioffb, ioffi, ioffs
-      integer               :: iskip, iskp2, notot, iss, ioutpt, iwidth
-      integer               :: itel2, itfact, i1dum, i2dum
-      integer               :: itels, itel, i3
-      real                  :: rar(:), rmat(:)
+      integer(kind=int_wp) ::  ifilsz, jfilsz, nobrk, ioffb, ioffi, ioffs
+      integer(kind=int_wp) ::  iskip, iskp2, notot, iss, ioutpt, iwidth
+      integer(kind=int_wp) ::  itel2, itfact, i1dum, i2dum
+      integer(kind=int_wp) ::  itels, itel, i3
+      real(kind=real_wp)        :: rar(:), rmat(:)
 !
 !     Local declarations
 
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwqj3", ithndl )
 !
 !     Write headers
@@ -272,7 +274,7 @@ cjvb1    ENDIF
       END
 !
       CHARACTER*20 FUNCTION CAR_OF_DUM(CAR,I)
-      INTEGER       I
+      INTEGER(kind=int_wp) :: I
       CHARACTER*(*) CAR(*)
       IF ( I .GT. 0 ) THEN
          CAR_OF_DUM = CAR(I)

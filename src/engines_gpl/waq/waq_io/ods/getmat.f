@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getmat
+      use m_waq_precision
+
 
       implicit none
 
@@ -66,21 +68,21 @@
       use m_dhfext
 
       CHARACTER*256 FNAME (3) , OPTION
-      REAL                  :: DATA(*)
-      INTEGER               :: LOC(*)
-      REAL*8        TIM(2)    , OTIME  , ATIME    , SECOND
-      real  amiss
+      REAL(kind=real_wp) ::  DATA(*)
+      INTEGER(kind=int_wp) ::  LOC(*)
+      REAL(kind=dp)        ::TIM(2)    , OTIME  , ATIME    , SECOND
+      real(kind=real_wp) :: amiss
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_wp) ::  extpos   ! position of extension
+      integer(kind=int_wp) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun
-      integer               :: I1
-      integer               :: NODUMP, NOTOT
-      integer               :: k, L, i2, i3, i4, ierror, iyear, imonth, iday
-      integer               :: ihour, iminut, isecnd, isfact, idummy, idate
-      integer               :: itime, ntt, iset, iprcod, maxdim
-      integer               :: adummy, itype
+      integer(kind=int_wp) ::  lun
+      integer(kind=int_wp) ::  I1
+      integer(kind=int_wp) ::  NODUMP, NOTOT
+      integer(kind=int_wp) ::  k, L, i2, i3, i4, ierror, iyear, imonth, iday
+      integer(kind=int_wp) ::  ihour, iminut, isecnd, isfact, idummy, idate
+      integer(kind=int_wp) ::  itime, ntt, iset, iprcod, maxdim
+      integer(kind=int_wp) ::  adummy, itype
       
 !         Open the DELWAQ .HIS file if needed
 !
@@ -198,19 +200,19 @@
 !
 !
       CHARACTER*256 FNAME (3) , OPTION
-      REAL      DATA(*)
-      integer   LOC(*)
-      REAL*8        TIM(2)    , OTIME  , ATIME    , SECOND
-      real  amiss
+      REAL(kind=real_wp) :: DATA(*)
+      integer(kind=int_wp) :: LOC(*)
+      REAL(kind=dp)        :: TIM(2)    , OTIME  , ATIME    , SECOND
+      real(kind=real_wp) :: amiss
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_wp) ::  extpos   ! position of extension
+      integer(kind=int_wp) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun, NODUMP, NOTOT, k, NTT
-      integer               :: ierror, iyear, imonth, iday
-      integer               :: ihour, iminut, isecnd, isfact, idummy, idate
+      integer(kind=int_wp) ::  lun, NODUMP, NOTOT, k, NTT
+      integer(kind=int_wp) ::  ierror, iyear, imonth, iday
+      integer(kind=int_wp) ::  ihour, iminut, isecnd, isfact, idummy, idate
       integer               :: itime, iset, iprcod(:), maxdim
-      integer               :: adummy, itype
+      integer(kind=int_wp) ::  adummy, itype
 !
 !         Open the DELWAQ .HIS file if needed
 !

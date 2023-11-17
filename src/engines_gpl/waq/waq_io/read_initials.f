@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_initials
+      use m_waq_precision
+
 
       implicit none
 
@@ -49,19 +51,19 @@
 
 !     declaration of arguments
 
-      integer               , intent(inout) :: lun(*)       ! unit numbers used
+      integer(kind=int_wp), intent(inout) ::  lun(*)        ! unit numbers used
       character(len=*)      , intent(inout) :: lchar(*)     ! filenames
-      integer  ( 4)         , intent(inout) :: filtype(*)   !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  filtype(*)    !< type of binary file
       type(inputfilestack)  , intent(inout) :: inpfil       ! input file strucure with include stack and flags
-      integer               , intent(in)    :: notot        ! nr of substances
+      integer(kind=int_wp), intent(in) ::  notot         ! nr of substances
       character(len=*)      , intent(in)    :: syname(*)    ! substance names
-      integer               , intent(in)    :: iwidth       ! width of output
-      integer               , intent(in)    :: ioutpt       ! level of reporting to ascii output file
+      integer(kind=int_wp), intent(in) ::  iwidth        ! width of output
+      integer(kind=int_wp), intent(in) ::  ioutpt        ! level of reporting to ascii output file
       type(gridpointercoll) , intent(in)    :: gridps       ! collection off all grid definitions
-      integer               , intent(in)    :: noseg        ! nr of segments
-      real                  , intent(inout) :: conc(notot,noseg)  ! initial conditions
-      integer               , intent(inout) :: ierr         !< cummulative error count
-      integer  ( 4)         , intent(inout) :: iwar         !< cumulative warning count
+      integer(kind=int_wp), intent(in) ::  noseg         ! nr of segments
+      real(kind=real_wp), intent(inout) ::  conc(notot,noseg)   ! initial conditions
+      integer(kind=int_wp), intent(inout) ::  ierr          !< cummulative error count
+      integer(kind=int_wp), intent(inout) ::  iwar          !< cumulative warning count
 
 !     local declarations
 
@@ -73,17 +75,17 @@
       type(t_dlwq_item)                    :: functions            ! delwaq functions list
       type(t_dlwq_item)                    :: segfuncs             ! delwaq segment-functions list
       type(t_dlwq_item)                    :: segments             ! delwaq segment name list
-      real, allocatable                    :: fscale(:)            ! scale factors
+      real(kind=real_wp), allocatable ::  fscale(:)             ! scale factors
       character(len=255)                   :: ctoken               ! token from input
-      integer                              :: idata                ! index in collection
-      integer                              :: itype                ! type of the token
-      integer                              :: ierr2                ! error from gettoken and others
-      integer                              :: ierr3                ! error from dlwqdataevaluate
-      integer                              :: itime                ! dummy time
-      integer                              :: i                    ! loop counter
-      integer                              :: idummy               ! dummy
-      real                                 :: rdummy               ! dummy
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  idata                 ! index in collection
+      integer(kind=int_wp) ::  itype                 ! type of the token
+      integer(kind=int_wp) ::  ierr2                 ! error from gettoken and others
+      integer(kind=int_wp) ::  ierr3                 ! error from dlwqdataevaluate
+      integer(kind=int_wp) ::  itime                 ! dummy time
+      integer(kind=int_wp) ::  i                     ! loop counter
+      integer(kind=int_wp) ::  idummy                ! dummy
+      real(kind=real_wp) ::  rdummy                ! dummy
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "read_initials", ithndl )
 
 

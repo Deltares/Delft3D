@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_gettme
+      use m_waq_precision
+
 
       implicit none
 
@@ -68,23 +70,23 @@
       use m_dhfext
 
       CHARACTER*256    FNAME (3) , OPTION
-      INTEGER          ITMTYP(*)
-      DOUBLE PRECISION TIMLST(*) , TIMDEF(2,*) , ATIME , OTIME, SECOND
+      INTEGER(kind=int_wp) :: ITMTYP(*)
+      real(kind=dp) :: TIMLST(*) , TIMDEF(2,*) , ATIME , OTIME, SECOND
       LOGICAL          SETALL
 !
-      REAL, ALLOCATABLE :: RDATA(:)
+      REAL(kind=real_wp), ALLOCATABLE ::  RDATA(:)
       character*256         :: ext     ! file extension
-      integer               :: extpos  ! position of extension
-      integer               :: extlen  ! length of file extension
+      integer(kind=int_wp) ::  extpos   ! position of extension
+      integer(kind=int_wp) ::  extlen   ! length of file extension
       logical               :: mapfil  ! true if map file extension
-      integer               :: lun
-      integer               :: NODUMP
-      integer               :: k, I, NOTOT, NTT
-      integer               :: ierror, nrlst, iprcod, iprtyp
-      integer               :: itype, maxdef, itmdep, locdep, maxlst, lang
-      integer               :: iyear, imonth, iday, ihour, iminut, isecnd
-      integer               :: isfact, idummy, idate, itime, iprdep
-!
+      integer(kind=int_wp) ::  lun
+      integer(kind=int_wp) ::  NODUMP
+      integer(kind=int_wp) ::  k, I, NOTOT, NTT
+      integer(kind=int_wp) ::  ierror, nrlst, iprcod, iprtyp
+      integer(kind=int_wp) ::  itype, maxdef, itmdep, locdep, maxlst, lang
+      integer(kind=int_wp) ::  iyear, imonth, iday, ihour, iminut, isecnd
+      integer(kind=int_wp) ::  isfact, idummy, idate, itime, iprdep
+ !
 !         Open the DELWAQ .HIS file
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )

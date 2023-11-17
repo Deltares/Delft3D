@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq05
+      use m_waq_precision
       use m_opt0
       use m_dlwq5a
 
@@ -71,32 +72,32 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: irmax             !< size of the real workspace
-      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
+      integer(kind=int_wp), intent(in   ) ::  irmax              !< size of the real workspace
+      integer(kind=int_wp), intent(inout) ::  lun   (*)          !< array with unit numbers
       character( *), intent(inout) :: lchar (*)         !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
       character( *), intent(inout) :: car   (*)         !< character workspace
-      integer  ( 4), intent(inout) :: iar   (*)         !< integer workspace ( dump locations at entrance )
-      real     ( 4), intent(inout) :: rar   (irmax)     !< real    workspace
-      integer  ( 4), intent(inout) :: nrftot(*)         !< number of function items
-      integer  ( 4), intent(inout) :: nrharm(*)         !< number of harmonic items
-      integer  ( 4), intent(in   ) :: nobnd             !< number of open model boundaries
-      integer  ( 4), intent(in   ) :: notot             !< total number of substances
-      integer  ( 4), intent(in   ) :: nosys             !< number of transported substances
-      integer  ( 4), intent(  out) :: nobtyp            !< number of open model boundary types
-      integer  ( 4), intent(in   ) :: iimax             !< size of the integer workspace
+      integer(kind=int_wp), intent(inout) ::  iar   (*)          !< integer workspace ( dump locations at entrance )
+      real(kind=real_wp), intent(inout) ::  rar   (irmax)      !< real    workspace
+      integer(kind=int_wp), intent(inout) ::  nrftot(*)          !< number of function items
+      integer(kind=int_wp), intent(inout) ::  nrharm(*)          !< number of harmonic items
+      integer(kind=int_wp), intent(in   ) ::  nobnd              !< number of open model boundaries
+      integer(kind=int_wp), intent(in   ) ::  notot              !< total number of substances
+      integer(kind=int_wp), intent(in   ) ::  nosys              !< number of transported substances
+      integer(kind=int_wp), intent(  out) ::  nobtyp             !< number of open model boundary types
+      integer(kind=int_wp), intent(in   ) ::  iimax              !< size of the integer workspace
       logical      , intent(in   ) :: dtflg1            !< 'date'-format 1st timescale
-      integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
-      integer  ( 4), intent(in   ) :: intsrt            !< integration option
-      integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  intsrt             !< integration option
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
       character(20), intent(in   ) :: sname(*)          !< array with substance names
-      integer  ( 4), intent(in   ) :: icmax             !< size of the character workspace
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
+      integer(kind=int_wp), intent(in   ) ::  icmax              !< size of the character workspace
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
 
-      integer       idef
-!
+      integer(kind=int_wp) :: idef
+ !
       CHARACTER*1   CDUMMY
       CHARACTER*255 CHULP
       LOGICAL       DISPER
@@ -105,17 +106,17 @@
       CHARACTER(LEN=20) , ALLOCATABLE :: BNDTYPE(:)             ! boundary types
       CHARACTER(LEN=256), ALLOCATABLE :: BNDID_LONG(:)          ! array to buffer the non truncated boundary id's
       CHARACTER(LEN=256), ALLOCATABLE :: BNDTYPE_LONG(:)        ! array to buffer the non truncated boundary types
-      INTEGER           , ALLOCATABLE :: IBNDTYPE(:)            ! index boundary type
-      real     (  8), allocatable :: drar        (:) !  double precission workspace (very large !lp)
+      INTEGER(kind=int_wp), ALLOCATABLE ::  IBNDTYPE(:)             ! index boundary type
+      real(kind=dp), allocatable ::  drar        (:)  !  double precission workspace (very large !lp)
       logical                         :: no_id_check            ! command line argument to skip double ID check
-      real                            :: rdummy                 ! dummy real in argument list
-      integer                         :: idummy                 ! dummy integer in argument list
-      integer                         :: VOLUME
-      integer(4) :: ithndl = 0
-      integer               :: k, I, IERR_ALLOC
-      integer               :: ifact, lunwr, ierr2, iwar2, ifound, ityp2
-      integer               :: iaropt, nover, mxover, ibnd, it, nosubs
-      integer               :: ierrh, ihulp, rhulp, ifound2, l, itype
+      real(kind=real_wp) ::  rdummy                  ! dummy real in argument list
+      integer(kind=int_wp) ::  idummy                  ! dummy integer in argument list
+      integer(kind=int_wp) ::  VOLUME
+      integer(kind=int_wp) ::  ithndl = 0
+      integer(kind=int_wp) ::  k, I, IERR_ALLOC
+      integer(kind=int_wp) ::  ifact, lunwr, ierr2, iwar2, ifound, ityp2
+      integer(kind=int_wp) ::  iaropt, nover, mxover, ibnd, it, nosubs
+      integer(kind=int_wp) ::  ierrh, ihulp, rhulp, ifound2, l, itype
       if (timon) call timstrt( "dlwq05", ithndl )
 !
 !     Init

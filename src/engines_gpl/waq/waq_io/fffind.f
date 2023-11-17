@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fffind
+      use m_waq_precision
       use time_module
 
 
@@ -36,24 +37,24 @@
       use m_open_waq_files
       use m_sysi          ! Timer characteristics
 
-      integer :: ILUN , IERR , I , K , A, IT2 , IT3 , IT4
-      integer :: IYEAR1 , IMONTH1 , IDAY1 , IHOUR1 , IMIN1 , ISEC1
-      integer :: IYEAR2 , IMONTH2 , IDAY2 , IHOUR2 , IMIN2 , ISEC2
-      integer :: IYEAR3 , IMONTH3 , IDAY3 , IHOUR3 , IMIN3 , ISEC3
-      integer :: IYEAR4 , IMONTH4 , IDAY4 , IHOUR4 , IMIN4 , ISEC4
-      integer :: IDATE , ITIME , ITIM , ITIM2 , ISTEP , IDTF , LUNUT
-      INTEGER :: NUMBR
-
+      integer(kind=int_wp) ::  ILUN , IERR , I , K , A, IT2 , IT3 , IT4
+      integer(kind=int_wp) ::  IYEAR1 , IMONTH1 , IDAY1 , IHOUR1 , IMIN1 , ISEC1
+      integer(kind=int_wp) ::  IYEAR2 , IMONTH2 , IDAY2 , IHOUR2 , IMIN2 , ISEC2
+      integer(kind=int_wp) ::  IYEAR3 , IMONTH3 , IDAY3 , IHOUR3 , IMIN3 , ISEC3
+      integer(kind=int_wp) ::  IYEAR4 , IMONTH4 , IDAY4 , IHOUR4 , IMIN4 , ISEC4
+      integer(kind=int_wp) ::  IDATE , ITIME , ITIM , ITIM2 , ISTEP , IDTF , LUNUT
+      INTEGER(kind=int_wp) ::  NUMBR
+ 
       CHARACTER*25  SGET  , S1
       CHARACTER*255 AFILE , BFILE
 
 !
 !     local declarations
 !
-      REAL*8        REFTIM, STARTTIM, STOPTIM, AFACT
+      REAL(kind=dp) :: REFTIM, STARTTIM, STOPTIM, AFACT 
       CHARACTER*255 FILPATH
-      INTEGER       PATHLEN
-!
+      INTEGER(kind=int_wp) :: PATHLEN
+ !
 !          Open the ASCII .hyd file
 !
       ILUN = 148

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_readmp
+      use m_waq_precision
+
 
       implicit none
 
@@ -71,34 +73,34 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
+      integer(kind=int_wp), intent(inout) ::  lun    (*)         !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
       character(20), pointer       :: duname (:)        !< name of monitoring areas
-      integer  ( 4), pointer       :: nsegdmp(:)        !< number of volumes per monitoring area
-      integer  ( 4), pointer       :: isegdmp(:)        !< volumes numbers per monitoring area
-      integer  ( 4), pointer       :: dmpbal(:)         !< balance option (flag) per monitoring area
-      integer  ( 4), intent(  out) :: ndmpar            !< number of monitoring areas
-      integer  ( 4), intent(  out) :: ntdmps            !< total number of volumes in monitoring areas
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
-      integer  ( 4), intent(inout) :: ierr              !< error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), pointer ::  nsegdmp(:)         !< number of volumes per monitoring area
+      integer(kind=int_wp), pointer ::  isegdmp(:)         !< volumes numbers per monitoring area
+      integer(kind=int_wp), pointer ::  dmpbal(:)          !< balance option (flag) per monitoring area
+      integer(kind=int_wp), intent(  out) ::  ndmpar             !< number of monitoring areas
+      integer(kind=int_wp), intent(  out) ::  ntdmps             !< total number of volumes in monitoring areas
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
+      integer(kind=int_wp), intent(inout) ::  ierr               !< error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
 
 !     local variables
 
-      integer             idopt1           ! First option number monitoring areas
-      integer             ierr2            ! Local error flag
-      integer             max_ntdmps       ! Size of isegdmp
-      integer, pointer :: isegdmp_2(:)     ! Help pointer for array expansion
-      integer             ierr_alloc       ! Error indicator for allocations
-      integer             nseg             ! Number of volumes per monitoring area
+      integer(kind=int_wp) :: idopt1            ! First option number monitoring areas
+      integer(kind=int_wp) :: ierr2             ! Local error flag
+      integer(kind=int_wp) :: max_ntdmps        ! Size of isegdmp
+      integer(kind=int_wp), pointer ::  isegdmp_2(:)      ! Help pointer for array expansion
+      integer(kind=int_wp) :: ierr_alloc        ! Error indicator for allocations
+      integer(kind=int_wp) :: nseg              ! Number of volumes per monitoring area
       logical             ldummy           ! Dummy logical
-      integer             id               ! Loop variable over all monitoring areas
-      integer             k                ! General loop variable
-      integer             ifound           ! Help variable for string search
+      integer(kind=int_wp) :: id                ! Loop variable over all monitoring areas
+      integer(kind=int_wp) :: k                 ! General loop variable
+      integer(kind=int_wp) :: ifound            ! Help variable for string search
       character(len=256)::option           ! balance option
-      integer             itype            ! type of the returned token
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: itype             ! type of the returned token
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "readmp", ithndl )
 
 !     Read file option

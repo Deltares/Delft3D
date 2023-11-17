@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rdodef
+      use m_waq_precision
+
 
       implicit none
 
@@ -52,41 +54,41 @@
 
 !     kind           function         name                   Descriptipon
 
-      integer  ( 4), intent(in   ) :: noutp                 !< Number of output files
-      integer  ( 4), intent(  out) :: nrvar (noutp )        !< Nr. of extra output variables
-      integer  ( 4), intent(in   ) :: nrvarm                !< Max. nr. of extra output var.
-      integer  ( 4), intent(inout) :: isrtou(noutp )        !< Sort of output
+      integer(kind=int_wp), intent(in   ) ::  noutp                  !< Number of output files
+      integer(kind=int_wp), intent(  out) ::  nrvar (noutp )         !< Nr. of extra output variables
+      integer(kind=int_wp), intent(in   ) ::  nrvarm                 !< Max. nr. of extra output var.
+      integer(kind=int_wp), intent(inout) ::  isrtou(noutp )         !< Sort of output
       character(20), intent(  out) :: ounam (nrvarm,noutp)  !< Name extra output variables
       logical      , intent(inout) :: infile                !< Flag if default(f) or in file(t)
-      integer  ( 4), intent(in   ) :: nx                    !< Width of grid
-      integer  ( 4), intent(in   ) :: ny                    !< Depth of grid
-      integer  ( 4), intent(in   ) :: nodump                !< Number of monitor points
-      integer  ( 4), intent(in   ) :: ibflag                !< Mass balance option flag
+      integer(kind=int_wp), intent(in   ) ::  nx                     !< Width of grid
+      integer(kind=int_wp), intent(in   ) ::  ny                     !< Depth of grid
+      integer(kind=int_wp), intent(in   ) ::  nodump                 !< Number of monitor points
+      integer(kind=int_wp), intent(in   ) ::  ibflag                 !< Mass balance option flag
       logical      , intent(in   ) :: lmoutp                !< Monitor output active
       logical      , intent(in   ) :: ldoutp                !< Dump output active
       logical      , intent(in   ) :: lhoutp                !< History output active
       logical      , intent(in   ) :: lncout                !< NetCDF output active
-      integer  ( 4), intent(inout) :: ierr                  !< Cumulative error count
-      integer  ( 4), intent(in   ) :: igrdou(4)             !< Output grid indication
-      integer  ( 4), intent(in   ) :: ndmpar                !< number of dump areas
+      integer(kind=int_wp), intent(inout) ::  ierr                   !< Cumulative error count
+      integer(kind=int_wp), intent(in   ) ::  igrdou(4)              !< Output grid indication
+      integer(kind=int_wp), intent(in   ) ::  ndmpar                 !< number of dump areas
 
 !     Local
 
-      integer, parameter :: igseg= 1 , igmon= 2 , iggrd= 3 , igsub = 4
+      integer(kind=int_wp), parameter ::  igseg= 1 , igmon= 2 , iggrd= 3 , igsub = 4
       integer               hissrt, hisnrv, mapsrt, mapnrv
-      integer               io         !  loop variable
-      integer               ioopt      !  output specification option
-      integer               ierr2      !  not used error variable
-      integer               max2       !  maximum read space
-      integer               nrv        !  number of variables
-      integer               ivar       !  loop variable
-      integer               ioptf      !  option for a file
+      integer               io          !  loop variable
+      integer(kind=int_wp) :: ioopt       !  output specification option
+      integer(kind=int_wp) :: ierr2       !  not used error variable
+      integer(kind=int_wp) :: max2        !  maximum read space
+      integer(kind=int_wp) :: nrv         !  number of variables
+      integer(kind=int_wp) :: ivar        !  loop variable
+      integer(kind=int_wp) :: ioptf       !  option for a file
       character(255)        cdummy     !  dummy string
       character(60)         keyword    !  keyword for tokenized reading
-      integer               keyvalue   !  value for tokenized reading
-      integer               itype      !  type of token for tokenized reading
+      integer(kind=int_wp) :: keyvalue    !  value for tokenized reading
+      integer(kind=int_wp) :: itype       !  type of token for tokenized reading
 
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "rdodef", ithndl )
 
 !     Read output option and output vars

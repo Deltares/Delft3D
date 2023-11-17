@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq02
+      use m_waq_precision
       use m_waq_timer
       use m_rearaa
       use m_readmp
@@ -108,34 +109,34 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
-      character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
-      integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
-      integer  ( 4), intent(inout) :: nlines            !< cumulative record  space
-      integer  ( 4), intent(inout) :: npoins            !< cumulative pointer space
-      logical      , intent(  out) :: dtflg1            !< 'date'-format 1st timescale
-      logical      , intent(  out) :: dtflg2            !< 'date'-format 2nd timescale
-      integer  ( 4), intent(  out) :: nodump            !< number of monitoring points output
-      integer  ( 4), intent(in   ) :: iopt (*)          !< array with valid integration options
-      integer  ( 4), intent(in   ) :: noint             !< dimension of iopt
-      integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
-      logical      , intent(  out) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer  ( 4), intent(  out) :: ndmpar            !< number of dump areas
-      integer  ( 4), intent(  out) :: ntdmps            !< total number segments in dump area
-      integer  ( 4), intent(  out) :: noraai            !< number of raaien
-      integer  ( 4), intent(  out) :: ntraaq            !< total number of exch. in raaien
-      integer  ( 4), intent(in   ) :: nosys             !< number of transported substances
-      integer  ( 4), intent(inout) :: notot             !< total number of substances
-      integer  ( 4), intent(  out) :: nototp            !< notot inclusive of partcle substances
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
-      integer  ( 4), pointer       :: nsegdmp (:)       !< number of volumes in this monitoring area
-      integer  ( 4), pointer       :: isegdmp (:)       !< computational volume numbers
-      integer  ( 4), pointer       :: nexcraai(:)       !< number of exchanges in this monitoring transect
-      integer  ( 4), pointer       :: iexcraai(:)       !< exchange area numbers of the transect
-      integer  ( 4), pointer       :: ioptraai(:)       !< option for the transects
-      integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), intent(inout) ::  lun    (*)         !< array with unit numbers
+      character( *), intent(inout)        :: lchar  (*)        !< array with file names of the files
+      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  nrftot (*)         !< number of function items
+      integer(kind=int_wp), intent(inout) ::  nlines             !< cumulative record  space
+      integer(kind=int_wp), intent(inout) ::  npoins             !< cumulative pointer space
+      logical      , intent(  out)        :: dtflg1            !< 'date'-format 1st timescale
+      logical      , intent(  out)        :: dtflg2            !< 'date'-format 2nd timescale
+      integer(kind=int_wp), intent(  out) ::  nodump             !< number of monitoring points output
+      integer(kind=int_wp), intent(in   ) ::  iopt (*)           !< array with valid integration options
+      integer(kind=int_wp), intent(in   ) ::  noint              !< dimension of iopt
+      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
+      logical      , intent(  out)        :: dtflg3              !< 'date'-format (F;ddmmhhss,T;yydddhh)
+      integer(kind=int_wp), intent(  out) ::  ndmpar             !< number of dump areas
+      integer(kind=int_wp), intent(  out) ::  ntdmps             !< total number segments in dump area
+      integer(kind=int_wp), intent(  out) ::  noraai             !< number of raaien
+      integer(kind=int_wp), intent(  out) ::  ntraaq             !< total number of exch. in raaien
+      integer(kind=int_wp), intent(in   ) ::  nosys              !< number of transported substances
+      integer(kind=int_wp), intent(inout) ::  notot              !< total number of substances
+      integer(kind=int_wp), intent(  out) ::  nototp             !< notot inclusive of partcle substances
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
+      integer(kind=int_wp), pointer       ::  nsegdmp (:)        !< number of volumes in this monitoring area
+      integer(kind=int_wp), pointer       ::  isegdmp (:)        !< computational volume numbers
+      integer(kind=int_wp), pointer       ::  nexcraai(:)        !< number of exchanges in this monitoring transect
+      integer(kind=int_wp), pointer       ::  iexcraai(:)        !< exchange area numbers of the transect
+      integer(kind=int_wp), pointer       ::  ioptraai(:)        !< option for the transects
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
 
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ---------------------------------------------------------
@@ -144,23 +145,23 @@
 !     ISFACT  INTEGER    1         INPUT   system clock in seconds
 !     OTIME   REAL*8     1         INPUT   Julian offset of the real time
 
-      integer         ierr2, iwar2             !  local error and warning variables
-      real            aint                     !  to read the integration option
-      integer         i, k, i2, ibrk           !  loop counters
-      integer         nobrk                    !  number of brakpoints
-      integer         ifound                   !  help variable for string search
-      integer         idummy                   !  help variables to read tokens
-      integer         itype                    !  help variables to read tokens
+      integer(kind=int_wp) :: ierr2, iwar2              !  local error and warning variables
+      real(kind=real_wp) :: aint                      !  to read the integration option
+      integer(kind=int_wp) :: i, k, i2, ibrk            !  loop counters
+      integer(kind=int_wp) :: nobrk                     !  number of brakpoints
+      integer(kind=int_wp) :: ifound                    !  help variable for string search
+      integer(kind=int_wp) :: idummy                    !  help variables to read tokens
+      integer(kind=int_wp) :: itype                     !  help variables to read tokens
       character(255)  cdummy                   !  help variables to read tokens
       character( 8 )  date1, date2             !  help variables to read date strings
-      integer         ierr_alloc               !  help variable to identify allocation errors
-      integer         ioerr                    !  help variable for errors on open files
-      integer         ibflag                   !  balances ?
+      integer(kind=int_wp) :: ierr_alloc                !  help variable to identify allocation errors
+      integer(kind=int_wp) :: ioerr                     !  help variable for errors on open files
+      integer(kind=int_wp) :: ibflag                    !  balances ?
       character( 20), pointer     :: duname(:)
-      integer       , pointer     :: dmpbal(:)
+      integer(kind=int_wp), pointer ::  dmpbal(:)
       character( 20), pointer     :: raname(:)
-      integer  (  4), allocatable :: iar   (:) !  integer workspace
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp), allocatable ::  iar   (:)  !  integer workspace
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq02", ithndl )
 
 !       Initialisation of timers

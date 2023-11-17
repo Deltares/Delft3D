@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5b
+      use m_waq_precision
+
 
       implicit none
 
@@ -82,17 +84,17 @@
       use m_movchr
       use timers       !   performance timers
 
-      INTEGER       ICMAX   , IIMAX
+      INTEGER(kind=int_wp) :: ICMAX   , IIMAX
       CHARACTER*(*) CAR(*)  , ANAME(*) , ATYPE(*) , LCH(LSTACK) ,
      *              CHULP
       CHARACTER*1   CCHAR*1 , CALLR*10
       LOGICAL       USEFOR, SETNAM, COMPUT, SIGNON
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       integer    :: I, ihulp, ierr, iabs, iar(:), ifound, i2
-      integer    :: namset, ioutpt, icm, ntitm, nttype, iwar, lstack
-      real       :: vrsion
-      integer    :: itmnr, ioff, ioffc, nconst, itype, lunut, ilun(LSTACK)
-      integer    :: iposr, npos, noitm, noits, ioffi
+      integer(kind=int_wp) ::  namset, ioutpt, icm, ntitm, nttype, iwar, lstack
+      real(kind=real_wp) ::  vrsion
+      integer(kind=int_wp) ::  itmnr, ioff, ioffc, nconst, itype, lunut, ilun(LSTACK)
+      integer(kind=int_wp) ::  iposr, npos, noitm, noits, ioffi
       real       :: rar(:), rhulp
 
       if (timon) call timstrt( "dlwq5b", ithndl )

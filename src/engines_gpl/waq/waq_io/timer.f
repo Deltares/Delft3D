@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_waq_timer
+      use m_waq_precision
 
       implicit none
 
@@ -63,21 +64,21 @@
 !     kind           function         name             Descriptipon
 
       logical      , intent(in   ) :: dtflg1         !< 'date'-format
-      integer   (4), intent(  out) :: it1            !< start time
-      integer   (4), intent(  out) :: it2            !< stop  time
-      integer   (4), intent(  out) :: it3            !< time step
-      integer   (4), intent(in   ) :: noopt          !< kind of timer
+      integer(kind=int_wp), intent(  out) ::  it1             !< start time
+      integer(kind=int_wp), intent(  out) ::  it2             !< stop  time
+      integer(kind=int_wp), intent(  out) ::  it3             !< time step
+      integer(kind=int_wp), intent(in   ) ::  noopt           !< kind of timer
       logical      , intent(in   ) :: dtflg3         !< yydddhh instead of ddhhmmss
-      integer   (4), intent(  out) :: ierr           !< not zero if error
+      integer(kind=int_wp), intent(  out) ::  ierr            !< not zero if error
 
 !     Local
 
-      integer       itype          !  help variable for tokenized reading
+      integer(kind=int_wp) :: itype           !  help variable for tokenized reading
       character*255 cdummy         !  help variable for tokenized reading
       character*12  txt(3)
-      integer       ierr2          !  local error variable
+      integer(kind=int_wp) :: ierr2           !  local error variable
       data          txt / ' Monitoring ',' Output     ',' History    ' /
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "timer", ithndl )
 
 !       Read timings

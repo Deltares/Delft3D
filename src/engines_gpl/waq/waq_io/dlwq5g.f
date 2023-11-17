@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5g
+      use m_waq_precision
+
 
       implicit none
 
@@ -89,20 +91,21 @@
       use timers       !   performance timers
       use m_cnvtim
 
-      integer       i_max
+      integer(kind=int_wp) :: i_max
       character*(*) lch   (lstack) , chulp , names_to_check(*)
       character     cchar*1 , strng*8
       dimension     i_array(*) , ilun( lstack )
       logical       dtflg1 , dtflg3 , first, must_read_more
-      integer ( 8)  ihulp8
-      integer(4) :: ithndl = 0
-      integer    :: i, count_items_comp_rule, count_subs_assign, count_subs_comp_rule, index_first, offset_names, offset_common, notim
-      integer    :: itype, lunut, ilun, start_in_line, nopos, ihulp, error_idx
-      integer    :: i_array, nocol, ifound, itfact, icnt, iods, k, iwar
-      integer    :: offset_i_array, count_items_assign, count_names, npos, lstack
-      real       :: rhulp
-      
-      
+      integer(kind=INT64)  :: ihulp8
+      integer(kind=int_wp) ::  ithndl = 0
+      integer(kind=int_wp) ::  i, count_items_comp_rule, count_subs_assign, count_subs_comp_rule, index_first, offset_names
+      integer(kind=int_wp) ::  offset_common, notim
+      integer(kind=int_wp) ::  itype, lunut, ilun, start_in_line, nopos, ihulp, error_idx
+      integer(kind=int_wp) ::  i_array, nocol, ifound, itfact, icnt, iods, k, iwar
+      integer(kind=int_wp) ::  offset_i_array, count_items_assign, count_names, npos, lstack
+      real(kind=real_wp) ::  rhulp
+
+
       if (timon) call timstrt( "dlwq5g", ithndl )
 !
 !     Array offsets
