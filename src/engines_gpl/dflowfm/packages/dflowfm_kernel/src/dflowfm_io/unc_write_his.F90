@@ -1225,43 +1225,45 @@ subroutine unc_write_his(tim)            ! wrihis
             enddo
          endif
 
-         if( jased == 4 .and. stmpar%lsedtot > 0 ) then
-            ierr = nf90_def_var(ihisfile, 'cross_section_bedload_sediment_transport', nc_precision, (/ id_crsdim, id_timedim /), id_sedbtrans)
-            ierr = nf90_put_att(ihisfile, id_sedbtrans, 'long_name', 'cumulative bed load transport')
-            ierr = nf90_put_att(ihisfile, id_sedbtrans, 'units', 'kg')
-            ierr = nf90_put_att(ihisfile, id_sedbtrans, 'coordinates', 'cross_section_name')
-            ierr = nf90_put_att(ihisfile, id_sedbtrans, 'geometry', crs_geom_container_name)
+         if( jased == 4 ) then 
+            if ( stmpar%lsedtot > 0 ) then
+               ierr = nf90_def_var(ihisfile, 'cross_section_bedload_sediment_transport', nc_precision, (/ id_crsdim, id_timedim /), id_sedbtrans)
+               ierr = nf90_put_att(ihisfile, id_sedbtrans, 'long_name', 'cumulative bed load transport')
+               ierr = nf90_put_att(ihisfile, id_sedbtrans, 'units', 'kg')
+               ierr = nf90_put_att(ihisfile, id_sedbtrans, 'coordinates', 'cross_section_name')
+               ierr = nf90_put_att(ihisfile, id_sedbtrans, 'geometry', crs_geom_container_name)
+               if (.not. allocated(id_sedbtransfrac)) then
+                  allocate(id_sedbtransfrac(stmpar%lsedtot))
+                  id_sedbtransfrac = 0
+               endif
+               do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+                  ierr = nf90_def_var(ihisfile, 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), nc_precision, &
+                      (/ id_crsdim, id_timedim /), id_sedbtransfrac(lsed))
+                  ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'long_name', 'cumulative bed load transport '//trim(stmpar%sedpar%namsed(lsed)))
+                  ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'units', 'kg')
+                  ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'coordinates', 'cross_section_name')
+                  ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'geometry', crs_geom_container_name)
+               enddo
+            endif
             if( stmpar%lsedsus > 0 ) then
                ierr = nf90_def_var(ihisfile, 'cross_section_suspended_sediment_transport', nc_precision, (/ id_crsdim, id_timedim /), id_sedstrans)
                ierr = nf90_put_att(ihisfile, id_sedstrans, 'long_name', 'cumulative suspended load transport')
                ierr = nf90_put_att(ihisfile, id_sedstrans, 'units', 'kg')
                ierr = nf90_put_att(ihisfile, id_sedstrans, 'coordinates', 'cross_section_name')
                ierr = nf90_put_att(ihisfile, id_sedstrans, 'geometry', crs_geom_container_name)
+               if (.not. allocated(id_sedstransfrac)) then
+                  allocate(id_sedstransfrac(stmpar%lsedsus))
+                  id_sedstransfrac = 0
+               endif
+               do lsed = 1,stmpar%lsedsus    ! Making suspended load on crosssections per fraction
+                  ierr = nf90_def_var(ihisfile, 'cross_section_suspended_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), nc_precision, &
+                      (/ id_crsdim, id_timedim /), id_sedstransfrac(lsed))
+                  ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'long_name', 'cumulative suspended load transport '//trim(stmpar%sedpar%namsed(lsed)))
+                  ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'units', 'kg')
+                  ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'coordinates', 'cross_section_name')
+                  ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'geometry', crs_geom_container_name)
+               enddo
             endif
-            if (.not. allocated(id_sedbtransfrac)) then
-               allocate(id_sedbtransfrac(stmpar%lsedtot))
-               id_sedbtransfrac = 0
-            endif
-            do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
-               ierr = nf90_def_var(ihisfile, 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), nc_precision, &
-                   (/ id_crsdim, id_timedim /), id_sedbtransfrac(lsed))
-               ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'long_name', 'cumulative bed load transport '//trim(stmpar%sedpar%namsed(lsed)))
-               ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'units', 'kg')
-               ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'coordinates', 'cross_section_name')
-               ierr = nf90_put_att(ihisfile, id_sedbtransfrac(lsed), 'geometry', crs_geom_container_name)
-            enddo
-            if (.not. allocated(id_sedstransfrac)) then
-               allocate(id_sedstransfrac(stmpar%lsedsus))
-               id_sedstransfrac = 0
-            endif
-            do lsed = 1,stmpar%lsedsus    ! Making suspended load on crosssections per fraction
-               ierr = nf90_def_var(ihisfile, 'cross_section_suspended_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), nc_precision, &
-                   (/ id_crsdim, id_timedim /), id_sedstransfrac(lsed))
-               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'long_name', 'cumulative suspended load transport '//trim(stmpar%sedpar%namsed(lsed)))
-               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'units', 'kg')
-               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'coordinates', 'cross_section_name')
-               ierr = nf90_put_att(ihisfile, id_sedstransfrac(lsed), 'geometry', crs_geom_container_name)
-            enddo
          endif
 
          ! runup gauges
@@ -3155,21 +3157,23 @@ subroutine unc_write_his(tim)            ! wrihis
                 ierr = nf90_put_var(ihisfile, id_const(num),     toutput_cur, (/ i, it_his /))
              end do
 
-          if( jased == 4 .and. stmpar%lsedtot > 0 ) then
+          if( jased == 4 ) then
+             if( stmpar%lsedtot > 0 ) then
              IP = IPNT_HUA + NUMCONST_MDU + 1
              ierr = nf90_put_var(ihisfile, id_sedbtrans, crs(i)%sumvalcum(IP), (/ i, it_his /))
-             if( stmpar%lsedsus > 0 ) then
-                IP = IP + 1
-                ierr = nf90_put_var(ihisfile, id_sedstrans, crs(i)%sumvalcum(IP), (/ i, it_his /))
-             endif
              do lsed = 1,stmpar%lsedtot    ! bed load on crosssections per fraction
                 IP = IP + 1
                 ierr = nf90_put_var(ihisfile, id_sedbtransfrac(lsed), crs(i)%sumvalcum(IP), (/ i, it_his /))
              enddo
-             do lsed = 1,stmpar%lsedsus    ! suspended load on crosssections per fraction
+             endif
+             if( stmpar%lsedsus > 0 ) then
                 IP = IP + 1
-                ierr = nf90_put_var(ihisfile, id_sedstransfrac(lsed), crs(i)%sumvalcum(IP), (/ i, it_his /))
-             enddo
+                ierr = nf90_put_var(ihisfile, id_sedstrans, crs(i)%sumvalcum(IP), (/ i, it_his /))
+                do lsed = 1,stmpar%lsedsus    ! suspended load on crosssections per fraction
+                   IP = IP + 1
+                   ierr = nf90_put_var(ihisfile, id_sedstransfrac(lsed), crs(i)%sumvalcum(IP), (/ i, it_his /))
+                enddo
+             endif
           endif
        end do
     end if
