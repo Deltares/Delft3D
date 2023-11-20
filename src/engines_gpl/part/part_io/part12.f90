@@ -60,7 +60,7 @@ contains
 
 !     functions   called    : none.
 
-      use precision_part          ! single and double precision
+      use m_waq_precision          ! single and double precision
       use m_part_modeltypes       ! part model definitions
       use timers
       use filldm_mod         ! explicit interface
@@ -75,58 +75,58 @@ contains
 
 !     kind           function         name                      description
 
-      integer  ( ip), intent(in   ) :: lun1                    !< unit nr of the Delwaq .map file
+      integer  ( int_wp ), intent(in   ) :: lun1                    !< unit nr of the Delwaq .map file
       character( * ), intent(in   ) :: lname                   !< name of the .map file
-      integer  ( ip), intent(in   ) :: lun2                    !< unit nr of the output log file
+      integer  ( int_wp ), intent(in   ) :: lun2                    !< unit nr of the output log file
       character( 40), intent(in   ) :: title (4)               !< model- and run titles
-      integer  ( ip), intent(in   ) :: nmax                    !< first dimension of the grid
-      integer  ( ip), intent(in   ) :: mmax                    !< second dimension of the grid
-      integer  ( ip), intent(in   ) :: nolay                   !< number of layers of the grid
-      integer  ( ip), intent(in   ) :: nosubs                  !< number of substances to plot
-      integer  ( ip), intent(in   ) :: nopart                  !< number of particles
+      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: nolay                   !< number of layers of the grid
+      integer  ( int_wp ), intent(in   ) :: nosubs                  !< number of substances to plot
+      integer  ( int_wp ), intent(in   ) :: nopart                  !< number of particles
       character( 20), intent(in   ) :: subst (nosubs+2)        !< substance names with layer extension
-      integer  ( ip), intent(in   ) :: lgrid (nmax,mmax)       !< active grid table
-      integer  ( ip), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid table
-      integer  ( ip), intent(in   ) :: lgrid3(nmax,mmax)       !< plot grid either total or active condensed
-      integer  ( ip), intent(in   ) :: nosub_max               !< maximum number of substances
-      real     ( rp), intent(  out) :: conc  (nosub_max,nmax*mmax*nolay) !< computed concentrations
+      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid table
+      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid table
+      integer  ( int_wp ), intent(in   ) :: lgrid3(nmax,mmax)       !< plot grid either total or active condensed
+      integer  ( int_wp ), intent(in   ) :: nosub_max               !< maximum number of substances
+      real     ( real_wp), intent(  out) :: conc  (nosub_max,nmax*mmax*nolay) !< computed concentrations
       real     ( sp), intent(in   ) :: volume( * )             !< volumes of the grid cells
-      integer  ( ip), intent(inout) :: npart ( nopart )        !< n-values of particles
-      integer  ( ip), intent(inout) :: mpart ( nopart )        !< m-values of particles
-      integer  ( ip), intent(inout) :: kpart ( nopart )        !< k-values of particles
+      integer  ( int_wp ), intent(inout) :: npart ( nopart )        !< n-values of particles
+      integer  ( int_wp ), intent(inout) :: mpart ( nopart )        !< m-values of particles
+      integer  ( int_wp ), intent(inout) :: kpart ( nopart )        !< k-values of particles
       real     ( sp), intent(inout) :: wpart (nosubs,nopart)   !< weights of particles
-      integer  ( ip), intent(in   ) :: itime                   !< model time
-      integer  ( ip), intent(in   ) :: idelt                   !< model time step
-      integer  ( ip), intent(in   ) :: icwsta                  !< start time map-file
-      integer  ( ip), intent(in   ) :: icwsto                  !< stop  time map-file
-      integer  ( ip), intent(in   ) :: icwste                  !< time step map-file
-      real     ( rp), intent(  out) :: atotal(nolay,nosubs)    !< total mass per subst/per layer
-      integer  ( ip), intent(inout) :: npwndw                  !< start of active particle number
+      integer  ( int_wp ), intent(in   ) :: itime                   !< model time
+      integer  ( int_wp ), intent(in   ) :: idelt                   !< model time step
+      integer  ( int_wp ), intent(in   ) :: icwsta                  !< start time map-file
+      integer  ( int_wp ), intent(in   ) :: icwsto                  !< stop  time map-file
+      integer  ( int_wp ), intent(in   ) :: icwste                  !< time step map-file
+      real     ( real_wp), intent(  out) :: atotal(nolay,nosubs)    !< total mass per subst/per layer
+      integer  ( int_wp ), intent(inout) :: npwndw                  !< start of active particle number
       real     ( sp), intent(in   ) :: pblay                   !< relative thickness lower layer
-      integer  ( ip), intent(inout) :: iptime( nopart )        !< age of particles
-      integer  ( ip), intent(in   ) :: npwndn                  !< new start of active particle number - 1
-      integer  ( ip), intent(in   ) :: modtyp                  !< model-run-type
-      integer  ( ip), intent(in   ) :: iyear                   !< year
-      integer  ( ip), intent(in   ) :: imonth                  !< month
-      integer  ( ip), intent(in   ) :: iofset                  !< offset in time
+      integer  ( int_wp ), intent(inout) :: iptime( nopart )        !< age of particles
+      integer  ( int_wp ), intent(in   ) :: npwndn                  !< new start of active particle number - 1
+      integer  ( int_wp ), intent(in   ) :: modtyp                  !< model-run-type
+      integer  ( int_wp ), intent(in   ) :: iyear                   !< year
+      integer  ( int_wp ), intent(in   ) :: imonth                  !< month
+      integer  ( int_wp ), intent(in   ) :: iofset                  !< offset in time
       type(PlotGrid)                   pg                      !< first plot grid information
-      integer  ( ip), intent(in   ) :: bufsize                 !< size of rbuffr
-      real     ( rp)                :: rbuffr(bufsize)         !< work storage
-      integer  ( ip), intent(in   ) :: nosta                   !< number of observation points
-      integer  ( ip), intent(in   ) :: mnmax2                  !< number of grid cells in one grid layer
-      integer  ( ip), intent(in   ) :: nosegl                  !< number of computational elements per layer
-      integer  ( ip), intent(in   ) :: isfile(nosub_max)       !< file output for the substance?
-      integer  ( ip), intent(in   ) :: mapsub(nosub_max)
-      integer  ( ip), intent(in   ) :: layt                    !< number of hydrodynamic layers
+      integer  ( int_wp ), intent(in   ) :: bufsize                 !< size of rbuffr
+      real     ( real_wp)                :: rbuffr(bufsize)         !< work storage
+      integer  ( int_wp ), intent(in   ) :: nosta                   !< number of observation points
+      integer  ( int_wp ), intent(in   ) :: mnmax2                  !< number of grid cells in one grid layer
+      integer  ( int_wp ), intent(in   ) :: nosegl                  !< number of computational elements per layer
+      integer  ( int_wp ), intent(in   ) :: isfile(nosub_max)       !< file output for the substance?
+      integer  ( int_wp ), intent(in   ) :: mapsub(nosub_max)
+      integer  ( int_wp ), intent(in   ) :: layt                    !< number of hydrodynamic layers
       real     ( sp), intent(in   ) :: area  (mnmax2)
-      integer  ( ip), intent(in   ) :: nfract                  !< number of oil fractions
+      integer  ( int_wp ), intent(in   ) :: nfract                  !< number of oil fractions
       logical       , intent(in   ) :: lsettl                  !< if .true. settling occurs in an extra layer
-      integer  ( ip), intent(in   ) :: mstick(nosub_max)
+      integer  ( int_wp ), intent(in   ) :: mstick(nosub_max)
       character( * ), pointer       :: elt_names(:)            !<  NEFIS
       character( * ), pointer       :: elt_types(:)            !<  NEFIS
-      integer  ( ip), pointer       :: elt_dims (:,:)          !<  NEFIS
-      integer  ( ip), pointer       :: elt_bytes(:)            !<  NEFIS
-      real     ( rp)                :: locdep (nmax*mmax,nolay)
+      integer  ( int_wp ), pointer       :: elt_dims (:,:)          !<  NEFIS
+      integer  ( int_wp ), pointer       :: elt_bytes(:)            !<  NEFIS
+      real     ( real_wp)                :: locdep (nmax*mmax,nolay)
 
 !     save values between invocations: specified precisely those needed!!
 !
@@ -142,13 +142,13 @@ contains
 !
 !     declarations for in order to use putget
 !
-      integer(ip), parameter :: itofmx = 7
-      integer(ip), parameter :: noparm = 8
+      integer(int_wp ), parameter :: itofmx = 7
+      integer(int_wp ), parameter :: noparm = 8
 !
       character(len=20) :: substance
       character(len=16) :: grnam1, grnam2
-      integer(ip), dimension(itofmx)              :: itoff
-      integer(ip), dimension(6)                   :: nosize
+      integer(int_wp ), dimension(itofmx)              :: itoff
+      integer(int_wp ), dimension(6)                   :: nosize
       real     ( sp) :: window(4)              !< first plotgrid window
 !
       save          grnam1, grnam2,                               &
@@ -161,16 +161,16 @@ contains
       logical     ::  first  = .true.
       logical     ::  first1 = .true.
       logical     ::  nefis = .true.
-      integer(ip) ::  celid1 = 1
-      integer(ip) ::  celid2 = 1
+      integer(int_wp ) ::  celid1 = 1
+      integer(int_wp ) ::  celid2 = 1
 !
 !     local scalars
 !
-      integer(ip) :: i     , j      , ierr   , ierrem , indx
-      integer(ip) :: i1    , i2     , ic     , ilay   , ipos   , iseg
-      integer(ip) :: isub  , jsub   , layts  , m      , n
-      integer(ip) :: nelmax
-      integer(ip)    noseg                         !  number of computational volumes per layer
+      integer(int_wp ) :: i     , j      , ierr   , ierrem , indx
+      integer(int_wp ) :: i1    , i2     , ic     , ilay   , ipos   , iseg
+      integer(int_wp ) :: isub  , jsub   , layts  , m      , n
+      integer(int_wp ) :: nelmax
+      integer(int_wp )    noseg                         !  number of computational volumes per layer
       real   (sp) :: ptlay  , pxlay  , vnorm
 
       integer(4) ithndl              ! handle to time this subroutine

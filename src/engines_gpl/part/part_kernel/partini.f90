@@ -27,7 +27,7 @@ module partini_mod
 !
 !  data definition module(s)
 !
-use precision_part ! single/double precision
+use m_waq_precision ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -51,28 +51,28 @@ contains
 !
 !     method     : for each partical the position and weigth of the first subtance is read and assigned
 !
-      integer(ip)                       :: nopart,nosubs
-      integer(ip)                       :: lunpr
+      integer(int_wp )                       :: nopart,nosubs
+      integer(int_wp )                       :: lunpr
       character(len=*)                  :: ini_file
 
-      integer(ip), pointer, dimension(:)          :: iptime
-      integer(ip), pointer, dimension(:)          :: npart, mpart, kpart
+      integer(int_wp ), pointer, dimension(:)          :: iptime
+      integer(int_wp ), pointer, dimension(:)          :: npart, mpart, kpart
       real   (sp), pointer, dimension(:)          :: xpart, ypart, zpart
       real   (sp), pointer, dimension(:,:)        :: wpart
 
 
-      integer(ip)                       :: lun_ini
-      integer(ip)                       :: ios
-      integer(ip)                       :: i
-      integer(ip)                       :: np
-      integer(ip)                       :: nopart_ini
-      integer(ip)                       :: nosubs_ini
-      integer(ip)                       :: nosubs_ext
+      integer(int_wp )                       :: lun_ini
+      integer(int_wp )                       :: ios
+      integer(int_wp )                       :: i
+      integer(int_wp )                       :: np
+      integer(int_wp )                       :: nopart_ini
+      integer(int_wp )                       :: nosubs_ini
+      integer(int_wp )                       :: nosubs_ext
       real                              :: rdummy
 !
 !     local scalars
 !
-      integer(ip) :: len_file
+      integer(int_wp ) :: len_file
 !
 !     required, otherwise under linux the built-in
 !     random generator will be used, rather than the

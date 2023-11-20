@@ -135,7 +135,7 @@ use m_stop_exit
 
 !     Subroutines called    : part11 - make concentrations on a detailed plot grid
 
-      use precision_part         ! single/double precision
+      use m_waq_precision         ! single/double precision
       use partmem
       use m_part_transport
       use m_particles, laypart => kpart
@@ -157,122 +157,122 @@ use m_stop_exit
 
 !     kind            function         name                    description
 
-      integer   (ip), intent(in   ) :: itime                 !< current time in the model
-      real     ( rp), pointer       :: dps    (:)            !< depth of the reference plain in the grid cells
-      real     ( rp), pointer       :: volume (:)            !< volume of the computational cells
+      integer   (int_wp ), intent(in   ) :: itime                 !< current time in the model
+      real     ( real_wp), pointer       :: dps    (:)            !< depth of the reference plain in the grid cells
+      real     ( real_wp), pointer       :: volume (:)            !< volume of the computational cells
 
 
 
 !     parameters used in formulae. Do not change the values without explicit permission of Frank Kleissen.
 
 
-      real   (rp), parameter   :: dmaxr  = 70.0*1.0e-6   ! chosen according to steady state distribution of Adios
-      real   (rp), parameter   :: rk1    = 1.14          ! Fays constant k1
-      real   (rp), parameter   :: rk2    = 1.45          ! Fays constant k2
-      real   (rp), parameter   :: visw   = 1.0e-6        ! viscosity of water
-      real   (rp), parameter   :: grav   = 9.81          ! accelleration of gravity
-      real   (rp), parameter   :: cb     = 0.032         ! pre-constant Holthuyzen
+      real   (real_wp), parameter   :: dmaxr  = 70.0*1.0e-6   ! chosen according to steady state distribution of Adios
+      real   (real_wp), parameter   :: rk1    = 1.14          ! Fays constant k1
+      real   (real_wp), parameter   :: rk2    = 1.45          ! Fays constant k2
+      real   (real_wp), parameter   :: visw   = 1.0e-6        ! viscosity of water
+      real   (real_wp), parameter   :: grav   = 9.81          ! accelleration of gravity
+      real   (real_wp), parameter   :: cb     = 0.032         ! pre-constant Holthuyzen
       logical    , parameter   :: lplgr  = .true.        ! there is a plotgrid
 
 !     allocatables, these are arrays only used in this routine and saved between subsequent calls
 !                   NB. the arrays involved in OMP PRIVATE and REDUCTION clauses may NOT be pointers
 !                   and should be allocated every time (that is done here on the stack)
 
-      real   (rp), pointer     :: fwatoil   (:,:)        ! cumulative water fraction, per fraction and particle
-      real   (rp), pointer     :: rhooilv   (:,:)        ! oil density, initialized with constant 9, changes over time
-      real   (rp), pointer     :: viso      (:,:)        ! kinetic viscosity, initialized with constant 10, changes over time.
-      real   (rp), pointer     :: totfe     (:,:)        ! cumulative evaporated part, per fraction and particle
-      real   (rp), pointer     :: c1         (:)         ! emulsification parameter
-      real   (rp), pointer     :: c2         (:)         ! maximum water content c2 [0,1] ( constant nr. 7 )
-      integer(ip)              :: isurf      (nfract)    ! number of surface particles per fraction at the surface
-      real   (rp), pointer     :: d180       (:)         ! percentage evaporated at 180degC
-      real   (rp), pointer     :: rhotmp     (:)
-      real   (rp), pointer     :: rhooil     (:)         !oil density
-      real   (rp), pointer     :: visotmp    (:)
-      real   (rp), pointer     :: visowat    (:)         ! kinetic viscosity (constant 10)
-      real   (rp), pointer     :: tmpevap    (:)         ! temporary storage of evaporation
-      real   (rp)              :: fracte     (nfract)    ! evaporated part, per fraction
-      real   (rp)              :: tmpfracte  (nfract)    ! evaporated part, per fraction
-      real   (rp)              :: fractd     (nfract)    ! workarray only used for the fraction of dispersed oil
-      real   (rp)              :: tmpfractd  (nfract)    ! workarray only used for the fraction of dispersed oil
-      integer(ip), pointer     :: luncsv     (:)         ! unit numbers for the csv files of the fractions
-      integer(ip), pointer     :: ioptd      (:)         ! dispersion option 0 = fraction / day ; 1 = delvigne/sweeny
-      real   (rp), pointer     :: ioptev     (:)         ! evaporatio option 0 = fraction / day ; other is first order process
-      real   (rp), pointer     :: volfrac    (:)         ! volatile fraction
-      integer(ip), pointer     :: ioilt      (:)         ! substance numbers of the floating part of the oil fractions
-      integer(ip), pointer     :: ioild      (:)         ! substance numbers of the dispersed part of the oil fractions
-      integer(ip), pointer     :: ioils      (:)         ! substance numbers of the sticking part of the oil fractions
+      real   (real_wp), pointer     :: fwatoil   (:,:)        ! cumulative water fraction, per fraction and particle
+      real   (real_wp), pointer     :: rhooilv   (:,:)        ! oil density, initialized with constant 9, changes over time
+      real   (real_wp), pointer     :: viso      (:,:)        ! kinetic viscosity, initialized with constant 10, changes over time.
+      real   (real_wp), pointer     :: totfe     (:,:)        ! cumulative evaporated part, per fraction and particle
+      real   (real_wp), pointer     :: c1         (:)         ! emulsification parameter
+      real   (real_wp), pointer     :: c2         (:)         ! maximum water content c2 [0,1] ( constant nr. 7 )
+      integer(int_wp )              :: isurf      (nfract)    ! number of surface particles per fraction at the surface
+      real   (real_wp), pointer     :: d180       (:)         ! percentage evaporated at 180degC
+      real   (real_wp), pointer     :: rhotmp     (:)
+      real   (real_wp), pointer     :: rhooil     (:)         !oil density
+      real   (real_wp), pointer     :: visotmp    (:)
+      real   (real_wp), pointer     :: visowat    (:)         ! kinetic viscosity (constant 10)
+      real   (real_wp), pointer     :: tmpevap    (:)         ! temporary storage of evaporation
+      real   (real_wp)              :: fracte     (nfract)    ! evaporated part, per fraction
+      real   (real_wp)              :: tmpfracte  (nfract)    ! evaporated part, per fraction
+      real   (real_wp)              :: fractd     (nfract)    ! workarray only used for the fraction of dispersed oil
+      real   (real_wp)              :: tmpfractd  (nfract)    ! workarray only used for the fraction of dispersed oil
+      integer(int_wp ), pointer     :: luncsv     (:)         ! unit numbers for the csv files of the fractions
+      integer(int_wp ), pointer     :: ioptd      (:)         ! dispersion option 0 = fraction / day ; 1 = delvigne/sweeny
+      real   (real_wp), pointer     :: ioptev     (:)         ! evaporatio option 0 = fraction / day ; other is first order process
+      real   (real_wp), pointer     :: volfrac    (:)         ! volatile fraction
+      integer(int_wp ), pointer     :: ioilt      (:)         ! substance numbers of the floating part of the oil fractions
+      integer(int_wp ), pointer     :: ioild      (:)         ! substance numbers of the dispersed part of the oil fractions
+      integer(int_wp ), pointer     :: ioils      (:)         ! substance numbers of the sticking part of the oil fractions
       double precision, pointer:: wsume      (:)         ! cumulative sum of mass evaporated oil per fraction
       double precision         :: wsumd      (nfract)    ! total mass of dispersed oil
       double precision         :: wsums      (nfract)    ! total mass of sticking oil
       double precision         :: wsumt      (nfract)    ! total mass of floating oil
       double precision         :: wevapt     (nfract)    !
-      real   (rp), pointer     :: evemul     (:)         ! evaporated fraction at which emulsification starts (default 1.0)
-      real   (rp)              :: viscsurf   (nfract)    !
-      real   (rp)              :: fwatoilsurf(nfract)    !
-      real   (rp)              :: densurf    (nfract)    !
+      real   (real_wp), pointer     :: evemul     (:)         ! evaporated fraction at which emulsification starts (default 1.0)
+      real   (real_wp)              :: viscsurf   (nfract)    !
+      real   (real_wp)              :: fwatoilsurf(nfract)    !
+      real   (real_wp)              :: densurf    (nfract)    !
 !      real   (rp)              :: c1         (nfract)    ! emulsification parameter ( constant nr. 6 )
 
 !     locals
 
-      real     ( rp) :: surf                     ! surface area of a plotgrid cell
+      real     ( real_wp) :: surf                     ! surface area of a plotgrid cell
       logical        :: first = .true.
       character(256) :: csv_fnam                 ! help string file names csv files
-      real     ( rp) :: timlc                    ! time since start in hours
-      integer  ( ip) :: nfcons                   ! number of constants per oil fraction
-      real     ( rp) :: cdt                      ! temperature dependency of oil density    f.m. kleissen 2-6-2003
-      real     ( rp) :: temp                     ! actual temperature                       f.m. kleissen 2-6-2003
-      real     ( rp) :: temp0                    ! reference temperature                    f.m. kleissen 2-6-2003
-      real     ( rp) :: cde                      ! density depending on evaporated fraction
-      real     ( rp) :: cdelv                    ! oil parameter c0 of Delvigne
-      real     ( rp) :: voil                     ! volume of oil entrained per unit volume of water
-      real     ( rp) :: pi                       ! pi
-      real     ( rp) :: prefac                   ! to be removed
-      integer  ( ip) :: id , ifrac, isuboil, jsub   ! help and loop variables for dyes, fractions and substances
-      integer  ( ip) :: ifr, ilay , iseg         ! help and loop variables for fractions, layers and cells
-      integer  ( ip) :: i  , i1   , i2           ! particle loop counters
-      integer  ( ip) :: ix , iy                  ! help variables plot grid indices
-      integer  ( ip) :: ic                       ! help variable for the grid index
-      real     ( rp) :: xpf, ypf                 ! help variables plot grid coordinates
-      real     ( rp) :: windw1, windw3           ! help variables plot window
-      real     ( rp) :: wveloi                   ! wind velocity at which white capping starts
-      integer  ( ip) :: ndisp                    ! number accumulator entrained particles
-      integer  ( ip) :: nevap                    ! number accumulator evaporated particles
-      real     ( rp) :: oilmass                  !
-      real     ( rp) :: totmas                   ! helpvariable for oil mass
-      real     ( rp) :: cfloat                   ! help variable floating concentrations
-      real     ( rp) :: dfwatoil                 ! help variable change in water fraction oil particle
-      real     ( rp) :: dviso                    ! help variable change in viscosity of the oil particle
-      real     ( rp) :: ac                       ! concentration help variable
-      real     ( rp) :: am                       ! mass help variable
-      real     ( rp) :: fvolum                   ! help variable volume of a plotgridcell
-      real     ( rp) :: wsum                     ! help variable accumulation of particle weight
+      real     ( real_wp) :: timlc                    ! time since start in hours
+      integer  ( int_wp ) :: nfcons                   ! number of constants per oil fraction
+      real     ( real_wp) :: cdt                      ! temperature dependency of oil density    f.m. kleissen 2-6-2003
+      real     ( real_wp) :: temp                     ! actual temperature                       f.m. kleissen 2-6-2003
+      real     ( real_wp) :: temp0                    ! reference temperature                    f.m. kleissen 2-6-2003
+      real     ( real_wp) :: cde                      ! density depending on evaporated fraction
+      real     ( real_wp) :: cdelv                    ! oil parameter c0 of Delvigne
+      real     ( real_wp) :: voil                     ! volume of oil entrained per unit volume of water
+      real     ( real_wp) :: pi                       ! pi
+      real     ( real_wp) :: prefac                   ! to be removed
+      integer  ( int_wp ) :: id , ifrac, isuboil, jsub   ! help and loop variables for dyes, fractions and substances
+      integer  ( int_wp ) :: ifr, ilay , iseg         ! help and loop variables for fractions, layers and cells
+      integer  ( int_wp ) :: i  , i1   , i2           ! particle loop counters
+      integer  ( int_wp ) :: ix , iy                  ! help variables plot grid indices
+      integer  ( int_wp ) :: ic                       ! help variable for the grid index
+      real     ( real_wp) :: xpf, ypf                 ! help variables plot grid coordinates
+      real     ( real_wp) :: windw1, windw3           ! help variables plot window
+      real     ( real_wp) :: wveloi                   ! wind velocity at which white capping starts
+      integer  ( int_wp ) :: ndisp                    ! number accumulator entrained particles
+      integer  ( int_wp ) :: nevap                    ! number accumulator evaporated particles
+      real     ( real_wp) :: oilmass                  !
+      real     ( real_wp) :: totmas                   ! helpvariable for oil mass
+      real     ( real_wp) :: cfloat                   ! help variable floating concentrations
+      real     ( real_wp) :: dfwatoil                 ! help variable change in water fraction oil particle
+      real     ( real_wp) :: dviso                    ! help variable change in viscosity of the oil particle
+      real     ( real_wp) :: ac                       ! concentration help variable
+      real     ( real_wp) :: am                       ! mass help variable
+      real     ( real_wp) :: fvolum                   ! help variable volume of a plotgridcell
+      real     ( real_wp) :: wsum                     ! help variable accumulation of particle weight
       double precision :: wevap                    ! not so clear why this simple help variable is double precision
-      real     ( rp) :: volfracw                 ! volume fraction of water per particle
-      real     ( rp) :: qentr                    ! entrainment rate (kg/m2/s)
-      real     ( rp) :: voloil0
-      real     ( rp) :: difrho
-      real     ( rp) :: vol56
-      real     ( rp) :: vis13
-      real     ( rp) :: grd16
-      real     ( rp) :: fac
+      real     ( real_wp) :: volfracw                 ! volume fraction of water per particle
+      real     ( real_wp) :: qentr                    ! entrainment rate (kg/m2/s)
+      real     ( real_wp) :: voloil0
+      real     ( real_wp) :: difrho
+      real     ( real_wp) :: vol56
+      real     ( real_wp) :: vis13
+      real     ( real_wp) :: grd16
+      real     ( real_wp) :: fac
      double precision :: fac1, fac2               ! two factors in the Delvigne/Sweeny formula
-      real     ( rp) :: fw                       ! fraction white-capping
-      real     ( rp) :: tp                       ! peak wave period (sec)
-      real     ( rp) :: fbw                      ! help variable
-      real     ( rp) :: h0wav                    ! significant wave height (m)
-      real     ( rp) :: hrms                     !
-      real     ( rp) :: de                       ! dissipation of wave energy per unit of surface area (j /m2)
-      real     ( rp) :: wfact                    ! wind factor in Delvigne/Sweeny
-      real     ( rp) :: rrand                    ! help variable for the random result
+      real     ( real_wp) :: fw                       ! fraction white-capping
+      real     ( real_wp) :: tp                       ! peak wave period (sec)
+      real     ( real_wp) :: fbw                      ! help variable
+      real     ( real_wp) :: h0wav                    ! significant wave height (m)
+      real     ( real_wp) :: hrms                     !
+      real     ( real_wp) :: de                       ! dissipation of wave energy per unit of surface area (j /m2)
+      real     ( real_wp) :: wfact                    ! wind factor in Delvigne/Sweeny
+      real     ( real_wp) :: rrand                    ! help variable for the random result
       double precision :: rseed = 0.5d10           ! seed of the random number generator
-      integer  ( ip) :: idisapp                  ! counter for dispersant applications
+      integer  ( int_wp ) :: idisapp                  ! counter for dispersant applications
       logical        :: disapp                   ! dispersant application set for this time step
-      real     ( rp) :: pdisapp(nfract)          ! chance for effictive dispersant application
-      real     ( rp) :: fractdapp                ! total chance to disperce
-      integer  ( ip) :: inside                   ! is particle inside polygon?
+      real     ( real_wp) :: pdisapp(nfract)          ! chance for effictive dispersant application
+      real     ( real_wp) :: fractdapp                ! total chance to disperce
+      integer  ( int_wp ) :: inside                   ! is particle inside polygon?
       double precision :: tmpevapold               ! FMK: temporary variable (previous timestep)
-      integer  ( ip) :: npadd                    !additional parameters if evaporation option 0 is used
+      integer  ( int_wp ) :: npadd                    !additional parameters if evaporation option 0 is used
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

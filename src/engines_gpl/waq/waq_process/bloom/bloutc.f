@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_bloutc
+      use m_waq_precision
+
 
       implicit none
 
@@ -33,7 +35,7 @@
       
       implicit none
 
-      integer dump
+      integer(kind=int_wp) ::dump
 
       idump  = dump
 

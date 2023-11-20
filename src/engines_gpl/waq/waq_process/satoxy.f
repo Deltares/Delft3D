@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_satoxy
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,15 +62,15 @@
 
       IMPLICIT NONE
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
 !     Local declarations
 !
-      INTEGER  SWITCH, LUNREP, ISEG  , IP1   ,
+      INTEGER(kind=int_wp) ::SWITCH, LUNREP, ISEG  , IP1   ,
      +         IP2   , IP3   , IP4   , IP5
-      REAL     CL    , TEMP  , SAL   , TEMP2 , PART1 ,
+      REAL(kind=real_wp) ::CL    , TEMP  , SAL   , TEMP2 , PART1 ,
      +         PART2 , OXSAT , A1    , A2    , A3    ,
      +         A4    , B1    , B2    , B3
       PARAMETER ( A1 = -173.4292   ,

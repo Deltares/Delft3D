@@ -36,14 +36,16 @@
 ! Avoid clashes between modules with the same name and other incompatibilities.
 !
 module flocculation_dwq
+use m_waq_precision
+
     !use precision
     implicit none
 
-    integer, parameter, private :: fp = kind(1.0)
-
-    integer, parameter, private :: FLOC_MANNING_DYER    = 1
-    integer, parameter, private :: FLOC_CHASSAGNE_SAFAR = 2
-    integer, parameter, private :: FLOC_VERNEY_ETAL     = 3  ! Note: not implemented yet
+    integer(kind=int_wp), parameter, private  ::  fp = kind(1.0)
+ 
+    integer(kind=int_wp), parameter, private  ::  FLOC_MANNING_DYER    = 1
+    integer(kind=int_wp), parameter, private  ::  FLOC_CHASSAGNE_SAFAR = 2
+    integer(kind=int_wp), parameter, private  ::  FLOC_VERNEY_ETAL     = 3   ! Note: not implemented yet
 
     real(fp), parameter   :: param_soulsby = 3.0  ! Coefficient of proportionality according to Soulsby (see Manning and Dyer)
 
@@ -465,24 +467,24 @@ subroutine flocculate_dwq( swfloform, cmacro, cmicro, tpm, tke, tau, total_depth
 !
 ! Global variables
 !
-    integer, intent(in) :: swfloform   !< Formulation for the flocculation process
-    real, intent(in)    :: cmacro      !< Macro floc concentration
-    real, intent(in)    :: cmicro      !< Micro floc concentration
-    real, intent(in)    :: tpm         !< Total sediment concentration (includes organic material)
-    real, intent(in)    :: tke         !< Turbulent kinectic energy
-    real, intent(in)    :: tau         !< Bottom shear stress
-    real, intent(in)    :: total_depth !< Total depth (distance bottom to surface)
-    real, intent(in)    :: local_depth !< Total depth (distance segment to surface)
-    real, intent(in)    :: viscosity   !< Kinematic viscosity
-    real, intent(in)    :: rho_water   !< Density of water
-    real, intent(out)   :: spmratioem  !< Ratio of concentration macro flocs to total
-    real, intent(out)   :: ws_macro    !< Fall velocity for macro flocs
-    real, intent(out)   :: ws_micro    !< Fall velocity for micro flocs
+    integer(kind=int_wp), intent(in) ::  swfloform    !< Formulation for the flocculation process
+    real(kind=real_wp), intent(in) ::  cmacro       !< Macro floc concentration
+    real(kind=real_wp), intent(in) ::  cmicro       !< Micro floc concentration
+    real(kind=real_wp), intent(in) ::  tpm          !< Total sediment concentration (includes organic material)
+    real(kind=real_wp), intent(in) ::  tke          !< Turbulent kinectic energy
+    real(kind=real_wp), intent(in) ::  tau          !< Bottom shear stress
+    real(kind=real_wp), intent(in) ::  total_depth  !< Total depth (distance bottom to surface)
+    real(kind=real_wp), intent(in) ::  local_depth  !< Total depth (distance segment to surface)
+    real(kind=real_wp), intent(in) ::  viscosity    !< Kinematic viscosity
+    real(kind=real_wp), intent(in) ::  rho_water    !< Density of water
+    real(kind=real_wp), intent(out) ::  spmratioem   !< Ratio of concentration macro flocs to total
+    real(kind=real_wp), intent(out) ::  ws_macro     !< Fall velocity for macro flocs
+    real(kind=real_wp), intent(out) ::  ws_micro     !< Fall velocity for micro flocs
 
 !
 ! Local variables
 !
-    real                :: settling_flux
+    real(kind=real_wp) ::  settling_flux
     real, parameter     :: grav = 9.81    ! Small variations only, so make it a fixed value
 
     select case (swfloform)

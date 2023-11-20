@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_setvat
+      use m_waq_precision
+
 
       implicit none
 
@@ -57,19 +59,19 @@
       use m_monsys
       use timers       !   performance timers
 
-      INTEGER             LUREP , NOCONS, NOPA  , NOFUN , NOSFUN,
+      INTEGER(kind=int_wp) ::LUREP , NOCONS, NOPA  , NOFUN , NOSFUN,
      +                    NOSYS , NOTOT , NODISP, NOVELO, NODEF ,
      +                    NOLOC , NDSPX , NVELX , NLOCX , NFLUX ,
      +                    NOPRED, NOVAR , NOGRID
-      INTEGER             VARARR(NOVAR) , VARIDX(NOVAR) ,
+      INTEGER(kind=int_wp) ::VARARR(NOVAR) , VARIDX(NOVAR) ,
      +                    VARTDA(NOVAR) , VARDAG(NOVAR) ,
      +                    VARTAG(NOVAR) , VARAGG(NOVAR)
       CHARACTER*20        VARNAM(NOVAR)
 !
 !     Locals
 !
-      integer, PARAMETER  :: MAXLOC = 2000
-      INTEGER      VATTAG(MAXLOC), VATTDA(MAXLOC)
+      integer(kind=int_wp), PARAMETER   ::MAXLOC = 2000
+      INTEGER(kind=int_wp) ::VATTAG(MAXLOC), VATTDA(MAXLOC)
       CHARACTER*20 VATNAM(MAXLOC), VATNAG(MAXLOC),
      +             VATNDA(MAXLOC)
       CHARACTER*20 CONAME(*)     , PANAME(*)     ,
@@ -78,7 +80,7 @@
      +             DENAME(*)
       CHARACTER*79 LINE, NAME
       LOGICAL      LEXI
-      INTEGER      LUN, IIVOL ,IIAREA, IIFLOW, IILENG, IIDISP, IICONC,
+      INTEGER(kind=int_wp) ::LUN, IIVOL ,IIAREA, IIFLOW, IILENG, IIDISP, IICONC,
      +             IIMASS, IIDERV, IIBOUN, IIBSET, IIBSAV, IIWSTE, IICONS,
      +             IIPARM, IIFUNC, IISFUN, IIDNEW, IIDIFF, IIVNEW, IIVELO,
      +             IIHARM, IIFARR, IIMAS2, IITIMR, IIVOL2, IITRAC, IIGWRK,
@@ -90,15 +92,15 @@
      +             IIAAK, IIBBK, IICCK, IIBD3X, IIBDDX, IIBDX, IIBU3X, IIBUUX,
      +             IIBUX, IIWRK1, IIWRK2, IIAAKL, IIBBKL, IICCKL, IIDDKL
 
-      integer      IVVOL,IVARE,IVFLO,IVLEN,IVCNS,IVPAR,IVFUN,IVSFU,IVCNC,
+      integer(kind=int_wp) ::IVVOL,IVARE,IVFLO,IVLEN,IVCNS,IVPAR,IVFUN,IVSFU,IVCNC,
      +             IVMAS,IVDER,IVDSP,IVVEL,IVDEF,IVLOC,IVDSX,IVVLX,IVLCX,
      +             IVFLX
 
-      integer      isys, ipa, ifun, idsp, isfun, ivel, idef, ivar, iv_da, iv_ag,
+      integer(kind=int_wp) ::isys, ipa, ifun, idsp, isfun, ivel, idef, ivar, iv_da, iv_ag,
      +             idsx, ivlx, ilcx, iflx, novat, ierr, ivat, iloc, icons
 
 
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "setvat", ithndl )
 !
 !     Just take the used array's in the right order

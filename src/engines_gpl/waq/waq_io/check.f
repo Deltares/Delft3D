@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_check
+      use m_waq_precision
+
 
       implicit none
 
@@ -55,19 +57,19 @@
 !     kind           function         name                 description
 
       character*(*), intent(inout) :: cdummy            !< character that may contain block end
-      integer   (4), intent(in   ) :: iwidth            !< width of the output file
-      integer   (4), intent(in   ) :: iblock            !< number of the input block
-      integer   (4), intent(inout) :: ierr2             !< accumulative nr of errors
-      integer   (4), intent(inout) :: ierr              !< cumulative error count
+      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  iblock             !< number of the input block
+      integer(kind=int_wp), intent(inout) ::  ierr2              !< accumulative nr of errors
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error count
 
 !     Local
 
-      integer        idummy            ! argument for token reading
-      real           rdummy            ! argument for token reading
-      integer        itype             ! argument for token reading
+      integer(kind=int_wp) :: idummy             ! argument for token reading
+      real(kind=real_wp) :: rdummy             ! argument for token reading
+      integer(kind=int_wp) :: itype              ! argument for token reading
       character( 1 ) chulp             ! to convert block number to character
-      integer        ihulp             ! return value gettoken
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: ihulp              ! return value gettoken
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "check", ithndl )
 
 !        First round of dealing with ierr2

@@ -36,7 +36,7 @@ contains
 !                 (per time step)
 !
 !     system administration : frank kleissen
-      use precision_part
+      use m_waq_precision
       use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, abuoy, t0buoy, ldiffh, nosubs, mpart
       use m_part_mesh
       use m_particles
@@ -58,10 +58,10 @@ contains
       integer          :: ipart, ifract, niter
       double precision :: rseed  =  0.5d+00
 
-      integer(ip)   :: ierror                  ! needed to call part07
-      integer(ip)   :: isub                    ! loop counter nosubs
-      integer(ip)   :: itdelt                  ! delta-t of the particle for smooth loading
-      integer(ip)   :: kp                      ! k of the particle
+      integer(int_wp )   :: ierror                  ! needed to call part07
+      integer(int_wp )   :: isub                    ! loop counter nosubs
+      integer(int_wp )   :: itdelt                  ! delta-t of the particle for smooth loading
+      integer(int_wp )   :: kp                      ! k of the particle
       logical       :: twolay                  ! = modtyp .eq. model_two_layer_temp
       double precision      :: abuac           ! actual value of abuoy(ipart) ( * sqrt(ddfac)
       double precision      :: cdrag           ! local drag coefficient (converted from persentage)
@@ -288,10 +288,10 @@ contains
       integer               :: ipart, niter
       double precision      :: rseed
 
-      integer(ip)           :: ierror                  ! needed to call part07
-      integer(ip)           :: ifract                  ! loop counter for nfract
-      integer(ip)           :: itdelt                  ! delta-t of the particle for smooth loading
-      integer(ip)           :: kp                      ! k of the particle
+      integer(int_wp )           :: ierror                  ! needed to call part07
+      integer(int_wp )           :: ifract                  ! loop counter for nfract
+      integer(int_wp )           :: itdelt                  ! delta-t of the particle for smooth loading
+      integer(int_wp )           :: kp                      ! k of the particle
       logical               :: dstick                  ! logical that determines sticking
       logical               :: twolay                  ! = modtyp .eq. model_two_layer_temp
       double precision      :: abuac                   ! actual value of abuoy(ipart) ( * sqrt(ddfac)

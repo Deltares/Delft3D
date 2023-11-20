@@ -70,17 +70,17 @@
 
 !     kind           function         name                      description
 
-      integer  (ip), intent(in   ) :: itime                   !< actual time
-      integer  (ip), intent(in   ) :: noseg                   !< delwaq noseg
-      integer  (ip), intent(in   ) :: nolay                   !< delwaq layers
-      integer  (ip), intent(in   ) :: noq                     !< delwaq noq
-      integer  (ip), intent(in   ) :: nosys                   !< delwaq transported subs
-      integer  (ip), intent(in   ) :: notot                   !< delwaq total subs, part subs included
-      real     (rp), intent(in   ) :: dwqvol (noseg )         !< delwaq volumes
-      real     (rp), intent(in   ) :: surface(noseg )         !< horizontal surfaces
-      real     (rp), intent(in   ) :: dwqflo (noq   )         !< delwaq flows
+      integer  (int_wp ), intent(in   ) :: itime                   !< actual time
+      integer  (int_wp ), intent(in   ) :: noseg                   !< delwaq noseg
+      integer  (int_wp ), intent(in   ) :: nolay                   !< delwaq layers
+      integer  (int_wp ), intent(in   ) :: noq                     !< delwaq noq
+      integer  (int_wp ), intent(in   ) :: nosys                   !< delwaq transported subs
+      integer  (int_wp ), intent(in   ) :: notot                   !< delwaq total subs, part subs included
+      real     (real_wp), intent(in   ) :: dwqvol (noseg )         !< delwaq volumes
+      real     (real_wp), intent(in   ) :: surface(noseg )         !< horizontal surfaces
+      real     (real_wp), intent(in   ) :: dwqflo (noq   )         !< delwaq flows
       character(20), intent(in   ) :: syname (notot )         !< names of sumstances
-      integer  (ip), intent(in   ) :: nosfun                  !< number of segment functions
+      integer  (int_wp ), intent(in   ) :: nosfun                  !< number of segment functions
       character(20), intent(in   ) :: sfname (nosfun)         !< names of segment functions
       real     ( 4), intent(in   ) :: segfun (noseg ,nosfun)  !< segment function values
       real     ( 4), intent(inout) :: amass  (notot ,noseg )  !< delwaq mass array
@@ -95,21 +95,21 @@
 
 !     Locals
 
-      integer(ip) lunut             !  output unit number
+      integer(int_wp ) lunut             !  output unit number
       integer     lunpr
       integer( 4) indx              !  index in segment names
       integer( 4) ioff              !  offset in substances array
       integer( 4) isys              !  loop counter substances
       logical     :: first  = .true.
-      integer(ip), save :: idtimd , itimd1 , itimd2     ! timings of the vertical diffusion file
-      integer(ip), save :: idtimt , itimt1 , itimt2     ! timings of the tau file
-      integer(ip), save :: idtims , itims1 , itims2     ! timings of the salinity file
-      integer(ip), save :: idtimtm , itimtm1 , itimtm2     ! timings of the temperature file
-      integer(ip), save :: ifflag , isflag
+      integer(int_wp ), save :: idtimd , itimd1 , itimd2     ! timings of the vertical diffusion file
+      integer(int_wp ), save :: idtimt , itimt1 , itimt2     ! timings of the tau file
+      integer(int_wp ), save :: idtims , itims1 , itims2     ! timings of the salinity file
+      integer(int_wp ), save :: idtimtm , itimtm1 , itimtm2     ! timings of the temperature file
+      integer(int_wp ), save :: ifflag , isflag
       logical    , save :: updatd
-      integer(ip) nosubud
-      integer(ip) iseg, i, i2, ipart
-      real   (rp) depmin
+      integer(int_wp ) nosubud
+      integer(int_wp ) iseg, i, i2, ipart
+      real   (real_wp) depmin
       logical     update
       integer     iniday
       integer  :: lures
@@ -435,7 +435,7 @@
          if (itime.eq.(itstrtp+idelt*itrakc-idelt)) then
             call wrttrk ( lunut   , fout     , fnamep(16), itrakc   , nopart  ,
      &                    npmax    , xa       , ya       , za       , xyztrk  ,
-     &                    nosubs , wpart  , track                    ) 
+     &                    nosubs , wpart  , track                    )
             itrakc = itrakc + itraki
          endif
       endif

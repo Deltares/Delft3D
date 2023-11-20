@@ -28,7 +28,7 @@ module writrk_mod
 !
 !  data definition module(s)
 !
-use precision_part       ! single and double precision
+use m_waq_precision       ! single and double precision
 use timers
 !
 !  module procedure(s)
@@ -146,11 +146,11 @@ contains
 !-declaration and specifications
 !
 !
-      integer(ip), parameter              :: nelmxx = 11
+      integer(int_wp ), parameter              :: nelmxx = 11
 !
-      integer(ip)                         :: ntrk  ,ittrkf,ittrki,itdate,lundia
-      integer(ip)                         :: ierror,id
-      integer(ip)                         :: celidt
+      integer(int_wp )                         :: ntrk  ,ittrkf,ittrki,itdate,lundia
+      integer(int_wp )                         :: ierror,id
+      integer(int_wp )                         :: celidt
 !
       real                                :: dt    ,tunit
 
@@ -165,8 +165,8 @@ contains
 !
       logical                             :: wrswch
 !
-      integer(ip), pointer, dimension(:,:       )  :: ibuff
-      integer(ip), dimension(2)           :: ival
+      integer(int_wp ), pointer, dimension(:,:       )  :: ibuff
+      integer(int_wp ), dimension(2)           :: ival
       real   (sp), pointer, dimension(:,:       )  :: rbuff
 !
       character (len=16),dimension(1)     :: cdum16
@@ -176,7 +176,7 @@ contains
 !-----nefis statics
 !
       save          first
-      integer(ip), dimension(6,nelmxx)   :: elt_dims
+      integer(int_wp ), dimension(6,nelmxx)   :: elt_dims
       logical                            :: first   = .true.
       real(sp)                           :: default = 999.999
 !
@@ -208,13 +208,13 @@ contains
                           'INTEGER  ',      &
                           'REAL     ',      &
                           'INTEGER  ' /)
-      integer(ip),  dimension(nelmxx) :: elt_bytes = &
+      integer(int_wp ),  dimension(nelmxx) :: elt_bytes = &
                     (/ 20 , 20, 4 , 4 , 4 , 16, 4, 20, 4 , 4 , 4 /)
 !
 !    local scalar
 !
-      integer(ip) :: ih     , im     , imonth , int   , is     , it
-      integer(ip) :: ittrkb , ittrke , iyear  , ndig  , nelmx  , nopmax , nstep
+      integer(int_wp ) :: ih     , im     , imonth , int   , is     , it
+      integer(int_wp ) :: ittrkb , ittrke , iyear  , ndig  , nelmx  , nopmax , nstep
       logical     :: fout
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
@@ -442,4 +442,3 @@ contains
       return
       end subroutine
 end module
-

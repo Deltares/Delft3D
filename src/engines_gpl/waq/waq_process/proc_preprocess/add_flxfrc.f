@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_add_flxfrc
+      use m_waq_precision
+
 
       implicit none
 
@@ -41,39 +43,39 @@
 
       ! decalaration of arguments
 
-      integer                   :: lunrep          ! report file
+      integer(kind=int_wp) ::lunrep          ! report file
       type(procespropcoll)      :: procesdef       ! the process definition
       type(itempropcoll)        :: allitems        ! all items of the proces system
       type(sfracsprop)          :: sfracs          ! substance fraction properties
-      integer                   :: no_act          ! number of active processes
+      integer(kind=int_wp) ::no_act          ! number of active processes
       character(len=*)          :: actlst(*)       ! active processes names
-      integer                   :: nbpr            ! number of processes
+      integer(kind=int_wp) ::nbpr            ! number of processes
 
       ! local declaration
 
       type(procesprop), pointer :: proc            ! single process
       type(procesprop)          :: procn           ! process to be added
       type(itemprop)            :: item            ! one item
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! loop counter processes
-      integer                   :: iproc_new       ! index inserted process
-      integer                   :: isfrac          ! index substance fractions
-      integer                   :: isfrac_2        ! index substance fractions
-      integer                   :: nfrac           ! number fractions in substance fraction
-      integer                   :: nlink           ! number of linked substance fractions
-      integer                   :: ilink           ! index of linked substance fractions
-      integer                   :: linklst(sfracs%nsfrac) ! index linked substance fractions
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! loop counter processes
+      integer(kind=int_wp) ::iproc_new       ! index inserted process
+      integer(kind=int_wp) ::isfrac          ! index substance fractions
+      integer(kind=int_wp) ::isfrac_2        ! index substance fractions
+      integer(kind=int_wp) ::nfrac           ! number fractions in substance fraction
+      integer(kind=int_wp) ::nlink           ! number of linked substance fractions
+      integer(kind=int_wp) ::ilink           ! index of linked substance fractions
+      integer(kind=int_wp) ::linklst(sfracs%nsfrac) ! index linked substance fractions
       character(len=20)         :: basnam          ! base name substance fractions
-      integer                   :: istochi         ! index stochi
-      integer                   :: istochi_2       ! index stochi
-      integer                   :: isfrac_positive ! fraction to be used if flux is positive
-      integer                   :: isfrac_negative ! fraction to be used if flux is negative
-      integer                   :: indx            ! index in list
-      integer                   :: iret            ! index in collection
-      integer                   :: ifrac           ! fraction number
+      integer(kind=int_wp) ::istochi         ! index stochi
+      integer(kind=int_wp) ::istochi_2       ! index stochi
+      integer(kind=int_wp) ::isfrac_positive ! fraction to be used if flux is positive
+      integer(kind=int_wp) ::isfrac_negative ! fraction to be used if flux is negative
+      integer(kind=int_wp) ::indx            ! index in list
+      integer(kind=int_wp) ::iret            ! index in collection
+      integer(kind=int_wp) ::ifrac           ! fraction number
       character(len=3)          :: suffix          ! suffix
-      integer                   :: ierr_alloc      ! error indication
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ierr_alloc      ! error indication
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "add_flxfrc", ithndl )
 
       ! loop over the processes

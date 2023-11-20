@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_setday
+      use m_waq_precision
       USE ProcesSet
 
       implicit none
@@ -71,7 +72,7 @@
 !
 !     Declaration of arguments
 !
-      INTEGER       LUNREP, NOKEY , IPROC , IERR  , NOWARN, item_ind
+      INTEGER(kind=int_wp) ::LUNREP, NOKEY , IPROC , IERR  , NOWARN, item_ind
       LOGICAL       DTFLG1 , DTFLG3
       CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
@@ -79,14 +80,14 @@
 !
 !     Local declarations
 !
-      INTEGER       IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
-      integer       istart , iperiod
-      INTEGER,      ALLOCATABLE :: ISUSED(:)
+      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
+      integer(kind=int_wp) ::istart , iperiod
+      INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
       CHARACTER*20  KEY       , SUFFIX  , NAME, item_name
       CHARACTER*50  item_desc
-      REAL          PERIOD, default_value 
+      REAL(kind=real_wp) ::PERIOD, default_value
       type(ItemProp)        :: aItemProp            ! one item
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "setday", ithndl )
 !
 !     init
@@ -430,9 +431,9 @@
          TYPE(ProcesProp), INTENT(OUT) :: process_prop ! output statistical proces definition
          CHARACTER(LEN=20), INTENT(IN) :: item_name
          CHARACTER(LEN=50), INTENT(IN) :: item_desc
-         INTEGER, INTENT(IN) :: item_ind, item_type
-         INTEGER :: iret
-         REAL, INTENT(IN) :: default_value 
+         INTEGER(kind=int_wp), INTENT(IN)  ::item_ind, item_type
+         INTEGER(kind=int_wp) ::iret
+         REAL(kind=real_wp), INTENT(IN)  ::default_value
 
          item_prop%name    = item_name
          item_prop%default = default_value

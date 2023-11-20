@@ -8,6 +8,7 @@ set(dflowfm_lib_module ${engines_gpl_path}/dflowfm/packages/dflowfm_lib)
 
 # Waq
 set(waq_module_path ${engines_gpl_path}/waq)
+set(waq_definition_module ${waq_module_path}/waq_definition)
 set(waq_utils_c_module ${waq_module_path}/waq_utils_c)
 set(waq_utils_f_module ${waq_module_path}/waq_utils_f)
 set(waq_netcdf_module ${waq_module_path}/waq_netcdf)

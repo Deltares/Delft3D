@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_depave
+      use m_waq_precision
+
 
       implicit none
 
@@ -46,15 +48,15 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      INTEGER  LUNREP
+      INTEGER(kind=int_wp) ::LUNREP
 
-      INTEGER  IP1 , IP2 , IP3 , IP4 , IP5 , IP6
-      REAL     DEPTH , ADEPTH
-      INTEGER  TELLER, NAVERA, NSWITS, ISEG
+      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6
+      REAL(kind=real_wp) ::DEPTH , ADEPTH
+      INTEGER(kind=int_wp) ::TELLER, NAVERA, NSWITS, ISEG
       LOGICAL  FIRST
       SAVE     FIRST
       DATA     FIRST /.TRUE./

@@ -326,7 +326,7 @@ contains
       use m_rdccol
       use m_getdps
       use m_monsys
-      use precision_part                  ! single/double precision
+      use m_waq_precision                  ! single/double precision
       use timers
       use fileinfo  , lun=> lunit    ! logical unit numbers for files
       use spec_feat_par
@@ -362,16 +362,16 @@ contains
       implicit none                  ! force explicit typing
       save
 
-      integer(ip)         :: itime   , lunpr, lunfil, lunini
-      integer(ip)         :: nosubud , noth
-      integer(ip)         :: ilp, isp, iext, nores, noras
+      integer(int_wp )         :: itime   , lunpr, lunfil, lunini
+      integer(int_wp )         :: nosubud , noth
+      integer(int_wp )         :: ilp, isp, iext, nores, noras
       real(sp)            :: dtstep, pctprogress
       logical             :: update
       character(len=*)    :: ifnam
 
       integer             :: iniday  ! day number for initial condition
 
-      real     ( hp)              :: rseed = 0.5d0
+      real     ( dp)              :: rseed = 0.5d0
       real     ( sp)              :: rnorm
 
       integer(4) ithndl              ! handle to time this subroutine

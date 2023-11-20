@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_vivian
+      use m_waq_precision
+
 
       implicit none
 
@@ -70,12 +72,12 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
 
-      INTEGER  NOSEG , NOFLUX, NOQ1  , NOQ2  , NOQ3  , NOQ4
-      INTEGER  IPOINT(*)       , INCREM(*),
+      INTEGER(kind=int_wp) ::NOSEG , NOFLUX, NOQ1  , NOQ2  , NOQ3  , NOQ4
+      INTEGER(kind=int_wp) ::IPOINT(*)       , INCREM(*),
      +         IEXPNT(4,*)     , IKNMRK(*)
-      REAL     PMSA(*)         , FL(*)
+      REAL(kind=real_wp) ::PMSA(*)         , FL(*)
 
-      REAL     KSOL , KPRC   , FSOL   , FPRC  ,
+      REAL(kind=real_wp) ::KSOL , KPRC   , FSOL   , FPRC  ,
      +         TEMP , TMPSOL , TMPPRC , TCSOL , TCPRC ,
      +         CPHD , CPHPR  , CPHDE  , POROS , OXY   , CROXY ,
      +         DELT

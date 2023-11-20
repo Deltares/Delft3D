@@ -30,7 +30,7 @@ module parths_mod
 !
 use m_stop_exit
 use m_part11
-use precision_part            ! single and double precision
+use m_waq_precision            ! single and double precision
 use m_part_modeltypes         ! part model definitions
 use timers
 use openfl_mod
@@ -179,14 +179,14 @@ contains
 !
       character(len=16), pointer, dimension(:) ::  elt_names, elt_types
 !
-      integer(ip), pointer, dimension(:)       :: ihplot
-      integer(ip), pointer, dimension(:)       :: nplsta, mplsta
-      integer(ip), pointer, dimension(:)       :: nstat , mstat
-      integer(ip), pointer, dimension(:,:)     :: elt_dims
-      integer(ip), pointer, dimension(:)       :: elt_bytes
-      integer(ip), pointer, dimension(:)       :: mstick
-      integer(ip), pointer, dimension(:)       :: npart , mpart , kpart
-      integer(ip), pointer, dimension(:,:)     :: lgrid , lgrid2, lgrid3
+      integer(int_wp ), pointer, dimension(:)       :: ihplot
+      integer(int_wp ), pointer, dimension(:)       :: nplsta, mplsta
+      integer(int_wp ), pointer, dimension(:)       :: nstat , mstat
+      integer(int_wp ), pointer, dimension(:,:)     :: elt_dims
+      integer(int_wp ), pointer, dimension(:)       :: elt_bytes
+      integer(int_wp ), pointer, dimension(:)       :: mstick
+      integer(int_wp ), pointer, dimension(:)       :: npart , mpart , kpart
+      integer(int_wp ), pointer, dimension(:,:)     :: lgrid , lgrid2, lgrid3
       real   (sp), pointer, dimension(:)       :: xa    , ya    , xb     , yb
       real   (sp), pointer, dimension(:)       :: xpart , ypart , volume , area
       real   (sp), pointer, dimension(:)       :: xstat , ystat
@@ -208,12 +208,12 @@ contains
 !
 !     local scalars
 !
-      integer(ip) :: i1        ,i2        ,idelt     ,ierror    ,ihstep    ,ihstop
-      integer(ip) :: ipos      ,iseg      ,ist2      ,istat     ,isub
-      integer(ip) :: jsub      ,lun1      ,lun2      ,mmap      ,mmax      ,mmloc
-      integer(ip) :: mnmax2    ,noseglp   ,modtyp    ,nfract    ,ihstrt    ,ilay
-      integer(ip) :: nmap      ,nmax      ,nmloc     ,noerr     ,nolay     ,nopart
-      integer(ip) :: nosubs    ,nosubt    ,npwndw    ,itime     ,ix        ,iy      ,nosta
+      integer(int_wp ) :: i1        ,i2        ,idelt     ,ierror    ,ihstep    ,ihstop
+      integer(int_wp ) :: ipos      ,iseg      ,ist2      ,istat     ,isub
+      integer(int_wp ) :: jsub      ,lun1      ,lun2      ,mmap      ,mmax      ,mmloc
+      integer(int_wp ) :: mnmax2    ,noseglp   ,modtyp    ,nfract    ,ihstrt    ,ilay
+      integer(int_wp ) :: nmap      ,nmax      ,nmloc     ,noerr     ,nolay     ,nopart
+      integer(int_wp ) :: nosubs    ,nosubt    ,npwndw    ,itime     ,ix        ,iy      ,nosta
       real   (sp) :: depthl    ,fvolum    ,pblay     ,surf      ,windw1
       real   (sp) :: windw3    ,xmloc     ,xnloc     ,xpf
       real   (sp) :: ymloc     ,ynloc     ,ypf
@@ -411,7 +411,7 @@ contains
 70                  continue
 ! also count number of particles
                     amap(nosubs + 1, ilay, iy, ix) = amap(nosubs + 1, ilay, iy, ix) + 1
-                    
+
                   endif
                 endif
               endif

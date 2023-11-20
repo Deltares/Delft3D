@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_algrep
+      use m_waq_precision
+
 
       implicit none
 
@@ -45,42 +47,42 @@
       ! declaration of arguments
 
       type(procespropcoll)      :: procesdef       ! all processes
-      integer                   :: notyp           ! number of algae types
-      integer                   :: nocof           ! number of coefficients
+      integer(kind=int_wp) ::notyp           ! number of algae types
+      integer(kind=int_wp) ::nocof           ! number of coefficients
       character(len=*)          :: algtyp(notyp)   ! type names
-      integer                   :: algact(notyp)   ! active indication
+      integer(kind=int_wp) ::algact(notyp)   ! active indication
       character(len=*)          :: abrtyp(notyp)   ! type abbrevation
       character(len=*)          :: cofnam(nocof)   ! coefficient name
-      real                      :: algcof(maxcof,notyp) ! coefficient values
-      integer                   :: maxcof          ! max number of coefficiets
+      real(kind=real_wp) ::algcof(maxcof,notyp) ! coefficient values
+      integer(kind=int_wp) ::maxcof          ! max number of coefficiets
       character(len=*)          :: alggrp(notyp)   ! group of type
-      integer                   :: nogrp           ! number of groups
+      integer(kind=int_wp) ::nogrp           ! number of groups
       character(len=*)          :: grpnam(nogrp)   ! group names
       character(len=*)          :: grpabr(nogrp)   ! group abbrevation
-      integer                   :: nouttyp         ! number of outputs per type
+      integer(kind=int_wp) ::nouttyp         ! number of outputs per type
       character(len=*)          :: outtyp(nouttyp) ! name of output per type
-      integer                   :: noutgrp         ! number of outputs per group
+      integer(kind=int_wp) ::noutgrp         ! number of outputs per group
       character(len=*)          :: outgrp(noutgrp) ! name of output per group
 
       ! local decalarations
 
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! loop counter processes
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! loop counter processes
       type(procesprop), pointer :: proc            ! process description
       character(len=10)         :: name1           ! name
       character(len=10)         :: name2           ! name
-      integer                   :: i_input         ! index input item
-      integer                   :: ioutput         ! index output item
-      integer                   :: istochi         ! index stochi item
-      integer                   :: ifound          ! indicates match
-      integer                   :: nalg            ! number of algae types
-      integer                   :: ialg            ! index algae types
-      integer                   :: igrp            ! index algae group
-      real                      :: rgrp            ! index algae group
-      integer                   :: icof            ! index coefficient
-      integer                   :: ilen            ! nonblank length of string
-      integer                   :: iout            ! index output
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::i_input         ! index input item
+      integer(kind=int_wp) ::ioutput         ! index output item
+      integer(kind=int_wp) ::istochi         ! index stochi item
+      integer(kind=int_wp) ::ifound          ! indicates match
+      integer(kind=int_wp) ::nalg            ! number of algae types
+      integer(kind=int_wp) ::ialg            ! index algae types
+      integer(kind=int_wp) ::igrp            ! index algae group
+      real(kind=real_wp) ::rgrp            ! index algae group
+      integer(kind=int_wp) ::icof            ! index coefficient
+      integer(kind=int_wp) ::ilen            ! nonblank length of string
+      integer(kind=int_wp) ::iout            ! index output
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "algrep", ithndl )
 
       ! some init

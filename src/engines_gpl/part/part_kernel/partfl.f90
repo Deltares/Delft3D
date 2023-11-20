@@ -28,7 +28,7 @@ module partfl_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part               ! single/double precision
+use m_waq_precision               ! single/double precision
 use timers
 use m_densty
 use m_diffus
@@ -162,9 +162,9 @@ contains
 !
 !     local scalars
 !
-      integer(ip) :: i     , icvdf  , icvdf2 , inocns , lun2
-      integer(ip) :: max   , nosubc , ic
-      integer(ip) :: min   , mnmaxk , nocons , nolay  , nosubs
+      integer(int_wp ) :: i     , icvdf  , icvdf2 , inocns , lun2
+      integer(int_wp ) :: max   , nosubc , ic
+      integer(int_wp ) :: min   , mnmaxk , nocons , nolay  , nosubs
       real   (sp) :: alpha , depth  , diff0  , ufric
       real   (sp) :: densb , densmn , denst  , gamma
       real   (sp) :: pblay , ptlay  , salamb , tempb  , tempt  , tex
@@ -391,4 +391,3 @@ contains
 !
       end subroutine
 end module
-

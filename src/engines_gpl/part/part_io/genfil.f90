@@ -28,7 +28,7 @@ module genfil_mod
 !
 !  data definition module(s)
 !
-use precision_part    ! single and double precision
+use m_waq_precision    ! single and double precision
       use timers
 !
 implicit none    ! force explicit typing
@@ -55,7 +55,7 @@ contains
 !
 !     local scalars
 !
-      integer(ip)      :: iext , ipath , k , lenfil , lnpath
+      integer(int_wp )      :: iext , ipath , k , lenfil , lnpath
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "genfil", ithndl )
@@ -90,5 +90,3 @@ contains
       return
       end subroutine
 end module
-
-

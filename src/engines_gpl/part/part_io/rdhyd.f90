@@ -44,7 +44,7 @@ use m_stop_exit
 
 !       Logical units     : lun1 = the hydrodynamic .hyd file
 
-      use precision_part       ! flexible size definition
+      use m_waq_precision       ! flexible size definition
       use typos           ! the derived types
       use hydmod
       use timers          ! performance timers
@@ -55,18 +55,18 @@ use m_stop_exit
 
 !     kind           function         name                 description
 
-      integer  ( ip), intent(in   ) :: nfiles            !< nr. of files
-      integer  ( ip), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
+      integer  ( int_wp ), intent(in   ) :: nfiles            !< nr. of files
+      integer  ( int_wp ), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
       character(256), intent(inout) :: fnam (nfiles)     !< file names of all files
       type(t_hyd)   , intent(in   ) :: hyd               !< description of the hydrodynamics
-      integer  ( ip), intent(  out) :: nolay             !< number of hydrodynamic layers
+      integer  ( int_wp ), intent(  out) :: nolay             !< number of hydrodynamic layers
       logical       , intent(in   ) :: zmodel            !< layer type
-      integer  ( ip), intent(  out) :: ihdel             !< hydrodynamic time step (s)
+      integer  ( int_wp ), intent(  out) :: ihdel             !< hydrodynamic time step (s)
       real     ( sp), pointer       :: tcktot(:)         !< relative layer thickness
       real     ( sp), pointer       :: zlbot(:)          !< z-layer layer bottom level
       real     ( sp), pointer       :: zltop(:)          !< z-layer layer top level
-      integer  ( ip), intent(  out) :: ndoms             !< number of domains
-      integer  ( ip), intent(  out) :: nbnds             !< number of DD-boundaries
+      integer  ( int_wp ), intent(  out) :: ndoms             !< number of domains
+      integer  ( int_wp ), intent(  out) :: nbnds             !< number of DD-boundaries
       type (domain) , pointer       :: doms  (:)         !< the domains
       type (boundp) , pointer       :: bnds  (:)         !< the domain boundaries
 
@@ -94,7 +94,7 @@ use m_stop_exit
 
       ndoms = 0
       nbnds = 0
-      
+
 !     open the .hyd file and read the required information
 
       ipath = scan(fnam(18),"\",.true.)

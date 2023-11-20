@@ -56,7 +56,7 @@ contains
 
 !     functions   called    : none.
 
-      use precision_part      ! single and double precision
+      use m_waq_precision      ! single and double precision
       use timers
       use openfl_mod
 
@@ -64,26 +64,26 @@ contains
 
 !     kind           function         name                Descriptipon
 
-      integer  (ip), intent(in   ) :: nmax              !< first dimension of the grid
-      integer  (ip), intent(in   ) :: mmax              !< second dimension of the grid
-      integer  (ip), intent(in   ) :: lun               !< unit number cco file
+      integer  (int_wp ), intent(in   ) :: nmax              !< first dimension of the grid
+      integer  (int_wp ), intent(in   ) :: mmax              !< second dimension of the grid
+      integer  (int_wp ), intent(in   ) :: lun               !< unit number cco file
       character( *), intent(in   ) :: fnam              !< name of cco file
-      integer  (ip), intent(in   ) :: lgrid(nmax,mmax)  !< grid table
+      integer  (int_wp ), intent(in   ) :: lgrid(nmax,mmax)  !< grid table
       real     (sp), intent(  out) :: xbott(*)          !< x-values in the grid
       real     (sp), intent(  out) :: ybott(*)          !< y-values in the grid
-      integer  (ip), intent(in   ) :: lun2              !< unit number log-file
+      integer  (int_wp ), intent(in   ) :: lun2              !< unit number log-file
 
 !     local scalars
 
-      integer(ip)   iocond    ! error indicator for file opening
-      integer(ip)   nmaxc     ! nmax in file
-      integer(ip)   mmaxc     ! mmax in file
-      real   (rp)   x0, y0    ! coordinates of the zero
-      real   (rp)   alpha     ! unknown
-      integer(ip)   npart     ! unknown
-      integer(ip)   layt      ! number of layers
+      integer(int_wp )   iocond    ! error indicator for file opening
+      integer(int_wp )   nmaxc     ! nmax in file
+      integer(int_wp )   mmaxc     ! mmax in file
+      real   (real_wp)   x0, y0    ! coordinates of the zero
+      real   (real_wp)   alpha     ! unknown
+      integer(int_wp )   npart     ! unknown
+      integer(int_wp )   layt      ! number of layers
       real   (sp)   xdummy    ! help variable
-      integer(ip)   i , j     ! loop variables
+      integer(int_wp )   i , j     ! loop variables
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
@@ -95,7 +95,7 @@ contains
       call openfl ( lun, fnam, 0 )
 
 !     read requested data
-      
+
       read (lun)
       read (lun) mmaxc, nmaxc, x0, y0, alpha, npart, layt
       if ( mmaxc .ne. mmax .or. nmaxc .ne. nmax ) then
@@ -105,9 +105,9 @@ contains
           write (lun2, *) '             nmax,mmax,cco-file   :   ', nmaxc, mmaxc
           call stop_exit(1)
       endif
-      
+
 !     skip header
-      
+
       do i = 1, 2 * npart + 9
         read (lun) xdummy
       enddo

@@ -75,7 +75,7 @@ module part14_mod
 
 !     Subroutines called    : findcircle - distributes particles over a circle
 
-      use precision_part          ! single/double precision
+      use m_waq_precision          ! single/double precision
       use timers
       use grid_search_mod
       use spec_feat_par
@@ -87,67 +87,67 @@ module part14_mod
 
 !     kind            function         name                    description
 
-      integer  ( ip), intent(in   ) :: nocont                !< nr of continuous loads
-      integer  ( ip), intent(in   ) :: nodye                 !< nr of dye release points
-      integer  ( ip), intent(in   ) :: nosubs                !< nr of substances
-      integer  ( ip), intent(in   ) :: layt                  !< number of hydr. layer
-      integer  ( ip), intent(in   ) :: itime                 !< actual time
-      integer  ( ip), intent(in   ) :: idelt                 !< time step size
-      integer  ( ip), intent(in   ) :: ictime (nocont,*)     !< array of breakpoint times
-      integer  ( ip), intent(in   ) :: ictmax (nocont)       !< nr of breakpoints per load
-      integer  ( ip), intent(in   ) :: nwaste (nodye+nocont) !< n-values of waste locations
-      integer  ( ip), intent(in   ) :: mwaste (nodye+nocont) !< m-values of waste locations
-      real     ( rp), intent(in   ) :: xwaste (nodye+nocont) !< x-values of waste locations
-      real     ( rp), intent(in   ) :: ywaste (nodye+nocont) !< y-values of waste locations
-      real     ( rp), intent(in   ) :: zwaste (nodye+nocont) !< z-values of waste locations
-      real     ( rp), intent(in   ) :: aconc  (nocont+nodye,nosubs)    !< mass per particle
-      real     ( rp), intent(inout) :: rem    (nocont)       !< remainder of mass to be released
-      integer  ( ip), intent(  out) :: npart  (*)            !< n-values particles
-      integer  ( ip), intent(in   ) :: ndprt  (nodye+nocont) !< no. particles per waste entry
-      integer  ( ip), intent(  out) :: mpart  (*)            !< m-values particles
-      real     ( rp), intent(  out) :: xpart  (*)            !< x-in-cell of particles
-      real     ( rp), intent(  out) :: ypart  (*)            !< y-in-cell of particles
-      real     ( rp), intent(  out) :: zpart  (*)            !< z-in-cell of particles
-      real     ( rp), intent(  out) :: wpart  (nosubs,*)     !< weight of the particles
-      integer  ( ip), intent(  out) :: iptime (*)            !< particle age
-      integer  ( ip), intent(inout) :: nopart                !< number of active particles
-      real     ( rp), intent(in   ) :: pblay                 !< relative thickness lower layer
-      real     ( rp), intent(in   ) :: radius (nodye+nocont) !< help var. radius (speed)
+      integer  ( int_wp ), intent(in   ) :: nocont                !< nr of continuous loads
+      integer  ( int_wp ), intent(in   ) :: nodye                 !< nr of dye release points
+      integer  ( int_wp ), intent(in   ) :: nosubs                !< nr of substances
+      integer  ( int_wp ), intent(in   ) :: layt                  !< number of hydr. layer
+      integer  ( int_wp ), intent(in   ) :: itime                 !< actual time
+      integer  ( int_wp ), intent(in   ) :: idelt                 !< time step size
+      integer  ( int_wp ), intent(in   ) :: ictime (nocont,*)     !< array of breakpoint times
+      integer  ( int_wp ), intent(in   ) :: ictmax (nocont)       !< nr of breakpoints per load
+      integer  ( int_wp ), intent(in   ) :: nwaste (nodye+nocont) !< n-values of waste locations
+      integer  ( int_wp ), intent(in   ) :: mwaste (nodye+nocont) !< m-values of waste locations
+      real     ( real_wp), intent(in   ) :: xwaste (nodye+nocont) !< x-values of waste locations
+      real     ( real_wp), intent(in   ) :: ywaste (nodye+nocont) !< y-values of waste locations
+      real     ( real_wp), intent(in   ) :: zwaste (nodye+nocont) !< z-values of waste locations
+      real     ( real_wp), intent(in   ) :: aconc  (nocont+nodye,nosubs)    !< mass per particle
+      real     ( real_wp), intent(inout) :: rem    (nocont)       !< remainder of mass to be released
+      integer  ( int_wp ), intent(  out) :: npart  (*)            !< n-values particles
+      integer  ( int_wp ), intent(in   ) :: ndprt  (nodye+nocont) !< no. particles per waste entry
+      integer  ( int_wp ), intent(  out) :: mpart  (*)            !< m-values particles
+      real     ( real_wp), intent(  out) :: xpart  (*)            !< x-in-cell of particles
+      real     ( real_wp), intent(  out) :: ypart  (*)            !< y-in-cell of particles
+      real     ( real_wp), intent(  out) :: zpart  (*)            !< z-in-cell of particles
+      real     ( real_wp), intent(  out) :: wpart  (nosubs,*)     !< weight of the particles
+      integer  ( int_wp ), intent(  out) :: iptime (*)            !< particle age
+      integer  ( int_wp ), intent(inout) :: nopart                !< number of active particles
+      real     ( real_wp), intent(in   ) :: pblay                 !< relative thickness lower layer
+      real     ( real_wp), intent(in   ) :: radius (nodye+nocont) !< help var. radius (speed)
       real     ( sp), pointer       :: xpolwaste(:,:)        !< x-coordinates of waste polygon
       real     ( sp), pointer       :: ypolwaste(:,:)        !< y-coordinates of waste polygon
-      integer  ( ip), pointer       :: nrowswaste(:)         !< length of waste polygon
-      integer  ( ip), pointer       :: lgrid  (:,:)          !< grid numbering active
-      integer  ( ip), pointer       :: lgrid2(:,:)           !< total grid layout of the area
-      integer  ( ip), intent(in   ) :: nmax                  !< first dimension of the grid
-      integer  ( ip), intent(in   ) :: mmax                  !< second dimension of the grid
-      real     ( rp), pointer       :: xp     (:)            !< x of upper right corner grid point
-      real     ( rp), pointer       :: yp     (:)            !< y of upper right corner grid point
-      real     ( rp), pointer       :: dx     (:)            !< dx of the grid cells
-      real     ( rp), pointer       :: dy     (:)            !< dy of the grid cells
-      real     ( rp), intent(in   ) :: ftime  (nocont,*)     !< time matrix for wasteloads (mass/s)
-      real     ( rp), intent(in   ) :: tmassu (nocont)       !< total unit masses cont releases
-      integer  ( ip), intent(  out) :: ncheck (nocont)       !< check number of particles per load
-      real     ( rp), intent(  out) :: t0buoy (*)            !< t0 for particles for buoyancy spreading
-      integer  ( ip), intent(in   ) :: modtyp                !< for model type 2 temperature
-      real     ( rp), intent(  out) :: abuoy  (*)            !< 2*sqrt(a*dt) particles-buoyancy spreading
-      real     ( rp), intent(in   ) :: t0cf   (nocont)       !< coefficients for loads
-      real     ( rp), intent(in   ) :: acf    (nocont)       !< coefficients for loads
-      integer  ( ip), intent(in   ) :: lun2                  !< output report unit number
-      integer  ( ip), intent(  out) :: kpart  (*)            !< k-values particles
-      real     ( rp), intent(in   ) :: tcktot (layt)         !< thickness hydrod.layer
+      integer  ( int_wp ), pointer       :: nrowswaste(:)         !< length of waste polygon
+      integer  ( int_wp ), pointer       :: lgrid  (:,:)          !< grid numbering active
+      integer  ( int_wp ), pointer       :: lgrid2(:,:)           !< total grid layout of the area
+      integer  ( int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
+      real     ( real_wp), pointer       :: xp     (:)            !< x of upper right corner grid point
+      real     ( real_wp), pointer       :: yp     (:)            !< y of upper right corner grid point
+      real     ( real_wp), pointer       :: dx     (:)            !< dx of the grid cells
+      real     ( real_wp), pointer       :: dy     (:)            !< dy of the grid cells
+      real     ( real_wp), intent(in   ) :: ftime  (nocont,*)     !< time matrix for wasteloads (mass/s)
+      real     ( real_wp), intent(in   ) :: tmassu (nocont)       !< total unit masses cont releases
+      integer  ( int_wp ), intent(  out) :: ncheck (nocont)       !< check number of particles per load
+      real     ( real_wp), intent(  out) :: t0buoy (*)            !< t0 for particles for buoyancy spreading
+      integer  ( int_wp ), intent(in   ) :: modtyp                !< for model type 2 temperature
+      real     ( real_wp), intent(  out) :: abuoy  (*)            !< 2*sqrt(a*dt) particles-buoyancy spreading
+      real     ( real_wp), intent(in   ) :: t0cf   (nocont)       !< coefficients for loads
+      real     ( real_wp), intent(in   ) :: acf    (nocont)       !< coefficients for loads
+      integer  ( int_wp ), intent(in   ) :: lun2                  !< output report unit number
+      integer  ( int_wp ), intent(  out) :: kpart  (*)            !< k-values particles
+      real     ( real_wp), intent(in   ) :: tcktot (layt)         !< thickness hydrod.layer
       logical       , intent(in   ) :: zmodel
-      integer  ( ip), intent(in   ) :: laytop(:,:)           !< highest active layer in z-layer model
-      integer  ( ip), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
-      integer  ( ip)                :: nplay  (layt)         !< work array that could as well remain inside
-      integer  ( ip), intent(in   ) :: kwaste (nodye+nocont) !< k-values of wasteload points
-      integer  ( ip), intent(in   ) :: nolay                 !< number of comp. layer
-      integer  ( ip), intent(in   ) :: linear (nocont)       !< 1 = linear interpolated loads
-      real     ( rp), intent(inout) :: track  (8,*)          !< track array for all particles
+      integer  ( int_wp ), intent(in   ) :: laytop(:,:)           !< highest active layer in z-layer model
+      integer  ( int_wp ), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
+      integer  ( int_wp )                :: nplay  (layt)         !< work array that could as well remain inside
+      integer  ( int_wp ), intent(in   ) :: kwaste (nodye+nocont) !< k-values of wasteload points
+      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of comp. layer
+      integer  ( int_wp ), intent(in   ) :: linear (nocont)       !< 1 = linear interpolated loads
+      real     ( real_wp), intent(inout) :: track  (8,*)          !< track array for all particles
       character( 20), intent(in   ) :: nmconr (nocont)       !< names of the continuous loads
-      real     ( rp), intent(in   )  :: spart  (nosubs,*)     !< size of the particles
-      real     ( rp), intent(inout) :: rhopart  (nosubs,*)   !< density of the particles
-      integer  ( ip), intent(in   ) :: noconsp               !< number of constants
-      real     ( rp), intent(in   ) :: const(*)              !< constant values
+      real     ( real_wp), intent(in   )  :: spart  (nosubs,*)     !< size of the particles
+      real     ( real_wp), intent(inout) :: rhopart  (nosubs,*)   !< density of the particles
+      integer  ( int_wp ), intent(in   ) :: noconsp               !< number of constants
+      real     ( real_wp), intent(in   ) :: const(*)              !< constant values
 
       save
 
@@ -156,30 +156,30 @@ module part14_mod
       logical     :: first  =  .true.
       logical        lcircl            ! this thing is always false !
       real   (dp) :: rseed             ! seed of the random number generator
-      integer(ip) :: ic                ! loop variable continuous loads
-      integer(ip) :: id                ! loop variable to identify time locations
-      integer(ip) :: ids, ide          ! interval numbers of start and stop time
-      real   (rp) :: fac1s, fac2s      ! interpolation factors start location time interval
-      real   (rp) :: fac1e, fac2e      ! interpolation factors end   location time interval
+      integer(int_wp ) :: ic                ! loop variable continuous loads
+      integer(int_wp ) :: id                ! loop variable to identify time locations
+      integer(int_wp ) :: ids, ide          ! interval numbers of start and stop time
+      real   (real_wp) :: fac1s, fac2s      ! interpolation factors start location time interval
+      real   (real_wp) :: fac1e, fac2e      ! interpolation factors end   location time interval
       real   (dp) :: aconu             ! mass per particle of this wasteload (constant !)
-      integer(ip) :: ipb               ! help variable for particle number
+      integer(int_wp ) :: ipb               ! help variable for particle number
       real   (dp) :: rest              ! help variable remainder for this wasteload
       real   (dp) :: avcon             ! average mass/s load over a time interval
       real   (dp) :: amass             ! avcon multiplied with its duration
       real   (dp) :: dts               ! (mass/particle) / (mass/s) gives s/particle for spreaded release
       real   (dp) :: rpnul             ! same is dts, but for the rest from last time => time first particle
-      integer(ip) :: nopnow            ! number of particles to be released for this continuos load
-      integer(ip) :: ibegin, iend      ! number of first and last particle of the batch of this load
-      integer(ip) :: ie                ! ic + nodye, entry number in combined arrays
-      integer(ip) :: i, ipart          ! loop/help variables for particles
-      integer(ip) :: ntot              ! help variables for particles
-      integer(ip) :: nulay             ! help variables for the actual layer in a particle loop
-      integer(ip) :: mwasth, nwasth    ! help variables for n and m of wastelocation
-      real   (rp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
-      real   (rp) :: radiuh            ! help variable for the radius
-      integer(ip) :: ilay  , isub      ! loop variables layers and substances
+      integer(int_wp ) :: nopnow            ! number of particles to be released for this continuos load
+      integer(int_wp ) :: ibegin, iend      ! number of first and last particle of the batch of this load
+      integer(int_wp ) :: ie                ! ic + nodye, entry number in combined arrays
+      integer(int_wp ) :: i, ipart          ! loop/help variables for particles
+      integer(int_wp ) :: ntot              ! help variables for particles
+      integer(int_wp ) :: nulay             ! help variables for the actual layer in a particle loop
+      integer(int_wp ) :: mwasth, nwasth    ! help variables for n and m of wastelocation
+      real   (real_wp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
+      real   (real_wp) :: radiuh            ! help variable for the radius
+      integer(int_wp ) :: ilay  , isub      ! loop variables layers and substances
 
-      integer(ip) :: np                ! Number of particles to add
+      integer(int_wp ) :: np                ! Number of particles to add
 
       integer(4), save :: ithndl = 0   ! handle to time this subroutine
 

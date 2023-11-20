@@ -30,48 +30,48 @@ contains
       subroutine partzp (lunpr, nopart, nmax, mmax, mnmax2, nolay, mpart, npart, kpart, zpart, &
                          lgrid, laytopp, laytop, locdepp, locdep, itime, itstrtp)
 
-      use precision_part    ! single/double precision
+      use m_waq_precision    ! single/double precision
       use timers
       implicit none    ! explicit typing
 
 !     Arguments
 
 !     kind                       name                     description
-      integer(ip), intent(in   ) :: lunpr                 !< unit number for log files
-      integer(ip), intent(in   ) :: nopart                !< total number of particles
-      integer(ip), intent(in   ) :: nmax                  !< first dimension of the grid
-      integer(ip), intent(in   ) :: mmax                  !< second dimension of the grid
-      integer(ip), intent(in   ) :: mnmax2                !< nmax*mmax
-      integer(ip), intent(in   ) :: nolay                 !< number of layers == layt
-      integer(ip), intent(in   ) :: npart(nopart)         !< first  grid index of the particles
-      integer(ip), intent(in   ) :: mpart(nopart)         !< second grid index of the particles
-      integer(ip), intent(inout) :: kpart(nopart)         !< third grid index of the particles
+      integer(int_wp ), intent(in   ) :: lunpr                 !< unit number for log files
+      integer(int_wp ), intent(in   ) :: nopart                !< total number of particles
+      integer(int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
+      integer(int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
+      integer(int_wp ), intent(in   ) :: mnmax2                !< nmax*mmax
+      integer(int_wp ), intent(in   ) :: nolay                 !< number of layers == layt
+      integer(int_wp ), intent(in   ) :: npart(nopart)         !< first  grid index of the particles
+      integer(int_wp ), intent(in   ) :: mpart(nopart)         !< second grid index of the particles
+      integer(int_wp ), intent(inout) :: kpart(nopart)         !< third grid index of the particles
       real   (sp), intent(inout) :: zpart(nopart)         !< z-value (0.0-1.0) third  direction within grid cell
-      integer(ip), intent(in   ) :: lgrid(nmax,mmax)      !< grid with active grid numbers, negatives for open boundaries
-      integer(ip), intent(in   ) :: laytopp(nmax,mmax)    !< highest active layer in z-layer model of previous time step
-      integer(ip), intent(in   ) :: laytop(nmax,mmax)     !< highest active layer in z-layer model
+      integer(int_wp ), intent(in   ) :: lgrid(nmax,mmax)      !< grid with active grid numbers, negatives for open boundaries
+      integer(int_wp ), intent(in   ) :: laytopp(nmax,mmax)    !< highest active layer in z-layer model of previous time step
+      integer(int_wp ), intent(in   ) :: laytop(nmax,mmax)     !< highest active layer in z-layer model
       real   (sp), intent(inout) :: locdepp(mnmax2,nolay) !< depth per layer of previous time step
       real   (sp), intent(in   ) :: locdep(mnmax2,nolay)  !< depth per layer
-      integer(ip), intent(in   ) :: itime                 !< current time
-      integer(ip), intent(in   ) :: itstrtp               !< start time
+      integer(int_wp ), intent(in   ) :: itime                 !< current time
+      integer(int_wp ), intent(in   ) :: itstrtp               !< start time
 
 !     local variables
 
 !     kind                       name                  description
       real(sp), parameter     :: zsurf = 0.001       ! particles in top layer are close to surface when zp < zsurf
-      integer(ip)             :: mp                  ! m of the particle
-      integer(ip)             :: np                  ! n of this particle
-      integer(ip)             :: kp                  ! particle layernr
-      integer(ip)             :: ktopold             ! previous time or location k top
-      integer(ip)             :: ktopnew             ! current k top
+      integer(int_wp )             :: mp                  ! m of the particle
+      integer(int_wp )             :: np                  ! n of this particle
+      integer(int_wp )             :: kp                  ! particle layernr
+      integer(int_wp )             :: ktopold             ! previous time or location k top
+      integer(int_wp )             :: ktopnew             ! current k top
       real(sp)                :: zp                  ! relative location in layer
-      integer(ip)             :: n0                  ! segment number 2d
-      
-      real(sp)                :: partdep             ! absolute location of particle from the top of the water column
-      integer(ip)             :: ipart               ! particle loop counter
-      integer(ip)             :: ilay                ! layer loop counter
+      integer(int_wp )             :: n0                  ! segment number 2d
 
-      
+      real(sp)                :: partdep             ! absolute location of particle from the top of the water column
+      integer(int_wp )             :: ipart               ! particle loop counter
+      integer(int_wp )             :: ilay                ! layer loop counter
+
+
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "partzp", ithndl )
@@ -90,7 +90,7 @@ contains
             zp = zpart(ipart)
             if (ktopold == ktopnew) cycle ! nothing to do when the toplayer doesn't change
             if (kp > ktopold .and. kp > ktopnew) cycle ! nothing to do when the particle was and is not in the top layer
-   
+
             if (kp < ktopold) then
                ! the particle was and is (floating) above the top layer, this should not happen...
                write ( * , 1000) ipart, kp, ktopold
@@ -98,7 +98,7 @@ contains
           1000 format (/'  WARNING: Particle number',i12,' found in layer ',i4,' which was less than ktop (=',i4,')'/)
                kp = ktopold
             end if
-   
+
             if (kp == ktopold .and. zp <= zsurf) then
                ! do not update zp when close to the surface (floating), just move to the new top layer and keep zp
                kp = ktopnew
@@ -122,16 +122,16 @@ contains
                   if (partdep <= locdep(n0, ilay)) then
                      ! the particle is now in this layer
                      kp = ilay
-                     exit              
-                  endif   
+                     exit
+                  endif
                enddo
                if (ilay == 1) then
-                  ! in the top layer the relative lacation is the particle depth divided by the 
+                  ! in the top layer the relative lacation is the particle depth divided by the
                   zp = partdep / locdep(n0, ilay)
                else
                   zp = (partdep - locdep(n0, ilay - 1)) / (locdep(n0, ilay) - locdep(n0, ilay - 1))
                endif
-            endif      
+            endif
             kpart(ipart) = kp
             zpart(ipart) = zp
          enddo

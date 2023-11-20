@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_maxgro
+      use m_waq_precision
       use m_bloom_3dl
 
 
@@ -45,9 +46,9 @@
 
       implicit none
 
-      real(8) :: root(*),xinit(*)
-      real(8) :: effi, exttot, grlim, bt, eadj, dep
-      integer :: iskmax, j, k
+      real(kind=dp) ::root(*),xinit(*)
+      real(kind=dp) ::effi, exttot, grlim, bt, eadj, dep
+      integer(kind=int_wp) ::iskmax, j, k
 
 !----------------------------------------------------------------------
 ! Purpose of this subroutine: find the growth efficiency EFFI for each

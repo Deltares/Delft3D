@@ -17,7 +17,7 @@ add_executable(${executable_name} ${source}
 set_source_files_properties(${fortran_version_file_delwaq}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-set(oss_dependencies_general waq_kernel)
+set(oss_dependencies_general waq_definition waq_kernel)
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})

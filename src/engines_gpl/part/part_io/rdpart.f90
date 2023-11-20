@@ -51,7 +51,7 @@ contains
 !                           lun2 = delpar report file
 
       use rd_token        ! tokenized reading like in DELWAQ
-      use precision_part  ! flexible size definition
+      use m_waq_precision  ! flexible size definition
       use timers          ! performance timers
       use partmem         ! <== this is the data-block that is filled by this routine
       use m_part_modeltypes       ! part model definitions
@@ -70,43 +70,43 @@ contains
 
 !     kind            function         name           description
 
-      integer  ( ip), intent(inout) :: lun1          !< unit number input file
-      integer  ( ip), intent(inout) :: lun2          !< unit number report file
+      integer  ( int_wp ), intent(inout) :: lun1          !< unit number input file
+      integer  ( int_wp ), intent(inout) :: lun2          !< unit number report file
       character(256), intent(in   ) :: lnam1         !< name of the input file
 
 !     Locals
 
-      integer  ( ip)                 lunfil
-      integer  ( ip)                 ierr            ! cumulative error variable
-      integer  ( ip)                 ierr2           ! local error variable
+      integer  ( int_wp )                 lunfil
+      integer  ( int_wp )                 ierr            ! cumulative error variable
+      integer  ( int_wp )                 ierr2           ! local error variable
       integer  ( 4 )                 itype           ! returned type of gettoken
-      integer  ( ip)                 ioption         ! option variable for input
+      integer  ( int_wp )                 ioption         ! option variable for input
       character( 32)                 filvers         ! to read the file version number
       character( 32)                 cwork           ! small character workstring
       character(256)                 cbuffer         ! character buffer
-      integer  ( ip)                 ibuffer         ! integer buffer
-      integer  ( ip)                 i, k            ! loop variables
-      integer  ( ip)                 ios             ! help variable io-status
-      integer  ( ip)                 nodac           ! help variable nodye + nocont
-      integer  ( ip)                 ifract          ! help variable oil fractions
-      integer  ( ip)                 isb, jsub       ! help variables for substances
-      integer  ( ip)                 ilay            ! help variable layers
-      integer  ( ip)                 ln              ! help variable for lengthes of strings
-      integer  ( ip)                 nvsfour         ! number of settling harmonics
-      integer  ( ip)                 lunin           ! help variable additional files
-      integer  ( ip)                 id, ih, im, is  ! help variables to read times
+      integer  ( int_wp )                 ibuffer         ! integer buffer
+      integer  ( int_wp )                 i, k            ! loop variables
+      integer  ( int_wp )                 ios             ! help variable io-status
+      integer  ( int_wp )                 nodac           ! help variable nodye + nocont
+      integer  ( int_wp )                 ifract          ! help variable oil fractions
+      integer  ( int_wp )                 isb, jsub       ! help variables for substances
+      integer  ( int_wp )                 ilay            ! help variable layers
+      integer  ( int_wp )                 ln              ! help variable for lengthes of strings
+      integer  ( int_wp )                 nvsfour         ! number of settling harmonics
+      integer  ( int_wp )                 lunin           ! help variable additional files
+      integer  ( int_wp )                 id, ih, im, is  ! help variables to read times
       real     ( sp)                 xw1f, xw2f      ! x-coordinates plot window
       real     ( sp)                 yw1f, yw2f      ! y-coordinates plot window
-      integer  ( ip)                 idummy          ! for not used information
+      integer  ( int_wp )                 idummy          ! for not used information
       real     ( sp), allocatable :: ascal(:)        ! array with scale factors
       character(1)                   cchar_save      ! save value from Delwaq
-      integer  ( ip)                 lunut_save      ! save value from Delwaq
-      integer  ( ip)                 npos_save       ! save value from Delwaq
+      integer  ( int_wp )                 lunut_save      ! save value from Delwaq
+      integer  ( int_wp )                 npos_save       ! save value from Delwaq
       real     ( sp), pointer     :: xpoltmp(:)      ! temp x-coordinates polygon
       real     ( sp), pointer     :: ypoltmp(:)      ! temp y-coordinates polygon
-      integer  ( ip)                 nrowstmp        ! temp length polygon
-      integer  ( ip)                 npmargin        ! allocation margin in number of particles
-      integer  ( ip)              :: ipc             ! numerical integration scheme
+      integer  ( int_wp )                 nrowstmp        ! temp length polygon
+      integer  ( int_wp )                 npmargin        ! allocation margin in number of particles
+      integer  ( int_wp )              :: ipc             ! numerical integration scheme
 
       character( 20)                 cplastic        ! plastic name
       real     ( sp)                 rdpldensity     ! read plastic density
@@ -116,7 +116,7 @@ contains
       real     ( sp)                 rdplmusize      ! read plastic meansize
       real     ( sp)                 rdplsigmasize   ! read plastic stdevsize
       real     ( sp)                 rdplfragrate    ! read plastic fragmentation rate
-      integer  ( ip)                 plmissing
+      integer  ( int_wp )                 plmissing
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
@@ -2538,7 +2538,7 @@ contains
 !
       use get_key_mod
       use openfl_mod      ! explicit interface
-      use precision_part       ! flexible size definition
+      use m_waq_precision       ! flexible size definition
       implicit none           !   force explicit typing
       integer, parameter                  :: max_len_line=200
       integer, parameter                  :: max_len_key=20
@@ -2591,14 +2591,14 @@ contains
 !
       use get_key_mod
       use openfl_mod      ! explicit interface
-      use precision_part       ! flexible size definition
+      use m_waq_precision       ! flexible size definition
       implicit none           !   force explicit typing
       integer, parameter                  :: max_len_line=200
       integer, parameter                  :: max_len_key=20
       integer                             :: npart_ini,lun, ios
       integer                             :: npolmax, npart_pol
       integer                             :: nrows,irow
-      integer (ip)                        :: nrowsmax
+      integer (int_wp )                        :: nrowsmax
       integer                             :: lunlog
       integer                             :: len_line,len_file
       character(len=256)                  :: ini_file
@@ -2672,14 +2672,14 @@ subroutine getdim_asc ( lun , asc_file , npart_ini, nrowsmax , &
 
       use get_key_mod
       use openfl_mod          ! explicit interface
-      use precision_part      ! flexible size definition
+      use m_waq_precision      ! flexible size definition
       implicit none           ! force explicit typing
 
       integer, parameter                  :: max_len_line=200
       integer, parameter                  :: max_len_key=20
       integer                             :: npart_ini,lun, ios
       integer                             :: npart_asc, npart_fact
-      integer (ip)                        :: nrowsmax
+      integer (int_wp )                        :: nrowsmax
       integer                             :: lunlog
       integer                             :: len_file
       character(len=256)                  :: asc_file

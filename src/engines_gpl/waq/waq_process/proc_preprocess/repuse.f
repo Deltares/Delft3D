@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_repuse
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,36 +45,36 @@
       ! declaration of arguments
 
       type(procespropcoll)      :: procesdef       ! all processes
-      integer                   :: nocons          ! number of constants
+      integer(kind=int_wp) ::nocons          ! number of constants
       character(len=*)          :: coname(*)       ! constant names
-      integer                   :: nopa            ! number of parameters
+      integer(kind=int_wp) ::nopa            ! number of parameters
       character(len=*)          :: paname(*)       ! parameter names
-      integer                   :: nofun           ! number of functions
+      integer(kind=int_wp) ::nofun           ! number of functions
       character(len=*)          :: funame(*)       ! function names
-      integer                   :: nosfun          ! number of segment functions
+      integer(kind=int_wp) ::nosfun          ! number of segment functions
       character(len=*)          :: sfname(*)       ! segment function names
-      integer                   :: noinfo          ! number of informative messages
+      integer(kind=int_wp) ::noinfo          ! number of informative messages
 
       ! local declarations
 
-      integer, parameter              :: nopred = 6       ! number of predefined defaults
-      integer                         :: nproc            ! number of processes
-      integer                         :: iproc            ! loop counter processes
+      integer(kind=int_wp), parameter               ::nopred = 6       ! number of predefined defaults
+      integer(kind=int_wp) ::nproc            ! number of processes
+      integer(kind=int_wp) ::iproc            ! loop counter processes
       type(procesprop), pointer       :: proc             ! process description
       character(len=80)               :: line             ! output buffer
-      integer                         :: icons            ! index constants
-      integer                         :: ipcons           ! pointer to constant in delwaq data space
-      integer                         :: ipa              ! index parameters
-      integer                         :: ippa             ! pointer to parameter in delwaq data space
-      integer                         :: ifun             ! index fun
-      integer                         :: ipfun            ! pointer to fun in delwaq data space
-      integer                         :: isfun            ! index sfun
-      integer                         :: ipsfun           ! pointer to sfun in delwaq data space
-      integer                         :: i_input          ! index
-      integer                         :: ioutp            ! index
+      integer(kind=int_wp) ::icons            ! index constants
+      integer(kind=int_wp) ::ipcons           ! pointer to constant in delwaq data space
+      integer(kind=int_wp) ::ipa              ! index parameters
+      integer(kind=int_wp) ::ippa             ! pointer to parameter in delwaq data space
+      integer(kind=int_wp) ::ifun             ! index fun
+      integer(kind=int_wp) ::ipfun            ! pointer to fun in delwaq data space
+      integer(kind=int_wp) ::isfun            ! index sfun
+      integer(kind=int_wp) ::ipsfun           ! pointer to sfun in delwaq data space
+      integer(kind=int_wp) ::i_input          ! index
+      integer(kind=int_wp) ::ioutp            ! index
       logical                         :: variable_is_used ! indicates if variable is used
-      integer                         :: iused            ! index
-      integer(4)                      :: ithndl = 0
+      integer(kind=int_wp) ::iused            ! index
+      integer(kind=int_wp) ::ithndl = 0
       character(len=24)               :: spcl_const_print ! special constants not used printed in brackets for lsp file
 
       character(len=18), dimension(21), parameter :: special_constants = ! names of special constants

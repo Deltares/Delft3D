@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_zerome
+      use m_waq_precision
+
 
       implicit none
 
@@ -32,7 +34,7 @@
       use m_monsys
 
       CHARACTER*(*) NAME
-      INTEGER LUNREP
+      INTEGER(kind=int_wp) ::LUNREP
 
       CALL GETMLU(LUNREP)
       WRITE (LUNREP,*) ' Coefficient ',NAME,' = 0'

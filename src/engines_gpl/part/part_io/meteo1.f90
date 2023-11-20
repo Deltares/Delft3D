@@ -31,21 +31,21 @@ module m_waq_itdate
 end module m_waq_itdate
 
 module m_waq_timespace_read
-   use precision_part
+   use m_waq_precision
    use m_stop_exit
    use m_meteo1temphelpers
    implicit none
 
   integer,  parameter    :: maxnamelen     = 256
-  double precision, parameter    :: dmiss_default  = -999.0_fp       ! Default missing value in meteo arrays
-  double precision, parameter    :: xymiss         = -999.0_fp       ! Default missing value in elementset
+  double precision, parameter    :: dmiss_default  = -999.0_sp       ! Default missing value in meteo arrays
+  double precision, parameter    :: xymiss         = -999.0_sp       ! Default missing value in elementset
   character(300), target :: errormessage   = ' '             ! When an error occurs, a message is set in message.
                                                              ! function getmeteoerror returns the message
 
   double precision                 :: pi                      ! pi
   double precision                 :: d2r                     ! degrees to radials
   double precision                 :: r2d                     ! degrees to radials
-  double precision, private, parameter     :: earthrad = 6378137.0_fp ! Mathworld, IUGG
+  double precision, private, parameter     :: earthrad = 6378137.0_sp ! Mathworld, IUGG
 
 contains
 
@@ -503,7 +503,7 @@ end function reaspwtim
 function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0        , &
                          & dxa       ,dya       ,dmiss      ) result(success)
 
-    use precision_part
+    use m_waq_precision
     !
     implicit none
 !
@@ -640,7 +640,7 @@ end function readarcinfoheader
 function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y         , &
                              & kcs       ,dmiss      ) result(success)
 
-    use precision_part
+    use m_waq_precision
     !
     implicit none
 !
@@ -780,7 +780,7 @@ end function readarcinfoheader_d3d
 function reaspwheader(minp      ,mx        ,nx        ,dxa        ,dya        , &
                       & mncoor    ) result(success)
 
-    use precision_part
+    use m_waq_precision
     implicit none
 !
 ! Global variables
@@ -841,7 +841,7 @@ end function reaspwheader
 
 function readcurviheader(minp, gridfilnam, mfirst, mlast, nfirst, nlast, mrow, dmiss ) result(success)
 
-    use precision_part
+    use m_waq_precision
     implicit none
 !
 ! Global variables
@@ -985,7 +985,7 @@ end function numbersonline
 end module m_waq_timespace_read
 
 module m_waq_timespace_data
-  use precision_part
+  use m_waq_precision
   use m_waq_timespace_read
   implicit none
 
@@ -2207,7 +2207,7 @@ function getmeteoerror( ) result(retval)
 end function getmeteoerror
 
 subroutine asc(omeg, ampl, phas, inaam, itdate, ierrs)
-    use precision_part
+    use m_waq_precision
     implicit none
 !    include 'globdat.igd'
 !    include 'pardef.igd'
@@ -2300,7 +2300,7 @@ subroutine asc(omeg, ampl, phas, inaam, itdate, ierrs)
 !    phas = phas*d2r + v0u(1)
 end subroutine asc
 subroutine datumi(jaar      ,jdatum    ,t         )
-    use precision_part
+    use m_waq_precision
     !
     implicit none
 !
@@ -2348,8 +2348,8 @@ subroutine datumi(jaar      ,jdatum    ,t         )
     endif
     !
     mnd = jdatum(2)
-    t = rmd(mnd)*24d0 + real(jdatum(3) - 1, hp)*24d0 + real(jdatum(4), hp)          &
-      & + real(jdatum(5), hp)/60d0 + real(jdatum(6), hp)/3600d0
+    t = rmd(mnd)*24d0 + real(jdatum(3) - 1, dp)*24d0 + real(jdatum(4), dp)          &
+      & + real(jdatum(5), dp)/60d0 + real(jdatum(6), dp)/3600d0
     !
     ! hypothetisch geval (jhulp = jdatum(1) en jaar = jdatum(1))
     !
@@ -2365,7 +2365,7 @@ subroutine datumi(jaar      ,jdatum    ,t         )
     endif
 end subroutine datumi
 subroutine hulpgr(jaar      ,tm1       ,v         ,f         )
-    use precision_part
+    use m_waq_precision
     !
     implicit none
 !
@@ -2409,10 +2409,10 @@ subroutine hulpgr(jaar      ,tm1       ,v         ,f         )
     pix2   = 8d0*atan(1d0)
     dhalf  = 0.5d0
     rad    = pix2/360d0
-    rjaar  = real(jaar - 1900, hp)
+    rjaar  = real(jaar - 1900, dp)
     ischrk = int((rjaar - 0.99d0)/4d0) - int((rjaar - 0.99d0)/100d0)        &
            & + int((rjaar + 300d0 - 0.99d0)/400d0)
-    tm3    = real(ischrk, hp) + tm1/24d0
+    tm3    = real(ischrk, dp) + tm1/24d0
     !
     v(1) = (180.000d0 + 360.0000000d0*tm3)*rad
     v(2) = (277.026d0 + 129.3848200d0*rjaar + 13.176396800000d0*tm3)*rad
@@ -2491,7 +2491,7 @@ subroutine hulpgr(jaar      ,tm1       ,v         ,f         )
     f(22) = 1.0924d0*ci4*sqrt(1d0 + f(22))
 end subroutine hulpgr
 function cmpnum(num       )
-    use precision_part
+    use m_waq_precision
     implicit none
 !
 ! Local parameters
@@ -2759,7 +2759,7 @@ function cmpnum(num       )
     endif
 end function cmpnum
 subroutine kompbs(l         )
-    use precision_part
+    use m_waq_precision
     implicit none
 !
 ! Global variables
@@ -3012,7 +3012,7 @@ end subroutine kompbs
 subroutine bewvuf(ierrs     ,kcmp      ,mxkc      ,inaam     ,knaam     , &
                 & jnaam     ,w         ,v0u       ,fr        ,v         , &
                 & f         )
-    use precision_part
+    use m_waq_precision
     !
     implicit none
 !
@@ -3093,12 +3093,12 @@ subroutine bewvuf(ierrs     ,kcmp      ,mxkc      ,inaam     ,knaam     , &
              ie1 = jnaam(16*j - 7)
              if (ie1/=0) then
                 ia1 = abs(ie1)
-                s1 = real(ie1/ia1, hp)
+                s1 = real(ie1/ia1, dp)
                 v0u(ikomp) = v0u(ikomp) + s1*v(ia1)
                 ie2 = jnaam(16*j - 6)
                 if (ie2/=0) then
                    ia2 = abs(ie2)
-                   s2 = real(ie2/ia2, hp)
+                   s2 = real(ie2/ia2, dp)
                    v0u(ikomp) = v0u(ikomp) + s2*v(ia2)
                 endif
              endif
@@ -3150,7 +3150,7 @@ End module m_waq_arcuv
 
 module m_waq_timespace_triangle
 
-    use precision_part
+    use m_waq_precision
     use m_waq_timespace_data
     use m_alloc
 
@@ -3922,7 +3922,7 @@ end subroutine extrapolate
 
 subroutine find_nearest2D(n, m, x, y, kcs, x_a, y_a, n_min, m_min, dist_min)
 
-    use precision_part
+    use m_waq_precision
 
     integer                 :: n
     integer                 :: m
@@ -3946,7 +3946,7 @@ end subroutine find_nearest2D
 
 subroutine find_nearest2D_missing_value(n, m, x, y, z, kcs, x_a, y_a, n_min, m_min, dist_min)
 
-    use precision_part
+    use m_waq_precision
 
     integer                 :: n
     integer                 :: m
@@ -3971,7 +3971,7 @@ end subroutine find_nearest2D_missing_value
 
 subroutine find_nearest1D(n, x, y, kcs, x_a, y_a, i_min, dist_min)
 
-    use precision_part
+    use m_waq_precision
 
     integer                 :: n
     double precision, dimension(n)  :: x
@@ -4003,7 +4003,7 @@ end subroutine find_nearest1D
 
 subroutine find_nearest1D_missing_value(n, x, y, z, kcs, x_a, y_a, i_min, dist_min)
 
-    use precision_part
+    use m_waq_precision
 
     integer                 :: n
     double precision, dimension(n)  :: x
@@ -4142,7 +4142,7 @@ end subroutine polyindexweight
 end module m_waq_timespace_triangle      ! with leading dimensions 3 of 4
 
 module m_waq_timespace
-   use precision_part
+   use m_waq_precision
 
    use m_waq_timespace_data
    use m_waq_timespace_triangle
@@ -4987,7 +4987,7 @@ end function deallocsubdoms
 
 
 subroutine operate(a,b,iop)
-use precision_part
+use m_waq_precision
 implicit none
 double precision :: a,b
 integer  :: iop
@@ -5021,7 +5021,7 @@ subroutine magdir2uv(u0,u1,a0,a1,uv)
   call regdir(wdir0, wdir1)
   wmag  = a0*u0(1) + a1*u1(1)
   wdir  = a0*wdir0 + a1*wdir1
-  wdir  = (270e0_fp - wdir)*d2r    ! nautical convention
+  wdir  = (270e0_sp - wdir)*d2r    ! nautical convention
   uv(1)  = wmag * cos(wdir)
   uv(2)  = wmag * sin(wdir)
 
@@ -5051,7 +5051,7 @@ end subroutine regdir
 
 subroutine bilin5(xa        ,ya        ,x0        ,y0        ,w         , &
                 & ier       )
-    use precision_part
+    use m_waq_precision
     implicit none
 !
 ! Global variables

@@ -23,7 +23,7 @@
 
       module typos
 
-      use precision_part
+      use m_waq_precision
 
 !     These types are used to support Domain decomposition
 
@@ -63,24 +63,24 @@
 !     These types are used to support plot grids
 
       type PlotGrid
-         integer(ip) :: ztype                      ! 0 = averaged (default and only option before 2011)
+         integer(int_wp ) :: ztype                      ! 0 = averaged (default and only option before 2011)
                                                    ! 1 = absolute z-values in m from surface
                                                    ! 2 = absolute z-values in m from bed
                                                    ! 3 = relative z-values beteen 0.0 and 1.0 from surface
-         integer(ip) :: mmap                       ! nr of x-cells in the grid
-         integer(ip) :: nmap                       ! nr of y-cells in the grid
-         real   (rp) :: xlow                       ! corner points of the plot grid window
-         real   (rp) :: xhigh
-         real   (rp) :: ylow
-         real   (rp) :: yhigh
-         real   (rp) :: zlow
-         real   (rp) :: zhigh
-         real   (rp) :: surf                       ! surface area of 1 plot grid cell
-         integer(ip), pointer :: nmcell(    :,:)   ! backpointer to hydrodynamic grid            (nmap,mmap)
-         real   (rp), pointer :: amap  (:,:,:,:)   ! plot grid map             (substances,layers,nmap,mmap)
-         real   (rp), pointer :: atrack(  :,:,:)   ! plot grid map                        (layers,nmap,mmap)
-         integer(ip), pointer :: nbin  (  :,:,:)   !                                      (layers,nmap,mmap)
-         integer(ip), pointer :: imask (    :,:)   ! plotgrid cells that are inactive            (nmap,mmap)
+         integer(int_wp ) :: mmap                       ! nr of x-cells in the grid
+         integer(int_wp ) :: nmap                       ! nr of y-cells in the grid
+         real   (real_wp) :: xlow                       ! corner points of the plot grid window
+         real   (real_wp) :: xhigh
+         real   (real_wp) :: ylow
+         real   (real_wp) :: yhigh
+         real   (real_wp) :: zlow
+         real   (real_wp) :: zhigh
+         real   (real_wp) :: surf                       ! surface area of 1 plot grid cell
+         integer(int_wp ), pointer :: nmcell(    :,:)   ! backpointer to hydrodynamic grid            (nmap,mmap)
+         real   (real_wp), pointer :: amap  (:,:,:,:)   ! plot grid map             (substances,layers,nmap,mmap)
+         real   (real_wp), pointer :: atrack(  :,:,:)   ! plot grid map                        (layers,nmap,mmap)
+         integer(int_wp ), pointer :: nbin  (  :,:,:)   !                                      (layers,nmap,mmap)
+         integer(int_wp ), pointer :: imask (    :,:)   ! plotgrid cells that are inactive            (nmap,mmap)
       end type PlotGrid
 
       end module typos

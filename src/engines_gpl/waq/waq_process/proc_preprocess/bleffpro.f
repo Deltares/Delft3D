@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_bleffpro
+      use m_waq_precision
+
       
       implicit none
 
@@ -48,13 +50,13 @@
       character*5 table
       character*265 inputfile
       character*265 outputfile
-      integer lunblm, lunrep
-      integer irc, npoint, i, j, k, nsp, nval, nz
-      real*8 power, effic, solvec, time, solar, cdf, dens, freq, tsol, tden, domf
-      real*8 rfirst, zvec, done, dneg, sfirst, gfun, gder, fun, der
-      real*8 daymul, dl, delsol, solmax, day
+      integer(kind=int_wp) ::lunblm, lunrep
+      integer(kind=int_wp) ::irc, npoint, i, j, k, nsp, nval, nz
+      real(kind=dp) ::power, effic, solvec, time, solar, cdf, dens, freq, tsol, tden, domf
+      real(kind=dp) ::rfirst, zvec, done, dneg, sfirst, gfun, gder, fun, der
+      real(kind=dp) ::daymul, dl, delsol, solmax, day
 !
-      integer nuecog ! Number of groups
+      integer(kind=int_wp) ::nuecog ! Number of groups
 !
 !  Read number of light intensity points
 !  Read efficiency data for each ecogroup
@@ -120,8 +122,8 @@
       subroutine inteff(npoint,nuecog,domf,rfirst,effic,power)
       implicit none
       dimension effic(51,30),power(51),domf(51),rfirst(51,30),e(30)
-      integer npoint, nuecog, i, j, i1
-      real*8 power, p, effic, e, rfirst, domf
+      integer(kind=int_wp) ::npoint, nuecog, i, j, i1
+      real(kind=dp) ::power, p, effic, e, rfirst, domf
 !
 !  Move lower end of curve away from zero.
 !
@@ -149,9 +151,9 @@
       dimension solvec(51),time(51),cdf(51),solar(51),solna(51),
      1          solnb(51),timea(51),timeb(51),value(2)
       common/solval/delsol,solmax,day
-      integer i, nsp, it, na, nb, j, jk, jkn, n, nval
-      real*8 solmax, solvec, rn, delsol, day, time, solna, timea, solnb
-      real*8 timeb, solar, cdf, rj, sol, value, dens, ri
+      integer(kind=int_wp) ::i, nsp, it, na, nb, j, jk, jkn, n, nval
+      real(kind=dp) ::solmax, solvec, rn, delsol, day, time, solna, timea, solnb
+      real(kind=dp) ::timeb, solar, cdf, rj, sol, value, dens, ri
 !
 !  Find maximum intensity
 !
@@ -207,9 +209,9 @@
       implicit none
       dimension solar(51),cdf(51),dens(51),value(2)
       common/solval/delsol,solmax,day
-      integer i, n, nval, imin
-      real*8 rj, sol, value, dens, ri, solc, delsol, soll, solu
-      real*8 solar, cdf, solmax, day
+      integer(kind=int_wp) ::i, n, nval, imin
+      real(kind=dp) ::rj, sol, value, dens, ri, solc, delsol, soll, solu
+      real(kind=dp) ::solar, cdf, solmax, day
 !
 !  Set constants and endpoints
 !
@@ -243,8 +245,8 @@
       subroutine indist(nval,solar,dens,freq,tsol,tden)
       implicit none
       dimension solar(51),freq(51),dens(51),tsol(51),tden(51)
-      integer i, nval
-      real*8 solar, s, dens, d, freq, sbar, del, amult, tsol, tden
+      integer(kind=int_wp) ::i, nval
+      real(kind=dp) ::solar, s, dens, d, freq, sbar, del, amult, tsol, tden
 !
 !  Move lower end of curve away from zero
 !
@@ -280,8 +282,8 @@
       subroutine zval(xvec,nx,yvec,ny,zvec,nz)
       implicit none
       dimension xvec(51),yvec(51),zvec(51),ix(51)
-      integer i, nx, ix, nz1, nz, ny, n1, n2, j, k, imin, ixk
-      real*8 rat, crat, xvec, yvec, zvec, smin, del 
+      integer(kind=int_wp) ::i, nx, ix, nz1, nz, ny, n1, n2, j, k, imin, ixk
+      real(kind=dp) ::rat, crat, xvec, yvec, zvec, smin, del 
       
       do 10 i=1,nx
    10 ix(i)=1
@@ -339,10 +341,10 @@
       implicit none
       dimension xvec(51),fofx(51),yvec(51),gofy(51),zvec(51),
      1          fstarg(51)
-      integer i, j, nx, ny, nz, ix, iy
-      real*8 xvec, yvec, zvec, fofx, fstarg, bot, top
-      real*8 ex1, ax, ex2, ey1, ay, ey2, f2, f1, g2, gofy, g1, d, s
-      real*8 tmp, x
+      integer(kind=int_wp) ::i, j, nx, ny, nz, ix, iy
+      real(kind=dp) ::xvec, yvec, zvec, fofx, fstarg, bot, top
+      real(kind=dp) ::ex1, ax, ex2, ey1, ay, ey2, f2, f1, g2, gofy, g1, d, s
+      real(kind=dp) ::tmp, x
 !
 !  Add a convenience point to f(x).
 !
@@ -401,8 +403,8 @@
 !
       implicit none
       dimension xvec(51),fofx(51),fofxm(51,30),fm(30)
-      integer i, n
-      real*8 x, xvec, f, fofx, fofxm, alam, fm
+      integer(kind=int_wp) ::i, n
+      real(kind=dp) ::x, xvec, f, fofx, fofxm, alam, fm
 !
 !  Check whether x is too low or too high
 !
@@ -425,8 +427,8 @@
       subroutine interm(xvec,fofxm,n,nuecog,x,fm)
       implicit none
       dimension xvec(51),fofx(51),fofxm(51,30),fm(30)
-      integer i, j, n, nuecog
-      real*8 x, xvec, fm, fofxm, alam, fofx
+      integer(kind=int_wp) ::i, j, n, nuecog
+      real(kind=dp) ::x, xvec, fm, fofxm, alam, fofx
 !
 !  Check whether x is too low or too high
 !

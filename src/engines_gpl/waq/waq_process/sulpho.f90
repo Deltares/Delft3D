@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sulpho
+use m_waq_precision
+
 
 implicit none
 
@@ -38,43 +40,43 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 11) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 11) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 11)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 11) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 11) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 11)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(4) fes         ! I  iron(II) sulphide                                  (gFe/m3)
-      real(4) fes2        ! I  pyrite                                             (gFe/m3)
-      real(4) oxy         ! I  Dissolved Oxygen                                   (g/m3)
-      real(4) rcfesox20   ! I  specific rate of iron sulphide oxidation           (m3/gO2/d)
-      real(4) rcfes2ox20  ! I  specific rate of pyrite oxidation                  (m3/gO2/d)
-      real(4) tcfesox     ! I  temperature coeff. for iron sulphide oxidation     (-)
-      real(4) temp        ! I  ambient water temperature                          (oC)
-      real(4) delt        ! I  timestep for processes                             (d)
-      real(4) poros       ! I  volumetric porosity                                (-)
-      real(4) ffesox      ! O  rate of iron sulphide oxidation                    (gFe/m3/d)
-      real(4) ffes2ox     ! O  rate of of pyrite oxidation                        (gFe/m3/d)
-      real(4) dfesox      ! F  rate of iron sulphide oxidation                    (gFe/m3/d)
-      real(4) dfes2ox     ! F  rate of of pyrite oxidation                        (gFe/m3/d)
-      integer idfesox     !    Pointer to the rate of iron sulphide oxidation
-      integer idfes2ox    !    Pointer to the rate of of pyrite oxidation
-      real(4) tffesox     ! L  temperature function for iron sulphide oxidation
-      real(4) rcfesox     ! L  specific rate of iron sulphide oxidation
-      real(4) rcfes2ox    ! L  specific rate of pyrite oxidation
+      real(kind=real_wp)  ::fes         ! I  iron(II) sulphide                                  (gFe/m3)
+      real(kind=real_wp)  ::fes2        ! I  pyrite                                             (gFe/m3)
+      real(kind=real_wp)  ::oxy         ! I  Dissolved Oxygen                                   (g/m3)
+      real(kind=real_wp)  ::rcfesox20   ! I  specific rate of iron sulphide oxidation           (m3/gO2/d)
+      real(kind=real_wp)  ::rcfes2ox20  ! I  specific rate of pyrite oxidation                  (m3/gO2/d)
+      real(kind=real_wp)  ::tcfesox     ! I  temperature coeff. for iron sulphide oxidation     (-)
+      real(kind=real_wp)  ::temp        ! I  ambient water temperature                          (oC)
+      real(kind=real_wp)  ::delt        ! I  timestep for processes                             (d)
+      real(kind=real_wp)  ::poros       ! I  volumetric porosity                                (-)
+      real(kind=real_wp)  ::ffesox      ! O  rate of iron sulphide oxidation                    (gFe/m3/d)
+      real(kind=real_wp)  ::ffes2ox     ! O  rate of of pyrite oxidation                        (gFe/m3/d)
+      real(kind=real_wp)  ::dfesox      ! F  rate of iron sulphide oxidation                    (gFe/m3/d)
+      real(kind=real_wp)  ::dfes2ox     ! F  rate of of pyrite oxidation                        (gFe/m3/d)
+      integer(kind=int_wp)  ::idfesox     !    Pointer to the rate of iron sulphide oxidation
+      integer(kind=int_wp)  ::idfes2ox    !    Pointer to the rate of of pyrite oxidation
+      real(kind=real_wp)  ::tffesox     ! L  temperature function for iron sulphide oxidation
+      real(kind=real_wp)  ::rcfesox     ! L  specific rate of iron sulphide oxidation
+      real(kind=real_wp)  ::rcfes2ox    ! L  specific rate of pyrite oxidation
 
       ! initialise pointering in pmsa
 

@@ -25,7 +25,7 @@ module orien_bathymetry_mod
 !
 !  data definition module(s)
 !
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -40,7 +40,7 @@ contains
                                   ypart     , a           , b        , flow        , local_angle ,    &
                                   lb_bath   , ub_bath     , bath_n0  , bath_n1     , bath_n12    ,    &
                                   bath_n2   , bath_n23    , bath_n3  , bath_n34    , bath_n4     ,    &
-                                  bath_n41 ) 
+                                  bath_n41 )
 
         ! function  : Calculates the orientation of the particles towards the lowest bathymetry
         !             based on the surrounding gridcells (2D in the horizontal).
@@ -49,20 +49,20 @@ contains
         !           gridcells considered:           -> m
         !                                       -     -     -
         !                                    | n23 | n3  | n34 |
-        !                                 |     -     -     -   
+        !                                 |     -     -     -
         !                                 v  | n2  | n0  | n4  |
-        !                                 n     -     -     -   
+        !                                 n     -     -     -
         !                                    | n12 | n1  | n41 |
         !                                       -     -     -
         !
 
         ! arguments :
-        integer(ip), intent(in)    :: lunrep              ! report file
-        
-        integer(ip), intent(in)    :: mnmaxk              ! total number of active grid cells
-        integer(ip)                :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer(ip)                :: lgrid2( : , : )     ! total grid
-        integer(ip)                :: lgrid3( : , : )     ! original grid (conc array)
+        integer(int_wp ), intent(in)    :: lunrep              ! report file
+
+        integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
+        integer(int_wp )                :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+        integer(int_wp )                :: lgrid2( : , : )     ! total grid
+        integer(int_wp )                :: lgrid3( : , : )     ! original grid (conc array)
         real   (sp), pointer       :: angle ( : )         ! angle with horizontal
         real   (sp), pointer       :: depth ( : )         ! depth segment numbering
         real   (sp), pointer       :: flow  ( : )         ! all flows
@@ -76,21 +76,21 @@ contains
         real   (sp)                :: a                   ! a coefficient in development (-)
         real   (sp)                :: b                   ! b coefficient in development (-)
 
-        integer(ip)                :: ipart               ! particle index
+        integer(int_wp )                :: ipart               ! particle index
 
         integer                    :: m                   ! m
         integer                    :: n                   ! n
-        integer(ip)                :: nmax                ! first grid dimension
-        integer(ip)                :: mmax                ! second grid dimension
+        integer(int_wp )                :: nmax                ! first grid dimension
+        integer(int_wp )                :: mmax                ! second grid dimension
         integer                    :: nlower              ! nlower
         integer                    :: nhigher             ! nhigher
         integer                    :: mlower              ! mlower
         integer                    :: mhigher             ! mhigher
-        
+
         real                       :: low_bath            ! lowest bathymetry
         real                       :: lb_bath             ! lower boundary of bathymetry
         real                       :: ub_bath             ! upper boundary of bathymetry
-        
+
         real                       :: bath_n0
         real                       :: bath_n1
         real                       :: bath_n12
@@ -124,13 +124,13 @@ contains
 
         real   , parameter         :: pi = 3.141592654
         real   , parameter         :: twopi = pi*2.0
-        
-        
+
+
         !bathymetry orientation
 
-        n0_lgrid  = lgrid (n,m)                                                      ! Get the gridnumbering from the active grid in the middle of particle position 
+        n0_lgrid  = lgrid (n,m)                                                      ! Get the gridnumbering from the active grid in the middle of particle position
         if(n0_lgrid .le. 0) return                                                   ! Stop execution if particle has left the model
-        
+
         !Make sure all grid selections are within limits
         if(m-1 .le. 1) mlower = 1
         if(m-1 .gt. 1) mlower = m-1
@@ -140,7 +140,7 @@ contains
         if(n-1 .gt. 1) nlower = n-1
         if(n+1 .gt. nmax) nhigher = nmax
         if(n+1 .le. nmax) nhigher = n+1
-       
+
         n1  = lgrid2(nlower,m)                                                       ! Get the gridnumbering from the total grid to down of particle position
         n2  = lgrid2(n,mlower)                                                       ! Get the gridnumbering from the total grid to the left of particle position
 
@@ -148,7 +148,7 @@ contains
         thd_n2 = ( flow(n2+mnmaxk) .eq. 0.0 )                                        ! Determine if flow equals to 0 for the storage layer to the left  of particle position (in that case thin dam on n2)
         thd_n3 = ( flow(n0_lgrid) .eq. 0.0 )                                         ! Determine if flow equals to 0 for middle of particle position (in that case thin dam on n3)
         thd_n4 = ( flow(n0_lgrid+mnmaxk) .eq. 0.0 )                                  ! Determine if flow equals to 0 for the storage layer in the middle of particle position (in that case thin dam on n4)
-   
+
         n0  = lgrid3(n,m)                                                            ! Determine the gridnumbering for the original grid in the middle of particle position
         n1  = lgrid3(nlower,m)                                                       ! Determine the gridnumbering for the original grid in down of particle position
         n12 = lgrid3(nlower,mlower)                                                  ! Determine the gridnumbering for the original grid in down-left of particle position
@@ -164,7 +164,7 @@ contains
         low_bath = depth(n0)                                                         ! Determine the bathymetry level for the cell of particle position
         bath_n0 = depth(n0)
         n_low = n0                                                                   ! Set lowest bathymetry to the cell of particle position
-        
+
         !Set extreme high values for all the gridcells
         bath_n1  = 9999
         bath_n12 = 9999

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dynrun
+      use m_waq_precision
+
 
       implicit none
 
@@ -59,21 +61,21 @@
       implicit none
 
       character*8 :: cdate
-      integer     :: nonun(mt)
-      integer     :: i, id, iseg, k, nset, numun
-      integer     :: swblsa, infeas
-      real(8)     :: sol
-      real(8)     :: solpar
-      real(8)     :: dep
-      real(8)     :: tmp
-      real(8)     :: extb
-      real(8)     :: dayl
-      real(8)     :: deat
-      real(8)     :: totchl
-      real(8)     :: exttot
-      real(8)     :: extlim
-      real(8)     :: totdry
-      real(8)     :: totcar
+      integer(kind=int_wp) ::nonun(mt)
+      integer(kind=int_wp) ::i, id, iseg, k, nset, numun
+      integer(kind=int_wp) ::swblsa, infeas
+      real(kind=dp) ::sol
+      real(kind=dp) ::solpar
+      real(kind=dp) ::dep
+      real(kind=dp) ::tmp
+      real(kind=dp) ::extb
+      real(kind=dp) ::dayl
+      real(kind=dp) ::deat
+      real(kind=dp) ::totchl
+      real(kind=dp) ::exttot
+      real(kind=dp) ::extlim
+      real(kind=dp) ::totdry
+      real(kind=dp) ::totcar
       
 !  Calculate solarradion level for week; correct for total radiadion.
       solpar=solaco * sol

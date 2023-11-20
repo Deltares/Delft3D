@@ -32,18 +32,18 @@ contains
       !
       !  data definition module(s)
       !
-      use precision_part               ! single/double precision
+      use m_waq_precision               ! single/double precision
       use timers
       implicit none
 
 
       ! arguments :
 
-      integer(ip), intent(in)    :: lunrep              ! report file
-      integer(ip), intent(in)    :: itime               ! time in seconds
-      integer(ip), intent(in)    :: nosegl              ! number segments per layer
-      integer(ip), intent(in)    :: nolay               ! number of layers in calculation
-      integer(ip), intent(in)    :: nosubs              ! number of substances per particle
+      integer(int_wp ), intent(in)    :: lunrep              ! report file
+      integer(int_wp ), intent(in)    :: itime               ! time in seconds
+      integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
+      integer(int_wp ), intent(in)    :: nolay               ! number of layers in calculation
+      integer(int_wp ), intent(in)    :: nosubs              ! number of substances per particle
       real   (sp), pointer       :: conc  ( : , : )     ! concentration array in transport grid
 
       ! function            : calculate larvae per m2 over the water column
@@ -56,9 +56,9 @@ contains
       integer, save                     :: notot
       integer                           :: iseg
       integer                           :: isegl
-      integer(ip)                       :: ilay
-      integer(ip)                       :: isys
-      integer(ip)                       :: istage
+      integer(int_wp )                       :: ilay
+      integer(int_wp )                       :: isys
+      integer(int_wp )                       :: istage
       integer, save                     :: ifirst = 1
 
       if ( ifirst .eq. 1 ) then

@@ -32,7 +32,7 @@ module rdhydr_mod
       use m_parttd
       use m_dlwqfl
       use m_dlwqbl
-      use precision_part      ! single and double precision
+      use m_waq_precision      ! single and double precision
       use timers
 !
 !  module procedure(s)
@@ -82,15 +82,15 @@ module rdhydr_mod
 !
 !     parameters            :
 
-      integer  (ip), intent(in   ) :: nmax             !< size of first index in the cube
-      integer  (ip), intent(in   ) :: mmax             !< size of second index in the cube
-      integer  (ip), intent(in   ) :: mnmaxk           !< number of cells in the cube
-      integer  (ip), intent(in   ) :: nflow            !< size of 3*3d flow array
-      integer  (ip), intent(in   ) :: noseg            !< nr of computational volumes
-      integer  (ip), intent(in   ) :: noq              !< total number of exchanges
-      integer  (ip), intent(in   ) :: itime            !< current time
-      integer  (ip), intent(  out) :: itstrt           !< start of the hydrodynamic files
-      integer  (ip), intent(  out) :: idelt            !< time step of hydrodynamic files
+      integer  (int_wp ), intent(in   ) :: nmax             !< size of first index in the cube
+      integer  (int_wp ), intent(in   ) :: mmax             !< size of second index in the cube
+      integer  (int_wp ), intent(in   ) :: mnmaxk           !< number of cells in the cube
+      integer  (int_wp ), intent(in   ) :: nflow            !< size of 3*3d flow array
+      integer  (int_wp ), intent(in   ) :: noseg            !< nr of computational volumes
+      integer  (int_wp ), intent(in   ) :: noq              !< total number of exchanges
+      integer  (int_wp ), intent(in   ) :: itime            !< current time
+      integer  (int_wp ), intent(  out) :: itstrt           !< start of the hydrodynamic files
+      integer  (int_wp ), intent(  out) :: idelt            !< time step of hydrodynamic files
       real     (sp), intent(  out) :: volume (mnmaxk)  !< a grid with volumes
       real     (sp), intent(  out) :: vdiff  (mnmaxk)  !< a grid with vertical diffusions
       real     (sp), intent(in   ) :: hsurf  (mnmaxk)  !< a grid with horizontal surfaces
@@ -101,8 +101,8 @@ module rdhydr_mod
       real     (sp), intent(  out) :: flow2m (nflow )  !< a grid with flows
       real     (sp), intent(  out) :: vdiff1 (noseg )  !< vertical diffusion record in file
       logical      , intent(  out) :: update           !< values have been updated
-      integer  (ip), intent(in   ) :: cellpnt(noseg )  !< backpointering from volumes to grid
-      integer  (ip), intent(in   ) :: flowpnt(noq,2 )  !< backpointering from flows to grid
+      integer  (int_wp ), intent(in   ) :: cellpnt(noseg )  !< backpointering from volumes to grid
+      integer  (int_wp ), intent(in   ) :: flowpnt(noq,2 )  !< backpointering from flows to grid
       real     (sp), intent(  out) :: tau    (mnmaxk)  !< tau record on the grid
       real     (sp), intent(  out) :: tau1   (noseg )  !< tau record in file
       logical      , intent(  out) :: caltau           !< should the tau be calculated ?
@@ -111,8 +111,8 @@ module rdhydr_mod
       real     (sp), intent(  out) :: temper (mnmaxk)  !< temperature record on the grid
       real     (sp), intent(  out) :: temper1(noseg )  !< temperature record in file
       real     (sp), intent(  out) :: rhowatc(noseg )  !< density water calculated from temperature and salinity on the active grid
-      integer  (ip), intent(in   ) :: nfiles           !< nr. of files
-      integer  (ip), intent(inout) :: lunit(nfiles)    !< unit nrs of all files
+      integer  (int_wp ), intent(in   ) :: nfiles           !< nr. of files
+      integer  (int_wp ), intent(inout) :: lunit(nfiles)    !< unit nrs of all files
       character(* ), intent(inout) :: fname(nfiles)    !< file names of all files
       real     (sp), intent(  out) :: flow2  ( noq  )  !< flow record in file second record
 
@@ -121,17 +121,17 @@ module rdhydr_mod
       logical           :: updatv, updatf, updatd, lblock
 !
       logical :: first  = .true.
-      integer(ip) :: i, i0, i03d, i1, i2, idelt1, ifflag , iocond , isflag, kmax
-      integer(ip) :: it1   , it2   , max    , mod    , lunut
-      integer(ip) :: mnmax                        ! number of cells per layer in the cube
-      integer(ip) :: idtimv , itimv1 , itimv2     ! timings of the volumes file
-      integer(ip) :: idtimf , itimf1 , itimf2     ! timings of the flow file
-      integer(ip) :: idtimd , itimd1 , itimd2     ! timings of the vertical diffusion file
-      integer(ip) :: idtimt , itimt1 , itimt2     ! timings of the tau file
+      integer(int_wp ) :: i, i0, i03d, i1, i2, idelt1, ifflag , iocond , isflag, kmax
+      integer(int_wp ) :: it1   , it2   , max    , mod    , lunut
+      integer(int_wp ) :: mnmax                        ! number of cells per layer in the cube
+      integer(int_wp ) :: idtimv , itimv1 , itimv2     ! timings of the volumes file
+      integer(int_wp ) :: idtimf , itimf1 , itimf2     ! timings of the flow file
+      integer(int_wp ) :: idtimd , itimd1 , itimd2     ! timings of the vertical diffusion file
+      integer(int_wp ) :: idtimt , itimt1 , itimt2     ! timings of the tau file
       real   (sp) :: depmin
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
-      real(ip) :: ideltold !AddedMarc
+      real(int_wp ) :: ideltold !AddedMarc
       if ( timon ) call timstrt( "rdhydr", ithndl )
 !
       lunut = lunit(2)

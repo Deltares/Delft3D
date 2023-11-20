@@ -68,21 +68,21 @@
 !     kind            function         name                      description
 
       character( * ), intent(in   ) :: mdpfile                 !< file name mdp-file
-      integer  ( ip), intent(in   ) :: noseg                   !< delwaq noseg
-      integer  ( ip), intent(in   ) :: noq                     !< delwaq noq
-      real     ( rp), intent(in   ) :: dwqvol (noseg)          !< delwaq volumes
-      real     ( rp), intent(in   ) :: dwqflo (noq)            !< delwaq flows
-      integer  ( ip), intent(in   ) :: nosfun                  !< number of segment functions
+      integer  ( int_wp ), intent(in   ) :: noseg                   !< delwaq noseg
+      integer  ( int_wp ), intent(in   ) :: noq                     !< delwaq noq
+      real     ( real_wp), intent(in   ) :: dwqvol (noseg)          !< delwaq volumes
+      real     ( real_wp), intent(in   ) :: dwqflo (noq)            !< delwaq flows
+      integer  ( int_wp ), intent(in   ) :: nosfun                  !< number of segment functions
       character( 20), intent(in   ) :: sfname (nosfun)         !< names of segment functions
       real     (  4), intent(in   ) :: segfun (noseg ,nosfun)  !< segment function values
       integer, save                 :: iniday              ! release of initial condition, not used here
 
 !     Locals
 
-      integer(ip) i, i2, itime, indx, ierr
+      integer(int_wp ) i, i2, itime, indx, ierr
       integer     lunut         ! report file
-      integer(ip)         :: ilp, isp, ids, ide, iext, nores, noras, nosubs_idp
-      real   (rp) depmin
+      integer(int_wp )         :: ilp, isp, ids, ide, iext, nores, noras, nosubs_idp
+      real   (real_wp) depmin
       real   (sp) dtstep
       real   (sp)         :: rnorm
       real   (kind = kind(1.0d0)) :: rseed = 0.5d0 ! AM: some strange quirk makes this necessary
@@ -101,7 +101,7 @@
          lunut = lunitp(2)
          call report_date_time   ( lunut     )
          call rdlgri ( nfilesp   , lunitp    , fnamep    )
-         call rdccol ( nmaxp     , mmaxp     , lunitp(5) , fnamep(5), 
+         call rdccol ( nmaxp     , mmaxp     , lunitp(5) , fnamep(5),
      &                 lgrid2    , xb        , yb        , lunut    )
          call part01 ( lgrid     , lgrid2    , xb        , yb       , dx      ,
      &                 dy        , area      , angle     , nmaxp    , mmaxp   )

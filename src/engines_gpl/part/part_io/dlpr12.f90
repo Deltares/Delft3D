@@ -28,7 +28,7 @@ module dlpr12_mod
 !
 !  data definition module(s)
 !
-use precision_part     ! single and double precision
+use m_waq_precision     ! single and double precision
       use timers
 use putget_mod    ! generic procedure for putget routines
 !
@@ -98,7 +98,7 @@ contains
 
       implicit none
 
-      integer   (ip)    , dimension(:)      :: idump
+      integer   (int_wp )    , dimension(:)      :: idump
       real      (sp)    , dimension(:)      :: rbuffr
       real      (sp)    , dimension(:,:,:)  :: conc
       character (len= 6), parameter         :: subnam = 'dlpr12'
@@ -121,7 +121,7 @@ contains
 !
 !     declarations for in order to use putget
 !
-      integer(ip), parameter  :: itofmx =    7
+      integer(int_wp ), parameter  :: itofmx =    7
 !
       character(len=20) :: substance
       character(len=16) :: grnam1, grnam2
@@ -129,12 +129,12 @@ contains
 
       character(len=*) , pointer, dimension(:) :: elt_names, elt_types
 
-      integer(ip), pointer, dimension(:,:)     :: elt_dims
-      integer(ip), pointer, dimension(:)       :: elt_bytes
+      integer(int_wp ), pointer, dimension(:,:)     :: elt_dims
+      integer(int_wp ), pointer, dimension(:)       :: elt_bytes
 
-      integer(ip), dimension(itofmx)  :: itoff
+      integer(int_wp ), dimension(itofmx)  :: itoff
       real   (sp), dimension(4)       :: window
-      integer(ip), dimension(6)       :: nosize
+      integer(int_wp ), dimension(6)       :: nosize
 !
       save          grnam1, grnam2,                           &
                     nosize, filnam, first1, first2, nefis ,   &
@@ -142,16 +142,16 @@ contains
 !
 !     local scalars
 !
-      integer(ip) :: idt      , ihstep , ihstop , ihstrt , iout   , itime
-      integer(ip) :: lunout   , nodump , nosubs , nolay  , noparm , notot
-      integer(ip) :: i        , ierr   , ierrem , indx   , j      , isub   , ilay
-      integer(ip) :: k        , nelmax , kk
+      integer(int_wp ) :: idt      , ihstep , ihstop , ihstrt , iout   , itime
+      integer(int_wp ) :: lunout   , nodump , nosubs , nolay  , noparm , notot
+      integer(int_wp ) :: i        , ierr   , ierrem , indx   , j      , isub   , ilay
+      integer(int_wp ) :: k        , nelmax , kk
 !
 !     r.j. vos , following 3 statements copied from code
 !     data
 !
-      integer(ip) ::  celid1 = 1
-      integer(ip) ::  celid2 = 1
+      integer(int_wp ) ::  celid1 = 1
+      integer(int_wp ) ::  celid2 = 1
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "dlpr12", ithndl )

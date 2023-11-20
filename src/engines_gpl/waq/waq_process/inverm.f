@@ -1,4 +1,6 @@
       module m_inverm
+      use m_waq_precision
+
 
       implicit none
 
@@ -34,7 +36,7 @@ C                                                                      C
 C----------------------------------------------------------------------C
       SUBROUTINE INVERM (A,B,N,M,NMAX,IH,WORK,IER)
       IMPLICIT REAL*8  (A-H,O-Z)
-      IMPLICIT INTEGER (i,j,m,n)      
+      IMPLICIT INTEGER (i,j,m,n)
       
       DIMENSION A(NMAX,*),B(NMAX,*),IH(*),WORK(*)
       IER = 0

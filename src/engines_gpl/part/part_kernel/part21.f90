@@ -29,7 +29,7 @@ module part21_mod
 !
 use m_stop_exit
 use m_part11
-use precision_part           ! single/double precision
+use m_waq_precision           ! single/double precision
       use timers
 !
 !  module procedure(s)
@@ -123,10 +123,10 @@ contains
 !
 !     integer arrays
 !
-      integer(ip),dimension(:)        :: npart , mpart , kpart
-      integer(ip),dimension(:)        :: nplay
-      integer(ip),dimension(:,:)      :: imap
-      integer(ip),dimension(:,:)      :: lgrid , lgrid2
+      integer(int_wp ),dimension(:)        :: npart , mpart , kpart
+      integer(int_wp ),dimension(:)        :: nplay
+      integer(int_wp ),dimension(:,:)      :: imap
+      integer(int_wp ),dimension(:,:)      :: lgrid , lgrid2
 !
 !     real arrays
 !
@@ -146,9 +146,9 @@ contains
 !
 !     local scalars
 !
-      integer(ip) ::  i1    , i2     , ilay   , isub   , ix     , iy     , lun2
-      integer(ip) ::  irfac , mmap   , mmax   , nmap   , mmapl  , nmapl  , nodry , nosubt
-      integer(ip) ::  nout  , npwndw , ntdry  , nmax   , nolay  , nopart , nosubs
+      integer(int_wp ) ::  i1    , i2     , ilay   , isub   , ix     , iy     , lun2
+      integer(int_wp ) ::  irfac , mmap   , mmax   , nmap   , mmapl  , nmapl  , nodry , nosubt
+      integer(int_wp ) ::  nout  , npwndw , ntdry  , nmax   , nolay  , nopart , nosubs
 !
       real   (sp) ::  aa    , ac     , am     , depthl , fvolum , surf
       real   (sp) ::  anfac , conc   , vv     , windw1 , windw3 , xpf    , ypf

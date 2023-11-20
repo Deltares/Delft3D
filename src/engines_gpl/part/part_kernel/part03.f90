@@ -64,7 +64,7 @@ contains
 !     vx      real        1       local   velocity in x direction
 !     vy      real        1       local   velocity in y direction
 !
-      use precision_part    ! single/double precision
+      use m_waq_precision    ! single/double precision
       use timers
       implicit none    ! force explicit typing
 
@@ -72,32 +72,32 @@ contains
 
 !     kind         function         name                     Description
 
-      integer(ip), intent(in   ) :: nmax                   !< first dimension lgrid
-      integer(ip), intent(in   ) :: mmax                   !< second dimension lgrid
-      integer(ip), intent(in   ) :: mnmaxk                 !< total size of 3D matrix
-      integer(ip), intent(in   ) :: layt                   !< number of layers
-      integer(ip), intent(in   ) :: lgrid (:,:)            !< active grid indices matrix
-      integer(ip), intent(in   ) :: lgrid2(:,:)            !< total grid indices matrix
-      real   (rp), intent(in   ) :: dx    (:)              !< x distance of grid cell
-      real   (rp), intent(in   ) :: dy    (:)              !< y distance of grid cell
-      real   (rp), intent(in   ) :: volume(:)              !< volumes
-      real   (rp), intent(in   ) :: flow  (*)              !< flows
-      real   (rp), intent(in   ) :: area  (:)              !< horizontal surface area
-      real   (rp), intent(  out) :: depth (:)              !< total water depth (from current surface to bottom)
-      real   (rp), intent(  out) :: velo  (:)              !< velocities in 3D
-      real   (rp), intent(in   ) :: dps   (:)              !< bed depth w.r.t. reference (fixed in time!)
-      real   (rp), intent(  out) :: locdep(:,:)            !< depth per layer
-      real   (rp), intent(  out) :: zlevel(:)
+      integer(int_wp ), intent(in   ) :: nmax                   !< first dimension lgrid
+      integer(int_wp ), intent(in   ) :: mmax                   !< second dimension lgrid
+      integer(int_wp ), intent(in   ) :: mnmaxk                 !< total size of 3D matrix
+      integer(int_wp ), intent(in   ) :: layt                   !< number of layers
+      integer(int_wp ), intent(in   ) :: lgrid (:,:)            !< active grid indices matrix
+      integer(int_wp ), intent(in   ) :: lgrid2(:,:)            !< total grid indices matrix
+      real   (real_wp), intent(in   ) :: dx    (:)              !< x distance of grid cell
+      real   (real_wp), intent(in   ) :: dy    (:)              !< y distance of grid cell
+      real   (real_wp), intent(in   ) :: volume(:)              !< volumes
+      real   (real_wp), intent(in   ) :: flow  (*)              !< flows
+      real   (real_wp), intent(in   ) :: area  (:)              !< horizontal surface area
+      real   (real_wp), intent(  out) :: depth (:)              !< total water depth (from current surface to bottom)
+      real   (real_wp), intent(  out) :: velo  (:)              !< velocities in 3D
+      real   (real_wp), intent(in   ) :: dps   (:)              !< bed depth w.r.t. reference (fixed in time!)
+      real   (real_wp), intent(  out) :: locdep(:,:)            !< depth per layer
+      real   (real_wp), intent(  out) :: zlevel(:)
       logical    , intent(in   ) :: zmodel
-      integer(ip), intent(inout) :: laytop(:,:)            !< highest active layer in z-layer model
-      integer(ip), intent(inout) :: laytopp(:,:)           !< highest active layer in z-layer model of previous time step
-      integer(ip), intent(inout) :: laybot(:,:)            !< deepest active layer in z-layer model
-      integer(ip), intent(in   ) :: pagrid(:,:,:)          !< potentially active z-layer segments grid matrix
-      integer(ip), intent(inout) :: aagrid(:,:,:)          !< actually active z-layer segments grid matrix
-      real   (rp), intent(in   ) :: tcktot(:)
+      integer(int_wp ), intent(inout) :: laytop(:,:)            !< highest active layer in z-layer model
+      integer(int_wp ), intent(inout) :: laytopp(:,:)           !< highest active layer in z-layer model of previous time step
+      integer(int_wp ), intent(inout) :: laybot(:,:)            !< deepest active layer in z-layer model
+      integer(int_wp ), intent(in   ) :: pagrid(:,:,:)          !< potentially active z-layer segments grid matrix
+      integer(int_wp ), intent(inout) :: aagrid(:,:,:)          !< actually active z-layer segments grid matrix
+      real   (real_wp), intent(in   ) :: tcktot(:)
       logical    , intent(in   ) :: ltrack
-      real   (rp), intent(in   ) :: flow2m  (*)            !< flows next time level on matrix
-      integer(ip), pointer       :: lgrid3( : , : )        !< original grid (conc array)
+      real   (real_wp), intent(in   ) :: flow2m  (*)            !< flows next time level on matrix
+      integer(int_wp ), pointer       :: lgrid3( : , : )        !< original grid (conc array)
       real   (sp), pointer       :: vol1   ( : )           !< first volume record
       real   (sp), pointer       :: vol2   ( : )           !< second volume record
       real   (sp), pointer       :: vel1  ( : )            ! velocity begin hydr step
@@ -107,17 +107,17 @@ contains
 
 !     local scalars
 
-      integer(ip)  i0       !    grid help variable
-      integer(ip)  i1       !    grid help variable
-      integer(ip)  i2       !    grid help variable
-      integer(ip)  i3       !    grid help variable
-      integer(ip)  i4       !    grid help variable
-      real   (rp)  sum      !    summed help variable
-      real   (rp)  vx       !    velocity in x direction
-      real   (rp)  vy       !    velocity in y direction
-      integer(ip)  i03d , i33d, i43d
-      integer(ip)  ilay
-      integer(ip)  iseg
+      integer(int_wp )  i0       !    grid help variable
+      integer(int_wp )  i1       !    grid help variable
+      integer(int_wp )  i2       !    grid help variable
+      integer(int_wp )  i3       !    grid help variable
+      integer(int_wp )  i4       !    grid help variable
+      real   (real_wp)  sum      !    summed help variable
+      real   (real_wp)  vx       !    velocity in x direction
+      real   (real_wp)  vy       !    velocity in y direction
+      integer(int_wp )  i03d , i33d, i43d
+      integer(int_wp )  ilay
+      integer(int_wp )  iseg
       real   (dp)  dplay
 
       integer(4) ithndl              ! handle to time this subroutine

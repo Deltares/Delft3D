@@ -30,7 +30,7 @@ module putget_mod
 !
 !  data definition module(s)
 !
-use precision_part          ! single and double precisionv
+use m_waq_precision          ! single and double precisionv
       use timers
 !
 !  module procedure(s)
@@ -53,20 +53,20 @@ end interface
 !   module data
 !
 !
-    integer(ip), parameter             :: start=1 ,stopp=2 ,incr=3
-    integer(ip), parameter             :: no_groups = 5
+    integer(int_wp ), parameter             :: start=1 ,stopp=2 ,incr=3
+    integer(int_wp ), parameter             :: no_groups = 5
 !
-    integer(ip)                        :: buflen,elmndm
-    integer(ip)                        :: inef  ,ierror,  jnef
-    integer(ip)                        :: lelmnr
-    integer(ip)                        :: nnef
-    integer(ip)                        :: igr
+    integer(int_wp )                        :: buflen,elmndm
+    integer(int_wp )                        :: inef  ,ierror,  jnef
+    integer(int_wp )                        :: lelmnr
+    integer(int_wp )                        :: nnef
+    integer(int_wp )                        :: igr
 !
-    integer(ip)                        :: datlen
-    integer(ip)                        :: deflen
-    integer(ip),dimension(10)          :: usrord
-    integer(ip),dimension(3,no_groups) :: uindex
-    integer(ip),dimension(5)           :: elmdim
+    integer(int_wp )                        :: datlen
+    integer(int_wp )                        :: deflen
+    integer(int_wp ),dimension(10)          :: usrord
+    integer(int_wp ),dimension(3,no_groups) :: uindex
+    integer(int_wp ),dimension(5)           :: elmdim
 !
     character(len=    1)               :: access
     character(len=    1)               :: coding
@@ -79,7 +79,7 @@ end interface
 !
 !-external functions
 !
-      integer(ip)       ::  clsnef, credat, crenef, defcel, defelm,  &
+      integer(int_wp )       ::  clsnef, credat, crenef, defcel, defelm,  &
                             defgrp, getelt, inqelm, neferr, putelt,  &
                             putels, getels
       external          ::  clsnef, credat, crenef, defcel, defelm,  &
@@ -87,7 +87,7 @@ end interface
                             putels, getels
 !
       save           fd_nef
-      integer(ip) :: fd_nef = -1
+      integer(int_wp ) :: fd_nef = -1
 
 contains
 !---------------------------------------------------------------------------
@@ -97,12 +97,12 @@ contains
                              elt_dims  ,elt_types ,elt_bytes ,elmnam       ,   &
                              celidt    ,wrilog    ,error     ,ibuffr     )
 !
-      integer(ip),dimension( :, :)       :: elt_dims
-      integer(ip),dimension( :)          :: elt_bytes
-      integer(ip)                        :: celidt,nelems,error
+      integer(int_wp ),dimension( :, :)       :: elt_dims
+      integer(int_wp ),dimension( :)          :: elt_bytes
+      integer(int_wp )                        :: celidt,nelems,error
 !
-      integer(ip)                        :: ibuffr
-      integer(ip),dimension(1)           :: buffr      ! array is placed on stack
+      integer(int_wp )                        :: ibuffr
+      integer(int_wp ),dimension(1)           :: buffr      ! array is placed on stack
       character(len=*),dimension(:)      :: elt_names,elt_types
       character(len=*)                   :: elmnam,filnam,grpnam
 !
@@ -249,11 +249,11 @@ contains
                               celidt    ,wrilog    ,error     ,buffr     )
       implicit none
 !
-      integer(ip),dimension(:,:)     :: elt_dims
-      integer(ip),dimension(  :)     :: elt_bytes
-      integer(ip)                    :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)     :: elt_dims
+      integer(int_wp ),dimension(  :)     :: elt_bytes
+      integer(int_wp )                    :: celidt,nelems,error
 !
-      integer(ip),dimension(:)       :: buffr
+      integer(int_wp ),dimension(:)       :: buffr
       character(len=*),dimension(:)  :: elt_names,elt_types
       character(len=*)               :: elmnam,filnam,grpnam
 !
@@ -400,12 +400,12 @@ contains
                               celidt    ,wrilog     ,error     ,ibuffr      )
       implicit none
 !
-      integer(ip),dimension(:,:)                            :: elt_dims
-      integer(ip),dimension(:)                              :: elt_bytes
-      integer(ip)                                           :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)                            :: elt_dims
+      integer(int_wp ),dimension(:)                              :: elt_bytes
+      integer(int_wp )                                           :: celidt,nelems,error
 !
-      integer(ip),dimension(:,:)                            :: ibuffr
-      integer(ip),dimension(:), allocatable                 :: buffr ! to prevent that the array is placed on the stack
+      integer(int_wp ),dimension(:,:)                            :: ibuffr
+      integer(int_wp ),dimension(:), allocatable                 :: buffr ! to prevent that the array is placed on the stack
       character(len=*),dimension(:)                         :: elt_names,elt_types
       character(len=*)                                      :: elmnam,filnam,grpnam
 !
@@ -567,9 +567,9 @@ contains
       implicit none
 !
 !
-      integer(ip),dimension(:,:)     :: elt_dims
-      integer(ip),dimension(:)       :: elt_bytes
-      integer(ip)                    :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)     :: elt_dims
+      integer(int_wp ),dimension(:)       :: elt_bytes
+      integer(int_wp )                    :: celidt,nelems,error
 !
       real(sp)                       :: rbuffr
       real(sp),dimension(1)          :: buffr      ! array is placed on stack
@@ -723,9 +723,9 @@ contains
       implicit none
 !
 !
-      integer(ip),dimension(:,:)     :: elt_dims
-      integer(ip),dimension(:)       :: elt_bytes
-      integer(ip)                    :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)     :: elt_dims
+      integer(int_wp ),dimension(:)       :: elt_bytes
+      integer(int_wp )                    :: celidt,nelems,error
 !
       real(sp),dimension(:)          :: buffr
       character(len=*),dimension(:)  :: elt_names , elt_types
@@ -876,9 +876,9 @@ contains
       implicit none
 !
 !
-      integer(ip),dimension(:,:)                          :: elt_dims
-      integer(ip),dimension(:)                            :: elt_bytes
-      integer(ip)                                         :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)                          :: elt_dims
+      integer(int_wp ),dimension(:)                            :: elt_bytes
+      integer(int_wp )                                         :: celidt,nelems,error
 !
       real(sp),dimension(:,:)                             :: rbuffr
       real(sp),dimension(:), allocatable                  :: buffr ! to prevent that the array is placed on the stack
@@ -1042,9 +1042,9 @@ contains
                         celidt    ,wrilog    ,error     ,cbuffr     )
       implicit none
 !
-      integer(ip),dimension(:,:)               :: elt_dims
-      integer(ip),dimension(:)                 :: elt_bytes
-      integer(ip)                              :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)               :: elt_dims
+      integer(int_wp ),dimension(:)                 :: elt_bytes
+      integer(int_wp )                              :: celidt,nelems,error
 !
       character(len=*)                         :: cbuffr
       character(len=len(cbuffr)),dimension(1)  :: buffr      ! array is placed on stack
@@ -1195,9 +1195,9 @@ contains
                         celidt    ,wrilog    ,error     ,buffr     )
       implicit none
 !
-      integer(ip),dimension(:,:)    :: elt_dims
-      integer(ip),dimension(:)      :: elt_bytes
-      integer(ip)                   :: celidt,nelems,error
+      integer(int_wp ),dimension(:,:)    :: elt_dims
+      integer(int_wp ),dimension(:)      :: elt_bytes
+      integer(int_wp )                   :: celidt,nelems,error
 !
       character(len=*),dimension(:) :: buffr
       character(len=*),dimension(:) :: elt_names,elt_types
@@ -1335,4 +1335,3 @@ contains
       end subroutine putget_char1D
 
 end module putget_mod
-

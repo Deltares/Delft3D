@@ -64,7 +64,7 @@ contains
 !     c       real        1       local   temp.dependent coefficient
 !     dens0   real        1       local   density zero
 !
-      use precision_part     ! single/double precision
+      use m_waq_precision     ! single/double precision
 !
       implicit none     ! force explicit typing
 !

@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module noextspaces_mod
-use precision_part
+use m_waq_precision
       use timers
 !
 !  module declarations
@@ -59,9 +59,9 @@ subroutine noextspaces(name      ,length    )
 !
 ! Local variables
 !
-    integer(ip)                    :: begpos
-    integer(ip)                    :: endpos
-    integer(ip)                    :: pos
+    integer(int_wp )                    :: begpos
+    integer(int_wp )                    :: endpos
+    integer(int_wp )                    :: pos
     character(len=1)               :: achar
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

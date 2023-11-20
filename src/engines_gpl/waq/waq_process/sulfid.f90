@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sulfid
+use m_waq_precision
+
 
 implicit none
 
@@ -38,49 +40,49 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 14) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 14) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 14)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 14) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 14) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 14)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(8) sud         ! I  total dissolved sulphide (SUD)                     (gS/m3)
-      real(8) lksth2s     ! I  log acidity constant for H2S (l.mole-1)            (-)
-      real(8) tcksth2s    ! I  temperature coefficient for KstH2S                 (-)
-      real(8) lksths      ! I  log acidity constant for HS- (l.mole-1)            (-)
-      real(8) tcksths     ! I  temperature coefficient for KstHS                  (-)
-      real(8) ph          ! I  pH                                                 (-)
-      real(8) temp        ! I  ambient water temperature                          (oC)
-      real(8) poros       ! I  volumetric porosity                                (-)
-      real(8) dish2swk    ! O  hydrogen sulphide concentration H2S                (mole/l)
-      real(8) dishswk     ! O  (HS-) in water column                              (mole/l)
-      real(8) disswk      ! O  (S--) in water column                              (mole/l)
-      real(8) frh2sdis    ! O  fraction of dissolved hydrogen sulphide            (-)
-      real(8) frhsdis     ! O  fraction (HS-) in water column                     (-)
-      real(8) frsdis      ! O  fraction (S--) in water column                     (-)
+      real(kind=dp)  ::sud         ! I  total dissolved sulphide (SUD)                     (gS/m3)
+      real(kind=dp)  ::lksth2s     ! I  log acidity constant for H2S (l.mole-1)            (-)
+      real(kind=dp)  ::tcksth2s    ! I  temperature coefficient for KstH2S                 (-)
+      real(kind=dp)  ::lksths      ! I  log acidity constant for HS- (l.mole-1)            (-)
+      real(kind=dp)  ::tcksths     ! I  temperature coefficient for KstHS                  (-)
+      real(kind=dp)  ::ph          ! I  pH                                                 (-)
+      real(kind=dp)  ::temp        ! I  ambient water temperature                          (oC)
+      real(kind=dp)  ::poros       ! I  volumetric porosity                                (-)
+      real(kind=dp)  ::dish2swk    ! O  hydrogen sulphide concentration H2S                (mole/l)
+      real(kind=dp)  ::dishswk     ! O  (HS-) in water column                              (mole/l)
+      real(kind=dp)  ::disswk      ! O  (S--) in water column                              (mole/l)
+      real(kind=dp)  ::frh2sdis    ! O  fraction of dissolved hydrogen sulphide            (-)
+      real(kind=dp)  ::frhsdis     ! O  fraction (HS-) in water column                     (-)
+      real(kind=dp)  ::frsdis      ! O  fraction (S--) in water column                     (-)
 
       ! local declaration
 
-      real(8) h_ion       ! L  proton concentration                               (mole/l)
-      real(8) ks1         ! L  acidity hydrolyses equilibrium constant for H2CO3  (-)
-      real(8) ks2         ! L  hydrolyses equilibrium constant for CO2            (-)
-      real(8) csdt        ! L  total dissolved                                    (mole/l)
-      real(8) csd1        ! L  dissolved H2S                                      (mole/l)
-      real(8) csd2        ! L  dissolved HS                                       (mole/l)
-      real(8) csd3        ! L  dissolved S                                        (mole/l)
+      real(kind=dp)  ::h_ion       ! L  proton concentration                               (mole/l)
+      real(kind=dp)  ::ks1         ! L  acidity hydrolyses equilibrium constant for H2CO3  (-)
+      real(kind=dp)  ::ks2         ! L  hydrolyses equilibrium constant for CO2            (-)
+      real(kind=dp)  ::csdt        ! L  total dissolved                                    (mole/l)
+      real(kind=dp)  ::csd1        ! L  dissolved H2S                                      (mole/l)
+      real(kind=dp)  ::csd2        ! L  dissolved HS                                       (mole/l)
+      real(kind=dp)  ::csd3        ! L  dissolved S                                        (mole/l)
 
       ! initialise pointering in pmsa
 

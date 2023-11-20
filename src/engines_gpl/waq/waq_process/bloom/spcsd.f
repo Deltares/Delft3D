@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_spcsd
+      use m_waq_precision
+
 
       implicit none
 
@@ -40,10 +42,10 @@
 
       implicit none
 
-      real(8)  :: aco(mt,mt),rvec(2*mt),svec(2*mt),dvec(2*mt),xvec(2*mt)
-      real(8)  :: extb, rtemp, extlim
+      real(kind=dp) ::aco(mt,mt),rvec(2*mt),svec(2*mt),dvec(2*mt),xvec(2*mt)
+      real(kind=dp) ::extb, rtemp, extlim
       
-      integer  :: i, ij, il, j, jk, k, k3, m, n, ni, nn
+      integer(kind=int_wp) ::i, ij, il, j, jk, k, k3, m, n, ni, nn
 
 !  Initialize.
       do i=1,nuspec

@@ -1,4 +1,6 @@
       module m_wr_proceswrk
+      use m_waq_precision
+
 
       implicit none
 
@@ -63,86 +65,86 @@
 
       ! arguments
 
-      integer             , intent(in   ) :: lurep                  !< unit number report file
+      integer(kind=int_wp), intent(in   )  ::lurep                  !< unit number report file
       type(procespropcoll), intent(in   ) :: procesdef              !< the proces definition
-      integer             , intent(in   ) :: nodef                  !< number of default values
-      real                , intent(in   ) :: defaul(*)              !< array with default
-      integer             , intent(in   ) :: idpnw(*)               !< new dispersion pointers
-      integer             , intent(in   ) :: ivpnw(*)               !< new velocity pointers
-      real                , intent(in   ) :: dsto(*)                !< dispersion stochi factors
-      real                , intent(in   ) :: vsto(*)                !< velocity stochi factors
+      integer(kind=int_wp), intent(in   )  ::nodef                  !< number of default values
+      real(kind=real_wp), intent(in   )  ::defaul(*)              !< array with default
+      integer(kind=int_wp), intent(in   )  ::idpnw(*)               !< new dispersion pointers
+      integer(kind=int_wp), intent(in   )  ::ivpnw(*)               !< new velocity pointers
+      real(kind=real_wp), intent(in   )  ::dsto(*)                !< dispersion stochi factors
+      real(kind=real_wp), intent(in   )  ::vsto(*)                !< velocity stochi factors
       character(len=20)   , intent(in   ) :: locnam(*)              !< name of the local variables
-      integer             , intent(in   ) :: nopred                 !< number of predfined values
-      integer             , intent(in   ) :: nocons                 !< number of constants
-      integer             , intent(in   ) :: nopa                   !< number of parameters
-      integer             , intent(in   ) :: nofun                  !< number of functions
-      integer             , intent(in   ) :: nosfun                 !< number of segment functions
-      integer             , intent(in   ) :: notot                  !< number of substances
-      integer             , intent(in   ) :: noloc                  !< number of local values
-      integer             , intent(in   ) :: nodisp                 !< number of dispersions
-      integer             , intent(in   ) :: novelo                 !< number of velocities
-      integer             , intent(in   ) :: ndspx                  !< number of dispersions
-      integer             , intent(in   ) :: nvelx                  !< number of velocities
-      integer             , intent(in   ) :: nlocx                  !< number of local values on exchanges
-      integer             , intent(in   ) :: nosys                  !< number of active substances
-      integer             , intent(in   ) :: nogrid                 !< number of grids
+      integer(kind=int_wp), intent(in   )  ::nopred                 !< number of predfined values
+      integer(kind=int_wp), intent(in   )  ::nocons                 !< number of constants
+      integer(kind=int_wp), intent(in   )  ::nopa                   !< number of parameters
+      integer(kind=int_wp), intent(in   )  ::nofun                  !< number of functions
+      integer(kind=int_wp), intent(in   )  ::nosfun                 !< number of segment functions
+      integer(kind=int_wp), intent(in   )  ::notot                  !< number of substances
+      integer(kind=int_wp), intent(in   )  ::noloc                  !< number of local values
+      integer(kind=int_wp), intent(in   )  ::nodisp                 !< number of dispersions
+      integer(kind=int_wp), intent(in   )  ::novelo                 !< number of velocities
+      integer(kind=int_wp), intent(in   )  ::ndspx                  !< number of dispersions
+      integer(kind=int_wp), intent(in   )  ::nvelx                  !< number of velocities
+      integer(kind=int_wp), intent(in   )  ::nlocx                  !< number of local values on exchanges
+      integer(kind=int_wp), intent(in   )  ::nosys                  !< number of active substances
+      integer(kind=int_wp), intent(in   )  ::nogrid                 !< number of grids
       character(len=20)   , intent(in   ) :: dename(*)              !< default names
       character(len=20)   , intent(in   ) :: coname(*)              !< constant names
       character(len=20)   , intent(in   ) :: paname(*)              !< parameter names
       character(len=20)   , intent(in   ) :: funame(*)              !< function names
       character(len=20)   , intent(in   ) :: sfname(*)              !< segm.func. names
       character(len=20)   , intent(in   ) :: syname(*)              !< substance names
-      integer             , intent(in   ) :: intopt                 !< integration sub options
-      integer             , intent(inout) :: lun(*)                 !< unit numbers
+      integer(kind=int_wp), intent(in   )  ::intopt                 !< integration sub options
+      integer(kind=int_wp), intent(inout)  ::lun(*)                 !< unit numbers
       character(len=*)    , intent(in   ) :: lchar(*)               !< filenames
-      integer             , intent(in   ) :: noutp                  !< total number of output files
-      integer             , intent(in   ) :: ioutps(7,*)            !< (old) output structure
+      integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
+      integer(kind=int_wp), intent(in   )  ::ioutps(7,*)            !< (old) output structure
       type(outputcoll)    , intent(in   ) :: outputs                !< output structure
-      integer             , intent(in   ) :: ndmpar                 !< number of dump areas
-      integer             , intent(in   ) :: nbufmx                 !< maximum buffer length
-      real                , intent(in   ) :: versio                 !< version number proces definition file
-      integer             , intent(in   ) :: ndspn                  !< number of new dispersions
-      integer             , intent(in   ) :: nveln                  !< number of new velocities
-      integer             , intent(in   ) :: nrref                  !< maximum nr of references to be resolved
-      integer             , intent(in   ) :: proref(nrref,*)        !< input items to be resolved for each process
-      integer             , intent(  out) :: nproc                  !< number of processes
-      integer             , intent(  out) :: nflux                  !< number of fluxes
-      integer             , intent(  out) :: novar                  !< number of variables
-      integer             , intent(  out) :: nipmsa                 !< actual length of pmsa array
+      integer(kind=int_wp), intent(in   )  ::ndmpar                 !< number of dump areas
+      integer(kind=int_wp), intent(in   )  ::nbufmx                 !< maximum buffer length
+      real(kind=real_wp), intent(in   )  ::versio                 !< version number proces definition file
+      integer(kind=int_wp), intent(in   )  ::ndspn                  !< number of new dispersions
+      integer(kind=int_wp), intent(in   )  ::nveln                  !< number of new velocities
+      integer(kind=int_wp), intent(in   )  ::nrref                  !< maximum nr of references to be resolved
+      integer(kind=int_wp), intent(in   )  ::proref(nrref,*)        !< input items to be resolved for each process
+      integer(kind=int_wp), intent(  out)  ::nproc                  !< number of processes
+      integer(kind=int_wp), intent(  out)  ::nflux                  !< number of fluxes
+      integer(kind=int_wp), intent(  out)  ::novar                  !< number of variables
+      integer(kind=int_wp), intent(  out)  ::nipmsa                 !< actual length of pmsa array
 
       ! local
 
-      integer                             :: mxpmsa                 !  maximum length of pmsa array
-      integer                             :: nbpr                   !  number of active processes
-      integer                             :: ioffx                  !  offset to the exchange items
-      integer                   :: no_ins          ! number of output items
-      integer                   :: no_ine          ! number of output items
-      integer                   :: no_ous          ! number of output items
-      integer                   :: no_oue          ! number of output items
-      integer                   :: no_flu          ! number of output items
-      integer                   :: no_sto          ! number of output items
-      integer                   :: no_dis          ! number of output items
-      integer                   :: no_vel          ! number of output items
-      integer      , pointer :: nsvar(:)
-      integer      , pointer :: iflux(:)
-      integer      , pointer :: ipmsa(:)
-      integer      , pointer :: ipssa(:)
-      integer      , pointer :: prvvar(:)
-      integer      , pointer :: prvtyp(:)
-      integer      , pointer :: progrd(:)
-      integer      , pointer :: prondt(:)
-      real         , pointer :: stochi(:)
+      integer(kind=int_wp) ::mxpmsa                 !  maximum length of pmsa array
+      integer(kind=int_wp) ::nbpr                   !  number of active processes
+      integer(kind=int_wp) ::ioffx                  !  offset to the exchange items
+      integer(kind=int_wp) ::no_ins          ! number of output items
+      integer(kind=int_wp) ::no_ine          ! number of output items
+      integer(kind=int_wp) ::no_ous          ! number of output items
+      integer(kind=int_wp) ::no_oue          ! number of output items
+      integer(kind=int_wp) ::no_flu          ! number of output items
+      integer(kind=int_wp) ::no_sto          ! number of output items
+      integer(kind=int_wp) ::no_dis          ! number of output items
+      integer(kind=int_wp) ::no_vel          ! number of output items
+      integer(kind=int_wp) , pointer :: nsvar(:)
+      integer(kind=int_wp) , pointer :: iflux(:)
+      integer(kind=int_wp) , pointer :: ipmsa(:)
+      integer(kind=int_wp) , pointer :: ipssa(:)
+      integer(kind=int_wp) , pointer :: prvvar(:)
+      integer(kind=int_wp) , pointer :: prvtyp(:)
+      integer(kind=int_wp) , pointer :: progrd(:)
+      integer(kind=int_wp) , pointer :: prondt(:)
+      real(kind=real_wp) , pointer :: stochi(:)
       character*10 , allocatable :: pronam(:)
       character*20,allocatable  :: varnam(:)       ! variable names
-      integer     ,allocatable  :: vararr(:)       ! variable array
-      integer     ,allocatable  :: varidx(:)       ! variable index
-      integer     ,allocatable  :: vartda(:)       ! variable type of dis-aggregation
-      integer     ,allocatable  :: vardag(:)       ! variable dis-aggregation variable
-      integer     ,allocatable  :: vartag(:)       ! variable type of aggregation
-      integer     ,allocatable  :: varagg(:)       ! variable aggregation variable
-      integer                             :: iproc                  !  loop counter processes
-      integer                             :: ierr2                  !  local error indication
-      integer(4)                :: ithndl = 0        ! handle for performance timer
+      integer(kind=int_wp),allocatable   ::vararr(:)       ! variable array
+      integer(kind=int_wp),allocatable   ::varidx(:)       ! variable index
+      integer(kind=int_wp),allocatable   ::vartda(:)       ! variable type of dis-aggregation
+      integer(kind=int_wp),allocatable   ::vardag(:)       ! variable dis-aggregation variable
+      integer(kind=int_wp),allocatable   ::vartag(:)       ! variable type of aggregation
+      integer(kind=int_wp),allocatable   ::varagg(:)       ! variable aggregation variable
+      integer(kind=int_wp) ::iproc                  !  loop counter processes
+      integer(kind=int_wp) ::ierr2                  !  local error indication
+      integer(kind=int_wp) ::ithndl = 0        ! handle for performance timer
       if (timon) call timstrt( "wr_proceswrk", ithndl )
 
       ! count active processes (merge nbpr and nproc?)

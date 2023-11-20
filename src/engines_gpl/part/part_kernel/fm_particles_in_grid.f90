@@ -516,7 +516,7 @@ end subroutine read_particles_release_file
 
 !> add released particles
 subroutine add_particles_from_release_file(time0)
-   use precision_part
+   use m_waq_precision
    use partmem, only: nopart, mpart
    use partmem, only: iptime
    use m_particles
@@ -529,7 +529,7 @@ subroutine add_particles_from_release_file(time0)
 
    double precision, intent(in) :: time0       !< current   julian (s) of h0
    integer                      :: k, k1
-   real(rp)                     :: xn, yn, zn, dn
+   real(real_wp)                     :: xn, yn, zn, dn
 
    integer(4) ithndl              ! handle to time this subroutine
    data ithndl / 0 /
@@ -585,7 +585,7 @@ subroutine part06fm ( lun    , nodye  , nocont , xwaste ,      &
 !     Note : we need to be careful about the names nwaste and mwaste, nwaste
 !            is actually a dummy in the case of unstructured grids
 
-      use precision_part
+      use m_waq_precision
       use timers
 
       implicit none
@@ -594,34 +594,34 @@ subroutine part06fm ( lun    , nodye  , nocont , xwaste ,      &
 
 !     kind            function         name                   description
 
-      integer  ( ip), intent(in   ) :: lun                  !< unit number output log file
-      integer  ( ip), intent(in   ) :: nodye                !< number of dye releases
-      integer  ( ip), intent(in   ) :: nocont               !< number of continuous release
-      real     ( rp), intent(inout) :: xwaste(nodye+nocont) !< x of wasteload location
-      real     ( rp), intent(inout) :: ywaste(nodye+nocont) !< y of wasteload location
-      real     ( rp), intent(inout) :: zwaste(nodye+nocont) !< z of wasteload location
-      integer  ( ip), intent(  out) :: nwaste(nodye+nocont) !< first grid index wasteloads
-      integer  ( ip), intent(  out) :: mwaste(nodye+nocont) !< second grid index wasteloads
+      integer  ( int_wp ), intent(in   ) :: lun                  !< unit number output log file
+      integer  ( int_wp ), intent(in   ) :: nodye                !< number of dye releases
+      integer  ( int_wp ), intent(in   ) :: nocont               !< number of continuous release
+      real     ( real_wp), intent(inout) :: xwaste(nodye+nocont) !< x of wasteload location
+      real     ( real_wp), intent(inout) :: ywaste(nodye+nocont) !< y of wasteload location
+      real     ( real_wp), intent(inout) :: zwaste(nodye+nocont) !< z of wasteload location
+      integer  ( int_wp ), intent(  out) :: nwaste(nodye+nocont) !< first grid index wasteloads
+      integer  ( int_wp ), intent(  out) :: mwaste(nodye+nocont) !< second grid index wasteloads
 
       real     ( dp)                :: xwasted(nodye+nocont) !< x of wasteload location
       real     ( dp)                :: ywasted(nodye+nocont) !< y of wasteload location
       real     ( dp)                :: xcrd(nodye+nocont)    !< x coordinate in grid
       real     ( dp)                :: ycrd(nodye+nocont)    !< y coordinate in grid
       real     ( dp)                :: zcrd(nodye+nocont)    !< z coordinate in grid
-      integer  ( ip)                :: kwaste(nodye+nocont) !< grid index wasteloads
+      integer  ( int_wp )                :: kwaste(nodye+nocont) !< grid index wasteloads
 
 !     Locals
 
-      integer  ( ip) ::  id      ! loop counter wasteloads
-      integer  ( ip) ::  ierror  ! error variable of part07
-      real     ( rp) ::  xnloc   ! input x coordinate for the grid search
-      real     ( rp) ::  ynloc   ! input y coordinate for the grid search
-      real     ( rp) ::  xmloc   ! output x coordinate for the grid search
-      real     ( rp) ::  ymloc   ! output y coordinate for the grid search
-      integer  ( ip) ::  nmloc   ! output n index of the wasteload point
-      integer  ( ip) ::  mmloc   ! output m index of the wasteload point
-      integer  ( ip) ::  noerr   ! local error accumulator
-      integer  ( ip) ::  np      ! index for storing particle information
+      integer  ( int_wp ) ::  id      ! loop counter wasteloads
+      integer  ( int_wp ) ::  ierror  ! error variable of part07
+      real     ( real_wp) ::  xnloc   ! input x coordinate for the grid search
+      real     ( real_wp) ::  ynloc   ! input y coordinate for the grid search
+      real     ( real_wp) ::  xmloc   ! output x coordinate for the grid search
+      real     ( real_wp) ::  ymloc   ! output y coordinate for the grid search
+      integer  ( int_wp ) ::  nmloc   ! output n index of the wasteload point
+      integer  ( int_wp ) ::  mmloc   ! output m index of the wasteload point
+      integer  ( int_wp ) ::  noerr   ! local error accumulator
+      integer  ( int_wp ) ::  np      ! index for storing particle information
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

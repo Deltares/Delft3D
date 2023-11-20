@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_grzmac
+      use m_waq_precision
+
 
       implicit none
 
@@ -40,54 +42,54 @@
 !
 !     Type    Name         I/O Description
 !
-      REAL(4) PMSA(*)     !I/O Process Manager System Array, window of routine to process library
-      REAL(4) FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      INTEGER IPOINT( 14) ! I  Array of pointers in PMSA to get and store the data
-      INTEGER INCREM( 14) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-      INTEGER NOSEG       ! I  Number of computational elements in the whole model schematisation
-      INTEGER NOFLUX      ! I  Number of fluxes, increment in the FL array
-      INTEGER IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      INTEGER IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      INTEGER NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-      INTEGER NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-      INTEGER NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      INTEGER NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      INTEGER IPNT( 14)   !    Local work array for the pointering
-      INTEGER ISEG        !    Local loop counter for computational element loop
+      REAL(kind=real_wp) ::PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+      REAL(kind=real_wp) ::FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      INTEGER(kind=int_wp) ::IPOINT( 14) ! I  Array of pointers in PMSA to get and store the data
+      INTEGER(kind=int_wp) ::INCREM( 14) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
+      INTEGER(kind=int_wp) ::NOSEG       ! I  Number of computational elements in the whole model schematisation
+      INTEGER(kind=int_wp) ::NOFLUX      ! I  Number of fluxes, increment in the FL array
+      INTEGER(kind=int_wp) ::IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      INTEGER(kind=int_wp) ::IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      INTEGER(kind=int_wp) ::NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+      INTEGER(kind=int_wp) ::NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
+      INTEGER(kind=int_wp) ::NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      INTEGER(kind=int_wp) ::NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      INTEGER(kind=int_wp) ::IPNT( 14)   !    Local work array for the pointering
+      INTEGER(kind=int_wp) ::ISEG        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      REAL(4) EM          ! I  macrophyt emerged                                  (gC/m2)
-      REAL(4) SM          ! I  macrophyt submerged                                (gC/m2)
-      REAL(4) RH          ! I  macrophyt rhizome                                  (gC/m2)
-      REAL(4) NRH         ! I  nitrogen content macrophyt rhizome                 (gN/m2)
-      REAL(4) PRH         ! I  phosphorus content macrophyt rhizome               (gP/m2)
-      REAL(4) K0GrzEM     ! I  zeroth-order grazing flux macrophyte EM            (gC/m2/d)
-      REAL(4) K1GrzEM     ! I  first order grazing rate macrophyte EM             (1/d)
-      REAL(4) K0GrzSM     ! I  zeroth-order grazing flux macrophyte SM            (gC/m2/d)
-      REAL(4) K1GrzSM     ! I  first order grazing rate macrophyte SM             (1/d)
-      REAL(4) K0GrzRH     ! I  zeroth-order grazing flux macrophyte RH            (gC/m2/d)
-      REAL(4) K1GrzRH     ! I  first order grazing rate macrophyte RH             (1/d)
-      REAL(4) Volume      ! I  volume of computational cell                       (m3)
-      REAL(4) Depth       ! I  depth of segment                                   (m)
-      REAL(4) DELT        ! I  timestep for processes                             (d)
-      REAL(4) dGrazeEM    ! F  grazing flux macrophyte EM                         (gC/m3/d)
-      REAL(4) dGrazeSM    ! F  grazing flux macrophyte SM                         (gC/m3/d)
-      REAL(4) dGrazeRH    ! F  grazing flux macrophyte RH                         (gC/m3/d)
-      REAL(4) dGrzNRH     ! F  grazing flux macrophyte NRH                        (gC/m3/d)
-      REAL(4) dGrzPRH     ! F  grazing flux macrophyte PRH                        (gC/m3/d)
-      INTEGER IdGrazeEM   !    Pointer to the grazing flux macrophyte EM
-      INTEGER IdGrazeSM   !    Pointer to the grazing flux macrophyte SM
-      INTEGER IdGrazeRH   !    Pointer to the grazing flux macrophyte RH
-      INTEGER IdGrzNRH    !    Pointer to the grazing flux macrophyte NRH
-      INTEGER IdGrzPRH    !    Pointer to the grazing flux macrophyte PRH
-      REAL(4) SURF        ! L  surface area                                       (m2)
-      INTEGER IKMRK1
+      REAL(kind=real_wp) ::EM          ! I  macrophyt emerged                                  (gC/m2)
+      REAL(kind=real_wp) ::SM          ! I  macrophyt submerged                                (gC/m2)
+      REAL(kind=real_wp) ::RH          ! I  macrophyt rhizome                                  (gC/m2)
+      REAL(kind=real_wp) ::NRH         ! I  nitrogen content macrophyt rhizome                 (gN/m2)
+      REAL(kind=real_wp) ::PRH         ! I  phosphorus content macrophyt rhizome               (gP/m2)
+      REAL(kind=real_wp) ::K0GrzEM     ! I  zeroth-order grazing flux macrophyte EM            (gC/m2/d)
+      REAL(kind=real_wp) ::K1GrzEM     ! I  first order grazing rate macrophyte EM             (1/d)
+      REAL(kind=real_wp) ::K0GrzSM     ! I  zeroth-order grazing flux macrophyte SM            (gC/m2/d)
+      REAL(kind=real_wp) ::K1GrzSM     ! I  first order grazing rate macrophyte SM             (1/d)
+      REAL(kind=real_wp) ::K0GrzRH     ! I  zeroth-order grazing flux macrophyte RH            (gC/m2/d)
+      REAL(kind=real_wp) ::K1GrzRH     ! I  first order grazing rate macrophyte RH             (1/d)
+      REAL(kind=real_wp) ::Volume      ! I  volume of computational cell                       (m3)
+      REAL(kind=real_wp) ::Depth       ! I  depth of segment                                   (m)
+      REAL(kind=real_wp) ::DELT        ! I  timestep for processes                             (d)
+      REAL(kind=real_wp) ::dGrazeEM    ! F  grazing flux macrophyte EM                         (gC/m3/d)
+      REAL(kind=real_wp) ::dGrazeSM    ! F  grazing flux macrophyte SM                         (gC/m3/d)
+      REAL(kind=real_wp) ::dGrazeRH    ! F  grazing flux macrophyte RH                         (gC/m3/d)
+      REAL(kind=real_wp) ::dGrzNRH     ! F  grazing flux macrophyte NRH                        (gC/m3/d)
+      REAL(kind=real_wp) ::dGrzPRH     ! F  grazing flux macrophyte PRH                        (gC/m3/d)
+      INTEGER(kind=int_wp) ::IdGrazeEM   !    Pointer to the grazing flux macrophyte EM
+      INTEGER(kind=int_wp) ::IdGrazeSM   !    Pointer to the grazing flux macrophyte SM
+      INTEGER(kind=int_wp) ::IdGrazeRH   !    Pointer to the grazing flux macrophyte RH
+      INTEGER(kind=int_wp) ::IdGrzNRH    !    Pointer to the grazing flux macrophyte NRH
+      INTEGER(kind=int_wp) ::IdGrzPRH    !    Pointer to the grazing flux macrophyte PRH
+      REAL(kind=real_wp) ::SURF        ! L  surface area                                       (m2)
+      INTEGER(kind=int_wp) ::IKMRK1
 
-      INTEGER, SAVE :: NR_MSG = 0
-      INTEGER :: LUNREP
+      INTEGER(kind=int_wp), SAVE  ::NR_MSG = 0
+      INTEGER(kind=int_wp) ::LUNREP
 !
 !*******************************************************************************
 !

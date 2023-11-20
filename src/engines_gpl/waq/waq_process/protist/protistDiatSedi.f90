@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_protistdiatsedi
+use m_waq_precision
+
 
 implicit none
 
@@ -42,60 +44,60 @@ use m_evaluate_waq_attribute
 !
 !     Type    Name         I/O Description
 !
-    real(4) pmsa(*)      ! I/O Process Manager System Array, window of routine to process library
-    real(4) fl(*)        ! O  Array of fluxes made by this process in mass/volume/time
-    integer ipoint(*)    ! I  Array of pointers in pmsa to get and store the data
-    integer increm(*)    ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-    integer noseg        ! I  Number of computational elements in the whole model schematisation
-    integer noflux       ! I  Number of fluxes, increment in the fl array
-    integer iexpnt(4,*)  ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-    integer iknmrk(*)    ! I  Active-Inactive, Surface-water-bottom, see manual for use
-    integer noq1         ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-    integer noq2         ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-    integer noq3         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-    integer noq4         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+    real(kind=real_wp)  ::pmsa(*)      ! I/O Process Manager System Array, window of routine to process library
+    real(kind=real_wp)  ::fl(*)        ! O  Array of fluxes made by this process in mass/volume/time
+    integer(kind=int_wp)  ::ipoint(*)    ! I  Array of pointers in pmsa to get and store the data
+    integer(kind=int_wp)  ::increm(*)    ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+    integer(kind=int_wp)  ::noseg        ! I  Number of computational elements in the whole model schematisation
+    integer(kind=int_wp)  ::noflux       ! I  Number of fluxes, increment in the fl array
+    integer(kind=int_wp)  ::iexpnt(4,*)  ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+    integer(kind=int_wp)  ::iknmrk(*)    ! I  Active-Inactive, Surface-water-bottom, see manual for use
+    integer(kind=int_wp)  ::noq1         ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+    integer(kind=int_wp)  ::noq2         ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+    integer(kind=int_wp)  ::noq3         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+    integer(kind=int_wp)  ::noq4         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
 !     support variables
-    integer, parameter    :: nrIndInp = 6     !   nr of species independent input items
-    integer, parameter    :: nrSpecInp = 7    !   nr of inputs per species
-    integer, parameter    :: nrSpecOut = 6    !   nr of outputs per species
-    integer               :: nrInputItems     !   nr of input items need for output PMSA
-    integer               :: nrOutputItems    !   nr of output items need for output PMSA
-    integer               :: ipointLength     !   total length of the PMSA input and output pointer array
-    integer, allocatable  :: ipnt(:)          !   Local work array for the pointering
+    integer(kind=int_wp), parameter     ::nrIndInp = 6     !   nr of species independent input items
+    integer(kind=int_wp), parameter     ::nrSpecInp = 7    !   nr of inputs per species
+    integer(kind=int_wp), parameter     ::nrSpecOut = 6    !   nr of outputs per species
+    integer(kind=int_wp)                ::nrInputItems     !   nr of input items need for output PMSA
+    integer(kind=int_wp)                ::nrOutputItems    !   nr of output items need for output PMSA
+    integer(kind=int_wp)                ::ipointLength     !   total length of the PMSA input and output pointer array
+    integer(kind=int_wp), allocatable ::ipnt(:)          !   Local work array for the pointering
 
-    integer iseg          ! Local loop counter for computational element loop
-    integer ioq
-    integer iflux
-    integer ikmrk1        ! first segment attribute
-    integer ikmrk2        ! second segment attribute
-    integer ikmrkv
-    integer ikmrkn
+    integer(kind=int_wp)  ::iseg          ! Local loop counter for computational element loop
+    integer(kind=int_wp)  ::ioq
+    integer(kind=int_wp)  ::iflux
+    integer(kind=int_wp)  ::ikmrk1        ! first segment attribute
+    integer(kind=int_wp)  ::ikmrk2        ! second segment attribute
+    integer(kind=int_wp)  ::ikmrkv
+    integer(kind=int_wp)  ::ikmrkn
 
-    integer i_origin, i_dest
+    integer(kind=int_wp)  ::i_origin, i_dest
 
-    integer iSpec         ! local species number counter
-    integer spInc         ! local species PMSA/FL number increment
-    integer inpItems      ! nr of input items need for output PMSA
+    integer(kind=int_wp)  ::iSpec         ! local species number counter
+    integer(kind=int_wp)  ::spInc         ! local species PMSA/FL number increment
+    integer(kind=int_wp)  ::inpItems      ! nr of input items need for output PMSA
 
      !input parameters
-     integer nrSpec       ! total nr species implemented in process (from proc_def)
-     real    DELT, MinDepth, TaucSDiat                  ! segment independent input
-     real    Tau, Depth                                 ! segment dependent input
-     real    ZSedDiat, VSedDiat                         ! species dependent input
-     real    Depth2, MinDepth2
+     integer(kind=int_wp)  ::nrSpec       ! total nr species implemented in process (from proc_def)
+     real(kind=real_wp)     ::DELT, MinDepth, TaucSDiat                  ! segment independent input
+     real(kind=real_wp)     ::Tau, Depth                                 ! segment dependent input
+     real(kind=real_wp)     ::ZSedDiat, VSedDiat                         ! species dependent input
+     real(kind=real_wp)     ::Depth2, MinDepth2
 
      ! input state variables
-     real    diatC, diatChl, diatN, diatP, diatSi        ! protist state variable
+     real(kind=real_wp)     ::diatC, diatChl, diatN, diatP, diatSi        ! protist state variable
 
      ! auxiliaries
-     real     PSed
-     real     MaxSed_C, MaxSed_Chl, MaxSed_N, MaxSed_P, MaxSed_Si
-     real     PotSed_C, PotSed_Chl, PotSed_N, PotSed_P, PotSed_Si
+     real(kind=real_wp)      ::PSed
+     real(kind=real_wp)      ::MaxSed_C, MaxSed_Chl, MaxSed_N, MaxSed_P, MaxSed_Si
+     real(kind=real_wp)      ::PotSed_C, PotSed_Chl, PotSed_N, PotSed_P, PotSed_Si
 
 
 !

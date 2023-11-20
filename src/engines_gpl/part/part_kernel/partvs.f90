@@ -66,7 +66,7 @@ contains
 !     functions   called    : none.
 
       use m_stop_exit
-      use precision_part    ! single/double precision
+      use m_waq_precision    ! single/double precision
       use spec_feat_par
       use timers
       use m_part_modeltypes
@@ -76,46 +76,46 @@ contains
 
 !     kind            function         name                      description
 
-      integer  ( ip), intent(in   ) :: lun2                    !< unit of output report file
-      integer  ( ip), intent(in   ) :: itime                   !< actual time
-      integer  ( ip), intent(in   ) :: nosubs                  !< number of substances
-      integer  ( ip), intent(in   ) :: nopart                  !< number of particles
-      integer  ( ip), intent(in   ) :: ivtset                  !< number of time breakpoints
-      integer  ( ip), intent(in   ) :: ivtime(ivtset)          !< time breakpoint values settling velocities
-      real     ( rp), intent(in   ) :: vsfour(6,nosubs,ivtset) !< settling velocity parameters
-      real     ( rp)                :: vsfact(6,nosubs)        !< local work array
-      real     ( rp), intent(in   ) :: wpart (  nosubs,nopart) !< weight of substances per particle
-      real     ( rp), intent(  out) :: wsettl(         nopart) !< actual settling velocity per particle
-      integer  ( ip), intent(in   ) :: modtyp
-      integer  ( ip), intent(in   ) :: nosegp
-      integer  ( ip), intent(in   ) :: noseglp
-      integer  ( ip), intent(in   ) :: npart( nopart)
-      integer  ( ip), intent(in   ) :: mpart( nopart)
-      integer  ( ip), intent(in   ) :: kpart( nopart)
-      integer  ( ip), intent(in   ) :: nmax                    !< first dimension lgrid
-      integer  ( ip), intent(in   ) :: mmax                    !< second dimension lgrid
-      integer  ( ip), intent(in   ) :: lgrid3 (nmax,mmax)      !< active grid matrix with noseg numbering
-      integer  ( ip), intent(in   ) :: nolay
-      real     ( rp), intent(in   ) :: rhopart (nosubs, nopart)
-      real     ( rp), intent(in   ) :: rhowatc (nosegp)
-      real     ( rp), intent(in   ) :: spart (nosubs,*)        !< size of the particles
-      integer  ( ip), intent(in   ) :: iptime (nopart)         !< age of the particles
-      
+      integer  ( int_wp ), intent(in   ) :: lun2                    !< unit of output report file
+      integer  ( int_wp ), intent(in   ) :: itime                   !< actual time
+      integer  ( int_wp ), intent(in   ) :: nosubs                  !< number of substances
+      integer  ( int_wp ), intent(in   ) :: nopart                  !< number of particles
+      integer  ( int_wp ), intent(in   ) :: ivtset                  !< number of time breakpoints
+      integer  ( int_wp ), intent(in   ) :: ivtime(ivtset)          !< time breakpoint values settling velocities
+      real     ( real_wp), intent(in   ) :: vsfour(6,nosubs,ivtset) !< settling velocity parameters
+      real     ( real_wp)                :: vsfact(6,nosubs)        !< local work array
+      real     ( real_wp), intent(in   ) :: wpart (  nosubs,nopart) !< weight of substances per particle
+      real     ( real_wp), intent(  out) :: wsettl(         nopart) !< actual settling velocity per particle
+      integer  ( int_wp ), intent(in   ) :: modtyp
+      integer  ( int_wp ), intent(in   ) :: nosegp
+      integer  ( int_wp ), intent(in   ) :: noseglp
+      integer  ( int_wp ), intent(in   ) :: npart( nopart)
+      integer  ( int_wp ), intent(in   ) :: mpart( nopart)
+      integer  ( int_wp ), intent(in   ) :: kpart( nopart)
+      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension lgrid
+      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension lgrid
+      integer  ( int_wp ), intent(in   ) :: lgrid3 (nmax,mmax)      !< active grid matrix with noseg numbering
+      integer  ( int_wp ), intent(in   ) :: nolay
+      real     ( real_wp), intent(in   ) :: rhopart (nosubs, nopart)
+      real     ( real_wp), intent(in   ) :: rhowatc (nosegp)
+      real     ( real_wp), intent(in   ) :: spart (nosubs,*)        !< size of the particles
+      integer  ( int_wp ), intent(in   ) :: iptime (nopart)         !< age of the particles
+
 
 !     local scalars
 
-      integer(ip)     id   , isub    ! loop variables time and substances
-      integer(ip)     ipart          ! loop variable for particles
-      real   (rp)     fac1 , fac2    ! interpolation factors
-      real   (rp)     twopi          ! 2*pi
-      real   (rp)     g              ! gravitational acceleration (m/s2)
-      real   (rp)     viscosity_water ! viscosity of water (Pa.s)
-      real   (rp)     vsfact1        ! help variable
+      integer(int_wp )     id   , isub    ! loop variables time and substances
+      integer(int_wp )     ipart          ! loop variable for particles
+      real   (real_wp)     fac1 , fac2    ! interpolation factors
+      real   (real_wp)     twopi          ! 2*pi
+      real   (real_wp)     g              ! gravitational acceleration (m/s2)
+      real   (real_wp)     viscosity_water ! viscosity of water (Pa.s)
+      real   (real_wp)     vsfact1        ! help variable
       real   (dp)     vs1  , vs2  , vs3  , vs4  , vs5  , vs6  , vst  ! accumulation help variables
       real   (dp)     w              ! help variable
-      integer(ip)     nonset         ! accumulator for non-settling particles
+      integer(int_wp )     nonset         ! accumulator for non-settling particles
       real   (dp)     waver          ! accumulator of the settling velocities
-      integer(ip)     ic, iseg       ! 2D and 3D segmentnumber of particle
+      integer(int_wp )     ic, iseg       ! 2D and 3D segmentnumber of particle
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
@@ -165,7 +165,7 @@ contains
          vst = 0.0
          do isub = 1, nosubs
             if (modtyp .eq. model_prob_dens_settling) then
-               ! density dependent settling velocity 
+               ! density dependent settling velocity
                ic = lgrid3(npart(ipart), mpart(ipart))
 !              active cell's only
                if (ic  >  0) then
@@ -182,7 +182,7 @@ contains
             else
                vsfact1 = vsfact(1,isub)
             endif
-            
+
             if ( abs(vsfact1) .gt. 1.0e-15 .or.             &
                  abs(vsfact(2,isub)) .gt. 1.0e-15 ) then
                vs1 = vs1 + vsfact1*wpart(isub,ipart)

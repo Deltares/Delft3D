@@ -53,7 +53,7 @@ contains
 
 !     Logical units         : none
 
-      use precision_part    ! single/double precision
+      use m_waq_precision    ! single/double precision
       use timers       ! to time the performance
       implicit none    ! explicit typing
 
@@ -61,16 +61,16 @@ contains
 
 !     kind            function         name                    description
 
-      integer  ( ip), intent(in   ) :: itime                 !< actual time
-      integer  ( ip), intent(in   ) :: nosubs                !< number of substances
-      integer  ( ip), intent(in   ) :: idtset                !< number of time breakpoints
-      integer  ( ip), intent(in   ) :: idtime(idtset)        !< time breakpoint values
-      real     ( rp), intent(in   ) :: decay (nosubs,idtset) !< time series of decay factors
-      real     ( rp), intent(  out) :: decays(nosubs)        !< interpolated decay factors
+      integer  ( int_wp ), intent(in   ) :: itime                 !< actual time
+      integer  ( int_wp ), intent(in   ) :: nosubs                !< number of substances
+      integer  ( int_wp ), intent(in   ) :: idtset                !< number of time breakpoints
+      integer  ( int_wp ), intent(in   ) :: idtime(idtset)        !< time breakpoint values
+      real     ( real_wp), intent(in   ) :: decay (nosubs,idtset) !< time series of decay factors
+      real     ( real_wp), intent(  out) :: decays(nosubs)        !< interpolated decay factors
 
 !     locals
 
-      integer(ip) ::  id   , isub    ! loop variables time and substances
+      integer(int_wp ) ::  id   , isub    ! loop variables time and substances
       real   (sp) ::  fract          ! interpolation factor
 
       integer(4) ithndl              ! handle to time this subroutine

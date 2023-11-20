@@ -3,6 +3,7 @@ set(library_name part_kernel_f)
 
 create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 set(oss_dependencies deltares_common
+                     waq_definition
                      part_data_f
                      part_utils_f
                      part_io_f

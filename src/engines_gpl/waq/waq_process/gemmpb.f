@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_gemmpb
+      use m_waq_precision
+
 
       implicit none
 
@@ -64,218 +66,218 @@ C***********************************************************************
 
 C     arguments
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
 C     from PMSA array
 
-      REAL               :: TEMP               ! 1  in
-      REAL               :: BIOMAS_MPB1        ! 2  in
-      REAL               :: BIOMAS_MPB2        ! 3  in
-      REAL               :: BIOMAS_S1_MPB1     ! 4  in
-      REAL               :: BIOMAS_S1_MPB2     ! 5  in
-      REAL               :: PMCH20_MPB1        ! 6  in
-      REAL               :: PMCH20_MPB2        ! 7  in
-      REAL               :: FLT_MPB1           ! 8  in
-      REAL               :: FLT_MPB2           ! 9  in
-      REAL               :: FTMP_MPB1          ! 10 in
-      REAL               :: FTMP_MPB2          ! 11 in
-      REAL               :: FNUT_MPB1          ! 12 in
-      REAL               :: FNUT_MPB2          ! 13 in
-      REAL               :: R_PR_MPB1          ! 14 in
-      REAL               :: R_PR_MPB2          ! 15 in
-      REAL               :: R_MT20_MPB1        ! 16 in
-      REAL               :: R_MT20_MPB2        ! 17 in
-      REAL               :: RT_MPB1            ! 18 in
-      REAL               :: RT_MPB2            ! 19 in
-      REAL               :: B_EX_MPB1          ! 20 in
-      REAL               :: B_EX_MPB2          ! 21 in
-      REAL               :: M1_20_MPB1         ! 22 in
-      REAL               :: M1_20_MPB2         ! 23 in
-      REAL               :: M2_20_MPB1         ! 24 in
-      REAL               :: M2_20_MPB2         ! 25 in
-      REAL               :: MT_MPB1            ! 26 in
-      REAL               :: MT_MPB2            ! 27 in
-      REAL               :: NCRAT_MPB1         ! 28 in
-      REAL               :: NCRAT_MPB2         ! 29 in
-      REAL               :: PCRAT_MPB1         ! 30 in
-      REAL               :: PCRAT_MPB2         ! 31 in
-      REAL               :: SCRAT_MPB1         ! 32 in
-      REAL               :: SCRAT_MPB2         ! 33 in
-      REAL               :: FAM_MPB1           ! 34 in
-      REAL               :: FAM_MPB2           ! 35 in
-      REAL               :: FNI_MPB1           ! 36 in
-      REAL               :: FNI_MPB2           ! 37 in
-      REAL               :: TRESH_MPB1         ! 38 in
-      REAL               :: TRESH_MPB2         ! 39 in
+      REAL(kind=real_wp) ::TEMP               ! 1  in
+      REAL(kind=real_wp) ::BIOMAS_MPB1        ! 2  in
+      REAL(kind=real_wp) ::BIOMAS_MPB2        ! 3  in
+      REAL(kind=real_wp) ::BIOMAS_S1_MPB1     ! 4  in
+      REAL(kind=real_wp) ::BIOMAS_S1_MPB2     ! 5  in
+      REAL(kind=real_wp) ::PMCH20_MPB1        ! 6  in
+      REAL(kind=real_wp) ::PMCH20_MPB2        ! 7  in
+      REAL(kind=real_wp) ::FLT_MPB1           ! 8  in
+      REAL(kind=real_wp) ::FLT_MPB2           ! 9  in
+      REAL(kind=real_wp) ::FTMP_MPB1          ! 10 in
+      REAL(kind=real_wp) ::FTMP_MPB2          ! 11 in
+      REAL(kind=real_wp) ::FNUT_MPB1          ! 12 in
+      REAL(kind=real_wp) ::FNUT_MPB2          ! 13 in
+      REAL(kind=real_wp) ::R_PR_MPB1          ! 14 in
+      REAL(kind=real_wp) ::R_PR_MPB2          ! 15 in
+      REAL(kind=real_wp) ::R_MT20_MPB1        ! 16 in
+      REAL(kind=real_wp) ::R_MT20_MPB2        ! 17 in
+      REAL(kind=real_wp) ::RT_MPB1            ! 18 in
+      REAL(kind=real_wp) ::RT_MPB2            ! 19 in
+      REAL(kind=real_wp) ::B_EX_MPB1          ! 20 in
+      REAL(kind=real_wp) ::B_EX_MPB2          ! 21 in
+      REAL(kind=real_wp) ::M1_20_MPB1         ! 22 in
+      REAL(kind=real_wp) ::M1_20_MPB2         ! 23 in
+      REAL(kind=real_wp) ::M2_20_MPB1         ! 24 in
+      REAL(kind=real_wp) ::M2_20_MPB2         ! 25 in
+      REAL(kind=real_wp) ::MT_MPB1            ! 26 in
+      REAL(kind=real_wp) ::MT_MPB2            ! 27 in
+      REAL(kind=real_wp) ::NCRAT_MPB1         ! 28 in
+      REAL(kind=real_wp) ::NCRAT_MPB2         ! 29 in
+      REAL(kind=real_wp) ::PCRAT_MPB1         ! 30 in
+      REAL(kind=real_wp) ::PCRAT_MPB2         ! 31 in
+      REAL(kind=real_wp) ::SCRAT_MPB1         ! 32 in
+      REAL(kind=real_wp) ::SCRAT_MPB2         ! 33 in
+      REAL(kind=real_wp) ::FAM_MPB1           ! 34 in
+      REAL(kind=real_wp) ::FAM_MPB2           ! 35 in
+      REAL(kind=real_wp) ::FNI_MPB1           ! 36 in
+      REAL(kind=real_wp) ::FNI_MPB2           ! 37 in
+      REAL(kind=real_wp) ::TRESH_MPB1         ! 38 in
+      REAL(kind=real_wp) ::TRESH_MPB2         ! 39 in
       LOGICAL            :: S1_BOTTOM          ! 40 in  , switch for S1 bottom approach (.true.) or DELWAQ-G approach (.false.)
-      REAL               :: FLT_S1_MPB1        ! 41 in
-      REAL               :: FLT_S1_MPB2        ! 42 in
-      REAL               :: FTMP_S1_MPB1       ! 43 in
-      REAL               :: FTMP_S1_MPB2       ! 44 in
-      REAL               :: FNUT_S1_MPB1       ! 45 in
-      REAL               :: FNUT_S1_MPB2       ! 46 in
-      REAL               :: FAM_S1_MPB1        ! 47 in
-      REAL               :: FAM_S1_MPB2        ! 48 in
-      REAL               :: FNI_S1_MPB1        ! 49 in
-      REAL               :: FNI_S1_MPB2        ! 50 in
-      REAL               :: NH4                ! 51 in
-      REAL               :: NO3                ! 52 in
-      REAL               :: PO4                ! 53 in
-      REAL               :: SI                 ! 54 in
-      REAL               :: ZSED               ! 55 in
-      REAL               :: SURF               ! 56 in
-      REAL               :: DEPTH              ! 57 in
-      REAL               :: DELT               ! 58 in
-      REAL               :: dBotN              ! 59 in
-      REAL               :: dSWN               ! 60 in
-      REAL               :: dGSNH              ! 61 in
-      REAL               :: dGSNO              ! 62 in
-      REAL               :: dBotP              ! 63 in
-      REAL               :: dSWP               ! 64 in
-      REAL               :: dGSP               ! 65 in
-      REAL               :: dBotSi             ! 66 in
-      REAL               :: dSWSi              ! 67 in
-      REAL               :: CCAP_MPB1          ! 68 in   carrying capacity MPB1                     (gC/m2)
-      REAL               :: CCAP_MPB2          ! 69 in   carrying capacity MPB2                     (gC/m2)
-      REAL               :: LOCSEDDEPT         ! 70 in   Sediment layer depth to bottom of segment      (m)
-      REAL               :: OXY                ! 71 in   Dissolved Oxygen                            (g/m3)
-      REAL               :: MPBOXYCRIT         ! 72 in   Crit. oxygen conc. for growth and resp. MPB (g/m3)
-      REAL               :: MPB1MO_20          ! 73 in   MPB1peli mortality at 20°C under Oxygen depl.(1/d)
-      REAL               :: MPB2MO_20          ! 74 in   MPB2psam mortality at 20°C under Oxygen depl.(1/d)
-      REAL               :: BIOMAS_MPB1_M2     ! 75 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
-      REAL               :: BIOMAS_MPB2_M2     ! 76 out, MPB2psam biomass per m3 in layer S1        (gC/m3)
-      REAL               :: BIOMAS_S1_MPB1_M3  ! 77 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
-      REAL               :: BIOMAS_S1_MPB2_M3  ! 78 out, MPB2psam biomass per m3 in layer S1        (gC/m3)
-      REAL               :: MPB1FMC            ! 79 out, logistic growth restaint factor MPB1           (-)
-      REAL               :: MPB2FMC            ! 80 out, logistic growth restaint factor MPB2           (-)
-      REAL               :: MPB1FMN            ! 81 out, correction factor insufficient nitrogen MPB1   (-)
-      REAL               :: MPB2FMN            ! 82 out, correction factor insufficient nitrogen MPB2   (-)
-      REAL               :: MPB1FMP            ! 83 out, correction factor insufficient phosphorus MPB1 (-)
-      REAL               :: MPB2FMP            ! 84 out, correction factor insufficient phosphorus MPB2 (-)
-      REAL               :: MPB1FMS            ! 85 out, correction factor insufficient silicate MPB1   (-)
-      REAL               :: MPB2FMS            ! 86 out, correction factor insufficient silicate MPB2   (-)
-      REAL               :: MPB1FMCS1          ! 87 out, logistic growth restaint factor MPB1 in S1     (-)
-      REAL               :: MPB2FMCS1          ! 88 out, logistic growth restaint factor MPB2 in S1     (-)
-      REAL               :: MPB1FMNS1          ! 89 out, corr. factor insufficient nitrogen MPB1 in S1  (-)
-      REAL               :: MPB2FMNS1          ! 90 out, corr. factor insufficient nitrogen MPB2 in S1  (-)
-      REAL               :: MPB1FMPS1          ! 91 out, corr. factor insufficient phosphorus MPB1 in S1(-)
-      REAL               :: MPB2FMPS1          ! 92 out, corr. factor insufficient phosphorus MPB2 in S1(-)
-      REAL               :: MPB1FMSS1          ! 93 out, corr. factor insufficient silicate MPB1 in S1  (-)
-      REAL               :: MPB2FMSS1          ! 94 out, corr. factor insufficient silicate MPB2 in S1  (-)
-      REAL               :: FMPB1NH4UP         ! 95 out, MPB1 net consumption rate for ammonium   (gN/m3/d)
-      REAL               :: FMPB2NH4UP         ! 96 out, MPB2 net consumption rate for ammonium   (gN/m3/d)
-      REAL               :: FMPB1NO3UP         ! 97 out, MPB1 net consumption rate for nitrate    (gN/m3/d)
-      REAL               :: FMPB2NO3UP         ! 98 out, MPB2 net consumption rate for nitrate    (gN/m3/d)
-      REAL               :: FMPB1PO4UP         ! 99 out, MPB1 net consumption rate for phosphate  (gP/m3/d)
-      REAL               :: FMPB2PO4UP         !100 out, MPB2 net consumption rate for phosphate  (gP/m3/d)
-      REAL               :: FMPB1SIUP          !101 out, MPB1 net consumption rate for silicate  (gSi/m3/d)
-      REAL               :: FMPB2SIUP          !102 out, MPB2 net consumption rate for silicate  (gSi/m3/d)
-      REAL               :: FMPB1EXC           !103 out, MPB1 excretion rate                      (gC/m3/d)
-      REAL               :: FMPB2EXC           !104 out, MPB2 excretion rate                      (gC/m3/d)
-      REAL               :: FMPB1FGP           !105 out, MPB1 gross primary production rate       (gC/m3/d)
-      REAL               :: FMPB2FGP           !106 out, MPB2 gross primary production rate       (gC/m3/d)
-      REAL               :: FMPB1MOR           !107 out, MPB1 total mortality rate                (gC/m3/d)
-      REAL               :: FMPB2MOR           !108 out, MPB2 total mortality rate                (gC/m3/d)
-      REAL               :: FMPB1POC1          !109 out, MPB1 net production rate for POC1        (gC/m3/d)
-      REAL               :: FMPB2POC1          !110 out, MPB2 net production rate for POC1        (gC/m3/d)
-      REAL               :: FMPB1PON1          !111 out, MPB1 net production rate for PON1        (gN/m3/d)
-      REAL               :: FMPB2PON1          !112 out, MPB2 net production rate for PON1        (gN/m3/d)
-      REAL               :: FMPB1POP1          !113 out, MPB1 net production rate for POP1        (gP/m3/d)
-      REAL               :: FMPB2POP1          !114 out, MPB2 net production rate for POP1        (gP/m3/d)
-      REAL               :: FMPB1OPAL          !115 out, MPB1 net production rate for OPAL Si    (gSi/m3/d)
-      REAL               :: FMPB2OPAL          !116 out, MPB2 net production rate for OPAL Si    (gSi/m3/d)
-      REAL               :: FMPB1OXY           !117 out, MPB1 net production rate for DO          (gO/m3/d)
-      REAL               :: FMPB2OXY           !118 out, MPB2 net production rate for DO          (gO/m3/d)
-      REAL               :: FMPB1RES           !119 out, MPB1 total respiration rate              (gC/m3/d)
-      REAL               :: FMPB2RES           !120 out, MPB2 total respiration rate              (gC/m3/d)
-      REAL               :: FMPB1FGPM2         !121 out, MPB1 gross primary production rate per m2(gC/m2/d)
-      REAL               :: FMPB2FGPM2         !122 out, MPB2 gross primary production rate per m2(gC/m2/d)
-      REAL               :: FMPB1FGPD          !123 out, MPB1 gross primary production rate per day   (1/d)
-      REAL               :: FMPB2FGPD          !124 out, MPB2 gross primary production rate per day   (1/d)
-      REAL               :: FMPB1NH4S1         !125 out, MPB1 net consumption rate for ammonium S1(gN/m3/d)
-      REAL               :: FMPB2NH4S1         !126 out, MPB2 net consumption rate for ammonium S1(gN/m3/d)
-      REAL               :: FMPB1NO3S1         !127 out, MPB1 net consumption rate for nitrate S1 (gN/m3/d)
-      REAL               :: FMPB2NO3S1         !128 out, MPB2 net consumption rate for nitrate S1 (gN/m3/d)
-      REAL               :: FMPB1PO4S1         !129 out, MPB1 net consumption rate for phosphateS1(gP/m3/d)
-      REAL               :: FMPB2PO4S1         !130 out, MPB2 net consumption rate for phosphateS1(gP/m3/d)
-      REAL               :: FMPB1SIS1          !131 out, MPB1 net consumption rate for silicateS1(gSi/m3/d)
-      REAL               :: FMPB2SIS1          !132 out, MPB2 net consumption rate for silicateS1(gSi/m3/d)
-      REAL               :: FMPB1EXCS1         !133 out, MPB1 excretion rate S1                   (gC/m3/d)
-      REAL               :: FMPB2EXCS1         !134 out, MPB2 excretion rate S1                   (gC/m3/d)
-      REAL               :: FMPB1FGPS1         !135 out, MPB1 gross primary production rate S1    (gC/m3/d)
-      REAL               :: FMPB2FGPS1         !136 out, MPB2 gross primary production rate S1    (gC/m3/d)
-      REAL               :: FMPB1MORS1         !137 out, MPB1 total mortality rate S1             (gC/m3/d)
-      REAL               :: FMPB2MORS1         !138 out, MPB2 total mortality rate S1             (gC/m3/d)
-      REAL               :: FMPB1POC1S         !139 out, MPB1 net production rate for POC1 S1     (gC/m3/d)
-      REAL               :: FMPB2POC1S         !140 out, MPB2 net production rate for POC1 S1     (gC/m3/d)
-      REAL               :: FMPB1PON1S         !141 out, MPB1 net production rate for PON1 S1     (gN/m3/d)
-      REAL               :: FMPB2PON1S         !142 out, MPB2 net production rate for PON1 S1     (gN/m3/d)
-      REAL               :: FMPB1POP1S         !143 out, MPB1 net production rate for POP1 S1     (gP/m3/d)
-      REAL               :: FMPB2POP1S         !144 out, MPB2 net production rate for POP1 S1     (gP/m3/d)
-      REAL               :: FMPB1OPALS         !145 out, MPB1 net production rate for OPAL Si S1 (gSi/m3/d)
-      REAL               :: FMPB2OPALS         !146 out, MPB2 net production rate for OPAL Si S1 (gSi/m3/d)
-      REAL               :: FMPB1OXYS1         !147 out, MPB1 net production rate for DO S1       (gO/m3/d)
-      REAL               :: FMPB2OXYS1         !148 out, MPB2 net production rate for DO S1       (gO/m3/d)
-      REAL               :: FMPB1RESS1         !149 out, MPB1 total respiration rate S1           (gC/m3/d)
-      REAL               :: FMPB2RESS1         !150 out, MPB2 total respiration rate S1           (gC/m3/d)
-      REAL               :: FMPB1GPS1M         !151 out, MPB1 gross primary production rate S1 m2 (gC/m2/d)
-      REAL               :: FMPB2GPS1M         !152 out, MPB2 gross primary production rate S1 m2 (gC/m2/d)
-      REAL               :: FMPB1GPS1D         !153 out, MPB1 gross primary production rate S1 per day(1/d)
-      REAL               :: FMPB2GPS1D         !154 out, MPB2 gross primary production rate S1 per day(1/d)
+      REAL(kind=real_wp) ::FLT_S1_MPB1        ! 41 in
+      REAL(kind=real_wp) ::FLT_S1_MPB2        ! 42 in
+      REAL(kind=real_wp) ::FTMP_S1_MPB1       ! 43 in
+      REAL(kind=real_wp) ::FTMP_S1_MPB2       ! 44 in
+      REAL(kind=real_wp) ::FNUT_S1_MPB1       ! 45 in
+      REAL(kind=real_wp) ::FNUT_S1_MPB2       ! 46 in
+      REAL(kind=real_wp) ::FAM_S1_MPB1        ! 47 in
+      REAL(kind=real_wp) ::FAM_S1_MPB2        ! 48 in
+      REAL(kind=real_wp) ::FNI_S1_MPB1        ! 49 in
+      REAL(kind=real_wp) ::FNI_S1_MPB2        ! 50 in
+      REAL(kind=real_wp) ::NH4                ! 51 in
+      REAL(kind=real_wp) ::NO3                ! 52 in
+      REAL(kind=real_wp) ::PO4                ! 53 in
+      REAL(kind=real_wp) ::SI                 ! 54 in
+      REAL(kind=real_wp) ::ZSED               ! 55 in
+      REAL(kind=real_wp) ::SURF               ! 56 in
+      REAL(kind=real_wp) ::DEPTH              ! 57 in
+      REAL(kind=real_wp) ::DELT               ! 58 in
+      REAL(kind=real_wp) ::dBotN              ! 59 in
+      REAL(kind=real_wp) ::dSWN               ! 60 in
+      REAL(kind=real_wp) ::dGSNH              ! 61 in
+      REAL(kind=real_wp) ::dGSNO              ! 62 in
+      REAL(kind=real_wp) ::dBotP              ! 63 in
+      REAL(kind=real_wp) ::dSWP               ! 64 in
+      REAL(kind=real_wp) ::dGSP               ! 65 in
+      REAL(kind=real_wp) ::dBotSi             ! 66 in
+      REAL(kind=real_wp) ::dSWSi              ! 67 in
+      REAL(kind=real_wp) ::CCAP_MPB1          ! 68 in   carrying capacity MPB1                     (gC/m2)
+      REAL(kind=real_wp) ::CCAP_MPB2          ! 69 in   carrying capacity MPB2                     (gC/m2)
+      REAL(kind=real_wp) ::LOCSEDDEPT         ! 70 in   Sediment layer depth to bottom of segment      (m)
+      REAL(kind=real_wp) ::OXY                ! 71 in   Dissolved Oxygen                            (g/m3)
+      REAL(kind=real_wp) ::MPBOXYCRIT         ! 72 in   Crit. oxygen conc. for growth and resp. MPB (g/m3)
+      REAL(kind=real_wp) ::MPB1MO_20          ! 73 in   MPB1peli mortality at 20°C under Oxygen depl.(1/d)
+      REAL(kind=real_wp) ::MPB2MO_20          ! 74 in   MPB2psam mortality at 20°C under Oxygen depl.(1/d)
+      REAL(kind=real_wp) ::BIOMAS_MPB1_M2     ! 75 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
+      REAL(kind=real_wp) ::BIOMAS_MPB2_M2     ! 76 out, MPB2psam biomass per m3 in layer S1        (gC/m3)
+      REAL(kind=real_wp) ::BIOMAS_S1_MPB1_M3  ! 77 out, MPB1peli biomass per m3 in layer S1        (gC/m3)
+      REAL(kind=real_wp) ::BIOMAS_S1_MPB2_M3  ! 78 out, MPB2psam biomass per m3 in layer S1        (gC/m3)
+      REAL(kind=real_wp) ::MPB1FMC            ! 79 out, logistic growth restaint factor MPB1           (-)
+      REAL(kind=real_wp) ::MPB2FMC            ! 80 out, logistic growth restaint factor MPB2           (-)
+      REAL(kind=real_wp) ::MPB1FMN            ! 81 out, correction factor insufficient nitrogen MPB1   (-)
+      REAL(kind=real_wp) ::MPB2FMN            ! 82 out, correction factor insufficient nitrogen MPB2   (-)
+      REAL(kind=real_wp) ::MPB1FMP            ! 83 out, correction factor insufficient phosphorus MPB1 (-)
+      REAL(kind=real_wp) ::MPB2FMP            ! 84 out, correction factor insufficient phosphorus MPB2 (-)
+      REAL(kind=real_wp) ::MPB1FMS            ! 85 out, correction factor insufficient silicate MPB1   (-)
+      REAL(kind=real_wp) ::MPB2FMS            ! 86 out, correction factor insufficient silicate MPB2   (-)
+      REAL(kind=real_wp) ::MPB1FMCS1          ! 87 out, logistic growth restaint factor MPB1 in S1     (-)
+      REAL(kind=real_wp) ::MPB2FMCS1          ! 88 out, logistic growth restaint factor MPB2 in S1     (-)
+      REAL(kind=real_wp) ::MPB1FMNS1          ! 89 out, corr. factor insufficient nitrogen MPB1 in S1  (-)
+      REAL(kind=real_wp) ::MPB2FMNS1          ! 90 out, corr. factor insufficient nitrogen MPB2 in S1  (-)
+      REAL(kind=real_wp) ::MPB1FMPS1          ! 91 out, corr. factor insufficient phosphorus MPB1 in S1(-)
+      REAL(kind=real_wp) ::MPB2FMPS1          ! 92 out, corr. factor insufficient phosphorus MPB2 in S1(-)
+      REAL(kind=real_wp) ::MPB1FMSS1          ! 93 out, corr. factor insufficient silicate MPB1 in S1  (-)
+      REAL(kind=real_wp) ::MPB2FMSS1          ! 94 out, corr. factor insufficient silicate MPB2 in S1  (-)
+      REAL(kind=real_wp) ::FMPB1NH4UP         ! 95 out, MPB1 net consumption rate for ammonium   (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB2NH4UP         ! 96 out, MPB2 net consumption rate for ammonium   (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB1NO3UP         ! 97 out, MPB1 net consumption rate for nitrate    (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB2NO3UP         ! 98 out, MPB2 net consumption rate for nitrate    (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB1PO4UP         ! 99 out, MPB1 net consumption rate for phosphate  (gP/m3/d)
+      REAL(kind=real_wp) ::FMPB2PO4UP         !100 out, MPB2 net consumption rate for phosphate  (gP/m3/d)
+      REAL(kind=real_wp) ::FMPB1SIUP          !101 out, MPB1 net consumption rate for silicate  (gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB2SIUP          !102 out, MPB2 net consumption rate for silicate  (gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB1EXC           !103 out, MPB1 excretion rate                      (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2EXC           !104 out, MPB2 excretion rate                      (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1FGP           !105 out, MPB1 gross primary production rate       (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2FGP           !106 out, MPB2 gross primary production rate       (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1MOR           !107 out, MPB1 total mortality rate                (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2MOR           !108 out, MPB2 total mortality rate                (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1POC1          !109 out, MPB1 net production rate for POC1        (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2POC1          !110 out, MPB2 net production rate for POC1        (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1PON1          !111 out, MPB1 net production rate for PON1        (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB2PON1          !112 out, MPB2 net production rate for PON1        (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB1POP1          !113 out, MPB1 net production rate for POP1        (gP/m3/d)
+      REAL(kind=real_wp) ::FMPB2POP1          !114 out, MPB2 net production rate for POP1        (gP/m3/d)
+      REAL(kind=real_wp) ::FMPB1OPAL          !115 out, MPB1 net production rate for OPAL Si    (gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB2OPAL          !116 out, MPB2 net production rate for OPAL Si    (gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB1OXY           !117 out, MPB1 net production rate for DO          (gO/m3/d)
+      REAL(kind=real_wp) ::FMPB2OXY           !118 out, MPB2 net production rate for DO          (gO/m3/d)
+      REAL(kind=real_wp) ::FMPB1RES           !119 out, MPB1 total respiration rate              (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2RES           !120 out, MPB2 total respiration rate              (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1FGPM2         !121 out, MPB1 gross primary production rate per m2(gC/m2/d)
+      REAL(kind=real_wp) ::FMPB2FGPM2         !122 out, MPB2 gross primary production rate per m2(gC/m2/d)
+      REAL(kind=real_wp) ::FMPB1FGPD          !123 out, MPB1 gross primary production rate per day   (1/d)
+      REAL(kind=real_wp) ::FMPB2FGPD          !124 out, MPB2 gross primary production rate per day   (1/d)
+      REAL(kind=real_wp) ::FMPB1NH4S1         !125 out, MPB1 net consumption rate for ammonium S1(gN/m3/d)
+      REAL(kind=real_wp) ::FMPB2NH4S1         !126 out, MPB2 net consumption rate for ammonium S1(gN/m3/d)
+      REAL(kind=real_wp) ::FMPB1NO3S1         !127 out, MPB1 net consumption rate for nitrate S1 (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB2NO3S1         !128 out, MPB2 net consumption rate for nitrate S1 (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB1PO4S1         !129 out, MPB1 net consumption rate for phosphateS1(gP/m3/d)
+      REAL(kind=real_wp) ::FMPB2PO4S1         !130 out, MPB2 net consumption rate for phosphateS1(gP/m3/d)
+      REAL(kind=real_wp) ::FMPB1SIS1          !131 out, MPB1 net consumption rate for silicateS1(gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB2SIS1          !132 out, MPB2 net consumption rate for silicateS1(gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB1EXCS1         !133 out, MPB1 excretion rate S1                   (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2EXCS1         !134 out, MPB2 excretion rate S1                   (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1FGPS1         !135 out, MPB1 gross primary production rate S1    (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2FGPS1         !136 out, MPB2 gross primary production rate S1    (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1MORS1         !137 out, MPB1 total mortality rate S1             (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2MORS1         !138 out, MPB2 total mortality rate S1             (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1POC1S         !139 out, MPB1 net production rate for POC1 S1     (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2POC1S         !140 out, MPB2 net production rate for POC1 S1     (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1PON1S         !141 out, MPB1 net production rate for PON1 S1     (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB2PON1S         !142 out, MPB2 net production rate for PON1 S1     (gN/m3/d)
+      REAL(kind=real_wp) ::FMPB1POP1S         !143 out, MPB1 net production rate for POP1 S1     (gP/m3/d)
+      REAL(kind=real_wp) ::FMPB2POP1S         !144 out, MPB2 net production rate for POP1 S1     (gP/m3/d)
+      REAL(kind=real_wp) ::FMPB1OPALS         !145 out, MPB1 net production rate for OPAL Si S1 (gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB2OPALS         !146 out, MPB2 net production rate for OPAL Si S1 (gSi/m3/d)
+      REAL(kind=real_wp) ::FMPB1OXYS1         !147 out, MPB1 net production rate for DO S1       (gO/m3/d)
+      REAL(kind=real_wp) ::FMPB2OXYS1         !148 out, MPB2 net production rate for DO S1       (gO/m3/d)
+      REAL(kind=real_wp) ::FMPB1RESS1         !149 out, MPB1 total respiration rate S1           (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB2RESS1         !150 out, MPB2 total respiration rate S1           (gC/m3/d)
+      REAL(kind=real_wp) ::FMPB1GPS1M         !151 out, MPB1 gross primary production rate S1 m2 (gC/m2/d)
+      REAL(kind=real_wp) ::FMPB2GPS1M         !152 out, MPB2 gross primary production rate S1 m2 (gC/m2/d)
+      REAL(kind=real_wp) ::FMPB1GPS1D         !153 out, MPB1 gross primary production rate S1 per day(1/d)
+      REAL(kind=real_wp) ::FMPB2GPS1D         !154 out, MPB2 gross primary production rate S1 per day(1/d)
 
 C     local
 
-      INTEGER            :: ISEG               ! loop counter segment loop
-      INTEGER            :: IFLUX              ! index pointer in FL (flux) array
-      INTEGER            :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
-      INTEGER            :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-      INTEGER, parameter :: NO_POINTER = 154   ! number of input output variables in PMSA array
-      INTEGER            :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
-      REAL               :: C_UPTAKE
-      REAL               :: DMINN
-      REAL               :: DMINP
-      REAL               :: DMINS
-      REAL               :: DN
-      REAL               :: DP
-      REAL               :: DSI
-      REAL               :: FACTOR_MPB1
-      REAL               :: FACTOR_MPB2
-      REAL               :: FEXC_MPB1
-      REAL               :: FEXC_MPB2
-      REAL               :: FGP_MPB1
-      REAL               :: FGP_MPB2
-      REAL               :: FMOR_MPB1
-      REAL               :: FMOR_MPB2
-      REAL               :: FNH4_MPB1
-      REAL               :: FNH4_MPB2
-      REAL               :: FNO3_MPB1
-      REAL               :: FNO3_MPB2
-      REAL               :: FRES_MPB1
-      REAL               :: FRES_MPB2
-      REAL               :: FN_MPB1
-      REAL               :: FN_MPB2
-      REAL               :: NH4_UPTAKE
-      REAL               :: NO3_UPTAKE
-      REAL               :: N_UPTAKE
-      REAL               :: OPAL_PROD
-      REAL               :: PO4_UPTAKE
-      REAL               :: POC_PROC
-      REAL               :: PON_PROD
-      REAL               :: POP_PROD
-      REAL               :: P_UPTAKE
-      REAL               :: SED2WAT
-      REAL               :: SI_UPTAKE
-      REAL               :: VOLSED             ! bulk volume of the sediment layer
-      REAL               :: VOLWAT             ! volume
-      REAL               :: MRES_MPB1          ! maintenance respiration MPB1
-      REAL               :: MRES_MPB2          ! maintenance respiration MPB2
-      REAL               :: FGP_MPB1_ORG       ! uncorrected FGP MPB1
-      REAL               :: FGP_MPB2_ORG       ! uncorrected FGP MPB2
-      REAL               :: EUF_FACT           ! correction factor for euphotic depth
-      REAL               :: BIOMAS_MPB1_EUF    ! biomass corrected for euphotic depth
-      REAL               :: BIOMAS_MPB2_EUF    ! biomass corrected for euphotic depth
+      INTEGER(kind=int_wp) ::ISEG               ! loop counter segment loop
+      INTEGER(kind=int_wp) ::IFLUX              ! index pointer in FL (flux) array
+      INTEGER(kind=int_wp) ::IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
+      INTEGER(kind=int_wp) ::IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
+      INTEGER(kind=int_wp), parameter  ::NO_POINTER = 154   ! number of input output variables in PMSA array
+      INTEGER(kind=int_wp) ::IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+      REAL(kind=real_wp) ::C_UPTAKE
+      REAL(kind=real_wp) ::DMINN
+      REAL(kind=real_wp) ::DMINP
+      REAL(kind=real_wp) ::DMINS
+      REAL(kind=real_wp) ::DN
+      REAL(kind=real_wp) ::DP
+      REAL(kind=real_wp) ::DSI
+      REAL(kind=real_wp) ::FACTOR_MPB1
+      REAL(kind=real_wp) ::FACTOR_MPB2
+      REAL(kind=real_wp) ::FEXC_MPB1
+      REAL(kind=real_wp) ::FEXC_MPB2
+      REAL(kind=real_wp) ::FGP_MPB1
+      REAL(kind=real_wp) ::FGP_MPB2
+      REAL(kind=real_wp) ::FMOR_MPB1
+      REAL(kind=real_wp) ::FMOR_MPB2
+      REAL(kind=real_wp) ::FNH4_MPB1
+      REAL(kind=real_wp) ::FNH4_MPB2
+      REAL(kind=real_wp) ::FNO3_MPB1
+      REAL(kind=real_wp) ::FNO3_MPB2
+      REAL(kind=real_wp) ::FRES_MPB1
+      REAL(kind=real_wp) ::FRES_MPB2
+      REAL(kind=real_wp) ::FN_MPB1
+      REAL(kind=real_wp) ::FN_MPB2
+      REAL(kind=real_wp) ::NH4_UPTAKE
+      REAL(kind=real_wp) ::NO3_UPTAKE
+      REAL(kind=real_wp) ::N_UPTAKE
+      REAL(kind=real_wp) ::OPAL_PROD
+      REAL(kind=real_wp) ::PO4_UPTAKE
+      REAL(kind=real_wp) ::POC_PROC
+      REAL(kind=real_wp) ::PON_PROD
+      REAL(kind=real_wp) ::POP_PROD
+      REAL(kind=real_wp) ::P_UPTAKE
+      REAL(kind=real_wp) ::SED2WAT
+      REAL(kind=real_wp) ::SI_UPTAKE
+      REAL(kind=real_wp) ::VOLSED             ! bulk volume of the sediment layer
+      REAL(kind=real_wp) ::VOLWAT             ! volume
+      REAL(kind=real_wp) ::MRES_MPB1          ! maintenance respiration MPB1
+      REAL(kind=real_wp) ::MRES_MPB2          ! maintenance respiration MPB2
+      REAL(kind=real_wp) ::FGP_MPB1_ORG       ! uncorrected FGP MPB1
+      REAL(kind=real_wp) ::FGP_MPB2_ORG       ! uncorrected FGP MPB2
+      REAL(kind=real_wp) ::EUF_FACT           ! correction factor for euphotic depth
+      REAL(kind=real_wp) ::BIOMAS_MPB1_EUF    ! biomass corrected for euphotic depth
+      REAL(kind=real_wp) ::BIOMAS_MPB2_EUF    ! biomass corrected for euphotic depth
 
       LOGICAL            :: WATER_OVERHEAD     ! guard against "dry" segments - no exchange with the water
 

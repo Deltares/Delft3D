@@ -50,7 +50,7 @@ contains
 
 !     logical unit numbers  :
 
-      use precision_part       ! single and double precision
+      use m_waq_precision       ! single and double precision
       use typos           ! the derived types
       use timers          ! performance timers
 
@@ -60,14 +60,14 @@ contains
 
 !     kind           function         name               description
 
-      integer ( ip), intent(in   ) :: nconn            !< dimension of conn
+      integer ( int_wp ), intent(in   ) :: nconn            !< dimension of conn
       type (pnt)   , intent(in   ) :: conn  ( nconn )  !< array with dd shift entries
-      integer ( ip), intent(in   ) :: n0               !< entry in conn for this shift
-      integer ( ip), intent(in   ) :: ddshift          !< m (1) or n (2) shift
-      integer ( ip), intent(  out) :: np               !< new n of particle
-      integer ( ip), intent(  out) :: mp               !< new m of particle
-      real    ( rp), intent(inout) :: xp               !< new x of particle in cell
-      real    ( rp), intent(inout) :: yp               !< new y of particle in cell
+      integer ( int_wp ), intent(in   ) :: n0               !< entry in conn for this shift
+      integer ( int_wp ), intent(in   ) :: ddshift          !< m (1) or n (2) shift
+      integer ( int_wp ), intent(  out) :: np               !< new n of particle
+      integer ( int_wp ), intent(  out) :: mp               !< new m of particle
+      real    ( real_wp), intent(inout) :: xp               !< new x of particle in cell
+      real    ( real_wp), intent(inout) :: yp               !< new y of particle in cell
 
 !     Locals
 

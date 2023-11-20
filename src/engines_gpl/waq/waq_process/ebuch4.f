@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_ebuch4
+      use m_waq_precision
+
 
       implicit none
 
@@ -67,16 +69,16 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      INTEGER  IP1, IP2, IP3, IP4, IP5, IP6, IP7
-      INTEGER  IN1, IN2, IN3, IN4, IN5, IN6, IN7
-      INTEGER  IFLUX  , ISEG   , ILUMON
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7
+      INTEGER(kind=int_wp) ::IN1, IN2, IN3, IN4, IN5, IN6, IN7
+      INTEGER(kind=int_wp) ::IFLUX  , ISEG   , ILUMON
 !
-      REAL     CCH4   , CCH4S  , DCH4  , FSCALE
-      REAL     POROS  , TEMP   , TEMP20, DEPTH  , DELT
+      REAL(kind=real_wp) ::CCH4   , CCH4S  , DCH4  , FSCALE
+      REAL(kind=real_wp) ::POROS  , TEMP   , TEMP20, DEPTH  , DELT
 !
       LOGICAL  FIRST
       SAVE     FIRST

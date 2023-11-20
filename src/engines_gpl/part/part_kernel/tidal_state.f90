@@ -23,30 +23,30 @@
 
 module tidal_state_mod
 
-use precision_part               ! single/double precision
-implicit none    
-    
+use m_waq_precision               ! single/double precision
+implicit none
+
 contains
       subroutine tidal_state( lunrep, itime, zmodel, itstrtp, nosegl, tide_opt, vol1, vol2, vel1, vel2, ebb_flow)
 
-      integer(ip), intent(in)    :: lunrep              ! report file
-      integer(ip), intent(in)    :: itime               ! time in seconds
-      integer(ip), intent(in)    :: itstrtp             ! start time
-      integer(ip), intent(in)    :: nosegl              ! number segments per layer
-      integer(ip), intent(in)    :: tide_opt            ! option in tidal state determination
+      integer(int_wp ), intent(in)    :: lunrep              ! report file
+      integer(int_wp ), intent(in)    :: itime               ! time in seconds
+      integer(int_wp ), intent(in)    :: itstrtp             ! start time
+      integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
+      integer(int_wp ), intent(in)    :: tide_opt            ! option in tidal state determination
       real   (sp), pointer       :: vol1  ( : )         ! volume begin hydr step
       real   (sp), pointer       :: vol2  ( : )         ! volume end hydr step
       real   (sp), pointer       :: vel1  ( : )         ! velocity begin hydr step
       real   (sp), pointer       :: vel2  ( : )         ! velocity end hydr step
       logical    , pointer       :: ebb_flow( : )       ! true if flow is ebb
-      
+
       logical                    :: zmodel              ! indicates zmodel
 
 
       ! local declarations
 
       logical                    :: ebb_tide           ! true if waterlevel is ebb
-      integer (ip)               :: iseg
+      integer (int_wp )               :: iseg
       integer, parameter         :: tide_opt_waterlevel = 1
       integer, parameter         :: tide_opt_velocity   = 2
 

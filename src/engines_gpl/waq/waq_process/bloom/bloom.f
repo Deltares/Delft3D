@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_bloom
+      use m_waq_precision
       use m_bloom_3dl
       use m_spcsd
       use m_solvlp
@@ -57,35 +58,35 @@
       
       implicit none
 
-      integer irs3, i, ier, index1, index2, infeas, inow, int, inhib, ismax, iskmax, irerun
-      integer j, k, l1, l2, linf, ni, nin, nset, numuni, numun, swblsa
-      integer ntstot, itnum, ntsst, k1
-      integer nonuni(mt),nonun(mt),irs(3),lib(mx),jkmax(ms)
+      integer(kind=int_wp) ::irs3, i, ier, index1, index2, infeas, inow, int, inhib, ismax, iskmax, irerun
+      integer(kind=int_wp) ::j, k, l1, l2, linf, ni, nin, nset, numuni, numun, swblsa
+      integer(kind=int_wp) ::ntstot, itnum, ntsst, k1
+      integer(kind=int_wp) ::nonuni(mt),nonun(mt),irs(3),lib(mx),jkmax(ms)
       save    irs, irs3
-      real(8) :: x(mx),xinit(*),xdef(*),bio(2),groot(2),oroot(2*mt),root(2),emin(mt),xeco(*),xecost(ms),zood(0:mg)
-      real(8) :: t
-      real(8) :: usol
-      real(8) :: csol
-      real(8) :: extb
-      real(8) :: exttot
-      real(8) :: dsol
-      real(8) :: dep
-      real(8) :: day
-      real(8) :: daym
-      real(8) :: effi
-      real(8) :: extlim
-      real(8) :: biomax
-      real(8) :: total
-      real(8) :: totst
-      real(8) :: exlive
-      real(8) :: ekxi
-      real(8) :: zmax
-      real(8) :: death
+      real(kind=dp) ::x(mx),xinit(*),xdef(*),bio(2),groot(2),oroot(2*mt),root(2),emin(mt),xeco(*),xecost(ms),zood(0:mg)
+      real(kind=dp) ::t
+      real(kind=dp) ::usol
+      real(kind=dp) ::csol
+      real(kind=dp) ::extb
+      real(kind=dp) ::exttot
+      real(kind=dp) ::dsol
+      real(kind=dp) ::dep
+      real(kind=dp) ::day
+      real(kind=dp) ::daym
+      real(kind=dp) ::effi
+      real(kind=dp) ::extlim
+      real(kind=dp) ::biomax
+      real(kind=dp) ::total
+      real(kind=dp) ::totst
+      real(kind=dp) ::exlive
+      real(kind=dp) ::ekxi
+      real(kind=dp) ::zmax
+      real(kind=dp) ::death
       
       character*8 cdate
       character*1 errind
       logical lsolu
-      real(8), parameter :: solmin=100.0
+      real(kind=dp), parameter  ::solmin=100.0
 
       numuni = 0
       numun = 0

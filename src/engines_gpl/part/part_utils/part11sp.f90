@@ -53,7 +53,7 @@ contains
 
 !     Functions   called    : none
 
-      use precision_part               ! single/double precision
+      use m_waq_precision               ! single/double precision
       use timers
 
       implicit none               ! force explicit typing
@@ -62,25 +62,25 @@ contains
 
 !     kind            function         name                      description
 
-      integer  ( ip), intent(in   ) :: nmax                    !< first grid index
-      integer  ( ip), intent(in   ) :: mmax                    !< second grid index
-      integer  ( ip), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
-      integer  ( ip), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
-      real     ( rp), intent(in   ) :: xp    (nmax*mmax)       !< x of the grid cell corner
-      real     ( rp), intent(in   ) :: yp    (nmax*mmax)       !< y of the grid cell corner
-      integer  ( ip), intent(in   ) :: npart                   !< first grid cell index particles
-      integer  ( ip), intent(in   ) :: mpart                   !< second grid cell index particles
-      real     ( rp), intent(in   ) :: xpart                   !< x-in the grid of particles
-      real     ( rp), intent(in   ) :: ypart                   !< y-in the grid of particles
-      real     ( rp), intent(  out) :: xa                      !< absolute x of particles
-      real     ( rp), intent(  out) :: ya                      !< absolute y of particles
+      integer  ( int_wp ), intent(in   ) :: nmax                    !< first grid index
+      integer  ( int_wp ), intent(in   ) :: mmax                    !< second grid index
+      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xp    (nmax*mmax)       !< x of the grid cell corner
+      real     ( real_wp), intent(in   ) :: yp    (nmax*mmax)       !< y of the grid cell corner
+      integer  ( int_wp ), intent(in   ) :: npart                   !< first grid cell index particles
+      integer  ( int_wp ), intent(in   ) :: mpart                   !< second grid cell index particles
+      real     ( real_wp), intent(in   ) :: xpart                   !< x-in the grid of particles
+      real     ( real_wp), intent(in   ) :: ypart                   !< y-in the grid of particles
+      real     ( real_wp), intent(  out) :: xa                      !< absolute x of particles
+      real     ( real_wp), intent(  out) :: ya                      !< absolute y of particles
 
 !     Locals:
 
-      integer( ip) n0      ! linear 2D grid cell number of the particle
-      integer( ip) n1      ! first index minus 1 grid number
-      integer( ip) n2      ! second index minus 1 grid number
-      integer( ip) n3      ! both indices minus 1 grid number
+      integer( int_wp ) n0      ! linear 2D grid cell number of the particle
+      integer( int_wp ) n1      ! first index minus 1 grid number
+      integer( int_wp ) n2      ! second index minus 1 grid number
+      integer( int_wp ) n3      ! both indices minus 1 grid number
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

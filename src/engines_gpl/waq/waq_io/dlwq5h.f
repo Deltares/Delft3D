@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5h
+      use m_waq_precision
+
 
       implicit none
       
@@ -70,12 +72,12 @@
       character*(*) cnames(*)
       dimension     iar(*)
       character*20  chulp,  message_type
-      integer(4) :: ithndl = 0
-      integer    :: i1, i3, i4, i5
-      integer    :: lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
-      integer    :: itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
-      
-      integer :: ierr, iwar
+      integer(kind=int_wp) ::  ithndl = 0
+      integer(kind=int_wp) ::  i1, i3, i4, i5
+      integer(kind=int_wp) ::  lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
+      integer(kind=int_wp) ::  itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
+       
+      integer(kind=int_wp) ::  ierr, iwar
       
       
       ierr = -1

@@ -57,7 +57,7 @@ contains
 !     functions   called    : none.
 !
 !
-      use precision_part       ! single/double precision
+      use m_waq_precision       ! single/double precision
       use timers
       implicit none       ! force explicit typing
 
@@ -65,10 +65,10 @@ contains
 
 !     kind         function         name                    Descriptipon
 
-      integer(ip), intent(in   ) :: nmax                  !< first dimension lgrid
-      integer(ip), intent(in   ) :: mmax                  !< second dimension lgrid
-      integer(ip), intent(in   ) :: lgrid (nmax,mmax)     !< active grid indices matrix
-      integer(ip), intent(in   ) :: lgrid2(nmax,mmax)     !< total grid indices matrix
+      integer(int_wp ), intent(in   ) :: nmax                  !< first dimension lgrid
+      integer(int_wp ), intent(in   ) :: mmax                  !< second dimension lgrid
+      integer(int_wp ), intent(in   ) :: lgrid (nmax,mmax)     !< active grid indices matrix
+      integer(int_wp ), intent(in   ) :: lgrid2(nmax,mmax)     !< total grid indices matrix
       real   (sp), intent(in   ) :: xp    (nmax*mmax)     !< x of upper right corner grid point
       real   (sp), intent(in   ) :: yp    (nmax*mmax)     !< y of upper right corner grid point
       real   (sp), intent(  out) :: dx    (nmax*mmax)     !< x distance of grid cell
@@ -88,12 +88,12 @@ contains
       real    (sp) dyb     !  help var.
       real    (sp) pi
       real    (sp) sqrt
-      integer (ip) i       !  index var.
-      integer (ip) j       !  index var.
-      integer (ip) n0      !  lgrid value
-      integer (ip) n1      !  lgrid value
-      integer (ip) n2      !  lgrid value
-      integer (ip) n3      !  lgrid value
+      integer (int_wp ) i       !  index var.
+      integer (int_wp ) j       !  index var.
+      integer (int_wp ) n0      !  lgrid value
+      integer (int_wp ) n1      !  lgrid value
+      integer (int_wp ) n2      !  lgrid value
+      integer (int_wp ) n3      !  lgrid value
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

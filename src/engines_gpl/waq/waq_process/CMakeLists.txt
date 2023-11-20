@@ -3,7 +3,8 @@ set(library_name waq_process)
 
 create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 # Set dependencies
-set(oss_dependencies deltares_common
+set(oss_dependencies waq_definition
+                     deltares_common
                      deltares_common_c
                      nefis
                      solvesaphe

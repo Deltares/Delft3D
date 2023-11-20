@@ -21,8 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1_init
-use m_uniset
-
+use m_working_files, only: create_work_file_one
 
 implicit none
 
@@ -30,72 +29,71 @@ contains
 
 
 
-!>\file
-!>                    delwaq1_init: initializes timer and values
-!     SUBROUTINES CALLED :
-!                         *UNISET, reads input filename
+!! delwaq1_init: initializes timer and values
+!! SUBROUTINES CALLED :
+!!     create_work_file_one, reads input filename
 
-subroutine delwaq1_init(argc, argv)
-    use m_delwaq1_data
-    use m_dhgarg
+    subroutine delwaq1_init(argc, argv)
+        use m_delwaq1_data
+        use m_dhgarg
 
-    implicit none
+        implicit none
 
-    integer, intent(in)                           :: argc
-    character(len=*), dimension(argc), intent(in) :: argv
+        integer, intent(in)                           :: argc
+        character(len=*), dimension(argc), intent(in) :: argv
 
-    !     Special system init
+        !     Special system init
 
-    call timini ( )                          ! initializes timer
+        call timini ( )                          ! initializes timer
 
-    call dhstore_command( argv )
+        call dhstore_command( argv )
 
-    narg = dhstored_number_args()            ! but timer is switched 'off' by default
-    if ( narg .eq. 0 ) narg = iargc() + 1
-    do ierr = 1, narg
-        call dhgarg ( ierr, arg )
-        if ( arg .eq. "timer" .or. arg .eq. "TIMER" ) then
-          timon = .true.                     ! optionally switch it 'on'
-          exit
-        endif
-    enddo
-    if (timon) call timstrt( "delwaq1", ithndl )
+        narg = dhstored_number_args()            ! but timer is switched 'off' by default
+        if ( narg .eq. 0 ) narg = iargc() + 1
+        do ierr = 1, narg
+            call dhgarg ( ierr, arg )
+            if ( arg .eq. "timer" .or. arg .eq. "TIMER" ) then
+              timon = .true.                     ! optionally switch it 'on'
+              exit
+            endif
+        enddo
+        if (timon) call timstrt( "delwaq1", ithndl )
 
-    !        initialise values
+        !        initialise values
 
-    ierr   = 0
-    iwar   = 0
-    lunrep = lun(29)
-    nolun  = nlun
-    filtype = 0
-    noitem = noitm
-    noutp  = nooutp
-    noinfo = 0
-    nharms = 0
-    niharm = 0
-    nlines = 0
-    npoins = 0
-    newrsp = 0
-    newisp = 0
-    ivflag = 0
-    itflag = 0
-    ncbufm = 0
-    novar  = 0
-    noarr  = iasize + ijsize + icsize
-    nufil  = 0
-    do i=1, noitem
-      nrftot(i) = 0
-      nrharm(i) = 0
-    end do
-    StatProcesDef%maxsize = 0
-    StatProcesDef%cursize = 0
-    AllItems%maxsize = 0
-    AllItems%cursize = 0
-    GridPs%cursize=0
-    GridPs%maxsize=0
+        ierr   = 0
+        iwar   = 0
+        lunrep = lun(29)
+        nolun  = nlun
+        filtype = 0
+        noitem = noitm
+        noutp  = nooutp
+        noinfo = 0
+        nharms = 0
+        niharm = 0
+        nlines = 0
+        npoins = 0
+        newrsp = 0
+        newisp = 0
+        ivflag = 0
+        itflag = 0
+        ncbufm = 0
+        novar  = 0
+        noarr  = iasize + ijsize + icsize
+        nufil  = 0
+        do i=1, noitem
+          nrftot(i) = 0
+          nrharm(i) = 0
+        end do
+        StatProcesDef%maxsize = 0
+        StatProcesDef%cursize = 0
+        AllItems%maxsize = 0
+        AllItems%cursize = 0
+        GridPs%cursize=0
+        GridPs%maxsize=0
 
-    call uniset ( lun    , lchar , nolun , runid )
+        call create_work_file_one ( lun    , lchar , nolun , runid )
 
+    end subroutine delwaq1_init
 
-end subroutine delwaq1_init
 end module m_delwaq1_init

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq06
+      use m_waq_precision
       use m_opt1
       use m_opt0
       use m_dlwq5a
@@ -81,29 +82,29 @@
 !     Parameters    :
 !     type     kind  function         name             description
 
-      integer  ( 4), intent(inout) :: lun    (*)     !< array with unit numbers
+      integer(kind=int_wp), intent(inout) ::  lun    (*)      !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
-      integer  ( 4), intent(inout) :: filtype(*)     !< type of binary files
-      integer  ( 4), intent(in   ) :: icmax          !< size of the character workspace
+      integer(kind=int_wp), intent(inout) ::  filtype(*)      !< type of binary files
+      integer(kind=int_wp), intent(in   ) ::  icmax           !< size of the character workspace
       character(20), intent(inout) :: car   (icmax)  !< local character workspace
-      integer  ( 4), intent(in   ) :: iimax          !< size of the integer   workspace
-      integer  ( 4), intent(inout) :: iar   (iimax)  !< local integer   workspace
-      integer  ( 4), intent(in   ) :: irmax          !< size of the real      workspace
-      real     ( 4), intent(inout) :: rar   (irmax)  !< local real      workspace
-      integer  ( 4), intent(in   ) :: notot          !< total number of substances
-      integer  ( 4), intent(in   ) :: noseg          !< number of computational volumes
+      integer(kind=int_wp), intent(in   ) ::  iimax           !< size of the integer   workspace
+      integer(kind=int_wp), intent(inout) ::  iar   (iimax)   !< local integer   workspace
+      integer(kind=int_wp), intent(in   ) ::  irmax           !< size of the real      workspace
+      real(kind=real_wp), intent(inout) ::  rar   (irmax)   !< local real      workspace
+      integer(kind=int_wp), intent(in   ) ::  notot           !< total number of substances
+      integer(kind=int_wp), intent(in   ) ::  noseg           !< number of computational volumes
       character(20), intent(in   ) :: sname (notot)  !< IDs of the substances
-      integer  ( 4), intent(  out) :: nowst          !< number of waste loads
-      integer  ( 4), intent(  out) :: nowtyp         !< number of waste load types
-      integer  ( 4), intent(inout) :: nrftot( 11 )   !< number of function items per kind
-      integer  ( 4), intent(inout) :: nrharm( 11 )   !< number of harmonic items per kind
+      integer(kind=int_wp), intent(  out) ::  nowst           !< number of waste loads
+      integer(kind=int_wp), intent(  out) ::  nowtyp          !< number of waste load types
+      integer(kind=int_wp), intent(inout) ::  nrftot( 11 )    !< number of function items per kind
+      integer(kind=int_wp), intent(inout) ::  nrharm( 11 )    !< number of harmonic items per kind
       logical      , intent(in   ) :: dtflg1         !< if true then 'date'-format for 2nd time scale
       logical      , intent(in   ) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer  ( 4), intent(in   ) :: iwidth         !< width of the output file
-      integer  ( 4), intent(in   ) :: ioutpt         !< Degree of output in report file
+      integer(kind=int_wp), intent(in   ) ::  iwidth          !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  ioutpt          !< Degree of output in report file
       logical      , intent(out   ) :: chkpar(2)     !< Check for parameters SURF and LENGTH
-      integer  ( 4), intent(inout) :: ierr           !< cumulative error count
-      integer  ( 4), intent(inout) :: iwar           !< cumulative warning count
+      integer(kind=int_wp), intent(inout) ::  ierr            !< cumulative error count
+      integer(kind=int_wp), intent(inout) ::  iwar            !< cumulative warning count
 
 !     local
 
@@ -114,24 +115,24 @@
       character( 20), allocatable :: wsttype     (:) !  wasteload types
       character(256), allocatable :: wstid_long  (:) !  array to buffer the non truncated wasteload id's
       character(256), allocatable :: wsttype_long(:) !  array to buffer the non truncated wasteload types
-      integer  (  4), allocatable :: iwstseg     (:) !  wasteload segment
-      integer  (  4), allocatable :: iwsttype    (:) !  index wasteload type
-      integer  (  4), allocatable :: iwstkind    (:) !  kind array: 0 = pres: use present situation
+      integer(kind=int_wp), allocatable ::  iwstseg     (:)  !  wasteload segment
+      integer(kind=int_wp), allocatable ::  iwsttype    (:)  !  index wasteload type
+      integer(kind=int_wp), allocatable ::  iwstkind    (:)  !  kind array: 0 = pres: use present situation
                                                      !              1 = mass: use data as mass/sec      even with flow > 0
                                                      !              2 = conc: use data as concentration even with flow = 0
                                                      !              3 = rain: flow >= 0 use concentration, < 0 use 0.0
                                                      !              4 = well: flow >= 0 use concentration, < 0 use model-C
-      real     (  8), allocatable :: drar        (:) !  double precission workspace (very large !lp)
-      integer  (  4)                 lunwr           !  binary unit for wasteloads
-      integer  (  4)                 itype           !  type of token that is read
-      integer  (  4)                 ierr2           !  local error indicator
-      integer  (  4)                 ierr_alloc      !  local error indicator for allocation
-      integer  (  4)                 i               !  loop counter
-      integer  (  4)                 ifound          !  help variable in searches
-      integer  (  4)                 ifound2         !  help variable in searches
+      real(kind=dp), allocatable ::  drar        (:)  !  double precission workspace (very large !lp)
+      integer(kind=int_wp) :: lunwr            !  binary unit for wasteloads
+      integer(kind=int_wp) :: itype            !  type of token that is read
+      integer(kind=int_wp) :: ierr2            !  local error indicator
+      integer(kind=int_wp) :: ierr_alloc       !  local error indicator for allocation
+      integer(kind=int_wp) :: i                !  loop counter
+      integer(kind=int_wp) :: ifound           !  help variable in searches
+      integer(kind=int_wp) :: ifound2          !  help variable in searches
       logical                        ldummy          !  dummy logical
-      integer                        idummy          !  dummy integer
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: idummy           !  dummy integer
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq06", ithndl )
 
 !     Init

@@ -20,17 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_setgeo
+      module m_setdpt
+      use m_waq_precision
+
 
       implicit none
 
       contains
 
 
-      SUBROUTINE SETGEO ( LUNREP     , NOKEY      ,
+      SUBROUTINE SETDPT ( LUNREP     , NOKEY      ,
      +                    KEYNAM     , KEYVAL     ,
-     +                    PERNAM     , PERSFX     ,
-     +                    PSTART     , PSTOP      ,
      +                    IPROC      , aProcesProp,
      +                    AllItems   , IERR       ,
      +                    NOWARN     )
@@ -39,7 +39,7 @@
 !
 !     CREATED:            : februari 2002 by Jan van Beek
 !
-!     FUNCTION            : Sets io list for statistical routine STAGEO
+!     FUNCTION            : Sets io list for statistical routine STADPT
 !
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
 !                           ZOEK  , finds string in character array
@@ -53,10 +53,6 @@
 !     NOKEY   INTEGER        1  INPUT   number of keywords for this process
 !     KEYNAM  CHAR*20    NOKEY  INPUT   keyword name
 !     KEYVAL  CHAR*20    NOKEY  INPUT   keyword value
-!     PERNAM  CHAR*20        1  INPUT   period name
-!     PERSFX  CHAR*20        1  INPUT   period suffix
-!     PSTART  INTEGER        1  INPUT   period start
-!     PSTOP   INTEGER        1  INPUT   period stop
 !     IPROC   INTEGER        1  INPUT   index number proces
 !     aProcesProp               OUTPUT  properties for this proces
 !     AllItems                  INPUT   all items known to the proces system
@@ -73,30 +69,28 @@
 !
 !     Declaration of arguments
 !
-      INTEGER       LUNREP, NOKEY , PSTART, PSTOP , IPROC ,
-     +              IERR  , NOWARN
-      CHARACTER*20  PERNAM, PERSFX
+      INTEGER(kind=int_wp) ::LUNREP, NOKEY , IPROC , IERR  , NOWARN
       CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
       type(ItemPropColl)    :: AllItems            ! all items of the proces system
 !
 !     Local declarations
 !
-      INTEGER       IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
+      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
      +              IERR2     , IRET
-      INTEGER,      ALLOCATABLE :: ISUSED(:)
-      REAL          THRESH
+      INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
       CHARACTER*20  KEY       , SUFFIX
+      REAL(kind=real_wp) ::PERIOD
       type(ItemProp)        :: aItemProp            ! one item
-      integer(4) :: ithndl = 0
-      if (timon) call timstrt( "setgeo", ithndl )
+      integer(kind=int_wp) ::ithndl = 0
+      if (timon) call timstrt( "setdpt", ithndl )
 !
 !     init
 !
       ALLOCATE(ISUSED(NOKEY),STAT=IERR_ALLOC)
       IF ( IERR_ALLOC .NE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
-         WRITE(LUNREP,*) 'in routine SETGEO_3, buffer length:',NOKEY
+         WRITE(LUNREP,*) 'in routine SETDPT_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
          CALL SRSTOP(1)
       ENDIF
@@ -109,14 +103,14 @@
 !
 !     Fill the Propces Properties
 !
-      aProcesProp%name       = 'STAGEO'
+      aProcesProp%name       = 'STADPT'
       WRITE(aProcesProp%name(7:10),'(I4.4)') IPROC
-      aProcesProp%routine    = 'STAGEO'
-      aProcesProp%text       = 'geometric mean'
+      aProcesProp%routine    = 'STADPT'
+      aProcesProp%text       = 'depth averaged output'
       aProcesProp%swtransp   = 123
-      aProcesProp%type       = PROCESTYPE_STAT
-      aProcesProp%no_input      = 7
-      aProcesProp%no_output     = 4
+      aProcesProp%type       = PROCESTYPE_OUTPUT
+      aProcesProp%no_input      = 2
+      aProcesProp%no_output     = 3
       aProcesProp%no_FluxOutput = 0
       aProcesProp%no_FluxStochi = 0
       aProcesProp%no_DispStochi = 0
@@ -126,7 +120,7 @@
      +         STAT=IERR_ALLOC)
       IF ( IERR_ALLOC .NE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
-         WRITE(LUNREP,*) 'in routine SETDAY_1, array length:',aProcesProp%no_input,aProcesProp%no_output
+         WRITE(LUNREP,*) 'in routine SETDPT_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
          CALL SRSTOP(1)
       ENDIF
@@ -156,97 +150,20 @@
          aProcesProp%input_item(1)%item=>AllItems%ItemPropPnts(iret)%pnt
       ENDIF
 !
-      aItemProp%name    = 'START     '//aProcesProp%name(1:10)
-      aItemProp%default = PSTART
-      aItemProp%text    = 'start of statistic output period'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aItemProp%name    = 'VOLUME'
+      iret = ItemPropCollFind( AllItems, aItemProp )
+      if ( iret .le. 0 ) then
+         aItemProp%default = -999.
+         aItemProp%text    = 'volume of segment'
+         aItemProp%waqtype = WAQTYPE_DEFAULT
+         iret = ItemPropCollAdd( AllItems, aItemProp )
+      endif
       aProcesProp%input_item(2)%name=aItemProp%name
       aProcesProp%input_item(2)%type=IOTYPE_SEGMENT_INPUT
       aProcesProp%input_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(2)%actdef=PSTART
+      aProcesProp%input_item(2)%actdef=-999.
       aProcesProp%input_item(2)%indx  = 2
       aProcesProp%input_item(2)%ip_val  = 0
-!
-      aItemProp%name    = 'STOP      '//aProcesProp%name(1:10)
-      aItemProp%default = PSTOP
-      aItemProp%text    = 'stop of statistic output period'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%input_item(3)%name=aItemProp%name
-      aProcesProp%input_item(3)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(3)%actdef=PSTOP
-      aProcesProp%input_item(3)%indx  = 3
-      aProcesProp%input_item(3)%ip_val  = 0
-!
-      aItemProp%name    = 'ITIME'
-      iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
-         aItemProp%default = -999.
-         aItemProp%text    = 'time in calculation'
-         aItemProp%waqtype = WAQTYPE_DEFAULT
-         iret = ItemPropCollAdd( AllItems, aItemProp )
-      endif
-      aProcesProp%input_item(4)%name=aItemProp%name
-      aProcesProp%input_item(4)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(4)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(4)%actdef=-999.
-      aProcesProp%input_item(4)%indx  = 4
-      aProcesProp%input_item(4)%ip_val  = 0
-!
-      aItemProp%name    = 'IDT'
-      iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
-         aItemProp%default = -999.
-         aItemProp%text    = 'time step'
-         aItemProp%waqtype = WAQTYPE_DEFAULT
-         iret = ItemPropCollAdd( AllItems, aItemProp )
-      endif
-      aProcesProp%input_item(5)%name=aItemProp%name
-      aProcesProp%input_item(5)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(5)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(5)%actdef=-999.
-      aProcesProp%input_item(5)%indx  = 5
-      aProcesProp%input_item(5)%ip_val  = 0
-!
-      KEY = 'THRESH'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
-      IF ( IKEY .LE. 0 ) THEN
-         THRESH = 1.0
-      ELSE
-         ISUSED(IKEY) = 1
-         READ(KEYVAL(IKEY),'(E20.0)',IOSTAT=IERR2) THRESH
-         IF ( IERR2 .NE. 0 ) THEN
-            WRITE(LUNREP,*)'ERROR interpreting threshold:',KEYVAL(IKEY)
-            IERR = IERR + 1
-         ENDIF
-      ENDIF
-      aItemProp%name    = 'THRESH    '//aProcesProp%name(1:10)
-      aItemProp%default = THRESH
-      aItemProp%text    = 'threshold because of logarithm'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%input_item(6)%name=aItemProp%name
-      aProcesProp%input_item(6)%type=IOTYPE_SEGMENT_INPUT
-      aProcesProp%input_item(6)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(6)%actdef=THRESH
-      aProcesProp%input_item(6)%indx  = 6
-      aProcesProp%input_item(6)%ip_val  = 0
-!
-      aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
-      aItemProp%default = 0.0
-      aItemProp%text    = 'time step counter'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%input_item(7)%name=aItemProp%name
-      aProcesProp%input_item(7)%type=IOTYPE_SEGMENT_WORK
-      aProcesProp%input_item(7)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(7)%actdef=0.0
-      aProcesProp%input_item(7)%indx  = 7
-      aProcesProp%input_item(7)%ip_val  = 0
-!
-!     output
 !
       KEY = 'SUFFIX'
       CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
@@ -257,16 +174,14 @@
          ISUSED(IKEY) = 1
       ENDIF
       CALL DHSLEN(SUFFIX,ISLEN)
+!
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
-         SUFFIX =SUFFIX(1:ISLEN)//'_'//PERSFX
+         aItemProp%name    = 'DPTAVG_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
-         SUFFIX ='GEO_'//PERSFX
+         aItemProp%name    = 'DPTAVG_'//aProcesProp%input_item(1)%name
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
-
-      aItemProp%name    = 'T_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       aItemProp%default = -999.
-      aItemProp%text    = 'time step counter above threshold '//aProcesProp%input_item(1)%name
+      aItemProp%text    = 'depth average '//aProcesProp%input_item(1)%name
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%output_item(1)%name=aItemProp%name
@@ -275,11 +190,15 @@
       aProcesProp%output_item(1)%indx= 1
       aProcesProp%output_item(1)%ip_val= 0
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                   '] created with time step counter above threshold from [',aProcesProp%input_item(1)%name,']'
+     +                   '] created with depth average from [',aProcesProp%input_item(1)%name,']'
 !
-      aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+         aItemProp%name    = 'DPTMAX_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      ELSE
+         aItemProp%name    = 'DPTMAX_'//aProcesProp%input_item(1)%name
+      ENDIF
       aItemProp%default = -999.
-      aItemProp%text    = 'geomentric mean of values above threshold '//aProcesProp%input_item(1)%name
+      aItemProp%text    = 'maximum over depth '//aProcesProp%input_item(1)%name
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%output_item(2)%name=aItemProp%name
@@ -288,11 +207,15 @@
       aProcesProp%output_item(2)%indx= 2
       aProcesProp%output_item(2)%ip_val= 0
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                   '] created with geometric mean of values above threshold from [',aProcesProp%input_item(1)%name,']'
+     +                   '] created with maximum over depth from [',aProcesProp%input_item(1)%name,']'
 !
-      aItemProp%name    = 'ALL_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+         aItemProp%name    = 'DPTMIN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
+      ELSE
+         aItemProp%name    = 'DPTMIN_'//aProcesProp%input_item(1)%name
+      ENDIF
       aItemProp%default = -999.
-      aItemProp%text    = 'geometric mean of max(value,threshold) '//aProcesProp%input_item(1)%name
+      aItemProp%text    = 'minimum over depth '//aProcesProp%input_item(1)%name
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%output_item(3)%name=aItemProp%name
@@ -301,20 +224,7 @@
       aProcesProp%output_item(3)%indx= 3
       aProcesProp%output_item(3)%ip_val= 0
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                   '] created with geometric mean of max(value,threshold) from [',aProcesProp%input_item(1)%name,']'
-
-      ! Add the companion for the TCOUNT input item
-      aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
-      aItemProp%default = -999.
-      aItemProp%text    = 'time step counter (work array)'
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(4)%name=aItemProp%name
-      aProcesProp%output_item(4)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(4)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(4)%indx= 4
-      aProcesProp%output_item(4)%ip_val= 0
-
+     +                   '] created with minimum over depth from [',aProcesProp%input_item(1)%name,']'
 !
 !     check the use of the key words
 !
@@ -334,4 +244,4 @@
  2000 FORMAT(5A)
       END
 
-      end module m_setgeo
+      end module m_setdpt

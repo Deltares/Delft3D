@@ -35,17 +35,17 @@ subroutine write_part_restart_file()
     use fileinfo
     use openfl_mod
     use m_part_modeltypes       ! part model definitions
-    
-    
+
+
     implicit none
 
     ! Locals
-    integer(ip) :: ilp, isp, ids, ide, iext, nores, noras
-    integer(ip) :: lunut             !  output unit number
+    integer(int_wp ) :: ilp, isp, ids, ide, iext, nores, noras
+    integer(int_wp ) :: lunut             !  output unit number
     integer     :: lures
 
-    
-    
+
+
     ! first to calculate the number of particles in the restart files
     nores = 0
     noras = 0

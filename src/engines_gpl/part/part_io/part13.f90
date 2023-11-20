@@ -59,7 +59,7 @@ contains
 
 !     functions   called    : findcell
 
-      use precision_part          ! single and double precision
+      use m_waq_precision          ! single and double precision
       use m_part_modeltypes       ! part model definitions
       use timers
       use putget_mod         ! explicit interface
@@ -76,65 +76,65 @@ contains
 
 !     kind           function         name                       description
 
-      integer  ( ip), intent(in   ) :: lun1                    !< unit nr of the map file
+      integer  ( int_wp ), intent(in   ) :: lun1                    !< unit nr of the map file
       character( * ), intent(in   ) :: lname                   !< name of the plotgrid-file
-      integer  ( ip), intent(in   ) :: lun2                    !< unit nr of the log file
+      integer  ( int_wp ), intent(in   ) :: lun2                    !< unit nr of the log file
       character( 40), intent(in   ) :: title (4)               !< model and run titles
-      integer  ( ip), intent(in   ) :: nosubs                  !< actual number of substances
-      integer  ( ip), intent(in   ) :: nosub_max               !< maximum number of substances
+      integer  ( int_wp ), intent(in   ) :: nosubs                  !< actual number of substances
+      integer  ( int_wp ), intent(in   ) :: nosub_max               !< maximum number of substances
       character( * ), intent(in   ) :: subst (nosub_max)       !< substance name and unit specs
-      integer  ( ip), intent(in   ) :: nmax                    !< first dimension of lgrid2
-      integer  ( ip), intent(in   ) :: mmax                    !< sec. dimension of lgrid2
-      integer  ( ip), intent(in   ) :: lgrid2(nmax,mmax)       !< model grid layout (total)
-      integer  ( ip), intent(in   ) :: nolay                   !< actual number of layers
-      real     ( rp), intent(in   ) :: volume(nmax*mmax*nolay) !< volumes of the lgrid2 cells
-      real     ( rp), intent(in   ) :: area  (nmax*mmax*nolay) !< horizontal surface areas of the lgrid2 cells
-      integer  ( ip), intent(in   ) :: nopart                  !< nr of particles
-      integer  ( ip), intent(in   ) :: npart (nopart)          !< n-values of particles
-      integer  ( ip), intent(in   ) :: mpart (nopart)          !< m-values of particles
-      real     ( rp), intent(in   ) :: xpart (nopart)          !< x-values of particles
-      real     ( rp), intent(in   ) :: ypart (nopart)          !< y-values of particles
-      real     ( rp), intent(in   ) :: wpart (nosubs,nopart)   !< weights of the particles
-      integer  ( ip), intent(in   ) :: itime                   !< simulation time
-      integer  ( ip), intent(in   ) :: idelt                   !< simulation time step
-      integer  ( ip), intent(in   ) :: iptmax                  !< nr of plot grids
-      integer  ( ip), intent(in   ) :: ipset (iptmax)          !< plot grid times
-      real     ( rp), intent(  out) :: xa    (nopart)          !< national coordinates of parts
-      real     ( rp), intent(  out) :: ya    (nopart)          !< national coordinates of parts
-      real     ( rp), intent(in   ) :: xb    (nmax*mmax)       !< x-values of bottom points
-      real     ( rp), intent(in   ) :: yb    (nmax*mmax)       !< y-values of bottom points
+      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension of lgrid2
+      integer  ( int_wp ), intent(in   ) :: mmax                    !< sec. dimension of lgrid2
+      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< model grid layout (total)
+      integer  ( int_wp ), intent(in   ) :: nolay                   !< actual number of layers
+      real     ( real_wp), intent(in   ) :: volume(nmax*mmax*nolay) !< volumes of the lgrid2 cells
+      real     ( real_wp), intent(in   ) :: area  (nmax*mmax*nolay) !< horizontal surface areas of the lgrid2 cells
+      integer  ( int_wp ), intent(in   ) :: nopart                  !< nr of particles
+      integer  ( int_wp ), intent(in   ) :: npart (nopart)          !< n-values of particles
+      integer  ( int_wp ), intent(in   ) :: mpart (nopart)          !< m-values of particles
+      real     ( real_wp), intent(in   ) :: xpart (nopart)          !< x-values of particles
+      real     ( real_wp), intent(in   ) :: ypart (nopart)          !< y-values of particles
+      real     ( real_wp), intent(in   ) :: wpart (nosubs,nopart)   !< weights of the particles
+      integer  ( int_wp ), intent(in   ) :: itime                   !< simulation time
+      integer  ( int_wp ), intent(in   ) :: idelt                   !< simulation time step
+      integer  ( int_wp ), intent(in   ) :: iptmax                  !< nr of plot grids
+      integer  ( int_wp ), intent(in   ) :: ipset (iptmax)          !< plot grid times
+      real     ( real_wp), intent(  out) :: xa    (nopart)          !< national coordinates of parts
+      real     ( real_wp), intent(  out) :: ya    (nopart)          !< national coordinates of parts
+      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax)       !< x-values of bottom points
+      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax)       !< y-values of bottom points
       type(PlotGrid), intent(in   ) :: pg                      !< plot grid information
-      real     ( rp), intent(in   ) :: recovr(iptmax)          !< recovery for the plots
-      real     ( rp), intent(  out) :: atotal(nolay,nosubs)    !< total per mass per subst/per layer
-      integer  ( ip), intent(in   ) :: iyear                   !< year offset to real time
-      integer  ( ip), intent(in   ) :: imonth                  !< month offset to real time
-      integer  ( ip), intent(in   ) :: iofset                  !< day offset in seconds to real time
-      integer  ( ip), intent(in   ) :: npwndw                  !< start of active nopart number
-      integer  ( ip), intent(in   ) :: lgrid (nmax,mmax)       !< active grid numbers
-      real     ( rp), intent(in   ) :: pblay                   !< relative thickness lower layer
-      integer  ( ip), intent(in   ) :: modtyp                  !< model type
-      real     ( rp), intent(  out) :: apeak (nosubs,nolay)    !< max mass per subst/per layer
-      real     ( rp), intent(  out) :: adepth(nosubs,nolay)    !< depth for max mass
-      integer  ( ip), intent(in   ) :: bufsize                 !< size of rbuffr
-      real     ( rp)                :: rbuffr(bufsize)         !< work storage
-      integer  ( ip), intent(in   ) :: kpart (nopart)          !< k-values of particles
-      integer  ( ip), intent(in   ) :: itrack                  !< substance number for tracks
-      integer  ( ip), intent(in   ) :: ntrack                  !< nr of particles to track
-      integer  ( ip), intent(in   ) :: nplot (ntrack)          !< particle nr's for particle tracks
-      integer  ( ip), intent(in   ) :: mapsub(nosubs)          !< substances numbers in map
-      integer  ( ip), intent(in   ) :: isfile(nosubs)          !< when 1 then from conc array
-      integer  ( ip), intent(in   ) :: nfract                  !< number of oil fractions
+      real     ( real_wp), intent(in   ) :: recovr(iptmax)          !< recovery for the plots
+      real     ( real_wp), intent(  out) :: atotal(nolay,nosubs)    !< total per mass per subst/per layer
+      integer  ( int_wp ), intent(in   ) :: iyear                   !< year offset to real time
+      integer  ( int_wp ), intent(in   ) :: imonth                  !< month offset to real time
+      integer  ( int_wp ), intent(in   ) :: iofset                  !< day offset in seconds to real time
+      integer  ( int_wp ), intent(in   ) :: npwndw                  !< start of active nopart number
+      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid numbers
+      real     ( real_wp), intent(in   ) :: pblay                   !< relative thickness lower layer
+      integer  ( int_wp ), intent(in   ) :: modtyp                  !< model type
+      real     ( real_wp), intent(  out) :: apeak (nosubs,nolay)    !< max mass per subst/per layer
+      real     ( real_wp), intent(  out) :: adepth(nosubs,nolay)    !< depth for max mass
+      integer  ( int_wp ), intent(in   ) :: bufsize                 !< size of rbuffr
+      real     ( real_wp)                :: rbuffr(bufsize)         !< work storage
+      integer  ( int_wp ), intent(in   ) :: kpart (nopart)          !< k-values of particles
+      integer  ( int_wp ), intent(in   ) :: itrack                  !< substance number for tracks
+      integer  ( int_wp ), intent(in   ) :: ntrack                  !< nr of particles to track
+      integer  ( int_wp ), intent(in   ) :: nplot (ntrack)          !< particle nr's for particle tracks
+      integer  ( int_wp ), intent(in   ) :: mapsub(nosubs)          !< substances numbers in map
+      integer  ( int_wp ), intent(in   ) :: isfile(nosubs)          !< when 1 then from conc array
+      integer  ( int_wp ), intent(in   ) :: nfract                  !< number of oil fractions
       logical       , intent(in   ) :: lsettl                  !< if .true. then settling in an extra layer
-      integer  ( ip), intent(in   ) :: mstick(nosubs)          !< sticking oil material if < 0 then sticky
+      integer  ( int_wp ), intent(in   ) :: mstick(nosubs)          !< sticking oil material if < 0 then sticky
       character( * ), pointer       :: elt_names(:)            !<  NEFIS
       character( * ), pointer       :: elt_types(:)            !<  NEFIS
-      integer  ( ip), pointer       :: elt_dims (:,:)          !<  NEFIS
-      integer  ( ip), pointer       :: elt_bytes(:)            !<  NEFIS
-      real     ( rp)                :: locdep(nmax*mmax,nolay)
-      real     ( rp), intent(in   ) :: zpart (nopart)          !< z-values of particles
-      real     ( rp), intent(  out) :: za    (nopart)          !< national coordinates of parts
-      real     ( rp), intent(in   ) :: dps   (nmax*mmax)       !< depth
-      real     ( rp), intent(in   ) :: tcktot(nolay+1)         !< layer thickness
+      integer  ( int_wp ), pointer       :: elt_dims (:,:)          !<  NEFIS
+      integer  ( int_wp ), pointer       :: elt_bytes(:)            !<  NEFIS
+      real     ( real_wp)                :: locdep(nmax*mmax,nolay)
+      real     ( real_wp), intent(in   ) :: zpart (nopart)          !< z-values of particles
+      real     ( real_wp), intent(  out) :: za    (nopart)          !< national coordinates of parts
+      real     ( real_wp), intent(in   ) :: dps   (nmax*mmax)       !< depth
+      real     ( real_wp), intent(in   ) :: tcktot(nolay+1)         !< layer thickness
 !
 !     parameters            :
 !
@@ -371,7 +371,7 @@ contains
         write ( lun2, * ) ' Writing to new plotgrid file:', lname(1:len_trim(lname))
         call openfl ( lun1, lname, 1 )
         write(lun1) title
-        write(lun1) -1,nosubs+2 , nmap, mmap, nolay ,    & 
+        write(lun1) -1,nosubs+2 , nmap, mmap, nolay ,    &
                        iyear, imonth, iofset
         write(lun1) window , surf
         write(lun1) (subst(i  ), i   = 1, nosubs+2)

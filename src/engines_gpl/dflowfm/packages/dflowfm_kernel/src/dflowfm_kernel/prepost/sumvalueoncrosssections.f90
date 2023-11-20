@@ -47,7 +47,7 @@ subroutine sumvalueOnCrossSections(resu, numvals)
     integer, intent(in)           :: numvals             !< Which values to sum (1=discharge)
     double precision, intent(out) :: resu(numvals,ncrs)  !< cross-section data, note: ncrs from module m_monitoring_crosssections
 
-    integer                       :: i, Lf, L, k1, k2, IP, num, LL
+    integer                       :: i, Lf, L, k1, k2, IP, num, LL, IPTOT
     integer                       :: icrs
     double precision              :: val
     integer                       :: lsed
@@ -83,31 +83,47 @@ subroutine sumvalueOnCrossSections(resu, numvals)
               enddo
            enddo
  
-           if( jased == 4 .and. stmpar%lsedtot > 0 ) then ! todo, loop korter tot lsedsus.
-              IP = IPNT_HUA + NUMCONST_MDU + 1 ! TODO: mourits/dam_ar: check whether all uses of NUMCONST versus NUMCONST_MDU are now correct.
-              do lsed = 1,stmpar%lsedtot
-                 resu(IP,icrs) = resu(IP,icrs) + sedtra%e_sbn(L,lsed) * wu_mor(L) * dble(sign(1, Lf))
-              enddo
-              if( stmpar%lsedsus > 0 ) then
-                 IP = IP + 1
-                 do lsed = 1,stmpar%lsedsus
-                    resu(IP,icrs) = resu(IP,icrs) + sedtra%e_ssn(L,lsed) * wu(L) * dble(sign(1, Lf))
+           if( jased == 4 ) then 
+              if ( stmpar%lsedtot > 0 ) then ! todo, loop korter tot lsedsus.
+                 IP = IPNT_HUA + NUMCONST_MDU + 1 ! TODO: mourits/dam_ar: check whether all uses of NUMCONST versus NUMCONST_MDU are now correct.
+                 IPTOT = IP
+                 do lsed = 1,stmpar%lsedtot  ! sum of bed load 
+                    IP = IP + 1
+                    val = sedtra%e_sbn(L,lsed) * wu_mor(L) * dble(sign(1, Lf))
+                    resu(IPTOT,icrs) = resu(IPTOT,icrs) + val   ! sum of bed load on crosssections
+                    resu(IP,icrs) = resu(IP,icrs) + val         ! bed load on crosssections per fraction
                  enddo
               endif
-              do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+              if( stmpar%lsedsus > 0 ) then
                  IP = IP + 1
-                 resu(IP,icrs) = resu(IP,icrs) + sedtra%e_sbn(L,lsed) * wu_mor(L) * dble(sign(1, Lf))
-              enddo
+                 IPTOT = IP
+                 do lsed = 1,stmpar%lsedsus ! sum of suspended load 
+                    IP = IP + 1
+                    val = resu(IP,icrs) + sedtra%e_ssn(L,lsed) * wu(L) * dble(sign(1, Lf))
+                    resu(IPTOT,icrs) = resu(IPTOT,icrs) + val   ! sum of suspended load on crosssections
+                    resu(IP,icrs) = resu(IP,icrs) + val         ! suspended load on crosssections per fraction
+                 enddo
+              endif
            endif
        end do
     end do   ! do icrs=1,ncrs
 
-    if( jased == 4 .and. stmpar%lsedtot > 0 ) then
-       IP = IPNT_HUA + NUMCONST_MDU + 1
-       sumvalcum_timescale(IP) = stmpar%morpar%morfac
+    if( jased == 4 ) then 
+       if ( stmpar%lsedtot > 0 ) then
+          IP = IPNT_HUA + NUMCONST_MDU + 1
+          sumvalcum_timescale(IP) = stmpar%morpar%morfac
+          do lsed = 1,stmpar%lsedtot
+             IP = IP + 1
+             sumvalcum_timescale(IP) = stmpar%morpar%morfac
+          enddo    
+       endif
        if( stmpar%lsedsus > 0 ) then
           IP = IP + 1;
           sumvalcum_timescale(IP) = stmpar%morpar%morfac
+          do lsed = 1,stmpar%lsedsus
+             IP = IP + 1
+             sumvalcum_timescale(IP) = stmpar%morpar%morfac
+          enddo    
        endif
     endif
 

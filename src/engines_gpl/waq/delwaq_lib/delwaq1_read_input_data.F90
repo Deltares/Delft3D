@@ -56,7 +56,7 @@ contains
 
 subroutine delwaq1_read_input_data()
 
-    use m_dlwqs1
+    use m_delwaq_statistical_process
     use m_dlwqp1
     use m_delwaq1_data
 
@@ -176,14 +176,14 @@ subroutine delwaq1_read_input_data()
                   icmak  , iimax  , iwidth , ibflag , &
                   ioutpt , ioutps , outputs, ierr   , iwar   )
 
-    call dlwqs1 ( lunrep       , npos         , &
-                  cchar        , &
-                  ilun         , lch          , &
-                  lstack       , ioutpt       , &
-                  dtflg1       , dtflg3       , &
-                  statprocesdef, allitems     , &
-                  noinfo       , iwar         , &
-                  ierr         )
+    call setup_statistical ( lunrep       , npos         , &
+                            cchar        , &
+                            ilun         , lch          , &
+                            lstack       , ioutpt       , &
+                            dtflg1       , dtflg3       , &
+                            statprocesdef, allitems     , &
+                            noinfo       , iwar         , &
+                            ierr         )
     write ( lunrep,'(//'' Messages presented in this .lst file:'')')
     write ( lunrep,'( /'' Number of WARNINGS            :'',I6)') iwar
     write ( lunrep,'(  '' Number of ERRORS during input :'',I6)') ierr

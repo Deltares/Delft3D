@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_cascad
+use m_waq_precision
+
 
 implicit none
 
@@ -80,20 +82,20 @@ use m_evaluate_waq_attribute
 
     implicit none
 
-    real     pmsa  ( * ) , fl    (*)
-    integer  ipoint(20)  , increm(20) , noseg , noflux, &
+    real(kind=real_wp)      ::pmsa  ( * ) , fl    (*)
+    integer(kind=int_wp)   ::ipoint(20)  , increm(20) , noseg , noflux, &
              iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 
-    integer  iseg, iflux, ikmrk1
+    integer(kind=int_wp)   ::iseg, iflux, ikmrk1
 
-    real     c1, c2, c3, c4, c5
-    real     decay1, decay2, decay3, decay4, decay5
-    real     trc1c2, trc1c3, trc1c4, trc1c5
-    real     trc2c3, trc2c4, trc2c5
-    real     trc3c4, trc3c5
-    real     trc4c5
+    real(kind=real_wp)      ::c1, c2, c3, c4, c5
+    real(kind=real_wp)      ::decay1, decay2, decay3, decay4, decay5
+    real(kind=real_wp)      ::trc1c2, trc1c3, trc1c4, trc1c5
+    real(kind=real_wp)      ::trc2c3, trc2c4, trc2c5
+    real(kind=real_wp)      ::trc3c4, trc3c5
+    real(kind=real_wp)      ::trc4c5
 
-    integer  ipnt(20)
+    integer(kind=int_wp)   ::ipnt(20)
 
     ipnt  = ipoint(1:20)
     iflux = 0

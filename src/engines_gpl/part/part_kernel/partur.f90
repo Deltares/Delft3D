@@ -27,7 +27,7 @@ module partur_mod
 !
 !  data definition module(s)
 !
-use precision_part               ! single/double precision
+use m_waq_precision               ! single/double precision
       use timers
 !
 !  module procedure(s)
@@ -116,12 +116,12 @@ contains
 !
 !     dimensioning
 !
-      integer(ip),dimension(:)    :: iftime , ifopt , nosyss, ipnt
-      integer(ip),dimension(:)    :: iptime , kpart
-      integer(ip),dimension(:)    :: iutime
-      integer(ip),dimension(:)    :: ndprt
-      integer(ip),dimension(:)    :: npart , mpart
-      integer(ip),dimension(:,:)  :: lgrid
+      integer(int_wp ),dimension(:)    :: iftime , ifopt , nosyss, ipnt
+      integer(int_wp ),dimension(:)    :: iptime , kpart
+      integer(int_wp ),dimension(:)    :: iutime
+      integer(int_wp ),dimension(:)    :: ndprt
+      integer(int_wp ),dimension(:)    :: npart , mpart
+      integer(int_wp ),dimension(:,:)  :: lgrid
 !
       real   (sp),dimension(:)    :: buffer, volume, uscal
       real   (sp),dimension(:)    :: xpart , ypart , zpart
@@ -129,7 +129,7 @@ contains
       real   (sp),dimension(:,:)  :: amasud
       real   (sp),dimension(:,:)  :: wpart
 !
-      integer(ip),dimension(:)    :: isub  , isfil
+      integer(int_wp ),dimension(:)    :: isub  , isfil
 !
       character(len=256), dimension(:)  :: finam
       character(len= 20), dimension(:)  :: sname
@@ -141,12 +141,12 @@ contains
 !
 !     local scalars
 !
-      integer(ip) ::  nmax
-      integer(ip) ::  is     , isout  , itime
-      integer(ip) ::  iu     , iwt    , lun    , mmax
-      integer(ip) ::  nocont , nodye  , noemax , nolay   , nopart
-      integer(ip) ::  nosegm , noudef , npold
-      integer(ip) ::  nosubs , nosubud
+      integer(int_wp ) ::  nmax
+      integer(int_wp ) ::  is     , isout  , itime
+      integer(int_wp ) ::  iu     , iwt    , lun    , mmax
+      integer(int_wp ) ::  nocont , nodye  , noemax , nolay   , nopart
+      integer(int_wp ) ::  nosegm , noudef , npold
+      integer(int_wp ) ::  nosubs , nosubud
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "partur", ithndl )
@@ -219,4 +219,3 @@ contains
 !
       end subroutine
 end module
-

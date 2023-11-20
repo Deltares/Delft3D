@@ -21,15 +21,18 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module precision_part
-!
-!  module declarations
-!
-      implicit none
-      integer, parameter :: ip = kind(1)      ! precision of normal integers
-      integer, parameter :: rp = kind(1.0)    ! precision of normal reals
-      integer, parameter :: sp = kind(1.0e0)  ! single precision
-      integer, parameter :: dp = kind(1.0d0)  ! double precision
-      integer, parameter :: fp = sp
-      integer, parameter :: hp = dp
-end module precision_part
+module m_waq_precision
+
+   use, intrinsic :: iso_fortran_env
+   implicit none
+   private
+   public ::  INT16, INT64, int_wp, sp, dp, qp, real_wp
+
+   integer, parameter :: int_wp = INT32
+
+   integer, parameter :: sp = REAL32
+   integer, parameter :: real_wp = REAL32
+   integer, parameter :: dp = REAL64
+   integer, parameter :: qp = REAL128
+
+end module m_waq_precision

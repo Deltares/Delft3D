@@ -49,7 +49,7 @@ contains
 
 !     Logical units     : * standard output
 
-      use precision_part        ! single/double precision
+      use m_waq_precision        ! single/double precision
       use timers
       use grid_search_mod
       use typos
@@ -60,28 +60,28 @@ contains
 
 !     kind            function         name                description
 
-      integer  ( ip), intent(in   ) :: npgrid            !< number of plot grids
+      integer  ( int_wp ), intent(in   ) :: npgrid            !< number of plot grids
       type(PlotGrid)                   pg    (npgrid)    !< collection with plot grid information
-      integer  ( ip), intent(in   ) :: nmax              !< 1st dimension of the flow grid
-      integer  ( ip), intent(in   ) :: mmax              !< 2nd dimension of the flow grid
-      integer  ( ip), intent(in   ) :: lgrid (nmax,mmax) !< active grid matrix
-      integer  ( ip), intent(in   ) :: lgrid2(nmax,mmax) !< total grid matrix
-      real     ( rp), intent(in   ) :: xb    (nmax*mmax) !< x-values of the grid cell corners
-      real     ( rp), intent(in   ) :: yb    (nmax*mmax) !< y-values of the grid cell corners
+      integer  ( int_wp ), intent(in   ) :: nmax              !< 1st dimension of the flow grid
+      integer  ( int_wp ), intent(in   ) :: mmax              !< 2nd dimension of the flow grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax) !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax) !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax) !< x-values of the grid cell corners
+      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax) !< y-values of the grid cell corners
 
 !     local scalars
 
-      integer(ip) :: ig             ! loop counter over grids
-      real   (rp) :: xpf  , ypf     ! step sizes in x and y direction
-      integer(ip) :: ix   , iy      ! loop counters within the grids
+      integer(int_wp ) :: ig             ! loop counter over grids
+      real   (real_wp) :: xpf  , ypf     ! step sizes in x and y direction
+      integer(int_wp ) :: ix   , iy      ! loop counters within the grids
       real   (sp) :: xnloc, ynloc   ! location of the middle of the plot grid cell
-      integer(ip) :: i    , j       ! loop counters around a corner point
-      integer(ip) :: nmloc          ! linear grid cell number found
+      integer(int_wp ) :: i    , j       ! loop counters around a corner point
+      integer(int_wp ) :: nmloc          ! linear grid cell number found
 
 !     progress bar ?!
 
-      integer(ip)    nocell, ncols, ifreq
-      real   (rp)    proc
+      integer(int_wp )    nocell, ncols, ifreq
+      real   (real_wp)    proc
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

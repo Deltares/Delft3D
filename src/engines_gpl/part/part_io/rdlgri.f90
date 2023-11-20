@@ -60,7 +60,7 @@ contains
 
 !     functions   called    : none.
 
-      use precision_part               ! single and double precision
+      use m_waq_precision               ! single and double precision
       use timers
       use rd_token                ! tokenized reading like in DELWAQ
       use partmem
@@ -77,24 +77,24 @@ contains
 
 !     kind           function         name                 description
 
-      integer  ( ip), intent(in   ) :: nfiles            !< nr. of files
-      integer  ( ip), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
+      integer  ( int_wp ), intent(in   ) :: nfiles            !< nr. of files
+      integer  ( int_wp ), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
       character(256), intent(inout) :: fname(nfiles)     !< file names of all files
 
 !     locals
 
       integer, allocatable   :: frm_to (:,:)     !  Delwaq exchange pointer
       integer, allocatable   :: ibnd   ( : )     !  locations of boundaries in the grid
-      integer  ( ip) noq1   , noq2   , noq3      !  dimensions of the active grid
-      integer  ( ip) nmax2  , mmax2  , layt2     !  dimensions of the total grid
-      integer  ( ip) i      , j      , k         !  loop counters in the 3 dimensions
-      integer  ( ip) n, ne, m, me                !  help variables grid index
-      integer  ( ip) i1                          !  help variable grid index
-      integer  ( ip) iseg                        !  help variable grid index
-      integer  ( ip) nobndl                      !  number of boundaries in 1 layer
+      integer  ( int_wp ) noq1   , noq2   , noq3      !  dimensions of the active grid
+      integer  ( int_wp ) nmax2  , mmax2  , layt2     !  dimensions of the total grid
+      integer  ( int_wp ) i      , j      , k         !  loop counters in the 3 dimensions
+      integer  ( int_wp ) n, ne, m, me                !  help variables grid index
+      integer  ( int_wp ) i1                          !  help variable grid index
+      integer  ( int_wp ) iseg                        !  help variable grid index
+      integer  ( int_wp ) nobndl                      !  number of boundaries in 1 layer
 
       integer(4) ithndl              ! handle to time this subroutine
-      integer(ip) lun
+      integer(int_wp ) lun
       data       ithndl / 0 /
       if ( timon ) call timstrt( "rdlgri", ithndl )
 
@@ -108,7 +108,7 @@ contains
       call rdhyd ( nfiles , lunit  , fname  , hyd    , layt   , zmodel , ihdel  ,                 &
      &             tcktot , zlbot  , zltop  , ndoms  , nbnds  , doms   , bnds   )
 
-      if (zmodel) then 
+      if (zmodel) then
          write ( lunit(2), *)
          write ( lunit(2), *) ' Zlayer defintion of z-layer model'
          write ( lunit(2), *)
@@ -123,7 +123,7 @@ contains
       write (lunit(2), *)
       write ( lunit(2), * ) ' Opening the active grid file file:', fname(3)(1:len_trim(fname(3)))
       call openfl ( lunit(3), fname(3), 0 )
-      
+
       read ( lunit(3), end = 10, err = 10 ) nmaxp, mmaxp, noseglp, layt2, noq1 , noq2 , noq3
       write( lunit(2),*) '   '
       write( lunit(2),*) ' Exchanges read from active grid file (*.lga) '

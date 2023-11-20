@@ -26,7 +26,7 @@ module behv_horseshoecrab_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -51,23 +51,23 @@ contains
                              ztop2    , zbot1   , zbot2  , vzact1 , vzact2      ,   &
                              vswim1   , vswim2  , iseg   , lunrep , angle  )
 
-        ! function  : Horse shoe crab (Carcinoscorpius rotundicauda) specific behaviour collected 
-        !              
-        
+        ! function  : Horse shoe crab (Carcinoscorpius rotundicauda) specific behaviour collected
+        !
+
 
         ! arguments :
 
-        integer(ip), intent(in)     :: lunrep              ! report file
-        integer(ip), intent(in)     :: nosegl              ! number segments per layer
-        integer(ip), intent(in)     :: nolay               ! number of layers in calculation
-        integer(ip), intent(in)     :: nmax                ! first grid dimension
-        integer(ip), intent(in)     :: mmax                ! second grid dimension
-        integer(ip), intent(in)     :: mnmaxk              ! total number of active grid cells
-        integer(ip), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer(ip), pointer        :: lgrid2( : , : )     ! total grid
-        integer(ip), pointer        :: lgrid3( : , : )     ! original grid (conc array)
+        integer(int_wp ), intent(in)     :: lunrep              ! report file
+        integer(int_wp ), intent(in)     :: nosegl              ! number segments per layer
+        integer(int_wp ), intent(in)     :: nolay               ! number of layers in calculation
+        integer(int_wp ), intent(in)     :: nmax                ! first grid dimension
+        integer(int_wp ), intent(in)     :: mmax                ! second grid dimension
+        integer(int_wp ), intent(in)     :: mnmaxk              ! total number of active grid cells
+        integer(int_wp ), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+        integer(int_wp ), pointer        :: lgrid2( : , : )     ! total grid
+        integer(int_wp ), pointer        :: lgrid3( : , : )     ! original grid (conc array)
 
-        integer(ip), pointer        :: kpart ( : )         ! third grid index of the particles
+        integer(int_wp ), pointer        :: kpart ( : )         ! third grid index of the particles
         real   (sp), pointer        :: xpart ( : )         ! x-value (0.0-1.0) first  direction within grid cell
         real   (sp), pointer        :: ypart ( : )         ! y-value (0.0-1.0) second direction within grid cell
         real   (sp), pointer        :: zpart ( : )         ! z-value (0.0-1.0) third  direction within grid cell
@@ -107,10 +107,10 @@ contains
         ! local :
 
         real(sp), pointer           :: phase_diurn(:)      ! phase in diurnal behaviour
-        integer(ip)                 :: ipart               ! particle index        
+        integer(int_wp )                 :: ipart               ! particle index
         real   (sp)                 :: fstage              ! fraction of current stage
-        integer(ip)                 :: istage              ! integer stage development
-        integer(ip)                 :: idelt               ! timestep in seconds
+        integer(int_wp )                 :: istage              ! integer stage development
+        integer(int_wp )                 :: idelt               ! timestep in seconds
         real   (sp)                 :: day                 ! time in days
         real   (sp)                 :: a                   ! a coefficient in development (-)
         real   (sp)                 :: b                   ! b coefficient in development (-)
@@ -122,12 +122,12 @@ contains
         real   (sp)                 :: zbot                ! zbot
         integer                     :: m                   ! m
         integer                     :: n                   ! n
-        
+
         real   (sp)                 :: zdepth              ! z relative to water surface
         real   (sp)                 :: zlevel              ! z relative to bottom
         logical, pointer            :: ebb_flow( : )       ! true if flow is ebb
         logical                     :: daytime             ! true if it is daytime, false in night
-        
+
         integer                     :: behaviour_type      ! actual behaviour type
 
         integer, parameter          :: behaviour_none     = 0 ! behaviour type none
@@ -135,11 +135,11 @@ contains
         integer, parameter          :: behaviour_larval   = 2  ! behaviour type larval
         integer, parameter          :: behaviour_adult    = 3  ! behaviour type adult
 
-        
+
 
         real                        :: vswim                  ! swimming velocity
         real                        :: local_angle            ! angle towards lowest salinity in grid
-        
+
         real                        :: lb_sal                 ! lower boundary of salinity
         real                        :: ub_sal                 ! upper boundary of salinity
 
@@ -154,7 +154,7 @@ contains
         real                        :: sal_n41
 
         real                        :: lb_temp                ! lower boundary of temperature
-        real                        :: ub_temp                ! upper boundary of temperature       
+        real                        :: ub_temp                ! upper boundary of temperature
 
         real                        :: temp_n0
         real                        :: temp_n1
@@ -165,9 +165,9 @@ contains
         real                        :: temp_n34
         real                        :: temp_n4
         real                        :: temp_n41
-        
+
         real                        :: lb_bath                ! lower boundary of bathymetry
-        real                        :: ub_bath                ! upper boundary of bathymetry       
+        real                        :: ub_bath                ! upper boundary of bathymetry
 
         real                        :: bath_n0
         real                        :: bath_n1
@@ -178,24 +178,24 @@ contains
         real                        :: bath_n34
         real                        :: bath_n4
         real                        :: bath_n41
-        
-        logical                     :: stick_to_bottom        ! stick to bottom when reached     
-        logical                     :: dive_at_night          ! dive during the night, if untrue dive during the day         
-        
+
+        logical                     :: stick_to_bottom        ! stick to bottom when reached
+        logical                     :: dive_at_night          ! dive during the night, if untrue dive during the day
+
         ! HORSESHOE CRAB BEHAVIOUR TYPES
-        
+
         istage  = wpart(2,ipart)                                                         ! Get current stage of particle
-        
+
         !Set layer and/or settling velocity according to stage and type of vertical behaviour
 
         behaviour_type = btype(istage)                                                   ! Assign the vertical behaviour type by stage
         select case ( behaviour_type )                                                   ! Select behaviour by numbering
 
-           case ( behaviour_none )                                                       !Behaviour 0 
+           case ( behaviour_none )                                                       !Behaviour 0
 
               !The particle shows no active behaviour in the vertical and in the horizontal
 
-              !Horizontal behaviour                                                        
+              !Horizontal behaviour
               v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
               d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
 
@@ -204,24 +204,24 @@ contains
 
             case ( behaviour_passive)                                                    !Behaviour 1
 
-             !Horizontal behaviour                                                        
+             !Horizontal behaviour
              v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
              d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
-             
-             !The particle shows no active behaviour in the vertical and in the horizontal, 
+
+             !The particle shows no active behaviour in the vertical and in the horizontal,
              ! but is subject to bouyancy and a maximum diving depth.
-            
+
              buoy = buoy1(istage) + fstage*(buoy2(istage)-buoy1(istage))               ! Set the bouyancy for the particle
              vz = buoy                                                                 ! Set the vertical direction for the particle
-             
+
              wsettl(ipart) = vz
 
            case ( behaviour_larval)                                                     !Behaviour 1
 
-             !Horizontal behaviour                                                        
+             !Horizontal behaviour
              v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
              d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
-             
+
              stick_to_bottom = .true.                                                   ! Hardcoded stick to bottom
              lb_bath = 0.001                                                            ! Hardcoded lower boundary for bathymetry
              ub_bath = 500.000                                                          ! Hardcoded upper boundary for bathymetry
@@ -229,20 +229,20 @@ contains
              buoy = buoy1(istage) + fstage*(buoy2(istage)-buoy1(istage))                ! Set the bouyancy for the particle
              vzact = vzact1(istage) + fstage*(vzact2(istage)-vzact1(istage))            ! Set the vertical swimming velocity for the particle
              vswim = vswim1(istage) + fstage*(vswim2(istage)-vswim1(istage))            ! Set the horizontal swimming velocity indicator
-                          
+
              !Standard swimming velocity of particle
              v_swim(ipart) = vswim                                                      ! Set the horizontal swimming velocity to the indicator
 
 
              !Horizontal behaviour
-             
-             !The particle will dig into the sediment when ebb flow occurs, and emerse when flood flow occurs 
+
+             !The particle will dig into the sediment when ebb flow occurs, and emerse when flood flow occurs
              ! when flood the particle will actively swimm towards the shallower coast
              ! wind will effect the particle when in the top layer
-             
+
              ! check if it is daytime or night
              call intpltd_diurnal ( lunrep, day, daytime)
-             
+
              ! Assemble bathymertry values of surrounding gridcells
              !  return: v_swim and d_swim
              call orien_bathymetry ( lunrep    , n           , m        , nmax        , mmax        ,    &
@@ -251,44 +251,40 @@ contains
                                      ypart     , a           , b        , flow        , local_angle ,    &
                                      lb_bath   , ub_bath     , bath_n0  , bath_n1     , bath_n12    ,    &
                                      bath_n2   , bath_n23    , bath_n3  , bath_n34    , bath_n4     ,    &
-                                     bath_n41 ) 
-            
+                                     bath_n41 )
+
             ! No swimming during outgoing tide
              call vert_swimm_tidal (   lunrep,   ebb_flow  , iseg , k, nolay, &
                                        stick_to_bottom , ipart , wsettl , kpart , zpart , &
                                        buoy , vzact , v_swim , d_swim )
-                         
+
             ! No swimming during the day
              call vert_swimm_diurnal (   lunrep        , daytime  , k       , nolay   , stick_to_bottom ,    &
                                          dive_at_night , ipart    , wsettl  , kpart   , zpart           ,    &
                                          buoy          , vzact    , v_swim  , d_swim  )
-                
-              
-           case ( behaviour_adult )                                                       !Behaviour 2 
+
+
+           case ( behaviour_adult )                                                       !Behaviour 2
 
               ! the adult behaviour is added for the end of simulation
               !The particle shows no active behaviour in the vertical and in the horizontal
 
-              !Horizontal behaviour                                                        
+              !Horizontal behaviour
               v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
               d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
 
               !Vertical behaviour
               wsettl(ipart) = 0.0                                                       ! Setteling velocity is set to 0
-             
-             
+
+
            case default                                                                 !Behaviour Default
 
               write(lunrep,*) ' error, larval behaviour type not defined'               ! Give an error notice that vertical behaviour is not defined
               call stop_exit(1)                                                         ! Stop the calculation
-    
-               
+
+
         end select
 
       return                                                                                                         !Return from the subroutine
       end subroutine
 end module
-
-
-
-            

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_pripro
+      use m_waq_precision
+
 
       implicit none
 
@@ -57,15 +59,15 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
 !     Local declaration
 !
-      integer  iseg
-      REAL     ALGMIN
-      INTEGER  NR_MES
+      integer(kind=int_wp) ::iseg
+      REAL(kind=real_wp) ::ALGMIN
+      INTEGER(kind=int_wp) ::NR_MES
       SAVE     NR_MES
       DATA     NR_MES / 0 /
 !

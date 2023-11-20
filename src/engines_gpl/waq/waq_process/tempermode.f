@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_tempermode
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,32 +41,32 @@
 
 !     arguments
 
-      REAL               :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-      REAL               :: FL(*)              ! in/out flux array
-      INTEGER            :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER            :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER            :: NOSEG              ! in     number of segments
-      INTEGER            :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-      INTEGER            :: IEXPNT(4,*)        ! in     exchange pointer table
-      INTEGER            :: IKNMRK(*)          ! in     segment features array
-      INTEGER            :: NOQ1               ! in     number of exchanges in first direction
-      INTEGER            :: NOQ2               ! in     number of exchanges in second direction
-      INTEGER            :: NOQ3               ! in     number of exchanges in third direction
-      INTEGER            :: NOQ4               ! in     number of exchanges in fourth direction
+      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::FL(*)              ! in/out flux array
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
+      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
+      INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
+      INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
+      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
 
 !     from PMSA array
 
-      REAL               :: MTEMP              ! 1  in  Modelled temperature                                [oC]
-      REAL               :: TMPNAT             ! 2  in  natural temperature of ambient water                [oC]
-      INTEGER            :: ISWTMP             ! 3  in  DELWAQ process time step                             [d]
-      REAL               :: TTEMP              ! 4  out Total temperature                                   [oC]
-      REAL               :: ETEMP              ! 5  out EXCESS! temperature                                 [oC]
+      REAL(kind=real_wp) ::MTEMP              ! 1  in  Modelled temperature                                [oC]
+      REAL(kind=real_wp) ::TMPNAT             ! 2  in  natural temperature of ambient water                [oC]
+      INTEGER(kind=int_wp) ::ISWTMP             ! 3  in  DELWAQ process time step                             [d]
+      REAL(kind=real_wp) ::TTEMP              ! 4  out Total temperature                                   [oC]
+      REAL(kind=real_wp) ::ETEMP              ! 5  out EXCESS! temperature                                 [oC]
 
 !     local decalrations
 
 
-      INTEGER  IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 
-      INTEGER  IFLUX , ISEG  , IKMRK2
+      INTEGER(kind=int_wp) ::IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6
+      INTEGER(kind=int_wp) ::IFLUX , ISEG  , IKMRK2
 
       IP1  = IPOINT(1 )
       IP2  = IPOINT(2 )

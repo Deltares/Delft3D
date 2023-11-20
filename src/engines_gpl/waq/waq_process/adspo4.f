@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_adspo4
+      use m_waq_precision
+
 
       implicit none
 
@@ -103,18 +105,18 @@
       IMPLICIT REAL (A-H,J-Z)
       IMPLICIT INTEGER (i)
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      INTEGER  IVERSN
-      REAL     AAP   , PO4   , EQAAP , KDADS , KADS20 , KADS   , KSORP ,
+      INTEGER(kind=int_wp) ::IVERSN
+      REAL(kind=real_wp) ::AAP   , PO4   , EQAAP , KDADS , KADS20 , KADS   , KSORP ,
      +         FCAP  , FRA   , FADS  , CADST , CADS   , IM1    , IM2   ,
      +         IM3   , TFE   , FRFE1 , FRFE2 , FRFE3  , FRFEOX , FIM1  ,
      +         FIM2  , FIM3  , PH    , OH    , AOH    , TEMP   , TC    ,
      +         OXY   , CROXY , POROS , DELT  , SWADSP , QIM1   , QIM2  ,
      +         QIM3  , EQAAPM
-      INTEGER  NR_MES, ILUMON
+      INTEGER(kind=int_wp) ::NR_MES, ILUMON
       SAVE     NR_MES
       DATA     NR_MES / 0 /
 !

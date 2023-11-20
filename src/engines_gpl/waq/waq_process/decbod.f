@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_decbod
+      use m_waq_precision
+
 
       implicit none
 
@@ -76,18 +78,18 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  (*) , FL  (*)
-      INTEGER  NOSEG , NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
-      INTEGER  IPOINT(*)       , INCREM(*),
+      REAL(kind=real_wp) ::PMSA  (*) , FL  (*)
+      INTEGER(kind=int_wp) ::NOSEG , NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
+      INTEGER(kind=int_wp) ::IPOINT(*)       , INCREM(*),
      +         IEXPNT(4,*)     , IKNMRK(*)
 !
-      INTEGER  LUNREP
-      INTEGER  IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
+      INTEGER(kind=int_wp) ::LUNREP
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
      +         IP11, IP12, IP13, IP14
-      INTEGER  IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10,
+      INTEGER(kind=int_wp) ::IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10,
      +         IN11, IN12, IN13, IN14
-      INTEGER  IFLUX, ISEG
-      REAL     OXFUNC, OXY, BOD5_1, BOD5_2, BOD5_3, BODU_1, BODU_2,
+      INTEGER(kind=int_wp) ::IFLUX, ISEG
+      REAL(kind=real_wp) ::OXFUNC, OXY, BOD5_1, BOD5_2, BOD5_3, BODU_1, BODU_2,
      +         BODU_3, RCBOD1, RCBOD2, RCBOD3, BOD5, BODU, KMOX,
      +         dBOD51, dBOD52, dBOD53, dBODU1, dBODU2, dBODU3, OXYDEM
 !

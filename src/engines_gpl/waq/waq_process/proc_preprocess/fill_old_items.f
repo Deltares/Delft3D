@@ -27,6 +27,8 @@
 !
 !
       module m_fill_old_items
+      use m_waq_precision
+
 
       implicit none
 
@@ -54,9 +56,9 @@
       ! local declaration
 
       type(old_item)            :: a_old_item        ! single process
-      integer                   :: i                 ! loop counter old items
-      integer                   :: i2                ! index in collection
-      integer(4)                :: ithndl = 0        ! handle for performance timer
+      integer(kind=int_wp) ::i                 ! loop counter old items
+      integer(kind=int_wp) ::i2                ! index in collection
+      integer(kind=int_wp) ::ithndl = 0        ! handle for performance timer
       if (timon) call timstrt( "fill_old_items", ithndl )
 
       do i = 1, n_old_items

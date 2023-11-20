@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_vbupt
+use m_waq_precision
+
 
 implicit none
 
@@ -39,54 +41,54 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 25) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 25) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 25)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 25) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 25) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 25)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(4) fVB         ! I  area scaled flux dVB01                             (gC/m2/d)
-      real(4) SwVBGro     ! I  vegetation biomass growth allowed (0=no,1=yes)     (-)
-      real(4) F1VB        ! I  allocation factor comp. 1 (stem) VB01              (-)
-      real(4) F2VB        ! I  allocation factor comp. 2 (foliage) VB01           (-)
-      real(4) F3VB        ! I  allocation factor comp. 3 (branch) VB01            (-)
-      real(4) F4VB        ! I  allocation factor comp. 4 (root) VB01              (-)
-      real(4) F5VB        ! I  allocation factor comp. 5 (fineroot) VB01          (-)
-      real(4) CNf1VB      ! I  carbon-nitrogen ratio in stem VB01                 (gC/gN)
-      real(4) CNf2VB      ! I  carbon-nitrogen ratio in foliage VB01              (gC/gN)
-      real(4) CNf3VB      ! I  carbon-nitrogen ratio in branch VB01               (gC/gN)
-      real(4) CNf4VB      ! I  carbon-nitrogen ratio in root VB01                 (gC/gN)
-      real(4) CNf5VB      ! I  carbon-nitrogen ratio in fineroot VB01             (gC/gN)
-      real(4) CPf1VB      ! I  carbon-phosporus ratio in stem VB01                (gC/gP)
-      real(4) CPf2VB      ! I  carbon-phosporus ratio in foliage VB01             (gC/gP)
-      real(4) CPf3VB      ! I  carbon-phosporus ratio in branch VB01              (gC/gP)
-      real(4) CPf4VB      ! I  carbon-phosporus ratio in root VB01                (gC/gP)
-      real(4) CPf5VB      ! I  carbon-phosporus ratio in fineroot VB01            (gC/gP)
-      real(4) CSf1VB      ! I  carbon-sulphur ratio in stem VB01                  (gC/gS)
-      real(4) CSf2VB      ! I  carbon-sulphur ratio in foliage VB01               (gC/gS)
-      real(4) CSf3VB      ! I  carbon-sulphur ratio in branch VB01                (gC/gS)
-      real(4) CSf4VB      ! I  carbon-sulphur ratio in root VB01                  (gC/gS)
-      real(4) CSf5VB      ! I  carbon-sulphur ratio in fineroot                   (gC/gS)
+      real(kind=real_wp)  ::fVB         ! I  area scaled flux dVB01                             (gC/m2/d)
+      real(kind=real_wp)  ::SwVBGro     ! I  vegetation biomass growth allowed (0=no,1=yes)     (-)
+      real(kind=real_wp)  ::F1VB        ! I  allocation factor comp. 1 (stem) VB01              (-)
+      real(kind=real_wp)  ::F2VB        ! I  allocation factor comp. 2 (foliage) VB01           (-)
+      real(kind=real_wp)  ::F3VB        ! I  allocation factor comp. 3 (branch) VB01            (-)
+      real(kind=real_wp)  ::F4VB        ! I  allocation factor comp. 4 (root) VB01              (-)
+      real(kind=real_wp)  ::F5VB        ! I  allocation factor comp. 5 (fineroot) VB01          (-)
+      real(kind=real_wp)  ::CNf1VB      ! I  carbon-nitrogen ratio in stem VB01                 (gC/gN)
+      real(kind=real_wp)  ::CNf2VB      ! I  carbon-nitrogen ratio in foliage VB01              (gC/gN)
+      real(kind=real_wp)  ::CNf3VB      ! I  carbon-nitrogen ratio in branch VB01               (gC/gN)
+      real(kind=real_wp)  ::CNf4VB      ! I  carbon-nitrogen ratio in root VB01                 (gC/gN)
+      real(kind=real_wp)  ::CNf5VB      ! I  carbon-nitrogen ratio in fineroot VB01             (gC/gN)
+      real(kind=real_wp)  ::CPf1VB      ! I  carbon-phosporus ratio in stem VB01                (gC/gP)
+      real(kind=real_wp)  ::CPf2VB      ! I  carbon-phosporus ratio in foliage VB01             (gC/gP)
+      real(kind=real_wp)  ::CPf3VB      ! I  carbon-phosporus ratio in branch VB01              (gC/gP)
+      real(kind=real_wp)  ::CPf4VB      ! I  carbon-phosporus ratio in root VB01                (gC/gP)
+      real(kind=real_wp)  ::CPf5VB      ! I  carbon-phosporus ratio in fineroot VB01            (gC/gP)
+      real(kind=real_wp)  ::CSf1VB      ! I  carbon-sulphur ratio in stem VB01                  (gC/gS)
+      real(kind=real_wp)  ::CSf2VB      ! I  carbon-sulphur ratio in foliage VB01               (gC/gS)
+      real(kind=real_wp)  ::CSf3VB      ! I  carbon-sulphur ratio in branch VB01                (gC/gS)
+      real(kind=real_wp)  ::CSf4VB      ! I  carbon-sulphur ratio in root VB01                  (gC/gS)
+      real(kind=real_wp)  ::CSf5VB      ! I  carbon-sulphur ratio in fineroot                   (gC/gS)
 
-      real(4) fNVB01up    ! O  uptake roots VB01                                  (gN/m2/d)
-      real(4) fPVB01up    ! O  uptake roots VB01                                  (gP/m2/d)
-      real(4) fSVB01up    ! O  uptake roots VB01                                  (gS/m2/d)
-      real(4) weighCN
-      real(4) weighCP
-      real(4) weighCS
+      real(kind=real_wp)  ::fNVB01up    ! O  uptake roots VB01                                  (gN/m2/d)
+      real(kind=real_wp)  ::fPVB01up    ! O  uptake roots VB01                                  (gP/m2/d)
+      real(kind=real_wp)  ::fSVB01up    ! O  uptake roots VB01                                  (gS/m2/d)
+      real(kind=real_wp)  ::weighCN
+      real(kind=real_wp)  ::weighCP
+      real(kind=real_wp)  ::weighCS
 !
 !*******************************************************************************
 !

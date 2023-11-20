@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_stadpt
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,23 +62,23 @@
 
       implicit none
 
-      real     pmsa  ( * ) , fl    (*)
-      integer  ipoint( * ) , increm(*) , noseg , noflux
-      integer  iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
+      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint( * ) , increm(*) , noseg , noflux
+      integer(kind=int_wp) ::iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 !
-      integer  ip1   , ip2   , ip3   , ip4   , ip5
-      integer  in1   , in2   , in3   , in4   , in5
-      integer  ikmrk
-      real     volume
+      integer(kind=int_wp) ::ip1   , ip2   , ip3   , ip4   , ip5
+      integer(kind=int_wp) ::in1   , in2   , in3   , in4   , in5
+      integer(kind=int_wp) ::ikmrk
+      real(kind=real_wp) ::volume
 
 !     work arrays
-      real, allocatable :: cdepsum(:)
-      real, allocatable :: vdepsum(:)
-      real, allocatable :: cdepavg(:)
-      real, allocatable :: cdepmax(:)
-      real, allocatable :: cdepmin(:)
+      real(kind=real_wp), allocatable  ::cdepsum(:)
+      real(kind=real_wp), allocatable  ::vdepsum(:)
+      real(kind=real_wp), allocatable  ::cdepavg(:)
+      real(kind=real_wp), allocatable  ::cdepmax(:)
+      real(kind=real_wp), allocatable  ::cdepmin(:)
       
-      integer           :: iseg, ifrom, ito, ik1from, ik1to, iq
+      integer(kind=int_wp) ::iseg, ifrom, ito, ik1from, ik1to, iq
 
       ip1 = ipoint(1)
       ip2 = ipoint(2)

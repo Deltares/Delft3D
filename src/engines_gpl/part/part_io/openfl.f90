@@ -29,7 +29,7 @@ module openfl_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part              ! single and double precision
+use m_waq_precision              ! single and double precision
 use timers
 !
 !  module procedure(s)
@@ -76,8 +76,8 @@ contains
 !
 !     local scalars
 !
-      integer(ip) :: iopt, ierror
-      integer(ip) :: lun
+      integer(int_wp ) :: iopt, ierror
+      integer(int_wp ) :: lun
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "openfl", ithndl )

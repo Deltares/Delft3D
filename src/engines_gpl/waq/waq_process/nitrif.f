@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_nitrif
+      use m_waq_precision
+
 
       implicit none
 
@@ -91,24 +93,24 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      INTEGER  IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
      +         IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19
-      INTEGER  IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10,
+      INTEGER(kind=int_wp) ::IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10,
      +         IN11, IN12, IN13, IN14, IN15, IN16, IN17, IN18, IN19
-      INTEGER  IFLUX, ISEG
-      REAL     TC     , O2FUNC , COX    , OOX    , CFL    , SKEWN  ,
+      INTEGER(kind=int_wp) ::IFLUX, ISEG
+      REAL(kind=real_wp) ::TC     , O2FUNC , COX    , OOX    , CFL    , SKEWN  ,
      +         ZERO   , RC     , CONC
-      INTEGER  IVERSN
-      REAL     K0NIT  , K0OX   , K0TEMP , KNIT   , KSAM   , KSOX   ,
+      INTEGER(kind=int_wp) ::IVERSN
+      REAL(kind=real_wp) ::K0NIT  , K0OX   , K0TEMP , KNIT   , KSAM   , KSOX   ,
      +         CROXY  , NH4    , AMFUNC , OXFUNC
-      REAL     POROS  , CRTEMP , OXY    , TEMP   , TEMPC  , TEMP20
-      REAL     DELT
-      REAL     FLNIT
-      REAL     NOX_RATIO
+      REAL(kind=real_wp) ::POROS  , CRTEMP , OXY    , TEMP   , TEMPC  , TEMP20
+      REAL(kind=real_wp) ::DELT
+      REAL(kind=real_wp) ::FLNIT
+      REAL(kind=real_wp) ::NOX_RATIO
 !
       IN1  = INCREM( 1)
       IN2  = INCREM( 2)

@@ -72,7 +72,7 @@ contains
 !
 !  data definition module(s)
 !
-      use precision_part        ! single/double precision
+      use m_waq_precision        ! single/double precision
       use timers           ! performance timer
       use typos
       use grid_search_mod
@@ -84,47 +84,47 @@ contains
 
 !**   parameters used for dimensioning
 
-      integer(ip), intent(in)    :: layt                ! number of layers of hydr. database
-      integer(ip), intent(in)    :: mmax                ! second grid dimension
-      integer(ip), intent(in)    :: mnmaxk              ! total number of active grid cells
-      integer(ip), intent(in)    :: nmax                ! first grid dimension
-      integer(ip), intent(in)    :: nopart              ! total number of particles
-      integer(ip), intent(in)    :: nosubs              ! number of substances per particle
+      integer(int_wp ), intent(in)    :: layt                ! number of layers of hydr. database
+      integer(int_wp ), intent(in)    :: mmax                ! second grid dimension
+      integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
+      integer(int_wp ), intent(in)    :: nmax                ! first grid dimension
+      integer(int_wp ), intent(in)    :: nopart              ! total number of particles
+      integer(int_wp ), intent(in)    :: nosubs              ! number of substances per particle
 
 !**   other parameters
 
-      integer(ip), intent(in)    :: idelt               ! time step size in seconds
-      integer(ip), intent(in)    :: ioptdv              ! if 0 constant vertical diffusion &
+      integer(int_wp ), intent(in)    :: idelt               ! time step size in seconds
+      integer(int_wp ), intent(in)    :: ioptdv              ! if 0 constant vertical diffusion &
                                                         ! if 1 depth averaged algebraic model
-      integer(ip), pointer    :: lgrid (:, : )          ! grid with active grid numbers, negatives for open boundaries
-      integer(ip), pointer    :: lgrid2(:, : )          ! total grid with grid numbers
+      integer(int_wp ), pointer    :: lgrid (:, : )          ! grid with active grid numbers, negatives for open boundaries
+      integer(int_wp ), pointer    :: lgrid2(:, : )          ! total grid with grid numbers
       logical    , intent(in) :: zmodel                 ! layer type
-      integer(ip), intent(in) :: laytop(:, :)           ! highest active layer in z-layer model
-      integer(ip), intent(in) :: laybot(:, :)           ! deepest active layer in z-layer model
-      integer(ip), intent(in) :: lun2                   ! unit number debug in formation file
-      integer(ip), pointer    :: mapsub(: )             ! index for substances, used for oil
-      integer(ip), intent(in) :: modtyp                 ! 1 = tracer model              &
+      integer(int_wp ), intent(in) :: laytop(:, :)           ! highest active layer in z-layer model
+      integer(int_wp ), intent(in) :: laybot(:, :)           ! deepest active layer in z-layer model
+      integer(int_wp ), intent(in) :: lun2                   ! unit number debug in formation file
+      integer(int_wp ), pointer    :: mapsub(: )             ! index for substances, used for oil
+      integer(int_wp ), intent(in) :: modtyp                 ! 1 = tracer model              &
                                                         ! 2 = 2-layer temperature model &
                                                         ! 3 = obsolete                  &
                                                         ! 4 = oil model                 &
                                                         ! 5 = 1-layer temperature model &
                                                         ! 6 = plastics model
                                                         ! 7 = abm model
-      integer(ip), intent(in)    :: nfract              ! nr of oil fractions, each fraction 3 substances &
+      integer(int_wp ), intent(in)    :: nfract              ! nr of oil fractions, each fraction 3 substances &
                                                         ! floating, dispersed and sticked
-      integer(ip), intent(in)    :: npwndw              ! first active particle
-      integer(ip), intent(in)    :: nstick              ! number of sticked particles !!!!! in !!!!!
-      integer(ip), pointer :: iptime( : )         ! particle age in seconds
-      integer(ip), pointer :: kpart ( : )         ! third grid index of the particles
-      integer(ip), pointer :: mpart ( : )         ! second grid index of the particles
-      integer(ip), pointer :: mpart0( : )         ! second grid index particles for previous time step
-      integer(ip), pointer :: mstick( : )         ! which active substances can sticking (>0) and what is inactive partner?
+      integer(int_wp ), intent(in)    :: npwndw              ! first active particle
+      integer(int_wp ), intent(in)    :: nstick              ! number of sticked particles !!!!! in !!!!!
+      integer(int_wp ), pointer :: iptime( : )         ! particle age in seconds
+      integer(int_wp ), pointer :: kpart ( : )         ! third grid index of the particles
+      integer(int_wp ), pointer :: mpart ( : )         ! second grid index of the particles
+      integer(int_wp ), pointer :: mpart0( : )         ! second grid index particles for previous time step
+      integer(int_wp ), pointer :: mstick( : )         ! which active substances can sticking (>0) and what is inactive partner?
                                                         ! j = mstick(i), j = inactive, i = active ; if j = 0 no sticking
                                                         ! if j is negative then i itself is sticking
-      integer(ip), intent(inout) :: nolay               ! number of layers == layt
-      integer(ip), pointer :: npart ( : )         ! first  grid index of the particles
-      integer(ip), pointer :: npart0( : )         ! first  grid index particles for previous time step
-      integer(ip), pointer :: floil ( : )         ! contains values 1 or 0
+      integer(int_wp ), intent(inout) :: nolay               ! number of layers == layt
+      integer(int_wp ), pointer :: npart ( : )         ! first  grid index of the particles
+      integer(int_wp ), pointer :: npart0( : )         ! first  grid index particles for previous time step
+      integer(int_wp ), pointer :: floil ( : )         ! contains values 1 or 0
 !
       logical    , intent(in)    :: acomp               ! use an analytical function for umagi
       logical    , intent(in)    :: ldiffh              ! horizontal diffusion is on/off
@@ -181,22 +181,22 @@ contains
       real   (sp), pointer :: vrtdsp( :,: )       ! storage of vert disp info for debugging
       character(len=*), pointer  :: subst ( : )         ! substance names per substance &
                                                         ! and per layer for the plo file
-      integer(ip), intent(in   ) :: stickdf             ! if 1 oil sticks at drying flats
-      integer(ip), intent(in   ) :: nbmax         ! highest regular open boundary number
-      integer(ip), intent(in   ) :: nconn         ! number of interdomain connections
+      integer(int_wp ), intent(in   ) :: stickdf             ! if 1 oil sticks at drying flats
+      integer(int_wp ), intent(in   ) :: nbmax         ! highest regular open boundary number
+      integer(int_wp ), intent(in   ) :: nconn         ! number of interdomain connections
       type( pnt ), intent(in   ) :: conn (nconn)  ! array with interdomain connections
       real   (sp), pointer       :: tau   ( : )   ! tau
       logical    , intent(in   ) :: caltau        ! if true, tau must be calculated
 
-      integer(ip), intent(in   ) :: nboomint      ! number of boom introductions
-      integer(ip), pointer :: iboomset(:)         ! timing of boom introduction
-      integer(ip), intent(in   ) :: tyboom        ! type of boom effectiveness parameter
+      integer(int_wp ), intent(in   ) :: nboomint      ! number of boom introductions
+      integer(int_wp ), pointer :: iboomset(:)         ! timing of boom introduction
+      integer(int_wp ), intent(in   ) :: tyboom        ! type of boom effectiveness parameter
       real     ( sp), pointer  :: efboom (:,:)  ! effectiveness parameter of boom per oil type
       real     ( sp), pointer  :: xpolboom (:,:)! x-coordinates of boom polygon
       real     ( sp), pointer  :: ypolboom (:,:)! y-coordinates of boom polygon
-      integer  ( ip), pointer  :: nrowsboom (:)  ! length of boom polygon
+      integer  ( int_wp ), pointer  :: nrowsboom (:)  ! length of boom polygon
 
-      integer(ip), intent(in   ) :: itime
+      integer(int_wp ), intent(in   ) :: itime
 
       real   (sp), pointer       :: v_swim( : )         ! horizontal swimming velocity m/s
       real   (sp), pointer       :: d_swim( : )         ! horizontal swimming direction (degree)
@@ -204,38 +204,38 @@ contains
 !**   local parameters
 
 
-      integer(ip)   :: icounz                  ! count the number of vertical bounces
-      integer(ip)   :: icvis                   ! strange construct to avoid endless operation, cyclic counter
-      integer(ip)   :: icvist                  ! strange construct to avoid endless operation, total counter
-      integer(ip)   :: idep                    ! layer offset in the hydrodynamic arrays
-      integer(ip)   :: idepm1                  ! layer offset - one layer in the hydrodynamic arrays
-      integer(ip)   :: idx                     ! boolean x direction of transport -1, 0, +1
-      integer(ip)   :: idy                     ! boolean y direction of transport -1, 0, +1
-      integer(ip)   :: idz                     ! boolean z direction of transport -1, 0, +1
-      integer(ip)   :: ierror                  ! needed to call part07
-      integer(ip)   :: ifract                  ! loop counter for nfract
-      integer(ip)   :: ipart                   ! loop counter particle loop
-      integer(ip)   :: isub                    ! loop counter nosubs
-      integer(ip)   :: itdelt                  ! delta-t of the particle for smooth loading
-      integer(ip)   :: ivisit( 4 )             ! part of the strange construct of icvis
-      integer(ip)   :: jsub                    ! pointer containing mstick(isub)
-      integer(ip)   :: kd                      ! loop counter of vertical layers
-      integer(ip)   :: kp                      ! k of the particle
-      integer(ip)   :: kpp                     ! local k of the particle
-      integer(ip)   :: ktopp                   ! local k top of the particle
-      integer(ip)   :: kbotp                   ! local k bot of the particle
-      integer(ip)   :: mp                      ! m of the particle
-      integer(ip)   :: n0                      ! segment number 2d
-      integer(ip)   :: n03d                    ! segment number 3d
-      integer(ip)   :: n0old                   ! old value of segment number 2d
-      integer(ip)   :: n0new                   ! new value of segment number 2d
-      integer(ip)   :: n1                      ! one back from n0 in first index
-      integer(ip)   :: n2                      ! one back from n0 in second index
-      integer(ip)   :: ninact                  ! summation counter inactive particles
-      integer(ip)   :: np                      ! nr of this particle
-      integer(ip)   :: nstpar                  ! summation counter sticking particles
-      integer(ip)   :: nopart_sed              ! no. of particles settled into bed layer (per time step)
-      integer(ip)   :: nopart_ero              ! no. of particles eroded from bed layer (per time step)
+      integer(int_wp )   :: icounz                  ! count the number of vertical bounces
+      integer(int_wp )   :: icvis                   ! strange construct to avoid endless operation, cyclic counter
+      integer(int_wp )   :: icvist                  ! strange construct to avoid endless operation, total counter
+      integer(int_wp )   :: idep                    ! layer offset in the hydrodynamic arrays
+      integer(int_wp )   :: idepm1                  ! layer offset - one layer in the hydrodynamic arrays
+      integer(int_wp )   :: idx                     ! boolean x direction of transport -1, 0, +1
+      integer(int_wp )   :: idy                     ! boolean y direction of transport -1, 0, +1
+      integer(int_wp )   :: idz                     ! boolean z direction of transport -1, 0, +1
+      integer(int_wp )   :: ierror                  ! needed to call part07
+      integer(int_wp )   :: ifract                  ! loop counter for nfract
+      integer(int_wp )   :: ipart                   ! loop counter particle loop
+      integer(int_wp )   :: isub                    ! loop counter nosubs
+      integer(int_wp )   :: itdelt                  ! delta-t of the particle for smooth loading
+      integer(int_wp )   :: ivisit( 4 )             ! part of the strange construct of icvis
+      integer(int_wp )   :: jsub                    ! pointer containing mstick(isub)
+      integer(int_wp )   :: kd                      ! loop counter of vertical layers
+      integer(int_wp )   :: kp                      ! k of the particle
+      integer(int_wp )   :: kpp                     ! local k of the particle
+      integer(int_wp )   :: ktopp                   ! local k top of the particle
+      integer(int_wp )   :: kbotp                   ! local k bot of the particle
+      integer(int_wp )   :: mp                      ! m of the particle
+      integer(int_wp )   :: n0                      ! segment number 2d
+      integer(int_wp )   :: n03d                    ! segment number 3d
+      integer(int_wp )   :: n0old                   ! old value of segment number 2d
+      integer(int_wp )   :: n0new                   ! new value of segment number 2d
+      integer(int_wp )   :: n1                      ! one back from n0 in first index
+      integer(int_wp )   :: n2                      ! one back from n0 in second index
+      integer(int_wp )   :: ninact                  ! summation counter inactive particles
+      integer(int_wp )   :: np                      ! nr of this particle
+      integer(int_wp )   :: nstpar                  ! summation counter sticking particles
+      integer(int_wp )   :: nopart_sed              ! no. of particles settled into bed layer (per time step)
+      integer(int_wp )   :: nopart_ero              ! no. of particles eroded from bed layer (per time step)
       logical       :: coriol                  ! = abs( defang ) .ge. 1.0e-6
       logical       :: dstick                  ! logical that determines sticking
       logical       :: ldispo                  ! vertical diffusion is on (true) or off (false) for oil particle
@@ -334,27 +334,27 @@ contains
       real(sp)      :: zpabs                   ! absolute z of the particle
       real(sp)      :: zp2                     ! help variable to correct z of the particle for twolay
       real(sp)      :: zpold                   ! old z of the particle needed for the correction routine
-      integer(ip)   :: n03d2                   ! help variable sequence number of cell in next layer
-      real   (rp)   :: disp2                   ! help variable diffusion in next layer
-      real   (rp)   :: pbounce                 ! probability that a particle will NOT bounce
-      integer(ip)   :: ddshift                 ! is it n (1) or m (2) direction
+      integer(int_wp )   :: n03d2                   ! help variable sequence number of cell in next layer
+      real   (real_wp)   :: disp2                   ! help variable diffusion in next layer
+      real   (real_wp)   :: pbounce                 ! probability that a particle will NOT bounce
+      integer(int_wp )   :: ddshift                 ! is it n (1) or m (2) direction
       real(sp)      :: xpnew                   ! potential new x of the particle
       real(sp)      :: ypnew                   ! potential new y of the particle
       real(sp)      :: xrest                   ! residual x offset
       real(sp)      :: yrest                   ! residual y offset
       real(sp)      :: dxpnew                  ! dxp new potential cell
       real(sp)      :: dypnew                  ! dyp new potential cell
-      integer(ip)   :: mpnew                   ! potential new m of the particle
-      integer(ip)   :: npnew                   ! potential new n of the particle
+      integer(int_wp )   :: mpnew                   ! potential new m of the particle
+      integer(int_wp )   :: npnew                   ! potential new n of the particle
       logical       :: booms                   ! indicator for the precence of booms
       logical       :: boomseffective          ! indicator for effective precence of booms per particle
-      integer(ip)   :: iboomint                ! counter for boom introductions
-      real(rp)      :: pboomcatch(100)         ! chance for boom to catch particle
+      integer(int_wp )   :: iboomint                ! counter for boom introductions
+      real(real_wp)      :: pboomcatch(100)         ! chance for boom to catch particle
 
-      real(rp)      :: xaold                   ! old real world x-coordinate
-      real(rp)      :: yaold                   ! old real world y-coordinate
-      real(rp)      :: xanew                   ! new real world x-coordinate
-      real(rp)      :: yanew                   ! new real world y-coordinate
+      real(real_wp)      :: xaold                   ! old real world x-coordinate
+      real(real_wp)      :: yaold                   ! old real world y-coordinate
+      real(real_wp)      :: xanew                   ! new real world x-coordinate
+      real(real_wp)      :: yanew                   ! new real world y-coordinate
       logical       :: catch
       real(sp)      :: xacatch
       real(sp)      :: yacatch
@@ -367,8 +367,8 @@ contains
       real(sp)      :: dx_swim             ! dx swimming displacement
       real(sp)      :: dy_swim             ! dy swimming displacement
 
-      integer(ip)   :: nboomtry
-      integer(ip)   :: nscreenstry
+      integer(int_wp )   :: nboomtry
+      integer(int_wp )   :: nscreenstry
       logical       :: screensfirsttry
       logical       :: leftside
 
@@ -490,7 +490,7 @@ contains
 !$OMP PARALLEL DO PRIVATE ( np, mp, kp, kpp, ktopp, kbotp, n0, n0old, a, n03d, xp, &
 !$OMP                       yp, zp, tp, itdelt, ddfac, dran1, abuac, deltt, dred,  &
 !$OMP                       kd, icvis, icvist, ivisit, lstick, wsum, isub, jsub,   &
-!$OMP                       ifract, pstick, wstick, ldispo, trp, t0, dax, day,     & 
+!$OMP                       ifract, pstick, wstick, ldispo, trp, t0, dax, day,     &
 !$OMP                       n1, n2, dxp, dyp, depth1, idep, vol, vy0, vy1,         &
 !$OMP                       vx0, vx1, vvx, vvy, vx, vy, vxr, vyr, ubstar, ubstar_b,&
 !$OMP                       vz0, vz1, disp, dvz, depthl, dvzs, dvzt, vzs, icounz,  &
@@ -696,7 +696,7 @@ contains
 
          idep   = (kpp - 1) * nmax * mmax
          vol    = volume( n03d )
-         
+
          ! Particles should not find themselves in a segment with zero volume, but it
          ! might happen with restarted calculations. If so, let them be - there is no
          ! sensible transport step we can take
@@ -704,7 +704,7 @@ contains
          if ( vol == 0.0 ) then
             cycle
          endif
-         
+
          vy0    = flow  (n1 + idep  ) / vol
          vy1    = flow  (n0 + idep  ) / vol
          vx0    = flow  (n2 + idep + mnmaxk) / vol
@@ -1078,7 +1078,7 @@ contains
          if ( abs(c3*vvz) .gt. accur ) then
             if ( vz .eq. 0.0 ) then
                 vz = sign(1.0e-10,vz1)
-            endif 
+            endif
             if ( vz .gt. 0.0 ) then
                if ( vz1 .gt.  1.0e-25 ) then
                   rtimz = alog(vz1/vz) / (c3*vvz)
@@ -1155,10 +1155,10 @@ contains
                   if (   kp .lt. ktopp .or.   &
                        ( kp .gt. kbotp .and. .not. twolay ) ) then
                      if(kp .lt. ktopp .and. zmodel) then        ! this seems to cause problems in Z-model where model layers change
-                         kp = ktopp  
+                         kp = ktopp
                      elseif(kp .gt. kbotp .and. zmodel ) then   ! this seems to cause problems in Z-model where model layers change
                          kp = kbotp
-                     else     
+                     else
                          write(*,*) ' Particle = ',ipart, kp, kbotp, ktopp, &
                                     ' not on an active layer'
                          write(*,*) ' Programming error in rtim in part10'
@@ -1228,7 +1228,7 @@ contains
 
 !**      xnew,ynew is inclusive of diffusion (dax,day); c1 = 0.0 for 3d
 
-         if (modtyp.eq.model_abm) then 
+         if (modtyp.eq.model_abm) then
             sdir         = d_swim(ipart) * twopi / 360.0
             displacement = v_swim(ipart)*idelt
             dx_swim      = displacement*sin(sdir+sangl)
@@ -1237,7 +1237,7 @@ contains
             dx_swim = 0.0
             dy_swim = 0.0
          endif
- 
+
          wdirr = wdir(n0) * twopi / 360.0
          xnew  = xp + (dax - c1 * sin(wdirr + sangl) + dx_swim) / dxp
          ynew  = yp + (day - c1 * cos(wdirr + sangl) + dy_swim) / dyp
@@ -1480,10 +1480,10 @@ contains
          if (   kp .lt. ktopp .or. &
               ( kp .gt. kbotp .and. .not. twolay ) ) then
                 if(kp .lt. ktopp .and. zmodel) then        ! this seems to cause problems in Z-model where model layers change
-                     kp = ktopp  
+                     kp = ktopp
                 elseif(kp .gt. kbotp .and. zmodel ) then   ! this seems to cause problems in Z-model where model layers change
                      kp = kbotp
-                else 
+                else
                      write(*,*) ' Particle = ',ipart, &
                          ' not on an active layer:', kp, ktopp, kbotp
                      write(*,*) ' Programming error in rtim in part10'
@@ -1780,7 +1780,7 @@ contains
 !     subroutine to keep a particle near the surface in z-layer models
       subroutine update_k_near_top(lun2, kp, ktopold, ktopnew, zp, locdep, n0old, n0, zsurf)
 
-      use precision_part
+      use m_waq_precision
 
       implicit none
 
@@ -1793,15 +1793,15 @@ contains
       integer                 :: ktopnew             !< current k top
       real(sp)                :: zp                  !< relative location in layer (shouldn't this be absolute?
       real(sp)                :: locdep(:,:)         !< depth per layer
-      integer(ip)             :: n0                  !< segment number 2d
-      integer(ip)             :: n0old               !< old value of segment number 2d
+      integer(int_wp )             :: n0                  !< segment number 2d
+      integer(int_wp )             :: n0old               !< old value of segment number 2d
       real(sp)                :: zsurf               !< threshold for a particle to be close enought to the surface to stat there
 
 !     local variables
 
 !     kind                       name                  description
       real(sp)                :: partdep             ! absolute location of particle from the top of the water column
-      integer(ip)             :: ilay                ! layer loop counter
+      integer(int_wp )             :: ilay                ! layer loop counter
 
       if (ktopold == ktopnew) return ! nothing to do when the toplayer doesn't change
       if (kp > ktopold .and. kp > ktopnew) return ! nothing to do when the particle was and is not in the top layer
