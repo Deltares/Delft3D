@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqt3
+      use m_waq_precision
+
 
       implicit none
 
@@ -83,21 +85,21 @@
       use m_srstop
       use timers
 
-      real, PARAMETER :: TWOPI = 6.28319
-      integer       IPERIO(*) , IPOINT(*)
-      real          APHASE(*) , AVALUE(*) , RESULT(NOSUB,*)
-      integer       ITIME  , NRHARM , NOSUB  , NOSPAC , NPOINT ,
+      real(kind=real_wp), PARAMETER  ::TWOPI = 6.28319
+      integer(kind=int_wp) ::IPERIO(*) , IPOINT(*)
+      real(kind=real_wp) ::APHASE(*) , AVALUE(*) , RESULT(NOSUB,*)
+      integer(kind=int_wp) ::ITIME  , NRHARM , NOSUB  , NOSPAC , NPOINT ,
      *              LUNIN  , LUNOUT , ISFLAG , IFFLAG
 
       CHARACTER*(*) LUNTXT
       LOGICAL       UPDATE
 
 
-      integer   k, notot
-      integer   irec, itel, ib, ih, ihstop, istart, i1, i2, iv
-      real      func
+      integer(kind=int_wp) ::k, notot
+      integer(kind=int_wp) ::irec, itel, ib, ih, ihstop, istart, i1, i2, iv
+      real(kind=real_wp) ::func
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqt3", ithandl )
 !
 !         are there harmonics? is this the initialisation phase?

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqb3
+      use m_waq_precision
+
 
       implicit none
 
@@ -67,18 +69,18 @@
 !
       use timers
 
-      INTEGER    NDMPQ, NOTOT, NOQ, NOVELO, NOSYS
-      INTEGER    IOPT, IDT, IAFLAG
-      INTEGER    IQDMP   (*)
-      real       AREA (*) , FLOW  (*) , VELO  (*) , VOLUME(*),
+      INTEGER(kind=int_wp) ::NDMPQ, NOTOT, NOQ, NOVELO, NOSYS
+      INTEGER(kind=int_wp) ::IOPT, IDT, IAFLAG
+      INTEGER(kind=int_wp) ::IQDMP   (*)
+      real(kind=real_wp) ::AREA (*) , FLOW  (*) , VELO  (*) , VOLUME(*),
      *           AMASS2(*) , DMPQ(*)
-      integer    IVPNT(*) , IPOINT(4,*)
+      integer(kind=int_wp) ::IVPNT(*) , IPOINT(4,*)
       LOGICAL    MASBAL
 
-      integer    i, j, i4, i5, i6, iq, ipq
-      real       b, q
+      integer(kind=int_wp) ::i, j, i4, i5, i6, iq, ipq
+      real(kind=real_wp) ::b, q
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqb3", ithandl )
 !
 !         loop accross the number of exchanges

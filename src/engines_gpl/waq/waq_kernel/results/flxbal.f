@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_flxbal
+      use m_waq_precision
+
 
       implicit none
 
@@ -61,14 +63,14 @@
       use m_monsys
       use timers
 
-      INTEGER NOTOT , NOFLUX, NDMPAR, NOBALT
-      REAL    STOCHI(NOTOT,NOFLUX)  , FLXINT(NOFLUX,NDMPAR),
+      INTEGER(kind=int_wp) ::NOTOT , NOFLUX, NDMPAR, NOBALT
+      REAL(kind=real_wp) ::STOCHI(NOTOT,NOFLUX)  , FLXINT(NOFLUX,NDMPAR),
      +        ASMASS(NOTOT,NDMPAR,6), BALINT(NOBALT,NDMPAR)
 
 !     local
-      integer ibalt, isys, i, idmp, iflx, lurep
-      real    st
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ibalt, isys, i, idmp, iflx, lurep
+      real(kind=real_wp) ::st
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "flxbal", ithandl )
 !
 !     We construeren nu de BALINT's

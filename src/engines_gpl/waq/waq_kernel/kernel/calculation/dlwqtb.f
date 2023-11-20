@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqtb
+      use m_waq_precision
+
 
       implicit none
 
@@ -64,20 +66,20 @@
 !
       use timers
 
-      real, PARAMETER  :: TWOPI = 6.28319
-      integer          J(*) , KTYPE(*) , IVAL(*)
-      real             A(*) , AVAL(*)
-      integer          IERR , LUNUT , IRPNT , IIMAX , ITIME , IOFF , IIPNT
+      real(kind=real_wp), PARAMETER   ::TWOPI = 6.28319
+      integer(kind=int_wp) ::J(*) , KTYPE(*) , IVAL(*)
+      real(kind=real_wp) ::A(*) , AVAL(*)
+      integer(kind=int_wp) ::IERR , LUNUT , IRPNT , IIMAX , ITIME , IOFF , IIPNT
 
 !     local
-      real     amiss, aa, ab, aphase, func
-      integer  noitm, notot, nobrk
-      integer  i, i1, i2, i3, ia, ib, ic, ij, ii
-      integer  iopt, ipro, iord, itim1, itim2
-      integer  irec, idt, itimf, it1c, it2c, idtc, iperio
-      integer  npnt, npst, ndim, ndst, ntt
+      real(kind=real_wp) ::amiss, aa, ab, aphase, func
+      integer(kind=int_wp) ::noitm, notot, nobrk
+      integer(kind=int_wp) ::i, i1, i2, i3, ia, ib, ic, ij, ii
+      integer(kind=int_wp) ::iopt, ipro, iord, itim1, itim2
+      integer(kind=int_wp) ::irec, idt, itimf, it1c, it2c, idtc, iperio
+      integer(kind=int_wp) ::npnt, npst, ndim, ndst, ntt
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqtb", ithandl )
 !
 !         initialise the system
@@ -384,15 +386,15 @@
      *                    IT1C   , IT2C   , IDTC   , AA     , AB     )
       use timers
 !
-      real    A( * )
-      integer J( * )
-      integer I, IJ, NTT, IREC, NOBRK, ITIMF, IOPT, IT1C, IT2C, IDTC
-      real    AMISS, AA, AB
+      real(kind=real_wp) ::A( * )
+      integer(kind=int_wp) ::J( * )
+      integer(kind=int_wp) ::I, IJ, NTT, IREC, NOBRK, ITIMF, IOPT, IT1C, IT2C, IDTC
+      real(kind=real_wp) ::AMISS, AA, AB
 
 !  	local
-      integer ll, jj, kk
+      integer(kind=int_wp) ::ll, jj, kk
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
 
       if ( timon ) call timstrt ( "dlwmis", ithandl )
 !           Search backward for the first valid point

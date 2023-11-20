@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module HydroSet
+      use m_waq_precision
       use m_srstop
 
 !
@@ -49,8 +50,8 @@
 !     contains the following subroutine:
 !          Flinterpol             ! performs the actual interpolation, routine is for local use.
 !
-      integer, parameter :: FILE_NAME_SIZE = 256             ! max length file path size
-      integer, parameter :: MAX_NUM        =   5             ! allocated per bunch
+      integer(kind=int_wp), parameter  ::FILE_NAME_SIZE = 256             ! max length file path size
+      integer(kind=int_wp), parameter  ::MAX_NUM        =   5             ! allocated per bunch
 !
 !          Lock the files by LU-number, so that multiple instances
 !          may use the library
@@ -63,17 +64,17 @@
 !
       type FileProp
          character(len=FILE_NAME_SIZE)    :: name            ! file path
-         integer                          :: ilun            ! unit number
-         integer                          :: istart          ! start time in file
-         integer                          :: istop           ! stop time in file
-         integer                          :: istep           ! step time in file
-         integer                          :: ioffset         ! offset at rewind of this file
-         integer                          :: itime1          ! time array1
-         integer                          :: itime2          ! time array2
-         integer(kind=8)                  :: position = -1   ! position in the file
+         integer(kind=int_wp) ::ilun            ! unit number
+         integer(kind=int_wp) ::istart          ! start time in file
+         integer(kind=int_wp) ::istop           ! stop time in file
+         integer(kind=int_wp) ::istep           ! step time in file
+         integer(kind=int_wp) ::ioffset         ! offset at rewind of this file
+         integer(kind=int_wp) ::itime1          ! time array1
+         integer(kind=int_wp) ::itime2          ! time array2
+         integer(kind=INT64) :: position = -1   ! position in the file
          logical                          :: stream_access   ! Stream or sequential access?
-         real, pointer                    :: array1(:)       ! interpolation arrays
-         real, pointer                    :: array2(:)       ! interpolation arrays
+         real(kind=real_wp) , pointer                    :: array1(:)       ! interpolation arrays
+         real(kind=real_wp) , pointer                    :: array2(:)       ! interpolation arrays
       end type FileProp
 !
 !          this is the pointer to properties of files
@@ -86,18 +87,18 @@
 !
       type FilePropColl
          type(FilePropPnt), pointer       :: FilePropPnts(:) ! array with file properties
-         integer                          :: maxsize         ! maximum size of the current array
-         integer                          :: cursize         ! filled up to this size
+         integer(kind=int_wp) ::maxsize         ! maximum size of the current array
+         integer(kind=int_wp) ::cursize         ! filled up to this size
       end type FilePropColl
 !
 !          this is one entry of the table of files
 !
       type FileUseDef
          type(FilePropPnt)                :: afilePnt        ! pointer to a file property
-         real                             :: weight          ! weight for interpolation
-         integer                          :: istart          ! waq start time for use
-         integer                          :: istop           ! waq stop time for use
-         integer                          :: ioffset         ! time in file for istart
+         real(kind=real_wp) ::weight          ! weight for interpolation
+         integer(kind=int_wp) ::istart          ! waq start time for use
+         integer(kind=int_wp) ::istop           ! waq stop time for use
+         integer(kind=int_wp) ::ioffset         ! time in file for istart
          logical                          :: active          ! time in file for istart
       end type FileUseDef
 !
@@ -105,25 +106,25 @@
 !
       type FileUseDefColl
          type(FileUseDef), pointer        :: FileUseDefs(:)  ! array with file definitions
-         integer                          :: maxsize         ! maximum size of the current array
-         integer                          :: cursize         ! filled up to this size
-         integer                          :: unitnr          ! the entry for the physical property
-         integer                          :: intopt          ! interpolation option
-         integer                          :: istart          ! start time of the UseDefCollection
-         integer                          :: istop           ! stop time of the UseDefCollection
-         integer                          :: ioffset         ! offset at rewind of full UseDefCollection
-         integer                          :: nrftot          ! length of the arrays
-         real, pointer                    :: array1(:)       ! interpolation arrays
-         real, pointer                    :: array2(:)       ! interpolation arrays
-         real, pointer                    :: array3(:)       ! interpolation arrays
+         integer(kind=int_wp) ::maxsize         ! maximum size of the current array
+         integer(kind=int_wp) ::cursize         ! filled up to this size
+         integer(kind=int_wp) ::unitnr          ! the entry for the physical property
+         integer(kind=int_wp) ::intopt          ! interpolation option
+         integer(kind=int_wp) ::istart          ! start time of the UseDefCollection
+         integer(kind=int_wp) ::istop           ! stop time of the UseDefCollection
+         integer(kind=int_wp) ::ioffset         ! offset at rewind of full UseDefCollection
+         integer(kind=int_wp) ::nrftot          ! length of the arrays
+         real(kind=real_wp) , pointer                    :: array1(:)       ! interpolation arrays
+         real(kind=real_wp) , pointer                    :: array2(:)       ! interpolation arrays
+         real(kind=real_wp) , pointer                    :: array3(:)       ! interpolation arrays
       end type FileUseDefColl
 !
 !          this is the collection of sets of files
 !
       type FileUseDefCollColl
          type(FileUseDefColl), pointer    :: FileUseDefColls(:) ! array with file definition collections
-         integer                          :: maxsize            ! maximum size of the current array
-         integer                          :: cursize            ! filled up to this size
+         integer(kind=int_wp) ::maxsize            ! maximum size of the current array
+         integer(kind=int_wp) ::cursize            ! filled up to this size
       end type FileUseDefCollColl
 !
 
@@ -136,7 +137,7 @@
 !
          type(FilePropColl)               :: aFilePropColl
          type(FileProp)                   :: aFileProp
-         integer                          :: iret
+         integer(kind=int_wp) ::iret
 !
          iret = 0
          do i = 1 , aFilePropColl%cursize         ! search by name
@@ -156,7 +157,7 @@
          type(FileProp)                   :: aFileProp
          type(FileProp), pointer          :: aPropPnt           ! should be a pointer to preserve space
          type(FilePropPnt), pointer       :: aFilePropPnts(:)   ! should be a pointer for the resize operation
-         integer                          :: nrftot, cursize
+         integer(kind=int_wp) ::nrftot, cursize
 !                                                   ! this is the standard procedure to enlarge collections
          if ( aFilePropColl%cursize .eq. aFilePropColl%maxsize ) then
             allocate ( aFilePropPnts ( aFilePropColl%maxsize + MAX_NUM ) )
@@ -215,7 +216,7 @@
          type(FileUseDefColl)             :: aFileUseDefColl
          type(FileUseDef)                 :: aFileUseDef
          type(FileUseDef), pointer        :: aFileUseDefs(:) ! should be a pointer for the resize operation
-         integer                             cursize
+         integer(kind=int_wp) ::cursize
 !                                                   ! this is the standard procedure to enlarge collections
          if ( aFileUseDefColl%cursize .eq. aFileUseDefColl%maxsize ) then
             allocate ( aFileUseDefs ( aFileUseDefColl%maxsize + MAX_NUM ) )
@@ -240,7 +241,7 @@
          type(FileUseDefCollColl)         :: aFileUseDefCollColl
          type(FileUseDefColl)             :: aFileUseDefColl
          type(FileUseDefColl), pointer    :: aFileUseDefColls(:)  ! should be a pointer for the resize operation
-         integer                             cursize
+         integer(kind=int_wp) ::cursize
 !                                                   ! this is the standard procedure to enlarge collections
          if ( aFileUseDefCollColl%cursize .eq. aFileUseDefCollColl%maxsize ) then
             allocate ( aFileUseDefColls ( aFileUseDefCollColl%maxsize + MAX_NUM ) )
@@ -266,7 +267,7 @@
       function FileUseDefCollCollFind( aFileUseDefCollColl , ilun ) result ( found )
 !
          type(FileUseDefCollColl)         :: aFileUseDefCollColl
-         integer                             ilun, found
+         integer(kind=int_wp) ::ilun, found
 !
          found = 0
          do i = 1 , aFileUseDefCollColl%cursize          ! search by unitc number for this phisics
@@ -294,7 +295,7 @@
          type(FileUseDefColl)             :: aUseDefColl
          type(FileUseDef),pointer         :: aUseDef
          type(FileProp),pointer           :: aProp
-         integer                             i, i2, itime, found, nrftot
+         integer(kind=int_wp) ::i, i2, itime, found, nrftot
          logical                             UPDATE, LREWIN, LrLocal
 
 
@@ -450,7 +451,7 @@
 !
       subroutine lock_this_file( ilun )
 
-      integer, intent(in) :: ilun
+      integer(kind=int_wp), intent(in)  ::ilun
 
       if ( file_locked(ilun) ) then
           do while ( file_locked(ilun) )
@@ -466,7 +467,7 @@
 !
       subroutine unlock_this_file( ilun )
 
-      integer, intent(in) :: ilun
+      integer(kind=int_wp), intent(in)  ::ilun
 
       file_locked(ilun) = .false.
 
@@ -478,7 +479,7 @@
 !
       subroutine sleep_a_while( ilun )
 
-      integer, intent(in) :: ilun
+      integer(kind=int_wp), intent(in)  ::ilun
 
       if ( file_locked(ilun) ) then
          call sleepqq(1)
@@ -491,7 +492,7 @@
 !
          type(FileProp)   aProp
          type(FileUseDef) aDef
-         real             array3(nrftot), weight
+         real(kind=real_wp) ::array3(nrftot), weight
          logical          UPDATE
 !
       weight = aDef%weight
@@ -543,7 +544,7 @@
       type(FileUseDefCollColl)      :: collection
 
       type(FileUseDefColl), pointer :: files
-      integer                       :: i, j
+      integer(kind=int_wp) ::i, j
 
       do i = 1,collection%cursize
           files => collection%FileUseDefColls(i)

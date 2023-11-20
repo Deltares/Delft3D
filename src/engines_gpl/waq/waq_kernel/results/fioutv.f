@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fioutv
+      use m_waq_precision
+
 
       implicit none
 
@@ -82,13 +84,13 @@
 !
       use timers
 
-      INTEGER    NRVAR , NOCONS, NOPA  , NOFUN , NOSFUN,
+      INTEGER(kind=int_wp) ::NRVAR , NOCONS, NOPA  , NOFUN , NOSFUN,
      +           NOTOT , IDT   , ITIME , NOSEG , NOSYS ,
      +           NODUMP, NX    , NY    , IGRID , NOLOC ,
      +           NODEF
-      INTEGER    IOPOIN(*)     , IDUMP(*)      ,
+      INTEGER(kind=int_wp) ::IOPOIN(*)     , IDUMP(*)      ,
      +           LGRID(*)
-      REAL       OUTVAL(*)      , CONC(NOTOT,*),
+      REAL(kind=real_wp) ::OUTVAL(*)      , CONC(NOTOT,*),
      +           SEGFUN(NOSEG,*), FUNC(*)      ,
      +           PARAM(*)       , CONS(*)      ,
      +           VOLUME(*)      , BOUND(*)     ,
@@ -96,12 +98,12 @@
 !
 !     Local
 !
-      integer, PARAMETER :: IGSEG = 1 , IGMON = 2 , IGGRD = 3 , IGSUB = 4
-      real,    PARAMETER :: RMISS = -999.
-      integer, PARAMETER :: NOPRED= 6
-      INTEGER     IOPA  , IOFUNC, IOSFUN, IOCONC, IOLOC ,
+      integer(kind=int_wp), PARAMETER  ::IGSEG = 1 , IGMON = 2 , IGGRD = 3 , IGSUB = 4
+      real(kind=real_wp),    PARAMETER  ::RMISS = -999.
+      integer(kind=int_wp), PARAMETER  ::NOPRED= 6
+      INTEGER(kind=int_wp) ::IOPA  , IOFUNC, IOSFUN, IOCONC, IOLOC ,
      +            IODEF , IP, icel, iseg, iocons, nocel, i, iicel, iip
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "fioutv", ithandl )
 !
 !     Pointer offsets

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqt1
+      use m_waq_precision
       use m_dlwqtb
       use m_dlwqt4
       use m_dlwqt3
@@ -108,15 +109,15 @@
       use timers
       use delwaq2_data
 
-      integer, intent(in   )           :: ftype  (*) !< type of files to be opened
+      integer(kind=int_wp), intent(in   )            ::ftype  (*) !< type of files to be opened
       type(delwaq_data), intent(inout) :: dlwqd      !< derived type for persistent storage
 
-      integer       IHARM (*) , IPOINT(*) , LUN   (*) , IWORK (*)
-      real          HARMAT(*) , FARRAY(*) , RESULT(*) , RECLST(*)
+      integer(kind=int_wp) ::IHARM (*) , IPOINT(*) , LUN   (*) , IWORK (*)
+      real(kind=real_wp) ::HARMAT(*) , FARRAY(*) , RESULT(*) , RECLST(*)
       CHARACTER*(*) LUNTXT(*)
       CHARACTER*12  CHLP
       LOGICAL       UPDATE    , NEWSET    , LSTREC    , LREWIN
-      integer       IPA  , IPH    , IPF, ITIME  , ITIMEL , NOSUB , NRHARM,
+      integer(kind=int_wp) ::IPA  , IPH    , IPF, ITIME  , ITIMEL , NOSUB , NRHARM,
      +              NTOT , NRFTOT , IS , ISFLAG , IFFLAG , IOFF  , IPI
 !
 !     Local
@@ -132,10 +133,10 @@
       LOGICAL            OLCFWQ, SRWACT, RTCACT
       COMMON /COMMUN/    OLCFWQ, SRWACT, RTCACT
 
-      integer ierr, ioerr, ipsi, ipsa, ipb, k, i, i2, j2
-      integer ntotal, nospac, npoint
+      integer(kind=int_wp) ::ierr, ioerr, ipsi, ipsa, ipb, k, i, i2, j2
+      integer(kind=int_wp) ::ntotal, nospac, npoint
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl= 0
       if ( timon ) call timstrt ( "dlwqt1", ithandl )
 !
 !         Prescribe ONLINE mode for selected files

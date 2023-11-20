@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_baldmp
+      use m_waq_precision
+
 
       implicit none
 
@@ -68,20 +70,20 @@
 !
       use timers
 
-      INTEGER       NOTOT , NOSYS , NOFLUX, NDMPAR, NDMPQ ,
+      INTEGER(kind=int_wp) ::NOTOT , NOSYS , NOFLUX, NDMPAR, NDMPQ ,
      +              NDMPS , NTDMPQ
-      INTEGER       IQDMP(*)              , ISDMP(*)        ,
+      INTEGER(kind=int_wp) ::IQDMP(*)              , ISDMP(*)        ,
      +              IPDMP(*)
-      REAL          DMPQ(NOSYS,NDMPQ,*)   , MASS(NOTOT,*)   ,
+      REAL(kind=real_wp) ::DMPQ(NOSYS,NDMPQ,*)   , MASS(NOTOT,*)   ,
      +              DMPS(NOTOT,NDMPS,*)   , FLXDMP(NOFLUX,*),
      +              ASMASS(NOTOT,NDMPAR,*), FLXINT(NOFLUX,*)
 !
 !     Local declarations
 !
-      INTEGER       ITEL1 , ITEL2 , IP1   , IDUMP , NQC   ,
+      INTEGER(kind=int_wp) ::ITEL1 , ITEL2 , IP1   , IDUMP , NQC   ,
      +              IQC   , IQ    , IPQ   , ISYS  , NSC   ,
      +              ISC   , ISEG  , IPS
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "baldmp", ithandl )
 
 !

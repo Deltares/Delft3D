@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module m_outmnc
+      use m_waq_precision
       use m_srstop
       use m_universally_unique_id_generator
 
@@ -45,51 +46,51 @@
 
 !     kind           function         name                    description
 
-      integer   (4), intent(inout) :: ncidmap              ! NetCDF id of output map file
+      integer(kind=int_wp), intent(inout)  ::ncidmap              ! NetCDF id of output map file
       character(255), intent(in  ) :: mncnam               ! name NetCDF output map file
       character(255), intent(in  ) :: ugridf               ! name of NetCDF ugrid file
-      integer   (4), intent(inout) :: timeid
-      integer   (4), intent(inout) :: bndtimeid
-      integer   (4), intent(in   ) :: mncrec               ! present record in NetCDF file
-      integer   (4), intent(in   ) :: itime                ! present time in clock units
+      integer(kind=int_wp), intent(inout)  ::timeid
+      integer(kind=int_wp), intent(inout)  ::bndtimeid
+      integer(kind=int_wp), intent(in   )  ::mncrec               ! present record in NetCDF file
+      integer(kind=int_wp), intent(in   )  ::itime                ! present time in clock units
       character(40), intent(in   ) :: moname(4)            ! model identification
-      integer   (4), intent(in   ) :: noseg                ! number of computational volumes
-      integer   (4), intent(in   ) :: notot1               ! number of variables in conc1
-      real      (4), intent(in   ) :: conc1 (notot1,noseg) ! values
+      integer(kind=int_wp), intent(in   )  ::noseg                ! number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::notot1               ! number of variables in conc1
+      real(kind=real_wp), intent(in   )  ::conc1 (notot1,noseg) ! values
       character(20), intent(in   ) :: synam1(notot1)       ! names of variables in conc1
       character(100), intent(in  ) :: sysnm1(notot1)       ! standard names of variables in conc1
       character(40), intent(in   ) :: syuni1(notot1)       ! units of variables in conc1
       character(60), intent(in   ) :: sydsc1(notot1)       ! decriptions of variables in conc1
-      integer   (4), intent(inout) :: wqid1(notot1,3)      ! NetCDF ids of variables in conc1
-      integer   (4), intent(in   ) :: notot2               ! number of variables in conc2
-      real      (4), intent(in   ) :: conc2 (notot2,noseg) ! values
+      integer(kind=int_wp), intent(inout)  ::wqid1(notot1,3)      ! NetCDF ids of variables in conc1
+      integer(kind=int_wp), intent(in   )  ::notot2               ! number of variables in conc2
+      real(kind=real_wp), intent(in   )  ::conc2 (notot2,noseg) ! values
       character(20), intent(in   ) :: synam2(notot2)       ! names of variables in conc2
       character(100), intent(in  ) :: sysnm2(notot2)       ! standard names of variables in conc1
       character(40), intent(in   ) :: syuni2(notot2)       ! units of variables in conc1
       character(60), intent(in   ) :: sydsc2(notot2)       ! decriptions of variables in conc1
-      integer   (4), intent(inout) :: wqid2(notot2,3)      ! NetCDF ids of variables in conc1
-      real      (4), intent(in   ) :: volume(noseg)        ! values
-      integer   (4), intent(in   ) :: iknmrk(noseg)        ! Feature array. Bit zero set means active.
-      integer   (4), intent(in   ) :: lunut                ! unit number monitoring file
+      integer(kind=int_wp), intent(inout)  ::wqid2(notot2,3)      ! NetCDF ids of variables in conc1
+      real(kind=real_wp), intent(in   )  ::volume(noseg)        ! values
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)        ! Feature array. Bit zero set means active.
+      integer(kind=int_wp), intent(in   )  ::lunut                ! unit number monitoring file
 
-      integer(4) iseg                         ! loop counter for segments
-      integer(4) k                            ! loop counter for substances
-      real   (4), parameter :: amiss = -999.0 ! missing value indicator
+      integer(kind=int_wp) ::iseg                         ! loop counter for segments
+      integer(kind=int_wp) ::k                            ! loop counter for substances
+      real(kind=real_wp), parameter  ::amiss = -999.0 ! missing value indicator
 
-      integer :: ncid
-      integer :: varid, varidout, meshidout, ntimeid, wqid, noseglmesh2d, nosegmesh2d3d, nosegmesh1d, nolay
-      integer :: meshid2d, meshid1d, networkid, network_geometryid
-      integer :: inc_error, ierr, iout
-      integer                               :: xtype
-      integer                               :: ndims
+      integer(kind=int_wp) ::ncid
+      integer(kind=int_wp) ::varid, varidout, meshidout, ntimeid, wqid, noseglmesh2d, nosegmesh2d3d, nosegmesh1d, nolay
+      integer(kind=int_wp) ::meshid2d, meshid1d, networkid, network_geometryid
+      integer(kind=int_wp) ::inc_error, ierr, iout
+      integer(kind=int_wp) ::xtype
+      integer(kind=int_wp) ::ndims
       logical, allocatable                  :: sumconc1(:), sumconc2(:)
-      integer, dimension(nf90_max_var_dims) :: dimids
-      integer, dimension(nf90_max_dims)     :: dimsizes
-!      integer                               :: naggr
-      integer, dimension(:,:), allocatable  :: aggr2d3d
-      integer, dimension(:), allocatable    :: aggr1d
+      integer(kind=int_wp), dimension(nf90_max_var_dims)  ::dimids
+      integer(kind=int_wp), dimension(nf90_max_dims)      ::dimsizes
+!      integer(kind=int_wp) ::naggr
+      integer(kind=int_wp), dimension(:,:), allocatable   ::aggr2d3d
+      integer(kind=int_wp), dimension(:), allocatable     ::aggr1d
 
-      integer           :: values(8)
+      integer(kind=int_wp) ::values(8)
       character(len=40) :: timestamp
       character(len=40) :: t0string
       character(len=40) :: uuid
@@ -102,21 +103,21 @@
       character(len=nf90_max_name) :: dimname
       character(len=nf90_max_name) :: history
 
-      integer :: i, j
-      integer :: type_ugrid
-      integer :: noseglid2d, nolayid, nosegid1d
-      integer :: isegl, ilay
-      integer :: wqidvolume_2d3d, wqidvolume_2d, wqidvolume_1d
-      real, dimension(:), allocatable :: laythickness
-      real, dimension(:,:), allocatable :: dlwq_values_2d3d
-      real, dimension(:), allocatable :: dlwq_values_2d, dlwq_volume_2d, dlwq_values_1d
+      integer(kind=int_wp) ::i, j
+      integer(kind=int_wp) ::type_ugrid
+      integer(kind=int_wp) ::noseglid2d, nolayid, nosegid1d
+      integer(kind=int_wp) ::isegl, ilay
+      integer(kind=int_wp) ::wqidvolume_2d3d, wqidvolume_2d, wqidvolume_1d
+      real(kind=real_wp), dimension(:), allocatable  ::laythickness
+      real(kind=real_wp), dimension(:,:), allocatable  ::dlwq_values_2d3d
+      real(kind=real_wp), dimension(:), allocatable  ::dlwq_values_2d, dlwq_volume_2d, dlwq_values_1d
 
       save ncid, noseglmesh2d, nolay, nosegmesh1d, varid, meshid2d, meshid1d, networkid, network_geometryid
       save nosegmesh2d3d, aggr2d3d, aggr1d, wqidvolume_2d3d, wqidvolume_2d, wqidvolume_1d
       save sumconc1, sumconc2
 
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmnc", ithandl )
 
 !     Initialize file

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outmo2
+      use m_waq_precision
+
 
       implicit none
 
@@ -58,15 +60,15 @@
 !
       use timers
 
-      INTEGER      IOUT  , NODUMP, ID    , NEND  , NOTOT
-      REAL         ARRA(NOTOT,*)
+      INTEGER(kind=int_wp) ::IOUT  , NODUMP, ID    , NEND  , NOTOT
+      REAL(kind=real_wp) ::ARRA(NOTOT,*)
       CHARACTER*20 DNAME(*)
       CHARACTER*40 VNAME
 
 !     local
-      integer idmp, k
+      integer(kind=int_wp) ::idmp, k
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmo2", ithandl )
 !
       WRITE (IOUT,2060) VNAME

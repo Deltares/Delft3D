@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outmon
+      use m_waq_precision
+
 
       implicit none
 
@@ -77,10 +79,10 @@
       use m_reptim
       use timers
 
-      INTEGER      IOUT  , ITIME , NODUMP, NOTOT , ISFLAG,
+      INTEGER(kind=int_wp) ::IOUT  , ITIME , NODUMP, NOTOT , ISFLAG,
      +             IBFLAG, NOTOT2, ITSTRT, ITSTOP, NDMPAR
-      INTEGER      IDUMP(*)      , IP(4)
-      REAL         CONC(NOTOT,*)         , AMASS2(NOTOT,5),
+      INTEGER(kind=int_wp) ::IDUMP(*)      , IP(4)
+      REAL(kind=real_wp) ::CONC(NOTOT,*)         , AMASS2(NOTOT,5),
      +             ASMASS(NOTOT,NDMPAR,*) , CONC2(*)
       CHARACTER*20 DNAME(*) , SNAME(*) , SYNAM2(*) , DANAM(*)
       CHARACTER*40 MNAME(*)
@@ -88,9 +90,9 @@
 !     Local declaration
 !
       CHARACTER*40 VNAME
-      integer    k, id, nend
-      real       percit
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::k, id, nend
+      real(kind=real_wp) ::percit
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmon", ithandl )
 !
 !         initialise the paging, accumulation arrays and acumul flag

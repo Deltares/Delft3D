@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqf7
+      use m_waq_precision
+
 
       implicit none
 
@@ -57,34 +59,34 @@
 
 !     Kind        Function         Name                    Description
 
-      integer(4), intent(in   ) :: isys                  !< current transported substance
-      integer(4), intent(in   ) :: nosys                 !< number of active substances
-      integer(4), intent(in   ) :: notot                 !< total number of substances
-      integer(4), intent(in   ) :: noseg                 !< number of computational volumes
-      real   (4), intent(inout) :: conc   (notot, noseg) !< concentration vector to store results
-      real   (8), intent(in   ) :: concvt (       noseg) !< newly obtained concentration from the solver
-      integer(4), intent(in   ) :: nobnd                 !< number of volumes with open boundaries
-      real   (4), intent(in   ) :: bound  (nosys, nobnd) !< boundary concentrations
-      integer(4), intent(in   ) :: noq                   !< number of exchanges between volumes
-      integer(4), intent(in   ) :: ipoint ( 4   , noq  ) !< exchange pointers
-      real   (4), intent(in   ) :: flowtot( noq )        !< flows plus additional velos.
-      real   (4), intent(in   ) :: disptot( noq )        !< dispersion plus additional dipers.
-      real   (4), intent(inout) :: amass2 (notot, 5    ) !< mass balance array for the whole model area
-      integer(4), intent(in   ) :: ndmpq                 !< number of dumped exchanges
-      integer(4), intent(in   ) :: iqdmp  ( noq )        !< pointers dumped exchages
-      real   (4), intent(inout) :: dmpq  (nosys,ndmpq,2) !< flux accumulation array for monitoring areas
-      integer(4), intent(in   ) :: iknmrk(noseg)         !< feature array, bit zero indicates wet or not
-      integer(4), intent(in   ) :: idt                   !< time step
+      integer(kind=int_wp), intent(in   )  ::isys                  !< current transported substance
+      integer(kind=int_wp), intent(in   )  ::nosys                 !< number of active substances
+      integer(kind=int_wp), intent(in   )  ::notot                 !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::noseg                 !< number of computational volumes
+      real(kind=real_wp), intent(inout)  ::conc   (notot, noseg) !< concentration vector to store results
+      real(kind=dp), intent(in   )  ::concvt (       noseg) !< newly obtained concentration from the solver
+      integer(kind=int_wp), intent(in   )  ::nobnd                 !< number of volumes with open boundaries
+      real(kind=real_wp), intent(in   )  ::bound  (nosys, nobnd) !< boundary concentrations
+      integer(kind=int_wp), intent(in   )  ::noq                   !< number of exchanges between volumes
+      integer(kind=int_wp), intent(in   )  ::ipoint ( 4   , noq  ) !< exchange pointers
+      real(kind=real_wp), intent(in   )  ::flowtot( noq )        !< flows plus additional velos.
+      real(kind=real_wp), intent(in   )  ::disptot( noq )        !< dispersion plus additional dipers.
+      real(kind=real_wp), intent(inout)  ::amass2 (notot, 5    ) !< mass balance array for the whole model area
+      integer(kind=int_wp), intent(in   )  ::ndmpq                 !< number of dumped exchanges
+      integer(kind=int_wp), intent(in   )  ::iqdmp  ( noq )        !< pointers dumped exchages
+      real(kind=real_wp), intent(inout)  ::dmpq  (nosys,ndmpq,2) !< flux accumulation array for monitoring areas
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)         !< feature array, bit zero indicates wet or not
+      integer(kind=int_wp), intent(in   )  ::idt                   !< time step
 
 !     Locals              :
 
-      real   (4)                   cin, cjn              ! from- and to concentrations
-      real   (4)                   fluxij                ! flux from i to j
-      integer(4)                   ifrom , ito           ! from- and to volume indices
-      integer(4)                   iseg                  ! current computational volume
-      integer(4)                   iq                    ! current edge
+      real(kind=real_wp) ::cin, cjn              ! from- and to concentrations
+      real(kind=real_wp) ::fluxij                ! flux from i to j
+      integer(kind=int_wp) ::ifrom , ito           ! from- and to volume indices
+      integer(kind=int_wp) ::iseg                  ! current computational volume
+      integer(kind=int_wp) ::iq                    ! current edge
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqf7", ithandl )
 
 !         put result in the concentration array

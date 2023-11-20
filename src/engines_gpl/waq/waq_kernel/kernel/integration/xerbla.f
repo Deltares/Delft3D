@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_xerbla
+      use m_waq_precision
+
 
       implicit none
 
@@ -32,9 +34,9 @@
       use timers
 
 *     ..    Scalar Arguments ..
-      INTEGER            INFO
+      INTEGER(kind=int_wp) ::INFO
       CHARACTER*6        SRNAME
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "xerbla", ithandl )
 *     ..
 *

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqm2
+      use m_waq_precision
+
 
       implicit none
 
@@ -48,34 +50,34 @@
 
 !     Kind        Function         Name                  Description
 
-      integer(4), intent(in   ) :: idt                   ! time step in scu's
-      integer(4), intent(in   ) :: noseg                 ! number of segments
-      real   (4), intent(in   ) :: volnew(  noseg)       ! segment volumes
-      integer(4), intent(in   ) :: nobnd                 ! number of boundary segments
-      integer(4), intent(in   ) :: noq                   ! number of exchanges
-      integer(4), intent(in   ) :: ipoint(  4,noq)       ! exchange pointers (dim: 4 x noq)
-      real   (4), intent(in   ) :: flowtot( noq)         ! flows plus additional velos. (dim: noq)
-      real   (4), intent(in   ) :: disptot( noq)         ! dispersion plus additional dipers. (dim: noq)
-      real   (4), intent(in   ) :: theta (  noq)         ! variable theta coefficients
-      real   (8), intent(  out) :: diag  (  noseg+nobnd) ! (scaled) diagonal matrix elements
-      integer(4), intent(in   ) :: iscale                ! 0: no diagonal scaling
+      integer(kind=int_wp), intent(in   )  ::idt                   ! time step in scu's
+      integer(kind=int_wp), intent(in   )  ::noseg                 ! number of segments
+      real(kind=real_wp), intent(in   )  ::volnew(  noseg)       ! segment volumes
+      integer(kind=int_wp), intent(in   )  ::nobnd                 ! number of boundary segments
+      integer(kind=int_wp), intent(in   )  ::noq                   ! number of exchanges
+      integer(kind=int_wp), intent(in   )  ::ipoint(  4,noq)       ! exchange pointers (dim: 4 x noq)
+      real(kind=real_wp), intent(in   )  ::flowtot( noq)         ! flows plus additional velos. (dim: noq)
+      real(kind=real_wp), intent(in   )  ::disptot( noq)         ! dispersion plus additional dipers. (dim: noq)
+      real(kind=real_wp), intent(in   )  ::theta (  noq)         ! variable theta coefficients
+      real(kind=dp), intent(  out)  ::diag  (  noseg+nobnd) ! (scaled) diagonal matrix elements
+      integer(kind=int_wp), intent(in   )  ::iscale                ! 0: no diagonal scaling
                                                          ! 1: diagonal scaling
-      real   (8), intent(  out) :: diagcc(  noseg+nobnd) ! copy of the unscaled diagonal, needed to scale the rhs later
-      integer(4), intent(in   ) :: nomat                 ! number of nonzero offdiagonal matrix elements
-      real   (8), intent(  out) :: mat   (  nomat)       ! (scaled) nonzero offdiagonal matrix elements (elsewhere: amat)
-      integer(4), intent(in   ) :: rowpnt(0:noseg+nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
-      integer(4), intent(in   ) :: fmat  (  noq  )       ! pointer from(iq) in matrix
-      integer(4), intent(in   ) :: tmat  (  noq  )       ! pointer to  (iq) in matrix
-      integer(4), intent(in   ) :: iexseg(  noseg+nobnd) ! zero if explicit
+      real(kind=dp), intent(  out)  ::diagcc(  noseg+nobnd) ! copy of the unscaled diagonal, needed to scale the rhs later
+      integer(kind=int_wp), intent(in   )  ::nomat                 ! number of nonzero offdiagonal matrix elements
+      real(kind=dp), intent(  out)  ::mat   (  nomat)       ! (scaled) nonzero offdiagonal matrix elements (elsewhere: amat)
+      integer(kind=int_wp), intent(in   )  ::rowpnt(0:noseg+nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
+      integer(kind=int_wp), intent(in   )  ::fmat  (  noq  )       ! pointer from(iq) in matrix
+      integer(kind=int_wp), intent(in   )  ::tmat  (  noq  )       ! pointer to  (iq) in matrix
+      integer(kind=int_wp), intent(in   )  ::iexseg(  noseg+nobnd) ! zero if explicit
 
 !     Local declarations
 
-      integer(4)                :: iseg                  ! current volume
-      integer(4)                :: iq                    ! current edge
-      integer(4)                :: ito, ifrom            ! from and to volume indices
-      real   (4)                :: q1, q2                ! flows
+      integer(kind=int_wp) ::iseg                  ! current volume
+      integer(kind=int_wp) ::iq                    ! current edge
+      integer(kind=int_wp) ::ito, ifrom            ! from and to volume indices
+      real(kind=real_wp) ::q1, q2                ! flows
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqm2", ithandl )
 
 ! set the diagonal

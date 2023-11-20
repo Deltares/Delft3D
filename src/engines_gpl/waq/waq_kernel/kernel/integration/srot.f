@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_srot
+      use m_waq_precision
+
 
       implicit none
 
@@ -34,9 +36,9 @@
 !
       use timers
 
-      real(8) sx(1),sy(1),stemp,c,s
-      integer i,incx,incy,ix,iy,n
-      integer(4) ithandl /0/
+      real(kind=dp) ::sx(1),sy(1),stemp,c,s
+      integer(kind=int_wp) ::i,incx,incy,ix,iy,n
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "srot", ithandl )
 !
       if(n.le.0)return

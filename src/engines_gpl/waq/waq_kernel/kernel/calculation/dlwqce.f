@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqce
+      use m_waq_precision
+
 
       implicit none
 
@@ -54,22 +56,22 @@
 
 !     Kind        Function         Name                  Description
 
-      integer(4), intent(in   ) :: lun                 !< Unit number of the monitroing file
-      integer(4), intent(in   ) :: nosys               !< Number of transport substances
-      integer(4), intent(in   ) :: notot               !< Total number of substances
-      integer(4), intent(in   ) :: noseg               !< Number of computational volumes
-      real   (4), intent(inout) :: amass (notot,noseg) !< Delwaq mass array to be updated
-      real   (4), intent(in   ) :: volumn(noseg)       !< Volume after rewind
-      real   (4), intent(in   ) :: voluml(noseg)       !< Last volume before rewind
+      integer(kind=int_wp), intent(in   )  ::lun                 !< Unit number of the monitroing file
+      integer(kind=int_wp), intent(in   )  ::nosys               !< Number of transport substances
+      integer(kind=int_wp), intent(in   )  ::notot               !< Total number of substances
+      integer(kind=int_wp), intent(in   )  ::noseg               !< Number of computational volumes
+      real(kind=real_wp), intent(inout)  ::amass (notot,noseg) !< Delwaq mass array to be updated
+      real(kind=real_wp), intent(in   )  ::volumn(noseg)       !< Volume after rewind
+      real(kind=real_wp), intent(in   )  ::voluml(noseg)       !< Last volume before rewind
 
 !     Locals
 
-      real   (8)  tovoll   ! total of the last volume array
-      real   (8)  tovoln   ! total of the last new volume array
-      real   (8)  clofac   ! closure correction factor
-      integer(4)  iseg     ! finite volume counter
+      real(kind=dp) ::tovoll   ! total of the last volume array
+      real(kind=dp) ::tovoln   ! total of the last new volume array
+      real(kind=dp) ::clofac   ! closure correction factor
+      integer(kind=int_wp) ::iseg     ! finite volume counter
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqce", ithandl )
 
 !     Say what you are doing

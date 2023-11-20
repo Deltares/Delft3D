@@ -95,7 +95,7 @@ contains
       call openfl ( lun, fnam, 0 )
 
 !     read requested data
-
+      
       read (lun)
       read (lun) mmaxc, nmaxc, x0, y0, alpha, npart, layt
       if ( mmaxc .ne. mmax .or. nmaxc .ne. nmax ) then
@@ -105,9 +105,9 @@ contains
           write (lun2, *) '             nmax,mmax,cco-file   :   ', nmaxc, mmaxc
           call stop_exit(1)
       endif
-
+      
 !     skip header
-
+      
       do i = 1, 2 * npart + 9
         read (lun) xdummy
       enddo

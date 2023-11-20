@@ -51,9 +51,9 @@ contains
                              ztop2    , zbot1   , zbot2  , vzact1 , vzact2      ,   &
                              vswim1   , vswim2  , iseg   , lunrep , angle  )
 
-        ! function  : European Eel (Anguila anguila) specific behaviour collected
-        !
-
+        ! function  : European Eel (Anguila anguila) specific behaviour collected 
+        !              
+        
 
         ! arguments :
 
@@ -122,20 +122,20 @@ contains
         real   (sp)                 :: zbot                ! zbot
         integer                     :: m                   ! m
         integer                     :: n                   ! n
-
+        
         real   (sp)                 :: zdepth              ! z relative to water surface
         real   (sp)                 :: zlevel              ! z relative to bottom
         logical, pointer            :: ebb_flow( : )       ! true if flow is ebb
-
+        
         integer                     :: behaviour_type      ! actual behaviour type
 
         integer, parameter          :: behaviour_none     = 0 ! behaviour type none
         integer, parameter          :: behaviour_juv_coas     = 1 ! behaviour type none
-
+        
 
         real                        :: vswim                  ! swimming velocity
         real                        :: local_angle            ! angle towards lowest salinity in grid
-
+        
         real                        :: lb_sal                 ! lower boundary of temperature
         real                        :: ub_sal                 ! upper boundary of temperature
 
@@ -150,7 +150,7 @@ contains
         real                        :: sal_n41
 
         real                        :: lb_temp                ! lower boundary of salinity
-        real                        :: ub_temp                ! upper boundary of salinity
+        real                        :: ub_temp                ! upper boundary of salinity       
 
         real                        :: temp_n0
         real                        :: temp_n1
@@ -161,24 +161,24 @@ contains
         real                        :: temp_n34
         real                        :: temp_n4
         real                        :: temp_n41
-
-        logical                     :: stick_to_bottom        ! stick to bottom when reached
-
-
+        
+        logical                     :: stick_to_bottom        ! stick to bottom when reached     
+        
+        
         ! EUROPEAN EEL BEHAVIOUR TYPES
-
-        istage  = wpart(2,ipart)                                                         ! Get current stage of particle
+        
+        istage  = wpart(2,ipart)                                                         ! Get current stage of particle        
 
         !Set layer and/or settling velocity according to stage and type of vertical behaviour
 
         behaviour_type = btype(istage)                                                   ! Assign the vertical behaviour type by stage
         select case ( behaviour_type )                                                   ! Select behaviour by numbering
 
-           case ( behaviour_none )                                                       !Behaviour 0
+           case ( behaviour_none )                                                       !Behaviour 0 
 
               !The particle shows no active behaviour in the vertical and in the horizontal
 
-              !Horizontal behaviour
+              !Horizontal behaviour                                                        
               v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
               d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
 
@@ -187,7 +187,7 @@ contains
 
 
            case ( behaviour_juv_coas)                                                    !Behaviour 1
-
+           
               stick_to_bottom = .true.                                                   ! Hardcoded stick to bottom
               lb_sal = 0.001                                                             ! Hardcoded lower boundary for salinity
               ub_sal = 31.000                                                            ! Hardcoded upper boundary for salinity
@@ -209,7 +209,7 @@ contains
                                     a          , b           ,flow      , local_angle , lb_sal  ,    &
                                     ub_sal     , sal_n0      ,sal_n1    , sal_n12     , sal_n2  ,    &
                                     sal_n23    , sal_n3      ,sal_n34   , sal_n4      , sal_n41    )
-
+              
               if(sal_n0 .lt. 0.0) then                                                  ! check if temperature is available
                  write(lunrep,*) 'ERROR no salinity provided, no european eel model activated'
                  write(*,*) 'ERROR no salinity provided, no  european eel model activated'

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_prodr2
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,15 +62,15 @@
 !     Declaration of arguments
 !
       use timers
-      INTEGER NOTOT , NOFLUX, NFLUX1, NFLUXP, NOSEG, NDT
-      REAL    DERIV(NOTOT,NOSEG) , STOCHI(NOTOT,NOFLUX) ,
+      INTEGER(kind=int_wp) ::NOTOT , NOFLUX, NFLUX1, NFLUXP, NOSEG, NDT
+      REAL(kind=real_wp) ::DERIV(NOTOT,NOSEG) , STOCHI(NOTOT,NOFLUX) ,
      +        FLUX(NOFLUX,NOSEG) , VOLUME(NOSEG)
 
 !     loclal
-      integer fdt, isys, iflux, iseg
-      real    st, fact
+      integer(kind=int_wp) ::fdt, isys, iflux, iseg
+      real(kind=real_wp) ::st, fact
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "prodr2", ithandl )
 !
 !     We construeren nu de DERIV's

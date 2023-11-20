@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqm7
+      use m_waq_precision
+
 
       implicit none
 
@@ -50,24 +52,24 @@
       use timers
       implicit none
 
-      integer(4), intent(in   ) :: noq                 !< number of exchanges
-      integer(4), intent(in   ) :: noq1                !< number of exchanges in first direction
-      integer(4), intent(in   ) :: noq2                !< number of exchanges in second direction
-      real   (4), intent(in   ) :: area(noq)           !< exchange surface areas (dim: noq)
-      real   (4), intent(in   ) :: flow(noq)           !< flows accross exchange surfs (dim: noq)
-      real   (4), intent(in   ) :: aleng(2,noq)        !< from- and to lengths (dim: 2*noq)
-      integer(4), intent(in   ) :: ilflag              !< if 0 then 3 length values (equidistant grid)
-      integer(4), intent(in   ) :: iopt                !< optoons for e.g. treatment of boundaries
-      integer(4), intent(in   ) :: ipoint(4,noq)       !< exchange pointers (dim: 4 x noq)
-      real   (4), intent(  out) :: mixlen(noq)         !< exchange surface areas (dim: noq)
-      integer(4), intent(in   ) :: iknmrk( * )         !< feature array, bit zero indicates wet or not
+      integer(kind=int_wp), intent(in   )  ::noq                 !< number of exchanges
+      integer(kind=int_wp), intent(in   )  ::noq1                !< number of exchanges in first direction
+      integer(kind=int_wp), intent(in   )  ::noq2                !< number of exchanges in second direction
+      real(kind=real_wp), intent(in   )  ::area(noq)           !< exchange surface areas (dim: noq)
+      real(kind=real_wp), intent(in   )  ::flow(noq)           !< flows accross exchange surfs (dim: noq)
+      real(kind=real_wp), intent(in   )  ::aleng(2,noq)        !< from- and to lengths (dim: 2*noq)
+      integer(kind=int_wp), intent(in   )  ::ilflag              !< if 0 then 3 length values (equidistant grid)
+      integer(kind=int_wp), intent(in   )  ::iopt                !< optoons for e.g. treatment of boundaries
+      integer(kind=int_wp), intent(in   )  ::ipoint(4,noq)       !< exchange pointers (dim: 4 x noq)
+      real(kind=real_wp), intent(  out)  ::mixlen(noq)         !< exchange surface areas (dim: noq)
+      integer(kind=int_wp), intent(in   )  ::iknmrk( * )         !< feature array, bit zero indicates wet or not
 
 !     Local declarations
 
-      integer(4)                :: ifrom, ito          ! from- and to segments
-      integer(4)                :: iq                  ! current edge
+      integer(kind=int_wp) ::ifrom, ito          ! from- and to segments
+      integer(kind=int_wp) ::iq                  ! current edge
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqm7", ithandl )
 
       mixlen = 0.0

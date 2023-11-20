@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dmpval
+      use m_waq_precision
+
 
       implicit none
 
@@ -48,15 +50,15 @@
 !
       use timers
 
-      INTEGER       NDMPAR
-      INTEGER       IPDMP(*)
-      REAL          VALSEG(*)
-      REAL          VALDMP(*)
+      INTEGER(kind=int_wp) ::NDMPAR
+      INTEGER(kind=int_wp) ::IPDMP(*)
+      REAL(kind=real_wp) ::VALSEG(*)
+      REAL(kind=real_wp) ::VALDMP(*)
 !
 !     Local declarations
 !
-      INTEGER       ITEL  , IDUMP , NSC   , ISC   , ISEG
-      integer(4) ithandl /0/
+      INTEGER(kind=int_wp) ::ITEL  , IDUMP , NSC   , ISC   , ISEG
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dmpval", ithandl )
 
 !     Loop over the dump area's, sum value

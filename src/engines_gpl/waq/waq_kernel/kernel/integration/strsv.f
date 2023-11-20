@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_strsv
+      use m_waq_precision
       use m_xerbla
 
 
@@ -36,10 +37,10 @@
       use timers
       use m_lsame
 *     .. Scalar Arguments ..
-      INTEGER            INCX, LDA, N
+      INTEGER(kind=int_wp) ::INCX, LDA, N
       CHARACTER*1        DIAG, TRANS, UPLO
 *     .. Array Arguments ..
-      REAL(8)            A( LDA, * ), X( * )
+      REAL(kind=dp) ::A( LDA, * ), X( * )
 *     ..
 *
 *  Purpose
@@ -137,15 +138,15 @@
 *
 *
 *     .. Parameters ..
-      REAL(8)            ZERO
+      REAL(kind=dp) ::ZERO
       PARAMETER        ( ZERO = 0.0E+0 )
 *     .. Local Scalars ..
-      REAL(8)            TEMP
-      INTEGER            I, INFO, IX, J, JX, KX
+      REAL(kind=dp) ::TEMP
+      INTEGER(kind=int_wp) ::I, INFO, IX, J, JX, KX
       LOGICAL            NOUNIT
 *     .. Intrinsic Functions ..
       INTRINSIC          MAX
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "strsv", ithandl )
 *     ..
 *     .. Executable Statements ..
