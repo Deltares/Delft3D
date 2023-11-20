@@ -3128,32 +3128,55 @@ end
 
 function Psi = compute_stream_function(Discharge, EdgeNodeConnect, nNodes)
 Psi = NaN(nNodes,1);
-Psi(1) = 0;
-found = true;
-nnodes = length(Psi);
-hPB = progressbar(0, 'title', 'Computing stream function ...');
-while found
-    nnodes_done = sum(~isnan(Psi));
-    progressbar(nnodes_done/nnodes, hPB);
-    found = false;
-    for i = 1:size(EdgeNodeConnect,1)
-        if ~isnan(Psi(EdgeNodeConnect(i,1))) && isnan(Psi(EdgeNodeConnect(i,2))) && ~isnan(Discharge(i))
-            Psi(EdgeNodeConnect(i,2)) = Psi(EdgeNodeConnect(i,1)) + Discharge(i);
-            found = true;
-        elseif isnan(Psi(EdgeNodeConnect(i,1))) && ~isnan(Psi(EdgeNodeConnect(i,2))) && ~isnan(Discharge(i))
-            Psi(EdgeNodeConnect(i,1)) = Psi(EdgeNodeConnect(i,2)) - Discharge(i);
-            found = true;
+if nNodes > 0
+    nNodes_done = 0;
+    hPB = progressbar(0, 'title', 'Computing stream function ...');
+    
+    % loop in case there are multiple disconnected areas
+    while nNodes_done < nNodes
+        % start by setting the first node to zero
+        Mask = isnan(Psi);
+        i = find(Mask,1,'first');
+        Psi(i) = 0;
+        
+        % loop while something changes
+        found = true;
+        while found
+            nNodes_done = sum(~isnan(Psi));
+            progressbar(nNodes_done/nNodes, hPB);
+            
+            % change is caused by any edge that connects a node with
+            % defined value to a node without value (NaN)
+            found = false;
+            for i = 1:size(EdgeNodeConnect,1)
+                if ~isnan(Psi(EdgeNodeConnect(i,1))) && isnan(Psi(EdgeNodeConnect(i,2))) && ~isnan(Discharge(i))
+                    Psi(EdgeNodeConnect(i,2)) = Psi(EdgeNodeConnect(i,1)) + Discharge(i);
+                    found = true;
+                elseif isnan(Psi(EdgeNodeConnect(i,1))) && ~isnan(Psi(EdgeNodeConnect(i,2))) && ~isnan(Discharge(i))
+                    Psi(EdgeNodeConnect(i,1)) = Psi(EdgeNodeConnect(i,2)) - Discharge(i);
+                    found = true;
+                end
+            end
         end
+        
+        % for each individual area the minimum should be set to 0
+        Psi(Mask) = Psi(Mask) - min(Psi(Mask));
+        
+        % remove all used edges to speed up searching
+        used = ~isnan(Psi(EdgeNodeConnect(:,1)));
+        EdgeNodeConnect(used,:) = [];
+        Discharge(used) = [];
     end
+    delete(hPB)
 end
-delete(hPB)
-Psi = Psi - min(Psi);
+
 
 function Psi = compute_net_discharge_into_cell(Discharge, EdgeFaceConnect, nFaces)
 from_somewhere = EdgeFaceConnect(:,1)~=0 & ~isnan(EdgeFaceConnect(:,1));
 to_somewhere = EdgeFaceConnect(:,2)~=0 & ~isnan(EdgeFaceConnect(:,2));
 Psi = -accumarray(EdgeFaceConnect(from_somewhere,1),Discharge(from_somewhere)',[nFaces,1]) ...
       +accumarray(EdgeFaceConnect(to_somewhere,2),Discharge(to_somewhere)',[nFaces,1]);
+
 
 function check = strend(Str,SubStr)
 len_ss = length(SubStr);
