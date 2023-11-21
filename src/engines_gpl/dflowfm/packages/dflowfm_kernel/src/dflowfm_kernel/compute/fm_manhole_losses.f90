@@ -35,7 +35,7 @@
       contains
       
    !>    gives link angle between 0 and Pi
-         double precision function absdLinkangle(L)
+         double precision function dLinkangle(L)
             use m_sferic, only: jsferic
             use geometry_module, only: getdxdy 
             use network_data, only: kn, xk, yk
@@ -56,10 +56,10 @@
             
             call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
             
-            absdLinkangle = abs(atan2(dy,dx))
+            dLinkangle = atan2(dy,dx)
             
             return
-      end function absdLinkangle
+      end function dLinkangle
       
       !> calculate Manhole losses entrance, expansion and bend losses for all manholes and apply losses to advi(L)
       subroutine calculate_manhole_losses(storS, advi)
@@ -97,7 +97,7 @@
                reference_angle = 0d0
                if (q_outflow > 0 .and. q_outflow > q_temp) then !we want the link with the biggest discharge as reference_angle
                   q_temp = q_outflow
-                  reference_angle = absdLinkangle(L)
+                  reference_angle = dlinkangle(L)
                endif
             enddo
    
@@ -111,7 +111,7 @@
                q_outflow = q_outflow*q1(L)
                if (q_outflow < 0) then
                   sum_1 = sum_1 + q1(L)
-                  angle = abs(absdLinkangle(L)-reference_angle)*180/pi
+                  angle = abs(dlinkangle(L)-reference_angle)*180/pi
                   if (angle> 180d0) then
                      angle = 360d0-angle
                   endif
