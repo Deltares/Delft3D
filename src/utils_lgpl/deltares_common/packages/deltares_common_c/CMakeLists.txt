@@ -14,7 +14,7 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
-    add_definitions(-DHAVE_FSEEKO64) # Define a preprocessor macro
+    add_definitions(-D_FILE_OFFSET_BITS=64)
 endif(UNIX)
 
 set(headers include/throwexception.h
