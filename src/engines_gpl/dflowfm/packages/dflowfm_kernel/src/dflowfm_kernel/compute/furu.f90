@@ -73,6 +73,8 @@
 
  if (kmx == 0 .or. ifixedweirscheme > 0)  then  ! original 2D coding
 
+    call calculate_manhole_losses(network%storS,advi)
+    
     !$OMP PARALLEL DO                       &
     !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp,uorbL)
     do L  = 1,lnx
@@ -205,8 +207,6 @@
     enddo
     !$OMP END PARALLEL DO
 
-    call calculate_manhole_losses(network%storS,advi)
-    
     if (npump > 0) then ! model has at least one pump link
     do np = 1,npumpsg  ! loop over pump signals, sethu
        qp    = qpump(np)
