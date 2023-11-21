@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_wq_processes_pmsa_size
+use m_waq_precision
+
 
 implicit none
 
@@ -40,22 +42,22 @@ contains
 
       !     kind     function         name        description
 
-      integer      , intent(in   ) :: lunrep    ! logical unitnumber output file
-      integer      , intent(in   ) :: noseg     ! number of segments
-      integer      , intent(in   ) :: noq       ! number of exchanges
-      integer      , intent(inout) :: isizea    ! Required array space
+      integer(kind=int_wp), intent(in   ) ::  lunrep     ! logical unitnumber output file
+      integer(kind=int_wp), intent(in   ) ::  noseg      ! number of segments
+      integer(kind=int_wp), intent(in   ) ::  noq        ! number of exchanges
+      integer(kind=int_wp), intent(inout) ::  isizea     ! Required array space
 
       !     Local declarations
 
       type(memory_partition)               :: part      ! Private variables for MAKPTR
-      integer         i_rar                             ! loop counter
-      integer         nr_rar                            ! number of real arrays
+      integer(kind=int_wp) :: i_rar                              ! loop counter
+      integer(kind=int_wp) :: nr_rar                             ! number of real arrays
       character*20    namarr                            ! help variable for array name
-      integer         iartyp                            ! help variable for array type
-      integer         iarlen                            ! help variable for array length
-      integer         ip                                ! help variable for array pointer
-      integer         ip_rar(78)                        ! help array to fill the common block / SYSA /
-      integer         ierr                              ! error indicator
+      integer(kind=int_wp) :: iartyp                             ! help variable for array type
+      integer(kind=int_wp) :: iarlen                             ! help variable for array length
+      integer(kind=int_wp) :: ip                                 ! help variable for array pointer
+      integer(kind=int_wp) :: ip_rar(78)                         ! help array to fill the common block / SYSA /
+      integer(kind=int_wp) :: ierr                               ! error indicator
 
       nr_rar = 78                   ! total number of arrays
       do i_rar = 1 , nr_rar

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhgnam
+      use m_waq_precision
       use m_srstop
       use m_getcom
 
@@ -63,8 +64,8 @@
       CHARACTER*3   ANSWER
       LOGICAL       EXI  ,LFOUND
       CHARACTER*1   CRJV  , CJVB  , CDUMMY
-      INTEGER       LUNAM, MAXNAM, IDUMMY, IERR, INDX, INDX1, INDX2, IOERR
-      REAL          RDUMMY
+      INTEGER(kind=int_wp) ::LUNAM, MAXNAM, IDUMMY, IERR, INDX, INDX1, INDX2, IOERR
+      REAL(kind=real_wp) ::RDUMMY
 
 
       CRJV = '/'

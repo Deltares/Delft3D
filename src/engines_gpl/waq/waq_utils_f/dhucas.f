@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhucas
+      use m_waq_precision
+
 
       implicit none
 
@@ -44,7 +46,7 @@
 !
 !     Declaration of arguments
 !
-      INTEGER       NOCHR , IC , NN
+      INTEGER(kind=int_wp) ::NOCHR , IC , NN
       CHARACTER*(*) STR1  , STR2
 !
 !     Local declaration

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhdag2
+      use m_waq_precision
       use m_srstop
       use m_monsys
 
@@ -64,10 +65,10 @@
 !
 !     Declaration of arguments
 !
-      INTEGER        NOSEG1, NOSEG2, IDATYP, ISWCUM, NOTOTI, NOTOTW, NOTOTH, NOTOTO
-      INTEGER        ISYS, ISYSO, ISYSH, ISYSW, ISYSI, NSYS
-      INTEGER        IPGRID(NOSEG1)
-      REAL           ARRINP(NOTOTI,NOSEG2) , WEIGHT(NOTOTW,NOSEG1) ,
+      INTEGER(kind=int_wp) :: NOSEG1, NOSEG2, IDATYP, ISWCUM, NOTOTI, NOTOTW, NOTOTH, NOTOTO
+      INTEGER(kind=int_wp) :: ISYS, ISYSO, ISYSH, ISYSW, ISYSI, NSYS
+      INTEGER(kind=int_wp) :: IPGRID(NOSEG1)
+      REAL(kind=real_wp) :: ARRINP(NOTOTI,NOSEG2) , WEIGHT(NOTOTW,NOSEG1) ,
      +               ARRHLP(NOTOTH,NOSEG2) , ARROUT(NOTOTO,NOSEG1)
 !
 !     Local declaration
@@ -76,7 +77,7 @@
 !     ISEG2   INTEGER  1          LOCAL   Segment index coarser grid
 !     LUREP   INTEGER  1          LOCAL   Unit number report file
 !
-      INTEGER        ISEG1 , ISEG2 , LUREP
+      INTEGER(kind=int_wp) ::ISEG1 , ISEG2 , LUREP
 !
 !     Zero arrays
 !

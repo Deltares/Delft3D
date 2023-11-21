@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_move
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,8 +45,8 @@
 !     ARRAY2  REAL      NOTOT     OUTPUT  array to copy to
 !     NOTOT   INTEGER     1       INPUT   total number of entries
 !
-      real    :: ARRAY1(*) , ARRAY2(*)
-      integer :: I , NOTOT
+      real(kind=real_wp) ::ARRAY1(*) , ARRAY2(*)
+      integer(kind=int_wp) ::I , NOTOT
 !
       DO  10 I = 1,NOTOT
    10 ARRAY2(I) = ARRAY1(I)
@@ -53,9 +55,9 @@
       END
       subroutine dmove ( array1 , array2 , notot )
 
-      real(8) ::  array1(*)
-      real(4) ::  array2(*)
-      integer :: I , NOTOT
+      real(kind=dp) ::array1(*)
+      real(kind=real_wp) ::array2(*)
+      integer(kind=int_wp) ::I , NOTOT
 
       do i = 1,notot
          array2(i) = array1(i)
@@ -65,9 +67,9 @@
       end
       subroutine smove ( array1 , array2 , notot )
 
-      real(4) ::  array1(*)
-      real(8) ::  array2(*)
-      integer :: I , NOTOT
+      real(kind=real_wp) ::array1(*)
+      real(kind=dp) ::array2(*)
+      integer(kind=int_wp) ::I , NOTOT
 
       do i = 1,notot
          array2(i) = array1(i)

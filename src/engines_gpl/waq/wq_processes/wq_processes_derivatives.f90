@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_wq_processes_derivatives
+use m_waq_precision
+
 
 implicit none
 
@@ -34,13 +36,13 @@ contains
 
       implicit none
 
-      integer notot, noflux, nflux1, nfluxp, noseg
-      integer isys, iflux, iseg, ndt
-      real    stochi(notot,noflux), flux(noflux,noseg)
+      integer(kind=int_wp) :: notot, noflux, nflux1, nfluxp, noseg
+      integer isys, iflux, iseg, ndt 
+      real(kind=real_wp) ::    stochi(notot,noflux), flux(noflux,noseg)
       real(8) deriv(noseg,notot), volume(noseg)
-      real(8) st, fact
-
-      integer(4), save :: ithndl = 0
+      real(kind=dp) :: st, fact
+ 
+      integer(kind=int_wp), save ::  ithndl = 0
       if (timon) call timstrt( "wq_processes_derivatives", ithndl )
 !
 !     Construct the DERIV's

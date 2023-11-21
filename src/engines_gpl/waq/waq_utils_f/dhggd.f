@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhggd
+      use m_waq_precision
+
 
       implicit none
 
@@ -31,9 +33,9 @@
 !
 !     Determine largest common denominator
 !
-      INTEGER           NONUMB, IGGD, I, IN
-      INTEGER           NUMBRS(NONUMB)
-      INTEGER           MINNUM
+      INTEGER(kind=int_wp) ::NONUMB, IGGD, I, IN
+      INTEGER(kind=int_wp) ::NUMBRS(NONUMB)
+      INTEGER(kind=int_wp) ::MINNUM
 
       MINNUM = NUMBRS(1)
       DO I = 2 , NONUMB

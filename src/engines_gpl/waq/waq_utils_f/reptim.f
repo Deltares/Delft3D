@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_reptim
+      use m_waq_precision
+
 
       implicit none
 
@@ -51,8 +53,8 @@
 !
 !     Declaration of arguments
 !
-      INTEGER LUN   , ITIME , ISFLAG
-      REAL    PERCIT
+      INTEGER(kind=int_wp) ::LUN   , ITIME , ISFLAG
+      REAL(kind=real_wp) ::PERCIT
 !
       IF ( ISFLAG .EQ. 0 ) THEN
          IF ( PERCIT .GE. 0.0 ) THEN

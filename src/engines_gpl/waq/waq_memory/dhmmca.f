@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module dhmmca_mod
+      use m_waq_precision
       use m_srstop
 
       contains
@@ -57,18 +58,18 @@
 
 !     kind     function         name        description
 
-      integer      , intent(in   ) :: lunrep    ! logical unitnumber output file
+      integer(kind=int_wp), intent(in   )  ::lunrep    ! logical unitnumber output file
       logical      , intent(in   ) :: l_decl    ! Declare memory y/n
-      integer      , intent(inout) :: arrpoi(:) ! Pointer in workarray/FMM reference pointer
-      integer      , intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
-      integer      , intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
-      integer      , intent(inout) :: arrlen(:) ! Length off array
-      integer      , intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
-      integer      , intent(inout) :: arrdm1(:) ! dimension 1
-      integer      , intent(inout) :: arrdm2(:) ! dimension 2
-      integer      , intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
+      integer(kind=int_wp), intent(inout)  ::arrpoi(:) ! Pointer in workarray/FMM reference pointer
+      integer(kind=int_wp), intent(inout)  ::arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
+      integer(kind=int_wp), intent(inout)  ::arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
+      integer(kind=int_wp), intent(inout)  ::arrlen(:) ! Length off array
+      integer(kind=int_wp), intent(inout)  ::arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+      integer(kind=int_wp), intent(inout)  ::arrdm1(:) ! dimension 1
+      integer(kind=int_wp), intent(inout)  ::arrdm2(:) ! dimension 2
+      integer(kind=int_wp), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
-      integer      , intent(inout) :: itotc     ! Required array space
+      integer(kind=int_wp), intent(inout)  ::itotc     ! Required array space
       type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
 
 
@@ -76,13 +77,13 @@
 
       character*20       :: namarr                      ! help variable for array name
 
-      integer            :: iianam, iimnam, iisnam, iidnam, iibnid,
+      integer(kind=int_wp) ::iianam, iimnam, iisnam, iidnam, iibnid,
      &                      iibnam, iibtyp, iiwsid, iiwnam, iiwtyp,
      &                      iicnam, iipnam, iifnam, iisfna, iiedit,
      &                      iiprna, iionam, iidina, iivnam, iidana,
      &                      iirnam, iicbuf, iilunt, iiosnm, iiouni,
      &                      iiodsc, iissnm, iisuni, iisdsc
-      integer            :: i_car,  iartyp, iarlen, ip
+      integer(kind=int_wp) ::i_car,  iartyp, iarlen, ip
 !
       IIANAM = IASIZE + IJSIZE +  1
       IIMNAM = IASIZE + IJSIZE +  2

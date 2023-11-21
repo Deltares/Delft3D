@@ -497,7 +497,6 @@ subroutine procal (pmsa   , imodul , flux   , ipoint , increm , &
 
 
     use timers
-    use iso_c_binding
 
 !     parameters          :
 

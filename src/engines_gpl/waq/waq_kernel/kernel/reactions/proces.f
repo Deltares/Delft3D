@@ -87,7 +87,6 @@
       use m_dhgvar
       use m_dhgpoi
       use timers
-      use iso_c_binding
       use process_registration
       use m_dhaggr
       use m_dhagkm
@@ -670,7 +669,6 @@
      +                    DSPNDT, VELNDT, dll_opb)
 !
       use timers
-      use iso_c_binding
       use process_registration
       use m_dhaggr
       use m_dhdag2

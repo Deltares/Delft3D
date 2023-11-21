@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_cnvtim
+      use m_waq_precision
+
 
       implicit none
 
@@ -53,18 +55,18 @@
 
 !     kind           function         name       Descriptipon
 
-      integer   (4), intent(inout) :: ibrk     !< breakpoint to convert
-      integer   (4), intent(in   ) :: ifact    !< factor between time scales
+      integer(kind=int_wp), intent(inout)  :: ibrk     !< breakpoint to convert
+      integer(kind=int_wp), intent(in   )  :: ifact    !< factor between time scales
       logical      , intent(in   ) :: dtflg    !< if true then 'date'-format
       logical      , intent(in   ) :: dtflg3   !< if true then YYDDDHH
 
 !     Local
 
-      integer   (4) isec    ! seconds
-      integer   (4) imin    ! minutes
-      integer   (4) ihour   ! hours
-      integer   (4) iday    ! days
-      integer   (4) iyear   ! years
+      integer(kind=int_wp) :: isec    ! seconds
+      integer(kind=int_wp) :: imin    ! minutes
+      integer(kind=int_wp) :: ihour   ! hours
+      integer(kind=int_wp) :: iday    ! days
+      integer(kind=int_wp) :: iyear   ! years
 
       if ( dtflg ) then
          if ( dtflg3 ) then

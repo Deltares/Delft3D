@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhzeri
+      use m_waq_precision
+
 
       implicit none
 
@@ -42,10 +44,10 @@
 !     IARRAY  INTEGER  NOTOT      OUTPUT  array to be zeroed
 !     NOTOT   INTEGER     1       INPUT   total number of entries
 !
-      integer :: NOTOT
-      integer :: I
+      integer(kind=int_wp) ::NOTOT
+      integer(kind=int_wp) ::I
 
-      integer  IARRAY(*)
+      integer(kind=int_wp) ::IARRAY(*)
 !
       DO  10 I  = 1,NOTOT
    10 IARRAY(I) = 0
