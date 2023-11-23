@@ -1151,7 +1151,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Maxitverticalforestertem' , Maxitverticalforestertem)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulencemodel' , Iturbulencemodel)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection' , javakeps)
-    call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
+    call prop_get_double (md_ptr, 'numerics', 'Centersheardepth'   , centersheardepth)
     call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
     call prop_get_double (md_ptr, 'numerics', 'drhodzfilterhorfac' , drhodzfilterhorfac)
@@ -3222,9 +3222,9 @@ endif
     if (writeall .or. (javakeps .ne. 3  .and. kmx > 0) ) then
        call prop_set(prop_ptr, 'numerics', 'Turbulenceadvection' , javakeps, 'Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)')
     endif
-
-    if (writeall .or. (jadrhodz .ne. 1  .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'Jadrhodz' , jadrhodz, '(1:central org, 2:centralnew, 3:upw cell, 4:most stratf. cell, 5:least stratf. cell)')
+    
+    if (writeall .or. (centersheardepth > 0d0  .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'Centersheardepth' , centersheardepth, '(only for Turbulencemodels 3,4 (links): 0: shearproduction on links , >0: on centers in top dep, on links below 2*topdep)')
     endif
 
     if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then

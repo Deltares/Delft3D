@@ -73,11 +73,10 @@ subroutine update_verticalprofiles()
 
  double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav,epswv, prsappr
 
- double precision :: dzws1, dzws2
+ double precision :: dzws1, dzws2, dzsurf, rel, dijdijcen, cendep=200d0
 
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
  integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv
- integer          :: jacenterproduction = 1 
 
  double precision, external :: setrhofixedp
 
@@ -420,68 +419,24 @@ subroutine update_verticalprofiles()
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
 
-        !if (dnt >= 484d0 .and. LL == 265 .and. L == Lt-7) then 
-        !   continue 
-        !endif
- 
-
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
             k1         = ln(1,L)  ; k2  = ln(2,L)
             k1u        = ln(1,Lu) ; k2u = ln(2,Lu)
             
-            drhodz  = 0d0
-            drhodz1 = drodzws(k1)
-            drhodz2 = drodzws(k2)
+            drhodz1    = drodzws(k1)
+            drhodz2    = drodzws(k2)
             
-            if (jadrhodz == 1) then               ! averagingif non zero   
-
-               if (drhodz1 == 0) then
-                  drhodz  = drhodz2
-               else if (drhodz2 == 0) then
-                  drhodz  = drhodz1
-               else
-                  !drhodz  = 0.5d0*( drhodz1 + drhodz2 )
-                  drhodz  = acl(LL)* drhodz1 + (1.0d0 - acl(LL)) * drhodz2
-               endif
-
-            else if (jadrhodz == 2) then          ! averaging
-
-               drhodz  = acl(LL)* drhodz1 + (1.0d0 - acl(LL)) * drhodz2
- 
-            else if (jadrhodz == 3) then          ! upwind
- 
-               if (u1(L) > 0d0) then 
-                  drhodz = drhodz1
-               else 
-                  drhodz = drhodz2
-               endif
-
-            else if (jadrhodz == 4) then          ! most stratified, decreases viscosity
-
-               drhodz  = min( drhodz1, drhodz2 )
-
-            else if (jadrhodz == 5) then
-
-               drhodz  = max( drhodz1, drhodz2 )  ! least stratified, increases viscosity 
-
-            else if (jadrhodz == 6) then          ! first average then d/dz
-
-               if (dzc1 > 0 .and. dzc2 > 0) then
-
-                  if (idensform < 10) then                     
-                     drhodz  = ( rho(k1u) + rho(k2u) - rho(k1) - rho(k2) ) / (dzc1 + dzc2)
-                  else
-                     prsappr = ag*rhomean*( zws(ktop(ln(1,LL))) - zws(k1) )   
-                     drhodz  = ( setrhofixedp(k1u,prsappr) + setrhofixedp(k2u,prsappr) - setrhofixedp(k1,prsappr) - setrhofixedp(k1,prsappr)) / ( dzc1 + dzc2)
-                  endif
- 
-               endif
-               
+            if (drhodz1 == 0) then
+                drhodz  = drhodz2
+            else if (drhodz2 == 0) then
+                drhodz  = drhodz1
+            else
+                drhodz  = acl(LL)* drhodz1 + (1.0d0 - acl(LL)) * drhodz2
             endif
  !
-            bruva (k)  = coefn2*drhodz    ! N.B., bruva = N**2 / sigrho
-            buoflu(k)  = max(vicwwu(L), vicwminb)*bruva(k)
+            bruva (k)   = coefn2*drhodz    ! N.B., bruva = N**2 / sigrho
+            buoflu(k)   = max(vicwwu(L), vicwminb)*bruva(k)
 
             !c Production, dissipation, and buoyancy term in TKE equation;
             !c dissipation and positive buoyancy are split by Newton linearization:
@@ -517,19 +472,19 @@ subroutine update_verticalprofiles()
 
         if (jawave>0 .and. jawaveStokes>=3 .and. .not. flowWithoutWaves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
            dijdij(k) = ( ( u1(Lu)-ustokes(Lu) - u1(L)+ustokes(L) ) ** 2 + ( v(Lu)-vstokes(Lu) - v(L)+vstokes(L) ) ** 2 ) / dzw(k)**2
-      !  else if (jacenterproduction == 1 .and. hu(Lt) - hu(Lb0) > 2d0*cendep) then ! only in deep water
-      !     dzws1     = max( dzuminturb, 0.5d0*( zws(k1u)-zws(k1-1) ) )
-      !     dzws2     = max( dzuminturb, 0.5d0*( zws(k2u)-zws(k2-1) ) )
-      !     dijdijcen =        acL(LL)  * ( ((ucx(k1u)-ucx(k1))/dzws1)**2 + ((ucy(k1u)-ucy(k1))/dzws1)**2 )  &  
-      !                 + (1d0-acL(LL)) * ( ((ucx(k2u)-ucx(k2))/dzws2)**2 + ((ucy(k2u)-ucy(k2))/dzws2)**2 )
-      !     dzsurf = hu(Lt) - hu(L)       ! distance from surface 
-      !     if ( dzsurf  < cendep ) then  ! in top part of column
-      !        dijdij(k) = dijdijcen      ! center only
-      !     else 
-      !        dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
-      !        rel       = 1d0 - (dzsurf - cendep) / cendep ! cendep to cendep*2 == 1 to 0
-      !        dijdij(k) = rel*dijdijcen + (1d-rel)*dijdij(k)
-      !     endif
+        else if (centersheardepth > 0d0 .and. hu(Lt) - hu(Lb0) > 2d0*centersheardepth) then ! only in deep water
+           dzws1     = max( dzuminturb, 0.5d0*( zws(k1u)-zws(k1-1) ) )
+           dzws2     = max( dzuminturb, 0.5d0*( zws(k2u)-zws(k2-1) ) )
+           dijdijcen =   (    acL(LL)) * ( ((ucx(k1u)-ucx(k1))/dzws1)**2 + ((ucy(k1u)-ucy(k1))/dzws1)**2 )  &  
+                     +   (1d0-acL(LL)) * ( ((ucx(k2u)-ucx(k2))/dzws2)**2 + ((ucy(k2u)-ucy(k2))/dzws2)**2 )
+           dzsurf    = hu(Lt) - hu(L)              ! distance from surface 
+           if ( dzsurf  < centersheardepth ) then  ! in top part of column
+              dijdij(k) = dijdijcen                ! center only
+           else 
+              dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
+              rel       = 1d0 - (dzsurf - centersheardepth) / centersheardepth  ! cendep to 2*cendep == 1 to 0
+              dijdij(k) = rel*dijdijcen + (1d0-rel)*dijdij(k)   
+           endif
         else
            dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
         endif
@@ -538,13 +493,6 @@ subroutine update_verticalprofiles()
             rich(L) = sigrho*bruva(k)/max(1d-8,dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
         endif
 
-        !vicwalfa = 0.3333d0
-        !if (vicwalfa == 0d0) then 
-        !   vicw = vicwwu(L)
-        !else 
-        !   vicw = (1d0-vicwalfa)*vicwwu(L) + vicwalfa*( vicwwu(Lu) + vicwwu(L-1) )   
-        !endif
-        !sourtu = max(vicw, 1d-6)*dijdij(k)
         sourtu = max(vicwwu(L), vicwminb)*dijdij(k)
 
         !

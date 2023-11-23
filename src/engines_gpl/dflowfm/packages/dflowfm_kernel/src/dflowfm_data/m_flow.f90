@@ -77,7 +77,7 @@
 
  integer                           :: iturbulencemodel  !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
  integer                           :: ieps              !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
- integer                           :: jadrhodz = 1
+ double precision                  :: centersheardepth = 0 !<only for Turbulencemodels 3,4 (on links): 0: shearproduction on links , >0: on centers in top dep, on links below 2*topdep
  double precision                  :: facLaxturb = 0    !< Turkineps0 from : 0.0=links ; 1.0=nodes 
  integer                           :: jafaclaxturbtyp=1 !< (Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)
  integer                           :: numdrhodzfilterhor=0 !<(Horizontal Filtering of Vertical density gradient in Turbulence model, nr of iterations,0=No) 
