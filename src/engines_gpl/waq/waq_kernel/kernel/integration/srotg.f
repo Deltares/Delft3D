@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_srotg
+      use m_waq_precision
+
 
       implicit none
 
@@ -35,8 +37,8 @@
 !
       use timers
 
-      real(8) sa,sb,c,s,roe,scale,r,z,one
-      integer(4) ithandl /0/
+      real(kind=dp) ::sa,sb,c,s,roe,scale,r,z,one
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "srotg", ithandl )
 !
       roe = sb

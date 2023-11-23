@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_cselac
+      use m_waq_precision
+
 
       implicit none
 
@@ -140,35 +142,35 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT(43) , INCREM(43) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT(43) , INCREM(43) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      INTEGER  IP(43)
-      INTEGER  IN(43)
-      INTEGER  IFLUX  , ISEG   , ILUMON
+      INTEGER(kind=int_wp) ::IP(43)
+      INTEGER(kind=int_wp) ::IN(43)
+      INTEGER(kind=int_wp) ::IFLUX  , ISEG   , ILUMON
 !
-      REAL     COX    , CNI    , CFEA   , CSU
-      REAL     RMIN1  , RMIN2  , RMIN3  , RMIN4  , RTMIN  , RDEN   ,
+      REAL(kind=real_wp) ::COX    , CNI    , CFEA   , CSU
+      REAL(kind=real_wp) ::RMIN1  , RMIN2  , RMIN3  , RMIN4  , RTMIN  , RDEN   ,
      +         RSRED  , RDMAX  , RSMAX  , DELT   , RMIN5  , RMIN6
-      REAL     FOX    , FNI    , FSU    , FCH4   , FOX20  , FNI20  ,
+      REAL(kind=real_wp) ::FOX    , FNI    , FSU    , FCH4   , FOX20  , FNI20  ,
      +         FSU20  , FCH420 , FSUM   , FROX   , FRNI   , FRSU   ,
      +         FRCH4  , FROXC  , FRNIC  , FRSUC  , FRCH4C , FRMCH4
-      REAL     KSOX   , KSOXI  , KSNI   , KSNISUI, KSSU   , KSSUI  ,
+      REAL(kind=real_wp) ::KSOX   , KSOXI  , KSNI   , KSNISUI, KSSU   , KSSUI  ,
      +         KTMIN  , KTDEN  , KTSRED , KTMET  , FCT2   , FCT3   ,
      +         FCT4   , FDEN   , FIRED  , FSRED  , FMET   , COXC1  ,
      +         COXC2  , COXC3  , COXC4  , CNIC   , KSFE   , KSNIFEI
-      REAL     KTIRED , FRFEC  , FCT5   , RIRED  , RIMAX  , FFE20  ,
+      REAL(kind=real_wp) ::KTIRED , FRFEC  , FCT5   , RIRED  , RIMAX  , FFE20  ,
      +         FFE    , FRFE
-      REAL     POROS  , TEMP   , TEMPC1 , TEMPC2 , TEMPC3 , TEMPC4 ,
+      REAL(kind=real_wp) ::POROS  , TEMP   , TEMPC1 , TEMPC2 , TEMPC3 , TEMPC4 ,
      +         TEMPC5 , CRTEMP , TEMP20
-      REAL     OXC_RATIO
-      REAL     NIC_RATIO
-      REAL     FEC_RATIO
-      REAL     SUC_RATIO
-      REAL     CHC_RATIO
-      REAL     ROMAX
-      REAL     ROXC
+      REAL(kind=real_wp) ::OXC_RATIO
+      REAL(kind=real_wp) ::NIC_RATIO
+      REAL(kind=real_wp) ::FEC_RATIO
+      REAL(kind=real_wp) ::SUC_RATIO
+      REAL(kind=real_wp) ::CHC_RATIO
+      REAL(kind=real_wp) ::ROMAX
+      REAL(kind=real_wp) ::ROXC
       LOGICAL  FIRST, ONLY_OX
       SAVE     FIRST, ONLY_OX
       DATA     FIRST /.TRUE./

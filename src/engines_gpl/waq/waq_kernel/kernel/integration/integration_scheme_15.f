@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_15
+      use m_waq_precision
       use m_zlayer
       use m_zercum
       use m_sgmres
@@ -138,9 +139,9 @@
 !     Kind                           Name         Description
 
       type(waq_data_buffer), target :: buffer      !< System total array space
-      integer                     :: lun   (*)  !< file unit numbers
+      integer(kind=int_wp) ::lun   (*)  !< file unit numbers
       character(*)                :: lchar (*)  !< file names
-      integer                     :: action     !< handle to stepwise call
+      integer(kind=int_wp) ::action     !< handle to stepwise call
       type(delwaq_data), target   :: dlwqd      !< data structure stepwize call
       type(gridpointercoll)       :: gridps     !< collection off all grid definitions
 
@@ -149,29 +150,29 @@
 
 !     Local declarations
 
-      real            rdummy(1)
+      real(kind=real_wp) ::rdummy(1)
       logical         imflag , idflag , ihflag
       logical         update , lrewin
       logical         timon_old
-      integer         laatst
-      INTEGER         sindex
+      integer(kind=int_wp) ::laatst
+      INTEGER(kind=int_wp) ::sindex
 
-      integer, save :: ithand1 = 0 ! Leave local
+      integer(kind=int_wp), save  ::ithand1 = 0 ! Leave local
 
-      integer         isys
-      integer         nstep
+      integer(kind=int_wp) ::isys
+      integer(kind=int_wp) ::nstep
 
-      integer         iseg
-      integer         ibnd
+      integer(kind=int_wp) ::iseg
+      integer(kind=int_wp) ::ibnd
 
-      integer         noth
-      integer         ith
+      integer(kind=int_wp) ::noth
+      integer(kind=int_wp) ::ith
 
 !       Variables specific to this method: leave them SAVEd
 
-      integer, save          :: ioptpc
-      integer, save          :: iter
-      integer, save          :: iscale
+      integer(kind=int_wp), save           ::ioptpc
+      integer(kind=int_wp), save           ::iter
+      integer(kind=int_wp), save           ::iscale
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

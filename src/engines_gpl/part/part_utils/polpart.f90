@@ -38,7 +38,7 @@ contains
 !     method     : read a single polygon from a tekal formated file (only the first is used!)
 !
       use m_skip_comments
-      use precision_part ! single/double precision
+      use m_waq_precision ! single/double precision
       use timers
       use m_stop_exit
 
@@ -49,19 +49,19 @@ contains
 !     kind           function         name                      description
 
       character( * ), intent(in   ) :: pol_file                !< polygon file
-      integer  ( ip), intent(in   ) :: nrowsmax                !< dimension of poligons
-      real     ( rp), intent(  out) :: xpol  (nrowsmax)        !< xvalues polygons
-      real     ( rp), intent(  out) :: ypol  (nrowsmax)        !< yvalues polygons
-      integer  ( ip), intent(  out) :: nrows                   !< dimension of poligon read
-      integer  ( ip), intent(in   ) :: lunpr                   !< unit nr of the diagnostics file
+      integer  ( int_wp ), intent(in   ) :: nrowsmax                !< dimension of poligons
+      real     ( real_wp), intent(  out) :: xpol  (nrowsmax)        !< xvalues polygons
+      real     ( real_wp), intent(  out) :: ypol  (nrowsmax)        !< yvalues polygons
+      integer  ( int_wp ), intent(  out) :: nrows                   !< dimension of poligon read
+      integer  ( int_wp ), intent(in   ) :: lunpr                   !< unit nr of the diagnostics file
 
-      integer(ip), parameter            :: max_len_line=200
-      integer(ip), parameter            :: max_len_blockname=4
-      integer(ip), parameter            :: max_len_key=20
+      integer(int_wp ), parameter            :: max_len_line=200
+      integer(int_wp ), parameter            :: max_len_blockname=4
+      integer(int_wp ), parameter            :: max_len_key=20
 
-      integer(ip)                       :: lun_pol
-      integer(ip)                       :: ios, ncols
-      integer(ip)                       :: i, len_file
+      integer(int_wp )                       :: lun_pol
+      integer(int_wp )                       :: ios, ncols
+      integer(int_wp )                       :: i, len_file
 
       logical                           :: polygone_complete
       logical                           :: end_of_file,read_error

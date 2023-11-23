@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqt4
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,23 +62,23 @@
 
 !     kind     function         name        description
 
-      integer           , intent(inout)         :: lun(*)          ! logical unitnumbers of files
+      integer(kind=int_wp), intent(inout)          ::lun(*)          ! logical unitnumbers of files
       character*(*)     , intent(in   )         :: luntxt(*)       ! file names
-      integer           , intent(in   )         :: ftype(*)        ! type of the files
-      integer           , intent(in   )         :: lunout          ! unit number monitor file
-      integer           , intent(in   )         :: ilun            ! entry in LUN/LUNTXT for this item
-      integer           , intent(in   )         :: itime           ! Model timer
-      integer           , intent(in   )         :: nosub           ! number of functions for this item
-      integer           , intent(in   )         :: nrftot          ! record length (nosub*nopoints)
-      real(4)           , intent(  out)         :: result(nosub,*) ! result array at ITIME
-      integer           , intent(in   )         :: ipoint(*)       ! pointer to result array
-      integer           , intent(in   )         :: isflag          ! = 1 then 'ddhhmmss' format
-      integer           , intent(in   )         :: ifflag          ! = 1 then first invocation
+      integer(kind=int_wp), intent(in   )          ::ftype(*)        ! type of the files
+      integer(kind=int_wp), intent(in   )          ::lunout          ! unit number monitor file
+      integer(kind=int_wp), intent(in   )          ::ilun            ! entry in LUN/LUNTXT for this item
+      integer(kind=int_wp), intent(in   )          ::itime           ! Model timer
+      integer(kind=int_wp), intent(in   )          ::nosub           ! number of functions for this item
+      integer(kind=int_wp), intent(in   )          ::nrftot          ! record length (nosub*nopoints)
+      real(kind=real_wp), intent(  out)          ::result(nosub,*) ! result array at ITIME
+      integer(kind=int_wp), intent(in   )          ::ipoint(*)       ! pointer to result array
+      integer(kind=int_wp), intent(in   )          ::isflag          ! = 1 then 'ddhhmmss' format
+      integer(kind=int_wp), intent(in   )          ::ifflag          ! = 1 then first invocation
       logical           , intent(  out)         :: update          ! set to T if function is updated
-      integer           , intent(in   )         :: ntotal          ! Length of result array NOT USED
+      integer(kind=int_wp), intent(in   )          ::ntotal          ! Length of result array NOT USED
       logical           , intent(in   )         :: lstrec          ! True if last record on rewind wanted
       logical           , intent(  out)         :: lrewin          ! True, then rewind took place
-      real(4)           , intent(  out)         :: reclst(nosub,*) ! last record before rewind
+      real(kind=real_wp), intent(  out)          ::reclst(nosub,*) ! last record before rewind
       type(delwaq_data) , intent(inout), target :: dlwqd           ! derived type for persistent storage
 
 !     local declarations        :
@@ -91,33 +93,33 @@
 !   NOTE: those not declared as pointer are all copies of the one in collections
 !         care should be taken if values within the collections are updated
 
-      integer        ierr                              ! error indicator when opening a file
-      integer        ioerr                             ! error indicator when opening a file
-      integer        ilt, llun                         ! help variables for unit numbers
-      integer        nfil                              ! number of files in the steering file
-      integer        i, i2                             ! general loop variables
-      real(4)        fact                              ! factor for this file in the steering file
-      integer        it1 , it2 , it3                   ! time in the steering file
-      integer        it1a, it2a, it3a                  ! time in the steering file
-      integer        iret                              ! general return code for functions
-      integer        icoll                             ! number in the collection of collections
-      integer        iup, igo, itt                     ! help variables
-      integer        idef                              ! number of the file definition in a collection
-      integer        idt                               ! time step size in a file
-      integer        iset                              ! incremental counter in double loops
-      integer        np                                ! number of items (nrftot/nosub)
-      integer        ip                                ! item number
+      integer(kind=int_wp) ::ierr                              ! error indicator when opening a file
+      integer(kind=int_wp) ::ioerr                             ! error indicator when opening a file
+      integer(kind=int_wp) ::ilt, llun                         ! help variables for unit numbers
+      integer(kind=int_wp) ::nfil                              ! number of files in the steering file
+      integer(kind=int_wp) ::i, i2                             ! general loop variables
+      real(kind=real_wp) ::fact                              ! factor for this file in the steering file
+      integer(kind=int_wp) ::it1 , it2 , it3                   ! time in the steering file
+      integer(kind=int_wp) ::it1a, it2a, it3a                  ! time in the steering file
+      integer(kind=int_wp) ::iret                              ! general return code for functions
+      integer(kind=int_wp) ::icoll                             ! number in the collection of collections
+      integer(kind=int_wp) ::iup, igo, itt                     ! help variables
+      integer(kind=int_wp) ::idef                              ! number of the file definition in a collection
+      integer(kind=int_wp) ::idt                               ! time step size in a file
+      integer(kind=int_wp) ::iset                              ! incremental counter in double loops
+      integer(kind=int_wp) ::np                                ! number of items (nrftot/nosub)
+      integer(kind=int_wp) ::ip                                ! item number
       logical        stream_access                     ! help variable to detect the type of file access
       character(20)  access                            ! help variable to detect the type of file access
       character(14)  strng                             ! help variable to detect th string 'Steering file '
       character(255) sfile                             ! help variable for file names
       logical        updat2                            ! help variable to determine updated record
       logical        lre3                              ! help variable to determine rewind
-      integer, save   :: islun                         ! base unit number for work files
-      integer        filtype                           ! type of file
-      real(4),pointer :: array1(:),array2(:),array3(:) ! help arrays for interpolation
+      integer(kind=int_wp), save    ::islun                         ! base unit number for work files
+      integer(kind=int_wp) ::filtype                           ! type of file
+      real(kind=real_wp) ,pointer :: array1(:),array2(:),array3(:) ! help arrays for interpolation
       logical        first  / .true. /                 ! construct for initialisation
-      integer(4)     ithandl /0/                       ! performance timer construct
+      integer(kind=int_wp) ::ithandl = 0                       ! performance timer construct
       if ( timon ) call timstrt ( "dlwqt4", ithandl )
 
       lrewin = .false.
@@ -302,14 +304,14 @@
       use m_srstop
       use timers
 
-      integer   LUNOUT, ISFLAG, LLUN, ITIME, ITIME1, MESSGE
+      integer(kind=int_wp) ::LUNOUT, ISFLAG, LLUN, ITIME, ITIME1, MESSGE
 
       CHARACTER*24  MSGTXT(6)
       CHARACTER*(*) SFILE
       DATA MSGTXT / ' REWIND ON              ' , ' WARNING READING        ' ,
      *              ' REWIND ERROR           ' , ' ERROR READING          ' ,
      *              ' ERROR OPENING          ' , ' ERROR: TIMES TOO LATE  ' /
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "messag", ithandl )
 
       IF ( MESSGE .EQ. 0 ) goto 9999

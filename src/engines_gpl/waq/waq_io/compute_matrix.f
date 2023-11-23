@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_compute_matrix
+      use m_waq_precision
+
 
       implicit none
 
@@ -45,36 +47,36 @@
 
 !     declaration of arguments
 
-      integer               , intent(in)    :: lunut        ! report file
+      integer(kind=int_wp), intent(in) ::  lunut         ! report file
       type(t_dlwq_item)     , intent(in)    :: data_param   ! list of param items in the data
       type(t_dlwq_item)     , intent(in)    :: data_loc     ! list of loc items in the data
       type(t_dlwq_item)     , intent(in)    :: waq_param    ! list of waq param items to be set
       type(t_dlwq_item)     , intent(in)    :: waq_loc      ! list of waq loc items to be set
-      real                  , intent(in)    :: amiss        ! missing value
+      real(kind=real_wp), intent(in) ::  amiss         ! missing value
       type(t_dlwqdata)      , intent(in)    :: fdata        ! data block input
       type(t_dlwqdata)      , intent(out)   :: wdata        ! data block output
 
 !     local declarations
 
-      integer                               :: iorder       ! order of the parameters and locations in the data array
-      integer                               :: functype     ! function type
-      integer                               :: nobrk        ! number of breakpoints
-      integer                               :: ndim1        ! first dimension of values
-      integer                               :: ndim2        ! second dimension of values
-      integer                               :: ibrk         ! loop counter breakpoints
-      integer                               :: iloc         ! loop counter locations
-      integer                               :: ipar         ! loop counter parameters
-      integer                               :: ipar_out     ! index output parameter
-      integer                               :: ip           ! assignment rule and indx pointer for parameter
-      integer                               :: ip2          ! index pointer for parameter in data array
-      integer                               :: iparo        ! parameter which is subject to current min or max
+      integer(kind=int_wp) ::  iorder        ! order of the parameters and locations in the data array
+      integer(kind=int_wp) ::  functype      ! function type
+      integer(kind=int_wp) ::  nobrk         ! number of breakpoints
+      integer(kind=int_wp) ::  ndim1         ! first dimension of values
+      integer(kind=int_wp) ::  ndim2         ! second dimension of values
+      integer(kind=int_wp) ::  ibrk          ! loop counter breakpoints
+      integer(kind=int_wp) ::  iloc          ! loop counter locations
+      integer(kind=int_wp) ::  ipar          ! loop counter parameters
+      integer(kind=int_wp) ::  ipar_out      ! index output parameter
+      integer(kind=int_wp) ::  ip            ! assignment rule and indx pointer for parameter
+      integer(kind=int_wp) ::  ip2           ! index pointer for parameter in data array
+      integer(kind=int_wp) ::  iparo         ! parameter which is subject to current min or max
       logical                               :: miniem       ! is minimum to be applied
       logical                               :: maxiem       ! is maximum to be applied
       logical                               :: close_accum  ! is calculation ready for this output parameter
-      real                                  :: accum        ! accumulation of calculation
-      real                                  :: aminv        ! minimum value to be applied
-      real                                  :: amaxv        ! maximum value to be applied
-      integer(4) :: ithndl = 0
+      real(kind=real_wp) ::  accum         ! accumulation of calculation
+      real(kind=real_wp) ::  aminv         ! minimum value to be applied
+      real(kind=real_wp) ::  amaxv         ! maximum value to be applied
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "compute_matrix", ithndl )
 
       ! some initialisation

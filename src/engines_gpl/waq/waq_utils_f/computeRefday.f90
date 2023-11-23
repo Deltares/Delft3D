@@ -28,6 +28,8 @@
 !
 !>
 module computeRefday
+use m_waq_precision
+
 
     implicit none
       interface compute_refday
@@ -45,10 +47,10 @@ module computeRefday
       subroutine compute_refday_from_string(refdat, refday)
         IMPLICIT  NONE
         character (len=*), intent(in)    ::   refdat             !  refdate
-        integer  ( 4)                    ::   iyear              !  year of the time offset
-        integer  ( 4)                    ::   imonth             !  month of the time offset
-        integer  ( 4)                    ::   iday               !  day of the time offset
-        integer  ( 4), intent(out)       ::   refday             !  refday
+        integer(kind=int_wp)                       ::   iyear              !  year of the time offset
+        integer(kind=int_wp)                       ::   imonth             !  month of the time offset
+        integer(kind=int_wp)                       ::   iday               !  day of the time offset
+        integer(kind=int_wp)   , intent(out)       ::   refday             !  refday
         
         read(refdat, '(i4,i2,i2)' ) iyear, imonth, iday
         call compute_refday_from_integers(iyear, imonth, iday, refday)
@@ -59,12 +61,12 @@ module computeRefday
       !     Compute reference day, varying from 1 till 365 (or 366 for leap years)
       subroutine compute_refday_from_integers(iyear, imonth, iday, refday)
         IMPLICIT  NONE
-        integer  ( 4), intent(in)  ::   iyear              !  year of the time offset
-        integer  ( 4), intent(in)  ::   imonth             !  month of the time offset
-        integer  ( 4), intent(in)  ::   iday               !  day of the time offset
-        integer  ( 4), intent(out) ::   refday             !  refday
+        integer(kind=int_wp)   , intent(in)  ::   iyear              !  year of the time offset
+        integer(kind=int_wp)   , intent(in)  ::   imonth             !  month of the time offset
+        integer(kind=int_wp)   , intent(in)  ::   iday               !  day of the time offset
+        integer(kind=int_wp)   , intent(out) ::   refday             !  refday
         
-        integer, dimension(12)     ::   daysPerMonth       !  # days in each month
+        integer(kind=int_wp), dimension(12) ::daysPerMonth       !  # days in each month
         logical                    ::   leapYear           !  is iyear a leap year, yes or no
         
         refday = 0
@@ -83,7 +85,7 @@ module computeRefday
 !     Check if year is a leap year
       subroutine checkLeapYear(iyear, leapYear)
         IMPLICIT  NONE
-        integer  ( 4), intent(in)  ::   iyear              !  year of the time offset
+        integer(kind=int_wp)   , intent(in)  ::   iyear              !  year of the time offset
         logical , intent(out)      ::   leapYear           !  is iyear a leap year, yes or no
         
         if (mod(iyear,4) == 0)   leapYear = .TRUE.

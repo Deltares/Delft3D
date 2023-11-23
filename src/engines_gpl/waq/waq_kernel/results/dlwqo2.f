@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqo2
+      use m_waq_precision
       use m_values
       use m_stepyn
       use m_sobbal
@@ -187,13 +188,12 @@
       use m_srstop
       use m_getcom
       use timers
-      use precision
       use output
       use nan_check_module
       use m_outmnc
       implicit none
 !
-      integer       notot , noseg , nopa  , nosfun, itime ,
+      integer(kind=int_wp) ::notot , noseg , nopa  , nosfun, itime ,
      +              nodump, nocons, nofun , idt   , noutp ,
      +              nx    , ny    , nosys , noflux, isflag,
      +              iaflag, ibflag, imstrt, imstop, imstep,
@@ -202,7 +202,7 @@
      +              ndmpar, ndmpq , ndmps , ntdmpq, noraai,
      +              ntraaq, nogrid, novar , nobnd , nobtyp,
      +              noq  
-      integer       idump(*)      , lun(*)        ,
+      integer(kind=int_wp) ::idump(*)      , lun(*)        ,
      +              ioutps(7,*)   , iopoin(*)     ,
      +              lgrid(*)      , ip(*)         ,
      +              iqdmp(*)      , isdmp(*)      ,
@@ -215,8 +215,8 @@
      +              vgrset(novar,*),grdnos(nogrid),
      +              grdseg(noseg,nogrid)          ,
      +              inwtyp(*)     , ipoint( 4,noq)
-      integer(4), intent(in   ) :: iknmrk(noseg)      ! Feature array. Bit zero set means active.
-      real          conc ( notot, noseg ),
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)      ! Feature array. Bit zero set means active.
+      real(kind=real_wp) ::conc ( notot, noseg ),
      &                              cons(*)       ,
      &              param( nopa , noseg ),
      &                              func(*)       ,
@@ -247,24 +247,24 @@
       character*40  moname(4)
       character*(*) lchar (*)
       logical       imflag, idflag, ihflag
-      integer                    :: dmpbal(ndmpar)        ! indicates if dump area is included in the balance
-      integer                    :: nowst                 ! number of wasteloads
-      integer                    :: nowtyp                ! number of wasteload types
+      integer(kind=int_wp) ::dmpbal(ndmpar)        ! indicates if dump area is included in the balance
+      integer(kind=int_wp) ::nowst                 ! number of wasteloads
+      integer(kind=int_wp) ::nowtyp                ! number of wasteload types
       character(len=20)          :: wsttyp(nowtyp)        ! wasteload types names
-      integer                    :: iwaste(nowst)         ! segment numbers of the wasteloads
-      integer                    :: inxtyp(nowst)         ! wasteload type number (index in wsttyp)
-      real                       :: wstdmp(notot,nowst,2) ! accumulated wasteloads 1/2 in and out
-      integer, intent(in   )     :: isegcol(*)            ! pointer from segment to top of column
+      integer(kind=int_wp) ::iwaste(nowst)         ! segment numbers of the wasteloads
+      integer(kind=int_wp) ::inxtyp(nowst)         ! wasteload type number (index in wsttyp)
+      real(kind=real_wp) ::wstdmp(notot,nowst,2) ! accumulated wasteloads 1/2 in and out
+      integer(kind=int_wp), intent(in   )      ::isegcol(*)            ! pointer from segment to top of column
 !
 !     Local declarations
 !
-      integer, parameter  :: igseg = 1
-      integer, parameter  :: igmon = 2
-      integer, parameter  :: iggrd = 3
-      integer, parameter  :: igsub = 4
-      integer, parameter  :: luoff = 18
-      integer, parameter  :: luoff2= 36
-      integer       k1    , iostrt, iostop, iostep, nrvar ,
+      integer(kind=int_wp), parameter   ::igseg = 1
+      integer(kind=int_wp), parameter   ::igmon = 2
+      integer(kind=int_wp), parameter   ::iggrd = 3
+      integer(kind=int_wp), parameter   ::igsub = 4
+      integer(kind=int_wp), parameter   ::luoff = 18
+      integer(kind=int_wp), parameter   ::luoff2= 36
+      integer(kind=int_wp) ::k1    , iostrt, iostop, iostep, nrvar ,
      +              isrtou, igrdou, iniout, lunout, iout  ,
      +              ierr  , ierr2 , i     , i1    , i2    ,
      +              ifi   , ncout , nrvar2, nrvar3, ip1   ,
@@ -274,25 +274,25 @@
       character*20  name
       logical       loflag, lmfirs, ldfirs, lhfirs, ldummy, lnonans
       logical       lget  , lread
-      real, allocatable  :: surf(:)
-      integer            :: idummy       ! dummy not used
-      real               :: rdummy       ! dummy not used
+      real(kind=real_wp), allocatable   ::surf(:)
+      integer(kind=int_wp) ::idummy       ! dummy not used
+      real(kind=real_wp) ::rdummy       ! dummy not used
       character(len=256) :: adummy       ! dummy not used
       logical            :: lfound       ! Keyword found (or not)
       logical, save      :: lnancheck    ! Do check on NAN in conc array
 
-      integer, save ::       mncrec = 0                            ! netCDF map
-      integer, save ::       hncrec = 0                            ! netCDF history
-      integer, save ::       timeid, bndtimeid                     ! netCDF map
-      integer, save ::       timeidh, bndtimeidh                   ! netCDF history
-      integer, allocatable, save ::  mncwqid1(:,:), mncwqid2(:,:)  ! netCDF map
-      integer, allocatable, save ::  hncwqid1(:,:), hncwqid2(:,:)  ! netCDF history
+      integer(kind=int_wp), save  ::mncrec = 0                            ! netCDF map
+      integer(kind=int_wp), save  ::hncrec = 0                            ! netCDF history
+      integer(kind=int_wp), save  ::timeid, bndtimeid                     ! netCDF map
+      integer(kind=int_wp), save  ::timeidh, bndtimeidh                   ! netCDF history
+      integer(kind=int_wp), allocatable, save  ::mncwqid1(:,:), mncwqid2(:,:)  ! netCDF map
+      integer(kind=int_wp), allocatable, save  ::hncwqid1(:,:), hncwqid2(:,:)  ! netCDF history
 
       logical, save ::       first = .true.
 
-      real(hp)           :: damass2(notot,5)
+      real(kind=dp) :: damass2(notot,5)
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqo2", ithandl )
 
       if (first) then

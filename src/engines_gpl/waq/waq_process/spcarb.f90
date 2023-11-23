@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_spcarb
+use m_waq_precision
+
 
 implicit none
 
@@ -39,53 +41,53 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 15) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 15) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 15)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 15) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 15) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 15)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
 
       ! from pmsa
 
-      real(8) tic         ! I  total inorganic carbonate                          (gC/m3)
-      real(8) co2         ! I  CO2                                                (g/m3)
-      integer swticco2    ! I  switch (0=use TIC, 1=use CO2)                      (-)
-      real(8) ph          ! I  pH                                                 (-)
-      real(8) salinity    ! I  Salinity                                           (g/kg)
-      real(8) temp        ! I  ambient water temperature                          (oC)
-      real(8) poros       ! I  volumetric porosity                                (-)
-      real(8) disco2      ! O  concentration of dissolved carbon dioxide          (g/m3)
-      real(8) dish2co3    ! O  concentration of dissolved true H2CO3              (gC/m3)
-      real(8) dishco3     ! O  concentration of dissolved HCO3(-)                 (gC/m3)
-      real(8) disco3      ! O  concentration of dissolved CO3(2-)                 (gC/m3)
-      real(8) frco2d      ! O  fraction of dissolved carbon dioxide               (-)
-      real(8) frh2co3d    ! O  fraction of dissolved true H2CO3                   (-)
-      real(8) frhco3d     ! O  fraction of dissolved HCO3(-)                      (-)
-      real(8) frco3d      ! O  fraction of dissolved CO3(2-)                      (-)
+      real(kind=dp)  ::tic         ! I  total inorganic carbonate                          (gC/m3)
+      real(kind=dp)  ::co2         ! I  CO2                                                (g/m3)
+      integer(kind=int_wp)  ::swticco2    ! I  switch (0=use TIC, 1=use CO2)                      (-)
+      real(kind=dp)  ::ph          ! I  pH                                                 (-)
+      real(kind=dp)  ::salinity    ! I  Salinity                                           (g/kg)
+      real(kind=dp)  ::temp        ! I  ambient water temperature                          (oC)
+      real(kind=dp)  ::poros       ! I  volumetric porosity                                (-)
+      real(kind=dp)  ::disco2      ! O  concentration of dissolved carbon dioxide          (g/m3)
+      real(kind=dp)  ::dish2co3    ! O  concentration of dissolved true H2CO3              (gC/m3)
+      real(kind=dp)  ::dishco3     ! O  concentration of dissolved HCO3(-)                 (gC/m3)
+      real(kind=dp)  ::disco3      ! O  concentration of dissolved CO3(2-)                 (gC/m3)
+      real(kind=dp)  ::frco2d      ! O  fraction of dissolved carbon dioxide               (-)
+      real(kind=dp)  ::frh2co3d    ! O  fraction of dissolved true H2CO3                   (-)
+      real(kind=dp)  ::frhco3d     ! O  fraction of dissolved HCO3(-)                      (-)
+      real(kind=dp)  ::frco3d      ! O  fraction of dissolved CO3(2-)                      (-)
 
       ! local declaration
 
-      real(8) tabs        ! L  absolute temperature                               (K)
-      real(8) h_ion       ! L  proton concentration                               (mole/l)
-      real(8) kc0         ! L  hydrolyses equilibrium constant for CO2            (-)
-      real(8) lkc1        ! L  log acidity hydrolyses equilibrium constant for H2CO3  (-)
-      real(8) lkc2        ! L  log hydrolyses equilibrium constant for CO2        (-)
-      real(8) kc1         ! L  acidity hydrolyses equilibrium constant for H2CO3  (-)
-      real(8) kc2         ! L  hydrolyses equilibrium constant for CO2            (-)
-      real(8) ccdt        ! L  total dissolved carbon                             (mole/l)
-      real(8) ccd0        ! L  dissolved carbon dioxide                           (mole/l)
-      real(8) ccd1        ! L  dissolved H2C03                                    (mole/l)
-      real(8) ccd2        ! L  dissolved HC03                                     (mole/l)
-      real(8) ccd3        ! L  dissolved CO3                                      (mole/l)
+      real(kind=dp)  ::tabs        ! L  absolute temperature                               (K)
+      real(kind=dp)  ::h_ion       ! L  proton concentration                               (mole/l)
+      real(kind=dp)  ::kc0         ! L  hydrolyses equilibrium constant for CO2            (-)
+      real(kind=dp)  ::lkc1        ! L  log acidity hydrolyses equilibrium constant for H2CO3  (-)
+      real(kind=dp)  ::lkc2        ! L  log hydrolyses equilibrium constant for CO2        (-)
+      real(kind=dp)  ::kc1         ! L  acidity hydrolyses equilibrium constant for H2CO3  (-)
+      real(kind=dp)  ::kc2         ! L  hydrolyses equilibrium constant for CO2            (-)
+      real(kind=dp)  ::ccdt        ! L  total dissolved carbon                             (mole/l)
+      real(kind=dp)  ::ccd0        ! L  dissolved carbon dioxide                           (mole/l)
+      real(kind=dp)  ::ccd1        ! L  dissolved H2C03                                    (mole/l)
+      real(kind=dp)  ::ccd2        ! L  dissolved HC03                                     (mole/l)
+      real(kind=dp)  ::ccd3        ! L  dissolved CO3                                      (mole/l)
 
       ! initialise pointering in pmsa
 

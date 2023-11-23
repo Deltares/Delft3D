@@ -28,7 +28,7 @@ module delete_file_mod
 !
 !  data definition module(s)
 !
-use precision_part    ! single and double precision
+use m_waq_precision    ! single and double precision
       use timers
 !
 implicit none    ! force explicit typing
@@ -50,12 +50,12 @@ contains
 !     ierror  integer       1     output  error indication
 !
       character(len=*) :: filnam
-      integer  (ip)    :: ierror
+      integer  (int_wp )    :: ierror
 !
 !     local
 !
-      integer(ip) :: iolun, ilun
-      logical(ip) :: lopen, lexist
+      integer(int_wp ) :: iolun, ilun
+      logical(int_wp ) :: lopen, lexist
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "delete_file", ithndl )

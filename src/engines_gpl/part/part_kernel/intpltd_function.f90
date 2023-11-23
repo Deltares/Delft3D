@@ -25,7 +25,7 @@ module intpltd_function_mod
 !
 !  data definition module(s)
 !
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -40,38 +40,37 @@ contains
     !         xVal  = a vector of the x-values where interpolation should be performed
     ! Output: yVal  = a vector of the resulting interpolated values
     ! taken from: https://scicomp.stackexchange.com/questions/20960/linear-interpolation-in-fortran
-    
+
       implicit none
 
-      integer(ip), intent(in)    :: lunrep              ! report file    
+      integer(int_wp ), intent(in)    :: lunrep              ! report file
       real, intent(in)           :: xData(:), yData(:), xVal
       real, intent(out)          :: yVal
       integer                    :: inputIndex, dataIndex
       real                       :: minXData,maxXData, minYdata, xRange, weight
-    
+
       ! Possible checks on inputs could go here
       ! Things you may want to check:
       ! monotonically increasing xData
       IF(size(xData) .ne. size(yData)) THEN
         write(lunrep,*) 'ERROR wrong X and Y data length for interpolation. Please check!'
-        write(*,*) 'ERROR wrong X and Y data length for interpolation. Please check!'  
+        write(*,*) 'ERROR wrong X and Y data length for interpolation. Please check!'
       ENDIF
-    
+
       minXData = xData(1)
       maxXData = xData(size(xData))
       xRange = maxXData - minXData
-    
+
       ! possible checks for out of range xVal could go here
-    
+
       ! this will work if x is incremental, otherwise function for uniformly spaced
       dataIndex = 1
       DO WHILE ((xData(dataIndex+1) < xVal) .and. (xData(dataIndex+1) .le. maxXData))
             dataIndex = dataIndex + 1
-      ENDDO             
-      
+      ENDDO
+
       weight = (xVal - xData(dataIndex))/(xData(dataIndex+1)-xData(dataIndex));
       yVal = (1.0-weight)*yData(dataIndex) + weight*yData(dataIndex+1);
 
 end subroutine
 end module
-

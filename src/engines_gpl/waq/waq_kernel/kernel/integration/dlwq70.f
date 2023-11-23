@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq70
+      use m_waq_precision
+
 
       implicit none
 
@@ -77,19 +79,19 @@
 !
       use timers
 
-      real       DISP  (  3) , DISPER(*) , AREA (*) , FLOW (*) ,
+      real(kind=real_wp) ::DISP  (  3) , DISPER(*) , AREA (*) , FLOW (*) ,
      *           ALENG (  *) , VELO  (*) , BOUND(*) , AMAT (*) ,
      *           DERIV(*)
-      integer    IPOINT(4,*) , IDPNT(*)  , IVPNT(*)
+      integer(kind=int_wp) ::IPOINT(4,*) , IDPNT(*)  , IVPNT(*)
 
-      integer    iband, iq, i, it, i3, i4, iopt, ilflag, isys
-      integer    j, jtrack, jt
-      integer    noq, noq1, noq2, nodisp, novelo, notot, nsys
-      integer    kt, k1, k2
+      integer(kind=int_wp) ::iband, iq, i, it, i3, i4, iopt, ilflag, isys
+      integer(kind=int_wp) ::j, jtrack, jt
+      integer(kind=int_wp) ::noq, noq1, noq2, nodisp, novelo, notot, nsys
+      integer(kind=int_wp) ::kt, k1, k2
 
-      real       a, q, q1, q2, e, al, f1, f2, dl
+      real(kind=real_wp) ::a, q, q1, q2, e, al, f1, f2, dl
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq70", ithandl )
 !
       IBAND = 2*JTRACK + 1

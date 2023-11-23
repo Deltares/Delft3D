@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_priron
+use m_waq_precision
+
 
 implicit none
 
@@ -38,98 +40,98 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 45) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 45) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 45)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 45) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 45) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 45)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(8) feiiipa     ! I  particulate amorphous oxidizing iron               (gFe/m3)
-      real(8) feiiid      ! I  dissolved oxidizing iron                           (gFe/m3)
-      real(8) fes         ! I  iron(II) sulphide                                  (gFe/m3)
-      real(8) feiid       ! I  total dissolved reducing iron                      (gFe/m3)
-      real(8) feco3       ! I  iron(II) carbonate concentration                   (gFe/m3)
-      real(8) sud         ! I  total dissolved sulphide (SUD)                     (gS/m3)
-      real(8) tic         ! I  total inorganic carbonate                          (gC/m3)
-      real(8) co2         ! I  CO2                                                (g/m3)
-      real(8) frfe3dis    ! I  fraction dissolved free iron(III)                  (-)
-      real(8) lkspfeoh3   ! I  log solubility product for Fe(OH)3                 (-)
-      real(8) rcagfe320   ! I  specific iron(III) aging rate at 20 oC             (1/d)
-      real(8) rcdisfe320  ! I  specific iron(III) dissolution rate at 20 oC       (1/d)
-      real(8) rcprcfe320  ! I  specific iron(III) precipitation rate              (gFe/m3/d)
-      real(8) tcagfe3     ! I  temperature coeff. for iron(III) aging             (-)
-      real(8) tcdisfe3    ! I  temperature coeff. for iron(III) dissolution       (-)
-      real(8) tcprcfe3    ! I  temperature coeff. for iron(III) precipitation     (-)
-      real(8) frfe2dis    ! I  fraction dissolved free iron(II)                   (-)
-      real(8) frh2sdis    ! I  fraction of dissolved hydrogen sulphide            (-)
-      real(8) frs2dis     ! I  fraction dissolved free sulphide                   (-)
-      real(8) frco3dis    ! I  fraction dissolved free carbonate                  (-)
-      real(8) lkspfes     ! I  log solubility product for FeS                     (-)
-      real(8) lkspfeco3   ! I  log solubility product for FeCO3                   (-)
-      real(8) rcpyrite20  ! I  specific pyrite formation rate at 20 oC            (gS/m3/d)
-      real(8) rcdisfes20  ! I  iron(II) sulphide dissolution rate                 (1/d)
-      real(8) rcprcfes20  ! I  iron(II) sulphide precipitation rate               (gFe/m3/d)
-      real(8) rcdisfec20  ! I  iron(II) carbonate dissolution rate                (1/d)
-      real(8) rcprcfec20  ! I  iron(II) carbonate precipitation rate              (gFe/m3/d)
-      real(8) tcpyrite    ! I  temperature coeff. for pyrite formation            (-)
-      real(8) tcdisfes    ! I  temperature coeff. for iron(II) sulphide diss.     (-)
-      real(8) tcprcfes    ! I  temperature coeff. for iron(II) sulphide prec.     (-)
-      real(8) tcdisfeco3  ! I  temperature coeff. for iron(II) carbonate diss.    (-)
-      real(8) tcprcfeco3  ! I  temperature coeff. for iron(II) carbonate prec.    (-)
-      real(8) swticco2    ! I  switch (0=use TIC, 1=use CO2)                      (-)
-      real(8) ph          ! I  pH                                                 (-)
-      real(8) temp        ! I  ambient water temperature                          (oC)
-      real(8) delt        ! I  timestep for processes                             (d)
-      real(8) poros       ! I  volumetric porosity                                (-)
-      real(8) fpfe3       ! O  rate of amorphous iron(III) precipitat.            (gFe/m3/d)
-      real(8) fdfe3       ! O  rate of amorphous iron(III) dissolution            (gFe/m3/d)
-      real(8) fafe3       ! O  rate of amorphous iron(III) aging                  (gFe/m3/d)
-      real(8) fpfes       ! O  rate of iron(II) sulphide precipitation            (gFe/m3/d)
-      real(8) fdfes       ! O  rate of iron(II) sulphide dissolution              (gFe/m3/d)
-      real(8) fpfeco3     ! O  rate of iron(II) carbonate precipitation           (gFe/m3/d)
-      real(8) fdfeco3     ! O  rate of iron(II) carbonate dissolution             (gFe/m3/d)
-      real(8) fpyr        ! O  rate of pyrite formation                           (gFe/m3/d)
-      real(8) dafe3       ! F  rate of amorphous iron(III) aging                  (gFe/m3/d)
-      integer idpfe3      !    Pointer to the rate of amorphous iron(III) precipitat.
-      integer iddfe3      !    Pointer to the rate of amorphous iron(III) dissolution
-      integer idafe3      !    Pointer to the rate of amorphous iron(III) aging
-      integer idpfes      !    Pointer to the rate of iron(II) sulphide precipitation
-      integer iddfes      !    Pointer to the rate of iron(II) sulphide dissolution
-      integer idpfeco3    !    Pointer to the rate of iron(II) carbonate precipitation
-      integer iddfeco3    !    Pointer to the rate of iron(II) carbonate dissolution
-      integer idpyr       !    Pointer to the rate of pyrite formation
-      real(8) ksp1        ! L  solubility product for Fe(OH)3 ((mole.l-1)4)
-      real(8) cfe3d       ! L  equilibrium dissolved free iron(III) concentration (mole.l-1)
-      real(8) oh          ! L  hydroxyl concentration (mole.l-1)
-      real(8) iap1        ! L  ion activity product for Fe(OH)3 ((mole.l-1)4)
-      real(8) kpfe3       ! L  specific iron(III) precipitation rate (gFe.m-3b.d-1)
-      real(8) kdfe3       ! L  specific iron(III) dissolution rate (d-1)
-      real(8) kafe3       ! L  specific iron(III) aging rate (d-1)
-      real(8) ksp2        ! L  solubility product for FeS ((mole.l-1)2)
-      real(8) csd3        ! L  dissolved free sulphide concentration (mole.l-l)
-      real(8) cfe2d       ! L  equilibrium dissolved free iron(II) concentration (mole.l-1)
-      real(8) iap2        ! L  ion activity product for FeS ((mole.l-1)2)
-      real(8) kpfes       ! L  specific FeS precipitation rate (gFe.m-3b.d-1)
-      real(8) kdfes       ! L  specific FeS dissolution rate (d-1)
-      real(8) ksp3        ! L  solubility product for FeCO3 ((mole.l-1)2)
-      real(8) cco3d       ! L  total dissolved free carbonate concentration (mole.l-l)
-      real(8) iap3        ! L  ion activity product for FeCO3 ((mole.l-1)2)
-      real(8) kpfeco3     ! L  specific FeCO3 precipitation rate (gFe.m-3b.d-1)
-      real(8) kdfeco3     ! L  specific FeCO3 dissolution rate (d-1)
-      real(8) kpyr        ! L  specific pyrite formation rate (gS-1.m3.d-1)
+      real(kind=dp)  ::feiiipa     ! I  particulate amorphous oxidizing iron               (gFe/m3)
+      real(kind=dp)  ::feiiid      ! I  dissolved oxidizing iron                           (gFe/m3)
+      real(kind=dp)  ::fes         ! I  iron(II) sulphide                                  (gFe/m3)
+      real(kind=dp)  ::feiid       ! I  total dissolved reducing iron                      (gFe/m3)
+      real(kind=dp)  ::feco3       ! I  iron(II) carbonate concentration                   (gFe/m3)
+      real(kind=dp)  ::sud         ! I  total dissolved sulphide (SUD)                     (gS/m3)
+      real(kind=dp)  ::tic         ! I  total inorganic carbonate                          (gC/m3)
+      real(kind=dp)  ::co2         ! I  CO2                                                (g/m3)
+      real(kind=dp)  ::frfe3dis    ! I  fraction dissolved free iron(III)                  (-)
+      real(kind=dp)  ::lkspfeoh3   ! I  log solubility product for Fe(OH)3                 (-)
+      real(kind=dp)  ::rcagfe320   ! I  specific iron(III) aging rate at 20 oC             (1/d)
+      real(kind=dp)  ::rcdisfe320  ! I  specific iron(III) dissolution rate at 20 oC       (1/d)
+      real(kind=dp)  ::rcprcfe320  ! I  specific iron(III) precipitation rate              (gFe/m3/d)
+      real(kind=dp)  ::tcagfe3     ! I  temperature coeff. for iron(III) aging             (-)
+      real(kind=dp)  ::tcdisfe3    ! I  temperature coeff. for iron(III) dissolution       (-)
+      real(kind=dp)  ::tcprcfe3    ! I  temperature coeff. for iron(III) precipitation     (-)
+      real(kind=dp)  ::frfe2dis    ! I  fraction dissolved free iron(II)                   (-)
+      real(kind=dp)  ::frh2sdis    ! I  fraction of dissolved hydrogen sulphide            (-)
+      real(kind=dp)  ::frs2dis     ! I  fraction dissolved free sulphide                   (-)
+      real(kind=dp)  ::frco3dis    ! I  fraction dissolved free carbonate                  (-)
+      real(kind=dp)  ::lkspfes     ! I  log solubility product for FeS                     (-)
+      real(kind=dp)  ::lkspfeco3   ! I  log solubility product for FeCO3                   (-)
+      real(kind=dp)  ::rcpyrite20  ! I  specific pyrite formation rate at 20 oC            (gS/m3/d)
+      real(kind=dp)  ::rcdisfes20  ! I  iron(II) sulphide dissolution rate                 (1/d)
+      real(kind=dp)  ::rcprcfes20  ! I  iron(II) sulphide precipitation rate               (gFe/m3/d)
+      real(kind=dp)  ::rcdisfec20  ! I  iron(II) carbonate dissolution rate                (1/d)
+      real(kind=dp)  ::rcprcfec20  ! I  iron(II) carbonate precipitation rate              (gFe/m3/d)
+      real(kind=dp)  ::tcpyrite    ! I  temperature coeff. for pyrite formation            (-)
+      real(kind=dp)  ::tcdisfes    ! I  temperature coeff. for iron(II) sulphide diss.     (-)
+      real(kind=dp)  ::tcprcfes    ! I  temperature coeff. for iron(II) sulphide prec.     (-)
+      real(kind=dp)  ::tcdisfeco3  ! I  temperature coeff. for iron(II) carbonate diss.    (-)
+      real(kind=dp)  ::tcprcfeco3  ! I  temperature coeff. for iron(II) carbonate prec.    (-)
+      real(kind=dp)  ::swticco2    ! I  switch (0=use TIC, 1=use CO2)                      (-)
+      real(kind=dp)  ::ph          ! I  pH                                                 (-)
+      real(kind=dp)  ::temp        ! I  ambient water temperature                          (oC)
+      real(kind=dp)  ::delt        ! I  timestep for processes                             (d)
+      real(kind=dp)  ::poros       ! I  volumetric porosity                                (-)
+      real(kind=dp)  ::fpfe3       ! O  rate of amorphous iron(III) precipitat.            (gFe/m3/d)
+      real(kind=dp)  ::fdfe3       ! O  rate of amorphous iron(III) dissolution            (gFe/m3/d)
+      real(kind=dp)  ::fafe3       ! O  rate of amorphous iron(III) aging                  (gFe/m3/d)
+      real(kind=dp)  ::fpfes       ! O  rate of iron(II) sulphide precipitation            (gFe/m3/d)
+      real(kind=dp)  ::fdfes       ! O  rate of iron(II) sulphide dissolution              (gFe/m3/d)
+      real(kind=dp)  ::fpfeco3     ! O  rate of iron(II) carbonate precipitation           (gFe/m3/d)
+      real(kind=dp)  ::fdfeco3     ! O  rate of iron(II) carbonate dissolution             (gFe/m3/d)
+      real(kind=dp)  ::fpyr        ! O  rate of pyrite formation                           (gFe/m3/d)
+      real(kind=dp)  ::dafe3       ! F  rate of amorphous iron(III) aging                  (gFe/m3/d)
+      integer(kind=int_wp)  ::idpfe3      !    Pointer to the rate of amorphous iron(III) precipitat.
+      integer(kind=int_wp)  ::iddfe3      !    Pointer to the rate of amorphous iron(III) dissolution
+      integer(kind=int_wp)  ::idafe3      !    Pointer to the rate of amorphous iron(III) aging
+      integer(kind=int_wp)  ::idpfes      !    Pointer to the rate of iron(II) sulphide precipitation
+      integer(kind=int_wp)  ::iddfes      !    Pointer to the rate of iron(II) sulphide dissolution
+      integer(kind=int_wp)  ::idpfeco3    !    Pointer to the rate of iron(II) carbonate precipitation
+      integer(kind=int_wp)  ::iddfeco3    !    Pointer to the rate of iron(II) carbonate dissolution
+      integer(kind=int_wp)  ::idpyr       !    Pointer to the rate of pyrite formation
+      real(kind=dp)  ::ksp1        ! L  solubility product for Fe(OH)3 ((mole.l-1)4)
+      real(kind=dp)  ::cfe3d       ! L  equilibrium dissolved free iron(III) concentration (mole.l-1)
+      real(kind=dp)  ::oh          ! L  hydroxyl concentration (mole.l-1)
+      real(kind=dp)  ::iap1        ! L  ion activity product for Fe(OH)3 ((mole.l-1)4)
+      real(kind=dp)  ::kpfe3       ! L  specific iron(III) precipitation rate (gFe.m-3b.d-1)
+      real(kind=dp)  ::kdfe3       ! L  specific iron(III) dissolution rate (d-1)
+      real(kind=dp)  ::kafe3       ! L  specific iron(III) aging rate (d-1)
+      real(kind=dp)  ::ksp2        ! L  solubility product for FeS ((mole.l-1)2)
+      real(kind=dp)  ::csd3        ! L  dissolved free sulphide concentration (mole.l-l)
+      real(kind=dp)  ::cfe2d       ! L  equilibrium dissolved free iron(II) concentration (mole.l-1)
+      real(kind=dp)  ::iap2        ! L  ion activity product for FeS ((mole.l-1)2)
+      real(kind=dp)  ::kpfes       ! L  specific FeS precipitation rate (gFe.m-3b.d-1)
+      real(kind=dp)  ::kdfes       ! L  specific FeS dissolution rate (d-1)
+      real(kind=dp)  ::ksp3        ! L  solubility product for FeCO3 ((mole.l-1)2)
+      real(kind=dp)  ::cco3d       ! L  total dissolved free carbonate concentration (mole.l-l)
+      real(kind=dp)  ::iap3        ! L  ion activity product for FeCO3 ((mole.l-1)2)
+      real(kind=dp)  ::kpfeco3     ! L  specific FeCO3 precipitation rate (gFe.m-3b.d-1)
+      real(kind=dp)  ::kdfeco3     ! L  specific FeCO3 dissolution rate (d-1)
+      real(kind=dp)  ::kpyr        ! L  specific pyrite formation rate (gS-1.m3.d-1)
 
       ! initialise pointering in pmsa array
 

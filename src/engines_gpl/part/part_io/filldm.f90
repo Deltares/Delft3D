@@ -28,7 +28,7 @@ module filldm_mod
 !
 !  data definition module(s)
 !
-use precision_part  ! single and double precision
+use m_waq_precision  ! single and double precision
       use timers
 !
 implicit none  ! force explicit typing
@@ -39,8 +39,8 @@ contains
 !
 !     local scalars
 !
-      integer(ip)             :: ielem
-      integer(ip)             :: dm1,dm2,dm3,dm4,dm5,dm6
+      integer(int_wp )             :: ielem
+      integer(int_wp )             :: dm1,dm2,dm3,dm4,dm5,dm6
       integer, dimension(:,:) :: elt_dims
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

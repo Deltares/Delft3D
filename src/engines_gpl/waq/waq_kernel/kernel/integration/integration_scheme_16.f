@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_16
+      use m_waq_precision
       use m_zlayer
       use m_zercum
       use m_sgmres
@@ -142,9 +143,9 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target :: buffer      !< System total array space
-      INTEGER, DIMENSION(*)       :: LUN
+      INTEGER(kind=int_wp), DIMENSION(*)        ::LUN
       CHARACTER*(*), DIMENSION(*) :: LCHAR
-      INTEGER                     :: ACTION
+      INTEGER(kind=int_wp) ::ACTION
       TYPE(DELWAQ_DATA), TARGET   :: DLWQD
       type(GridPointerColl)       :: GridPs               ! collection of all grid definitions
 
@@ -153,26 +154,26 @@
 !
 !     Local declarations
 !
-      REAL                   :: RDUMMY(1)
+      REAL(kind=real_wp) ::RDUMMY(1)
       LOGICAL                :: IMFLAG , IDFLAG , IHFLAG
       LOGICAL                :: UPDATE , LREWIN
       LOGICAL                :: timon_old
-      INTEGER                :: ISYS
-      INTEGER                :: NSTEP
-      INTEGER                :: sindex
+      INTEGER(kind=int_wp) ::ISYS
+      INTEGER(kind=int_wp) ::NSTEP
+      INTEGER(kind=int_wp) ::sindex
 
-      integer, save          :: ithand1 = 0 ! Make this one "global"
-      integer                :: noth
-      integer                :: ith
+      integer(kind=int_wp), save           ::ithand1 = 0 ! Make this one "global"
+      integer(kind=int_wp) ::noth
+      integer(kind=int_wp) ::ith
 
-      integer                :: ibnd
+      integer(kind=int_wp) ::ibnd
 
       !
       ! Variables specific to this method: leave them SAVEd
       !
-      integer, save          :: ioptpc
-      integer, save          :: iter
-      integer, save          :: iscale
+      integer(kind=int_wp), save           ::ioptpc
+      integer(kind=int_wp), save           ::iter
+      integer(kind=int_wp), save           ::iscale
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 !

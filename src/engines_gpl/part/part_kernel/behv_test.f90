@@ -26,7 +26,7 @@ module behv_test_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part              ! single/double precision
+use m_waq_precision              ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -52,21 +52,21 @@ contains
                              vswim1   , vswim2  , iseg   , lunrep , angle  )
 
         ! function  : Test behaviour
-        !              
+        !
 
         ! arguments :
 
-        integer(ip), intent(in)     :: lunrep              ! report file
-        integer(ip), intent(in)     :: nosegl              ! number segments per layer
-        integer(ip), intent(in)     :: nolay               ! number of layers in calculation
-        integer(ip), intent(in)     :: nmax                ! first grid dimension
-        integer(ip), intent(in)     :: mmax                ! second grid dimension
-        integer(ip), intent(in)     :: mnmaxk              ! total number of active grid cells
-        integer(ip), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer(ip), pointer        :: lgrid2( : , : )     ! total grid
-        integer(ip), pointer        :: lgrid3( : , : )     ! original grid (conc array)
+        integer(int_wp ), intent(in)     :: lunrep              ! report file
+        integer(int_wp ), intent(in)     :: nosegl              ! number segments per layer
+        integer(int_wp ), intent(in)     :: nolay               ! number of layers in calculation
+        integer(int_wp ), intent(in)     :: nmax                ! first grid dimension
+        integer(int_wp ), intent(in)     :: mmax                ! second grid dimension
+        integer(int_wp ), intent(in)     :: mnmaxk              ! total number of active grid cells
+        integer(int_wp ), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+        integer(int_wp ), pointer        :: lgrid2( : , : )     ! total grid
+        integer(int_wp ), pointer        :: lgrid3( : , : )     ! original grid (conc array)
 
-        integer(ip), pointer        :: kpart ( : )         ! third grid index of the particles
+        integer(int_wp ), pointer        :: kpart ( : )         ! third grid index of the particles
         real   (sp), pointer        :: xpart ( : )         ! x-value (0.0-1.0) first  direction within grid cell
         real   (sp), pointer        :: ypart ( : )         ! y-value (0.0-1.0) second direction within grid cell
         real   (sp), pointer        :: zpart ( : )         ! z-value (0.0-1.0) third  direction within grid cell
@@ -102,14 +102,14 @@ contains
         integer, pointer            :: hbtype(:)           ! horizontal behaviour type
         real(sp), pointer           :: vswim1(:)           ! swim velocity at begin of stage
         real(sp), pointer           :: vswim2(:)           ! swim velocity at end of stage
-		
+
         ! local :
 
         real(sp), pointer           :: phase_diurn(:)      ! phase in diurnal behaviour
-        integer(ip)                 :: ipart               ! particle index        
+        integer(int_wp )                 :: ipart               ! particle index
         real   (sp)                 :: fstage              ! fraction of current stage
-        integer(ip)                 :: istage              ! integer stage development
-        integer(ip)                 :: idelt               ! timesteps in seconds
+        integer(int_wp )                 :: istage              ! integer stage development
+        integer(int_wp )                 :: idelt               ! timesteps in seconds
         real   (sp)                 :: day                 ! time in days
         real   (sp)                 :: a                   ! a coefficient in development (-)
         real   (sp)                 :: b                   ! b coefficient in development (-)
@@ -124,7 +124,7 @@ contains
         real   (sp)                 :: zdepth              ! z relative to water surface
         real   (sp)                 :: zlevel              ! z relative to bottom
         logical, pointer            :: ebb_flow( : )       ! true if flow is ebb
-        
+
         integer                     :: behaviour_type      ! actual behaviour type
 
         integer, parameter          :: behaviour_none     = 0 ! behaviour type none
@@ -142,13 +142,13 @@ contains
 
         integer,parameter           :: h_behaviour_none               = 0  	! no horizontal behaviour
         integer,parameter           :: h_behaviour_salinity           = 1  	! horizontal behaviour towards lowest salinity
-        integer,parameter           :: h_behaviour_temperature        = 2  	! horizontal behaviour towards lowest temperature 
-        integer,parameter           :: h_behaviour_re_orien_sal_temp  = 3  	! horizontal behaviour towards lowest salinity 
+        integer,parameter           :: h_behaviour_temperature        = 2  	! horizontal behaviour towards lowest temperature
+        integer,parameter           :: h_behaviour_re_orien_sal_temp  = 3  	! horizontal behaviour towards lowest salinity
                                                                             ! avoinding temperature boundaries
 
         real                        :: vswim                  ! swimming velocity
         real                        :: local_angle            ! angle towards lowest salinity in grid
-        
+
         real                        :: sal_n0
         real                        :: sal_n1
         real                        :: sal_n12
@@ -160,8 +160,8 @@ contains
         real                        :: sal_n41
 
         real                        :: lb_sal             ! lower boundary of salinity
-        real                        :: ub_sal             ! upper boundary of salinity          
-        
+        real                        :: ub_sal             ! upper boundary of salinity
+
         real                        :: temp_n0
         real                        :: temp_n1
         real                        :: temp_n12
@@ -174,40 +174,40 @@ contains
 
         real                        :: lb_temp             ! lower boundary of temperature
         real                        :: ub_temp             ! upper boundary of temperature
-        
+
         logical                     :: stick_to_bottom        ! stick to bottom when reached
 
 
         !TEST NEW VERTICAL AND HORIZONTAL BEHAVIOURS
 
-        istage  = wpart(2,ipart)                                                         ! Get current stage of particle        
+        istage  = wpart(2,ipart)                                                         ! Get current stage of particle
 
         !Set layer and/or settling velocity according to stage and type of behaviour
 
             behaviour_type = btype(istage)                                                   ! Assign the vertical behaviour type by stage
             select case ( behaviour_type )                                                   ! Select behaviour by numbering
-               
-               case ( behaviour_none )                                                       !Behaviour 0 
+
+               case ( behaviour_none )                                                       !Behaviour 0
                   wsettl(ipart) = 0.0                                                        ! Setteling velocity is set to 0
-               
+
                case ( behaviour_bottom )                                                     !Behaviour 1
                   wsettl(ipart) = 0.0                                                        ! Setteling velocity is set to 0
                   kpart(ipart) = nolay + 1                                                   ! Particle is placed in the storage layer (total layers +1)
                   zpart(ipart) = 0.5                                                         ! Particle is positioned in the middle of the cell in the third dimension
-               
+
                case ( behaviour_midlow )                                                     !Behaviour 2
                   wsettl(ipart) = 0.0                                                        ! Setteling velocity is set to 0
                   kpart(ipart) = nolay                                                       ! Particle is placed in the layer above the bottom
                   zpart(ipart) = 0.5                                                         ! Particle is positioned in the middle of the cell in the third dimension
-               
+
                case ( behaviour_midtop )                                                     !Behaviour 3
                   wsettl(ipart) = 0.0                                                        ! Setteling velocity is set to 0
                   kpart(ipart) = 1                                                           ! Particle is placed in the surface layer
                   zpart(ipart) = 0.5                                                         ! Particle is positioned in the middle of the cell in the third dimension
-               
+
                case ( behaviour_pelagic )                                                    !Behaviour 4
                   wsettl(ipart) = buoy1(istage) + fstage*(buoy2(istage)-buoy1(istage))       ! The setteling velocity is determined by the bouyancy dependend on stage
-               
+
                case ( behaviour_demersal )                                                   !Behaviour 5
                   ztop  = ztop1(istage)  + fstage*(ztop2(istage)-ztop1(istage))              ! Set the maximum position in the water column for the particle
                   zbot  = zbot1(istage)  + fstage*(zbot2(istage)-zbot1(istage))              ! Set the minimum position in the water column for the particle
@@ -221,7 +221,7 @@ contains
                      vz = buoy + phase_diurn(istage)*(vzact-buoy)                            ! Based on the time of the day the particle has a downward or upward vertical velocity
                   endif
                   wsettl(ipart) = vz                                                         ! The settling of the particle becomes equal to the vertical velocity
-               
+
                case ( behaviour_diurnal )                                                    !Behaviour 6
                   ztop  = ztop1(istage)  + fstage*(ztop2(istage)-ztop1(istage))              ! Set the maximum position in the water column for the particle
                   zbot  = zbot1(istage)  + fstage*(zbot2(istage)-zbot1(istage))              ! Set the minimum position in the water column for the particle
@@ -229,22 +229,22 @@ contains
                   vzact = vzact1(istage) + fstage*(vzact2(istage)-vzact1(istage))            ! Set the vertical swimming velocity for the particle
                   if ( zdepth .lt. ztop ) then                                               !If the position of the particle (measured from the surface) is higher than the maximum position in the water column
                      vz = buoy                                                               ! The vertical velocity becomes equal to the bouyancy
-                  elseif ( zdepth .gt. zbot ) then                                           !If the position of the particle (measured from the surface) is lower than the minimum position in the water column 
+                  elseif ( zdepth .gt. zbot ) then                                           !If the position of the particle (measured from the surface) is lower than the minimum position in the water column
                      vz = vzact                                                              ! The vertical velocity is equal to the vertical swimming velocity
                   else                                                                       !If the position of the particle is in between the maximum and the minimum position in the water column
                      vz = buoy + phase_diurn(istage)*(vzact-buoy)                            ! Based on the time of the day the particle has a downward or upward vertical velocity
                   endif
                   wsettl(ipart) = vz                                                         ! The settling of the particle becomes equal to the vertical velocity
-               
+
                case ( behaviour_herring )                                                    !Behaviour 7
                   wsettl(ipart) = 0.0                                                        ! The settling is set to 0.0
-               
+
                case ( behaviour_stst_dem )                                                   !Behaviour 8
-                  
+
                	  stick_to_bottom = .true.
 
                   vzact = vzact1(istage) + fstage*(vzact2(istage)-vzact1(istage))            ! Set the vertical swimming velocity for the particle
-                  
+
                   ! Vertical positioning based on tide
                   !  return: wsettl, kpart, zpart, v_swim and d_swim
 
@@ -254,11 +254,11 @@ contains
 
 
                case ( behaviour_stst_pel )                                                   !Behaviour 9
-                  
+
                   stick_to_bottom = .false.
 
                   vzact = vzact1(istage) + fstage*(vzact2(istage)-vzact1(istage))            ! Set the vertical swimming velocity for the particle
-                  
+
                   ! Vertical positioning based on tide
                   !  return: wsettl, kpart, zpart, v_swim and d_swim
 
@@ -276,11 +276,11 @@ contains
 
             h_behaviour_type = hbtype(istage)                                                ! Assign the horizontal behaviour type by stage
             select case ( h_behaviour_type )                                                 ! Select behaviour by numbering
-               
+
                case ( h_behaviour_none )                                                     !Behaviour 0
                   v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
                   d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
-               
+
                case ( h_behaviour_salinity )                                                 !Behaviour 1
                   vswim = vswim1(istage) + fstage*(vswim2(istage)-vswim1(istage))            ! Set the horizontal swimming velocity indicator
                   v_swim(ipart) = vswim                                                      ! Set the horizontal swimming velocity to the indicator
@@ -292,7 +292,7 @@ contains
                                         d_swim     , angle       ,ipart     , xpart       , ypart   ,    &
                                         a          , b           ,flow      , local_angle , lb_sal  ,    &
                                         ub_sal     , sal_n0      ,sal_n1    , sal_n12     , sal_n2  ,    &
-                                        sal_n23    , sal_n3      ,sal_n34   , sal_n4      , sal_n41    )                                               
+                                        sal_n23    , sal_n3      ,sal_n34   , sal_n4      , sal_n41    )
 
                case ( h_behaviour_temperature )                                              !Behaviour 2
                   vswim = vswim1(istage) + fstage*(vswim2(istage)-vswim1(istage))            ! Set the horizontal swimming velocity indicator
@@ -305,17 +305,17 @@ contains
                                            d_swim     , angle       , ipart    , xpart       , ypart    ,    &
                                            a          , b           , flow     , local_angle , lb_temp  ,    &
                                            ub_temp    , temp_n0     , temp_n1  , temp_n12    , temp_n2  ,    &
-                                           temp_n23   , temp_n3     , temp_n34 , temp_n4     , temp_n41   )                            
+                                           temp_n23   , temp_n3     , temp_n34 , temp_n4     , temp_n41   )
 
 
                case ( h_behaviour_re_orien_sal_temp )                                        !Behaviour 3
-                  
+
                	  lb_temp = 12                                                               ! Hardcoded lower boundary for temperature
                   ub_temp = 25                                                               ! Hardcoded upper boundary for temperature
 
                   vswim = vswim1(istage) + fstage*(vswim2(istage)-vswim1(istage))            ! Set the horizontal swimming velocity indicator
                   v_swim(ipart) = vswim                                                      ! Set the horizontal swimming velocity to the indicator
-       
+
                   ! Assemble salinity values of surrounding gridcells
                   !  return: sal_n0, sal_n1 , sal_n12 , sal_n2 , sal_n23 , sal_n3 , sal_n34, sal_n4 and sal_n41
                   call orien_salinity ( n          , m           , nmax     , mmax        , mnmaxk  ,    &
@@ -323,7 +323,7 @@ contains
                                         d_swim     , angle       ,ipart     , xpart       , ypart   ,    &
                                         a          , b           ,flow      , local_angle , lb_sal  ,    &
                                         ub_sal     , sal_n0      ,sal_n1    , sal_n12     , sal_n2  ,    &
-                                        sal_n23    , sal_n3      ,sal_n34   , sal_n4      , sal_n41    )  
+                                        sal_n23    , sal_n3      ,sal_n34   , sal_n4      , sal_n41    )
 
                   ! Assemble temperature values of surrounding gridcells
                   !  return: temp_n0, temp_n1 , temp_n12 , temp_n2 , temp_n23 , temp_n3 , temp_n34, temp_n4 and temp_n41
@@ -332,7 +332,7 @@ contains
                                            d_swim     , angle       , ipart    , xpart       , ypart    ,    &
                                            a          , b           , flow     , local_angle , lb_temp  ,    &
                                            ub_temp    , temp_n0     , temp_n1  , temp_n12    , temp_n2  ,    &
-                                           temp_n23   , temp_n3     , temp_n34 , temp_n4     , temp_n41   )   
+                                           temp_n23   , temp_n3     , temp_n34 , temp_n4     , temp_n41   )
 
                   ! Move closest to lowest salinity based on temperature avoidance
                   !  return: v_swim and d_swim
@@ -340,7 +340,7 @@ contains
                                            lgrid      , lgrid2   , lgrid3     , v_swim     , d_swim     ,    &
                                            angle      , ipart    , xpart      , ypart      , a          ,    &
                                            b          , flow     , local_angle, sal_n0     , sal_n1     ,    &
-                                           sal_n12    , sal_n2   , sal_n23    , sal_n3     , sal_n34    ,    & 
+                                           sal_n12    , sal_n2   , sal_n23    , sal_n3     , sal_n34    ,    &
                                            sal_n4     , sal_n41  , temp_n0    , temp_n1    , temp_n12   ,    &
                                            temp_n2    , temp_n23 , temp_n3    , temp_n34   , temp_n4    ,    &
                                            temp_n41  )

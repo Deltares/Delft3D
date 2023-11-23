@@ -33,7 +33,7 @@ contains
       subroutine rdfnam ( lun    , ifnam    , fnam   , nfil   , iout   ,            &
      &                    ipri   , alone    )
 !
-      use precision_part             ! single and double precision
+      use m_waq_precision             ! single and double precision
       use timers
       use rd_token        ! tokenized reading like in DELWAQ
 !
@@ -79,21 +79,21 @@ contains
 
 !     kind            function         name           description
 
-      integer  ( ip), intent(in   ) :: nfil          !< number of files
-      integer  ( ip), intent(  out) :: lun(nfil)     !< array of unit numbers
+      integer  ( int_wp ), intent(in   ) :: nfil          !< number of files
+      integer  ( int_wp ), intent(  out) :: lun(nfil)     !< array of unit numbers
       character( * ), intent(in   ) :: ifnam         !< name of the input file
       character( * ), intent(  out) :: fnam(nfil)    !< array of filenames
-      integer  ( ip), intent(in   ) :: iout          !< index of report file in unit nr array
-      integer  ( ip), intent(in   ) :: ipri          !< unit number report file
+      integer  ( int_wp ), intent(in   ) :: iout          !< index of report file in unit nr array
+      integer  ( int_wp ), intent(in   ) :: ipri          !< unit number report file
       logical       , intent(in   ) :: alone         !< .false. if coupled with Delwaq
 
 !     local scalars
 
       logical                        lexist          ! help variable
       character( 1 )                 cchar_save      ! save value from Delwaq
-      integer  ( ip)                 lunut_save      ! save value from Delwaq
-      integer  ( ip)                 npos_save       ! save value from Delwaq
-      integer(ip) :: i , ierr , indx , ipp , isep , max, ifil
+      integer  ( int_wp )                 lunut_save      ! save value from Delwaq
+      integer  ( int_wp )                 npos_save       ! save value from Delwaq
+      integer(int_wp ) :: i , ierr , indx , ipp , isep , max, ifil
       integer(4) ithndl              ! handle to time this subroutine
       integer(4) luninfil
       character(len=256)   finame

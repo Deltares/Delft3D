@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqib
+      use m_waq_precision
+
 
       implicit none
 
@@ -57,13 +59,13 @@
 !
       use timers
 
-      real        A(*)
-      integer     J(*)
-      integer     IISP, IRSP, IERR, MODE, LUN, LUNUT
+      real(kind=real_wp) ::A(*)
+      integer(kind=int_wp) ::J(*)
+      integer(kind=int_wp) ::IISP, IRSP, IERR, MODE, LUN, LUNUT
 
-      integer     i, ia, ij, k, iopt
-      integer     noitm, nosys, npnt, ndim, ntal, nobrk
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::i, ia, ij, k, iopt
+      integer(kind=int_wp) ::noitm, nosys, npnt, ndim, ntal, nobrk
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqib", ithandl )
 !
 !         initialise the system

@@ -60,7 +60,7 @@ contains
 
 !     subroutines called    : stop_exit, stops execution
 
-      use precision_part         ! single/double precision
+      use m_waq_precision         ! single/double precision
       use timers
 
       implicit none
@@ -69,22 +69,22 @@ contains
 
 !     kind           function         name               description
 
-      integer  (ip), intent(in   ) :: lunin            !< unit number intermediate file
-      integer  (ip), intent(in   ) :: lunout           !< unit number report file
-      integer  (ip), intent(in   ) :: itime            !< current time in the model
-      integer  (ip), intent(inout) :: idtime           !< time offset after rewind
-      integer  (ip), intent(inout) :: itime1           !< lower time in file
-      integer  (ip), intent(inout) :: itime2           !< higher time in file
-      integer  (ip), intent(in   ) :: nftot            !< array size in the file
-      integer  (ip), intent(in   ) :: nrtot            !< array size to be delivered
+      integer  (int_wp ), intent(in   ) :: lunin            !< unit number intermediate file
+      integer  (int_wp ), intent(in   ) :: lunout           !< unit number report file
+      integer  (int_wp ), intent(in   ) :: itime            !< current time in the model
+      integer  (int_wp ), intent(inout) :: idtime           !< time offset after rewind
+      integer  (int_wp ), intent(inout) :: itime1           !< lower time in file
+      integer  (int_wp ), intent(inout) :: itime2           !< higher time in file
+      integer  (int_wp ), intent(in   ) :: nftot            !< array size in the file
+      integer  (int_wp ), intent(in   ) :: nrtot            !< array size to be delivered
       real     (sp), intent(inout) :: array1(nftot)    !< record at lower time in file
       real     (sp), intent(inout) :: array2(nftot)    !< record at higher time in file
       real     (sp), intent(inout) :: result(nrtot)    !< record as delivered to Delpar
-      integer  (ip), intent(in   ) :: ipnt  (nftot)    !< pointer from nftot to nrtot
+      integer  (int_wp ), intent(in   ) :: ipnt  (nftot)    !< pointer from nftot to nrtot
       logical      , intent(in   ) :: lblock           !< if true then block function
       character( *), intent(in   ) :: luntxt           !< text with this unit number
-      integer  (ip), intent(in   ) :: isflag           !< if 1 then 'dddhhmmss' format
-      integer  (ip), intent(in   ) :: ifflag           !< if 1 then this is first invokation
+      integer  (int_wp ), intent(in   ) :: isflag           !< if 1 then 'dddhhmmss' format
+      integer  (int_wp ), intent(in   ) :: ifflag           !< if 1 then this is first invokation
       logical      , intent(  out) :: update           !< true if record is updated
 
 !     declarations        :
@@ -95,7 +95,7 @@ contains
 
 !     local scalars
 
-      integer(ip) :: it2 , messge
+      integer(int_wp ) :: it2 , messge
       real   (sp) :: div , fac1  , fac2
       integer     :: i
 

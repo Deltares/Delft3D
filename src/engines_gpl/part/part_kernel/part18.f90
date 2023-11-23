@@ -28,7 +28,7 @@ module part18_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part               ! single/double precision
+use m_waq_precision               ! single/double precision
       use timers
 !
 !  module procedure(s)
@@ -124,8 +124,8 @@ contains
 !
 !     dimensioning
 !
-      integer(ip),dimension(:)    :: npart , mpart , kpart
-      integer(ip),dimension(:,:)  :: lgrid
+      integer(int_wp ),dimension(:)    :: npart , mpart , kpart
+      integer(int_wp ),dimension(:,:)  :: lgrid
 !
 !     dimensioning
 !
@@ -140,9 +140,9 @@ contains
 !
 !     local scalars
 !
-      integer(ip) ::  i     , ic    , icvdf  , icvdf2 , idelt , layt  , lun2
-      integer(ip) ::  mnmaxk, nocons, nofl1  , nofl2  , nolay , nopart
-      integer(ip) ::  nosubc, nosubs, npwndw
+      integer(int_wp ) ::  i     , ic    , icvdf  , icvdf2 , idelt , layt  , lun2
+      integer(int_wp ) ::  mnmaxk, nocons, nofl1  , nofl2  , nolay , nopart
+      integer(int_wp ) ::  nosubc, nosubs, npwndw
       real   (sp) ::  alpha , arand , flux   , pblay  , ptlay
       real   (sp) ::  tflux , vol1  , vol2
       integer(4) ithndl              ! handle to time this subroutine
@@ -285,4 +285,3 @@ contains
 !
       end subroutine
 end module
-

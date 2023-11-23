@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqtr
+      use m_waq_precision
+
 
       implicit none
 
@@ -103,8 +105,8 @@
 !
       SAVE
 !
-      integer      IPOINT(4,NOQ)
-      real         VOLUME(NOSEG)     , AREA(NOQ)         ,
+      integer(kind=int_wp) ::IPOINT(4,NOQ)
+      real(kind=real_wp) ::VOLUME(NOSEG)     , AREA(NOQ)         ,
      +             FLOW(NOQ)         , ALENG (2,NOQ)     ,
      +             CONC(NOTOT,NOSEG) , DISP(3)           ,
      +             CONS(*)           , PARAM (NOPA,NOSEG),
@@ -114,12 +116,12 @@
      +             PANAME (*)        , FUNAME (*)        ,
      +             SFNAME (*)
       LOGICAL      UPDATR
-      integer      NOTOT, ILFLAG, NOSYS, NOSEG, NOQ, NOQ1, IDT, ITIME,
+      integer(kind=int_wp) ::NOTOT, ILFLAG, NOSYS, NOSEG, NOQ, NOQ1, IDT, ITIME,
      +             NOQ2, NOQ3, NOPA, NOSFUN, NODISP, NOVELO, NOCONS, NOFUN
 !
 !     Local
 !
-      INTEGER    LCCCO, ier, ierr, ier2, lunrep, isurf,
+      INTEGER(kind=int_wp) ::LCCCO, ier, ierr, ier2, lunrep, isurf,
      +           nmaxa, mmaxa, nma, idummy, nmt, k, iseg,
      +           ilay, iq, ipos, ifrom, ito, layt
       LOGICAL    FIRST ,  LINIT , LEXI

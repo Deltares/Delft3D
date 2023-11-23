@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dredge_process
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,123 +41,123 @@
 
       ! declaration of the arguments
 
-      real    pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real    fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint(*)   ! I  Array of pointers in PMSA to get and store the data
-      integer increm(*)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the FL array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-      integer noq2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      real(kind=real_wp) ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) ::ipoint(*)   ! I  Array of pointers in PMSA to get and store the data
+      integer(kind=int_wp) ::increm(*)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) ::noflux      ! I  Number of fluxes, increment in the FL array
+      integer(kind=int_wp) ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp) ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) ::noq1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+      integer(kind=int_wp) ::noq2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
+      integer(kind=int_wp) ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
       ! variables from the pmsa array
 
-      integer max_basin                        ! I
-      integer basin_no                         ! I
-      integer no_basin                         ! I
-      real    actths1                          ! I
-      real    actths2                          ! I
-      real    volume                           ! I
-      real    surf                             ! I
-      real    delt                             ! I
-      integer itime                            ! I
-      integer idt                              ! I
-      integer nim1                             ! I number of fractions IM1
-      integer nim2                             ! I number of fractions IM2
-      integer nim3                             ! I number of fractions IM3
-      integer nim1s1                           ! I number of fractions IM1S1
-      real    im1s1                            ! I fractions IM1S1
-      integer nim2s1                           ! I number of fractions IM2S1
-      real    im2s1                            ! I fractions IM1S1
-      integer nim3s1                           ! I number of fractions IM3S1
-      real    im3s1                            ! I fractions IM3S1
-      integer nim1s2                           ! I number of fractions IM1S2
-      real    im1s2                            ! I fractions IM1S2
-      integer nim2s2                           ! I number of fractions IM2S2
-      real    im2s2                            ! I fractions IM1S2
-      integer nim3s2                           ! I number of fractions IM3S2
-      real    im3s2                            ! I fractions IM3S2
-      integer it_start_dredge                  ! I it_start_dredge     per basin
-      integer it_freq_dredge                   ! I it_freq_dredge      per basin
-      real    dredge_criterium                 ! I dredge_criterium    per basin
-      integer sws1s2_dredge                    ! I sws1s2_dredge       per basin
-      integer dumpsegment                      ! I dumpsegment         per basin
-      real    dumpspeed                        ! I dumpspeed           per basin
-      integer relabel                          ! I relabel             per basin
-      real    dredge_im1                       ! I/O storage of dredged im1 fractions per basin
-      real    dredge_im2                       ! I/O storage of dredged im1 fractions per basin
-      real    dredge_im3                       ! I/O storage of dredged im1 fractions per basin
+      integer(kind=int_wp) ::max_basin                        ! I
+      integer(kind=int_wp) ::basin_no                         ! I
+      integer(kind=int_wp) ::no_basin                         ! I
+      real(kind=real_wp) ::actths1                          ! I
+      real(kind=real_wp) ::actths2                          ! I
+      real(kind=real_wp) ::volume                           ! I
+      real(kind=real_wp) ::surf                             ! I
+      real(kind=real_wp) ::delt                             ! I
+      integer(kind=int_wp) ::itime                            ! I
+      integer(kind=int_wp) ::idt                              ! I
+      integer(kind=int_wp) ::nim1                             ! I number of fractions IM1
+      integer(kind=int_wp) ::nim2                             ! I number of fractions IM2
+      integer(kind=int_wp) ::nim3                             ! I number of fractions IM3
+      integer(kind=int_wp) ::nim1s1                           ! I number of fractions IM1S1
+      real(kind=real_wp) ::im1s1                            ! I fractions IM1S1
+      integer(kind=int_wp) ::nim2s1                           ! I number of fractions IM2S1
+      real(kind=real_wp) ::im2s1                            ! I fractions IM1S1
+      integer(kind=int_wp) ::nim3s1                           ! I number of fractions IM3S1
+      real(kind=real_wp) ::im3s1                            ! I fractions IM3S1
+      integer(kind=int_wp) ::nim1s2                           ! I number of fractions IM1S2
+      real(kind=real_wp) ::im1s2                            ! I fractions IM1S2
+      integer(kind=int_wp) ::nim2s2                           ! I number of fractions IM2S2
+      real(kind=real_wp) ::im2s2                            ! I fractions IM1S2
+      integer(kind=int_wp) ::nim3s2                           ! I number of fractions IM3S2
+      real(kind=real_wp) ::im3s2                            ! I fractions IM3S2
+      integer(kind=int_wp) ::it_start_dredge                  ! I it_start_dredge     per basin
+      integer(kind=int_wp) ::it_freq_dredge                   ! I it_freq_dredge      per basin
+      real(kind=real_wp) ::dredge_criterium                 ! I dredge_criterium    per basin
+      integer(kind=int_wp) ::sws1s2_dredge                    ! I sws1s2_dredge       per basin
+      integer(kind=int_wp) ::dumpsegment                      ! I dumpsegment         per basin
+      real(kind=real_wp) ::dumpspeed                        ! I dumpspeed           per basin
+      integer(kind=int_wp) ::relabel                          ! I relabel             per basin
+      real(kind=real_wp) ::dredge_im1                       ! I/O storage of dredged im1 fractions per basin
+      real(kind=real_wp) ::dredge_im2                       ! I/O storage of dredged im1 fractions per basin
+      real(kind=real_wp) ::dredge_im3                       ! I/O storage of dredged im1 fractions per basin
 
       ! pointers in the pmsa array
 
-      integer ip_basin_no                      !
-      integer ip_actths1                       !
-      integer ip_actths2                       !
-      integer ip_volume                        !
-      integer ip_surf                          !
-      integer ip_delt                          !
-      integer, dimension(:), allocatable :: ip0_im1s1                        !
-      integer, dimension(:), allocatable :: ip0_im2s1                        !
-      integer, dimension(:), allocatable :: ip0_im3s1                        !
-      integer ip_im1s1                         !
-      integer ip_im2s1                         !
-      integer ip_im3s1                         !
-      integer, dimension(:), allocatable :: ip0_im1s2                        !
-      integer, dimension(:), allocatable :: ip0_im2s2                        !
-      integer, dimension(:), allocatable :: ip0_im3s2                        !
-      integer ip_im1s2                         !
-      integer ip_im2s2                         !
-      integer ip_im3s2                         !
-      integer, dimension(:), allocatable :: ip_it_start_dredge               !
-      integer, dimension(:), allocatable :: ip_it_freq_dredge                !
-      integer, dimension(:), allocatable :: ip_dredge_criterium              !
-      integer, dimension(:), allocatable :: ip_sws1s2_dredge                 !
-      integer, dimension(:), allocatable :: ip_dumpsegment                   !
-      integer, dimension(:), allocatable :: ip_dumpspeed                     !
-      integer, dimension(:), allocatable :: ip_relabel                       !
-      integer, dimension(:,:), allocatable :: ip0_dredge_im1                   !
-      integer, dimension(:,:), allocatable :: ip0_dredge_im2                   !
-      integer, dimension(:,:), allocatable :: ip0_dredge_im3                   !
-      integer ip_dredge_im1                    !
-      integer ip_dredge_im2                    !
-      integer ip_dredge_im3                    !
-      integer ipoff                            !
-      integer size_sum_dredge                      !
-      real, dimension(:), allocatable :: sum_dredge
+      integer(kind=int_wp) ::ip_basin_no                      !
+      integer(kind=int_wp) ::ip_actths1                       !
+      integer(kind=int_wp) ::ip_actths2                       !
+      integer(kind=int_wp) ::ip_volume                        !
+      integer(kind=int_wp) ::ip_surf                          !
+      integer(kind=int_wp) ::ip_delt                          !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip0_im1s1                        !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip0_im2s1                        !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip0_im3s1                        !
+      integer(kind=int_wp) ::ip_im1s1                         !
+      integer(kind=int_wp) ::ip_im2s1                         !
+      integer(kind=int_wp) ::ip_im3s1                         !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip0_im1s2                        !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip0_im2s2                        !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip0_im3s2                        !
+      integer(kind=int_wp) ::ip_im1s2                         !
+      integer(kind=int_wp) ::ip_im2s2                         !
+      integer(kind=int_wp) ::ip_im3s2                         !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip_it_start_dredge               !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip_it_freq_dredge                !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip_dredge_criterium              !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip_sws1s2_dredge                 !
+      integer(kind=int_wp),dimension(:),  allocatable  ::ip_dumpsegment                   !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip_dumpspeed                     !
+      integer(kind=int_wp), dimension(:), allocatable  ::ip_relabel                       !
+      integer(kind=int_wp), dimension(:,:), allocatable  ::ip0_dredge_im1                   !
+      integer(kind=int_wp), dimension(:,:), allocatable  ::ip0_dredge_im2                   !
+      integer(kind=int_wp), dimension(:,:), allocatable  ::ip0_dredge_im3                   !
+      integer(kind=int_wp) ::ip_dredge_im1                    !
+      integer(kind=int_wp) ::ip_dredge_im2                    !
+      integer(kind=int_wp) ::ip_dredge_im3                    !
+      integer(kind=int_wp) ::ipoff                            !
+      integer(kind=int_wp) ::size_sum_dredge                      !
+      real(kind=real_wp), dimension(:),allocatable  ::sum_dredge
 
-      integer lunrep                           ! unit number of output file
+      integer(kind=int_wp) ::lunrep                           ! unit number of output file
 
       ! pointers in the flux array
 
-      integer iflux                            !
-      integer ipflux                           !
-      integer ifl_dump_im1                     !
-      integer ifl_dump_im2                     !
-      integer ifl_dump_im3                     !
+      integer(kind=int_wp) ::iflux                            !
+      integer(kind=int_wp) ::ipflux                           !
+      integer(kind=int_wp) ::ifl_dump_im1                     !
+      integer(kind=int_wp) ::ifl_dump_im2                     !
+      integer(kind=int_wp) ::ifl_dump_im3                     !
 
       ! other local declarations
 
-      real                 :: dredge_tot       !
-      real                 :: fraction_dredge  !
-      real                 :: maxdump          !
-      real                 :: dump             !
-      real                 :: dump_im1         !
-      real                 :: dump_im2         !
-      real                 :: dump_im3         !
-      integer              :: iseg             ! local loop counter for computational element loop
-      integer              :: i_basin          ! local loop counter for basin
-      integer              :: ikmrk2           ! second attribute
-      logical, allocatable :: dredge_moment(:) ! indication per basin if the current step is a dredge_process step
-      integer              :: ifrac_im1        ! fraction
-      integer              :: ifrac_im2        ! fraction
-      integer              :: ifrac_im3        ! fraction
-      integer              :: ifrac_dump_im1   ! dump towards this fraction
-      integer              :: ifrac_dump_im2   ! dump towards this fraction
-      integer              :: ifrac_dump_im3   ! dump towards this fraction
+      real(kind=real_wp) ::dredge_tot       !
+      real(kind=real_wp) ::fraction_dredge  !
+      real(kind=real_wp) ::maxdump          !
+      real(kind=real_wp) ::dump             !
+      real(kind=real_wp) ::dump_im1         !
+      real(kind=real_wp) ::dump_im2         !
+      real(kind=real_wp) ::dump_im3         !
+      integer(kind=int_wp) ::iseg             ! local loop counter for computational element loop
+      integer(kind=int_wp) ::i_basin          ! local loop counter for basin
+      integer(kind=int_wp) ::ikmrk2           ! second attribute
+      logical, allocatable :: dredge_moment(:) ! indication per basin if the current step is a dredge step
+      integer(kind=int_wp) ::ifrac_im1        ! fraction
+      integer(kind=int_wp) ::ifrac_im2        ! fraction
+      integer(kind=int_wp) ::ifrac_im3        ! fraction
+      integer(kind=int_wp) ::ifrac_dump_im1   ! dump towards this fraction
+      integer(kind=int_wp) ::ifrac_dump_im2   ! dump towards this fraction
+      integer(kind=int_wp) ::ifrac_dump_im3   ! dump towards this fraction
 
       call getmlu( lunrep )
 
@@ -260,7 +262,7 @@
          enddo
       enddo
 
-!     copy sum_dredge (remaining dredge_process mass) from pmsa
+!     copy sum_dredge (remaining dredge mass) from pmsa
       size_sum_dredge = max_basin*(nim1+nim2+nim3)
       allocate( sum_dredge(size_sum_dredge) )
       sum_dredge = 0.0
@@ -291,7 +293,7 @@
          endif
       enddo
 
-      ! dredge_process loop
+      ! dredge loop
 
       ip_basin_no = ipoint(2)
       ip_actths1  = ipoint(4)
@@ -499,6 +501,6 @@
       enddo
 
       return
-      end
+      end SUBROUTINE dredge_process
 
       end module m_dredge_process

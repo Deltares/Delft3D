@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_specfe
+use m_waq_precision
+
 
 implicit none
 
@@ -38,66 +40,66 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 25) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 25) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 25)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 25) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 25) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 25)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(4) feiiid      ! I  dissolved oxidizing iron                           (gFe/m3)
-      real(4) feiid       ! I  total dissolved reducing iron                      (gFe/m3)
-      real(4) lkstfe3oh   ! I  log stability constant for Fe3OH2+ (l.mole-1)      (-)
-      real(4) lkstfe3oh2  ! I  log stability constant for Fe3OH2+ (l.mole-1)      (-)
-      real(4) tckfe3oh    ! I  temperature coefficient for KstFe3OH               (-)
-      real(4) tckfe3oh2   ! I  temperature coefficient for KstFe3OH2              (-)
-      real(4) lkstfe2oh   ! I  log stability constant for Fe2OH+ (l.mole-1)       (-)
-      real(4) lkstfe2oh2  ! I  log stability constant for Fe2OH2 (l.mole-1)       (-)
-      real(4) tckfe2oh    ! I  temperature coefficient for KstFe2OH               (-)
-      real(4) tckfe2oh2   ! I  temperature coefficient for KstFe2OH2              (-)
-      real(4) ph          ! I  pH                                                 (-)
-      real(4) temp        ! I  ambient water temperature                          (oC)
-      real(4) poros       ! I  volumetric porosity                                (-)
-      real(4) disfe3      ! O  concentration of free dissolved iron(III)          (mole/l)
-      real(4) disfe3oh    ! O  concentration of dissolved FeOH2+                  (mole/l)
-      real(4) disfe3oh2   ! O  concentration of dissolved Fe(OH)2+                (mole/l)
-      real(4) frfe3d      ! O  fraction of free dissolved iron(III)               (-)
-      real(4) frfe3ohd    ! O  fraction of dissolved FeOH2+                       (-)
-      real(4) frfe3oh2d   ! O  fraction of dissolved Fe(OH)2+                     (-)
-      real(4) disfe2      ! O  concentration of free dissolved iron(II)           (mole/l)
-      real(4) disfe2oh    ! O  concentration of dissolved FeOH+                   (mole/l)
-      real(4) disfe2oh2   ! O  concentration of dissolved Fe(OH)2                 (mole/l)
-      real(4) frfe2d      ! O  fraction of free dissolved iron(II)                (-)
-      real(4) frfe2ohd    ! O  fraction of dissolved FeOH+                        (-)
-      real(4) frfe2oh2d   ! O  fraction of dissolved Fe(OH)2                      (-)
+      real(kind=real_wp)  ::feiiid      ! I  dissolved oxidizing iron                           (gFe/m3)
+      real(kind=real_wp)  ::feiid       ! I  total dissolved reducing iron                      (gFe/m3)
+      real(kind=real_wp)  ::lkstfe3oh   ! I  log stability constant for Fe3OH2+ (l.mole-1)      (-)
+      real(kind=real_wp)  ::lkstfe3oh2  ! I  log stability constant for Fe3OH2+ (l.mole-1)      (-)
+      real(kind=real_wp)  ::tckfe3oh    ! I  temperature coefficient for KstFe3OH               (-)
+      real(kind=real_wp)  ::tckfe3oh2   ! I  temperature coefficient for KstFe3OH2              (-)
+      real(kind=real_wp)  ::lkstfe2oh   ! I  log stability constant for Fe2OH+ (l.mole-1)       (-)
+      real(kind=real_wp)  ::lkstfe2oh2  ! I  log stability constant for Fe2OH2 (l.mole-1)       (-)
+      real(kind=real_wp)  ::tckfe2oh    ! I  temperature coefficient for KstFe2OH               (-)
+      real(kind=real_wp)  ::tckfe2oh2   ! I  temperature coefficient for KstFe2OH2              (-)
+      real(kind=real_wp)  ::ph          ! I  pH                                                 (-)
+      real(kind=real_wp)  ::temp        ! I  ambient water temperature                          (oC)
+      real(kind=real_wp)  ::poros       ! I  volumetric porosity                                (-)
+      real(kind=real_wp)  ::disfe3      ! O  concentration of free dissolved iron(III)          (mole/l)
+      real(kind=real_wp)  ::disfe3oh    ! O  concentration of dissolved FeOH2+                  (mole/l)
+      real(kind=real_wp)  ::disfe3oh2   ! O  concentration of dissolved Fe(OH)2+                (mole/l)
+      real(kind=real_wp)  ::frfe3d      ! O  fraction of free dissolved iron(III)               (-)
+      real(kind=real_wp)  ::frfe3ohd    ! O  fraction of dissolved FeOH2+                       (-)
+      real(kind=real_wp)  ::frfe3oh2d   ! O  fraction of dissolved Fe(OH)2+                     (-)
+      real(kind=real_wp)  ::disfe2      ! O  concentration of free dissolved iron(II)           (mole/l)
+      real(kind=real_wp)  ::disfe2oh    ! O  concentration of dissolved FeOH+                   (mole/l)
+      real(kind=real_wp)  ::disfe2oh2   ! O  concentration of dissolved Fe(OH)2                 (mole/l)
+      real(kind=real_wp)  ::frfe2d      ! O  fraction of free dissolved iron(II)                (-)
+      real(kind=real_wp)  ::frfe2ohd    ! O  fraction of dissolved FeOH+                        (-)
+      real(kind=real_wp)  ::frfe2oh2d   ! O  fraction of dissolved Fe(OH)2                      (-)
 
       ! local declaration
 
-      real(4) h_ion       ! L  proton concentration                               (mole/l)
-      real(4) kfe31       ! L  stability (equilibrium, hydrolysis) constant for FeOH2+ (mole.l-1)
-      real(4) kfe32       ! L  stability (equilibrium, hydrolysis) constant for Fe(OH)2+ (mole.l-1)
-      real(4) cfe3dt      ! L  concentration of total dissolved oxidizing iron (mole.l-1)
-      real(4) cfe3d1      ! L  concentration of free dissolved Fe3+ (mole.l-1)
-      real(4) cfe3d2      ! L  concentration of dissolved FeOH2+ (mole.l-1)
-      real(4) cfe3d3      ! L  concentration of dissolved Fe(OH)2+ (mole.l-1)
-      real(4) kfe21       ! L  stability (equilibrium, hydrolysis) constant for FeOH+ (mole.l-1)
-      real(4) kfe22       ! L  stability (equilibrium, hydrolysis) constant for Fe(OH)2+ (mole.l-1)
-      real(4) cfe2dt      ! L  concentration of total dissolved reducing iron
-      real(4) cfe2d1      ! L  concentration of free dissolved Fe2+ (mole.l-1)
-      real(4) cfe2d2      ! L  concentration of dissolved FeOH+ (mole.l-1)
-      real(4) cfe2d3      ! L  concentration of dissolved Fe(OH)2 (mole.l-1)
+      real(kind=real_wp)  ::h_ion       ! L  proton concentration                               (mole/l)
+      real(kind=real_wp)  ::kfe31       ! L  stability (equilibrium, hydrolysis) constant for FeOH2+ (mole.l-1)
+      real(kind=real_wp)  ::kfe32       ! L  stability (equilibrium, hydrolysis) constant for Fe(OH)2+ (mole.l-1)
+      real(kind=real_wp)  ::cfe3dt      ! L  concentration of total dissolved oxidizing iron (mole.l-1)
+      real(kind=real_wp)  ::cfe3d1      ! L  concentration of free dissolved Fe3+ (mole.l-1)
+      real(kind=real_wp)  ::cfe3d2      ! L  concentration of dissolved FeOH2+ (mole.l-1)
+      real(kind=real_wp)  ::cfe3d3      ! L  concentration of dissolved Fe(OH)2+ (mole.l-1)
+      real(kind=real_wp)  ::kfe21       ! L  stability (equilibrium, hydrolysis) constant for FeOH+ (mole.l-1)
+      real(kind=real_wp)  ::kfe22       ! L  stability (equilibrium, hydrolysis) constant for Fe(OH)2+ (mole.l-1)
+      real(kind=real_wp)  ::cfe2dt      ! L  concentration of total dissolved reducing iron
+      real(kind=real_wp)  ::cfe2d1      ! L  concentration of free dissolved Fe2+ (mole.l-1)
+      real(kind=real_wp)  ::cfe2d2      ! L  concentration of dissolved FeOH+ (mole.l-1)
+      real(kind=real_wp)  ::cfe2d3      ! L  concentration of dissolved Fe(OH)2 (mole.l-1)
 
       ! initialise pointering in pmsa
 

@@ -25,7 +25,7 @@ module re_orien_sal_temp_mod
 !
 !  data definition module(s)
 !
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -38,11 +38,11 @@ contains
                                    lgrid      , lgrid2   , lgrid3     , v_swim     , d_swim     ,    &
                                    angle      , ipart    , xpart      , ypart      , a          ,    &
                                    b          , flow     , local_angle, sal_n0     , sal_n1     ,    &
-                                   sal_n12    , sal_n2   , sal_n23    , sal_n3     , sal_n34    ,    & 
+                                   sal_n12    , sal_n2   , sal_n23    , sal_n3     , sal_n34    ,    &
                                    sal_n4     , sal_n41  , temp_n0    , temp_n1    , temp_n12   ,    &
                                    temp_n2    , temp_n23 , temp_n3    , temp_n34   , temp_n4    ,    &
                                    temp_n41  )
-                                   
+
 
         ! function  : Calculates the orientation of the particle towards the lowest salinity
         !             based on the surrounding gridcells (2D in the horizontal).
@@ -51,19 +51,19 @@ contains
         !           gridcells considered:           -> m
         !                                       -     -     -
         !                                    | n23 | n3  | n34 |
-        !                                 |     -     -     -   
+        !                                 |     -     -     -
         !                                 v  | n2  | n0  | n4  |
-        !                                 n     -     -     -   
+        !                                 n     -     -     -
         !                                    | n12 | n1  | n41 |
         !                                       -     -     -
         !
 
         ! arguments :
 
-        integer(ip), intent(in)    :: mnmaxk              ! total number of active grid cells
-        integer(ip)                :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer(ip)                :: lgrid2( : , : )     ! total grid
-        integer(ip)                :: lgrid3( : , : )     ! original grid (conc array)
+        integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
+        integer(int_wp )                :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+        integer(int_wp )                :: lgrid2( : , : )     ! total grid
+        integer(int_wp )                :: lgrid3( : , : )     ! original grid (conc array)
         real   (sp)                :: angle ( : )         ! angle with horizontal
         real   (sp), pointer       :: temper1( : )        ! temperature segment numbering
         real   (sp)                :: flow  ( : )         ! all flows
@@ -77,17 +77,17 @@ contains
         real   (sp)                :: a                   ! a coefficient in development (-)
         real   (sp)                :: b                   ! b coefficient in development (-)
 
-        integer(ip)                :: ipart               ! particle index
+        integer(int_wp )                :: ipart               ! particle index
 
         integer                    :: m                   ! m
         integer                    :: n                   ! n
-        integer(ip)                :: nmax                ! first grid dimension
-        integer(ip)                :: mmax                ! second grid dimension
+        integer(int_wp )                :: nmax                ! first grid dimension
+        integer(int_wp )                :: mmax                ! second grid dimension
         integer                    :: nlower              ! nlower
         integer                    :: nhigher             ! nhigher
         integer                    :: mlower              ! mlower
         integer                    :: mhigher             ! mhigher
-        
+
         real                       :: low_sal                ! lowest salinity
         real                       :: sal_n0
         real                       :: sal_n1
@@ -133,12 +133,12 @@ contains
         real   , parameter         :: pi = 3.141592654
         real   , parameter         :: twopi = pi*2.0
 
-        
+
         !Orientation based on temperature limits and lowest salinity gradient
 
-        n0_lgrid  = lgrid (n,m)                                                   ! Get the gridnumbering from the active grid in the middle of particle position 
+        n0_lgrid  = lgrid (n,m)                                                   ! Get the gridnumbering from the active grid in the middle of particle position
         if(n0_lgrid .le. 0) return                                                ! Stop execution if particle has left the model
- 
+
         !Make sure all grid selections are within limits
         if(m-1 .le. 1) mlower = 1
         if(m-1 .gt. 1) mlower = m-1
@@ -147,7 +147,7 @@ contains
         if(n-1 .le. 1) nlower = 1
         if(n-1 .gt. 1) nlower = n-1
         if(n+1 .gt. nmax) nhigher = nmax
-        if(n+1 .le. nmax) nhigher = n+1    
+        if(n+1 .le. nmax) nhigher = n+1
 
         n1  = lgrid2(nlower,m)                                                    ! Get the gridnumbering from the total grid to down of particle position
         n2  = lgrid2(n,mlower)                                                    ! Get the gridnumbering from the total grid to the left of particle position
@@ -155,7 +155,7 @@ contains
         thd_n2 = ( flow(n2+mnmaxk) .eq. 0.0 )                                     ! Determine if flow equals to 0 for the storage layer to the left  of particle position (in that case thin dam on n2)
         thd_n3 = ( flow(n0_lgrid) .eq. 0.0 )                                      ! Determine if flow equals to 0 for middle of particle position (in that case thin dam on n3)
         thd_n4 = ( flow(n0_lgrid+mnmaxk) .eq. 0.0 )                               ! Determine if flow equals to 0 for the storage layer in the middle of particle position (in that case thin dam on n4)
-   
+
         n0  = lgrid3(n,m)                                                         ! Determine the gridnumbering for the original grid in the middle of particle position
         n1  = lgrid3(nlower,m)                                                    ! Determine the gridnumbering for the original grid in down of particle position
         n12 = lgrid3(nlower,mlower)                                               ! Determine the gridnumbering for the original grid in down-left of particle position
@@ -168,7 +168,7 @@ contains
 
 
         ! Asses per gridcell
-        
+
 
         ! Get values of gricellparticle
 
@@ -211,7 +211,7 @@ contains
 
         ! Get values of gridcell up-left
 
-        if ( temp_n23 .lt. 9999 ) then                                            !If temperature is within low bound and high bound of sencing             
+        if ( temp_n23 .lt. 9999 ) then                                            !If temperature is within low bound and high bound of sencing
             if ( sal_n23 .lt. low_sal ) then                                      !If salinity in the up-left position is lower than lowest salinity encountered in area
                 low_sal = sal_n23                                                 ! Set the new level of lowest salinity
                 n_low = n23                                                       ! Set the cel number for lowest salinity
@@ -222,7 +222,7 @@ contains
 
         ! Get values of gridcell up
 
-        if ( temp_n3 .lt. 9999 ) then                                             !If temperature is within low bound and high bound of sencing     
+        if ( temp_n3 .lt. 9999 ) then                                             !If temperature is within low bound and high bound of sencing
             if ( sal_n3 .lt. low_sal ) then                                       !If salinity in the up position is lower than lowest salinity encountered in area
                 low_sal = sal_n3                                                  ! Set the new level of lowest salinity
                 n_low = n3                                                        ! Set the cel number for lowest salinity
@@ -233,7 +233,7 @@ contains
 
         ! Get values of gridcell up-right
 
-        if ( temp_n34 .lt. 9999 ) then                                            !If temperature is within low bound and high bound of sencing 
+        if ( temp_n34 .lt. 9999 ) then                                            !If temperature is within low bound and high bound of sencing
             if ( sal_n34 .lt. low_sal ) then                                      !If salinity in the up-right position is lower than lowest salinity encountered in area
                 low_sal = sal_n34                                                 ! Set the new level of lowest salinity
                 n_low = n34                                                       ! Set the cel number for lowest salinity
@@ -244,7 +244,7 @@ contains
 
         ! Get values of gridcell right
 
-        if ( temp_n4 .lt. 9999 ) then                                             !If temperature is within low bound and high bound of sencing 
+        if ( temp_n4 .lt. 9999 ) then                                             !If temperature is within low bound and high bound of sencing
             if ( sal_n4 .lt. low_sal ) then                                       !If salinity in the right position is lower than lowest salinity encountered in area
                 low_sal = sal_n4                                                  ! Set the new level of lowest salinity
                 n_low = n4                                                        ! Set the cel number for lowest salinity
@@ -255,7 +255,7 @@ contains
 
         ! Get values of gridcell down-right
 
-        if ( temp_n41 .lt. 9999 ) then                                            !If temperature is within low bound and high bound of sencing 
+        if ( temp_n41 .lt. 9999 ) then                                            !If temperature is within low bound and high bound of sencing
             if ( sal_n41 .lt. low_sal ) then                                      !If salinity in the down-right position is lower than lowest salinity encountered in area
                 low_sal = sal_n41                                                 ! Set the new level of lowest salinity
                 n_low = n41                                                       ! Set the cel number for lowest salinity
@@ -268,7 +268,7 @@ contains
 
         if ( n_low .eq. n0 ) then                                                  !If the middle position still has the lowest salinity
                                                                                    ! and the appropriate temperature range
-                                                         
+
            ! stay put, againts the flow with velocity of the flo
 
            v_swim(ipart) = 0.0                                                     ! Set the swimming velocity to 0.0

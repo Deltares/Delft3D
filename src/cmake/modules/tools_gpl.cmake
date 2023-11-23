@@ -60,5 +60,8 @@ set(agrhyd_module ${tools_gpl_path}/waq_tools/agrhyd)
 # Maptonetcdf
 set(maptonetcdf_module ${tools_gpl_path}/waq_tools/maptonetcdf)
 
+# Calcage
+set(calcage_module ${tools_gpl_path}/waq_tools/calcage)
+
 # cosumo_bmi
 set(cosumo_bmi_module "${tools_gpl_path}/cosumo_bmi")

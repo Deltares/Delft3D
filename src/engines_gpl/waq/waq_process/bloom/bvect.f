@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_bvect
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,12 +41,12 @@
 
       implicit none
 
-      real(8)      :: x(*)
-      real(8)      :: b2(ms)
-      real(8)      :: xdef(*)
-      real(8)      :: sumsp
-      real(8)      :: dmax1
-      integer      :: i, i1, k, k1, l1, l2
+      real(kind=dp) ::x(*)
+      real(kind=dp) ::b2(ms)
+      real(kind=dp) ::xdef(*)
+      real(kind=dp) ::sumsp
+      real(kind=dp) ::dmax1
+      integer(kind=int_wp) ::i, i1, k, k1, l1, l2
       
 ! To tell Bloom how much biomass of the living phytoplankton
 ! species is left at the end of the time-step, the 'minimum

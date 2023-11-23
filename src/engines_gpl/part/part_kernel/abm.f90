@@ -26,7 +26,7 @@ module abm_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part              ! single/double precision
+use m_waq_precision              ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -64,36 +64,36 @@ contains
 
       ! arguments :
 
-      integer(ip), intent(in)    :: lunrep              ! report file
-      integer(ip), intent(in)    :: itime               ! time in seconds
-      integer(ip), intent(in)    :: idelt               ! time step size in seconds
-      integer(ip), intent(in)    :: nmax                ! first grid dimension
-      integer(ip), intent(in)    :: mmax                ! second grid dimension
-      integer(ip), intent(in)    :: layt                ! number of layers of hydr. database
-      integer(ip), intent(in)    :: nosegl              ! number segments per layer
-      integer(ip), intent(in)    :: nolay               ! number of layers in calculation (all model)
-      integer(ip)                :: nlay                ! number of layers in calculation (current location)
-      integer(ip), intent(in)    :: mnmaxk              ! total number of active grid cells
-      integer(ip), intent(in)    :: laytop(nmax,mmax)   !< highest active layer in z-layer model
-      integer(ip), intent(in)    :: laybot(nmax,mmax)   !< deepest active layer in z-layer model
-      integer(ip), pointer       :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-      integer(ip), pointer       :: lgrid2( : , : )     ! total grid
-      integer(ip), pointer       :: lgrid3( : , : )     ! original grid (conc array)
-      integer(ip), intent(in)    :: nopart              ! total number of particles
-      integer(ip), intent(in)    :: npwndw              ! first active particle
-      integer(ip), intent(in)    :: nosubs              ! number of substances per particle
-      integer(ip), pointer       :: npart ( : )         ! first  grid index of the particles
-      integer(ip), pointer       :: mpart ( : )         ! second grid index of the particles
-      integer(ip), pointer       :: kpart ( : )         ! third grid index of the particles
+      integer(int_wp ), intent(in)    :: lunrep              ! report file
+      integer(int_wp ), intent(in)    :: itime               ! time in seconds
+      integer(int_wp ), intent(in)    :: idelt               ! time step size in seconds
+      integer(int_wp ), intent(in)    :: nmax                ! first grid dimension
+      integer(int_wp ), intent(in)    :: mmax                ! second grid dimension
+      integer(int_wp ), intent(in)    :: layt                ! number of layers of hydr. database
+      integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
+      integer(int_wp ), intent(in)    :: nolay               ! number of layers in calculation (all model)
+      integer(int_wp )                :: nlay                ! number of layers in calculation (current location)
+      integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
+      integer(int_wp ), intent(in)    :: laytop(nmax,mmax)   !< highest active layer in z-layer model
+      integer(int_wp ), intent(in)    :: laybot(nmax,mmax)   !< deepest active layer in z-layer model
+      integer(int_wp ), pointer       :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+      integer(int_wp ), pointer       :: lgrid2( : , : )     ! total grid
+      integer(int_wp ), pointer       :: lgrid3( : , : )     ! original grid (conc array)
+      integer(int_wp ), intent(in)    :: nopart              ! total number of particles
+      integer(int_wp ), intent(in)    :: npwndw              ! first active particle
+      integer(int_wp ), intent(in)    :: nosubs              ! number of substances per particle
+      integer(int_wp ), pointer       :: npart ( : )         ! first  grid index of the particles
+      integer(int_wp ), pointer       :: mpart ( : )         ! second grid index of the particles
+      integer(int_wp ), pointer       :: kpart ( : )         ! third grid index of the particles
       real   (sp), pointer       :: xpart ( : )         ! x-value (0.0-1.0) first  direction within grid cell
       real   (sp), pointer       :: ypart ( : )         ! y-value (0.0-1.0) second direction within grid cell
       real   (sp), pointer       :: zpart ( : )         ! z-value (0.0-1.0) third  direction within grid cell
       real   (sp), pointer       :: wpart ( : , :)      ! weight factors of the subs per particle
-      integer(ip), pointer       :: iptime( : )         ! particle age in seconds
+      integer(int_wp ), pointer       :: iptime( : )         ! particle age in seconds
       real   (sp), pointer       :: wsettl( : )         ! settling per particle
       real   (sp), pointer       :: locdep( : , : )     ! depth per layer
       real   (sp), pointer       :: depth( : )          ! total depth of the cells from top to bottom
-      integer(ip), intent(in)    :: nocons              ! number of constants
+      integer(int_wp ), intent(in)    :: nocons              ! number of constants
       real   (sp), pointer       :: const ( : )         ! user-defined constants
       real   (sp), pointer       :: conc  ( : , : )     ! concentration array in transport grid
       real   (sp), pointer       :: xa    ( : )         ! x-coordiante in real world
@@ -107,7 +107,7 @@ contains
       real   (sp), pointer       :: temper1( : )        ! temperature segment numbering
       real   (sp), pointer       :: v_swim( : )         ! horizontal swimming velocity m/s
       real   (sp), pointer       :: d_swim( : )         ! horizontal swimming direction (degree)
-      integer(ip), intent(in)    :: itstrtp             ! start time
+      integer(int_wp ), intent(in)    :: itstrtp             ! start time
       real   (sp), pointer       :: vel1  ( : )         ! velocity begin hydr step
       real   (sp), pointer       :: vel2  ( : )         ! velocity end hydr step
 
@@ -123,7 +123,7 @@ contains
       integer, save              :: luncsv
       real(sp), pointer,save     :: astage(:)           ! a coefficient in stage development (-)
       real(sp), pointer,save     :: bstage(:)           ! b coefficient in stage development (-)
-      integer(ip), pointer,save  :: btype(:)       ! behaviour type
+      integer(int_wp ), pointer,save  :: btype(:)       ! behaviour type
       real(sp), pointer,save     :: mort1(:)            ! base mortality begin stage
       real(sp), pointer,save     :: mort2(:)            ! base mortality end stage
       real(sp), pointer,save     :: tcmort(:)           ! temperature coefficient mortality
@@ -151,12 +151,12 @@ contains
       ! local :
 
       real(sp), pointer,save     :: phase_diurn(:)      ! phase in diurnal behaviour
-      integer(ip)                :: ipart               ! particle index
+      integer(int_wp )                :: ipart               ! particle index
       real   (sp)                :: stage               ! stage development
       real   (sp)                :: fstage              ! fraction of current stage
-      integer(ip)                :: istage              ! integer stage development
-      integer(ip)                :: istage_t            ! index stage development
-      integer(ip)                :: istag0              ! previous stage
+      integer(int_wp )                :: istage              ! integer stage development
+      integer(int_wp )                :: istage_t            ! index stage development
+      integer(int_wp )                :: istag0              ! previous stage
       real   (sp)                :: stime               ! time since last stage change
       real   (sp)                :: stemp               ! average temperature since last stage change
       real   (sp)                :: dtemp               ! average temp day
@@ -188,7 +188,7 @@ contains
       integer                    :: kseg                ! k - 1
       integer                    :: ktopp               ! ktopp
       integer                    :: kbotp               ! kbotp
-      integer (ip)               :: iseg                ! iseg
+      integer (int_wp )               :: iseg                ! iseg
       integer                    :: isegl               ! isegl
       integer                    :: isegb               ! isegb
       real   (sp)                :: z                   ! z

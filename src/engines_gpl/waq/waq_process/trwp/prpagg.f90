@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_prpagg
+use m_waq_precision
+
 
 implicit none
 
@@ -61,25 +63,25 @@ use m_evaluate_waq_attribute
 
     implicit none
 
-    real     pmsa  ( * ) , fl    (*)
-    integer  ipoint( * ) , increm(*) , noseg , noflux, &
+    real(kind=real_wp)      ::pmsa  ( * ) , fl    (*)
+    integer(kind=int_wp)   ::ipoint( * ) , increm(*) , noseg , noflux, &
              iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 !
 !   local declarations
 !
-    integer  iseg, ikmrk1,ikmrk2, itel, noq, iq, ifrom, ipp
-    real     diameter1, density1, diameter2, density2, biofilm_thk, biofilm_density
-    real     combined_diameter, combined_density, new_shape_factor
-    real     settle_vel, tcr_sedim
+    integer(kind=int_wp)   ::iseg, ikmrk1,ikmrk2, itel, noq, iq, ifrom, ipp
+    real(kind=real_wp)      ::diameter1, density1, diameter2, density2, biofilm_thk, biofilm_density
+    real(kind=real_wp)      ::combined_diameter, combined_density, new_shape_factor
+    real(kind=real_wp)      ::settle_vel, tcr_sedim
 
-    integer           :: ipnt(500)  
-    integer,parameter :: ip_nTRWP = 1
-    integer,parameter :: ip_nIM = 2
-    integer,parameter :: ip_BioFilmThk = 3
-    integer,parameter :: ip_BioFilmDen = 4
-    integer,parameter :: ip_lastsingle = 4
+    integer(kind=int_wp)            ::ipnt(500)
+    integer(kind=int_wp),parameter  ::ip_nTRWP = 1
+    integer(kind=int_wp),parameter  ::ip_nIM = 2
+    integer(kind=int_wp),parameter  ::ip_BioFilmThk = 3
+    integer(kind=int_wp),parameter  ::ip_BioFilmDen = 4
+    integer(kind=int_wp),parameter  ::ip_lastsingle = 4
 
-    integer :: ntrwp, itrwp, nsusp, isusp, nitem, offset
+    integer(kind=int_wp)  ::ntrwp, itrwp, nsusp, isusp, nitem, offset
 
     ntrwp = pmsa(ipoint(ip_ntrwp))
     nsusp = pmsa(ipoint(ip_nim  ))

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhnoseg
+      use m_waq_precision
+
 
       implicit none
 
@@ -48,7 +50,7 @@
 !     declarations
       use m_sysn          ! System characteristics
 !
-      integer       pnoseg
+      integer(kind=int_wp) ::pnoseg
 
       pnoseg = noseg
 
@@ -78,7 +80,7 @@
 !     declarations
       use m_sysn          ! System characteristics
 !
-      integer       pnoseg, kmx, nosegfm
+      integer(kind=int_wp) ::pnoseg, kmx, nosegfm
 
 
       noseg = nosegfm

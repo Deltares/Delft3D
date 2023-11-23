@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_s12tra
+      use m_waq_precision
+
 
       implicit none
 
@@ -38,13 +40,13 @@
 
       implicit none
 
-      real     pmsa  ( * ) , fl    (*)
-      integer  ipoint(23) , increm(23) , noseg , noflux,
+      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint(23) , increm(23) , noseg , noflux,
      +         iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 
 
-      integer  ip(23), iflux, iseg, ikmrk2
-      real     fracs1, scals1, fracs2, scals2, fress1, fress2,
+      integer(kind=int_wp) ::ip(23), iflux, iseg, ikmrk2
+      real(kind=real_wp) ::fracs1, scals1, fracs2, scals2, fress1, fress2,
      j         fburs1, fburs2, fdigs1, fdigs2, swds1 , swds2 ,
      j         depth , switch, fracs3, scals3, b1, b2, d1, d2, r1, r2
 

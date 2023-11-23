@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_items
+      use m_waq_precision
+
 
       implicit none
 
@@ -46,33 +48,33 @@
 
 !     declaration of the arguments
 
-      integer               , intent(in)    :: lunrep       ! report file
+      integer(kind=int_wp), intent(in) ::  lunrep        ! report file
       type(inputfilestack)  , intent(inout) :: inpfil       ! input file strucure with include stack
-      integer               , intent(in)    :: ioutpt       ! level of reporting to ascii output file
-      integer               , intent(in)    :: chkflg       ! check on input or add items
+      integer(kind=int_wp), intent(in) ::  ioutpt        ! level of reporting to ascii output file
+      integer(kind=int_wp), intent(in) ::  chkflg        ! check on input or add items
       character(len=10)     , intent(in)    :: callr        ! calling subject
       type(t_dlwq_item)     , intent(out)   :: waq_item     ! list of items to be set in this block ( boundaries, loads, substances etc )
       type(t_dlwq_item)     , intent(out)   :: data_item    ! list of items in the data
       type(t_dlwq_item)     , intent(inout) :: name_item    ! delwaq item list
       type(t_dlwq_item)     , intent(in)    :: type_item    ! delwaq (item-) type list
-      integer               , intent(out)   :: noits        ! number of scale factors to be read
-      integer               , intent(inout) :: ierr         ! cummulative error count
-      integer               , intent(inout) :: iwar         ! cummulative warning count
+      integer(kind=int_wp), intent(out) ::  noits         ! number of scale factors to be read
+      integer(kind=int_wp), intent(inout) ::  ierr          ! cummulative error count
+      integer(kind=int_wp), intent(inout) ::  iwar          ! cummulative warning count
 
 !     local declarations
 
       logical       usefor, setnam, comput, signon
-      integer                               :: ntitm        ! number of bounds/wastes
-      integer                               :: nttype       ! number of bound/waste types
-      integer                               :: noitm        ! number of items read
-      integer                               :: t_asked      ! type of token asked
-      integer                               :: itype        ! type of token read
-      integer                               :: itoken       ! real token
+      integer(kind=int_wp) ::  ntitm         ! number of bounds/wastes
+      integer(kind=int_wp) ::  nttype        ! number of bound/waste types
+      integer(kind=int_wp) ::  noitm         ! number of items read
+      integer(kind=int_wp) ::  t_asked       ! type of token asked
+      integer(kind=int_wp) ::  itype         ! type of token read
+      integer(kind=int_wp) ::  itoken        ! real token
       character(len=256)                    :: ctoken       ! character token
-      real                                  :: rtoken       ! real token
-      integer       itmnr, ioffc, ioffi, nconst, ierr2, i, i2, ifound, namset
-
-      integer(4) :: ithndl = 0
+      real(kind=real_wp) ::  rtoken        ! real token
+      integer(kind=int_wp) :: itmnr, ioffc, ioffi, nconst, ierr2, i, i2, ifound, namset
+ 
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "read_items", ithndl )
 
 !     some initialisations

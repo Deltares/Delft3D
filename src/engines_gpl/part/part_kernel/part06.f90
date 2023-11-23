@@ -50,7 +50,7 @@ contains
 
 !     subroutines called    : part07 - searches for cell and coordinates
 
-      use precision_part
+      use m_waq_precision
       use timers
       use grid_search_mod
 
@@ -60,31 +60,31 @@ contains
 
 !     kind            function         name                   description
 
-      integer  ( ip), intent(in   ) :: lun                  !< unit number output log file
-      integer  ( ip), intent(in   ) :: nmax                 !< first index hydrodynamic grid
-      integer  ( ip), intent(in   ) :: mmax                 !< second index hydrodynamic grid
-      integer  ( ip), intent(in   ) :: lgrid (nmax,mmax)    !< active grid matrix
-      integer  ( ip), intent(in   ) :: lgrid2(nmax,mmax)    !< total grid matrix
-      real     ( rp), intent(in   ) :: xb    (nmax*mmax)    !< x of grid corner points
-      real     ( rp), intent(in   ) :: yb    (nmax*mmax)    !< y of grid corner points
-      integer  ( ip), intent(in   ) :: nodye                !< number of dye releases
-      integer  ( ip), intent(in   ) :: nocont               !< number of continuous release
-      real     ( rp), intent(inout) :: xwaste(nodye+nocont) !< x of wasteload location
-      real     ( rp), intent(inout) :: ywaste(nodye+nocont) !< y of wasteload location
-      integer  ( ip), intent(  out) :: nwaste(nodye+nocont) !< first grid index wasteloads
-      integer  ( ip), intent(  out) :: mwaste(nodye+nocont) !< second grid index wasteloads
+      integer  ( int_wp ), intent(in   ) :: lun                  !< unit number output log file
+      integer  ( int_wp ), intent(in   ) :: nmax                 !< first index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: mmax                 !< second index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)    !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)    !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax)    !< x of grid corner points
+      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax)    !< y of grid corner points
+      integer  ( int_wp ), intent(in   ) :: nodye                !< number of dye releases
+      integer  ( int_wp ), intent(in   ) :: nocont               !< number of continuous release
+      real     ( real_wp), intent(inout) :: xwaste(nodye+nocont) !< x of wasteload location
+      real     ( real_wp), intent(inout) :: ywaste(nodye+nocont) !< y of wasteload location
+      integer  ( int_wp ), intent(  out) :: nwaste(nodye+nocont) !< first grid index wasteloads
+      integer  ( int_wp ), intent(  out) :: mwaste(nodye+nocont) !< second grid index wasteloads
 
 !     Locals
 
-      integer  ( ip) ::  id      ! loop counter wasteloads
-      integer  ( ip) ::  ierror  ! error variable of part07
-      real     ( rp) ::  xnloc   ! input x coordinate for the grid search
-      real     ( rp) ::  ynloc   ! input y coordinate for the grid search
-      real     ( rp) ::  xmloc   ! output x coordinate for the grid search
-      real     ( rp) ::  ymloc   ! output y coordinate for the grid search
-      integer  ( ip) ::  nmloc   ! output n index of the wasteload point
-      integer  ( ip) ::  mmloc   ! output m index of the wasteload point
-      integer  ( ip) ::  noerr   ! local error accumulator
+      integer  ( int_wp ) ::  id      ! loop counter wasteloads
+      integer  ( int_wp ) ::  ierror  ! error variable of part07
+      real     ( real_wp) ::  xnloc   ! input x coordinate for the grid search
+      real     ( real_wp) ::  ynloc   ! input y coordinate for the grid search
+      real     ( real_wp) ::  xmloc   ! output x coordinate for the grid search
+      real     ( real_wp) ::  ymloc   ! output y coordinate for the grid search
+      integer  ( int_wp ) ::  nmloc   ! output n index of the wasteload point
+      integer  ( int_wp ) ::  mmloc   ! output m index of the wasteload point
+      integer  ( int_wp ) ::  noerr   ! local error accumulator
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /

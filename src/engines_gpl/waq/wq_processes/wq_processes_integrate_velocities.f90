@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_wq_processes_integrate_velocities
+use m_waq_precision
+
 
 implicit none
 
@@ -52,35 +54,35 @@ contains
 
 !     kind           function         name                   description
 
-      integer  ( 4), intent(in   ) :: nosys                !< number of transported substances
-      integer  ( 4), intent(in   ) :: notot                !< total number of substances
-      integer  ( 4), intent(in   ) :: noseg                !< number of computational volumes
-      integer  ( 4), intent(in   ) :: noq                  !< total number of interfaces
-      integer  ( 4), intent(in   ) :: novelo               !< number additional velocities
-      real     ( 4), intent(in   ) :: velo  (novelo,noq)   !< array with additional velocities
-      real     ( 4), intent(in   ) :: area  (noq)          !< exchange areas in m2
-      real     ( 8), intent(in   ) :: volume(noseg)        !< volumes in m3
-      integer  ( 4), intent(in   ) :: ipoint(  4   ,noq)   !< from, to, from-1, to+1 volume numbers
-      integer  ( 4), intent(in   ) :: iknmrk(noseg)        !< feature array
-      integer  ( 4), intent(in   ) :: ivpnt (nosys)        !< additional velocity number per substance
-      real     ( 4), intent(in   ) :: conc  (notot,noseg)  !< concentrations at previous time level
-      real     ( 8), intent(in   ) :: dts                  !< time step in seconds
-      real     ( 8), intent(inout) :: deriv (noseg,notot)  !< explicit derivative in mass/m3/s
+      integer(kind=int_wp), intent(in   ) ::  nosys                 !< number of transported substances
+      integer(kind=int_wp), intent(in   ) ::  notot                 !< total number of substances
+      integer(kind=int_wp), intent(in   ) ::  noseg                 !< number of computational volumes
+      integer(kind=int_wp), intent(in   ) ::  noq                   !< total number of interfaces
+      integer(kind=int_wp), intent(in   ) ::  novelo                !< number additional velocities
+      real(kind=real_wp), intent(in   ) ::  velo  (novelo,noq)    !< array with additional velocities
+      real(kind=real_wp), intent(in   ) ::  area  (noq)           !< exchange areas in m2
+      real(kind=dp), intent(in   ) ::  volume(noseg)         !< volumes in m3
+      integer(kind=int_wp), intent(in   ) ::  ipoint(  4   ,noq)    !< from, to, from-1, to+1 volume numbers
+      integer(kind=int_wp), intent(in   ) ::  iknmrk(noseg)         !< feature array
+      integer(kind=int_wp), intent(in   ) ::  ivpnt (nosys)         !< additional velocity number per substance
+      real(kind=real_wp), intent(in   ) ::  conc  (notot,noseg)   !< concentrations at previous time level
+      real(kind=dp), intent(in   ) ::  dts                   !< time step in seconds
+      real(kind=dp), intent(inout) ::  deriv (noseg,notot)   !< explicit derivative in mass/m3/s
 
 !     Local variables     :
 
-      integer  ( 4) iq          ! loop counter exchanges
-      integer  ( 4) isys        ! loop counter substance
-      integer  ( 4) ifrom, ito  ! from and to volume numbers
-      real     ( 8) a           ! this area
-      real     ( 8) vfrom       ! from volume
-      real     ( 8) vto         ! to volume
-      real     ( 8) q           ! flow for this exchange
-      real     ( 8) cfrom       ! from concentration
-      real     ( 8) cto         ! to concentration
-      real     ( 8) dq          ! total flux from and to
+      integer(kind=int_wp) :: iq           ! loop counter exchanges
+      integer(kind=int_wp) :: isys         ! loop counter substance
+      integer(kind=int_wp) :: ifrom, ito   ! from and to volume numbers
+      real(kind=dp) :: a            ! this area
+      real(kind=dp) :: vfrom        ! from volume
+      real(kind=dp) :: vto          ! to volume
+      real(kind=dp) :: q            ! flow for this exchange
+      real(kind=dp) :: cfrom        ! from concentration
+      real(kind=dp) :: cto          ! to concentration
+      real(kind=dp) :: dq           ! total flux from and to
 
-      integer(4), save :: ithndl = 0
+      integer(kind=int_wp), save ::  ithndl = 0
       if (timon) call timstrt( "wq_processes_integrate_velocities", ithndl )
 
       !     loop accross the number of exchanges

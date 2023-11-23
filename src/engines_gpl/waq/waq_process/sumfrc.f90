@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sumfrc
+use m_waq_precision
+
 
 implicit none
 
@@ -37,32 +39,32 @@ contains
 
       ! declaration of the arguments
 
-      real(4)               :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4)               :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer               :: ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
-      integer               :: increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer               :: noseg       ! I  Number of computational elements in the whole model schematisation
-      integer               :: noflux      ! I  Number of fluxes, increment in the fl array
-      integer               :: iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer               :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer               :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer               :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer               :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer               :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      real(kind=real_wp)                ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)                ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)                ::ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)                ::increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)                ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)                ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)                ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)                ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)                ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)                ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)                ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)                ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
       ! variables from pmsa array
 
-      integer               :: nfrac       ! I  number of fractions to be summed
-      real(4)               :: frac        ! I  fraction to be summed
-      real(4)               :: sum         ! O  sum of the fractions
-      real(4)               :: rfrac       ! O  relative fraction
+      integer(kind=int_wp)                ::nfrac       ! I  number of fractions to be summed
+      real(kind=real_wp)                ::frac        ! I  fraction to be summed
+      real(kind=real_wp)                ::sum         ! O  sum of the fractions
+      real(kind=real_wp)                ::rfrac       ! O  relative fraction
 
       ! local variables
 
-      integer               :: npnt        !    number of pointers in pmsa
-      integer, allocatable  :: ipnt(:)     !    local work array for the pointering
-      integer               :: iseg        !    loop counter for computational element loop
-      integer               :: ifrac       !    loop counter for fractions
+      integer(kind=int_wp)                ::npnt        !    number of pointers in pmsa
+      integer(kind=int_wp), allocatable ::ipnt(:)     !    local work array for the pointering
+      integer(kind=int_wp)                ::iseg        !    loop counter for computational element loop
+      integer(kind=int_wp)                ::ifrac       !    loop counter for fractions
 
       ! initialise pointering in pmsa
 

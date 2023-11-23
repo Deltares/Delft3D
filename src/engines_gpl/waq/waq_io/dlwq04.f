@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq04
+      use m_waq_precision
       use m_scale
       use m_pointi
       use m_opt2
@@ -102,27 +103,27 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
+      integer(kind=int_wp), intent(inout) ::  lun    (*)         !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
-      integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
-      integer  ( 4), intent(inout) :: nrharm (*)        !< number of harmonic items
-      integer  ( 4), intent(  out) :: ilflag            !< length flag
+      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  nrftot (*)         !< number of function items
+      integer(kind=int_wp), intent(inout) ::  nrharm (*)         !< number of harmonic items
+      integer(kind=int_wp), intent(  out) ::  ilflag             !< length flag
       logical      , intent(in   ) :: dtflg1            !< 'date'-format 1st timescale
-      integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
-      integer  ( 4), intent(in   ) :: intsrt            !< integration option
+      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  intsrt             !< integration option
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
-      integer  ( 4), intent(in   ) :: nsegdmp (*)       !< number of volumes in this monitoring area
-      integer  ( 4), intent(inout) :: isegdmp (*)       !< computational volume numbers
-      integer  ( 4), intent(in   ) :: nexcraai(*)       !< number of exchanges in this monitoring transect
-      integer  ( 4), intent(in   ) :: iexcraai(*)       !< exchange area numbers of the transect
-      integer  ( 4), intent(in   ) :: ioptraai(*)       !< option for the transects
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
+      integer(kind=int_wp), intent(in   ) ::  nsegdmp (*)        !< number of volumes in this monitoring area
+      integer(kind=int_wp), intent(inout) ::  isegdmp (*)        !< computational volume numbers
+      integer(kind=int_wp), intent(in   ) ::  nexcraai(*)        !< number of exchanges in this monitoring transect
+      integer(kind=int_wp), intent(in   ) ::  iexcraai(*)        !< exchange area numbers of the transect
+      integer(kind=int_wp), intent(in   ) ::  ioptraai(*)        !< option for the transects
       type(GridPointerColl)           GridPs            !< Collection of grid pointers
-      integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
       logical      , intent(in)    :: has_hydfile       !< if true, much information comes from the hyd-file
-      integer  ( 4), dimension(*), intent(in) :: nexch  !< nmber of exchanges from the hyd-file
+      integer(kind=int_wp), dimension(*), intent(in)  ::  nexch   !< nmber of exchanges from the hyd-file
 
 !     COMMON BLOCK  :
 
@@ -153,39 +154,39 @@
 
 !     Locals
 
-      integer  ( 4)   nosss     !  number of volumes inclusive of bed volumes
-      integer         volume    !  if true, computed volumes
+      integer(kind=int_wp) :: nosss      !  number of volumes inclusive of bed volumes
+      integer(kind=int_wp) :: volume     !  if true, computed volumes
       logical         disper    !  if true, dispersion
-      real     ( 4)   adummy    !  real zero
-      integer  ( 4)   idummy    !  integer zero
+      real(kind=real_wp) :: adummy     !  real zero
+      integer(kind=int_wp) :: idummy     !  integer zero
       character(255)  cdummy    !  dummy character space
-      integer  ( 4)   idum      !  multi purpose dummy variable
-      integer  ( 4)   ifact     !  factor between clocks ( 1 in the case of transport )
-      integer  ( 4)   ierr2     !  local error count
-      integer  ( 4)   iwar2     !  local warning count
-      integer  ( 4)   nosegl    !  number of volumes per layer
-      integer  ( 4)   noq12     !  noq1 + noq2 (number of horizontal exchanges)
-      integer  ( 4)   noq34     !  noq3 + noq4 (number of vertical exchanges)
-      integer  ( 4)   noqt      !  total number of exchanges (water and bed)
-      integer  ( 4)   i, j, k   !  loop counters
-      integer  ( 4)   ifound    !  help variable to find things
-      integer  ( 4)   iopt      !  option for type of input (2 = tabular input)
-      integer  ( 4)   iopt1     !  option for file type (1 = this file etc.)
-      integer  ( 4)   itype     !  the type of token that was presented
+      integer(kind=int_wp) :: idum       !  multi purpose dummy variable
+      integer(kind=int_wp) :: ifact      !  factor between clocks ( 1 in the case of transport )
+      integer(kind=int_wp) :: ierr2      !  local error count
+      integer(kind=int_wp) :: iwar2      !  local warning count
+      integer(kind=int_wp) :: nosegl     !  number of volumes per layer
+      integer(kind=int_wp) :: noq12      !  noq1 + noq2 (number of horizontal exchanges)
+      integer(kind=int_wp) :: noq34      !  noq3 + noq4 (number of vertical exchanges)
+      integer(kind=int_wp) :: noqt       !  total number of exchanges (water and bed)
+      integer(kind=int_wp) :: i, j, k    !  loop counters
+      integer(kind=int_wp) :: ifound     !  help variable to find things
+      integer(kind=int_wp) :: iopt       !  option for type of input (2 = tabular input)
+      integer(kind=int_wp) :: iopt1      !  option for file type (1 = this file etc.)
+      integer(kind=int_wp) :: itype      !  the type of token that was presented
       logical         regular   !  if .true. indicates presence of a regular grid
 
 !     Local arrays
 
       character(20), allocatable :: dispnam(:)       !  dispersion names
-      integer  ( 4), pointer     :: ipnt   (:,:)     !  room for the 'from-to' pointer table
-      real     ( 4), allocatable :: rwork  (:,:)     !  room for tabular input option
-      integer  ( 4)                 idisp  (nosys)   !  dispersion number per substance
-      integer  ( 4)                 ivelo  (nosys)   !  velocity number per substance
-      real     ( 4)                 factor ( 5 )     !  scale factor tabular input
-      integer  ( 4), pointer     :: cellpnt(:)       !  backpointer noseg to mnmaxk
-      integer  ( 4), pointer     :: flowpnt(:)       !  backpointer noq to 3*mnmaxk-mnmax
-      real     ( 4)                 length (3,1)     !  lengthes per direction
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp), pointer ::  ipnt   (:,:)      !  room for the 'from-to' pointer table
+      real(kind=real_wp), allocatable ::  rwork  (:,:)      !  room for tabular input option
+      integer(kind=int_wp) :: idisp  (nosys)    !  dispersion number per substance
+      integer(kind=int_wp) :: ivelo  (nosys)    !  velocity number per substance
+      real(kind=real_wp) :: factor ( 5 )      !  scale factor tabular input
+      integer(kind=int_wp), pointer ::  cellpnt(:)        !  backpointer noseg to mnmaxk
+      integer(kind=int_wp), pointer ::  flowpnt(:)        !  backpointer noq to 3*mnmaxk-mnmax
+      real(kind=real_wp) :: length (3,1)      !  lengthes per direction
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq04", ithndl )
 
       nosss  = noseg + nseg2

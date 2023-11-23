@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq61
+      use m_waq_precision
+
 
       implicit none
 
@@ -58,13 +60,13 @@
 !
       use timers
 
-      real        CONC (NOTOT,*)  ,  DERIV(*)  ,  AMAT(*)  ,
+      real(kind=real_wp) ::CONC (NOTOT,*)  ,  DERIV(*)  ,  AMAT(*)  ,
      *            AMASS(      *)
 
-      integer ntot, nsys, notot, noseg
-      integer i, isys, istep, iset, iseg, ioff, jtrack
+      integer(kind=int_wp) ::ntot, nsys, notot, noseg
+      integer(kind=int_wp) ::i, isys, istep, iset, iseg, ioff, jtrack
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq61", ithandl )
 !
 !         zero the matrix

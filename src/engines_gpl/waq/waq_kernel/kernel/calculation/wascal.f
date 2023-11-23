@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_wascal
+      use m_waq_precision
+
 
       implicit none
 
@@ -42,38 +44,40 @@
 
       use m_srstop
       use m_monsys
-      use delwaq_loads
+      use delwaq_loads, only : wasteloads
       use delwaq_user_wasteloads
       use timers
       implicit none
 
       ! arguments declarations
 
-      integer                             :: nowst
-      integer                             :: notot
-      integer                             :: nosys
-      integer                             :: noseg
+      integer(kind=int_wp) ::nowst
+      integer(kind=int_wp) ::notot
+      integer(kind=int_wp) ::nosys
+      integer(kind=int_wp) ::noseg
       character(len=20)                   :: syname(notot)
-      real                                :: conc(notot,noseg)
-      integer                             :: itime
-      integer                             :: nowtyp
+      real(kind=real_wp) ::conc(notot,noseg)
+      integer(kind=int_wp) ::itime
+      integer(kind=int_wp) ::nowtyp
       character(len=20)                   :: wastid(nowst)
       character(len=40)                   :: wstnam(nowst)
       character(len=20)                   :: wsttyp(nowtyp)
-      integer                             :: iwaste(nowst)
-      integer                             :: iwtype(nowst)
-      real                                :: waste(0:notot,nowst)
+      integer(kind=int_wp) ::iwaste(nowst)
+      integer(kind=int_wp) ::iwtype(nowst)
+      real(kind=real_wp) ::waste(0:notot,nowst)
 
       ! local declarations
 
-      integer, save       :: ifirst = 1
-      integer             :: ierror
-      integer             :: iwst
-      integer             :: isys
-      integer             :: lunrep
+      integer(kind=int_wp), save        ::ifirst = 1
+      integer(kind=int_wp) ::ierror
+      integer(kind=int_wp) ::iwst
+      integer(kind=int_wp) ::isys
+      integer(kind=int_wp) ::lunrep
       character(len=256)  :: load_routine
-      integer             :: ierr_alloc
-      integer(4), save    :: ithandl = 0
+
+      integer(kind=int_wp) ::ierr_alloc
+      integer(kind=int_wp), save     ::ithandl = 0
+
       if ( timon ) call timstrt ( "wascal", ithandl )
 
       ! initialise dll

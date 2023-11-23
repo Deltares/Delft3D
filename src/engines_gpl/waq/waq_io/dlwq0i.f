@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq0i
+      use m_waq_precision
+
 
       implicit none
 
@@ -74,13 +76,13 @@
 !     kind           function         name                Descriptipon
 
       character*(*), intent(in   ) :: keynam            !< string to test
-      integer  ( 4), intent(inout) :: intopt            !< integration option
-      integer  ( 4), intent(in   ) :: lunut             !< unit number report file
-      integer  ( 4), intent(  out) :: ierr2             !< 0 if keyword found
+      integer(kind=int_wp), intent(inout) ::  intopt             !< integration option
+      integer(kind=int_wp), intent(in   ) ::  lunut              !< unit number report file
+      integer(kind=int_wp), intent(  out) ::  ierr2              !< 0 if keyword found
 
 !     local
 
-      integer, parameter ::  nokey = 19
+      integer(kind=int_wp), parameter ::   nokey = 19
       character*(40)  lockey
       character*(40), save ::  keywords(nokey)
       character*(40), save ::  defkeys(nokey)
@@ -104,8 +106,8 @@
      &                'BAL_SUPPRESSTIME          ' , 'SCHEME15_STRUCTURED       ' ,
      &                'NO-ANTIDIFFUSION          ' , 'x xxxxxxxxxxxxxxxxxxxxxxxx' ,
      &                'SCHEME24_VERTICAL_UPWIND  ' /
-      integer ikey                ! number of the found key
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: ikey                 ! number of the found key
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq0i", ithndl )
 
 !     watch out BTEST, IBSET en IBCLR start counting at 0, so IKEY-1 should be used

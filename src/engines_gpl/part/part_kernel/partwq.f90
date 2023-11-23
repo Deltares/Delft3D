@@ -28,7 +28,7 @@ module partwq_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part               ! single/double precision
+use m_waq_precision               ! single/double precision
 use timers
 use m_densty
 !
@@ -199,29 +199,29 @@ contains
                              fdivt  = 4.0/3.0, rodivt = 1.0/3.0, rodivf =1.0/4.0,      &
                              twopi  = 6.2831853
 
-      integer(ip), pointer, dimension(:)     :: npart , mpart
-      integer(ip), pointer, dimension(:,:)   :: lgrid , lgrid2
+      integer(int_wp ), pointer, dimension(:)     :: npart , mpart
+      integer(int_wp ), pointer, dimension(:,:)   :: lgrid , lgrid2
       real   (sp), pointer, dimension(:)     :: volume, area  , velo  , radius , const , xb , yb
       real   (dp), pointer, dimension(:)     :: wvelo
       real   (sp), pointer, dimension(:,:)   :: conc
       real   (sp), pointer, dimension(:,:)   :: wpart
 
-      integer(ip), pointer, dimension(:)     :: kpart    , mapsub
-      integer(ip), pointer, dimension(:)     :: nwaste   , mwaste
+      integer(int_wp ), pointer, dimension(:)     :: kpart    , mapsub
+      integer(int_wp ), pointer, dimension(:)     :: nwaste   , mwaste
       real   (sp), pointer, dimension(:)     :: t0cf     , acf
 
-      integer(ip), parameter        :: maxld = 50
-      integer(ip), dimension(maxld) :: intake
+      integer(int_wp ), parameter        :: maxld = 50
+      integer(int_wp ), dimension(maxld) :: intake
       real   (sp), dimension(maxld) :: qflow    , tmpexc   , cintk
 !
 !     local scalars
 !
-      integer(ip) ::  i      , ic     , icount , idelt  , iposv  , k      , min
-      integer(ip) ::  icvdf  , il     , inocns , ipos   , ipos0  , layloc , layt
-      integer(ip) ::  lun2   , j      , ierror , il2    , iseg   , itime  , mmloc
-      integer(ip) ::  nmloc  , nodye , mmax   , mnmax2 , mnmaxk , ncload
-      integer(ip) ::  nloads , nocons , nolay  , nmax   , nosubs , nopart , noptk
-      integer(ip) ::  npwndw
+      integer(int_wp ) ::  i      , ic     , icount , idelt  , iposv  , k      , min
+      integer(int_wp ) ::  icvdf  , il     , inocns , ipos   , ipos0  , layloc , layt
+      integer(int_wp ) ::  lun2   , j      , ierror , il2    , iseg   , itime  , mmloc
+      integer(int_wp ) ::  nmloc  , nodye , mmax   , mnmax2 , mnmaxk , ncload
+      integer(int_wp ) ::  nloads , nocons , nolay  , nmax   , nosubs , nopart , noptk
+      integer(int_wp ) ::  npwndw
 
       real   (sp) ::  a0     , aby    , drho   , hcapac , r0
       real   (sp) ::  cp     , densmn , dfac   , dxby   , gamma  , pblay
@@ -680,4 +680,3 @@ contains
 !
       end subroutine
 end module
-

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_varpoi
+      use m_waq_precision
+
 
       implicit none
 
@@ -47,26 +49,26 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(in   ) :: notot             !< Total number of substances
-      integer  ( 4), intent(in   ) :: nopa              !< Number of parameters
-      integer  ( 4), intent(in   ) :: nosfun            !< Number of segment functions
+      integer(kind=int_wp), intent(in   ) ::  notot              !< Total number of substances
+      integer(kind=int_wp), intent(in   ) ::  nopa               !< Number of parameters
+      integer(kind=int_wp), intent(in   ) ::  nosfun             !< Number of segment functions
       character(20), intent(in   ) :: syname(notot)     !< Names of systems
-      integer  ( 4), intent(in   ) :: nocons            !< Number of constants used
-      integer  ( 4), intent(in   ) :: nofun             !< Number of functions ( user )
+      integer(kind=int_wp), intent(in   ) ::  nocons             !< Number of constants used
+      integer(kind=int_wp), intent(in   ) ::  nofun              !< Number of functions ( user )
       character(20), intent(in   ) :: coname(nocons)    !< Constant names
       character(20), intent(in   ) :: paname(nopa  )    !< Parameter names
       character(20), intent(in   ) :: funame(nofun )    !< Function names
       character(20), intent(in   ) :: sfname(nosfun)    !< Segment function names
       character(20), intent(in   ) :: varnam            !< Name of variable to be identified
-      integer  ( 4), intent(  out) :: ivarip            !< Pointer in the SSA
-      integer  ( 4), intent(in   ) :: lurep             !< Unit nr. report file
+      integer(kind=int_wp), intent(  out) ::  ivarip             !< Pointer in the SSA
+      integer(kind=int_wp), intent(in   ) ::  lurep              !< Unit nr. report file
 
 !     Local
 
-      integer, parameter :: nopred = 6
-      integer               indx           !  index in array of names
+      integer(kind=int_wp), parameter ::  nopred = 6
+      integer(kind=int_wp) :: indx            !  index in array of names
       character(20) predef(3)
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "varpoi", ithndl )
 
       predef(1) = 'volume'

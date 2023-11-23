@@ -48,7 +48,7 @@ subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
 !          particle tracking, this file may be missing
 !          in other cases (see itrack)
 
-      use precision_part      ! single and double precision
+      use m_waq_precision      ! single and double precision
       use timers
       use fileinfo       ! file information for all input/output files
       use openfl_mod     ! explicit interface for subroutine calls
@@ -58,14 +58,14 @@ subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
 
 !     kind           function         name                  description
 
-      integer  ( ip), intent(in   ) :: lunpr               !< unit nr of the diagnostics file
-      integer  ( ip), intent(in   ) :: lundp               !< unit nr of the depth file
+      integer  ( int_wp ), intent(in   ) :: lunpr               !< unit nr of the diagnostics file
+      integer  ( int_wp ), intent(in   ) :: lundp               !< unit nr of the depth file
       character( * ), intent(in   ) :: lnam                !< name of the depth file
-      integer  ( ip), intent(in   ) :: nmax                !< first dimension of the grid
-      integer  ( ip), intent(in   ) :: mmax                !< second dimension of the grid
-      integer  ( ip), intent(in   ) :: nosegl              !< nr of active segments of a layer
-      real     ( rp), intent(  out) :: dps   (nmax*mmax)   !< array with depth values
-      integer  ( ip), intent(in   ) :: cellpnt(nosegl)     !< backpointer of nosegl to mnmax
+      integer  ( int_wp ), intent(in   ) :: nmax                !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: mmax                !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: nosegl              !< nr of active segments of a layer
+      real     ( real_wp), intent(  out) :: dps   (nmax*mmax)   !< array with depth values
+      integer  ( int_wp ), intent(in   ) :: cellpnt(nosegl)     !< backpointer of nosegl to mnmax
       logical       , intent(in   ) :: ltrack              !< if .true. then particle tracing
 
 !     local scalars

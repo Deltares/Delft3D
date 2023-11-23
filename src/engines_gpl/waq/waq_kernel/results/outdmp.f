@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outdmp
+      use m_waq_precision
+
 
       implicit none
 
@@ -74,10 +76,10 @@
       use m_reptim
       use timers
 
-      INTEGER       IOUT  , ITIME , NX    , NY    , NOTOT ,
+      INTEGER(kind=int_wp) ::IOUT  , ITIME , NX    , NY    , NOTOT ,
      +              NOSYS , ISFLAG, NOTOT2, INIOUT
-      INTEGER       LGRID(*)      , IP(*)
-      REAL          CONC(NOTOT,*) , BOUND(NOSYS,*),
+      INTEGER(kind=int_wp) ::LGRID(*)      , IP(*)
+      REAL(kind=real_wp) ::CONC(NOTOT,*) , BOUND(NOSYS,*),
      +              CONC2 (*)
       CHARACTER*6   CGRID ( 20, * )
       CHARACTER*20  SNAME ( * )        , SYNAM2(*)
@@ -86,12 +88,12 @@
 !
 !     Local declaration
 !
-      integer  itot, i, i1, i2, i3, k, j, iscale, factor, nend
-      real     cmax, c
-      real, PARAMETER   :: RMISS = -999.
+      integer(kind=int_wp) ::itot, i, i1, i2, i3, k, j, iscale, factor, nend
+      real(kind=real_wp) ::cmax, c
+      real(kind=real_wp), PARAMETER    ::RMISS = -999.
       CHARACTER*6   POINT , PADDER
       DATA          POINT / '  .   ' /
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outdmp", ithandl )
 !
       IF ( NX*NY .EQ. 0 ) goto 9999  !   RETURN

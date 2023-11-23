@@ -52,7 +52,7 @@ contains
 !     functions   called    :
 
       use m_stop_exit
-      use precision_part    ! single/double precision
+      use m_waq_precision    ! single/double precision
       use timers
       use m_waq_timespace    ! meteo module ?
 
@@ -75,8 +75,8 @@ contains
 
 !     locals
 
-      integer(ip) :: id              ! loop counter time values
-      real   (rp) :: fract           ! interpolation factor
+      integer(int_wp ) :: id              ! loop counter time values
+      real   (real_wp) :: fract           ! interpolation factor
       real   (sp) :: w1, w2, diff    ! help variables 360 degrees turn
       logical        yes1, yes2      ! to identify successful windmodule call
       real   (sp)    avelo, adir     ! help variables from x,y to magnitude, direction

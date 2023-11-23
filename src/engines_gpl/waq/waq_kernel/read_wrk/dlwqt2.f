@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqt2
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,8 +62,8 @@
       use m_srstop
       use timers
 
-      real          RESULT(NTOTAL)
-      integer       LUNIN  , LUNOUT , ITIME , NTOTAL, ISFLAG , IFFLAG
+      real(kind=real_wp) ::RESULT(NTOTAL)
+      integer(kind=int_wp) ::LUNIN  , LUNOUT , ITIME , NTOTAL, ISFLAG , IFFLAG
       CHARACTER*10  MSGTXT(3)
       CHARACTER*(*) LUNTXT
       LOGICAL       ONLINE
@@ -69,8 +71,8 @@
       logical        stream_access                     ! help variable to detect the type of file access
       character(20)  access                            ! help variable to detect the type of file access
 
-      integer    ierr, itime1, messge
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ierr, itime1, messge
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqt2", ithandl )
 
       IF ( ONLINE ) THEN

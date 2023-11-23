@@ -30,13 +30,13 @@ module alloc_mod
 !  data definition module(s)
 !
       use m_stop_exit
-      use precision_part               ! single and double precision
+      use m_waq_precision, only: int_wp , dp, sp               ! single and double precision
       implicit none   ! force explicit typing
 
-      integer(ip), private :: lunmem        ! output unit memory allocation
-      integer(ip), private :: lunrep        ! output unit dellpar report file
-      integer(ip), private :: accu          ! accumulated memory size
-      integer(ip), private :: number        ! accumulated memory size
+      integer(int_wp ), private :: lunmem        ! output unit memory allocation
+      integer(int_wp ), private :: lunrep        ! output unit dellpar report file
+      integer(int_wp ), private :: accu          ! accumulated memory size
+      integer(int_wp ), private :: number        ! accumulated memory size
 !
 !
    interface alloc
@@ -58,8 +58,8 @@ module alloc_mod
 ! ----------------------------------------------------
       subroutine init_alloc ( lun    , lunut  )
 
-      integer(ip), intent(out  ) :: lun
-      integer(ip), intent(in   ) :: lunut
+      integer(int_wp ), intent(out  ) :: lun
+      integer(int_wp ), intent(in   ) :: lunut
 
       accu   = 0
       number = 0
@@ -75,7 +75,7 @@ module alloc_mod
 !     wrap up
 ! ----------------------------------------------------
       subroutine exit_alloc ( accu2 )
-      integer(ip) accu2
+      integer(int_wp ) accu2
       accu2 = accu
       write ( lunmem, '(''                                       ==========='' )' )
       write ( lunmem, 10 )      accu/4                  ,                                 &

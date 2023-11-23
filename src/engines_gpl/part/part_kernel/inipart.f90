@@ -60,7 +60,7 @@ contains
 !                  at z=0.0 of the top layer (k=1)
 !
       use m_skip_comments
-      use precision_part ! single/double precision
+      use m_waq_precision ! single/double precision
       use timers
       use get_key_mod
       use grid_search_mod
@@ -75,41 +75,41 @@ contains
 
 !     kind           function         name                      description
 
-      integer  ( ip), intent(in   ) :: nmax                    !< first dimension matrix
-      integer  ( ip), intent(in   ) :: mmax                    !< second dimension matrix
-      integer  ( ip), intent(in   ) :: npmax                   !< maximum number of particles
-      integer  ( ip), intent(inout) :: nopart                  !< number of active particles
-      integer  ( ip), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
-      integer  ( ip), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
-      real     ( rp), intent(in   ) :: xcor  (nmax*mmax)
-      real     ( rp), intent(in   ) :: ycor  (nmax*mmax)
-      integer  ( ip), intent(inout) :: nosubs                  !< number of substances
+      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension matrix
+      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension matrix
+      integer  ( int_wp ), intent(in   ) :: npmax                   !< maximum number of particles
+      integer  ( int_wp ), intent(inout) :: nopart                  !< number of active particles
+      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xcor  (nmax*mmax)
+      real     ( real_wp), intent(in   ) :: ycor  (nmax*mmax)
+      integer  ( int_wp ), intent(inout) :: nosubs                  !< number of substances
       character( * ), intent(in   ) :: subst (*)               !< substance names
       character( * ), intent(in   ) :: ini_file                !< polygon file
-      integer  ( ip), intent(in   ) :: npol                    !< number of substances
-      integer  ( ip), intent(in   ) :: nrowsmax                !< dimension of poligons
-      real     ( rp), intent(  out) :: xpol  (nrowsmax)        !< xvalues polygons
-      real     ( rp), intent(  out) :: ypol  (nrowsmax)        !< yvalues polygons
-      real     ( rp), intent(  out) :: wpart (nosubs,npmax)    !< weight of the particles
-      real     ( rp), intent(  out) :: xpart (npmax)           !< x of theparticles
-      real     ( rp), intent(  out) :: ypart (npmax)           !< y of the particles
-      real     ( rp), intent(  out) :: zpart (npmax)           !< z of the particles
-      integer  ( ip), intent(  out) :: npart (npmax)           !< n of the particles
-      integer  ( ip), intent(  out) :: mpart (npmax)           !< m of the particles
-      integer  ( ip), intent(  out) :: kpart (npmax)           !< k of the particles
-      integer  ( ip), intent(  out) :: iptime(npmax)           !< time in the system
-      integer  ( ip), intent(in   ) :: lunpr                   !< unit nr of the diagnostics file
+      integer  ( int_wp ), intent(in   ) :: npol                    !< number of substances
+      integer  ( int_wp ), intent(in   ) :: nrowsmax                !< dimension of poligons
+      real     ( real_wp), intent(  out) :: xpol  (nrowsmax)        !< xvalues polygons
+      real     ( real_wp), intent(  out) :: ypol  (nrowsmax)        !< yvalues polygons
+      real     ( real_wp), intent(  out) :: wpart (nosubs,npmax)    !< weight of the particles
+      real     ( real_wp), intent(  out) :: xpart (npmax)           !< x of theparticles
+      real     ( real_wp), intent(  out) :: ypart (npmax)           !< y of the particles
+      real     ( real_wp), intent(  out) :: zpart (npmax)           !< z of the particles
+      integer  ( int_wp ), intent(  out) :: npart (npmax)           !< n of the particles
+      integer  ( int_wp ), intent(  out) :: mpart (npmax)           !< m of the particles
+      integer  ( int_wp ), intent(  out) :: kpart (npmax)           !< k of the particles
+      integer  ( int_wp ), intent(  out) :: iptime(npmax)           !< time in the system
+      integer  ( int_wp ), intent(in   ) :: lunpr                   !< unit nr of the diagnostics file
 
-      integer(ip), parameter            :: max_len_line=200
-      integer(ip), parameter            :: max_len_blockname=4
-      integer(ip), parameter            :: max_len_key=20
+      integer(int_wp ), parameter            :: max_len_line=200
+      integer(int_wp ), parameter            :: max_len_blockname=4
+      integer(int_wp ), parameter            :: max_len_key=20
 
-      integer(ip)                       :: lun_ini
-      integer(ip)                       :: ios, ier
-      integer(ip)                       :: npart_pol, isub, i, np, nerr
-      integer(ip)                       :: nrows, ncols
-      integer(ip)                       :: nnpart, mmpart
-      integer(ip)                       :: inside
+      integer(int_wp )                       :: lun_ini
+      integer(int_wp )                       :: ios, ier
+      integer(int_wp )                       :: npart_pol, isub, i, np, nerr
+      integer(int_wp )                       :: nrows, ncols
+      integer(int_wp )                       :: nnpart, mmpart
+      integer(int_wp )                       :: inside
 
       real   (sp)                       :: big
       real   (sp)                       :: xmin,xmax,ymin,ymax,xx,yy
@@ -129,7 +129,7 @@ contains
 !
 !     local scalars
 !
-      integer(ip) :: ipol, len_file, len_fract
+      integer(int_wp ) :: ipol, len_file, len_fract
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "inipart", ithndl )

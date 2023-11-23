@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_bound
+      use m_waq_precision
       use m_pointb
 
 
@@ -56,30 +57,30 @@
 
 !     kind           function         name             Descriptipon
 
-      integer(4), intent(in   ) :: lun   (*)         !< array with unit numbers
-      integer(4), intent(in   ) :: noseg             !< number of volumes
-      integer(4), intent(in   ) :: noq               !< number of exchanges from input
-      integer(4), intent(in   ) :: noqt              !< total number of exchanges
-      integer(4), intent(in   ) :: intsrt            !< integration option
-      integer(4), intent(in   ) :: ioutpt            !< flag for more or less output
+      integer(kind=int_wp), intent(in   ) ::  lun   (*)          !< array with unit numbers
+      integer(kind=int_wp), intent(in   ) ::  noseg              !< number of volumes
+      integer(kind=int_wp), intent(in   ) ::  noq                !< number of exchanges from input
+      integer(kind=int_wp), intent(in   ) ::  noqt               !< total number of exchanges
+      integer(kind=int_wp), intent(in   ) ::  intsrt             !< integration option
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
       type(GridPointerColl)        GridPs            !< Structure with grid info
-      integer(4), intent(  out) :: nobnd             !< number of open boundaries
-      integer(4), intent(  out) :: jtrack            !< number of codiagonals
-      integer(4), intent(inout) :: ipoint(4,noqt)    !< exchange pointers
-      integer(4), intent(inout) :: ierr              !< cumulative error   count
-      integer(4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), intent(  out) ::  nobnd              !< number of open boundaries
+      integer(kind=int_wp), intent(  out) ::  jtrack             !< number of codiagonals
+      integer(kind=int_wp), intent(inout) ::  ipoint(4,noqt)     !< exchange pointers
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
 
 !     local declarations
 
-      integer, allocatable :: ibnd(:,:)     !  boundary pointer structure
-      integer     ierr2     ! local error count
-      integer     iwar2     ! local warning count
-      integer     iwar2_old ! local warning count help variable
-      integer     iq        ! loop counter exchanges
-      integer     ip1, ip2  ! from and to pointers
-      integer     i         ! loop counter
-      integer     lunut     ! output report file
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp), allocatable ::  ibnd(:,:)      !  boundary pointer structure
+      integer(kind=int_wp) :: ierr2      ! local error count
+      integer(kind=int_wp) :: iwar2      ! local warning count
+      integer(kind=int_wp) :: iwar2_old  ! local warning count help variable
+      integer(kind=int_wp) :: iq         ! loop counter exchanges
+      integer(kind=int_wp) :: ip1, ip2   ! from and to pointers
+      integer(kind=int_wp) :: i          ! loop counter
+      integer(kind=int_wp) :: lunut      ! output report file
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "bound", ithndl )
 
       ierr2 = 0

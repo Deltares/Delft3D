@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_sedox
+      use m_waq_precision
+
 
       implicit none
 
@@ -71,22 +73,22 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      REAL     x1real(6), kapc20, kappad,
+      REAL(kind=real_wp) ::x1real(6) , kapc20, kappad,
      J         OXY   , COXSOD, OOXSOD, TCSOD , TEMP  , TFSOD , O2FUNC,
      J         ZFL   , DEPTH , SOD   , RCSOD , VOL   , DSOD  , DOXSOD,
      J         DMINER, DIAGEN, HSED  , THETAK, EDWCSD, DIAMB , XOX   ,
      J         DEP   , ZFLAUT
       LOGICAL  TFACT, GASBEL, BODEM, OFACT
-      INTEGER  IFLUX , ISEG  , IKMRK1, IKMRK2
-      INTEGER  IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8 , IP9 ,
+      INTEGER(kind=int_wp) ::IFLUX , ISEG  , IKMRK1, IKMRK2
+      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8 , IP9 ,
      J         IP10, IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18,
      J         IP19, IP20, IP21, IP22, IP23, IP24, IP25, IP26, IP27,
      J         IP28, IP29, IP30, IP31, IP32, IP33
-      INTEGER  IN1 , IN2 , IN3 , IN4 , IN5 , IN6 , IN7 , IN8 , IN9 ,
+      INTEGER(kind=int_wp) ::IN1 , IN2 , IN3 , IN4 , IN5 , IN6 , IN7 , IN8 , IN9 ,
      J         IN10, IN11, IN12, IN13, IN14, IN15, IN16, IN17, IN18,
      J         IN19, IN20, IN21, IN22, IN23, IN24, IN25, IN26, IN27,
      J         IN28, IN29, IN30, IN31, IN32, IN33

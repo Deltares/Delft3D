@@ -121,7 +121,7 @@ contains
 !-----------------------------------------------------------------------
 !
 !
-      use precision_part       ! single and double precision
+      use m_waq_precision       ! single and double precision
       use timers
       use putget_mod      ! explicit interface
       use filldm_mod      ! explicit interface
@@ -132,19 +132,19 @@ contains
 
 !     kind           function         name                      description
 
-      integer  ( ip), intent(in   ) :: lundia                  !< unit nr of the diagnostics file
+      integer  ( int_wp ), intent(in   ) :: lundia                  !< unit nr of the diagnostics file
       logical       , intent(  out) :: fout                    !< output is written
       character( * )                :: filnam                  !< name of the output file
-      integer  ( ip)                :: ittrkc
-      integer  ( ip), intent(in   ) :: ntrk                    !< number of particles to track
-      integer  ( ip), intent(in   ) :: npmax                   !< total number of particles
-      real     ( rp), intent(in   ) :: xa    (npmax)           !< x of the particles
-      real     ( rp), intent(in   ) :: ya    (npmax)           !< y of the particles
-      real     ( rp), intent(in   ) :: za    (npmax)           !< z of the particles
-      real     ( rp), intent(  out) :: xyztrk(  3  , npmax)    !< work array to padd the particles in
+      integer  ( int_wp )                :: ittrkc
+      integer  ( int_wp ), intent(in   ) :: ntrk                    !< number of particles to track
+      integer  ( int_wp ), intent(in   ) :: npmax                   !< total number of particles
+      real     ( real_wp), intent(in   ) :: xa    (npmax)           !< x of the particles
+      real     ( real_wp), intent(in   ) :: ya    (npmax)           !< y of the particles
+      real     ( real_wp), intent(in   ) :: za    (npmax)           !< z of the particles
+      real     ( real_wp), intent(  out) :: xyztrk(  3  , npmax)    !< work array to padd the particles in
       integer       , intent(in   ) :: nosubs                  !< number of particles
-      real     ( rp), intent(in   ) :: wpart(nosubs, npmax)    !< mass for all substances per particle
-      real     ( rp), intent(in   ) :: track(  8   , npmax)    !< information on the initial release of the particles
+      real     ( real_wp), intent(in   ) :: wpart(nosubs, npmax)    !< mass for all substances per particle
+      real     ( real_wp), intent(in   ) :: track(  8   , npmax)    !< information on the initial release of the particles
 
 !  declaration and specifications
 !
@@ -157,7 +157,7 @@ contains
 !
       logical                                :: first =  .true.
       real   (sp)                            :: default = -999.999
-      integer(ip), dimension(6,nelmx ), save :: elt_dims
+      integer(int_wp ), dimension(6,nelmx ), save :: elt_dims
       save          first
 !
 !-----end nefis statics
@@ -167,10 +167,10 @@ contains
       character (len=16)                   ::  grnam4 = 'trk-initial'
       character (len=16), dimension(nelmx) ::  elt_names = (/'ITTRKC','XYZTRK','WPART','TRACK'/)
       character (len=16), dimension(nelmx) ::  elt_types = (/'INTEGER','REAL   ','REAL   ','REAL   '/)
-      integer   (ip)    , dimension(nelmx) ::  elt_bytes = (/ 4 , 4 , 4 , 4 /)
-      integer   (ip)                       ::  celidt = 0
+      integer   (int_wp )    , dimension(nelmx) ::  elt_bytes = (/ 4 , 4 , 4 , 4 /)
+      integer   (int_wp )                       ::  celidt = 0
 
-      integer   (ip) :: ierr2 , it , nelmx2 , nelmx3, nelmx4
+      integer   (int_wp ) :: ierr2 , it , nelmx2 , nelmx3, nelmx4
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "wrttrk", ithndl )

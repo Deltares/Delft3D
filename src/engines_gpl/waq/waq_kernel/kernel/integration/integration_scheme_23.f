@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_23
+      use m_waq_precision
       use m_zercum
       use m_setset
       use m_proint
@@ -120,9 +121,9 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target :: buffer      !< System total array space
-      INTEGER, DIMENSION(*)       :: LUN
+      INTEGER(kind=int_wp), DIMENSION(*)        ::LUN
       CHARACTER*(*), DIMENSION(*) :: LCHAR
-      INTEGER                     :: ACTION
+      INTEGER(kind=int_wp) ::ACTION
       TYPE(DELWAQ_DATA), TARGET   :: DLWQD
       type(GridPointerColl)       :: GridPs               ! collection of all grid definitions
 
@@ -133,24 +134,24 @@
       LOGICAL         IMFLAG , IDFLAG , IHFLAG
       LOGICAL         OPFLAG , LREWIN
 
-      INTEGER         ISYS
-      INTEGER         ICSYS
-      INTEGER         NSYS
-      INTEGER         INTOP2
-      INTEGER         ISTEP
-      INTEGER         ITH
-      INTEGER         I
-      INTEGER         ISCALE
-      INTEGER         ITER
-      INTEGER         IOPTPC
+      INTEGER(kind=int_wp) ::ISYS
+      INTEGER(kind=int_wp) ::ICSYS
+      INTEGER(kind=int_wp) ::NSYS
+      INTEGER(kind=int_wp) ::INTOP2
+      INTEGER(kind=int_wp) ::ISTEP
+      INTEGER(kind=int_wp) ::ITH
+      INTEGER(kind=int_wp) ::I
+      INTEGER(kind=int_wp) ::ISCALE
+      INTEGER(kind=int_wp) ::ITER
+      INTEGER(kind=int_wp) ::IOPTPC
 
-      INTEGER         IBND
+      INTEGER(kind=int_wp) ::IBND
 
-      INTEGER         NSTEP
-      INTEGER         IDTOLD
-      REAL            SECPREV
+      INTEGER(kind=int_wp) ::NSTEP
+      INTEGER(kind=int_wp) ::IDTOLD
+      REAL(kind=real_wp) ::SECPREV
 
-      integer, save :: ithand1 = 0 ! Leave local
+      integer(kind=int_wp), save  ::ithand1 = 0 ! Leave local
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

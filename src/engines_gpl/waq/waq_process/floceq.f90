@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_floceq
+use m_waq_precision
+
 
 implicit none
 
@@ -39,48 +41,48 @@ contains
 !
 !     type    name         i/o description
 !
-      real(4) pmsa(*)     !i/o process manager system array, window of routine to process library
-      real(4) fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-      integer ipoint(  9) ! i  array of pointers in pmsa to get and store the data
-      integer increm(  9) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! i  number of computational elements in the whole model schematisation
-      integer noflux      ! i  number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-      integer noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt(  9)   !    local work array for the pointering
-      integer iseg        !    local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !i/o process manager system array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! o  array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint(  9) ! i  array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm(  9) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! i  number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! i  number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt(  9)   !    local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     type    name         i/o description                                        unit
 !
-      real(4) im1         ! i  inorganic matter (im1)                             (gdm/m3)
-      real(4) im2         ! i  inorganic matter (im2)                             (gdm/m3)
-      real(4) im3         ! i  inorganic matter (im3)                             (gdm/m3)
-      real(4) tpm         ! i  total particulate matter (including algae)         (gdw/m3)
-      real(4) swfloceq    ! i  0=im1macro-im2micro,1=im2im1,2=im2im3,3=im3im2     (-)
-      real(4) rcfloc      ! i  flocculation rate                                  (1/d)
-      real(4) rcbreakup   ! i  floc break-up rate                                 (1/d)
-      real(4) delt        ! i  timestep for processes                             (d)
-      real(4) spmratioem  ! o  flocculation ratio macro:micro empirical model     (-)
-      real(4) dflocim1    ! f  flocculation or break-up flux im1                  (g/m3/d)
-      real(4) dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
-      real(4) dflocim3    ! f  flocculation or break-up flux im3                  (g/m3/d)
-      integer idflocim1   !    pointer to the flocculation or break-up flux im1
-      integer idflocim2   !    pointer to the flocculation or break-up flux im2
-      integer idflocim3   !    pointer to the flocculation or break-up flux im3
-      integer ikmrk1      !    first segment attribute
+      real(kind=real_wp)  ::im1         ! i  inorganic matter (im1)                             (gdm/m3)
+      real(kind=real_wp)  ::im2         ! i  inorganic matter (im2)                             (gdm/m3)
+      real(kind=real_wp)  ::im3         ! i  inorganic matter (im3)                             (gdm/m3)
+      real(kind=real_wp)  ::tpm         ! i  total particulate matter (including algae)         (gdw/m3)
+      real(kind=real_wp)  ::swfloceq    ! i  0=im1macro-im2micro,1=im2im1,2=im2im3,3=im3im2     (-)
+      real(kind=real_wp)  ::rcfloc      ! i  flocculation rate                                  (1/d)
+      real(kind=real_wp)  ::rcbreakup   ! i  floc break-up rate                                 (1/d)
+      real(kind=real_wp)  ::delt        ! i  timestep for processes                             (d)
+      real(kind=real_wp)  ::spmratioem  ! o  flocculation ratio macro:micro empirical model     (-)
+      real(kind=real_wp)  ::dflocim1    ! f  flocculation or break-up flux im1                  (g/m3/d)
+      real(kind=real_wp)  ::dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
+      real(kind=real_wp)  ::dflocim3    ! f  flocculation or break-up flux im3                  (g/m3/d)
+      integer(kind=int_wp)  ::idflocim1   !    pointer to the flocculation or break-up flux im1
+      integer(kind=int_wp)  ::idflocim2   !    pointer to the flocculation or break-up flux im2
+      integer(kind=int_wp)  ::idflocim3   !    pointer to the flocculation or break-up flux im3
+      integer(kind=int_wp)  ::ikmrk1      !    first segment attribute
       logical active      !    active segment
       logical bodem       !    sediment bed segment
-      real(4) macro       !    concentration macro flocs                            (g/m3)
-      real(4) micro       !    concentration micro flocs                            (g/m3)
-      real(4) tim         !    total concentration flocs                            (g/m3)
-      real(4) macroeq     !    concentration macro flocs in equilibrium             (g/m3)
-      real(4) dfloc       !    flocculation or break-up flux                      (g/m3/d)
+      real(kind=real_wp)  ::macro       !    concentration macro flocs                            (g/m3)
+      real(kind=real_wp)  ::micro       !    concentration micro flocs                            (g/m3)
+      real(kind=real_wp)  ::tim         !    total concentration flocs                            (g/m3)
+      real(kind=real_wp)  ::macroeq     !    concentration macro flocs in equilibrium             (g/m3)
+      real(kind=real_wp)  ::dfloc       !    flocculation or break-up flux                      (g/m3/d)
 !
 !*******************************************************************************
 !

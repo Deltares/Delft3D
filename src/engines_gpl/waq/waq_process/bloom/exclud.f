@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_exclud
+      use m_waq_precision
+
 
       implicit none
 
@@ -40,7 +42,7 @@
 
       implicit none
 
-      integer ntypes (ms),irs(3), i, inow, k, nexclu, notprs, linf, iform
+      integer(kind=int_wp) ::ntypes (ms),irs(3), i, inow, k, nexclu, notprs, linf, iform
       save ntypes
       data nexclu /0/
 

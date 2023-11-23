@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_sobbal
+      use m_waq_precision
+
 
       implicit none
 
@@ -106,13 +108,13 @@
       use m_getcom
       use m_open_waq_files
       use timers
-      INTEGER       NOTOT , ITIME , NOSYS , NOSEG , LUNOUT,
+      INTEGER(kind=int_wp) ::NOTOT , ITIME , NOSYS , NOSEG , LUNOUT,
      +              NOFLUX, NDMPAR, NDMPQ , NTDMPQ,
      +              NOBND , ITSTOP, IMSTOP, IMSTRT, IMSTEP,
      +              NOBTYP, NOCONS, NOQ   , INIOUT, INTOPT
-      INTEGER       IQDMP(*)      , IPDMP(*)  ,
+      INTEGER(kind=int_wp) ::IQDMP(*)      , IPDMP(*)  ,
      +              INBTYP(NOBND) , IPOINT( 4,NOQ )
-      REAL          DMPQ(NOSYS,NDMPQ,*),
+      REAL(kind=real_wp) ::DMPQ(NOSYS,NDMPQ,*),
      +              ASMASS(NOTOT,NDMPAR,*), FLXINT(NOFLUX,*),
      +              STOCHI(NOTOT,NOFLUX)  , CONS(NOCONS)     ,
      +              VOLUME(*)             , SURF(*)
@@ -121,14 +123,14 @@
      +              FLXNAM(NOFLUX)
       CHARACTER*40  MONAME(4)
       CHARACTER*255 LCHOUT
-      integer                    :: dmpbal(ndmpar)        ! indicates if dump area is included in the balance
-      integer                    :: nowst                 ! number of wasteloads
-      integer                    :: nowtyp                ! number of wasteload types
+      integer(kind=int_wp) ::dmpbal(ndmpar)        ! indicates if dump area is included in the balance
+      integer(kind=int_wp) ::nowst                 ! number of wasteloads
+      integer(kind=int_wp) ::nowtyp                ! number of wasteload types
       character(len=20)          :: wsttyp(nowtyp)        ! wasteload types names
-      integer                    :: iwaste(nowst)         ! segment numbers of the wasteloads
-      integer                    :: inwtyp(nowst)         ! wasteload type number (index in wsttyp)
-      real                       :: wstdmp(notot,nowst,2) ! accumulated wasteloads 1/2 in and out
-      integer, intent(in   )     :: isegcol(*)            ! pointer from segment to top of column
+      integer(kind=int_wp) ::iwaste(nowst)         ! segment numbers of the wasteloads
+      integer(kind=int_wp) ::inwtyp(nowst)         ! wasteload type number (index in wsttyp)
+      real(kind=real_wp) ::wstdmp(notot,nowst,2) ! accumulated wasteloads 1/2 in and out
+      integer(kind=int_wp), intent(in   )      ::isegcol(*)            ! pointer from segment to top of column
 
 !     Local declarations
 !
@@ -153,20 +155,20 @@
 !     IBSTRT  INTEGER     1       Proper start time of the balance period
 !     IBSTOP  INTEGER     1       Proper stop time of the balance period
 
-      INTEGER       IOSOBH, IOBALI, ISYS  , IBOUN , NEMISS, IFRAC ,
+      INTEGER(kind=int_wp) ::IOSOBH, IOBALI, ISYS  , IBOUN , NEMISS, IFRAC ,
      J              IFLUX , IDUMP , IPQ   , ISYS2 , ITEL  , IINIT ,
      J              ITEL1 , IP1   , ITEL2 , NQC   , IQC   , IQ    ,
      J              IPOIN , NOOUT , IERR  , IOUT  , ISUM  , NOSUM ,
      J              NSC   , ISC   , LUNREP, IBSTRT, IBSTOP
       PARAMETER    (NOSUM=2)
-      real   ,      allocatable : : SFACTO(:,:),
+      real(kind=real_wp),      allocatable   :: SFACTO(:,:),
      J                              STOCHL(:,:),
      J                              FLTRAN(:,:),
      J                              BALANS(:,:),
      J                              BALTOT(:,:),
      J                              DMP_SURF(:),
      J                              DMP_VOLU(:)
-      integer,      allocatable : : JDUMP(:),
+      integer(kind=int_wp),      allocatable  :: JDUMP(:),
      J                              FL2BAL(:,:),
      J                              IMASSA(:),
      J                              IEMISS(:),
@@ -174,28 +176,28 @@
      J                              IPROCS(:),
      J                              NPROCS(:),
      J                              SEGDMP(:)
-      character*20, allocatable : : OUNAME(:),
+      character*20, allocatable :: OUNAME(:),
      J                              DANAMP(:),
      J                              SYNAMP(:)
-      logical, allocatable      : : IWDMP(:,:)
+      logical, allocatable      :: IWDMP(:,:)
 
       LOGICAL       LUMPEM, LUMPPR, IFIRST, SUPPFT, ONLYSM,
      J              INCLUD, BOUNDA, LUMPTR, B_AREA, B_VOLU
-      REAL          RDUM(1)
-      REAL          ST    , TFACTO(NOSUM)
+      REAL(kind=real_wp) ::RDUM(1)
+      REAL(kind=real_wp) ::ST    , TFACTO(NOSUM)
       CHARACTER*20  C20   , SYNAMS(NOSUM)
       CHARACTER*40  CDUM
       CHARACTER*255 FILNAM
       character*2   c2
       character*255 inifil
       logical       lfound
-      integer       idummy, ierr2
-      integer       lunini
-      real          rdummy
-      integer       iseg, iw, idum, ivan, ibal_off, idump_out
-      integer       ndmpar_out, ntrans, indx
-      integer       inaar, itstrt
-      real          tot_surf, tot_volu
+      integer(kind=int_wp) ::idummy, ierr2
+      integer(kind=int_wp) ::lunini
+      real(kind=real_wp) ::rdummy
+      integer(kind=int_wp) ::iseg, iw, idum, ivan, ibal_off, idump_out
+      integer(kind=int_wp) ::ndmpar_out, ntrans, indx
+      integer(kind=int_wp) ::inaar, itstrt
+      real(kind=real_wp) ::tot_surf, tot_volu
       DATA          LUMPEM /.true./
       DATA          LUMPPR /.true./
       DATA          SUPPFT /.true./
@@ -209,7 +211,7 @@
 !    J              BALANS, FLTRAN, IMASSA, IEMISS, ITRANS, IPROCS,
 !    J              NPROCS, FL2BAL, LUMPTR, B_AREA, B_VOLU, SEGDMP
       SAVE
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
 
 !     Skip this routine when there are no balance area's
       IF (NDMPAR.EQ.0) RETURN
@@ -972,17 +974,17 @@
      J                   SFACTO, IUNIT , INIT  )
       use timers
 
-      INTEGER      IOBALI, IBSTRT, IBSTOP, NOOUT , NOTOT , NDMPAR,
+      INTEGER(kind=int_wp) ::IOBALI, IBSTRT, IBSTOP, NOOUT , NOTOT , NDMPAR,
      J             IMASSA(*), IEMISS(*), NEMISS, ITRANS(*), NTRANS,
      J             IPROCS(*), NPROCS(*), NOSUM    , IUNIT , INIT
       CHARACTER*40 MONAME(4)
       CHARACTER*20 DANAMP(NDMPAR),OUNAME(*),SYNAME(*)
-      REAL         BALTOT(NOOUT,NDMPAR),SFACTO(NOSUM,*)
+      REAL(kind=real_wp) ::BALTOT(NOOUT,NDMPAR),SFACTO(NOSUM,*)
       LOGICAL      ONLYSM
 
-      REAL         VALUE , VALUE1, VALUE2, SUMPOS, SUMNEG
-      INTEGER      IDUMP , ISYS  , ITEL  , I     , ITEL2 , ISUM
-      integer(4) ithandl /0/
+      REAL(kind=real_wp) ::VALUE , VALUE1, VALUE2, SUMPOS, SUMNEG
+      INTEGER(kind=int_wp) ::IDUMP , ISYS  , ITEL  , I     , ITEL2 , ISUM
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outbai", ithandl )
 
 
@@ -1143,18 +1145,18 @@
 
       implicit none
 
-      integer            nosum , notot , nocons
+      integer(kind=int_wp) ::nosum , notot , nocons
       character*20       syname(notot),  coname(nocons)
-      real               tfacto(nosum), sfacto(nosum,notot), cons(nocons)
+      real(kind=real_wp) ::tfacto(nosum), sfacto(nosum,notot), cons(nocons)
 
 !      INCLUDE 'cblbal.inc'
 
-      integer              isum, isys, icons, ires, nres1, nres2, ityp, lunrep
-      real                 factor
+      integer(kind=int_wp) ::isum, isys, icons, ires, nres1, nres2, ityp, lunrep
+      real(kind=real_wp) ::factor
       parameter           (nres1 = 23, nres2 = 2)
       character*20         resna1(nres1),resna2(nres2)
       character*10         ratna2(2,nres2)
-      real                 facres(2,nres1),ratdef(2,nres2)
+      real(kind=real_wp) ::facres(2,nres1),ratdef(2,nres2)
 
       data resna1   / 'DetP                ',
      J                'OOP                 ',
@@ -1208,7 +1210,7 @@
      J                'NCRatGreen','PCRatGreen'/
       data ratdef   / 0.16,0.02,
      J                0.16,0.02/
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "consum", ithandl )
 
 !     Compose sum parameters
@@ -1300,15 +1302,15 @@
 !
 
       use timers
-      INTEGER             IDUMP , NOTOT , NOSUM , NOOUT , IOFFSE, NTEL ,
+      INTEGER(kind=int_wp) ::IDUMP , NOTOT , NOSUM , NOOUT , IOFFSE, NTEL ,
      J                    NOLAST
-      INTEGER             IMASSA(*), ITERMS(*)
-      REAL                BALANS(NOOUT,*), DMASSA(NTEL,*),
+      INTEGER(kind=int_wp) ::IMASSA(*), ITERMS(*)
+      REAL(kind=real_wp) ::BALANS(NOOUT,*), DMASSA(NTEL,*),
      J                    FACTOR, SFACTO(NOSUM,*)
 
-      INTEGER             ISYS  , IOUT  , ISYSS , IOUT2 , ISUM  ,
+      INTEGER(kind=int_wp) ::ISYS  , IOUT  , ISYSS , IOUT2 , ISUM  ,
      J                    ITEST , ITEL  , ITEL2
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "updbal", ithandl )
 
       DO ISYS = 1 , NOTOT

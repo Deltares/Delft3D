@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_advtra
+      use m_waq_precision
+
 
       implicit none
 
@@ -64,27 +66,27 @@
 
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
 !     Locals
 
-      INTEGER  IWA1  , IWA2  , ITOP  , IBOT  , IOFFSE, IQ    , ISEG  ,
+      INTEGER(kind=int_wp) ::IWA1  , IWA2  , ITOP  , IBOT  , IOFFSE, IQ    , ISEG  ,
      J         IKMRK1, IK
-      REAL     TOTSED, SW    , VBUR  , DELT  , SEEP  , PORACT
-      INTEGER  IPDM  , IPSFLX, IPZRES, IPVBUR, IPTAU , IPTCRR, IPSURF,
+      REAL(kind=real_wp) ::TOTSED, SW    , VBUR  , DELT  , SEEP  , PORACT
+      INTEGER(kind=int_wp) ::IPDM  , IPSFLX, IPZRES, IPVBUR, IPTAU , IPTCRR, IPSURF,
      J         IPDEPT, IPMDEP, IPACTH, IPMNTH, IPMXTH, IPSW  , IPDELT,
      J         IPRFLX, IPPRES, IPTFLX, IPBFLX, IPRVEL, IPSVEL, IPBVEL,
      J         IPRVOL, IPSVOL, IPBVOL, IPPORI, IPPORA,
      J         IPDVOL, IPDVEL, IPSEEP
-      INTEGER  INDM  , INSFLX, INZRES, INVBUR, INTAU , INTCRR, INSURF,
+      INTEGER(kind=int_wp) ::INDM  , INSFLX, INZRES, INVBUR, INTAU , INTCRR, INSURF,
      J         INDEPT, INMDEP, INACTH, INMNTH, INMXTH, INSW  , INDELT,
      J         INRFLX, INPRES, INTFLX, INBFLX, INRVEL, INSVEL, INBVEL,
      J         INRVOL, INSVOL, INBVOL, INPORI, INPORA,
      J         INDVOL, INDVEL, INSEEP
 
-      integer  IPSWRE, IPALPH, IPCFLX, INSWRE, INALPH, INCFLX
+      integer(kind=int_wp) ::IPSWRE, IPALPH, IPCFLX, INSWRE, INALPH, INCFLX
 !     Include column structure
 !     we define a double column structure, one for downward,
 !     and one for upward transport
@@ -361,18 +363,18 @@
 ! TOTSED  R*4    1   O  Summed sedimentation flux
 !
 !
-      INTEGER    ITOP  , IBOT  ,
+      INTEGER(kind=int_wp) ::ITOP  , IBOT  ,
      J           IPACTH, INACTH, IPMXTH, INMXTH, IPMNTH, INMNTH,
      J           IPDM  , INDM  , IPBFLX, INBFLX,
      J           IPBVEL, INBVEL, IPBVOL, INBVOL,
      J           IPPORA, INPORA, IPPORI, INPORI
-      REAL       TOTSED, SW    , VBUR  , DELT  , PMSA(*)
-      INTEGER    IEXPNT( 4,* )
+      REAL(kind=real_wp) ::TOTSED, SW    , VBUR  , DELT  , PMSA(*)
+      INTEGER(kind=int_wp) ::IEXPNT( 4,* )
 
 !     Local variables
 
-      INTEGER    IQ    , IBODEM
-      REAL       TOTBUR, ACTH  , MAXTH , DM    , MINTH ,
+      INTEGER(kind=int_wp) ::IQ    , IBODEM
+      REAL(kind=real_wp) ::TOTBUR, ACTH  , MAXTH , DM    , MINTH ,
      J           PORACT, PORINP, CORBUR, MXRCOR
       PARAMETER (MXRCOR = 1.0)
 !JVB  PARAMETER (MXRCOR = 0.5)
@@ -505,24 +507,24 @@
 ! INCFLX  I*4    1   I  Increment of IPPRES in the PMSA array
 !
 !
-      INTEGER    IWA1  , IWA2  , IPZRES, INZRES, IPTAU , INTAU ,
+      INTEGER(kind=int_wp) ::IWA1  , IWA2  , IPZRES, INZRES, IPTAU , INTAU ,
      J           IPDEPT, INDEPT, IPMDEP, INMDEP, ITOP  , IBOT  , IPACTH,
      J           INACTH, IPMNTH, INMNTH, IPTCRR, INTCRR, IPDM  , INDM  ,
      J           IPSURF, INSURF, IPPRES, INPRES, IPRFLX, INRFLX,
      J           IPRVEL, INRVEL, IPTFLX, INTFLX, IPRVOL, INRVOL,
      J           IPSWRE, INSWRE, IPALPH, INALPH, IPCFLX, INCFLX
-      INTEGER    IEXPNT( 4,* )
-      REAL       PMSA(*), DELT , SW
+      INTEGER(kind=int_wp) ::IEXPNT( 4,* )
+      REAL(kind=real_wp) ::PMSA(*), DELT , SW
 
 !     Local variables
 
-      INTEGER    IWATER, IQ    , IQ2   , IBODEM, IBODE2, IQ3
+      INTEGER(kind=int_wp) ::IWATER, IQ    , IQ2   , IBODEM, IBODE2, IQ3
       LOGICAL    GONE
-      REAL       ZRES  , DEPTH , MINDEP, TAU   , ACTH  , MINTH ,
+      REAL(kind=real_wp) ::ZRES  , DEPTH , MINDEP, TAU   , ACTH  , MINTH ,
      J           FLRES , PRES  , TCRR  , RESTH , RESMX , SURFW ,
      J           SURFB , ZRESLE, VELRES, DM    , DMTOP
       LOGICAL    SW_PARTHENIADES
-      real       TIME_LEFT, ALPHA
+      real(kind=real_wp) ::TIME_LEFT, ALPHA
 
 !     Resuspension submodel for DELWAQ-G, equals Restra, bug fixed ZRESLE
 !     AM (august 2018) ZRESLE is not actually used
@@ -718,16 +720,16 @@
 !        IPSFLX and IPDM   point in the SEGMENT  space
 !
 !
-      INTEGER    IQ1   , IQ2   ,
+      INTEGER(kind=int_wp) ::IQ1   , IQ2   ,
      J           IPSFLX, INSFLX, IPDM  , INDM  ,
      J           IPSVEL, INSVEL, IPSVOL, INSVOL
-      INTEGER    IEXPNT( 4,* )
-      REAL       SW    , TOTSED, PMSA(*)
+      INTEGER(kind=int_wp) ::IEXPNT( 4,* )
+      REAL(kind=real_wp) ::SW    , TOTSED, PMSA(*)
 
 !     Local variables
 
-      INTEGER    IQ    , IVAN  , INAAR
-      REAL       SEDFLX, DM    , DVOL
+      INTEGER(kind=int_wp) ::IQ    , IVAN  , INAAR
+      REAL(kind=real_wp) ::SEDFLX, DM    , DVOL
 
       TOTSED = 0.0
 !     Loop over bodem-water uitwisselingen voor huidige kolom
@@ -808,16 +810,16 @@
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
       type ( BotColmn )     :: set   !  makes code more readable
 
-      INTEGER  IEXPNT(4,*), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+      INTEGER(kind=int_wp) ::IEXPNT(4,*), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
 !     Local variables
 
       LOGICAL          KOLOM
       logical, save :: FIRST
-      INTEGER  IK    , IQ    , ivan  , inaar , ikmrkv, ikmrkn,
+      INTEGER(kind=int_wp) ::IK    , IQ    , ivan  , inaar , ikmrkv, ikmrkn,
      j         lenkol , nkolom, ist, iw1, iw2, isb
       DATA FIRST / .true. /
-      INTEGER lunrep, errorcode
+      INTEGER(kind=int_wp) ::lunrep, errorcode
 
       call getmlu(lunrep)
       errorcode = 0
@@ -921,17 +923,17 @@
      +                    IPBFLX, INBFLX, IPBVEL, INBVEL, IPPORA,
      +                    INPORA, IPPORI, INPORI )
 !
-      INTEGER    ITOP  , IBOT  , IPACTH, INACTH,
+      INTEGER(kind=int_wp) ::ITOP  , IBOT  , IPACTH, INACTH,
      +           IPDM  , INDM  , IPBFLX, INBFLX,
      +           IPBVEL, INBVEL, IPPORA, INPORA,
      +           IPPORI, INPORI
-      REAL       DELT  , PMSA(*)
-      INTEGER    IEXPNT( 4,* )
+      REAL(kind=real_wp) ::DELT  , PMSA(*)
+      INTEGER(kind=int_wp) ::IEXPNT( 4,* )
 
 !     Local variables
 
-      INTEGER    IQ    , IBODEM
-      REAL       ACTH  , DM    , PORACT, PORINP, CORDIG,
+      INTEGER(kind=int_wp) ::IQ    , IBODEM
+      REAL(kind=real_wp) ::ACTH  , DM    , PORACT, PORINP, CORDIG,
      +           MXRCOR
       PARAMETER (MXRCOR = 1.0)
 !JVB  PARAMETER (MXRCOR = 0.5)

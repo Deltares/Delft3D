@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_s12tim
+      use m_waq_precision
+
 
       implicit none
 
@@ -40,40 +42,40 @@
 
       implicit none
 
-      real     pmsa  ( * ) , fl    (*)
-      integer  ipoint(34) , increm(34) , noseg , noflux,
+      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint(34) , increm(34) , noseg , noflux,
      +         iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
      
      
-      integer  ip(34), iflux, iseg, ikmrk2
-      real     fracs1, scals1, fracs2, scals2, fress1, fress2,
+      integer(kind=int_wp) ::ip(34), iflux, iseg, ikmrk2
+      real(kind=real_wp) ::fracs1, scals1, fracs2, scals2, fress1, fress2,
      j         fburs1, fburs2, fdigs1, fdigs2, swds1 , swds2 , 
      j         depth , switch, fracs3, scals3, b1, b2, d1, d2, r1, r2
-      integer :: iswres
-      integer :: isw_zf
-      real    :: dms1
-      real    :: dms2
-      real    :: zres
-      real    :: vres
-      real    :: tau
-      real    :: tcrrs1
-      real    :: tcrrs2
-      real    :: delt
-      real    :: mindep
-      real    :: press1
-      real    :: press2
-      real    :: flres1
-      real    :: flres2
-      real    :: rfdms1
-      real    :: mrdms1
-      real    :: delts2
-      real    :: rfdms2
-      real    :: mrdms2
-      real    :: fracs1_res
-      real    :: scals1_res
-      real    :: fracs2_res
-      real    :: scals2_res
-      integer :: lunrep
+      integer(kind=int_wp) ::iswres
+      integer(kind=int_wp) ::isw_zf
+      real(kind=real_wp) ::dms1
+      real(kind=real_wp) ::dms2
+      real(kind=real_wp) ::zres
+      real(kind=real_wp) ::vres
+      real(kind=real_wp) ::tau
+      real(kind=real_wp) ::tcrrs1
+      real(kind=real_wp) ::tcrrs2
+      real(kind=real_wp) ::delt
+      real(kind=real_wp) ::mindep
+      real(kind=real_wp) ::press1
+      real(kind=real_wp) ::press2
+      real(kind=real_wp) ::flres1
+      real(kind=real_wp) ::flres2
+      real(kind=real_wp) ::rfdms1
+      real(kind=real_wp) ::mrdms1
+      real(kind=real_wp) ::delts2
+      real(kind=real_wp) ::rfdms2
+      real(kind=real_wp) ::mrdms2
+      real(kind=real_wp) ::fracs1_res
+      real(kind=real_wp) ::scals1_res
+      real(kind=real_wp) ::fracs2_res
+      real(kind=real_wp) ::scals2_res
+      integer(kind=int_wp) ::lunrep
 
       ip  = ipoint
 !

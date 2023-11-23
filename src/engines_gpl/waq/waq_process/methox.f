@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_methox
+      use m_waq_precision
+
 
       implicit none
 
@@ -86,29 +88,29 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      INTEGER  IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
      +         IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20,
      +         IP21, IP22, IP23, IP24, IP25
-      INTEGER  IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10,
+      INTEGER(kind=int_wp) ::IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10,
      +         IN11, IN12, IN13, IN14, IN15, IN16, IN17, IN18, IN19, IN20,
      +         IN21, IN22, IN23, IN24, IN25
-      INTEGER  IFLUX  , ISEG  , ILUMON
+      INTEGER(kind=int_wp) ::IFLUX  , ISEG  , ILUMON
 !
-      REAL     CCH4   , COX    , CSU
-      REAL     K0OXI1 , K0OXI2 , KOXI1  , KOXI2  , KSCH4  , KSOX   ,
+      REAL(kind=real_wp) ::CCH4   , COX    , CSU
+      REAL(kind=real_wp) ::K0OXI1 , K0OXI2 , KOXI1  , KOXI2  , KSCH4  , KSOX   ,
      +         KSSU   , COXC   , CSUC   , CHFUNC , OXFUNC , SUFUNC ,
      +         LIFUNC
-      REAL     POROS  , CRTEMP , KTOXI1 , KTOXI2 , TEMP   , TEMPC  ,
+      REAL(kind=real_wp) ::POROS  , CRTEMP , KTOXI1 , KTOXI2 , TEMP   , TEMPC  ,
      +         TEMP20 , KSRADFR, KSRADSH
-      REAL     DELT, RAD, RADINH
-      REAL     COX_RATIO
-      REAL     CSU_RATIO
-      REAL     FLCOX
-      REAL     FLCSU
+      REAL(kind=real_wp) ::DELT, RAD, RADINH
+      REAL(kind=real_wp) ::COX_RATIO
+      REAL(kind=real_wp) ::CSU_RATIO
+      REAL(kind=real_wp) ::FLCOX
+      REAL(kind=real_wp) ::FLCSU
       LOGICAL  FIRST
       SAVE     FIRST
       DATA     FIRST /.TRUE./

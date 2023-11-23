@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_natmor
+      use m_waq_precision
+
 
       implicit none
 
@@ -41,8 +43,8 @@
 
       implicit none
 
-      integer  :: i
-      real(8)  :: death, temp, temp2, tmpcor
+      integer(kind=int_wp) ::i
+      real(kind=dp) ::death, temp, temp2, tmpcor
 !
       temp2 = temp
       if (temp .lt. temlim) then

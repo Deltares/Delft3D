@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_sedcar
+      use m_waq_precision
+
 
       implicit none
 
@@ -70,19 +72,19 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
       
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      REAL     MINDEP, MINDE2, DEPTH , DEPTH2
+      REAL(kind=real_wp) ::MINDEP, MINDE2, DEPTH , DEPTH2
       
       LOGICAL, SAVE :: FIRST = .TRUE.
       LOGICAL       :: SW_PSEDMIN
-      INTEGER       :: IDUMMY
-      REAL   , SAVE :: PSEDMIN
+      INTEGER(kind=int_wp) ::IDUMMY
+      REAL(kind=real_wp), SAVE  ::PSEDMIN
       CHARACTER     :: CDUMMY
-      INTEGER       :: IERR2
-      INTEGER       :: LUNREP
+      INTEGER(kind=int_wp) ::IERR2
+      INTEGER(kind=int_wp) ::LUNREP
 
       IF ( FIRST ) THEN
          CALL GETCOM('-psedmin', 2 , SW_PSEDMIN, IDUMMY, PSEDMIN, CDUMMY, IERR2)

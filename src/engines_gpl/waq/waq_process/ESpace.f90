@@ -1,4 +1,6 @@
 module m_espace
+use m_waq_precision
+
 
 implicit none
 
@@ -19,18 +21,18 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
-      integer increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 !
 !*******************************************************************************
 !     Final Draft of version for PUB April 2018
@@ -50,132 +52,132 @@ contains
 !     Type    Name         I/O Description                                        Unit
 !
 !     support variables
-!!    integer,parameter  :: npmsamax = 200
-      integer, allocatable, save :: ipnt(:)    !    Local work array for the pointering
-      integer            :: iseg, isegl, iflux, ip, isrc, irec, isubs, ioq, iatt1, npmsa, ipmsa, isc
-      real               :: emisvar, emisfac, sumlocator, drydep, rainconc, flux, ro_mmperday, ra_mmperday, roun_mmperday,&
+!!    integer(kind=int_wp),parameter   ::npmsamax = 200
+      integer(kind=int_wp), allocatable, save ::ipnt(:)    !    Local work array for the pointering
+      integer(kind=int_wp)             ::iseg, isegl, iflux, ip, isrc, irec, isubs, ioq, iatt1, npmsa, ipmsa, isc
+      real(kind=real_wp)                ::emisvar, emisfac, sumlocator, drydep, rainconc, flux, ro_mmperday, ra_mmperday, roun_mmperday,&
                             in_mmperday, fwashoff, ferosion, froun, finf, fdisp, fdeepinf, fgwbflow
-      real               :: fluxloss, conc, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxgwf, fluxdeepinf,&
+      real(kind=real_wp)                ::fluxloss, conc, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxgwf, fluxdeepinf,&
                             fluxleak, fluxstp, kpaved, kunpaved, ksoil, kdunpaved, fluxexp
       character*20       :: itemname
       character*12       :: ddhhmmss1
 
       ! fixed quantities
-      integer,parameter   :: scu = 1
-      integer,parameter   :: nrec = 6
-      integer,parameter   :: nsubs = 5
-      integer,parameter   :: rec_sew = 1
-      integer,parameter   :: rec_pav = 2
-      integer,parameter   :: rec_unp = 3
-      integer,parameter   :: rec_soi = 4
-      integer,parameter   :: rec_stw = 5
-      integer,parameter   :: rec_sfw = 6
-      integer,parameter   :: nopar_srca = 2
-      integer,parameter   :: nopar_srcb = 1
-      integer,parameter   :: lu_loc = 1961
-      integer,parameter   :: lu_nod = 1962
-      integer,parameter   :: lu_ini = 1963
-      real   ,parameter   :: qmin = 1e-10
+      integer(kind=int_wp),parameter    ::scu = 1
+      integer(kind=int_wp),parameter    ::nrec = 6
+      integer(kind=int_wp),parameter    ::nsubs = 5
+      integer(kind=int_wp),parameter    ::rec_sew = 1
+      integer(kind=int_wp),parameter    ::rec_pav = 2
+      integer(kind=int_wp),parameter    ::rec_unp = 3
+      integer(kind=int_wp),parameter    ::rec_soi = 4
+      integer(kind=int_wp),parameter    ::rec_stw = 5
+      integer(kind=int_wp),parameter    ::rec_sfw = 6
+      integer(kind=int_wp),parameter    ::nopar_srca = 2
+      integer(kind=int_wp),parameter    ::nopar_srcb = 1
+      integer(kind=int_wp),parameter    ::lu_loc = 1961
+      integer(kind=int_wp),parameter    ::lu_nod = 1962
+      integer(kind=int_wp),parameter    ::lu_ini = 1963
+      real(kind=real_wp)   ,parameter    ::qmin = 1e-10
 
       ! PMSA admin
-      integer             :: offset_srca
-      integer             :: offset_srcb
-      integer             :: offset_ef
-      integer             :: offset_ef_srca
-      integer             :: offset_ef_srcb
-      integer             :: offset_rf_srca
-      integer             :: offset_rf_srcb
-      integer             :: offset_decp
-      integer             :: offset_decup
-      integer             :: offset_decso
-      integer             :: offset_kdup
-      integer             :: offset_conc
-      integer             :: lins
-      integer,parameter   :: line = 0
-      integer             :: louts
-      integer             :: loute
+      integer(kind=int_wp)              ::offset_srca
+      integer(kind=int_wp)              ::offset_srcb
+      integer(kind=int_wp)              ::offset_ef
+      integer(kind=int_wp)              ::offset_ef_srca
+      integer(kind=int_wp)              ::offset_ef_srcb
+      integer(kind=int_wp)              ::offset_rf_srca
+      integer(kind=int_wp)              ::offset_rf_srcb
+      integer(kind=int_wp)              ::offset_decp
+      integer(kind=int_wp)              ::offset_decup
+      integer(kind=int_wp)              ::offset_decso
+      integer(kind=int_wp)              ::offset_kdup
+      integer(kind=int_wp)              ::offset_conc
+      integer(kind=int_wp)              ::lins
+      integer(kind=int_wp),parameter    ::line = 0
+      integer(kind=int_wp)              ::louts
+      integer(kind=int_wp)              ::loute
 
-      integer             :: offset_vel
+      integer(kind=int_wp)              ::offset_vel
 
       ! Flux admin
-      integer             :: fl0_atm
-      integer             :: fl0_srca
-      integer             :: fl0_srcb
-      integer             :: fl0_dec
+      integer(kind=int_wp)              ::fl0_atm
+      integer(kind=int_wp)              ::fl0_srca
+      integer(kind=int_wp)              ::fl0_srcb
+      integer(kind=int_wp)              ::fl0_dec
 
       ! transport admin
-      integer,parameter   :: sew2stw = 1
-      integer,parameter   :: sew2stp = 2
-      integer,parameter   :: pav2stw = 3
-      integer,parameter   :: unp2stw = 4
-      integer,parameter   :: unp2soi = 5
-      integer,parameter   :: soi2stw = 6
-      integer,parameter   :: stw2exp = 7
-      integer,parameter   :: sfw2exp = 8
-      integer,parameter   :: soi2inf = 9
+      integer(kind=int_wp),parameter    ::sew2stw = 1
+      integer(kind=int_wp),parameter    ::sew2stp = 2
+      integer(kind=int_wp),parameter    ::pav2stw = 3
+      integer(kind=int_wp),parameter    ::unp2stw = 4
+      integer(kind=int_wp),parameter    ::unp2soi = 5
+      integer(kind=int_wp),parameter    ::soi2stw = 6
+      integer(kind=int_wp),parameter    ::stw2exp = 7
+      integer(kind=int_wp),parameter    ::sfw2exp = 8
+      integer(kind=int_wp),parameter    ::soi2inf = 9
 
 
       ! pointers to concrete items
-      integer,parameter   :: ip_nsrca = 1
-      integer,parameter   :: ip_nsrcb = 2
-      integer,parameter   :: ip_nsubs = 3
-      integer,parameter   :: ip_nrecin = 4
-      integer,parameter   :: ip_nosegl = 5
-      integer,parameter   :: ip_delt = 6
-      integer,parameter   :: ip_totsurf = 7
-      integer,parameter   :: ip_fpaved = 8
-      integer,parameter   :: ip_funpaved = 9
-      integer,parameter   :: ip_fwater = 10
-      integer,parameter   :: ip_rainfall = 11
-      integer,parameter   :: ip_leakage = 12
-      integer,parameter   :: ip_ropaved = 13
-      integer,parameter   :: ip_rounpaved = 14
-      integer,parameter   :: ip_percola = 15
-      integer,parameter   :: ip_gwbflow = 16
-      integer,parameter   :: ip_deepinf = 17
-      integer,parameter   :: ip_totflow = 18
-      integer,parameter   :: ip_itime = 19
-      integer,parameter   :: lastsingle = 19
+      integer(kind=int_wp),parameter    ::ip_nsrca = 1
+      integer(kind=int_wp),parameter    ::ip_nsrcb = 2
+      integer(kind=int_wp),parameter    ::ip_nsubs = 3
+      integer(kind=int_wp),parameter    ::ip_nrecin = 4
+      integer(kind=int_wp),parameter    ::ip_nosegl = 5
+      integer(kind=int_wp),parameter    ::ip_delt = 6
+      integer(kind=int_wp),parameter    ::ip_totsurf = 7
+      integer(kind=int_wp),parameter    ::ip_fpaved = 8
+      integer(kind=int_wp),parameter    ::ip_funpaved = 9
+      integer(kind=int_wp),parameter    ::ip_fwater = 10
+      integer(kind=int_wp),parameter    ::ip_rainfall = 11
+      integer(kind=int_wp),parameter    ::ip_leakage = 12
+      integer(kind=int_wp),parameter    ::ip_ropaved = 13
+      integer(kind=int_wp),parameter    ::ip_rounpaved = 14
+      integer(kind=int_wp),parameter    ::ip_percola = 15
+      integer(kind=int_wp),parameter    ::ip_gwbflow = 16
+      integer(kind=int_wp),parameter    ::ip_deepinf = 17
+      integer(kind=int_wp),parameter    ::ip_totflow = 18
+      integer(kind=int_wp),parameter    ::ip_itime = 19
+      integer(kind=int_wp),parameter    ::lastsingle = 19
 
       ! input items
-      integer             :: nsrca     ! # of sources type A
-      integer             :: nsrcb     ! # of sources type B
-      integer             :: nsubsin    ! # of substances
-      integer             :: nrecin     ! # of receptors in input
-      integer             :: nosegl     ! # of segments per layer (horizontal schematisation elements, SCs + SWBs)
-      real                :: delt       ! time step
-      real                :: totsurf    ! total area
-      real                :: fpaved     ! fracrion paved
-      real                :: funpaved   ! fraction unpaved
-      real                :: fwater     ! fraction water
-      real                :: rainfall   ! rainfall
-      real                :: leakage    ! fraction of sewage leaking
-      real                :: ropaved    ! runoff from paved areas
-      real                :: rounpaved  ! unpaved
-      real                :: infilt     ! infiltration
-      real                :: gwbaseflow ! groundwater flow
-      real                :: deepinfilt ! deep infiltration
-      integer             :: itime      ! actual time
-      real                :: totalflow  ! actual flow
+      integer(kind=int_wp)              ::nsrca     ! # of sources type A
+      integer(kind=int_wp)              ::nsrcb     ! # of sources type B
+      integer(kind=int_wp)              ::nsubsin    ! # of substances
+      integer(kind=int_wp)              ::nrecin     ! # of receptors in input
+      integer(kind=int_wp)              ::nosegl     ! # of segments per layer (horizontal schematisation elements, SCs + SWBs)
+      real(kind=real_wp)                 ::delt       ! time step
+      real(kind=real_wp)                 ::totsurf    ! total area
+      real(kind=real_wp)                 ::fpaved     ! fracrion paved
+      real(kind=real_wp)                 ::funpaved   ! fraction unpaved
+      real(kind=real_wp)                 ::fwater     ! fraction water
+      real(kind=real_wp)                 ::rainfall   ! rainfall
+      real(kind=real_wp)                 ::leakage    ! fraction of sewage leaking
+      real(kind=real_wp)                 ::ropaved    ! runoff from paved areas
+      real(kind=real_wp)                 ::rounpaved  ! unpaved
+      real(kind=real_wp)                 ::infilt     ! infiltration
+      real(kind=real_wp)                 ::gwbaseflow ! groundwater flow
+      real(kind=real_wp)                 ::deepinfilt ! deep infiltration
+      integer(kind=int_wp)              ::itime      ! actual time
+      real(kind=real_wp)                 ::totalflow  ! actual flow
 
       ! specific other variables
-      integer             :: nsc        ! # of SCs per layer
-      integer             :: nswb       ! # of SWBs per layer
+      integer(kind=int_wp)              ::nsc        ! # of SCs per layer
+      integer(kind=int_wp)              ::nswb       ! # of SWBs per layer
 
       ! work arrays
-      real,allocatable    :: sc_losses(:,:,:,:) ! Type A static losses per SC
-      real,allocatable    :: losses(:)
-      real,allocatable    :: frac2rec(:)
-      real,allocatable    :: locator(:)
-      real,allocatable    :: totflxin(:,:) ! total losses per receptor and per substance in current SC/SWB
-      real,allocatable    :: boun(:)
+      real(kind=real_wp),allocatable ::sc_losses(:,:,:,:) ! Type A static losses per SC
+      real(kind=real_wp),allocatable ::losses(:)
+      real(kind=real_wp),allocatable ::frac2rec(:)
+      real(kind=real_wp),allocatable ::locator(:)
+      real(kind=real_wp),allocatable ::totflxin(:,:) ! total losses per receptor and per substance in current SC/SWB
+      real(kind=real_wp),allocatable ::boun(:)
 
       ! Prelim SRO model
-      real,parameter :: ro_lothr = 2.
-      real,parameter :: ro_hithr = 5.
-      real,parameter :: ra_lothr = 15.
-      real,parameter :: ra_hithr = 65.
-      real,parameter :: disp_hithr = 7.
+      real(kind=real_wp),parameter  ::ro_lothr = 2.
+      real(kind=real_wp),parameter  ::ro_hithr = 5.
+      real(kind=real_wp),parameter  ::ra_lothr = 15.
+      real(kind=real_wp),parameter  ::ra_hithr = 65.
+      real(kind=real_wp),parameter  ::disp_hithr = 7.
 
       ! file names
       character*255      :: file_out_nodes, file_in_names, file_usefor, file_subs
@@ -604,9 +606,9 @@ contains
 1003  format (6e15.6)
       end
       subroutine ddhhmmss(timeinscu,scu,ddhhmmss1)
-      integer timeinscu,scu
+      integer(kind=int_wp)  ::timeinscu,scu
       character*12 ddhhmmss1
-      integer dd,hh,mm,ss,timeinseconds
+      integer(kind=int_wp)  ::dd,hh,mm,ss,timeinseconds
       timeinseconds = timeinscu*scu
       dd = timeinseconds/86400
       timeinseconds = timeinseconds - dd*86400

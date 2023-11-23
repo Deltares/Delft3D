@@ -16,7 +16,8 @@ add_executable(${executable_name} ${source}
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
-set(oss_dependencies deltares_common
+set(oss_dependencies waq_definition
+                     deltares_common
                      io_netcdf
                      io_hyd
                      waq_hyd_data

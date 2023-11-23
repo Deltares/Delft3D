@@ -26,7 +26,7 @@ module behv_european_eel_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -57,17 +57,17 @@ contains
 
         ! arguments :
 
-        integer(ip), intent(in)     :: lunrep              ! report file
-        integer(ip), intent(in)     :: nosegl              ! number segments per layer
-        integer(ip), intent(in)     :: nolay               ! number of layers in calculation
-        integer(ip), intent(in)     :: nmax                ! first grid dimension
-        integer(ip), intent(in)     :: mmax                ! second grid dimension
-        integer(ip), intent(in)     :: mnmaxk              ! total number of active grid cells
-        integer(ip), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer(ip), pointer        :: lgrid2( : , : )     ! total grid
-        integer(ip), pointer        :: lgrid3( : , : )     ! original grid (conc array)
+        integer(int_wp ), intent(in)     :: lunrep              ! report file
+        integer(int_wp ), intent(in)     :: nosegl              ! number segments per layer
+        integer(int_wp ), intent(in)     :: nolay               ! number of layers in calculation
+        integer(int_wp ), intent(in)     :: nmax                ! first grid dimension
+        integer(int_wp ), intent(in)     :: mmax                ! second grid dimension
+        integer(int_wp ), intent(in)     :: mnmaxk              ! total number of active grid cells
+        integer(int_wp ), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+        integer(int_wp ), pointer        :: lgrid2( : , : )     ! total grid
+        integer(int_wp ), pointer        :: lgrid3( : , : )     ! original grid (conc array)
 
-        integer(ip), pointer        :: kpart ( : )         ! third grid index of the particles
+        integer(int_wp ), pointer        :: kpart ( : )         ! third grid index of the particles
         real   (sp), pointer        :: xpart ( : )         ! x-value (0.0-1.0) first  direction within grid cell
         real   (sp), pointer        :: ypart ( : )         ! y-value (0.0-1.0) second direction within grid cell
         real   (sp), pointer        :: zpart ( : )         ! z-value (0.0-1.0) third  direction within grid cell
@@ -107,10 +107,10 @@ contains
         ! local :
 
         real(sp), pointer           :: phase_diurn(:)      ! phase in diurnal behaviour
-        integer(ip)                 :: ipart               ! particle index        
+        integer(int_wp )                 :: ipart               ! particle index
         real   (sp)                 :: fstage              ! fraction of current stage
-        integer(ip)                 :: istage              ! integer stage development
-        integer(ip)                 :: idelt               ! timesteps in seconds
+        integer(int_wp )                 :: istage              ! integer stage development
+        integer(int_wp )                 :: idelt               ! timesteps in seconds
         real   (sp)                 :: day                 ! time in days
         real   (sp)                 :: a                   ! a coefficient in development (-)
         real   (sp)                 :: b                   ! b coefficient in development (-)
@@ -237,7 +237,3 @@ contains
       return                                                                                                         !Return from the subroutine
       end subroutine
 end module
-
-
-
-            

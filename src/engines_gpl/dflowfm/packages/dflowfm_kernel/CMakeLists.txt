@@ -152,6 +152,7 @@ if (UNIX)
                             trachytopes_io
                             trachytopes_kernel
                             triangle_c
+                            waq_definition
                             wq_processes
                             waq_process
                             waq_hyd_data
@@ -197,6 +198,7 @@ set(oss_dependencies    deltares_common
                         trachytopes_io
                         trachytopes_kernel
                         triangle_c
+                        waq_definition
                         waq_process
                         waq_hyd_data
                         waq_utils_c

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_delpar00
+      use m_waq_precision
       use m_wrttrk
       use m_plotgr
       use m_part08
@@ -68,28 +69,28 @@
 !     kind            function         name                      description
 
       character( * ), intent(in   ) :: mdpfile                 !< file name mdp-file
-      integer  ( ip), intent(in   ) :: noseg                   !< delwaq noseg
-      integer  ( ip), intent(in   ) :: noq                     !< delwaq noq
-      real     ( rp), intent(in   ) :: dwqvol (noseg)          !< delwaq volumes
-      real     ( rp), intent(in   ) :: dwqflo (noq)            !< delwaq flows
-      integer  ( ip), intent(in   ) :: nosfun                  !< number of segment functions
+      integer  ( kind=int_wp), intent(in   ) :: noseg                   !< delwaq noseg
+      integer  ( kind=int_wp), intent(in   ) :: noq                     !< delwaq noq
+      real     ( kind=real_wp), intent(in   ) :: dwqvol (noseg)          !< delwaq volumes
+      real     ( kind=real_wp), intent(in   ) :: dwqflo (noq)            !< delwaq flows
+      integer  ( kind=int_wp), intent(in   ) :: nosfun                  !< number of segment functions
       character( 20), intent(in   ) :: sfname (nosfun)         !< names of segment functions
-      real     (  4), intent(in   ) :: segfun (noseg ,nosfun)  !< segment function values
-      integer, save                 :: iniday              ! release of initial condition, not used here
+      real(kind=real_wp), intent(in   ) ::  segfun (noseg ,nosfun)   !< segment function values
+      integer(kind=int_wp), save ::  iniday               ! release of initial condition, not used here
 
 !     Locals
 
-      integer(ip) i, i2, itime, indx, ierr
-      integer     lunut         ! report file
-      integer(ip)         :: ilp, isp, ids, ide, iext, nores, noras, nosubs_idp
-      real   (rp) depmin
-      real   (sp) dtstep
-      real   (sp)         :: rnorm
-      real   (kind = kind(1.0d0)) :: rseed = 0.5d0 ! AM: some strange quirk makes this necessary
+      integer(kind=int_wp) i, i2, itime, indx, ierr
+      integer(kind=int_wp) :: lunut          ! report file
+      integer(kind=int_wp)         :: ilp, isp, ids, ide, iext, nores, noras, nosubs_idp
+      real   (kind=real_wp) :: depmin
+      real   (kind=real_wp) :: dtstep
+      real   (kind=real_wp)         :: rnorm
+      real   (kind=dp) :: rseed = 0.5d0 ! AM: some strange quirk makes this necessary
       logical update
-      integer             :: luini
-
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::  luini
+ 
+      integer(kind=int_wp) :: ithandl = 0
       if ( timon ) call timstrt ( "delpar00", ithandl )
 
       alone = .true.

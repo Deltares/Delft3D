@@ -60,7 +60,7 @@ implicit none
         if( jased == 4 .and. stmpar%lsedtot > 0 ) then
            nval = nval + stmpar%lsedtot + 1      
            if( stmpar%lsedsus > 0 ) then
-              nval = nval + 1
+              nval = nval + stmpar%lsedsus + 1
            endif
         endif
     endif

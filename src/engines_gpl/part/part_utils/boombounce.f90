@@ -33,14 +33,14 @@ contains
 !     Does a boom catch a particle in it's path from xold, yold to xnew, ynew?
 !     And if it does, does it bounce without crossing another part of the boom?
 
-      use precision_part      ! single/double precision
+      use m_waq_precision      ! single/double precision
       use timers
 
       implicit none
 
-      real    ( rp ) :: xold, yold, xnew, ynew
-      integer ( ip ) :: nboom
-      integer ( ip ) :: npolbounce
+      real    ( real_wp ) :: xold, yold, xnew, ynew
+      integer ( int_wp  ) :: nboom
+      integer ( int_wp  ) :: npolbounce
       real    ( sp ) :: xboom(nboom), yboom(nboom)
       real    ( sp ) :: xcatch, ycatch
       logical        :: catch
@@ -49,7 +49,7 @@ contains
       logical        :: bounce
 
 !     local variables
-      real    ( rp ) :: xmin, ymin, xmax, ymax
+      real    ( real_wp ) :: xmin, ymin, xmax, ymax
       real    ( dp ) :: xoldd, yoldd, xnewd, ynewd
       real    ( dp ) :: xboomd(nboom), yboomd(nboom)
       real    ( dp ) :: a1, b1, c1, rl1, rlnear
@@ -86,9 +86,9 @@ contains
       xboomd = dble(xboom)
       yboomd = dble(yboom)
 
-!     at least one coordinate must have changed, otherwise there is no line between old and new location      
+!     at least one coordinate must have changed, otherwise there is no line between old and new location
       if ( xold .ne. xnew .or. yold .ne. ynew ) then
-!        fill matrix for particle track         
+!        fill matrix for particle track
          a1 = ynewd - yoldd
          b1 = xoldd - xnewd
          c1 = xnewd * yoldd - xoldd * ynewd
@@ -106,12 +106,12 @@ contains
             notnear = (xmax .lt. xboom(iboom) .and. xmax .lt. xboom(iboom+1)) .or. &
                       (xmin .gt. xboom(iboom) .and. xmin .gt. xboom(iboom+1)) .or. &
                       (ymax .lt. yboom(iboom) .and. ymax .lt. yboom(iboom+1)) .or. &
-                      (ymin .gt. yboom(iboom) .and. ymin .gt. yboom(iboom+1))            
+                      (ymin .gt. yboom(iboom) .and. ymin .gt. yboom(iboom+1))
 !           if both are false we might have a colission (sorry for the double denial)
             if (.not. boomgap(iboom) .and. .not. notnear) then
-!              only when at least one coordinate is different we have a boom line               
+!              only when at least one coordinate is different we have a boom line
                if (xboomd(iboom) .ne. xboomd(iboom+1) .or. yboomd(iboom) .ne. yboomd(iboom+1) ) then
-!                 fill matrix for boom track         
+!                 fill matrix for boom track
                   a2(iboom) = yboomd(iboom+1) - yboomd(iboom)
                   b2(iboom) = xboomd(iboom) - xboomd(iboom+1)
                   c2(iboom) = xboomd(iboom+1) * yboomd(iboom) - xboomd(iboom) * yboomd(iboom+1)
@@ -126,7 +126,7 @@ contains
                      ycross(iboom) = (a2(iboom) / det) * c1 - (a1 / det) * c2(iboom)
 
 !                    relative distance of crosspoint between old and new location of particle
-                     if (xnew .ne. xold) then 
+                     if (xnew .ne. xold) then
                         rl1 = (xcross(iboom) - xoldd) / (xnewd - xoldd)
                      else
                         rl1 = (ycross(iboom) - yoldd) / (ynewd - yoldd)
@@ -170,7 +170,7 @@ contains
             yb = yn - (ynewd - yn)
             bounce = .true.
 
-!           fill matrix for particle track         
+!           fill matrix for particle track
             a1 = yb - yoldd
             b1 = xoldd - xb
             c1 = xb * yoldd - xoldd * yb
@@ -185,7 +185,7 @@ contains
                notnear = (xmax .lt. xboom(iboom) .and. xmax .lt. xboom(iboom+1)) .or. &
                          (xmin .gt. xboom(iboom) .and. xmin .gt. xboom(iboom+1)) .or. &
                          (ymax .lt. yboom(iboom) .and. ymax .lt. yboom(iboom+1)) .or. &
-                         (ymin .gt. yboom(iboom) .and. ymin .gt. yboom(iboom+1))            
+                         (ymin .gt. yboom(iboom) .and. ymin .gt. yboom(iboom+1))
 !              if both are false we might have a colission (sorry for the double denial)
                if (.not.(iboom.eq.npolbounce) .and. bounce .and. (.not.boomgap(iboom) .and. .not. notnear)) then
 !                 matrix determinant
@@ -197,7 +197,7 @@ contains
                      ycross(iboom) = (a2(iboom) / det) * c1 - (a1 / det) * c2(iboom)
 
 !                    relative distance of crosspoint between old and new location of particle
-                     if (xb .ne. xold) then 
+                     if (xb .ne. xold) then
                         rl1 = (xcross(iboom) - xoldd) / (xb - xoldd)
                      else
                         rl1 = (ycross(iboom) - yoldd) / (yb - yoldd)
@@ -224,6 +224,6 @@ contains
       end if
 99999 if ( timon ) call timstop ( ithndl )
       return
-      end subroutine boombounce      
-	  
+      end subroutine boombounce
+
 end module m_boombounce

@@ -29,7 +29,7 @@ module mudrel_mod
 !
       use m_stop_exit
       use m_show_error
-      use precision_part             ! single/double precision
+      use m_waq_precision             ! single/double precision
       use timers
       use fileinfo              ! file information for all input/output files
 !
@@ -107,15 +107,15 @@ contains
 !
 ! ================================================================================
 !
-      integer(ip), parameter        :: nosfmx = 100
-      integer(ip), parameter        :: lunin = 51
+      integer(int_wp ), parameter        :: nosfmx = 100
+      integer(int_wp ), parameter        :: lunin = 51
       real   (sp), parameter        :: small = 1.0e-15
       real   (dp)                   :: rseed = 0.5d0
       character(len=256)            :: finam
 !
-      integer(ip), dimension(:)     :: iptime , ipnt
-      integer(ip), dimension(:,:)   :: lgrid
-      integer(ip), dimension(:)     :: npart , mpart , kpart
+      integer(int_wp ), dimension(:)     :: iptime , ipnt
+      integer(int_wp ), dimension(:,:)   :: lgrid
+      integer(int_wp ), dimension(:)     :: npart , mpart , kpart
       real   (sp), dimension(:,:)   :: aconud, wpart
       real   (sp), dimension(:,:)   :: amasud
       real   (sp), dimension(:)     :: cbuf
@@ -127,12 +127,12 @@ contains
 !
 !     local scalars
 !
-      integer(ip) :: i     , iftime, iopt   , is    , isfil , isout , it    , itime , iu
-      integer(ip) :: i1    , ihulp , ilay   , int   , ipp   , isg2  , jseg  , mod
-      integer(ip) :: il    , im    , in     , ipos  , ips2  , iseg  , isub  , layt  , mmax
-      integer(ip) :: iutime, lurep , nose2  , nosegm, nosy2 , nosyss , nosudx, nact  , nm
-      integer(ip) :: nmax  , nosubs, nprest , npseg , ndprt , ndprt2, nopart, noseg2, noumx2
-      integer(ip) :: npadd , npmax , nptot
+      integer(int_wp ) :: i     , iftime, iopt   , is    , isfil , isout , it    , itime , iu
+      integer(int_wp ) :: i1    , ihulp , ilay   , int   , ipp   , isg2  , jseg  , mod
+      integer(int_wp ) :: il    , im    , in     , ipos  , ips2  , iseg  , isub  , layt  , mmax
+      integer(int_wp ) :: iutime, lurep , nose2  , nosegm, nosy2 , nosyss , nosudx, nact  , nm
+      integer(int_wp ) :: nmax  , nosubs, nprest , npseg , ndprt , ndprt2, nopart, noseg2, noumx2
+      integer(int_wp ) :: npadd , npmax , nptot
       real   (sp) :: hulp  , rmass , rpseg , rdum  , totmas, uscal
       real   (sp) :: totma1, totma2, totma3 , wpart1
 
@@ -532,4 +532,3 @@ contains
 !
       end subroutine
 end module
-

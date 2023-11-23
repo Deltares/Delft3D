@@ -20,7 +20,8 @@ set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set dependencies
-set(oss_dependencies deltares_common
+set(oss_dependencies waq_definition
+                     deltares_common
                      deltares_common_c
                      waq_data
                      waq_utils_f)

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_read_version_number
+  use m_waq_precision
   use m_srstop
 
 
@@ -55,19 +56,19 @@ module m_read_version_number
 
 !     kind           function         name                 description
 
-    integer      , intent(in   ) :: lunin             !< unit number input file
+    integer(kind=int_wp)      , intent(in   ) ::lunin             !< unit number input file
     character*(*), intent(in   ) :: lfile             !< file name
-    integer      , intent(in   ) :: lunut             !< unit number report file
-    integer      , intent(in   ) :: npos              !< number of significant positions in one line
-    real         , intent(  out) :: input_version_number            !< Version number
-    integer      , intent(  out) :: ioutpt            !< Output option
+    integer(kind=int_wp)      , intent(in   ) ::lunut             !< unit number report file
+    integer(kind=int_wp)      , intent(in   ) ::npos              !< number of significant positions in one line
+    real(kind=real_wp)         , intent(  out) ::input_version_number            !< Version number
+    integer(kind=int_wp)      , intent(  out) ::ioutpt            !< Output option
 
 !     Local
 
     character*(npos) car                              !  read buffer
     character*1      ctrlz , ch_cr                    !  special characters
-    integer          i, i2                            !  loop counter
-    integer          status                           !  iostatus
+    integer(kind=int_wp)           ::i, i2                            !  loop counter
+    integer(kind=int_wp)           ::status                           !  iostatus
 
     ch_cr = char(13)
     ctrlz = char(26)
@@ -135,9 +136,9 @@ module m_read_version_number
 !     Parameters
     
 !     kind           function         name                 description
-      real         , intent(in) ::    input_version_number              ! Version number
-      real                      ::    lower_limit_version ! lower limit of version numbers
-      integer      , intent(in) ::    lunut               ! unit number report file
+      real(kind=real_wp)         , intent(in) ::input_version_number              ! Version number
+      real(kind=real_wp)                       ::lower_limit_version ! lower limit of version numbers
+      integer(kind=int_wp)      , intent(in) ::lunut               ! unit number report file
     
       lower_limit_version = 4.91
          

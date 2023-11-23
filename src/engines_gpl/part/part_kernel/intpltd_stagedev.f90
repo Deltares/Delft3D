@@ -25,7 +25,7 @@ module intpltd_stagedev_mod
 !
 !  data definition module(s)
 !
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -39,28 +39,27 @@ implicit none
 contains
     subroutine intpltd_stagedev ( lunrep, stemp, dev_factor )
 
-        ! function  : Based on the encoutered temperature a stage development reduction factor  
-        !             will be given. 
-        !             
-        
+        ! function  : Based on the encoutered temperature a stage development reduction factor
+        !             will be given.
+        !
+
         ! arguments :
-        integer(ip), intent(in)    :: lunrep              ! report file
+        integer(int_wp ), intent(in)    :: lunrep              ! report file
         real   (sp)                :: stemp
-        
-        real   (sp), pointer       :: sdxData(:), sdyData(:) 
+
+        real   (sp), pointer       :: sdxData(:), sdyData(:)
         real   (sp)                :: dev_factor
-        
+
         !Setup the data for stagedev
         allocate(sdxData(6))
         sdxData = (/ 4.5, 13.5, 17.0, 19.0, 20.0, 25.0 /)
         allocate(sdyData(6))
         sdyData = (/ 0.00, 0.40, 1.00, 0.80, 0.75, 0.00 /)
-        
+
         !interpolate
         call intpltd_function(lunrep, sdxData, sdyData, real(stemp), dev_factor)
-        
-             
+
+
     return                                                                     	   !Return from the subroutine
     end subroutine
 end module
-

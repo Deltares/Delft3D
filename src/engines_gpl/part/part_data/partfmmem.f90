@@ -27,7 +27,7 @@
 !-------------------------------------------------------------------------------
 
 module m_part_parameters
-   use precision_part
+   use m_waq_precision
 
    implicit none
    ! parameters controlling flooding/drying/solving

@@ -26,7 +26,7 @@ module behv_mangrove_mod
 !  data definition module(s)
 !
 use m_stop_exit
-use precision_part          ! single/double precision
+use m_waq_precision          ! single/double precision
 use timers
 !
 !  module procedure(s)
@@ -56,17 +56,17 @@ contains
 
         ! arguments :
 
-        integer(ip), intent(in)     :: lunrep              ! report file
-        integer(ip), intent(in)     :: nosegl              ! number segments per layer
-        integer(ip), intent(in)     :: nolay               ! number of layers in calculation
-        integer(ip), intent(in)     :: nmax                ! first grid dimension
-        integer(ip), intent(in)     :: mmax                ! second grid dimension
-        integer(ip), intent(in)     :: mnmaxk              ! total number of active grid cells
-        integer(ip), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer(ip), pointer        :: lgrid2( : , : )     ! total grid
-        integer(ip), pointer        :: lgrid3( : , : )     ! original grid (conc array)
+        integer(int_wp ), intent(in)     :: lunrep              ! report file
+        integer(int_wp ), intent(in)     :: nosegl              ! number segments per layer
+        integer(int_wp ), intent(in)     :: nolay               ! number of layers in calculation
+        integer(int_wp ), intent(in)     :: nmax                ! first grid dimension
+        integer(int_wp ), intent(in)     :: mmax                ! second grid dimension
+        integer(int_wp ), intent(in)     :: mnmaxk              ! total number of active grid cells
+        integer(int_wp ), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
+        integer(int_wp ), pointer        :: lgrid2( : , : )     ! total grid
+        integer(int_wp ), pointer        :: lgrid3( : , : )     ! original grid (conc array)
 
-        integer(ip), pointer        :: kpart ( : )         ! third grid index of the particles
+        integer(int_wp ), pointer        :: kpart ( : )         ! third grid index of the particles
         real   (sp), pointer        :: xpart ( : )         ! x-value (0.0-1.0) first  direction within grid cell
         real   (sp), pointer        :: ypart ( : )         ! y-value (0.0-1.0) second direction within grid cell
         real   (sp), pointer        :: zpart ( : )         ! z-value (0.0-1.0) third  direction within grid cell
@@ -106,10 +106,10 @@ contains
         ! local :
 
         real(sp), pointer           :: phase_diurn(:)      ! phase in diurnal behaviour
-        integer(ip)                 :: ipart               ! particle index        
+        integer(int_wp )                 :: ipart               ! particle index
         real   (sp)                 :: fstage              ! fraction of current stage
-        integer(ip)                 :: istage              ! integer stage development
-        integer(ip)                 :: idelt               ! timestep in seconds
+        integer(int_wp )                 :: istage              ! integer stage development
+        integer(int_wp )                 :: idelt               ! timestep in seconds
         real   (sp)                 :: day                 ! time in days
         real   (sp)                 :: a                   ! a coefficient in development (-)
         real   (sp)                 :: b                   ! b coefficient in development (-)
@@ -161,24 +161,24 @@ contains
         real                        :: temp_n34
         real                        :: temp_n4
         real                        :: temp_n41
-        
-        logical                     :: stick_to_bottom        ! stick to bottom when reached     
-        
-        
+
+        logical                     :: stick_to_bottom        ! stick to bottom when reached
+
+
         ! MANGROVE BEHAVIOUR TYPES
-        
+
         istage  = wpart(2,ipart)                                                         ! Get current stage of particle
-        
+
         !Set layer and/or settling velocity according to stage and type of vertical behaviour
 
         behaviour_type = btype(istage)                                                   ! Assign the vertical behaviour type by stage
         select case ( behaviour_type )                                                   ! Select behaviour by numbering
 
-           case ( behaviour_none )                                                       !Behaviour 0 
+           case ( behaviour_none )                                                       !Behaviour 0
 
               !The particle shows no active behaviour in the vertical and in the horizontal
 
-              !Horizontal behaviour                                                        
+              !Horizontal behaviour
               v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
               d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
 
@@ -188,44 +188,40 @@ contains
 
            case ( behaviour_passive)                                                    !Behaviour 1
 
-             !Horizontal behaviour                                                        
+             !Horizontal behaviour
              v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
              d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
-             
-             !The particle shows no active behaviour in the vertical and in the horizontal, 
+
+             !The particle shows no active behaviour in the vertical and in the horizontal,
              ! but is subject to bouyancy.
-            
+
              buoy = buoy1(istage) + fstage*(buoy2(istage)-buoy1(istage))               ! Set the bouyancy for the particle
              vz = buoy                                                                 ! Set the vertical direction for the particle
-             
+
              wsettl(ipart) = vz
-			 
+
 		   case ( behaviour_rooted)                                                     !Behaviour 2
 
-             !Horizontal behaviour                                                        
+             !Horizontal behaviour
              v_swim(ipart) = 0.0                                                        ! Set the horizontal swimming velocity to 0
              d_swim(ipart) = 0.0                                                        ! Set the horizontal swimming direction to 0
-             
-             !The particle shows no active behaviour in the vertical and in the horizontal, 
+
+             !The particle shows no active behaviour in the vertical and in the horizontal,
              ! but is subject to bouyancy.
-            
+
              buoy = buoy1(istage) + fstage*(buoy2(istage)-buoy1(istage))               ! Set the bouyancy for the particle
              vz = buoy                                                                 ! Set the vertical direction for the particle
-             
+
              wsettl(ipart) = vz
-             
+
            case default                                                                 !Behaviour Default
 
               write(lunrep,*) ' error, larval behaviour type not defined'               ! Give an error notice that vertical behaviour is not defined
               call stop_exit(1)                                                         ! Stop the calculation
-    
-               
+
+
         end select
 
       return                                                                                                         !Return from the subroutine
       end subroutine
 end module
-
-
-
-            

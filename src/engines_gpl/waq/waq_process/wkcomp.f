@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_wkcomp
+      use m_waq_precision
+
 
       implicit none
 
@@ -46,21 +48,21 @@
 
       IMPLICIT NONE
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( 80 ) , INCREM(80) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( 80 ) , INCREM(80) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      REAL     NO3,NH4,PO4,Si,IM1,IM2,IM3,Phyt,AlgN,AlgP,AlgSi,AlgDM,
+      REAL(kind=real_wp) ::NO3,NH4,PO4,Si,IM1,IM2,IM3,Phyt,AlgN,AlgP,AlgSi,AlgDM,
      J         POCnoa,POMnoa,PONnoa,POPnoa, POSnoa, DOC, DON, DOP,
      J         DOS, AAP, VIVP, APATP, DmIM1, DmIM2, DmIM3
-      REAL     TIM,POC,TOC,PON,TON,DIN,TotN,Kjel,POP,TOP,PIP,TotP,
+      REAL(kind=real_wp) ::TIM,POC,TOC,PON,TON,DIN,TotN,Kjel,POP,TOP,PIP,TotP,
      J         FrAAP, FrVAP, TotSi, TOSnoa
-      REAL     POC1, PON1, POP1, POS1, DmPOC1, CN1, CP1, CS1,
+      REAL(kind=real_wp) ::POC1, PON1, POP1, POS1, DmPOC1, CN1, CP1, CS1,
      J         POC2, PON2, POP2, POS2, DmPOC2, CN2, CP2, CS2,
      J         POC3, PON3, POP3, POS3, DmPOC3, CN3, CP3, CS3,
      J         POC4, PON4, POP4, POS4, DmPOC4, CN4, CP4, CS4
-      INTEGER  IFLUX, ISEG
-      INTEGER  IP(80)
+      INTEGER(kind=int_wp) ::IFLUX, ISEG
+      INTEGER(kind=int_wp) ::IP(80)
 !
       IP = IPOINT
 !

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dayrad
+      use m_waq_precision
+
 
       implicit none
 
@@ -45,27 +47,27 @@
 
 !     arguments
 
-      REAL               :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-      REAL               :: FL(*)              ! in/out flux array
-      INTEGER            :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER            :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER            :: NOSEG              ! in     number of segments
-      INTEGER            :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-      INTEGER            :: IEXPNT(4,*)        ! in     exchange pointer table
-      INTEGER            :: IKNMRK(*)          ! in     segment features array
-      INTEGER            :: NOQ1               ! in     number of exchanges in first direction
-      INTEGER            :: NOQ2               ! in     number of exchanges in second direction
-      INTEGER            :: NOQ3               ! in     number of exchanges in third direction
-      INTEGER            :: NOQ4               ! in     number of exchanges in fourth direction
+      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::FL(*)              ! in/out flux array
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
+      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
+      INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
+      INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
+      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
 
 !     from PMSA array
 
-      REAL               :: RADSURF            ! 1  in  irradiation at the water surface            (W/m2)
-      REAL               :: TIME               ! 2  in  DELWAQ time                                  (scu)
+      REAL(kind=real_wp) ::RADSURF            ! 1  in  irradiation at the water surface            (W/m2)
+      REAL(kind=real_wp) ::TIME               ! 2  in  DELWAQ time                                  (scu)
       DOUBLE PRECISION   :: LATITUDE           ! 3  in  latitude of study area                   (degrees)
-      REAL               :: REFDAY             ! 4  in  daynumber of reference day simulation          (d)
-      REAL               :: AUXSYS             ! 5  in  ratio between days and system clock        (scu/d)
-      REAL               :: DAYRADSURF         ! 6  out actual irradiance over the day              (W/m2)
+      REAL(kind=real_wp) ::REFDAY             ! 4  in  daynumber of reference day simulation          (d)
+      REAL(kind=real_wp) ::AUXSYS             ! 5  in  ratio between days and system clock        (scu/d)
+      REAL(kind=real_wp) ::DAYRADSURF         ! 6  out actual irradiance over the day              (W/m2)
       DOUBLE PRECISION   :: RADDAY             ! 7  out actual irradiance                           (W/m2)
       DOUBLE PRECISION   :: RADTIME            ! 8  out actual irradiance                           (W/m2)
 
@@ -88,10 +90,10 @@
       DOUBLE PRECISION             :: COS_LATITU
       DOUBLE PRECISION             :: COS_OMEGA
       LOGICAL                      :: VARFLG
-      INTEGER                      :: ISEG
-      INTEGER                      :: IKMRK1
-      INTEGER                      :: IP1,IP2,IP3,IP4,IP5,IP6, IP7, IP8
-      INTEGER                      :: IN1,IN2,IN3,IN4,IN5,IN6, IN7, IN8
+      INTEGER(kind=int_wp) ::ISEG
+      INTEGER(kind=int_wp) ::IKMRK1
+      INTEGER(kind=int_wp) ::IP1,IP2,IP3,IP4,IP5,IP6, IP7, IP8
+      INTEGER(kind=int_wp) ::IN1,IN2,IN3,IN4,IN5,IN6, IN7, IN8
 
       IN1  = INCREM( 1)
       IN2  = INCREM( 2)

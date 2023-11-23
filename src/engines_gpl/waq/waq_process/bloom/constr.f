@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_constr
+      use m_waq_precision
       use m_ebcalc
 
 
@@ -40,27 +41,27 @@
 
       implicit none
 
-      real(8) :: root(2)
-      real(8) :: s0
-      real(8) :: surf
-      real(8) :: x
-      real(8) :: dlog
-      real(8) :: fx
-      real(8) :: derx
-      real(8) :: phi
-      real(8) :: emin
-      real(8) :: y
-      real(8) :: dmix
-      real(8) :: b(2)
-      real(8) :: a(2)
-      real(8) :: fm
-      real(8) :: fpr
-      real(8) :: ebar
-      real(8) :: deriv
-      real(8) :: xm
-      real(8) :: fp
+      real(kind=dp) ::root(2)
+      real(kind=dp) ::s0
+      real(kind=dp) ::surf
+      real(kind=dp) ::x
+      real(kind=dp) ::dlog
+      real(kind=dp) ::fx
+      real(kind=dp) ::derx
+      real(kind=dp) ::phi
+      real(kind=dp) ::emin
+      real(kind=dp) ::y
+      real(kind=dp) ::dmix
+      real(kind=dp) ::b(2)
+      real(kind=dp) ::a(2)
+      real(kind=dp) ::fm
+      real(kind=dp) ::fpr
+      real(kind=dp) ::ebar
+      real(kind=dp) ::deriv
+      real(kind=dp) ::xm
+      real(kind=dp) ::fp
 
-      integer     :: i, k, numgr
+      integer(kind=int_wp) ::i, k, numgr
       logical     :: rootsexist
       
 !  Determines limits on the extinction coefficient

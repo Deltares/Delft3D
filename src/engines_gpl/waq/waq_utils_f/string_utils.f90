@@ -57,7 +57,7 @@ module m_string_utils
     logical function contains_any(whole_string, substring_array)
         !< Returns true if any of the substrings in <substring_array> is contained in <whole_string>.
         character(*), dimension(:), intent(in) :: substring_array !< Array containing multiple (sub)strings.
-        character(*), intent(in)               :: whole_string    !< String to check if any of the substrings is contained inside.
+        character(*), intent(in)               :: whole_string    !< String to check if any of the substrings in contained inside.
         
         integer :: idx, i
         

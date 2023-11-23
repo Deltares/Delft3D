@@ -47,13 +47,14 @@ use m_fm_write_unc
    use m_fm_particles_in_grid
    use m_fm_handle_mesh
    use m_rdpart
-   use precision_part
+   use m_waq_precision
    use MessageHandling
    use partmem
    use m_part_mesh
    use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart
    use part10fm_mod
-   use oildspfm_mod
+   use fm_oildsp_mod
+   use fm_vert_disp_mod
    use m_partfm_decay
    use alloc_mod
    use m_alloc
@@ -69,9 +70,9 @@ use m_fm_write_unc
 
    implicit none
 
-   integer(ip), intent(in) :: lunpr
-   integer(ip)             :: ierror, ntimes, ictimes, npload, ipartload
-   integer(ip)             :: lunmem, istat, itime, ilay, Ldot, ipart, iload, idye, iinsti, ndpart
+   integer(int_wp ), intent(in) :: lunpr
+   integer(int_wp )             :: ierror, ntimes, ictimes, npload, ipartload
+   integer(int_wp )             :: lunmem, istat, itime, ilay, Ldot, ipart, iload, idye, iinsti, ndpart
    double precision        :: dtcontp, totcload
    double precision        :: rseed = 0.5d0
    double precision        :: dpangle, dxp, dyp, dradius, xx, yy
@@ -90,7 +91,7 @@ use m_fm_write_unc
       write (   *  , * ) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
    endif
    !dts   = real(hyd%cnv_step_sec, 8)  !idelt in seconds taken from the hyd file (conversion timestep)
-   tzone = 0.0_hp
+   tzone = 0.0_dp
    refdat = hyd%HYD_REF(1:8)
    call setTUDUnitString()
 
@@ -205,6 +206,7 @@ use m_fm_write_unc
       call part10fm()
 !      jsferic = jsfer_old ! back to what it should be
       call oildspfm(itime)
+      call fm_vert_disp(lun(2), itime)
 !     interpolation for wind speed/direction in the wind table
    end do
 

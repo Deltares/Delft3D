@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqm1
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,29 +45,29 @@
       use timers
       implicit none
 
-      integer(4), intent(in   ) :: idt             ! time step in scu's
-      integer(4), intent(in   ) :: noseg           ! number of segments
-      integer(4), intent(in   ) :: nobnd           ! number of boundaries
-      real   (4), intent(in   ) :: volold(noseg)   ! volumes at beginning of step (dim: noseg)
-      integer(4), intent(in   ) :: noq             ! total number of exchanges
-      integer(4), intent(in   ) :: noq1            ! number of exchanges in the first direction
-      integer(4), intent(in   ) :: noq2            ! number of exchanges in the second direction
-      integer(4), intent(in   ) :: ipoint  (4,noq) ! exchange pointers (dim: 4 x noq)
-      real   (4), intent(in   ) :: flowtot (  noq) ! total flows accross exchange surfs (dim: noq)
-      real   (4), intent(in   ) :: disptot (  noq) ! total flows accross exchange surfs (dim: noq)
-      real   (4), intent(  out) :: theta   (  noq) ! variable theta coefficients (dim: noq)
-      real   (4), intent(  out) :: thetaseg(noseg) ! variable theta coefficients per segment
+      integer(kind=int_wp), intent(in   )  ::idt             ! time step in scu's
+      integer(kind=int_wp), intent(in   )  ::noseg           ! number of segments
+      integer(kind=int_wp), intent(in   )  ::nobnd           ! number of boundaries
+      real(kind=real_wp), intent(in   )  ::volold(noseg)   ! volumes at beginning of step (dim: noseg)
+      integer(kind=int_wp), intent(in   )  ::noq             ! total number of exchanges
+      integer(kind=int_wp), intent(in   )  ::noq1            ! number of exchanges in the first direction
+      integer(kind=int_wp), intent(in   )  ::noq2            ! number of exchanges in the second direction
+      integer(kind=int_wp), intent(in   )  ::ipoint  (4,noq) ! exchange pointers (dim: 4 x noq)
+      real(kind=real_wp), intent(in   )  ::flowtot (  noq) ! total flows accross exchange surfs (dim: noq)
+      real(kind=real_wp), intent(in   )  ::disptot (  noq) ! total flows accross exchange surfs (dim: noq)
+      real(kind=real_wp), intent(  out)  ::theta   (  noq) ! variable theta coefficients (dim: noq)
+      real(kind=real_wp), intent(  out)  ::thetaseg(noseg) ! variable theta coefficients per segment
       logical(4), intent(in   ) :: antidiffusion   ! if true: replace diffusion error by antidiffusion error
-      integer(4), intent(  out) :: iexseg  (noseg+nobnd) ! 0 if volume is explicit
+      integer(kind=int_wp), intent(  out)  ::iexseg  (noseg+nobnd) ! 0 if volume is explicit
 
 !     Local declarations
 
-      integer(4)                :: i, j            ! from- and to volumes
-      integer(4)                :: iq              ! current edge
-      integer(4)                :: iseg            ! current volumes
-      integer(4)                :: iexp            ! explicit fraction of the problem
+      integer(kind=int_wp) ::i, j            ! from- and to volumes
+      integer(kind=int_wp) ::iq              ! current edge
+      integer(kind=int_wp) ::iseg            ! current volumes
+      integer(kind=int_wp) ::iexp            ! explicit fraction of the problem
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqm1", ithandl )
 
 !         initialisation

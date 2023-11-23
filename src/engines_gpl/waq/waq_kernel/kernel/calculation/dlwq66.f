@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq66
+      use m_waq_precision
+
 
       implicit none
 
@@ -51,13 +53,13 @@
 !
       use timers
 
-      real       AMASS(NOTOT,*) , VOLUME(*) , CONC(NOTOT,*)
-      real       v1
+      real(kind=real_wp) ::AMASS(NOTOT,*) , VOLUME(*) , CONC(NOTOT,*)
+      real(kind=real_wp) ::v1
 
-      integer    notot, noseg
-      integer    isys, iseg
+      integer(kind=int_wp) ::notot, noseg
+      integer(kind=int_wp) ::isys, iseg
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq66", ithandl )
 !
 !         loop over the number of segments and systems

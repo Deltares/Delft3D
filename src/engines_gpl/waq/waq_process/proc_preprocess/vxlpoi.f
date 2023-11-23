@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_vxlpoi
+      use m_waq_precision
+
 
       implicit none
 
@@ -62,7 +64,7 @@
 !
       use timers       !   performance timers
 
-      INTEGER       NOCONS , NOFUN  , NODISP , NOVELO , IVALIP
+      INTEGER(kind=int_wp) ::NOCONS , NOFUN  , NODISP , NOVELO , IVALIP
       CHARACTER*(*) VALNAM, LINE
       CHARACTER*(*)            FUNAME(*),
      +              DINAME(*), VENAME(*)
@@ -70,12 +72,12 @@
 !
 !     Local
 !
-      integer, PARAMETER  :: NOPREF=4
+      integer(kind=int_wp), PARAMETER   ::NOPREF=4
       CHARACTER*10 PREDEF(NOPREF)
 
-      INTEGER       ICO, IDSP, IVEL, IFUN
+      INTEGER(kind=int_wp) ::ICO, IDSP, IVEL, IFUN
 
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "vxlpoi", ithndl )
 !
       PREDEF(1) = 'FLOW'

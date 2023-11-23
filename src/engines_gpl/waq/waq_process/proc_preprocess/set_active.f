@@ -1,4 +1,6 @@
       module m_set_active
+      use m_waq_precision
+
 
       implicit none
 
@@ -53,21 +55,21 @@
       ! arguments
 
       type(t_dlwq_item) , intent(inout) :: constants              !< delwaq constants list
-      integer           , intent(in   ) :: no_act_max             !< number of activated processes max
-      integer           , intent(inout) :: no_act                 !< number of activated processes
+      integer(kind=int_wp), intent(in   )  ::no_act_max             !< number of activated processes max
+      integer(kind=int_wp), intent(inout)  ::no_act                 !< number of activated processes
       character(len=*)  , intent(inout) :: actlst(*)              !< list of activated processes
 
       ! local declarations
 
-      integer                           :: nocons                 !  number of constants
-      integer                           :: ico                    !  loop counter constants
-      integer                           :: i_act                  !  loop counter active
-      integer                           :: ix_act                 !  index active
-      integer                           :: ix_dbl                 !  index double
+      integer(kind=int_wp) ::nocons                 !  number of constants
+      integer(kind=int_wp) ::ico                    !  loop counter constants
+      integer(kind=int_wp) ::i_act                  !  loop counter active
+      integer(kind=int_wp) ::ix_act                 !  index active
+      integer(kind=int_wp) ::ix_dbl                 !  index double
       character(len=10)                 :: name10                 !  local process name
       character(len=80)                 :: line                   !  line buffer for report file
-      integer                           :: i_old_item             !  loopcounter old_items
-      integer(4)                        :: ithndl = 0             !  handle for performance timer
+      integer(kind=int_wp) ::i_old_item             !  loopcounter old_items
+      integer(kind=int_wp) ::ithndl = 0             !  handle for performance timer
       if (timon) call timstrt( "set_active", ithndl )
 
       ! check the actives in the constant names

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqi2
+      use m_waq_precision
+
 
       implicit none
 
@@ -81,9 +83,9 @@
 !     BNDID   CHAR*20   NOBND     OUTPUT  Open boundary ID's
 !     BNDNAM  CHAR*40   NOBND     OUTPUT  Open boundary names
 !     BNDTYP  CHAR*20   NOBND     OUTPUT  Open boundary types
-!     INWTYP  INTEGER     *       OUTPUT  Types of items
+!     INWTYP  INTEGER       *     OUTPUT  Types of items
 !     IWASTE  INTEGER   NOWST     OUTPUT  waste load segment numbers
-      integer  ( 4), intent(  out) :: iwsknd(*) !  wasteload processing
+      integer(kind=int_wp), intent(  out)  ::iwsknd(*) !  wasteload processing
 !     WASTID  CHAR*20   NOWST     OUTPUT  Waste location ID
 !     WSTNAM  CHAR*40   NOWST     OUTPUT  Waste location names
 !     WSTTYP  CHAR*20   NOWST     OUTPUT  Waste location types
@@ -136,27 +138,27 @@
 !
 !
 
-      INTEGER      IPDMP(*)  , IQDMP(*)   , ISDMP (*) , IORAAI(*) ,
+      INTEGER(kind=int_wp) ::IPDMP(*)  , IQDMP(*)   , ISDMP (*) , IORAAI(*) ,
      +             NQRAAI(*) , IQRAAI(*)  , GRDNOS(*) , GRDREF(*),
      +             IDUMP (*) , IDPNT (*)  , IVPNT (*) , IBPNT (4,*),
      +             IWASTE(*) , NRFTOT(*)  , NRHARM(*) , LUN   (*),
      +             IKNMRK(*) , INWTYP(*)
-      INTEGER      GRDSEG(NOSEG+NSEG2,NOGRID)
+      INTEGER(kind=int_wp) ::GRDSEG(NOSEG+NSEG2,NOGRID)
       CHARACTER*40 MODID (4) , BNDNAM(*)  , WSTNAM(*)
       CHARACTER*20 SYSID (*) , DUMPID(*)  , BNDID (*) , BNDTYP(*) ,
      *             WASTID(*) , WSTTYP(*)  , CONAME(*) , PANAME(*) ,
      *             FUNAME(*) , SFNAME(*)  , DINAME(*) , VENAME(*) ,
      *             DANAM (*) , RANAM (*)
-      real         DISP  (*) , ALENG (*)  , CONST (*) , PARAM (*)
+      real(kind=real_wp) ::DISP  (*) , ALENG (*)  , CONST (*) , PARAM (*)
       CHARACTER*40  FILLER
       type(GridPointerColl), intent(inout) :: GridPs     !< definitions of the grids
       type(delwaq_data),     intent(inout) :: dlwqd      !< derived type for persistent storage
-      integer                              :: dmpbal(*)  !< indicates if dump area is included in the balance
+      integer(kind=int_wp) ::dmpbal(*)  !< indicates if dump area is included in the balance
       type(GridPointer)    :: aGrid      ! a single grid
 
-      integer  it, noqtt, nosss, k, igrid, iin, iseg, ierror, i_grid
-      integer  isys, ix, i, idummy
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::it, noqtt, nosss, k, igrid, iin, iseg, ierror, i_grid
+      integer(kind=int_wp) ::isys, ix, i, idummy
+      integer(kind=int_wp) ::ithandl =0
       if ( timon ) call timstrt ( "dlwqi2", ithandl )
 !
 !     Local
@@ -296,11 +298,11 @@
       IMPLICIT NONE
       CHARACTER(LEN=*) :: T0STRING
 
-      INTEGER                :: IYEAR, IMONTH, IDAY, IHOUR, IMIN, ISEC, ISCALE
-      INTEGER                :: IERR
-      REAL(KIND=KIND(1.0D0)) :: TEMP1, TEMP2
+      INTEGER(kind=int_wp) ::IYEAR, IMONTH, IDAY, IHOUR, IMIN, ISEC, ISCALE
+      INTEGER(kind=int_wp) ::IERR
+      REAL(kind=dp) :: TEMP1, TEMP2
 
-      REAL(KIND=KIND(1.0D0)), PARAMETER :: MODIFICATION_OFFSET = 2400000.5D0
+      REAL(kind=dp), PARAMETER :: MODIFICATION_OFFSET = 2400000.5D0
 
       TSCALE = 1.0d0
 

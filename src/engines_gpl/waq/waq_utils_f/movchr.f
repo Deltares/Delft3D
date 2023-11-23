@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_movchr
+      use m_waq_precision
+
 
       implicit none
 
@@ -50,7 +52,7 @@
 !
 !
       CHARACTER*(*) CAR(*)
-      integer :: NSTRT , NOTOT , I
+      integer(kind=int_wp) ::NSTRT , NOTOT , I
 !
       DO 10 I=NOTOT,NSTRT,-1
          CAR(I+1) = CAR(I)

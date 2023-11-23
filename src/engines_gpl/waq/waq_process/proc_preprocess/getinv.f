@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getinv
+      use m_waq_precision
       use m_vxlpoi
       use m_valpoi
 
@@ -52,60 +53,60 @@
       ! declaration of arguments
 
       type(procespropcoll)      :: procesdef       ! all processes
-      integer                   :: notot           ! number of substances
+      integer(kind=int_wp) ::notot           ! number of substances
       character(len=*)          :: syname(*)       ! substance name
-      integer                   :: nocons          ! number of constants
+      integer(kind=int_wp) ::nocons          ! number of constants
       type(t_dlwq_item)   , intent(inout) :: constants       !< delwaq constants list
-      integer                   :: nopa            ! number of parameters
+      integer(kind=int_wp) ::nopa            ! number of parameters
       character(len=*)          :: paname(*)       ! parameter names
-      integer                   :: nofun           ! number of functions
+      integer(kind=int_wp) ::nofun           ! number of functions
       character(len=*)          :: funame(*)       ! function names
-      integer                   :: nosfun          ! number of segment functions
+      integer(kind=int_wp) ::nosfun          ! number of segment functions
       character(len=*)          :: sfname(*)       ! segment function names
-      integer                   :: nodisp          ! number of dispersions
+      integer(kind=int_wp) ::nodisp          ! number of dispersions
       character(len=*)          :: diname(*)       ! dispersion names
-      integer                   :: novelo          ! number of velocities
+      integer(kind=int_wp) ::novelo          ! number of velocities
       character(len=*)          :: vename(*)       ! velocity names
-      integer                   :: nmis            ! number of missing inpu items
-      real                      :: defaul(*)       ! default values array
-      integer                   :: noloc           ! number of local values
-      integer                   :: nodef           ! number of default
+      integer(kind=int_wp) ::nmis            ! number of missing inpu items
+      real(kind=real_wp) ::defaul(*)       ! default values array
+      integer(kind=int_wp) ::noloc           ! number of local values
+      integer(kind=int_wp) ::nodef           ! number of default
       character(len=*)          :: dename(*)       ! default names
       type(outputcoll)          :: outputs         ! output structure
-      integer                   :: ndspx           ! number of dispersions
-      integer                   :: nvelx           ! number of velocities
-      integer                   :: nlocx           ! number of local values on exchanges
+      integer(kind=int_wp) ::ndspx           ! number of dispersions
+      integer(kind=int_wp) ::nvelx           ! number of velocities
+      integer(kind=int_wp) ::nlocx           ! number of local values on exchanges
       character(len=*)          :: locnam(*)       ! local values names
-      integer  ( 4)       , intent(in)    :: refday          ! reference day, varying from 1 till 365
+      integer(kind=int_wp), intent(in)     ::refday          ! reference day, varying from 1 till 365
 
       ! local decalarations
 
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! loop counter processes
-      integer                   :: iproc2          ! second loop counter processes
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! loop counter processes
+      integer(kind=int_wp) ::iproc2          ! second loop counter processes
       type(procesprop), pointer :: proc1           ! process description
       type(procesprop), pointer :: proc2           ! description second process
-      integer                   :: i_input         ! index input item
-      integer                   :: ioutput         ! index output item
-      integer                   :: iou             ! index output item
-      integer                   :: ioux            ! index output item
-      integer                   :: nrout           ! number of outputs
-      integer                   :: iflux           ! index flux
-      integer                   :: ivalip          ! index variable in pmsa
-      integer                   :: ioff            ! offset for values in pmsa
-      integer                   :: ioffx           ! offset for values in pmsa
-      integer                   :: idef            ! index defualt
-      integer                   :: nfl             ! flux counter
+      integer(kind=int_wp) ::i_input         ! index input item
+      integer(kind=int_wp) ::ioutput         ! index output item
+      integer(kind=int_wp) ::iou             ! index output item
+      integer(kind=int_wp) ::ioux            ! index output item
+      integer(kind=int_wp) ::nrout           ! number of outputs
+      integer(kind=int_wp) ::iflux           ! index flux
+      integer(kind=int_wp) ::ivalip          ! index variable in pmsa
+      integer(kind=int_wp) ::ioff            ! offset for values in pmsa
+      integer(kind=int_wp) ::ioffx           ! offset for values in pmsa
+      integer(kind=int_wp) ::idef            ! index defualt
+      integer(kind=int_wp) ::nfl             ! flux counter
       character(len=20)         :: valnam          ! variable name
       character(len=50)         :: valtxt          ! variable description
       character(len=100)        :: line            ! output buffer
       character(len=100)        :: line1           ! output buffer
       character(len=100)        :: line2           ! output buffer
-      integer, parameter        :: nopred = 6      ! number of predefined defaults
-      real, parameter           :: rmis0  = -888.  ! missing but no matter (set to 0.0)
-      integer                   :: i_star          ! index of * in name
-      integer(4)                :: ithndl = 0      ! handle for performance timer
-      integer                   :: refDayFound = -1 ! check for RefDay default
+      integer(kind=int_wp), parameter         ::nopred = 6      ! number of predefined defaults
+      real(kind=real_wp), parameter            ::rmis0  = -888.  ! missing but no matter (set to 0.0)
+      integer(kind=int_wp) ::i_star          ! index of * in name
+      integer(kind=int_wp) ::ithndl = 0      ! handle for performance timer
+      integer(kind=int_wp) ::refDayFound = -1 ! check for RefDay default
 
       if (timon) call timstrt( "getinv", ithndl )
 

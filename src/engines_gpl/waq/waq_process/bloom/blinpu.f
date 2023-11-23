@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_blinpu
+      use m_waq_precision
+
 
       implicit none
 
@@ -47,33 +49,33 @@
 
       implicit none
 
-      integer      ntyp_m               ! Maximum number of types
-      integer      ntyp_a               ! Actual number of types
-      integer      ngro_a               ! Actual number of groups
-      integer      nunucom              ! Number of constrains
-      integer      j, k, is             ! Indexes
-      real         algtyp(0:20,ntyp_m)  ! Characteristics per algae type
+      integer(kind=int_wp) ::ntyp_m               ! Maximum number of types
+      integer(kind=int_wp) ::ntyp_a               ! Actual number of types
+      integer(kind=int_wp) ::ngro_a               ! Actual number of groups
+      integer(kind=int_wp) ::nunucom              ! Number of constrains
+      integer(kind=int_wp) ::j, k, is             ! Indexes
+      real(kind=real_wp) ::algtyp(0:20,ntyp_m)  ! Characteristics per algae type
       logical      lmixo                ! Flag mixotrophy
       logical      lfixn                ! Flag N-fixation
       logical      lcarb                ! Flag carbon limitation
-      integer      nutcon(nunucom)      ! Nutrients involved in active nutrient constraints
-      integer      flxcon(nunucom)      ! Uptake fluxes involved in active nutrient constraints
-      integer      con2out(nunucom)     ! Mapping of actual nutrient constraints to DELWAQ output
+      integer(kind=int_wp) ::nutcon(nunucom)      ! Nutrients involved in active nutrient constraints
+      integer(kind=int_wp) ::flxcon(nunucom)      ! Uptake fluxes involved in active nutrient constraints
+      integer(kind=int_wp) ::con2out(nunucom)     ! Mapping of actual nutrient constraints to DELWAQ output
 
 !     Former D09 input
-      integer      swblsolint           ! Switch for solar irradiation as total radiation (0) or PAR (1)
-      integer      swblobject           ! Switch for objective growth (1) or biomass (0)
-      real         bltemlim             ! Minimum temperature for growth
-      real         blbasmor             ! Base mortality when temperature is below minimum temperature for growth
-      integer      swblgrochk           ! Switch to use extra constraints on growth rates
-      real         blbiobas             ! Base biomass level per group
-      integer      swblmorchk           ! Switch to use extra mortality constraints
-      real         bltoplev             ! Top level of mortality constraints
+      integer(kind=int_wp) ::swblsolint           ! Switch for solar irradiation as total radiation (0) or PAR (1)
+      integer(kind=int_wp) ::swblobject           ! Switch for objective growth (1) or biomass (0)
+      real(kind=real_wp) ::bltemlim             ! Minimum temperature for growth
+      real(kind=real_wp) ::blbasmor             ! Base mortality when temperature is below minimum temperature for growth
+      integer(kind=int_wp) ::swblgrochk           ! Switch to use extra constraints on growth rates
+      real(kind=real_wp) ::blbiobas             ! Base biomass level per group
+      integer(kind=int_wp) ::swblmorchk           ! Switch to use extra mortality constraints
+      real(kind=real_wp) ::bltoplev             ! Top level of mortality constraints
 
 !     Local variables
       character(120) idstr
-      integer        lparam, i, i1, i2
-      real           autofr
+      integer(kind=int_wp) ::lparam, i, i1, i2
+      real(kind=real_wp) ::autofr
       character(8)   cpmax
 
 !  From now on BLOOM won't read the D09-file any more. Some settings will be made available through the inp-file later on

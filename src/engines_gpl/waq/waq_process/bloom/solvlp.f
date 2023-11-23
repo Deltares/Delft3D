@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_solvlp
+      use m_waq_precision
+
 
       implicit none
 
@@ -54,18 +56,18 @@
 ! 3.  All constraints with only zero A coefficients. (i.e. growth
 !     constraints of species not permitted).
 
-      integer   :: lsc(ia),lsctmp(ia),iopt(4),irs(3),lib(mx),libtmp(mx),libbas(mx),nonuni(mt)
-      integer   :: i, j, j1, k, l
-      integer   :: index, ier, inow, numuni, nsolve, nustmp, nurtmp, nsolv
-      real(8)   :: atmp(ia,mt)
-      real(8)   :: btmp(ia)
-      real(8)   :: ctmp(mt)
-      real(8)   :: xtmp(mx)
-      real(8)   :: biomax
-      real(8)   :: d(1)
-      real(8)   :: p(1)
-      real(8)   :: x(mx)
-      real(8)   :: sumx
+      integer(kind=int_wp) ::lsc(ia),lsctmp(ia),iopt(4),irs(3),lib(mx),libtmp(mx),libbas(mx),nonuni(mt)
+      integer(kind=int_wp) ::i, j, j1, k, l
+      integer(kind=int_wp) ::index, ier, inow, numuni, nsolve, nustmp, nurtmp, nsolv
+      real(kind=dp) ::atmp(ia,mt)
+      real(kind=dp) ::btmp(ia)
+      real(kind=dp) ::ctmp(mt)
+      real(kind=dp) ::xtmp(mx)
+      real(kind=dp) ::biomax
+      real(kind=dp) ::d(1)
+      real(kind=dp) ::p(1)
+      real(kind=dp) ::x(mx)
+      real(kind=dp) ::sumx
       save    lsc, iopt
       logical   :: lbasis(mx)
       data nsolv /0/

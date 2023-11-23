@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_trsoxy
+      use m_waq_precision
+
 
       implicit none
 
@@ -44,42 +46,42 @@
 
 !     arguments
 
-      REAL               :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-      REAL               :: FL(*)              ! in/out flux array
-      INTEGER            :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER            :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER            :: NOSEG              ! in     number of segments
-      INTEGER            :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-      INTEGER            :: IEXPNT(4,*)        ! in     exchange pointer table
-      INTEGER            :: IKNMRK(*)          ! in     segment features array
-      INTEGER            :: NOQ1               ! in     number of exchanges in first direction
-      INTEGER            :: NOQ2               ! in     number of exchanges in second direction
-      INTEGER            :: NOQ3               ! in     number of exchanges in third direction
-      INTEGER            :: NOQ4               ! in     number of exchanges in fourth direction
+      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::FL(*)              ! in/out flux array
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
+      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
+      INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
+      INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
+      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
 
 !     from PMSA array
 
-      INTEGER            :: SWEMERSION         ! 1  in  switch indicating submersion(0) or emersion (1)
-      REAL               :: OXY                ! 2  in  dissolved oxygen concentration
-      REAL               :: OXYSAT             ! 3  in  dissolved oxygen saturation concentration
-      REAL               :: DEPTH              ! 4  in  depth of a segment
-      REAL               :: AUXSYS             ! 5  in  auxsys conversion from system timer to day
-      REAL               :: VDOWN              ! 6  in  downward velocity
-      REAL               :: CORFLX             ! 7  out correction flux
+      INTEGER(kind=int_wp) ::SWEMERSION         ! 1  in  switch indicating submersion(0) or emersion (1)
+      REAL(kind=real_wp) ::OXY                ! 2  in  dissolved oxygen concentration
+      REAL(kind=real_wp) ::OXYSAT             ! 3  in  dissolved oxygen saturation concentration
+      REAL(kind=real_wp) ::DEPTH              ! 4  in  depth of a segment
+      REAL(kind=real_wp) ::AUXSYS             ! 5  in  auxsys conversion from system timer to day
+      REAL(kind=real_wp) ::VDOWN              ! 6  in  downward velocity
+      REAL(kind=real_wp) ::CORFLX             ! 7  out correction flux
 
 !     local decalrations
 
-      INTEGER                      :: IP1,IP2,IP3,IP4,IP5 ! index pointer in PMSA array
-      INTEGER                      :: IP6,IP7             ! index pointer in PMSA array
-      INTEGER                      :: IN1,IN2,IN3,IN4,IN5 ! increment in PMSA array
-      INTEGER                      :: IN6,IN7             ! increment in PMSA array
-      INTEGER                      :: ISEG                ! loop counter segment loop
-      INTEGER                      :: IK                  ! loop counter bottom columns
-      INTEGER                      :: IQ                  ! loop counter exchanges
-      INTEGER                      :: IWA1                ! index first water exchange
-      INTEGER                      :: IWA2                ! index last water exchange
-      INTEGER                      :: IVAN                ! index from segment in exchange
-      INTEGER                      :: INAAR               ! index to segment in exchange
+      INTEGER(kind=int_wp) ::IP1,IP2,IP3,IP4,IP5 ! index pointer in PMSA array
+      INTEGER(kind=int_wp) ::IP6,IP7             ! index pointer in PMSA array
+      INTEGER(kind=int_wp) ::IN1,IN2,IN3,IN4,IN5 ! increment in PMSA array
+      INTEGER(kind=int_wp) ::IN6,IN7             ! increment in PMSA array
+      INTEGER(kind=int_wp) ::ISEG                ! loop counter segment loop
+      INTEGER(kind=int_wp) ::IK                  ! loop counter bottom columns
+      INTEGER(kind=int_wp) ::IQ                  ! loop counter exchanges
+      INTEGER(kind=int_wp) ::IWA1                ! index first water exchange
+      INTEGER(kind=int_wp) ::IWA2                ! index last water exchange
+      INTEGER(kind=int_wp) ::IVAN                ! index from segment in exchange
+      INTEGER(kind=int_wp) ::INAAR               ! index to segment in exchange
 
 !     initialise bottom if necessary
 

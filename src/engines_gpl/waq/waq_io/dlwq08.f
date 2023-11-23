@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq08
+      use m_waq_precision
       use m_read_initials
       use m_opt2
       use m_opt1
@@ -88,42 +89,42 @@
 
 !     Kind                    Function         Name               Description
 
-      integer           ( 4), intent(inout) :: lun  (*)      !< array with unit numbers
+      integer(kind=int_wp), intent(inout) ::  lun  (*)       !< array with unit numbers
       character         ( *), intent(inout) :: lchar(*)      !< filenames
-      integer           ( 4), intent(inout) :: filtype(*)    !< type of binary file
-      integer           ( 4), intent(in   ) :: noseg         !< nr of computational volumes
-      integer           ( 4), intent(in   ) :: notot         !< nr of delwaq + delpar state variables
+      integer(kind=int_wp), intent(inout) ::  filtype(*)     !< type of binary file
+      integer(kind=int_wp), intent(in   ) ::  noseg          !< nr of computational volumes
+      integer(kind=int_wp), intent(in   ) ::  notot          !< nr of delwaq + delpar state variables
       character         (20), intent(in   ) :: syname(notot) !< names of the substances
-      integer           ( 4), intent(in   ) :: iwidth        !< width of the output file
-      integer           ( 4), intent(in   ) :: ioutpt        !< option for extent of output
+      integer(kind=int_wp), intent(in   ) ::  iwidth         !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  ioutpt         !< option for extent of output
       type(inputfilestack)  , intent(inout) :: inpfil        !< input file strucure with include stack and flags
       type(gridpointercoll) , intent(in)    :: gridps        !< collection off all grid definitions
-      integer           ( 4), intent(inout) :: ierr          !< cumulative error   count
-      integer           ( 4), intent(inout) :: iwar          !< cumulative warning count
+      integer(kind=int_wp), intent(inout) ::  ierr           !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar           !< cumulative warning count
 
-      integer, parameter :: STRING   =  1
+      integer(kind=int_wp), parameter ::  STRING   =  1
       integer, parameter :: EXTASCII = -1, BINARY   = 0, THISFILE = 1
-      integer, parameter :: NODEFAUL =  1, DEFAULTS = 2
+      integer(kind=int_wp), parameter ::  NODEFAUL =  1, DEFAULTS = 2
+ 
+      real(kind=real_wp), allocatable ::  scales(:)              ! real workspace scale factors
+      real(kind=real_wp), allocatable ::  values(:,:)            ! real workspace values
+      integer(kind=int_wp), allocatable ::  iover (:)              ! integer space for overridings
 
-      real(4), allocatable :: scales(:)             ! real workspace scale factors
-      real(4), allocatable :: values(:,:)           ! real workspace values
-      integer, allocatable :: iover (:)             ! integer space for overridings
-
-      integer  (  4)  ierr2                         ! local error indicator
-      integer  (  4)  itype                         ! 0 = all, 1 = string, 2 = integer, 3 = real
+      integer(kind=int_wp) :: ierr2                          ! local error indicator
+      integer(kind=int_wp) :: itype                          ! 0 = all, 1 = string, 2 = integer, 3 = real
       character(255)  cdummy                        ! workspace for reading
       character(  4)  cext                          ! inital conditions file extention
-      integer  (  4)  icopt1                        ! first file option (ASCII/Binary/external etc)
-      integer  (  4)  icopt2                        ! constants with or without defaults
+      integer(kind=int_wp) :: icopt1                         ! first file option (ASCII/Binary/external etc)
+      integer(kind=int_wp) :: icopt2                         ! constants with or without defaults
       logical         ldummy                        ! dummy variable
-      integer  (  4)  ip                            ! location of the period in the file name
-      integer  (  4)  i                             ! loop variable and dummy integer
-      integer  (  4)  isys, iseg                    ! substances and volumes loop variables
+      integer(kind=int_wp) :: ip                             ! location of the period in the file name
+      integer(kind=int_wp) :: i                              ! loop variable and dummy integer
+      integer(kind=int_wp) :: isys, iseg                     ! substances and volumes loop variables
       logical         masspm2                       ! is it mass per m2 ?
       logical         transp            ! input with a transposed matrix (per substance) ?
       logical         old_input         ! old or new input
-      integer  (  4)  itime             ! time in map file
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: itime              ! time in map file
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq08", ithndl )
 
 !        Initialisations

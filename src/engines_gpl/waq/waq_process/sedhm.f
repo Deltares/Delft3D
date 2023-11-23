@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_sedhm
+      use m_waq_precision
+
 
       implicit none
 
@@ -52,16 +54,16 @@
 
       implicit none
 
-      real     pmsa  ( * ) , fl    (*)
-      integer  ipoint( 27) , increm( 27 ) , noseg , noflux,
+      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint( 27) , increm( 27 ) , noseg , noflux,
      +         iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
-      integer  ipnt(27)
+      integer(kind=int_wp) ::ipnt(27)
 
-      integer  iflux, iseg, ikmrk2, iq, ifrom
-      real     fl1, fl2, fl3, fl1s2, fl2s2, fl3s2, fl4, fl5
-      real     q1, q2, q3, q4, q5, depth
-      real     fhmim1, fhmim2,fhmim3, fhmpoc, fhmphy
-      real     vsim1, vsim2, vsim3, vspoc, vsphy
+      integer(kind=int_wp) ::iflux, iseg, ikmrk2, iq, ifrom
+      real(kind=real_wp) ::fl1, fl2, fl3, fl1s2, fl2s2, fl3s2, fl4, fl5
+      real(kind=real_wp) ::q1, q2, q3, q4, q5, depth
+      real(kind=real_wp) ::fhmim1, fhmim2,fhmim3, fhmpoc, fhmphy
+      real(kind=real_wp) ::vsim1, vsim2, vsim3, vspoc, vsphy
 
       ipnt = ipoint
       iflux = 0

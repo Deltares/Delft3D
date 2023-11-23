@@ -13,3 +13,5 @@ add_subdirectory(${checkout_src_root}/${ddcouple_module} ddcouple)
 add_subdirectory(${checkout_src_root}/${agrhyd_module} agrhyd)
 
 add_subdirectory(${checkout_src_root}/${maptonetcdf_module} maptonetcdf)
+
+add_subdirectory(${checkout_src_root}/${calcage_module} calcage)

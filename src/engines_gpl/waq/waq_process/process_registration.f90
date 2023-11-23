@@ -22,6 +22,7 @@
 !!  rights reserved.
 
 module process_registration
+    use m_waq_precision
     use m_srstop
     use m_monsys
     use m_protistcm
@@ -211,7 +212,7 @@ module process_registration
 
     public :: pronrs, procal
 
-    integer, parameter :: max_processes = 180  ! Exact number of process routines
+    integer(kind=int_wp),  parameter :: max_processes = 180  ! Exact number of process routines
 
     type :: process_routine_info
         character(len=6) :: pronam
@@ -245,9 +246,9 @@ subroutine pronrs( pronam, imodul )
 !     Declaration of arguments
 !
     character(len=*), intent(in) :: pronam
-    integer, intent(out)         :: imodul
+    integer(kind=int_wp), intent(out) ::imodul
 
-    integer :: i
+    integer(kind=int_wp)  ::i
     logical :: okay
     logical, save :: first = .true.
 !
@@ -496,38 +497,37 @@ subroutine procal (pmsa   , imodul , flux   , ipoint , increm , &
 
 
     use timers
-    use iso_c_binding
 
 !     parameters          :
 
 !     kind           function                 name          description
 
-    real   (4)   , intent(inout)          :: pmsa  ( * ) ! Process module status array
-    integer      , intent(in   )          :: imodul      ! Process module number
-    real   (4)   , intent(  out)          :: flux  ( * ) ! Process fluxes
-    integer      , intent(in   )          :: ipoint( * ) ! Pointer to process data
-    integer      , intent(in   )          :: increm( * ) ! Increment in pointer process data
-    integer      , intent(in   )          :: noseg       ! Number of computational volumes
-    integer      , intent(in   )          :: noflux      ! Number of process fluxes
-    integer      , intent(in   )          :: iexpnt(4,*) ! Exchange pointers
-    integer      , intent(in   )          :: iknmrk( * ) ! Tag array
-    integer      , intent(in   )          :: noq1        ! Number of exchanges in first direction
-    integer      , intent(in   )          :: noq2        ! Number of exchanges in second direction
-    integer      , intent(in   )          :: noq3        ! Number of exchanges in third direction
-    integer      , intent(in   )          :: noq4        ! Number of exchanges in the water bed
+    real(kind=real_wp)    , intent(inout)          :: pmsa  ( * ) ! Process module status array
+    integer(kind=int_wp)      , intent(in   ) ::imodul      ! Process module number
+    real(kind=real_wp)    , intent(  out)          :: flux  ( * ) ! Process fluxes
+    integer(kind=int_wp)      , intent(in   ) ::ipoint( * ) ! Pointer to process data
+    integer(kind=int_wp)      , intent(in   ) ::increm( * ) ! Increment in pointer process data
+    integer(kind=int_wp)      , intent(in   ) ::noseg       ! Number of computational volumes
+    integer(kind=int_wp)      , intent(in   ) ::noflux      ! Number of process fluxes
+    integer(kind=int_wp)      , intent(in   ) ::iexpnt(4,*) ! Exchange pointers
+    integer(kind=int_wp)      , intent(in   ) ::iknmrk( * ) ! Tag array
+    integer(kind=int_wp)      , intent(in   ) ::noq1        ! Number of exchanges in first direction
+    integer(kind=int_wp)      , intent(in   ) ::noq2        ! Number of exchanges in second direction
+    integer(kind=int_wp)      , intent(in   ) ::noq3        ! Number of exchanges in third direction
+    integer(kind=int_wp)      , intent(in   ) ::noq4        ! Number of exchanges in the water bed
     character(10), intent(in   )          :: pronam      ! Name of this process
-    integer      , intent(in   )          :: pronvr      ! Not used
-    integer      , intent(in   )          :: prvtyp( * ) ! Not used
-    integer      , intent(in   )          :: iproc       ! Process number
+    integer(kind=int_wp)      , intent(in   ) ::pronvr      ! Not used
+    integer(kind=int_wp)      , intent(in   ) ::prvtyp( * ) ! Not used
+    integer(kind=int_wp)      , intent(in   ) ::iproc       ! Process number
     integer(c_intptr_t)   , intent(in   ) :: dll_opb     ! open proces library dll handle
 
 !  local
 
-    integer             :: perf_function
-    integer             :: lunrep
-    integer             :: ierror
+    integer(kind=int_wp)              ::perf_function
+    integer(kind=int_wp)              ::lunrep
+    integer(kind=int_wp)              ::ierror
 
-    integer(4), save    :: ithand(max_processes+10) = 0 !  timer handles, just a wee bit more than the number of "standard" routines
+    integer(kind=int_wp),  save    :: ithand(max_processes+10) = 0 !  timer handles, just a wee bit more than the number of "standard" routines
 
     !
     ! Only monitor the "standard" routines (otherwise we would have to

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outbal
+      use m_waq_precision
+
 
       implicit none
 
@@ -67,9 +69,9 @@
 !
       use timers
 
-      INTEGER       LUBAL , ITIME , INIT  , NOTOT , NOFLUX,
+      INTEGER(kind=int_wp) ::LUBAL , ITIME , INIT  , NOTOT , NOFLUX,
      +              NDMPAR, NOTOT2, NOPOUT
-      REAL          ASMASS(NOTOT,NDMPAR,6), FLXINT(NOFLUX,NDMPAR),
+      REAL(kind=real_wp) ::ASMASS(NOTOT,NDMPAR,6), FLXINT(NOFLUX,NDMPAR),
      +              CONC2(NOTOT2,NDMPAR)
       CHARACTER*20  SYNAME(*)             , DANAME(*)
       CHARACTER*40  MONAME(4)
@@ -77,9 +79,9 @@
 !
 !     Local declarations
 !
-      INTEGER      J     , I     , K     , ISYS  , IFLX  ,
+      INTEGER(kind=int_wp) ::J     , I     , K     , ISYS  , IFLX  ,
      +             IHLP
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl =0
       if ( timon ) call timstrt ( "outbal", ithandl )
 !
 !     Initialize file

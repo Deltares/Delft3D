@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outhis
+      use m_waq_precision
+
 
       implicit none
 
@@ -64,17 +66,17 @@
 !
       use timers
 
-      INTEGER       IOHIS , ITIME , NODUMP, NOTOT1, NOTOT2,
+      INTEGER(kind=int_wp) ::IOHIS , ITIME , NODUMP, NOTOT1, NOTOT2,
      +              INIT
-      INTEGER       IDUMP(*)
+      INTEGER(kind=int_wp) ::IDUMP(*)
       CHARACTER*(*) MONAME(4), NAMFIH
       CHARACTER*(*) DUNAME(*), SYNAM1(*), SYNAM2(*)
-      REAL          CONC1(*) , CONC2(*)
+      REAL(kind=real_wp) ::CONC1(*) , CONC2(*)
       
 !     local
-      integer      i, k1, k2, j
+      integer(kind=int_wp) ::i, k1, k2, j
       
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outhis", ithandl )
 !
 !     Initialize file

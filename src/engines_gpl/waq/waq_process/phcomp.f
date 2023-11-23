@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_phcomp
+      use m_waq_precision
+
 
       implicit none
 
@@ -46,13 +48,13 @@
 
       IMPLICIT REAL (A-H,J-Z)
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      INTEGER  ITEL  , ISEG
-      INTEGER  NTYPE , ITYPE
-      REAL     PHYT  , ALGN  , ALGP  , ALGSI , ALGDM , CHLFA , BIOMAS,
+      INTEGER(kind=int_wp) ::ITEL  , ISEG
+      INTEGER(kind=int_wp) ::NTYPE , ITYPE
+      REAL(kind=real_wp) ::PHYT  , ALGN  , ALGP  , ALGSI , ALGDM , CHLFA , BIOMAS,
      J         NCRAT , PCRAT , SICRAT, DMCF  , CATOCL
 
       NTYPE   = PMSA(IPOINT(1))

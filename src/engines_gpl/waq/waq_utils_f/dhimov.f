@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhimov
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,8 +45,8 @@
 !     IARRA2  INTEGER   NOTOT     OUTPUT  array to copy to
 !     NOTOT   INTEGER     1       INPUT   total number of entries
 !
-      INTEGER     NOTOT, I
-      INTEGER     IARRA1(*) , IARRA2(*)
+      INTEGER(kind=int_wp) ::NOTOT, I
+      INTEGER(kind=int_wp) ::IARRA1(*) , IARRA2(*)
 !
       DO  10 I = 1,NOTOT
    10 IARRA2(I) = IARRA1(I)

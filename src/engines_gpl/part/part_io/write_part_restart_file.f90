@@ -40,8 +40,8 @@ subroutine write_part_restart_file()
     implicit none
 
     ! Locals
-    integer(ip) :: ilp, isp, ids, ide, iext, nores, noras
-    integer(ip) :: lunut             !  output unit number
+    integer(int_wp ) :: ilp, isp, ids, ide, iext, nores, noras
+    integer(int_wp ) :: lunut             !  output unit number
     integer     :: lures
 
     

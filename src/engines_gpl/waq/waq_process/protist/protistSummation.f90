@@ -1,4 +1,6 @@
 module m_protistsummation
+use m_waq_precision
+
 
 implicit none
 
@@ -50,19 +52,19 @@ contains
    !
    implicit none
 
-   real     :: pmsa  ( * ) , fl    (*)
-   integer  :: ipoint( * ) , increm(*) , noseg , noflux, &
+   real(kind=real_wp)      ::pmsa  ( * ) , fl    (*)
+   integer(kind=int_wp)   ::ipoint( * ) , increm(*) , noseg , noflux, &
                iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 
-   integer, allocatable  :: ipnt(:)          ! Local work array for the pointering
-   integer  :: ioffset, ioffsetoutput        ! Offsets for input and start of output
-   integer  :: ipointLength
-   integer  :: iseg, isum, iinpt
-   integer  :: nrsums
-   integer, allocatable  :: nrinputs(:)
+   integer(kind=int_wp), allocatable ::ipnt(:)          ! Local work array for the pointering
+   integer(kind=int_wp)   ::ioffset, ioffsetoutput        ! Offsets for input and start of output
+   integer(kind=int_wp)   ::ipointLength
+   integer(kind=int_wp)   ::iseg, isum, iinpt
+   integer(kind=int_wp)   ::nrsums
+   integer(kind=int_wp), allocatable ::nrinputs(:)
 
-   real(8)  :: total
-   real(8), allocatable  :: conversionfactor(:)
+   real(kind=dp)   ::total
+   real(kind=dp), allocatable ::conversionfactor(:)
 
    nrsums = nint(pmsa(ipoint(1)))
    allocate(nrinputs(nrsums), conversionfactor(nrsums))

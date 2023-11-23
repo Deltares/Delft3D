@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_read_sub_procgrid
+      use m_waq_precision
+
 
       implicit none
 
@@ -53,25 +55,25 @@
 
 !     declaration of arguments
 
-      integer               , intent(in   ) :: notot         !< nr of substances
+      integer(kind=int_wp), intent(in   ) ::  notot          !< nr of substances
       character(20)         , intent(in   ) :: syname(notot) !< substance names
       type(GridPointerColl) , intent(in   ) :: GridPs        !< collection of all grid definitions
-      integer               , intent(inout) :: isysg (notot) !< process gridnr of substances
-      integer               , intent(inout) :: ierr          !< cummulative error count
+      integer(kind=int_wp), intent(inout) ::  isysg (notot)  !< process gridnr of substances
+      integer(kind=int_wp), intent(inout) ::  ierr           !< cummulative error count
 
 !     local declarations
 
-      integer                 :: itoken           ! integer token from input
-      integer                 :: idummy           ! dummy which content is not used
-      real                    :: adummy           ! dummy which content is not used
+      integer(kind=int_wp) ::  itoken            ! integer token from input
+      integer(kind=int_wp) ::  idummy            ! dummy which content is not used
+      real(kind=real_wp) ::  adummy            ! dummy which content is not used
       character(len=255)      :: ctoken           ! character token from input
       character               :: cdummy           ! dummy which content is not used
-      integer                 :: itype            ! type of input to be needded
-      integer                 :: ierr2            ! local error indication
-      integer                 :: sysused(notot)   ! work array substance selection
-      integer                 :: isys             ! index substance
-      integer                 :: i_grid           ! index grid in collection
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  itype             ! type of input to be needded
+      integer(kind=int_wp) ::  ierr2             ! local error indication
+      integer(kind=int_wp) ::  sysused(notot)    ! work array substance selection
+      integer(kind=int_wp) ::  isys              ! index substance
+      integer(kind=int_wp) ::  i_grid            ! index grid in collection
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "read_sub_procgrid", ithndl )
 
 !     some init

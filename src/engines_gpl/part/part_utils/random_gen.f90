@@ -66,7 +66,7 @@
 !
 !  data definition module(s)
 !
-      use precision_part    ! single and double precision
+      use m_waq_precision    ! single and double precision
 !
 !
 !     save values between invocations
@@ -87,4 +87,3 @@
       return
       end function
       end module random_generator
-

@@ -3190,6 +3190,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        endif
        ierr = nf90_put_att(irstfile, id_ucx,  'long_name'    , 'flow element center velocity vector, x-component')
        ierr = nf90_put_att(irstfile, id_ucx,  'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucx,  '_FillValue'   , dmiss)
 
        ! Definition and attributes of flow data on centres: y-component of the velocity
        ierr = nf90_def_var(irstfile, 'ucy', nf90_double, (/ id_laydim, id_flowelemdim, id_timedim /) , id_ucy)
@@ -3201,6 +3202,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        endif
        ierr = nf90_put_att(irstfile, id_ucy,  'long_name'    , 'flow element center velocity vector, y-component')
        ierr = nf90_put_att(irstfile, id_ucy,  'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucy,  '_FillValue'   , dmiss)
 
        ! Definition and attributes of flow data on centres: z-component of the velocity
        ierr = nf90_def_var(irstfile, 'ucz', nf90_double, (/ id_laydim, id_flowelemdim, id_timedim /) , id_ucz)
@@ -3208,6 +3210,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_ucz,  'standard_name', 'upward_sea_water_velocity')
        ierr = nf90_put_att(irstfile, id_ucz,  'long_name'    , 'upward velocity on flow element center')
        ierr = nf90_put_att(irstfile, id_ucz,  'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucz,  '_FillValue'   , dmiss)
 
        ! Definition and attributes of flow data on centres: z-component of the velocity on vertical interface
        ierr = nf90_def_var(irstfile, 'ww1', nf90_double, (/ id_wdim, id_flowelemdim, id_timedim /) , id_ww1)
@@ -3287,6 +3290,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        endif
        ierr = nf90_put_att(irstfile, id_ucx,  'long_name'    , 'velocity on flow element center, x-component')
        ierr = nf90_put_att(irstfile, id_ucx,  'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucx,  '_FillValue'   , dmiss)
 
        ! Definition and attributes of flow data on centres: y-component of the velocity
        ierr = nf90_def_var(irstfile, 'ucy', nf90_double, (/ id_flowelemdim, id_timedim /) , id_ucy)
@@ -3298,6 +3302,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        endif
        ierr = nf90_put_att(irstfile, id_ucy,  'long_name'    , 'velocity on flow element center, y-component')
        ierr = nf90_put_att(irstfile, id_ucy,  'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucy,  '_FillValue'   , dmiss)
 
        ! Definition and attributes of flow data on edges: velocity magnitude at latest timestep
        ierr = nf90_def_var(irstfile, 'unorm' , nf90_double, (/ id_flowlinkdim, id_timedim /) , id_unorm)

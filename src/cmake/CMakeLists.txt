@@ -34,7 +34,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
     # To be implemented later on
 else()
-    echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
+    message (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
     include(compiler_options/intel.cmake)
 endif()
 

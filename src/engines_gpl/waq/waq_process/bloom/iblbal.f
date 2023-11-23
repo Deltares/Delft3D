@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_iblbal
+      use m_waq_precision
+
 
       implicit none
 
@@ -37,12 +39,12 @@
 !     Function : set common CBLBAL communication with balance routines
 !     Jos van Gils, May 2011: bug fix for N-fixers and heterotrophs
 !
-      integer        ::  ntyp_m              ! Max number of types
-      integer        ::  ntyp_a              ! Actual number of types
-      real           ::  algtyp(0:20,ntyp_m) ! Characteristics per algae type
-      integer        ::  ipoint(ntyp_a)      ! pointers to bloom algea concentration array
+      integer(kind=int_wp) ::ntyp_m              ! Max number of types
+      integer(kind=int_wp) ::ntyp_a              ! Actual number of types
+      real(kind=real_wp) ::algtyp(0:20,ntyp_m) ! Characteristics per algae type
+      integer(kind=int_wp) ::ipoint(ntyp_a)      ! pointers to bloom algea concentration array
 
-      integer        :: ialg
+      integer(kind=int_wp) ::ialg
 !                     index  4 is NC-ratio
 !                     index  5 is PC-ratio
 !                     index 16 is NC-ratio detritus uptake
