@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_wq_processes_proces
+use m_waq_precision
 use m_wq_processes_velocities
 
 
@@ -64,95 +65,95 @@ contains
 
 !     Kind         Function         Name                          Description
 
-      integer( 4), intent(in   ) :: notot                       !< Total number of substances
-      integer( 4), intent(in   ) :: noseg                       !< Nr. of computational volumes
-      integer( 4), intent(in   ) :: nodef                       !< Number of values in the deafult array
-      integer( 4), intent(in   ) :: novar                       !<
-      real   ( 4), intent(inout) :: conc  (notot,noseg)         !< Model concentrations
-      real   ( 8), intent(in   ) :: volume(      noseg)         !< Segment volumes
-      real   ( 8), intent(in   ) :: time                        !< Time in system clock units
-      real   ( 8), intent(in   ) :: dts                         !< Time step system clock units
-      real   ( 8), intent(inout) :: deriv (noseg,notot)         !< Model derivatives
-      integer( 4), intent(in   ) :: ndmpar                      !< Number of dump areas
-      integer( 4), intent(in   ) :: nproc                       !< Number of processes
-      integer( 4), intent(in   ) :: noflux                      !< Number of fluxes
-      integer( 4), intent(in   ) :: ipmsa (*)                   !< Direct pointer in DELWAQ arrays
-      integer( 4), intent(in   ) :: prvnio(nproc)               !< Nr. of state variables per proces
-      integer( 4), intent(in   ) :: promnr(nproc)               !< Proces module number per proces
-      integer( 4), intent(in   ) :: iflux (nproc)               !< Offset in flux array per process
-      integer( 4), intent(in   ) :: increm(*)                   !< Direct increment in DELWAQ arrays
-      real   ( 4)                :: flux  (noflux,noseg)        !< Proces fluxes
-      real   ( 8), intent(inout) :: flxdmp(2,noflux,ndmps)        !< Fluxes at dump segments
-      real   ( 4), intent(in   ) :: stochi(notot ,noflux)       !< Proces stochiometry
-      integer( 4), intent(in   ) :: ibflag                      !< if 1 then mass balance output
-      integer( 4), intent(in   ) :: ipbloo                      !< Number of Bloom module  (if >0)
-      integer( 4), intent(in   ) :: ioffbl                      !< Offset in IPMSA for Bloom
-      real   ( 8), intent(inout) :: amass (notot,noseg)         !< mass array to be updated
-      integer( 4), intent(in   ) :: nosys                       !< number of active substances
-      integer( 4), intent(in   ) :: isfact                      !< system clock in seconds
-      integer( 4), intent(in   ) :: itfact                      !< time scale factor processes
-      integer( 4), intent(in   ) :: iexpnt(4,*)                 !< Exchange pointer
-      integer( 4), intent(in   ) :: iknmrk(noseg)               !< Integration suboptions
-      integer( 4), intent(in   ) :: noq1                        !< Number of exchanges first direction
-      integer( 4), intent(in   ) :: noq2                        !< Number of exchanges second direction
-      integer( 4), intent(in   ) :: noq3                        !< Number of exchanges vertical
-      integer( 4), intent(in   ) :: noq4                        !< Number of exchanges in the bed
-      real   ( 4), intent(in   ) :: area  (*)                   !< exchange areas
-      integer( 4), intent(in   ) :: ndspn                       !< Number of new dispersion arrays
-      integer( 4), intent(in   ) :: idpnew(nosys )              !< Pointer to new disp array
-      real   ( 4), intent(inout) :: dispnw(ndspn ,*)            !< New dispersion array
-      integer( 4), intent(in   ) :: ndspx                       !< Nr. of calculated dispersions
-      real   ( 4)                :: dspx  (ndspx ,*)            !< Calculated dispersions
-      real   ( 4), intent(in   ) :: dsto  (nosys,ndspx)         !< Factor for calc. dispersions
-      integer( 4), intent(in   ) :: nveln                       !< Nr. of new velocity array's
-      integer( 4), intent(in   ) :: ivpnew(nosys )              !< Pointer to new velo array
-      real   ( 4), intent(  out) :: velonw(nveln ,*)            !< New velocity array
-      integer( 4), intent(in   ) :: nvelx                       !< Nr. of calculated velocities
-      real   ( 4)                :: velx  (nvelx ,*)            !< Calculated velocities
-      real   ( 4), intent(in   ) :: vsto  (nosys,nvelx)         !< Factor for velocitie
-      integer( 4), intent(in   ) :: isdmp (noseg)               !< pointer dumped segments
-      real   ( 4), intent(inout) :: defaul(nodef)               !< Default proces parameters
-      integer( 4), intent(inout) :: prondt(nproc)               !<
-      integer( 4), intent(in   ) :: prvvar(*)                   !<
-      integer( 4), intent(in   ) :: prvtyp(*)                   !<
-      integer( 4), intent(in   ) :: vararr(novar)               !<
-      integer( 4), intent(in   ) :: varidx(novar)               !<
-      integer( 4), intent(in   ) :: arrpoi(78)                  !<
-      integer( 4), intent(in   ) :: arrknd(78)                  !<
-      integer( 4), intent(in   ) :: arrdm1(78)                  !<
-      integer( 4), intent(in   ) :: arrdm2(78)                  !<
-      real   ( 4), intent(in   ) :: a     (*)                   !<
-      integer( 4), intent(in   ) :: ndmps                       !<
+      integer(kind=int_wp), intent(in   ) ::  notot                        !< Total number of substances
+      integer(kind=int_wp), intent(in   ) ::  noseg                        !< Nr. of computational volumes
+      integer(kind=int_wp), intent(in   ) ::  nodef                        !< Number of values in the deafult array
+      integer(kind=int_wp), intent(in   ) ::  novar                        !<
+      real(kind=real_wp), intent(inout) ::  conc  (notot,noseg)          !< Model concentrations
+      real(kind=dp), intent(in   ) ::  volume(      noseg)          !< Segment volumes
+      real(kind=dp), intent(in   ) ::  time                         !< Time in system clock units
+      real(kind=dp), intent(in   ) ::  dts                          !< Time step system clock units
+      real(kind=dp), intent(inout) ::  deriv (noseg,notot)          !< Model derivatives
+      integer(kind=int_wp), intent(in   ) ::  ndmpar                       !< Number of dump areas
+      integer(kind=int_wp), intent(in   ) ::  nproc                        !< Number of processes
+      integer(kind=int_wp), intent(in   ) ::  noflux                       !< Number of fluxes
+      integer(kind=int_wp), intent(in   ) ::  ipmsa (*)                    !< Direct pointer in DELWAQ arrays
+      integer(kind=int_wp), intent(in   ) ::  prvnio(nproc)                !< Nr. of state variables per proces
+      integer(kind=int_wp), intent(in   ) ::  promnr(nproc)                !< Proces module number per proces
+      integer(kind=int_wp), intent(in   ) ::  iflux (nproc)                !< Offset in flux array per process
+      integer(kind=int_wp), intent(in   ) ::  increm(*)                    !< Direct increment in DELWAQ arrays
+      real(kind=real_wp) ::  flux  (noflux,noseg)         !< Proces fluxes
+      real(kind=dp), intent(inout) ::  flxdmp(2,noflux,ndmps)         !< Fluxes at dump segments
+      real(kind=real_wp), intent(in   ) ::  stochi(notot ,noflux)        !< Proces stochiometry
+      integer(kind=int_wp), intent(in   ) ::  ibflag                       !< if 1 then mass balance output
+      integer(kind=int_wp), intent(in   ) ::  ipbloo                       !< Number of Bloom module  (if >0)
+      integer(kind=int_wp), intent(in   ) ::  ioffbl                       !< Offset in IPMSA for Bloom
+      real(kind=dp), intent(inout) ::  amass (notot,noseg)          !< mass array to be updated
+      integer(kind=int_wp), intent(in   ) ::  nosys                        !< number of active substances
+      integer(kind=int_wp), intent(in   ) ::  isfact                       !< system clock in seconds
+      integer(kind=int_wp), intent(in   ) ::  itfact                       !< time scale factor processes
+      integer(kind=int_wp), intent(in   ) ::  iexpnt(4,*)                  !< Exchange pointer
+      integer(kind=int_wp), intent(in   ) ::  iknmrk(noseg)                !< Integration suboptions
+      integer(kind=int_wp), intent(in   ) ::  noq1                         !< Number of exchanges first direction
+      integer(kind=int_wp), intent(in   ) ::  noq2                         !< Number of exchanges second direction
+      integer(kind=int_wp), intent(in   ) ::  noq3                         !< Number of exchanges vertical
+      integer(kind=int_wp), intent(in   ) ::  noq4                         !< Number of exchanges in the bed
+      real(kind=real_wp), intent(in   ) ::  area  (*)                    !< exchange areas
+      integer(kind=int_wp), intent(in   ) ::  ndspn                        !< Number of new dispersion arrays
+      integer(kind=int_wp), intent(in   ) ::  idpnew(nosys )               !< Pointer to new disp array
+      real(kind=real_wp), intent(inout) ::  dispnw(ndspn ,*)             !< New dispersion array
+      integer(kind=int_wp), intent(in   ) ::  ndspx                        !< Nr. of calculated dispersions
+      real(kind=real_wp) ::  dspx  (ndspx ,*)             !< Calculated dispersions
+      real(kind=real_wp), intent(in   ) ::  dsto  (nosys,ndspx)          !< Factor for calc. dispersions
+      integer(kind=int_wp), intent(in   ) ::  nveln                        !< Nr. of new velocity array's
+      integer(kind=int_wp), intent(in   ) ::  ivpnew(nosys )               !< Pointer to new velo array
+      real(kind=real_wp), intent(  out) ::  velonw(nveln ,*)             !< New velocity array
+      integer(kind=int_wp), intent(in   ) ::  nvelx                        !< Nr. of calculated velocities
+      real(kind=real_wp) ::  velx  (nvelx ,*)             !< Calculated velocities
+      real(kind=real_wp), intent(in   ) ::  vsto  (nosys,nvelx)          !< Factor for velocitie
+      integer(kind=int_wp), intent(in   ) ::  isdmp (noseg)                !< pointer dumped segments
+      real(kind=real_wp), intent(inout) ::  defaul(nodef)                !< Default proces parameters
+      integer(kind=int_wp), intent(inout) ::  prondt(nproc)                !<
+      integer(kind=int_wp), intent(in   ) ::  prvvar(*)                    !<
+      integer(kind=int_wp), intent(in   ) ::  prvtyp(*)                    !<
+      integer(kind=int_wp), intent(in   ) ::  vararr(novar)                !<
+      integer(kind=int_wp), intent(in   ) ::  varidx(novar)                !<
+      integer(kind=int_wp), intent(in   ) ::  arrpoi(78)                   !<
+      integer(kind=int_wp), intent(in   ) ::  arrknd(78)                   !<
+      integer(kind=int_wp), intent(in   ) ::  arrdm1(78)                   !<
+      integer(kind=int_wp), intent(in   ) ::  arrdm2(78)                   !<
+      real(kind=real_wp), intent(in   ) ::  a     (*)                    !<
+      integer(kind=int_wp), intent(in   ) ::  ndmps                        !<
       character(10)              :: pronam(nproc)               !< Name of called module
-      integer( 4), intent(in   ) :: prvpnt(nproc)               !< entry in process io pointers (cummulative of prvnio)
-      real   ( 4), intent(in   ) :: surfac(noseg)               !< horizontal surface
-      integer( 4), intent(in   ) :: flux_int                    !< Switch for integration of process fluxes by Delwaq (or not)
-      integer( 4)                :: lunrep                      !< Logical unit number of report-file
+      integer(kind=int_wp), intent(in   ) ::  prvpnt(nproc)                !< entry in process io pointers (cummulative of prvnio)
+      real(kind=real_wp), intent(in   ) ::  surfac(noseg)                !< horizontal surface
+      integer(kind=int_wp), intent(in   ) ::  flux_int                     !< Switch for integration of process fluxes by Delwaq (or not)
+      integer(kind=int_wp) ::  lunrep                       !< Logical unit number of report-file
 
 !     Local declarations
 
-      integer( 4)  ivar  , iarr  , iv_idx, ip_arr          !  help variables
-      integer( 4)  ipndt , ndtblo                          !  help variables
-      integer( 4)  nfluxp, ifracs, iproc   !  help variables
-      real   ( 8)                :: dtspro    ! fractional step dts
-      integer(4)                 :: ipp_dts    ! pointer in default array to process specific dts
-      integer(4)                 :: ipp_delt   ! pointer in default array to process specific delt
-      INTEGER ISTEP, NOQ
-      integer                    :: open_shared_library
-      integer, save              :: ifirst = 1
+      integer(kind=int_wp) :: ivar  , iarr  , iv_idx, ip_arr           !  help variables
+      integer(kind=int_wp) :: ipndt , ndtblo                           !  help variables
+      integer(kind=int_wp) :: nfluxp, ifracs, iproc    !  help variables
+      real(kind=dp) ::  dtspro     ! fractional step dts
+      integer(kind=int_wp) ::  ipp_dts     ! pointer in default array to process specific dts
+      integer(kind=int_wp) ::  ipp_delt    ! pointer in default array to process specific delt
+      INTEGER(kind=int_wp) :: ISTEP, NOQ
+      integer(kind=int_wp) ::  open_shared_library
+      integer(kind=int_wp), save ::  ifirst = 1
       logical                    :: lfound
-      integer                    :: idummy
-      real                       :: rdummy
-      integer                    :: ierror
-      integer                    :: ierr2
+      integer(kind=int_wp) ::  idummy
+      real(kind=real_wp) ::  rdummy
+      integer(kind=int_wp) ::  ierror
+      integer(kind=int_wp) ::  ierr2
       logical                    :: l_stop
-      integer(4)                 :: iflx                            ! Loop counter over fluxes
-      integer(4)                 :: iseg                            ! Loop counter over segments
-      integer(4)                 :: nflux1                          ! Help variable for fluxes
-      integer(4)                 :: ips                             ! Help variable for dump segments
-      real(8)                    :: vol                             ! Help variable volume
-      real(8)                    :: ndt                             ! Help variable time step multiplier
-      real(8)                    :: atfac                           ! Help variable
+      integer(kind=int_wp) ::  iflx                             ! Loop counter over fluxes
+      integer(kind=int_wp) ::  iseg                             ! Loop counter over segments
+      integer(kind=int_wp) ::  nflux1                           ! Help variable for fluxes
+      integer(kind=int_wp) ::  ips                              ! Help variable for dump segments
+      real(kind=dp) ::  vol                              ! Help variable volume
+      real(kind=dp) ::  ndt                              ! Help variable time step multiplier
+      real(kind=dp) ::  atfac                            ! Help variable
 
       save    istep
       data    istep  / 0 /
@@ -338,10 +339,9 @@ contains
                               noq4  , pronam, dll_opb)
 
       use timers
-      use iso_c_binding
       use process_registration
 
-      integer             iproc , k, noseg , noflux, noq1  , noq2  , noq3  , noq4
+      integer(kind=int_wp) :: iproc , k, noseg , noflux, noq1  , noq2  , noq3  , noq4
       integer             prvnio(*)      , prvtyp(*)      , &
                           prvvar(*)      , vararr(*)      , &
                           varidx(*)      , arrknd(*)      , &
@@ -356,17 +356,17 @@ contains
 !
 !     Local
 !
-      integer :: ityp
-      integer :: ivario
-      integer :: ivar
-      integer :: iarr
-      integer :: iv_idx
-      integer :: iarknd
-      integer :: ip_arr
-      integer :: idim1
-      integer :: idim2
-      integer :: ipflux
-
+      integer(kind=int_wp) ::  ityp
+      integer(kind=int_wp) ::  ivario
+      integer(kind=int_wp) ::  ivar
+      integer(kind=int_wp) ::  iarr
+      integer(kind=int_wp) ::  iv_idx
+      integer(kind=int_wp) ::  iarknd
+      integer(kind=int_wp) ::  ip_arr
+      integer(kind=int_wp) ::  idim1
+      integer(kind=int_wp) ::  idim2
+      integer(kind=int_wp) ::  ipflux
+ 
       integer(4) ithndl /0/
       if ( timon ) call timstrt ( "onepro_wqp", ithndl )
 
@@ -421,33 +421,33 @@ contains
 !     Arguments           :
 
 !     Kind        Function         Name   Dimensions                 Description
-      integer(4), intent(in   ) :: nproc                           ! Total number of processes
-      integer(4), intent(in   ) :: noflux                          ! Total number of fluxes
-      integer(4), intent(in   ) :: noseg                           ! Total number of computational volumes
-      integer(4), intent(in   ) :: notot                           ! Total number of substances
-      integer(4), intent(in   ) :: ndmps                           ! Total number of mass balance areas
-      real   (8), intent(in   ) :: dts
-      integer(4), intent(in   ) :: iflux (nproc )                  ! Offset in the flux array per process
-      real   (8), intent(in   ) :: volume(noseg )                  ! Computational volumes
-      real   (8), intent(inout) :: deriv (noseg , notot )          ! Array with derivatives
-      real   (4), intent(in   ) :: stochi(notot , noflux )         ! Stoichiometric factors per flux
-      real   (4), intent(in   ) :: flux  (noflux, noseg )          ! Process fluxes
-      integer(4), intent(in   ) :: prondt(nproc )                  ! Time step size of the process
-      integer(4), intent(in   ) :: ibflag                          ! If > 0 then balances are required
-      integer(4), intent(in   ) :: isdmp (noseg )                  ! Segment to dumped segment pointer
-      real   (8), intent(inout) :: flxdmp(2,noflux, ndmps  )       ! Dumped fluxes
-      integer(4), intent(in   ) :: ipbloo                          ! The BLOOM  process if any
-      integer(4), intent(in   ) :: istep                           ! Time step nr.
+      integer(kind=int_wp), intent(in   ) ::  nproc                            ! Total number of processes
+      integer(kind=int_wp), intent(in   ) ::  noflux                           ! Total number of fluxes
+      integer(kind=int_wp), intent(in   ) ::  noseg                            ! Total number of computational volumes
+      integer(kind=int_wp), intent(in   ) ::  notot                            ! Total number of substances
+      integer(kind=int_wp), intent(in   ) ::  ndmps                            ! Total number of mass balance areas
+      real(kind=dp), intent(in   ) ::  dts 
+      integer(kind=int_wp), intent(in   ) ::  iflux (nproc )                   ! Offset in the flux array per process
+      real(kind=dp), intent(in   ) ::  volume(noseg )                   ! Computational volumes
+      real(kind=dp), intent(inout) ::  deriv (noseg , notot )           ! Array with derivatives
+      real(kind=real_wp), intent(in   ) ::  stochi(notot , noflux )          ! Stoichiometric factors per flux
+      real(kind=real_wp), intent(in   ) ::  flux  (noflux, noseg )           ! Process fluxes
+      integer(kind=int_wp), intent(in   ) ::  prondt(nproc )                   ! Time step size of the process
+      integer(kind=int_wp), intent(in   ) ::  ibflag                           ! If > 0 then balances are required
+      integer(kind=int_wp), intent(in   ) ::  isdmp (noseg )                   ! Segment to dumped segment pointer
+      real(kind=dp), intent(inout) ::  flxdmp(2,noflux, ndmps  )        ! Dumped fluxes
+      integer(kind=int_wp), intent(in   ) ::  ipbloo                           ! The BLOOM  process if any
+      integer(kind=int_wp), intent(in   ) ::  istep                            ! Time step nr.
 
 !     Local
-      integer(4)                :: iproc                           ! Loop counter over processes
-      integer(4)                :: iflx                            ! Loop counter over fluxes
-      integer(4)                :: iseg                            ! Loop counter over segments
-      integer(4)                :: nflux1                          ! Help variable for fluxes
-      integer(4)                :: ips                             ! Help variable for dump segments
-      integer(4)                :: nfluxp                          ! Number of fluxes in this process
-      real(8)                   :: vol                             ! Help variable volume
-      real(8)                   :: ndt                             ! Help variable time step multiplier
+      integer(kind=int_wp) ::  iproc                            ! Loop counter over processes
+      integer(kind=int_wp) ::  iflx                             ! Loop counter over fluxes
+      integer(kind=int_wp) ::  iseg                             ! Loop counter over segments
+      integer(kind=int_wp) ::  nflux1                           ! Help variable for fluxes
+      integer(kind=int_wp) ::  ips                              ! Help variable for dump segments
+      integer(kind=int_wp) ::  nfluxp                           ! Number of fluxes in this process
+      real(kind=dp) ::  vol                              ! Help variable volume
+      real(kind=dp) ::  ndt                              ! Help variable time step multiplier
 
       integer(4) ithndl /0/
       if ( timon ) call timstrt ( "twopro_wqm", ithndl )

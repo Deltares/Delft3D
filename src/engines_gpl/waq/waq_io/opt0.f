@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_opt0
+      use m_waq_precision
       use m_opt3
       use m_opt2
 
@@ -85,45 +86,45 @@
 
 !     kind           function         name           Descriptipon
 
-      integer  ( 4), intent(inout) :: lun    (*)    !< array with unit numbers
-      integer  ( 4), intent(in   ) :: is            !< entry in lun for this call
-      integer  ( 4), intent(in   ) :: noql1         !< number of exchanges 1st direction
-      integer  ( 4), intent(in   ) :: noql2         !< number of exchanges 2nd direction
-      integer  ( 4), intent(in   ) :: noql3         !< number of exchanges 3rd direction
-      integer  ( 4), intent(in   ) :: ndim2         !< number of items per block
-      integer  ( 4), intent(in   ) :: ndim3         !< number of scale factors
-      integer  ( 4), intent(inout) :: nrftot        !< number of functions
-      integer  ( 4), intent(inout) :: nrharm        !< number of harmonics
-      integer  ( 4), intent(in   ) :: ifact         !< factor between time scales
+      integer(kind=int_wp), intent(inout) ::  lun    (*)     !< array with unit numbers
+      integer(kind=int_wp), intent(in   ) ::  is             !< entry in lun for this call
+      integer(kind=int_wp), intent(in   ) ::  noql1          !< number of exchanges 1st direction
+      integer(kind=int_wp), intent(in   ) ::  noql2          !< number of exchanges 2nd direction
+      integer(kind=int_wp), intent(in   ) ::  noql3          !< number of exchanges 3rd direction
+      integer(kind=int_wp), intent(in   ) ::  ndim2          !< number of items per block
+      integer(kind=int_wp), intent(in   ) ::  ndim3          !< number of scale factors
+      integer(kind=int_wp), intent(inout) ::  nrftot         !< number of functions
+      integer(kind=int_wp), intent(inout) ::  nrharm         !< number of harmonics
+      integer(kind=int_wp), intent(in   ) ::  ifact          !< factor between time scales
       logical      , intent(in   ) :: dtflg1        !< 'date'-format 1st time scale
       logical      , intent(in   ) :: disper        !< .true. then dispersion
-      integer      , intent(inout) :: volume        !< if 1 then volume ( out: 0 = computed volumes )
-      integer  ( 4), intent(in   ) :: iwidth        !< width of the output file
+      integer(kind=int_wp), intent(inout) ::  volume         !< if 1 then volume ( out: 0 = computed volumes )
+      integer(kind=int_wp), intent(in   ) ::  iwidth         !< width of the output file
       character( *), intent(inout) :: lchar  (*)    !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)    !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  filtype(*)     !< type of binary file
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer  ( 4), intent(in   ) :: ioutpt        !< how extensive is output ?
-      integer  ( 4), intent(inout) :: ierr          !< cumulative error count
-      integer  ( 4), intent(inout) :: iwar          !< cumulative warning count
+      integer(kind=int_wp), intent(in   ) ::  ioutpt         !< how extensive is output ?
+      integer(kind=int_wp), intent(inout) ::  ierr           !< cumulative error count
+      integer(kind=int_wp), intent(inout) ::  iwar           !< cumulative warning count
       logical      , intent(in)    :: dont_read     !< do not actually read tokens, if true, the information is already provided
 
 
       logical        bound       !  if .true. then boundary call
       logical        waste       !  if .true. then waste call
       logical        skip        !  if .true. then waste call with skip
-      integer        iopt1       !  first  option ( type of file e.g. 0 = binary file )
-      integer        iopt2       !  second option ( 1,2 = constant, 3 = time varying )
-      integer        ndim1       !  sum of input in 3 directions
-      integer        ndtot       !  total size of matrix (ndim1*ndim2)
-      integer        ierr2       !  local error flag
-      integer        itype       !  to identify the data type read
-      integer        idummy      !  work integer ( = 0 )
-      real           adummy      !  work real    ( = 0.0 )
+      integer(kind=int_wp) :: iopt1        !  first  option ( type of file e.g. 0 = binary file )
+      integer(kind=int_wp) :: iopt2        !  second option ( 1,2 = constant, 3 = time varying )
+      integer(kind=int_wp) :: ndim1        !  sum of input in 3 directions
+      integer(kind=int_wp) :: ndtot        !  total size of matrix (ndim1*ndim2)
+      integer(kind=int_wp) :: ierr2        !  local error flag
+      integer(kind=int_wp) :: itype        !  to identify the data type read
+      integer(kind=int_wp) :: idummy       !  work integer ( = 0 )
+      real(kind=real_wp) :: adummy       !  work real    ( = 0.0 )
       character(128) cdummy      !  work character
-      integer        k           !  loop counter
-      real           disp(3,1)   !  dispersions in 3 directions
-      real(4), allocatable :: values(:,:) ! read buffer for the values
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: k            !  loop counter
+      real(kind=real_wp) :: disp(3,1)    !  dispersions in 3 directions
+      real(kind=real_wp), allocatable ::  values(:,:)  ! read buffer for the values
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "opt0", ithndl )
 
       idummy =   0

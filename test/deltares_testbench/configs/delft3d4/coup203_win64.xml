@@ -15,15 +15,15 @@
             <location name="reference_engines">
                 <credential ref="commandline"/>
 				<!--root>https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32</root-->
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>

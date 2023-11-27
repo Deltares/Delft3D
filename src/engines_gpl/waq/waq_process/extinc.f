@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_extinc
+      use m_waq_precision
+
 
       implicit none
 
@@ -47,60 +49,60 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT(41) , INCREM(41) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT(41) , INCREM(41) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
 !     Local declaration
 !
-      REAL(8) A1      ! R*8 1 I specific ext. inorganic suspended matter 1  [m2/gDM]
-      REAL(8) A2      ! R*8 1 I specific ext. inorganic suspended matter 2  [m2/gDM]
-      REAL(8) A3      ! R*8 1 I specific ext. inorganic suspended matter 3  [m2/gDM]
-      REAL(8) EXT     ! R*8 1 O total extinction                               [1/m]
-      REAL(8) EXTIM   ! R*8 1 O calculated extinction IM                       [1/m]
-      REAL(8) EXTPOC  ! R*8 1 O extinction POC                                 [1/m]
-      REAL(8) EXTDOC  ! R*8 1 O extinction DOC                                 [1/m]
-      REAL(8) EXT0    ! R*8 1 I background extinction                          [1/m]
-      REAL(8) EXTBL   ! R*8 1 I extinction algae (Bloom)                       [1/m]
-      REAL(8) EXTDYN  ! R*8 1 I extinction algae (Dynamo)                      [1/m]
-      REAL(8) EXTPRO  ! R*8 1 I extinction algae (Protist)                     [1/m]
-      REAL(8) EXTALG  ! R*8 1 I extinction algae                                [1/m]
-      REAL(8) EXTMAC  ! R*8 1 I extinction macrophytes                         [1/m]
-      REAL(8) EXTSAL  ! R*8 1 O extinction DOC for fresh water fraction        [1/m]
-      REAL(8) AIM1    ! R*8 1 I suspended solids  fraction 1                [gDM/m3]
-      REAL(8) AIM2    ! R*8 1 I suspended solids  fraction 2                [gDM/m3]
-      REAL(8) AIM3    ! R*8 1 I suspended solids  fraction 3                [gDM/m3]
-      REAL(8) POC1    ! R*8 1 I fast decomposing detritus                    [gC/m3]
-      REAL(8) POC2    ! R*8 1 I medium decomposing detritus                  [gC/m3]
-      REAL(8) POC3    ! R*8 1 I slow decomposing detritus                    [gC/m3]
-      REAL(8) POC4    ! R*8 1 I refractory detritus                          [gC/m3]
-      INTEGER SW_UIT  ! Extinction by UITZICHT on (1) or Off (0)              [-]
-      REAL(8) DOC     ! R*8 1 I dissolved organic carbon                     [gC/m3]
-      REAL(8) ADOC    ! R*8 1 I Specific extinction of DOC                   [m2/gC]
-      REAL(8) DIEP1   ! R*8 1 I argument UITZICHT
-      REAL(8) DIEP2   ! R*8 1 I argument UITZICHT
-      REAL(8) CORCHL  ! R*8 1 I argument UITZICHT
-      REAL(8) C_DET   ! R*8 1 I argument UITZICHT
-      REAL(8) C_GL1   ! R*8 1 I argument UITZICHT
-      REAL(8) C_GL2   ! R*8 1 I argument UITZICHT
-      REAL(8) HELHUM  ! R*8 1 I argument UITZICHT
-      REAL(8) TAU     ! R*8 1 I argument UITZICHT
-      REAL(8) ANGLE   ! R*8 1 I argument UITZICHT
-      REAL(8) DETCDM  ! R*8 1 I dry matter carbon ratio detritus              [g/g]
-      REAL(8) XTSAL0  ! R*8 1 I extra VL extinction at Salinity = 0           [1/m]
-      REAL(8) SALMAX  ! R*8 1 I salinity value for extra extinction = 0      [g/kg]
-      REAL(8) SALIN   ! R*8 1 I actual salinity                              [g/kg]
-      REAL(8) APOC1   ! R*8 1 I specific extintion POC1                [1/m/(G/M3)]
-      REAL(8) APOC2   ! R*8 1 I specific extintion POC2                [1/m/(G/M3)]
-      REAL(8) APOC3   ! R*8 1 I specific extintion POC3                [1/m/(G/M3)]
-      REAL(8) APOC4   ! R*8 1 I specific extintion POC4                [1/m/(G/M3)]
+      REAL(kind=dp) ::A1      ! R*8 1 I specific ext. inorganic suspended matter 1  [m2/gDM]
+      REAL(kind=dp) ::A2      ! R*8 1 I specific ext. inorganic suspended matter 2  [m2/gDM]
+      REAL(kind=dp) ::A3      ! R*8 1 I specific ext. inorganic suspended matter 3  [m2/gDM]
+      REAL(kind=dp) ::EXT     ! R*8 1 O total extinction                               [1/m]
+      REAL(kind=dp) ::EXTIM   ! R*8 1 O calculated extinction IM                       [1/m]
+      REAL(kind=dp) ::EXTPOC  ! R*8 1 O extinction POC                                 [1/m]
+      REAL(kind=dp) ::EXTDOC  ! R*8 1 O extinction DOC                                 [1/m]
+      REAL(kind=dp) ::EXT0    ! R*8 1 I background extinction                          [1/m]
+      REAL(kind=dp) ::EXTBL   ! R*8 1 I extinction algae (Bloom)                       [1/m]
+      REAL(kind=dp) ::EXTDYN  ! R*8 1 I extinction algae (Dynamo)                      [1/m]
+      REAL(kind=dp) ::EXTPRO  ! R*8 1 I extinction algae (Protist)                     [1/m]
+      REAL(kind=dp) ::EXTALG  ! R*8 1 I extinction algae                                [1/m]
+      REAL(kind=dp) ::EXTMAC  ! R*8 1 I extinction macrophytes                         [1/m]
+      REAL(kind=dp) ::EXTSAL  ! R*8 1 O extinction DOC for fresh water fraction        [1/m]
+      REAL(kind=dp) ::AIM1    ! R*8 1 I suspended solids  fraction 1                [gDM/m3]
+      REAL(kind=dp) ::AIM2    ! R*8 1 I suspended solids  fraction 2                [gDM/m3]
+      REAL(kind=dp) ::AIM3    ! R*8 1 I suspended solids  fraction 3                [gDM/m3]
+      REAL(kind=dp) ::POC1    ! R*8 1 I fast decomposing detritus                    [gC/m3]
+      REAL(kind=dp) ::POC2    ! R*8 1 I medium decomposing detritus                  [gC/m3]
+      REAL(kind=dp) ::POC3    ! R*8 1 I slow decomposing detritus                    [gC/m3]
+      REAL(kind=dp) ::POC4    ! R*8 1 I refractory detritus                          [gC/m3]
+      INTEGER(kind=int_wp) ::SW_UIT  ! Extinction by UITZICHT on (1) or Off (0)              [-]
+      REAL(kind=dp) ::DOC     ! R*8 1 I dissolved organic carbon                     [gC/m3]
+      REAL(kind=dp) ::ADOC    ! R*8 1 I Specific extinction of DOC                   [m2/gC]
+      REAL(kind=dp) ::DIEP1   ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::DIEP2   ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::CORCHL  ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::C_DET   ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::C_GL1   ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::C_GL2   ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::HELHUM  ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::TAU     ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::ANGLE   ! R*8 1 I argument UITZICHT
+      REAL(kind=dp) ::DETCDM  ! R*8 1 I dry matter carbon ratio detritus              [g/g]
+      REAL(kind=dp) ::XTSAL0  ! R*8 1 I extra VL extinction at Salinity = 0           [1/m]
+      REAL(kind=dp) ::SALMAX  ! R*8 1 I salinity value for extra extinction = 0      [g/kg]
+      REAL(kind=dp) ::SALIN   ! R*8 1 I actual salinity                              [g/kg]
+      REAL(kind=dp) ::APOC1   ! R*8 1 I specific extintion POC1                [1/m/(G/M3)]
+      REAL(kind=dp) ::APOC2   ! R*8 1 I specific extintion POC2                [1/m/(G/M3)]
+      REAL(kind=dp) ::APOC3   ! R*8 1 I specific extintion POC3                [1/m/(G/M3)]
+      REAL(kind=dp) ::APOC4   ! R*8 1 I specific extintion POC4                [1/m/(G/M3)]
 !
-      REAL(8) CHLORP, DETRIC, GLOEIR, AH_380
-      REAL(8) SECCHI, D_1   , EXTP_D, EXTDET, EXTGL, EXTHUM
-      INTEGER      IFLUX, ISEG
+      REAL(kind=dp) ::CHLORP, DETRIC, GLOEIR, AH_380
+      REAL(kind=dp) ::SECCHI, D_1   , EXTP_D, EXTDET, EXTGL, EXTHUM
+      INTEGER(kind=int_wp) ::IFLUX, ISEG
 !
-      INTEGER  IPNT(41)
-      INTEGER  NR_MES
+      INTEGER(kind=int_wp) ::IPNT(41)
+      INTEGER(kind=int_wp) ::NR_MES
       SAVE     NR_MES
       DATA     NR_MES / 0 /
 !

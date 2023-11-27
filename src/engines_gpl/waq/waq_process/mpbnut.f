@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_mpbnut
+      use m_waq_precision
+
 
       implicit none
 
@@ -75,20 +77,20 @@ C     Modules called : -
 C     Name     Type   Library
 C     ------   -----  ------------
 
-C     IMPLICIT REAL (A-H,J-Z)
+C     IMPLICIT REAL(kind=real_wp) ::(A-H,J-Z)
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      INTEGER  IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 ,IP7 ,IP8 ,IP9 ,IP10,
+      INTEGER(kind=int_wp) ::IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 ,IP7 ,IP8 ,IP9 ,IP10,
      J         IP11,IP12,IP13,IP14,IP15,IP16,IP17,IP18,IP19,IP20,
      J         IP21,IP22, IP23, IP24
-      INTEGER  IN1 ,IN2 ,IN3 ,IN4 ,IN5 ,IN6 ,IN7 ,IN8 ,IN9 ,IN10,
+      INTEGER(kind=int_wp) ::IN1 ,IN2 ,IN3 ,IN4 ,IN5 ,IN6 ,IN7 ,IN8 ,IN9 ,IN10,
      J         IN11,IN12,IN13,IN14,IN15,IN16,IN17,IN18,IN19,IN20,
      J         IN21,IN22, IN23, IN24
-      INTEGER  IKMRK1, ISEG
-      REAL     LEN   , DIF   , FNBM  , FNSW  , FNH4GS, FNO3GS, FPBM  ,
+      INTEGER(kind=int_wp) ::IKMRK1, ISEG
+      REAL(kind=real_wp) ::LEN   , DIF   , FNBM  , FNSW  , FNH4GS, FNO3GS, FPBM  ,
      J         FPSW  , FPGS  , FSiBM , FSiSW , NH4   , NO3   , PO4   ,
      J         Si    , TCNIT , FRNO3 , TEMP  , DEPTH , SURF  ,
      J         FNO3  , FNH4  , FN    , FTMP  , FPO4  , FSi   ,

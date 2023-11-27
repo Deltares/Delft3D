@@ -1356,6 +1356,7 @@ module m_ec_converter
                return
          end select
          success = .true.
+         deallocate(valuesT, stat=istat)
       end function ecConverterUniform
 
       

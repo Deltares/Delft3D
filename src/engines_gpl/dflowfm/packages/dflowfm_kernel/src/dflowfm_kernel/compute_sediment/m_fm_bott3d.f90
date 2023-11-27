@@ -1634,7 +1634,7 @@ public :: fm_bott3d
 
    use m_flowgeom, only: lnx, wu_mor
    use m_fm_erosed, only: e_ssn, lsed, e_scrn
-   use m_transport, only: fluxhortot
+   use m_transport, only: fluxhortot, ISED1
    
    implicit none
    
@@ -1647,7 +1647,7 @@ public :: fm_bott3d
    !!
    !! Execute
    !!
-
+   lstart = ISED1 - 1
    do ll = 1, lsed
       j = lstart + ll   ! constituent index
       do L=1,lnx

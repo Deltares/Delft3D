@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_veloc
+use m_waq_precision
+
 
 implicit none
 
@@ -39,35 +41,35 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 20) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 20) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 20)   ! L  Local work array for the pointering
-      integer i           ! L  Local general loop counter
-      integer iseg        ! L  Local loop counter for computational element loop
-      integer iq          ! L  Local loop counter for exchanges loop
-      integer ifrom       ! L  Local help variable 'from' comp. elem.
-      integer ito         ! L  Local help variable 'to'   comp. elem.
-      integer ispnt       ! L  Local help variable segment of an exchange
-      integer ikmrkv      ! L  Local help variable feature 'from' comp. elem.
-      integer ikmrkt      ! L  Local help variable feature 'to'   comp. elem.
-      integer ikmrk1      ! L  Local help variable feature
-      real(4) pi, radcf   ! L  pi and  its conversion to radians
-      real(4) x, y        ! L  helpvariables for the direction of velocities
-      real(4) u, u2       ! L  helpvariables for summation of velocities
-      integer icalsw      ! L  computational switch
-      integer iavgsw      ! L  averaging switch
-      integer ip1, ip2, ip3, ip4, ip8, ip10, ip11
-      integer in1, in2, in3, in4, in8, in10, in11
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 20) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 20) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 20)   ! L  Local work array for the pointering
+      integer(kind=int_wp)  ::i           ! L  Local general loop counter
+      integer(kind=int_wp)  ::iseg        ! L  Local loop counter for computational element loop
+      integer(kind=int_wp)  ::iq          ! L  Local loop counter for exchanges loop
+      integer(kind=int_wp)  ::ifrom       ! L  Local help variable 'from' comp. elem.
+      integer(kind=int_wp)  ::ito         ! L  Local help variable 'to'   comp. elem.
+      integer(kind=int_wp)  ::ispnt       ! L  Local help variable segment of an exchange
+      integer(kind=int_wp)  ::ikmrkv      ! L  Local help variable feature 'from' comp. elem.
+      integer(kind=int_wp)  ::ikmrkt      ! L  Local help variable feature 'to'   comp. elem.
+      integer(kind=int_wp)  ::ikmrk1      ! L  Local help variable feature
+      real(kind=real_wp)  ::pi, radcf   ! L  pi and  its conversion to radians
+      real(kind=real_wp)  ::x, y        ! L  helpvariables for the direction of velocities
+      real(kind=real_wp)  ::u, u2       ! L  helpvariables for summation of velocities
+      integer(kind=int_wp)  ::icalsw      ! L  computational switch
+      integer(kind=int_wp)  ::iavgsw      ! L  averaging switch
+      integer(kind=int_wp)  ::ip1, ip2, ip3, ip4, ip8, ip10, ip11
+      integer(kind=int_wp)  ::in1, in2, in3, in4, in8, in10, in11
 !
       parameter ( pi = 3.1415926,  radcf = pi / 180.)
 !
@@ -75,20 +77,20 @@ contains
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(4) MaxVeloc    ! I  maximum horizontal flow velocity                   (m/s)
-      real(4) Orient_1    ! I  orientation of main positive flow direction        (degrees)
-      real(4) Orient_2    ! I  orientation of secondary positive flow direct      (degrees)
-      real(4) SWCalcVelo  ! I  switch (1=lin avg, 2=Flow avg, 3=Area avg)         (-)
-      real(4) SWAvgVelo   ! I  switch (1=Pythagoras, 2=Min, 3=Max)                (-)
-      real(4) Area        ! I  exchange area                                      (m2)
-      real(4) Flow        ! I  flow rate                                          (m3/s)
-      real(4) Velocity    ! O  horizontal flow velocity                           (m/s)
-      real(4) FlowDir     ! O  flow direction relative to North                   (degrees)
-      real(4) Veloc1      ! O  horizontal flow velocity first direction           (m/s)
-      real(4) Veloc2      ! O  horizontal flow velocity second direction          (m/s)
-      real(4) FlowSeg     ! O  horizontal flow averaged over two directions       (m3/s)
-      real(4) FlowSeg1    ! O  horizontal flow first direction                    (m3/s)
-      real(4) FlowSeg2    ! O  horizontal flow second direction                   (m3/s)
+      real(kind=real_wp)  ::MaxVeloc    ! I  maximum horizontal flow velocity                   (m/s)
+      real(kind=real_wp)  ::Orient_1    ! I  orientation of main positive flow direction        (degrees)
+      real(kind=real_wp)  ::Orient_2    ! I  orientation of secondary positive flow direct      (degrees)
+      real(kind=real_wp)  ::SWCalcVelo  ! I  switch (1=lin avg, 2=Flow avg, 3=Area avg)         (-)
+      real(kind=real_wp)  ::SWAvgVelo   ! I  switch (1=Pythagoras, 2=Min, 3=Max)                (-)
+      real(kind=real_wp)  ::Area        ! I  exchange area                                      (m2)
+      real(kind=real_wp)  ::Flow        ! I  flow rate                                          (m3/s)
+      real(kind=real_wp)  ::Velocity    ! O  horizontal flow velocity                           (m/s)
+      real(kind=real_wp)  ::FlowDir     ! O  flow direction relative to North                   (degrees)
+      real(kind=real_wp)  ::Veloc1      ! O  horizontal flow velocity first direction           (m/s)
+      real(kind=real_wp)  ::Veloc2      ! O  horizontal flow velocity second direction          (m/s)
+      real(kind=real_wp)  ::FlowSeg     ! O  horizontal flow averaged over two directions       (m3/s)
+      real(kind=real_wp)  ::FlowSeg1    ! O  horizontal flow first direction                    (m3/s)
+      real(kind=real_wp)  ::FlowSeg2    ! O  horizontal flow second direction                   (m3/s)
       !
 !*******************************************************************************
 !

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_simph
+      use m_waq_precision
+
 
       implicit none
 
@@ -71,19 +73,19 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
 !     Local declarations, constants in source
 !
       PARAMETER ( MC     =    12.0    ,  MCO2 = 44.0 ,
      +           MHCO3  =    61.0    ,  M3TOL = 1.0E-3, KELVIN = real(CtoKelvin))
-      integer, save :: nr_mes = 0     ! message count negative total carbonate
-      integer, save :: nrmes2 = 0     ! message count negative salinity
-      integer, save :: nrmes3 = 0     ! message count high salinity
-      integer, save :: nrmes4 = 0     ! message count negative alkalinity
-      integer, save :: nrmes5 = 0     ! message count negative H+
+      integer(kind=int_wp), save  ::nr_mes = 0     ! message count negative total carbonate
+      integer(kind=int_wp), save  ::nrmes2 = 0     ! message count negative salinity
+      integer(kind=int_wp), save  ::nrmes3 = 0     ! message count high salinity
+      integer(kind=int_wp), save  ::nrmes4 = 0     ! message count negative alkalinity
+      integer(kind=int_wp), save  ::nrmes5 = 0     ! message count negative H+
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)

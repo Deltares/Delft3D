@@ -1,4 +1,6 @@
       module m_salchl
+      use m_waq_precision
+
 
       implicit none
 
@@ -61,12 +63,12 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      REAL     CL , SAL , SAL0 , GTCL , TEMP , DENS , SWSALCL 
-      integer  iseg
+      REAL(kind=real_wp) ::CL , SAL , SAL0 , GTCL , TEMP , DENS , SWSALCL
+      integer(kind=int_wp) ::iseg
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)

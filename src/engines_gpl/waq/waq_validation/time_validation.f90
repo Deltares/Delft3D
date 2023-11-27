@@ -31,7 +31,7 @@
 ! Will return an errormessage if data does not adhere to required format.
 
 module m_time_validation
-
+  use m_waq_precision
   use dlwq_hyd_data
 
   implicit none
@@ -40,32 +40,30 @@ module m_time_validation
   private :: validate_divisibility, validate_start_time, validate_time_coincidence
 
   contains
+    ! Routine to check if a time series in input is strictly increasing. If not, write an error message.
+    ! Input:
+    ! - lun (file unit for error message)
+    ! - data_block (data to validate)
+    ! - ierror (error number to be increased)
+    ! Output:
+    ! - ierror
+    subroutine validate_time_series_strictly_increasing(lun, data_block, ierror)
+  
+      integer(kind=int_wp), intent(in   )   ::  lun        ! logical unit number for logging error message, if required
 
-
-
-  ! Routine to check if a time series in input is strictly increasing. If not, write an error message.
-  ! Input:
-  ! - lun (file unit for error message)
-  ! - data_block (data to validate)
-  ! - ierror (error number to be increased)
-  ! Output:
-  ! - ierror
-  subroutine validate_time_series_strictly_increasing(lun, data_block, ierror)
-
-    integer               , intent(in   ) :: lun         ! logical unit number for logging error message, if required
-    type(t_dlwqdata)      , intent(in   ) :: data_block  ! data block containing time series to validate
-    integer               , intent(inout) :: ierror      ! local error count
-    character(:), allocatable             :: errformat   ! format for error message
-    integer                               :: i
-
-    errformat = "(/' ERROR: time value ',I0.1,' not larger than previous time value ',I0.1, '.')"
-    do i = 2, size(data_block%times)
-      if (data_block%times(i) <= data_block%times(i-1)) then
-        write ( lun, errformat) data_block%times(i), data_block%times(i-1)
-        ierror = ierror + 1
-      end if
-    end do
-  end subroutine validate_time_series_strictly_increasing
+      type(t_dlwqdata)      , intent(in   ) :: data_block  ! data block containing time series to validate
+      integer(kind=int_wp), intent(inout)   ::  ierror     ! local error count
+      character(:), allocatable             :: errformat   ! format for error message
+      integer(kind=int_wp)                  ::  i
+   
+      errformat = "(/' ERROR: time value ',I0.1,' not larger than previous time value ',I0.1, '.')"
+      do i = 2, size(data_block%times)
+        if (data_block%times(i) <= data_block%times(i-1)) then
+          write ( lun, errformat) data_block%times(i), data_block%times(i-1)
+          ierror = ierror + 1
+        end if
+      end do
+    end subroutine validate_time_series_strictly_increasing
 
 
          

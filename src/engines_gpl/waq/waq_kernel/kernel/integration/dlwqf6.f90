@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dlwqf6
+use m_waq_precision
+
 
 implicit none
 
@@ -49,21 +51,21 @@ contains
 
 !     Kind        Function         Name                  Description
 
-      integer(4), intent(in   ) :: noseg               !< Number of computational volumes
-      integer(4), intent(in   ) :: notot               !< Total number of substances
-      integer(4), intent(in   ) :: isys                !< First substance to update
-      integer(4), intent(in   ) :: nsys                !< Total number of substances to update
-      real   (8), intent(inout) :: rhs (nsys ,noseg)   !< RHS matrix for the nsys substances
-      real   (4), intent(inout) :: conc(notot,noseg)   !< Target array for update
-      integer(4), intent(in   ) :: iknmrk(noseg)       !< feature array, bit zero indicates wet or not
+      integer(kind=int_wp), intent(in   )  ::noseg               !< Number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::notot               !< Total number of substances
+      integer(kind=int_wp), intent(in   )  ::isys                !< First substance to update
+      integer(kind=int_wp), intent(in   )  ::nsys                !< Total number of substances to update
+      real(kind=dp), intent(inout)  ::rhs (nsys ,noseg)   !< RHS matrix for the nsys substances
+      real(kind=real_wp), intent(inout)  ::conc(notot,noseg)   !< Target array for update
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)       !< feature array, bit zero indicates wet or not
 
 !     Local declarations
 
-      integer(4)    iseg, j       ! loop variables
+      integer(kind=int_wp) ::iseg, j       ! loop variables
 
 !     The WAQ-timer
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqf6", ithandl )
 
 !         put result in concentration array

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhfext
+      use m_waq_precision
+
 
       implicit none
 
@@ -54,12 +56,12 @@
 !
 !     Declaration of arguments
 !
-      INTEGER       EXTPOS, EXTLEN
+      INTEGER(kind=int_wp) ::EXTPOS, EXTLEN
       CHARACTER*(*) FILNAM, FILEXT
 !
 !     Local declaration
 !
-      INTEGER       LENNAM, ICH_LAST, ICH
+      INTEGER(kind=int_wp) ::LENNAM, ICH_LAST, ICH
       CHARACTER     DIRSEP_DOS, DIRSEP_UX
 !
       DIRSEP_DOS = CHAR(92)

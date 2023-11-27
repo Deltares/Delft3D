@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_sgemv
+      use m_waq_precision
       use m_xerbla
 
 
@@ -35,11 +36,11 @@
       use m_lsame
 
 *     .. Scalar Arguments ..
-      REAL(8)            ALPHA, BETA
-      INTEGER            INCX, INCY, LDA, M, N
+      REAL(kind=dp) ::ALPHA, BETA
+      INTEGER(kind=int_wp) ::INCX, INCY, LDA, M, N
       CHARACTER*1        TRANS
 *     .. Array Arguments ..
-      REAL(8)            A( LDA, * ), X( * ), Y( * )
+      REAL(kind=dp) ::A( LDA, * ), X( * ), Y( * )
 *     ..
 *
 *  Purpose
@@ -134,14 +135,14 @@
 *
 *
 *     .. Parameters ..
-      REAL(8)            ONE         , ZERO
+      REAL(kind=dp) ::ONE         , ZERO
       PARAMETER        ( ONE = 1.0E+0, ZERO = 0.0E+0 )
 *     .. Local Scalars ..
-      REAL(8)            TEMP
-      INTEGER            I, INFO, IX, IY, J, JX, JY, KX, KY, LENX, LENY
+      REAL(kind=dp) ::TEMP
+      INTEGER(kind=int_wp) ::I, INFO, IX, IY, J, JX, JY, KX, KY, LENX, LENY
 *     .. Intrinsic Functions ..
       INTRINSIC          MAX
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "sgemv", ithandl )
 *     ..
 *     .. Executable Statements ..

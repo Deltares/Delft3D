@@ -21,11 +21,11 @@
     <locations>
       <location name="dsctestbench-cases">
         <credential ref="commandline" />
-        <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+        <root>{server_base_url}/cases</root>
       </location>
       <location name="dsctestbench-references">
         <credential ref="commandline" />
-        <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+        <root>{server_base_url}/references</root>
       </location>
       <location name="local">
         <root>.</root>

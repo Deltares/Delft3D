@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_blmeff
+      use m_waq_precision
+
 
       implicit none
 
@@ -35,24 +37,24 @@
       use timers        !   performance timers
 
       implicit none
-      integer       lunrep, lunblm
-      real          verspe
-      integer       lunfrm, nuecog, noalg
+      integer(kind=int_wp) ::lunrep, lunblm
+      real(kind=real_wp) ::verspe
+      integer(kind=int_wp) ::lunfrm, nuecog, noalg
       character*10  grname(nuecog)
       character*10  typnam(noalg)
 
 !
-      integer, parameter :: maxlin=1000
-      integer, parameter :: maxspe=30
-      integer, parameter :: maxtok=8
-      integer, parameter :: maxnz=51
-      integer ifnd (maxspe)
-      real*8 power(51), effic(51,maxspe), fun(51,maxspe), der(51,maxspe), zvec(51),daymul(24,maxspe), dl(24)
+      integer(kind=int_wp), parameter  ::maxlin=1000
+      integer(kind=int_wp), parameter  ::maxspe=30
+      integer(kind=int_wp), parameter  ::maxtok=8
+      integer(kind=int_wp), parameter  ::maxnz=51
+      integer(kind=int_wp) ::ifnd (maxspe)
+      real(kind=dp) ::power(51), effic(51,maxspe), fun(51,maxspe), der(51,maxspe), zvec(51),daymul(24,maxspe), dl(24)
       character*8 spnam2 (maxspe)
-      integer numtyp, i, j, nfnd, npoint, nz
-      real    tefcur
+      integer(kind=int_wp) ::numtyp, i, j, nfnd, npoint, nz
+      real(kind=real_wp) ::tefcur
       character*1000 line
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
 
       if (timon) call timstrt( "blmeff", ithndl )
 
@@ -181,8 +183,8 @@
 ! Purpose: sort an integer array.
 
       subroutine insort (inarr, lenarr)
-      integer inarr (*), lenarr
-      integer i, ihelp
+      integer(kind=int_wp) ::inarr (*), lenarr
+      integer(kind=int_wp) ::i, ihelp
       logical ready
 !
 10    continue

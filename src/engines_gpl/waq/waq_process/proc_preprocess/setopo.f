@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_setopo
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,24 +45,24 @@
 
       type(procespropcoll)      :: procesdef       ! all processes
       type(outputcoll)          :: outputs         ! output structure
-      integer                   :: iloc            ! offset to local array
-      integer                   :: idef            ! offset to default array
-      integer                   :: iflx            ! offset to flux array
-      integer                   :: nowarn          ! number of warnings
+      integer(kind=int_wp) ::iloc            ! offset to local array
+      integer(kind=int_wp) ::idef            ! offset to default array
+      integer(kind=int_wp) ::iflx            ! offset to flux array
+      integer(kind=int_wp) ::nowarn          ! number of warnings
 
       ! local decalarations
 
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! loop counter processes
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! loop counter processes
       type(procesprop), pointer :: proc            ! process description
       character(len=100)        :: line            ! line buffer for output
-      integer                   :: ioutput         ! index output item
-      integer                   :: i_input         ! index input item
-      integer                   :: indx            ! index
-      integer                   :: iou             ! loop counter output variable
-      integer                   :: iou2            ! loop counter output variable
+      integer(kind=int_wp) ::ioutput         ! index output item
+      integer(kind=int_wp) ::i_input         ! index input item
+      integer(kind=int_wp) ::indx            ! index
+      integer(kind=int_wp) ::iou             ! loop counter output variable
+      integer(kind=int_wp) ::iou2            ! loop counter output variable
       character(len=20)         :: predef(3)       ! predefined names
-      integer(4)                :: ithndl = 0      ! handle for performance timer
+      integer(kind=int_wp) ::ithndl = 0      ! handle for performance timer
       if (timon) call timstrt( "setopo", ithndl )
 
       predef(1) = 'volume'

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq09
+      use m_waq_precision
       use m_rdodef
       use m_outboo
       use m_opt1
@@ -73,31 +74,31 @@
 
 !     kind           function         name                Description
 
-      integer  ( 4), intent(inout) :: lun   (*)         !< array with unit numbers
+      integer(kind=int_wp), intent(inout) ::  lun   (*)          !< array with unit numbers
       character( *), intent(inout) :: lchar (*)         !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
-      integer  ( 4), intent(in   ) :: icmax             !< size of the character workspace
+      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
+      integer(kind=int_wp), intent(in   ) ::  icmax              !< size of the character workspace
       character(20), intent(inout) :: car   (icmax)     !< character workspace
-      integer  ( 4), intent(inout) :: iar   (*)         !< integer workspace ( dump locations at entrance )
-      integer  ( 4), intent(in   ) :: iimax             !< size of the integer workspace
-      integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
-      integer  ( 4), intent(in   ) :: ibflag            !< mass balance option flag
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
-      integer  ( 4), intent(  out) :: ioutps(7,noutp)   !< output administration array
+      integer(kind=int_wp), intent(inout) ::  iar   (*)          !< integer workspace ( dump locations at entrance )
+      integer(kind=int_wp), intent(in   ) ::  iimax              !< size of the integer workspace
+      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  ibflag             !< mass balance option flag
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
+      integer(kind=int_wp), intent(  out) ::  ioutps(7,noutp)    !< output administration array
       type(OutputColl)                Outputs           !< output collection
-      integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
 
 
 
 !     Local
 
-      integer                       nrvar (noutp) ! Number of extra output vars
-      integer                       iostrt(noutp) ! Output start time (scu)
-      integer                       iostop(noutp) ! Output stop time (scu)
-      integer                       iostep(noutp) ! Output step time (scu)
-      integer                       isrtou(noutp) ! Sort output indication
-      integer                       igrdou(noutp) ! Output grid indication
+      integer(kind=int_wp) :: nrvar (noutp)  ! Number of extra output vars
+      integer(kind=int_wp) :: iostrt(noutp)  ! Output start time (scu)
+      integer(kind=int_wp) :: iostop(noutp)  ! Output stop time (scu)
+      integer(kind=int_wp) :: iostep(noutp)  ! Output step time (scu)
+      integer(kind=int_wp) :: isrtou(noutp)  ! Sort output indication
+      integer(kind=int_wp) :: igrdou(noutp)  ! Output grid indication
       character(40)                 modid (4)     ! Model and run-ID
       character(20), allocatable :: sysid (:)     ! Systems ID
       character(20), allocatable :: coname(:)     ! Constant names
@@ -106,21 +107,21 @@
       character(20), allocatable :: sfname(:)     ! Segment function names
       character(20), allocatable :: diname(:)     ! Dispersion array names
       character(20), allocatable :: vename(:)     ! Velocity array names
-      integer                       noqtt         ! all exchanges inclusive of the layered bed
-      integer                       nosss         ! all computational cells inclusive of layered bed
-      integer                       nrvarm        ! maximum number of variables that fits in array size
-      integer                       itype         ! return variable for get_token call
-      integer                       ierr2         ! local error variable
-      integer                       iopt1         ! input file option
-      integer                       nmis          ! number of unresolved variables
-      integer                       iv, ip        ! help variables to pointer in array
-      integer                       i             ! loop variable
-      integer                       ivar          ! cumulative variable counter
+      integer(kind=int_wp) :: noqtt          ! all exchanges inclusive of the layered bed
+      integer(kind=int_wp) :: nosss          ! all computational cells inclusive of layered bed
+      integer(kind=int_wp) :: nrvarm         ! maximum number of variables that fits in array size
+      integer(kind=int_wp) :: itype          ! return variable for get_token call
+      integer(kind=int_wp) :: ierr2          ! local error variable
+      integer(kind=int_wp) :: iopt1          ! input file option
+      integer(kind=int_wp) :: nmis           ! number of unresolved variables
+      integer(kind=int_wp) :: iv, ip         ! help variables to pointer in array
+      integer(kind=int_wp) :: i              ! loop variable
+      integer(kind=int_wp) :: ivar           ! cumulative variable counter
 
       LOGICAL       INFILE, LMOUTP, LDOUTP, LHOUTP
       LOGICAL       LDUMMY
       character*255 lchloc            ! Local character variable for file name
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq09", ithndl )
 !
 !     Some init

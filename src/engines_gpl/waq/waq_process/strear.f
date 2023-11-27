@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_strear
+      use m_waq_precision
+
 
       implicit none
 
@@ -77,17 +79,17 @@
 !     ------   -----  ------------
 !
       IMPLICIT NONE
-      REAL     PMSA  (*) , FL  (*)
-      INTEGER  NOSEG , NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
-      INTEGER  IPOINT(*)       , INCREM(*),
+      REAL(kind=real_wp) ::PMSA  (*) , FL  (*)
+      INTEGER(kind=int_wp) ::NOSEG , NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
+      INTEGER(kind=int_wp) ::IPOINT(*)       , INCREM(*),
      +         IEXPNT(4,*)     , IKNMRK(*)
 !
-      INTEGER  IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8,
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8,
      +         IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8
-      INTEGER  ITEL, ISTRUC, NOSTR, SEGL, SEGR, UPSEG, DNSEG
-      INTEGER  LUNREP
-      REAL     WLL, WLR
-      REAL     OXYDN, OXYUP, DELT, CSAT, BOD5, B, UPWL, DNWL,
+      INTEGER(kind=int_wp) ::ITEL, ISTRUC, NOSTR, SEGL, SEGR, UPSEG, DNSEG
+      INTEGER(kind=int_wp) ::LUNREP
+      REAL(kind=real_wp) ::WLL, WLR
+      REAL(kind=real_wp) ::OXYDN, OXYUP, DELT, CSAT, BOD5, B, UPWL, DNWL,
      +         TEMP, DISCH, WIDTH, DEPTH, WLDIF, A, SWAER,
      +         OXYDR, LOGNAK, DRNAK, OXYCAL, OXYPL
 !

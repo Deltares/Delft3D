@@ -9,7 +9,10 @@ set(library_name waq_utils_f)
 create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Set dependencies
-set(oss_dependencies waq_definition deltares_common)
+set(oss_dependencies deltares_common
+                     waq_definition
+                     )
+
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

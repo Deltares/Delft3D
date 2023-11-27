@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_calchz
+      use m_waq_precision
+
 
       implicit none
 
@@ -56,15 +58,15 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
 !     Local declarations, constants in source
 !
-      REAL     ROUGH  , DEPTH , TOTDEP,    CHZ, ONESIX,
+      REAL(kind=real_wp) ::ROUGH  , DEPTH , TOTDEP,    CHZ, ONESIX,
      +         MANCOF
-      INTEGER  IP1    , IP2   , IP3   , IKMRK2,
+      INTEGER(kind=int_wp) ::IP1    , IP2   , IP3   , IKMRK2,
      +         ICHZTP , IP4   , IP5   , IP6   , ISEG
 
 

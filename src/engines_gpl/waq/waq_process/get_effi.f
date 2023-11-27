@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_get_effi
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,50 +45,50 @@
 
 !     arguments
 
-      integer  SWEff      ! input , Switch to use classic(1) or direct(2) BLOOM Efficiency calculation
-      real     temper     ! input , temperature
-      real     radiat     ! input , radiation
-      real     ext        ! input , total extinction
-      real     depthw     ! input , depth of the layer
-      real     daylen     ! input , daylength in hours
-      integer  nspe       ! output, number of bloom algea species
-      real     effi(30)   ! output, calculated efficiencies per species
+      integer(kind=int_wp) ::SWEff      ! input , Switch to use classic(1) or direct(2) BLOOM Efficiency calculation
+      real(kind=real_wp) ::temper     ! input , temperature
+      real(kind=real_wp) ::radiat     ! input , radiation
+      real(kind=real_wp) ::ext        ! input , total extinction
+      real(kind=real_wp) ::depthw     ! input , depth of the layer
+      real(kind=real_wp) ::daylen     ! input , daylength in hours
+      integer(kind=int_wp) ::nspe       ! output, number of bloom algea species
+      real(kind=real_wp) ::effi(30)   ! output, calculated efficiencies per species
 
 !     local decalarations
 
-      integer  lunrep
+      integer(kind=int_wp) ::lunrep
 
-      real*8   temp       ! temperature
-      real*8   csol       ! radiation
-      real*8   dsol       ! radiation
-      real*8   radtop     ! radiation at the top of the segment
-      real*8   radmid     ! radiation at the middle of the segment
-      real*8   radbot     ! radiation at the bottom of the segment
-      real*8   radlay     ! radiation at the current effi layer of the segment
-      real*8   effitop    ! efficiency at the top of the segment
-      real*8   effimid    ! efficiency at the middle of the segment
-      real*8   effibot    ! efficiency at the bottom of the segment
-      real*8   effilay    ! efficiency at the current effi layer of the segment
-      real*8   effitot    ! efficiency collector for calculation of the average
-      integer  neffilay   ! number of effi layers
-      integer  ilay       ! current effi layer number
-      real*8   dep        ! depth
-      real*8   exttot     ! total extinction
-      real*8   day        ! daylength in hours
-      real*8   dayl       ! daylength in fraction
-      real*8   tcorr      ! tcorr
-      real*8   surf_typ   ! scaled, converted and corrected radiation for a type
-      integer  ntyp       ! number of bloom algea types
-      integer  itype      ! index number of bloom algae type
-      integer  igroup     ! index number of bloom algae group
-      real*8   pmax20(mt),sdmixn(mt)
+      real(kind=dp) ::temp       ! temperature
+      real(kind=dp) ::csol       ! radiation
+      real(kind=dp) ::dsol       ! radiation
+      real(kind=dp) ::radtop     ! radiation at the top of the segment
+      real(kind=dp) ::radmid     ! radiation at the middle of the segment
+      real(kind=dp) ::radbot     ! radiation at the bottom of the segment
+      real(kind=dp) ::radlay     ! radiation at the current effi layer of the segment
+      real(kind=dp) ::effitop    ! efficiency at the top of the segment
+      real(kind=dp) ::effimid    ! efficiency at the middle of the segment
+      real(kind=dp) ::effibot    ! efficiency at the bottom of the segment
+      real(kind=dp) ::effilay    ! efficiency at the current effi layer of the segment
+      real(kind=dp) ::effitot    ! efficiency collector for calculation of the average
+      integer(kind=int_wp) ::neffilay   ! number of effi layers
+      integer(kind=int_wp) ::ilay       ! current effi layer number
+      real(kind=dp) ::dep        ! depth
+      real(kind=dp) ::exttot     ! total extinction
+      real(kind=dp) ::day        ! daylength in hours
+      real(kind=dp) ::dayl       ! daylength in fraction
+      real(kind=dp) ::tcorr      ! tcorr
+      real(kind=dp) ::surf_typ   ! scaled, converted and corrected radiation for a type
+      integer(kind=int_wp) ::ntyp       ! number of bloom algea types
+      integer(kind=int_wp) ::itype      ! index number of bloom algae type
+      integer(kind=int_wp) ::igroup     ! index number of bloom algae group
+      real(kind=dp) ::pmax20(mt),sdmixn(mt)
 
-      real*8   phi_s      ! x value tabulated function at surface
-      real*8   fun_s      ! function at surface
-      real*8   der_s      ! derivative at sutface
-      real*8   phi_d      ! x value tabulated function at dep
-      real*8   fun_d      ! function at surface at dep
-      real*8   der_d      ! derivative at sutface at dep
+      real(kind=dp) ::phi_s      ! x value tabulated function at surface
+      real(kind=dp) ::fun_s      ! function at surface
+      real(kind=dp) ::der_s      ! derivative at sutface
+      real(kind=dp) ::phi_d      ! x value tabulated function at dep
+      real(kind=dp) ::fun_d      ! function at surface at dep
+      real(kind=dp) ::der_d      ! derivative at sutface at dep
 
       dep    = depthw
       exttot = ext
@@ -214,11 +216,11 @@
 
       implicit none
 
-      real*8  rad
-      real*8  effi
-      integer numgr, i
-      integer lunrep
-      real*8  interpol
+      real(kind=dp) ::rad
+      real(kind=dp) ::effi
+      integer(kind=int_wp) ::numgr, i
+      integer(kind=int_wp) ::lunrep
+      real(kind=dp) ::interpol
       logical, save :: first = .true.
 
       if (first) then
@@ -260,7 +262,7 @@
 
       implicit none
 
-      integer  nspe       ! input , number of bloom algea types
+      integer(kind=int_wp) ::nspe       ! input , number of bloom algea types
 
       nspe   = nuecog
 

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_raatra
+      use m_waq_precision
+
 
       implicit none
 
@@ -61,15 +63,15 @@
 !
       use timers
 
-      INTEGER       NOSYS , NDMPQ , NORAAI, NTRAAQ
-      INTEGER       IORAAI(*)             , NQRAAI(*)       ,
+      INTEGER(kind=int_wp) ::NOSYS , NDMPQ , NORAAI, NTRAAQ
+      INTEGER(kind=int_wp) ::IORAAI(*)             , NQRAAI(*)       ,
      +              IQRAAI(*)             , IQDMP(*)
-      REAL          DMPQ(NOSYS,NDMPQ,*)   , TRRAAI(NOSYS,*)
+      REAL(kind=real_wp) ::DMPQ(NOSYS,NDMPQ,*)   , TRRAAI(NOSYS,*)
 
 !     local
-      integer itel1, isys, iraai, nqc, iopt, iqc, iq, ipq
+      integer(kind=int_wp) ::itel1, isys, iraai, nqc, iopt, iqc, iq, ipq
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "raatra", ithandl )
 !
 !     Local declarations

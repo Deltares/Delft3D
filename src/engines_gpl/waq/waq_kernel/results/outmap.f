@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outmap
+      use m_waq_precision
+
 
       implicit none
 
@@ -51,27 +53,27 @@
 
 !     kind           function         name                    description
 
-      integer   (4), intent(in   ) :: iomap                ! unit number output file
+      integer(kind=int_wp), intent(in   )  ::iomap                ! unit number output file
       character*(*), intent(in   ) :: namfim               ! name output file
-      integer   (4), intent(in   ) :: itime                ! present time in clock units
+      integer(kind=int_wp), intent(in   )  ::itime                ! present time in clock units
       character(40), intent(in   ) :: moname(4)            ! model identification
-      integer   (4), intent(in   ) :: noseg                ! number of computational volumes
-      integer   (4), intent(in   ) :: notot1               ! number of variables in conc1
-      real      (4), intent(in   ) :: conc1 (notot1,noseg) ! values
+      integer(kind=int_wp), intent(in   )  ::noseg                ! number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::notot1               ! number of variables in conc1
+      real(kind=real_wp), intent(in   )  ::conc1 (notot1,noseg) ! values
       character(20), intent(in   ) :: synam1(notot1)       ! names of variables in conc1
-      integer   (4), intent(in   ) :: notot2               ! number of variables in conc2
-      real      (4), intent(in   ) :: conc2 (notot2,noseg) ! values
+      integer(kind=int_wp), intent(in   )  ::notot2               ! number of variables in conc2
+      real(kind=real_wp), intent(in   )  ::conc2 (notot2,noseg) ! values
       character(20), intent(in   ) :: synam2(notot2)       ! names of variables in conc2
-      integer   (4), intent(in   ) :: iknmrk(noseg)        ! Feature array. Bit zero set means active.
-      integer   (4), intent(inout) :: init                 ! Initialisation flag
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)        ! Feature array. Bit zero set means active.
+      integer(kind=int_wp), intent(inout)  ::init                 ! Initialisation flag
 
-      integer(4) iseg                   ! loop counter for segments
-      integer(4) k                      ! loop counter for substances
-      integer    ierr
-      real   (4) amiss   /-999.0/       ! missing value indicator
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::iseg                   ! loop counter for segments
+      integer(kind=int_wp) ::k                      ! loop counter for substances
+      integer(kind=int_wp) ::ierr
+      real(kind=real_wp) ::amiss = -999.0       ! missing value indicator
+      integer(kind=int_wp) ::ithandl = 0
 
-      real(4), dimension(:,:), allocatable :: outconc
+      real(kind=real_wp), dimension(:,:), allocatable  ::outconc
 
       if ( timon ) call timstrt ( "outmap", ithandl )
 

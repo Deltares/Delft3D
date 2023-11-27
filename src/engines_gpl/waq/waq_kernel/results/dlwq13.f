@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq13
+      use m_waq_precision
+
 
       implicit none
 
@@ -58,16 +60,16 @@
       use m_open_waq_files
       use timers
 
-      real          CONC  ( NOTOT, NOSEG )
+      real(kind=real_wp) ::CONC  ( NOTOT, NOSEG )
       CHARACTER*20  SNAME ( * )
       CHARACTER*40  MNAME ( * )
       CHARACTER*(*) LCHAR ( * )
       CHARACTER*255 LCHARMAP
-      integer       lun(*)
+      integer(kind=int_wp) ::lun(*)
       
-      integer    i, j, k, itime
-      integer    noseg, notot, nonan, ierr
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::i, j, k, itime
+      integer(kind=int_wp) ::noseg, notot, nonan, ierr
+      integer(kind=int_wp) ::ithandl = 0
       
             
       if ( timon ) call timstrt ( "dlwq13", ithandl )

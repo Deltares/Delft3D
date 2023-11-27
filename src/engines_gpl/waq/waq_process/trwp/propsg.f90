@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_propsg
+use m_waq_precision
+
 
 implicit none
 
@@ -58,22 +60,22 @@ use m_evaluate_waq_attribute
 
     implicit none
 
-    real     pmsa  ( * ) , fl    (*)
-    integer  ipoint( * ) , increm(*) , noseg , noflux, &
+    real(kind=real_wp)      ::pmsa  ( * ) , fl    (*)
+    integer(kind=int_wp)   ::ipoint( * ) , increm(*) , noseg , noflux, &
              iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 !
 !   local declarations
 !
-    integer  iseg, ikmrk1,ikmrk2, noq, iq, ifrom, ipp
-    real     diameter, density, biofilm_thk, biofilm_density, shape_factor
-    real     settle_vel, tcr_sedim
+    integer(kind=int_wp)   ::iseg, ikmrk1,ikmrk2, noq, iq, ifrom, ipp
+    real(kind=real_wp)      ::diameter, density, biofilm_thk, biofilm_density, shape_factor
+    real(kind=real_wp)      ::settle_vel, tcr_sedim
     
-    integer           :: ipnt(500)  
-    integer,parameter :: ip_nfrac = 1
-    integer,parameter :: ip_BioFilmDen = 2
-    integer,parameter :: ip_lastsingle = 2
+    integer(kind=int_wp)            ::ipnt(500)
+    integer(kind=int_wp), parameter :: ip_nfrac = 1
+    integer(kind=int_wp), parameter :: ip_BioFilmDen = 2
+    integer(kind=int_wp), parameter :: ip_lastsingle = 2
    
-    integer :: nfrac, ifrac, nitem, offset
+    integer(kind=int_wp)  ::nfrac, ifrac, nitem, offset
     
     nfrac = pmsa(ipoint(ip_nfrac))
     nitem = ip_lastsingle+7*nfrac ! 4x input and 3x output per fraction

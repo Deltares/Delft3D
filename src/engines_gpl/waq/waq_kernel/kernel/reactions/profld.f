@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_profld
+      use m_waq_precision
+
 
       implicit none
 
@@ -64,16 +66,16 @@
 !
       use timers
 
-      INTEGER NOFLUX, NFLUX1, NFLUXP, IGRID , NOSEG2,
+      INTEGER(kind=int_wp) ::NOFLUX, NFLUX1, NFLUXP, IGRID , NOSEG2,
      +        NOSEG , NDT
-      INTEGER ISDMP(NOSEG)       , GRDSEG(NOSEG,*)
-      REAL    FLUX(NOFLUX,NOSEG2), VOLUME(NOSEG)       ,
+      INTEGER(kind=int_wp) ::ISDMP(NOSEG)       , GRDSEG(NOSEG,*)
+      REAL(kind=real_wp) ::FLUX(NOFLUX,NOSEG2), VOLUME(NOSEG)       ,
      +        FLXDMP(NOFLUX,*)
 
 !     local
-      integer iseg, iseg2, ips, iflux
-      real    vol
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::iseg, iseg2, ips, iflux
+      real(kind=real_wp) ::vol
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "profld", ithandl )
 !
 !     We construeren nu de FLUXDUMPEN

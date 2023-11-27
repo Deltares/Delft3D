@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_par2waq
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,54 +62,53 @@
       use timers
 !
       implicit none
-      integer, parameter :: ip=4, rp=4
 
 !     Parameters          :
 
 !     kind           function         name                      description
 
-      integer  (ip), intent(in   ) :: nopart                  !< total number of particles
-      integer  (ip), intent(in   ) :: nosys                   !< transported substances in delwaq
-      integer  (ip), intent(in   ) :: notot                   !< total substances in delwaq
-      integer  (ip), intent(in   ) :: nosubs                  !< total substances in delpar
-      integer  (ip), intent(in   ) :: noseg                   !< total number of gridcells in delwaq
-      integer  (ip), intent(in   ) :: nolay                   !< number of layers in delwaq
-      real     (rp), intent(in   ) :: volume (noseg)          !< delwaq volumes
-      real     (rp), intent(in   ) :: surface(noseg)          !< delwaq horizontal surfaces
-      integer  (ip), intent(in   ) :: nmax                    !< first grid dimension
-      integer  (ip), intent(in   ) :: mmax                    !< second grid dimension
-      integer  (ip), intent(in   ) :: lgrida (nmax,mmax)      !< active computational grid
+      integer(kind=int_wp) , intent(in   ) :: nopart                  !< total number of particles
+      integer(kind=int_wp) , intent(in   ) :: nosys                   !< transported substances in delwaq
+      integer(kind=int_wp) , intent(in   ) :: notot                   !< total substances in delwaq
+      integer(kind=int_wp) , intent(in   ) :: nosubs                  !< total substances in delpar
+      integer(kind=int_wp) , intent(in   ) :: noseg                   !< total number of gridcells in delwaq
+      integer(kind=int_wp) , intent(in   ) :: nolay                   !< number of layers in delwaq
+      real(kind=real_wp) , intent(in   ) :: volume (noseg)          !< delwaq volumes
+      real(kind=real_wp) , intent(in   ) :: surface(noseg)          !< delwaq horizontal surfaces
+      integer(kind=int_wp) , intent(in   ) :: nmax                    !< first grid dimension
+      integer(kind=int_wp) , intent(in   ) :: mmax                    !< second grid dimension
+      integer(kind=int_wp) , intent(in   ) :: lgrida (nmax,mmax)      !< active computational grid
       character(20), intent(in   ) :: syname (notot)          !< names of the substances
-      integer  (ip), intent(in   ) :: itime                   !< current time
-      integer  (ip), intent(in   ) :: iddtim                  !< delwaq take-over delay time
-      integer  (ip), intent(inout) :: npwndw                  !< first active particle in array
-      integer  (ip), intent(inout) :: iptime (nopart)         !< age of the particles
-      integer  (ip), intent(inout) :: npart  (nopart)         !< first grid index particles
-      integer  (ip), intent(inout) :: mpart  (nopart)         !< second grid index particles
-      integer  (ip), intent(inout) :: kpart  (nopart)         !< third grid index particles
-      real     (rp), intent(inout) :: wpart  (nosubs,nopart ) !< weight of the particles
-      real     (rp), intent(inout) :: amass  (notot ,noseg  ) !< delwaq masses per cell
-      real     (rp), intent(inout) :: conc   (notot ,noseg  ) !< delwaq concentrations per cell
-      integer   (4), intent(in   ) :: iaflag                  !< if 1 then accumulation of balances
-      integer   (4), intent(in   ) :: intopt                  !< integration suboptions
-      integer   (4), intent(in   ) :: ndmps                   !< number of dumped volumes for balances
-      integer   (4), intent(in   ) :: isdmp  (noseg )         !< volume to dump-location pointer
-      real      (4), intent(inout) :: dmps   (notot ,ndmps,*) !< dumped segment fluxes if INTOPT > 7
-      real      (4), intent(inout) :: amass2 (notot , 5 )     !< mass balance array
+      integer(kind=int_wp) , intent(in   ) :: itime                   !< current time
+      integer(kind=int_wp) , intent(in   ) :: iddtim                  !< delwaq take-over delay time
+      integer(kind=int_wp) , intent(inout) :: npwndw                  !< first active particle in array
+      integer(kind=int_wp) , intent(inout) :: iptime (nopart)         !< age of the particles
+      integer(kind=int_wp) , intent(inout) :: npart  (nopart)         !< first grid index particles
+      integer(kind=int_wp) , intent(inout) :: mpart  (nopart)         !< second grid index particles
+      integer(kind=int_wp) , intent(inout) :: kpart  (nopart)         !< third grid index particles
+      real(kind=real_wp) , intent(inout) :: wpart  (nosubs,nopart ) !< weight of the particles
+      real(kind=real_wp) , intent(inout) :: amass  (notot ,noseg  ) !< delwaq masses per cell
+      real(kind=real_wp) , intent(inout) :: conc   (notot ,noseg  ) !< delwaq concentrations per cell
+      integer(kind=int_wp), intent(in   )  ::iaflag                  !< if 1 then accumulation of balances
+      integer(kind=int_wp), intent(in   )  ::intopt                  !< integration suboptions
+      integer(kind=int_wp), intent(in   )  ::ndmps                   !< number of dumped volumes for balances
+      integer(kind=int_wp), intent(in   )  ::isdmp  (noseg )         !< volume to dump-location pointer
+      real(kind=real_wp), intent(inout)  ::dmps   (notot ,ndmps,*) !< dumped segment fluxes if INTOPT > 7
+      real(kind=real_wp), intent(inout)  ::amass2 (notot , 5 )     !< mass balance array
 
 !     Local declarations
 
-      integer, allocatable, save :: iwaqsub(:)        ! pointer from part substance to waq substance
+      integer(kind=int_wp), allocatable, save  ::iwaqsub(:)        ! pointer from part substance to waq substance
       character(20)                 partsub           ! this particle substance
-      integer                       isub, ipart       ! loop variables
-      integer                       ic  , iseg , ilay ! help variable for segment location
-      integer                       ioff              ! help variable start of delpar substances in delwaq
-      integer                       nosegl            ! number of cells per layer
+      integer(kind=int_wp) ::isub, ipart       ! loop variables
+      integer(kind=int_wp) ::ic  , iseg , ilay ! help variable for segment location
+      integer(kind=int_wp) ::ioff              ! help variable start of delpar substances in delwaq
+      integer(kind=int_wp) ::nosegl            ! number of cells per layer
       logical                       fluxes            ! set .true. if intopt > 7
       logical                       massbal           ! set .true. if iaflag eq 1
-      integer                       ipb, isys         ! help variables
+      integer(kind=int_wp) ::ipb, isys         ! help variables
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
 
       if ( iddtim .eq. 0 ) return
 

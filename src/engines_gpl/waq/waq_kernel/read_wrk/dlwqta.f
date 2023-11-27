@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqta
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,40 +62,40 @@
 
 !     kind                       function         name                   Descriptipon
 
-      integer                  , intent(inout) :: lun                  !< unit number binary input file
+      integer(kind=int_wp), intent(inout)  ::lun                  !< unit number binary input file
       character(len=*)         , intent(in   ) :: lch                  !< name input file
-      integer                  , intent(in   ) :: lunrep               !< unit number report file
-      integer                  , intent(in   ) :: noseg                !< number of segments
-      integer                  , intent(in   ) :: nocons               !< number of constants
-      integer                  , intent(in   ) :: nopa                 !< number of parameters
-      integer                  , intent(in   ) :: nofun                !< number of functions
-      integer                  , intent(in   ) :: nosfun               !< number of segment functions
-      real                     , intent(  out) :: const(nocons)        !< constants array
-      real                     , intent(  out) :: param(nopa,noseg)    !< parameters array
-      real                     , intent(  out) :: funcs(nofun)         !< functions array
-      real                     , intent(  out) :: sfuncs(noseg,nosfun) !< segment functions array
-      integer                  , intent(in   ) :: isflag               !< = 1 then 'ddhhmmss' format
-      integer                  , intent(in   ) :: ifflag               !< = 1 then first invocation
-      integer                  , intent(in   ) :: itime                !< system timer
+      integer(kind=int_wp), intent(in   )  ::lunrep               !< unit number report file
+      integer(kind=int_wp), intent(in   )  ::noseg                !< number of segments
+      integer(kind=int_wp), intent(in   )  ::nocons               !< number of constants
+      integer(kind=int_wp), intent(in   )  ::nopa                 !< number of parameters
+      integer(kind=int_wp), intent(in   )  ::nofun                !< number of functions
+      integer(kind=int_wp), intent(in   )  ::nosfun               !< number of segment functions
+      real(kind=real_wp), intent(  out)  ::const(nocons)        !< constants array
+      real(kind=real_wp), intent(  out)  ::param(nopa,noseg)    !< parameters array
+      real(kind=real_wp), intent(  out)  ::funcs(nofun)         !< functions array
+      real(kind=real_wp), intent(  out)  ::sfuncs(noseg,nosfun) !< segment functions array
+      integer(kind=int_wp), intent(in   )  ::isflag               !< = 1 then 'ddhhmmss' format
+      integer(kind=int_wp), intent(in   )  ::ifflag               !< = 1 then first invocation
+      integer(kind=int_wp), intent(in   )  ::itime                !< system timer
       type(GridPointerColl)    , intent(in   ) :: GridPs               !< collection off all grid definitions
       type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
-      integer                  , intent(inout) :: ierr                 !< error count
+      integer(kind=int_wp), intent(inout)  ::ierr                 !< error count
 
 !     Local declarations
 
-      integer                              :: no_proc_pars         ! number of process parameters data blocks
+      integer(kind=int_wp) ::no_proc_pars         ! number of process parameters data blocks
       type(t_dlwqdata), pointer            :: proc_par             ! a pointer to one data block
-      integer                              :: ntotal               ! number of process parameters
+      integer(kind=int_wp) ::ntotal               ! number of process parameters
       character(len=12)                    :: chlp
-      integer                                 ftype                ! the equivalent of the ftype array elsewhere
-      integer                              :: ierr2                ! io error indicator
-      integer                              :: i, i2
-      integer                              :: ntt, ndim1, ndim2, nobrk
-      integer, allocatable                 :: ipntloc(:)
-      integer                              :: ia_dummy(1)
+      integer(kind=int_wp) ::ftype                ! the equivalent of the ftype array elsewhere
+      integer(kind=int_wp) ::ierr2                ! io error indicator
+      integer(kind=int_wp) ::i, i2
+      integer(kind=int_wp) ::ntt, ndim1, ndim2, nobrk
+      integer(kind=int_wp), allocatable                  ::ipntloc(:)
+      integer(kind=int_wp) ::ia_dummy(1)
       logical                              :: ldummy, ldumm2
-      real, allocatable                    :: ra_dummy(:)
-      integer(4) ithandl /0/
+      real(kind=real_wp), allocatable                     ::ra_dummy(:)
+      integer(kind=int_wp) ::ithandl= 0
 
       if ( timon ) call timstrt ( "dlwqta", ithandl )
 

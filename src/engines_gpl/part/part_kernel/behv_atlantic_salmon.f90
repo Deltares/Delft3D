@@ -130,11 +130,11 @@ contains
 
         integer, parameter         :: behaviour_none          = 0 	! behaviour type none
         integer, parameter         :: behaviour_adult_coas    = 1 	! behaviour type adult salmon when migration towards the coast
-
+        
 
         real                        :: vswim                  ! swimming velocity
         real                        :: local_angle            ! angle towards lowest salinity in grid
-
+        
         real                        :: sal_n0
         real                        :: sal_n1
         real                        :: sal_n12
@@ -212,7 +212,7 @@ contains
                  write(*,*) 'ERROR no salinity provided, no atlantic salmon model activated'
                  stop
               endif
-
+              
               ! Assemble temperature values of surrounding gridcells
               !  return: temp_n0, temp_n1 , temp_n12 , temp_n2 , temp_n23 , temp_n3 , temp_n34, temp_n4 and temp_n41
               call orien_temperature ( n          , m           , nmax     , mmax        , mnmaxk   ,    &
@@ -227,7 +227,7 @@ contains
                  write(*,*) 'ERROR no temperature provided, no atlantic salmon model activated'
                  stop
               endif
-
+              
               ! Move closest to lowest salinity based on temperature avoidance
               !  return: v_swim and d_swim
               call re_orien_sal_temp ( n          , m        , nmax       , mmax       , mnmaxk     ,    &
@@ -238,7 +238,7 @@ contains
                                        sal_n4     , sal_n41  , temp_n0    , temp_n1    , temp_n12   ,    &
                                        temp_n2    , temp_n23 , temp_n3    , temp_n34   , temp_n4    ,    &
                                        temp_n41  )
-
+              
 
               !Vertical behaviour
 
@@ -261,3 +261,7 @@ contains
       return                                                                                                         !Return from the subroutine
       end subroutine
 end module
+
+
+
+            

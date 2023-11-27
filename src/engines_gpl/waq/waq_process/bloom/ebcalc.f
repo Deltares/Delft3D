@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_ebcalc
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,8 +41,8 @@
 
       implicit none
       
-      real(8)    :: x, f, fpr, ex, ei, ei1, alam, c0, c1
-      integer    :: i, numgr
+      real(kind=dp) ::x, f, fpr, ex, ei, ei1, alam, c0, c1
+      integer(kind=int_wp) ::i, numgr
 
 ! Check whether x is too low or too high
       if (x .le. zvec(1)) then

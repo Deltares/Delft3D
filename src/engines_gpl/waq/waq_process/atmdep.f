@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_atmdep
+      use m_waq_precision
+
 
       implicit none
 
@@ -54,12 +56,12 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-      integer  IP1, IP2, IP3, IP4, IP5, IP6, IFLUX, ISEG, IKMRK1,
+      integer(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IFLUX, ISEG, IKMRK1,
      +         IKMRK2, ISW1, ISW2
-      real     zfl, depth, conc, delt  
+      real(kind=real_wp) ::zfl, depth, conc, delt
 
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)

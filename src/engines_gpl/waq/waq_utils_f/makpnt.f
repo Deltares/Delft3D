@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_makpnt
+      use m_waq_precision
+
 
       implicit none
 
@@ -59,34 +61,34 @@
 
 !     kind        function         name                 Descriptipon
 
-      integer(4), intent(in   ) :: nmax               !< first grid dimension
-      integer(4), intent(in   ) :: mmax               !< second grid dimension
-      integer(4), intent(in   ) :: kmax               !< number of layers
-      integer(4), intent(in   ) :: noseg              !< total number of volumes
-      integer(4), intent(in   ) :: nobnd              !< total number of boundaries
-      integer(4), intent(in   ) :: noq                !< total number of exchanges
-      integer(4), intent(in   ) :: noq1               !< total number of exchanges in first direction
-      integer(4), intent(in   ) :: noq2               !< total number of exchanges in second direction
-      integer(4), intent(in   ) :: lgrida(nmax,mmax)  !< active grid table
-      integer(4), intent(  out) :: ipoint(4,noq)      !< from to pointer
-      integer(4), intent(  out) :: cellpnt(noseg)     !< from to pointer
-      integer(4), intent(  out) :: flowpnt( noq )     !< from to pointer
+      integer(kind=int_wp), intent(in   )  ::nmax               !< first grid dimension
+      integer(kind=int_wp), intent(in   )  ::mmax               !< second grid dimension
+      integer(kind=int_wp), intent(in   )  ::kmax               !< number of layers
+      integer(kind=int_wp), intent(in   )  ::noseg              !< total number of volumes
+      integer(kind=int_wp), intent(in   )  ::nobnd              !< total number of boundaries
+      integer(kind=int_wp), intent(in   )  ::noq                !< total number of exchanges
+      integer(kind=int_wp), intent(in   )  ::noq1               !< total number of exchanges in first direction
+      integer(kind=int_wp), intent(in   )  ::noq2               !< total number of exchanges in second direction
+      integer(kind=int_wp), intent(in   )  ::lgrida(nmax,mmax)  !< active grid table
+      integer(kind=int_wp), intent(  out)  ::ipoint(4,noq)      !< from to pointer
+      integer(kind=int_wp), intent(  out)  ::cellpnt(noseg)     !< from to pointer
+      integer(kind=int_wp), intent(  out)  ::flowpnt( noq )     !< from to pointer
 
 !     Local declarations
 
-      integer   n, m, k         !  loop variables in the matrix
-      integer   iq, nq          !  help variable exchange nr.
-      integer   ifrom , ito     !  from and to exchange pointers
-      integer   ifrom1, itopl1  !  from-1 and to+1 exchange pointers
-      integer   kmax1           !  number of layers
-      integer   nosegl          !  number of volumes per layer
-      integer   nobndl          !  number of boundaries per layer
-      integer   noq1l           !  number of exchanges first direction per layer
-      integer   noq2l           !  number of exchanges second direction per layer
+      integer(kind=int_wp) ::n, m, k         !  loop variables in the matrix
+      integer(kind=int_wp) ::iq, nq          !  help variable exchange nr.
+      integer(kind=int_wp) ::ifrom , ito     !  from and to exchange pointers
+      integer(kind=int_wp) ::ifrom1, itopl1  !  from-1 and to+1 exchange pointers
+      integer(kind=int_wp) ::kmax1           !  number of layers
+      integer(kind=int_wp) ::nosegl          !  number of volumes per layer
+      integer(kind=int_wp) ::nobndl          !  number of boundaries per layer
+      integer(kind=int_wp) ::noq1l           !  number of exchanges first direction per layer
+      integer(kind=int_wp) ::noq2l           !  number of exchanges second direction per layer
       logical   contracted      !  if true, it is an 'active only' grid
-      integer   mnmax           !  help variable nmax*mmax (horizontal size of the matrix)
-      integer   mnmaxk          !  help variable mnmax*kmax (total size of the cube)
-      integer   nqn, nqc        !  non contracted and contracted counters
+      integer(kind=int_wp) ::mnmax           !  help variable nmax*mmax (horizontal size of the matrix)
+      integer(kind=int_wp) ::mnmaxk          !  help variable mnmax*kmax (total size of the cube)
+      integer(kind=int_wp) ::nqn, nqc        !  non contracted and contracted counters
 
 !     Some init
 

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqd2
+      use m_waq_precision
+
 
       implicit none
 
@@ -74,15 +76,15 @@
 !
       use timers
 !
-      INTEGER     LUNUT , NOSYS , NOTOT , NOSEG , NOQ3  , NOWARN, KMAX
-      REAL        CONC(NOTOT,NOSEG) , ALENG(2,NOQ3)
+      INTEGER(kind=int_wp) ::LUNUT , NOSYS , NOTOT , NOSEG , NOQ3  , NOWARN, KMAX
+      REAL(kind=real_wp) ::CONC(NOTOT,NOSEG) , ALENG(2,NOQ3)
 
-      real        dd, dr, dr1, dr2, dz1, dz2, coef
+      real(kind=real_wp) ::dd, dr, dr1, dr2, dz1, dz2, coef
 
-      integer     iseg, isys, ifilt, il, is, ilu, ifil, ild, ilay
-      integer     nhor, maxfil
+      integer(kind=int_wp) ::iseg, isys, ifilt, il, is, ilu, ifil, ild, ilay
+      integer(kind=int_wp) ::nhor, maxfil
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqd2", ithandl )
 !
       DD     = 1.0E-02

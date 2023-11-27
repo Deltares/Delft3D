@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_psolve
+      use m_waq_precision
       use m_usolve
 
 
@@ -55,34 +56,34 @@
 
 !     Kind        Function         Name                  Description
 
-      integer(4), intent(in   ) :: ntrace               ! dimension of matrix (length of diagonal)
-      real   (8), intent(  out) :: x     (  ntrace)     ! the solution of Mx = y
-      real   (8), intent(inout) :: rhs   (  ntrace)     ! right hand side of P-solve only
+      integer(kind=int_wp), intent(in   )  ::ntrace               ! dimension of matrix (length of diagonal)
+      real(kind=dp), intent(  out)  ::x     (  ntrace)     ! the solution of Mx = y
+      real(kind=dp), intent(inout)  ::rhs   (  ntrace)     ! right hand side of P-solve only
                                                         ! this vector may be changed on exit!!
-      integer(4), intent(in   ) :: nomat                ! number of off-diagonal entries matrix
-      real   (8), intent(in   ) :: amat  (  nomat )     ! off-diagonal entries matrix LP format
-      integer(4), intent(in   ) :: imat  (  nomat )     ! collumn nrs of off-diagonal entries matrix
-      real   (8), intent(in   ) :: diag  (  ntrace)     ! diagonal entries of matrix
-      integer(4), intent(in   ) :: idiag (0:ntrace)     ! start of rows in amat
-      integer(4), intent(in   ) :: nolay                ! number of layers in the vertical
-      integer(4), intent(in   ) :: ioptpc               ! = 0 no preconditioning
+      integer(kind=int_wp), intent(in   )  ::nomat                ! number of off-diagonal entries matrix
+      real(kind=dp), intent(in   )  ::amat  (  nomat )     ! off-diagonal entries matrix LP format
+      integer(kind=int_wp), intent(in   )  ::imat  (  nomat )     ! collumn nrs of off-diagonal entries matrix
+      real(kind=dp), intent(in   )  ::diag  (  ntrace)     ! diagonal entries of matrix
+      integer(kind=int_wp), intent(in   )  ::idiag (0:ntrace)     ! start of rows in amat
+      integer(kind=int_wp), intent(in   )  ::nolay                ! number of layers in the vertical
+      integer(kind=int_wp), intent(in   )  ::ioptpc               ! = 0 no preconditioning
                                                         ! = 1 L-GS preconditioning
                                                         ! = 2 U-GS preconditioning
                                                         ! = 3 SSOR preconditioning
-      integer(4), intent(in   ) :: nobnd                ! number of open boundaries
-      real   (8), intent(inout) :: triwrk(  nolay )     ! work array for vertical double sweep
-      integer(4), intent(in   ) :: iexseg(  ntrace)     ! 0 for explicit volumes
+      integer(kind=int_wp), intent(in   )  ::nobnd                ! number of open boundaries
+      real(kind=dp), intent(inout)  ::triwrk(  nolay )     ! work array for vertical double sweep
+      integer(kind=int_wp), intent(in   )  ::iexseg(  ntrace)     ! 0 for explicit volumes
 
 !        local variables
 
-      integer(4)                :: noseg                ! nr of volumes
-      integer(4)                :: nsegl                ! nr of volumes per layer
-      integer(4)                :: iadd                 ! 0 for 2DH, 2 for 3D
-      integer(4)                :: iseg                 ! this volume
-      integer(4)                :: jcol                 ! collumn counter for off-diagonals
-      integer(4)                :: ilow, ihigh          ! loop boundaries
+      integer(kind=int_wp) ::noseg                ! nr of volumes
+      integer(kind=int_wp) ::nsegl                ! nr of volumes per layer
+      integer(kind=int_wp) ::iadd                 ! 0 for 2DH, 2 for 3D
+      integer(kind=int_wp) ::iseg                 ! this volume
+      integer(kind=int_wp) ::jcol                 ! collumn counter for off-diagonals
+      integer(kind=int_wp) ::ilow, ihigh          ! loop boundaries
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "psolve", ithandl )
 
       if ( nolay .eq. 1) then

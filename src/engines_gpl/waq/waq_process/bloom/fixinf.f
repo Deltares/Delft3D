@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fixinf
+      use m_waq_precision
+
 
       implicit none
 
@@ -74,24 +76,24 @@
 
       implicit none
 
-      real(8)      :: x(*),bio(*),sumnut(mn),aroot(*)
-      integer      :: irs (*),jkmax(*),swblsa, i, j, k
+      real(kind=dp) ::x(*),bio(*),sumnut(mn),aroot(*)
+      integer(kind=int_wp) ::irs (*),jkmax(*),swblsa, i, j, k
       character(8) :: cdate
       character(1) :: errind
       
-      integer      :: inhib
-      integer      :: irerun
-      integer      :: ni
-      integer      :: index
-      integer      :: irmax
-      integer      :: mof
-      integer      :: infeas
-      real(8)      :: exttot
-      real(8)      :: extb
-      real(8)      :: extrem
-      real(8)      :: biomax
-      real(8)      :: xdefk
-      real(8)      :: xi
+      integer(kind=int_wp) ::inhib
+      integer(kind=int_wp) ::irerun
+      integer(kind=int_wp) ::ni
+      integer(kind=int_wp) ::index
+      integer(kind=int_wp) ::irmax
+      integer(kind=int_wp) ::mof
+      integer(kind=int_wp) ::infeas
+      real(kind=dp) ::exttot
+      real(kind=dp) ::extb
+      real(kind=dp) ::extrem
+      real(kind=dp) ::biomax
+      real(kind=dp) ::xdefk
+      real(kind=dp) ::xi
 
 ! Set flag for non-unique solutions (LST) to 0.
       lst = 0

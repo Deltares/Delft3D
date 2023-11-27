@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_partmp
+      use m_waq_precision
+
 
       implicit none
 
@@ -87,23 +89,23 @@
 
       IMPLICIT REAL (A-H,J-Z)
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
       LOGICAL  IM1OPT , IM2OPT , IM3OPT , IM4OPT , IM5OPT , IM6OPT ,
      *         FFFOPT , QQQOPT , WATOPT , HVTOPT , TWOFRC , QUALOPT
-      INTEGER  IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 ,IP7 ,IP8 ,IP9 ,IP10,
+      INTEGER(kind=int_wp) ::IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 ,IP7 ,IP8 ,IP9 ,IP10,
      J         IP11,IP12,IP13,IP14,IP15,IP16,IP17,IP18,IP19,IP20,
      J         IP21,IP22,IP23,IP24,IP25,IP26,IP27,IP28,IP29,IP30,
      J         IP31,IP32,IP33,IP34,IP35,IP36,IP37,IP38,IP39,IP40,
      J         IP41,IP42,IP43,IP44,IP45,IP46,IP47,IP48,IP49,IP50
-      INTEGER  IN1 ,IN2 ,IN3 ,IN4 ,IN5 ,IN6 ,IN7 ,IN8 ,IN9 ,IN10,
+      INTEGER(kind=int_wp) ::IN1 ,IN2 ,IN3 ,IN4 ,IN5 ,IN6 ,IN7 ,IN8 ,IN9 ,IN10,
      J         IN11,IN12,IN13,IN14,IN15,IN16,IN17,IN18,IN19,IN20,
      J         IN21,IN22,IN23,IN24,IN25,IN26,IN27,IN28,IN29,IN30,
      J         IN31,IN32,IN33,IN34,IN35,IN36,IN37,IN38,IN39,IN40,
      J         IN41,IN42,IN43,IN44,IN45,IN46,IN47,IN48,IN49,IN50
-      REAL     AIM1  , KDIM1 , FAC1  , AIM2  , KDIM2 , FAC2  ,
+      REAL(kind=real_wp) ::AIM1  , KDIM1 , FAC1  , AIM2  , KDIM2 , FAC2  ,
      J         AIM3  , KDIM3 , FAC3  , POC   , KPOC  , FAC4  ,
      J         PHYT  , KPHYT , FAC5  , DOC   , XDOC  , KDOC  ,
      J         FAC6  , HVTADS, HVTDES, MPPAR , MPDIS , DELT  ,
@@ -116,8 +118,8 @@
      J         DISS  , DISHS , LKSOL , LKMES , LKMEHS, FSULF ,
      J         FDIS2 , CDISM , QUAL  , KDALL , VOLUME, IAP   ,
      J         FAC6C
-      INTEGER  LUNREP, IKMRK2
-      INTEGER  IFLUX , ISEG  , ISWOX , IGROUP
+      INTEGER(kind=int_wp) ::LUNREP, IKMRK2
+      INTEGER(kind=int_wp) ::IFLUX , ISEG  , ISWOX , IGROUP
       LOGICAL  SEDIME
 !
       IP1  = IPOINT( 1)

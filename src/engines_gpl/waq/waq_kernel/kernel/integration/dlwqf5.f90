@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dlwqf5
+use m_waq_precision
+
 
 implicit none
 
@@ -52,41 +54,41 @@ contains
 
 !     Kind           Function         Name             Description
 
-      integer  ( 4), intent(in   ) :: lunrep         ! Unit number report file
-      integer  ( 4), intent(in   ) :: nocons         ! Number of constants used
+      integer(kind=int_wp), intent(in   )  ::lunrep         ! Unit number report file
+      integer(kind=int_wp), intent(in   )  ::nocons         ! Number of constants used
       character(20), intent(in   ) :: coname(nocons) ! Constant names
-      real     ( 4), intent(in   ) :: cons  (nocons) ! Model constants
-      integer  ( 4), intent(  out) :: ioptpc         ! Preconditioner switch, 0 = none,
+      real(kind=real_wp), intent(in   )  ::cons  (nocons) ! Model constants
+      integer(kind=int_wp), intent(  out)  ::ioptpc         ! Preconditioner switch, 0 = none,
                                                      ! 1 = GS (L), 2 = GS (U),3 = SSOR
-      integer  ( 4), intent(  out) :: iter           ! Maximum number of iterations
-      real     ( 8), intent(  out) :: tol            ! Relative tolerance
-      integer  ( 4), intent(  out) :: iscale         ! Row scaling switch [0 = no, 1 =yes]
+      integer(kind=int_wp), intent(  out)  ::iter           ! Maximum number of iterations
+      real(kind=dp), intent(  out)  ::tol            ! Relative tolerance
+      integer(kind=int_wp), intent(  out)  ::iscale         ! Row scaling switch [0 = no, 1 =yes]
       logical      , intent(  out) :: litrep         ! Switch on reporting iterarions
-      integer  ( 4), intent(in   ) :: noseg          ! Number of computational volumes
-      integer  ( 4), intent(in   ) :: noq3           ! Number of exchange surfaces in 3rd direction
-      integer  ( 4), intent(in   ) :: noq            ! total number of exchange surfaces
-      integer  ( 4), intent(in   ) :: nobnd          ! Number of open boundaries
-      integer  ( 4), intent(in   ) :: novec          !
-      integer  ( 4), intent(in   ) :: nomat          ! size of matrix with off-diagonals
-      integer  ( 4), intent(  out) :: nolay          ! number of layers
-      integer  ( 4), intent(in   ) :: intsrt         ! integration type
-      integer  ( 4), intent(in   ) :: intopt         ! integration option
+      integer(kind=int_wp), intent(in   )  ::noseg          ! Number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::noq3           ! Number of exchange surfaces in 3rd direction
+      integer(kind=int_wp), intent(in   )  ::noq            ! total number of exchange surfaces
+      integer(kind=int_wp), intent(in   )  ::nobnd          ! Number of open boundaries
+      integer(kind=int_wp), intent(in   )  ::novec          !
+      integer(kind=int_wp), intent(in   )  ::nomat          ! size of matrix with off-diagonals
+      integer(kind=int_wp), intent(  out)  ::nolay          ! number of layers
+      integer(kind=int_wp), intent(in   )  ::intsrt         ! integration type
+      integer(kind=int_wp), intent(in   )  ::intopt         ! integration option
 
 !     Local declarations
 
-      integer  ( 4) ierr               ! Error count
-      integer  ( 4) defopt  /    3/    ! Default preconditioner switch
-      integer  ( 4) defite  /  100/    ! Default maximum number of iterations
-      integer  ( 4) defsca  /    1/    ! Default value for row scaling
-      real     ( 8) deftol  /1.D-7/    ! Default tolerance value
-      integer  ( 4) defrep  /    0/    ! Default value for iteration report
-      integer  ( 4) idef, itrep        ! Help variables
+      integer(kind=int_wp) ::ierr               ! Error count
+      integer(kind=int_wp) ::defopt  =    3    ! Default preconditioner switch
+      integer(kind=int_wp) ::defite  =  100    ! Default maximum number of iterations
+      integer(kind=int_wp) ::defsca  =    1    ! Default value for row scaling
+      real(kind=dp) ::deftol  = 1.D-7    ! Default tolerance value
+      integer(kind=int_wp) ::defrep  =    0    ! Default value for iteration report
+      integer(kind=int_wp) ::idef, itrep        ! Help variables
       character(20) defnam             ! Help string
-      integer  ( 4) noth               ! Number of available threads
+      integer(kind=int_wp) ::noth               ! Number of available threads
 
 !     The WAQ-timer
 
-      integer  ( 4) ithandl /    0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqf5", ithandl )
 
 !     look for unstructured setting, this is misuse of nolay, fractim depends also on this

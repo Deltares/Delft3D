@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_wlcwoc
+      use m_waq_precision
+
 
       implicit none
 
@@ -38,43 +40,43 @@
 
 !     arguments
 
-      REAL               :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-      REAL               :: FL(*)              ! in/out flux array
-      INTEGER            :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER            :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER            :: NOSEG              ! in     number of segments
-      INTEGER            :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-      INTEGER            :: IEXPNT(4,*)        ! in     exchange pointer table
-      INTEGER            :: IKNMRK(*)          ! in     segment features array
-      INTEGER            :: NOQ1               ! in     number of exchanges in first direction
-      INTEGER            :: NOQ2               ! in     number of exchanges in second direction
-      INTEGER            :: NOQ3               ! in     number of exchanges in third direction
-      INTEGER            :: NOQ4               ! in     number of exchanges in fourth direction
+      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::FL(*)              ! in/out flux array
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
+      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
+      INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
+      INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
+      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
 
 !     from PMSA array
 
-      REAL               :: Temp               !1   in ambient water temperature                      (oC)
-      REAL               :: Surtemp            !2  Surplus temperature                                (oC)
-      REAL               :: Surf               !3  horizontal surface area of a DELWAQ segment        (m2)
-      REAL               :: Volume             !4  volume of computational cell                       (m3)
-      REAL               :: RhoWater           !5  density of water                                   (kg/m3)
-      REAL               :: CP                 !6  specific heat of water                             (J/kg/oC)
-      REAL               :: Depth              !7  depth of segment                                   (m)
-      REAL               :: Width              !8  total width                                        (m)
-      REAL               :: Velocity           !9  horizontal flow velocity                           (m/s)
-      REAL               :: SWCalcVelo         !10  switch (1=lin avg, 2=Flow avg, 3=Area avg)        (-)
-      REAL               :: flowseg            !11  flow from routine velocity SW=3                   (m3/s)
-      REAL               :: fSpeHeDis          !12  Zelfkoelgetal                                     (W/m2/C)
+      REAL(kind=real_wp) ::Temp               !1   in ambient water temperature                      (oC)
+      REAL(kind=real_wp) ::Surtemp            !2  Surplus temperature                                (oC)
+      REAL(kind=real_wp) ::Surf               !3  horizontal surface area of a DELWAQ segment        (m2)
+      REAL(kind=real_wp) ::Volume             !4  volume of computational cell                       (m3)
+      REAL(kind=real_wp) ::RhoWater           !5  density of water                                   (kg/m3)
+      REAL(kind=real_wp) ::CP                 !6  specific heat of water                             (J/kg/oC)
+      REAL(kind=real_wp) ::Depth              !7  depth of segment                                   (m)
+      REAL(kind=real_wp) ::Width              !8  total width                                        (m)
+      REAL(kind=real_wp) ::Velocity           !9  horizontal flow velocity                           (m/s)
+      REAL(kind=real_wp) ::SWCalcVelo         !10  switch (1=lin avg, 2=Flow avg, 3=Area avg)        (-)
+      REAL(kind=real_wp) ::flowseg            !11  flow from routine velocity SW=3                   (m3/s)
+      REAL(kind=real_wp) ::fSpeHeDis          !12  Zelfkoelgetal                                     (W/m2/C)
 
-      REAL               :: WL_Tmax            !13  maximum wT after heat discharge               (oC)
-      REAL               :: WL_dTmax           !14  maximum wT increase after heat discharge      (oC)
-      REAL               :: WO_Tbgn            !15  wT at beginning cooling (WO)                  (oC)
-      REAL               :: WO_Tend            !16  wT at end cooling (WO)                        (oC)
-      REAL               :: WO_dTmax           !17  maximum wT decrease during cooling (WO)       (oC)
-      REAL               :: KO_Tbgn            !18  wT at beginning heating (KO)                  (oC)
-      REAL               :: KO_Tend            !19  wT at end of heating (KO)                     (oC)
-      REAL               :: KO_Tmin            !20  minimum wT to prevent freezing intake (WO)    (oC)
-      REAL               :: KO_dTmax           !21  maximum wT increase during heating (KO)       (oC)
+      REAL(kind=real_wp) ::WL_Tmax            !13  maximum wT after heat discharge               (oC)
+      REAL(kind=real_wp) ::WL_dTmax           !14  maximum wT increase after heat discharge      (oC)
+      REAL(kind=real_wp) ::WO_Tbgn            !15  wT at beginning cooling (WO)                  (oC)
+      REAL(kind=real_wp) ::WO_Tend            !16  wT at end cooling (WO)                        (oC)
+      REAL(kind=real_wp) ::WO_dTmax           !17  maximum wT decrease during cooling (WO)       (oC)
+      REAL(kind=real_wp) ::KO_Tbgn            !18  wT at beginning heating (KO)                  (oC)
+      REAL(kind=real_wp) ::KO_Tend            !19  wT at end of heating (KO)                     (oC)
+      REAL(kind=real_wp) ::KO_Tmin            !20  minimum wT to prevent freezing intake (WO)    (oC)
+      REAL(kind=real_wp) ::KO_dTmax           !21  maximum wT increase during heating (KO)       (oC)
 
 !     fluxes
 
@@ -82,52 +84,52 @@
 
 !     local declarations
 
-      REAL               :: flowabs            ! flow absolute value used in wlc and woc              (m3/s)
-      REAL               :: flowsegvel         ! flow calc from velocity and width and depth          (m3/s)
+      REAL(kind=real_wp) ::flowabs            ! flow absolute value used in wlc and woc              (m3/s)
+      REAL(kind=real_wp) ::flowsegvel         ! flow calc from velocity and width and depth          (m3/s)
 
 
-      real               ::dTWLC               ! dT for heat loading capacity
-      real               ::dTWOC               ! dT for heat extraction capacity
-      real               ::dTKOC               ! dT for cold extraction capacity
+      real(kind=real_wp) ::dTWLC               ! dT for heat loading capacity
+      real(kind=real_wp) ::dTWOC               ! dT for heat extraction capacity
+      real(kind=real_wp) ::dTKOC               ! dT for cold extraction capacity
 C
-      REAL               ::WLC_Q_s             ! O  Heat Loading Capacity Flow per segment             MW
-      REAL               ::WLC_A_s             ! O  Heat Loading Capacity Atmosphere per segment       MW
-      REAL               ::WLC_m2              ! O  Heat Loading Capacity total  per m2           W/m2
+      REAL(kind=real_wp) ::WLC_Q_s             ! O  Heat Loading Capacity Flow per segment             MW
+      REAL(kind=real_wp) ::WLC_A_s             ! O  Heat Loading Capacity Atmosphere per segment       MW
+      REAL(kind=real_wp) ::WLC_m2              ! O  Heat Loading Capacity total  per m2           W/m2
 C
-      REAL               ::WOC_Q_s             ! O  Heat Extraction Capacity per segment               MW
-      REAL               ::WOC_A_s             ! O  Heat Extraction Capacity Atmosphere per segment    MW
-      REAL               ::WOC_m2              ! O  Heat Extraction Capacity Total per m2             W/m2
+      REAL(kind=real_wp) ::WOC_Q_s             ! O  Heat Extraction Capacity per segment               MW
+      REAL(kind=real_wp) ::WOC_A_s             ! O  Heat Extraction Capacity Atmosphere per segment    MW
+      REAL(kind=real_wp) ::WOC_m2              ! O  Heat Extraction Capacity Total per m2             W/m2
 
-      REAL               ::KOC_Q_s             ! O  Cold Extraction Capacity per segment               MW
-      REAL               ::KOC_A_s             ! O  Cold Extraction Capacity Atmosphere per segment    MW
-      REAL               ::KOC_m2              ! O  Cold Extraction Capacity Total per m2             W/m2
+      REAL(kind=real_wp) ::KOC_Q_s             ! O  Cold Extraction Capacity per segment               MW
+      REAL(kind=real_wp) ::KOC_A_s             ! O  Cold Extraction Capacity Atmosphere per segment    MW
+      REAL(kind=real_wp) ::KOC_m2              ! O  Cold Extraction Capacity Total per m2             W/m2
 
 C     tbv alternatieve berekening met voorbelasting
-      real               ::dTWLC2              ! dT for heat loading capacity second method
-      real               ::dTWOC2              ! dT for heat extraction capacity second metod
-      real               ::dTKOC2              ! dT for cold extraction capacity
+      real(kind=real_wp) ::dTWLC2              ! dT for heat loading capacity second method
+      real(kind=real_wp) ::dTWOC2              ! dT for heat extraction capacity second metod
+      real(kind=real_wp) ::dTKOC2              ! dT for cold extraction capacity
 
-      REAL               ::WLC2_Q_s     ! O  Heat Loading Capacity Flow per segment             MW
-      REAL               ::WLC2_A_s     ! O  Heat Loading Capacity Atmosphere per segment       MW
-      REAL               ::WLC2_m2      ! O  Heat Loading Capacity total  per m2           W/m2
+      REAL(kind=real_wp) ::WLC2_Q_s     ! O  Heat Loading Capacity Flow per segment             MW
+      REAL(kind=real_wp) ::WLC2_A_s     ! O  Heat Loading Capacity Atmosphere per segment       MW
+      REAL(kind=real_wp) ::WLC2_m2      ! O  Heat Loading Capacity total  per m2           W/m2
 C
-      REAL               ::WOC2_Q_s     ! O  Heat Extraction Capacity per segment               MW
-      REAL               ::WOC2_A_s     ! O  Heat Extraction Capacity Atmosphere per segment    MW
-      REAL               ::WOC2_m2      ! O  Heat Extraction Capacity total per m2              W/m2
+      REAL(kind=real_wp) ::WOC2_Q_s     ! O  Heat Extraction Capacity per segment               MW
+      REAL(kind=real_wp) ::WOC2_A_s     ! O  Heat Extraction Capacity Atmosphere per segment    MW
+      REAL(kind=real_wp) ::WOC2_m2      ! O  Heat Extraction Capacity total per m2              W/m2
 C
-      REAL               ::KOC2_Q_s     ! O  Cold Extraction Capacity per segment               MW
-      REAL               ::KOC2_A_s     ! O  Cold Extraction Capacity Atmosphere per segment    MW
-      REAL               ::KOC2_m2      ! O  Cold Extraction Capacity total per m2              W/m2
+      REAL(kind=real_wp) ::KOC2_Q_s     ! O  Cold Extraction Capacity per segment               MW
+      REAL(kind=real_wp) ::KOC2_A_s     ! O  Cold Extraction Capacity Atmosphere per segment    MW
+      REAL(kind=real_wp) ::KOC2_m2      ! O  Cold Extraction Capacity total per m2              W/m2
 
-      REAL, PARAMETER    ::factorMW = 1.0e6 ! Conversion from MW to W and vice versa
+      REAL(kind=real_wp), PARAMETER     ::factorMW = 1.0e6 ! Conversion from MW to W and vice versa
 
 
-      INTEGER  IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 ,IP7 ,IP8 ,IP9 ,IP10,
+      INTEGER(kind=int_wp) ::IP1 ,IP2 ,IP3 ,IP4 ,IP5 ,IP6 ,IP7 ,IP8 ,IP9 ,IP10,
      J         IP11,IP12,IP13,IP14,IP15,IP16,IP17,IP18,IP19,IP20,
      J         IP21,IP22,IP23,IP24,IP25,IP26,IP27,IP28,IP29, IP30,
      J         IP31,IP32,IP33,IP34,IP35, IP36,IP37,IP38,IP39, IP40,
      J         IP41,IP42,IP43,IP44,IP45, IP46,IP47
-      INTEGER  IFLUX , ISEG  , IKMRK2
+      INTEGER(kind=int_wp) ::IFLUX , ISEG  , IKMRK2
 
       IP1  = IPOINT(1 )
       IP2  = IPOINT(2 )

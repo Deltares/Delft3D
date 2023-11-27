@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_13
+      use m_waq_precision
       use m_zercum
       use m_setset
       use m_proint
@@ -117,9 +118,9 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target :: buffer      !< System total array space
-      INTEGER, DIMENSION(*)       :: LUN
+      INTEGER(kind=int_wp), DIMENSION(*)        ::LUN
       CHARACTER*(*), DIMENSION(*) :: LCHAR
-      INTEGER                     :: ACTION
+      INTEGER(kind=int_wp) ::ACTION
       TYPE(DELWAQ_DATA), TARGET   :: DLWQD
       type(GridPointerColl)       :: GridPs               ! collection of all grid definitions
 
@@ -128,20 +129,20 @@
 !
       LOGICAL         IMFLAG , IDFLAG , IHFLAG
       LOGICAL         LREWIN , LDUMM2
-      REAL            RDUMMY(1)
-      INTEGER         NSTEP
-      INTEGER         IBND
-      INTEGER         ISYS
+      REAL(kind=real_wp) ::RDUMMY(1)
+      INTEGER(kind=int_wp) ::NSTEP
+      INTEGER(kind=int_wp) ::IBND
+      INTEGER(kind=int_wp) ::ISYS
 
-      INTEGER         LAREA
-      INTEGER         LDISP
-      INTEGER         LDIFF
-      INTEGER         LFLOW
-      INTEGER         LNOQ
-      INTEGER         LQDMP
-      INTEGER         LVELO
-      INTEGER         LXPNT
-      INTEGER         sindex
+      INTEGER(kind=int_wp) ::LAREA
+      INTEGER(kind=int_wp) ::LDISP
+      INTEGER(kind=int_wp) ::LDIFF
+      INTEGER(kind=int_wp) ::LFLOW
+      INTEGER(kind=int_wp) ::LNOQ
+      INTEGER(kind=int_wp) ::LQDMP
+      INTEGER(kind=int_wp) ::LVELO
+      INTEGER(kind=int_wp) ::LXPNT
+      INTEGER(kind=int_wp) ::sindex
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

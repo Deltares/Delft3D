@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rear
+      use m_waq_precision
+
 
       implicit none
 
@@ -70,22 +72,22 @@
 
       IMPLICIT NONE
 
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
 !     Local declarations
 !
-      INTEGER  LUNREP
-      INTEGER  IFREAR, IKMRK1, IKMRK2, ISEG, IFLUX
-      INTEGER  IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8, IP9, IP10,
+      INTEGER(kind=int_wp) ::LUNREP
+      INTEGER(kind=int_wp) ::IFREAR, IKMRK1, IKMRK2, ISEG, IFLUX
+      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8, IP9, IP10,
      +         IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18,IP19,IP20,
      +         IP21, IP22, IP23, IP24, IP25, IP26, IP27
-      REAL     SAL   , B_ENHA, SC    , SC20  , KLREAR, TOTDEP,
+      REAL(kind=real_wp) ::SAL   , B_ENHA, SC    , SC20  , KLREAR, TOTDEP,
      +         REARTC, REARRC, HCRT  , VELOC , VWIND , TEMP  ,
      +         OXSAT , O2    , TEMP20, TMPCF , DEPTH , FL1   ,
      +         FCOVER, MAXRRC, REARKL, SATPERC,MINRRC, DELT  , RAIN
-      REAL     A     , B1    , B2    , C1    ,
+      REAL(kind=real_wp) ::A     , B1    , B2    , C1    ,
      +         C2    , D1    , D2    , D3    , D4  ,
      +         D1Os  , D2Os  , D3Os  , D4Os  ,
      +         D1Cs  , D2Cs  , D3Cs  , D4Cs  ,

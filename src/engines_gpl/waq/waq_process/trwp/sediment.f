@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_waqsediment
+      use m_waq_precision
+
 
       implicit none
 
@@ -61,27 +63,27 @@
 !
       implicit none
 
-      real     pmsa  ( * ) , fl    (*)
-      integer  ipoint( * ) , increm(*) , noseg , noflux,
+      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint( * ) , increm(*) , noseg , noflux,
      +         iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 !
 !     local declarations
 !
 
-      integer  iflux, iseg, ikmrk1, ikmrk2, itel, iq, ifrom, ito
-      real     cwater, settling, shear_stress, critical_stress,
+      integer(kind=int_wp) ::iflux, iseg, ikmrk1, ikmrk2, itel, iq, ifrom, ito
+      real(kind=real_wp) ::cwater, settling, shear_stress, critical_stress,
      &         delt, depth, safe_factor, depfro, depto
-      real     prob_settling, settling_flux
+      real(kind=real_wp) ::prob_settling, settling_flux
       
-      integer           :: ipnt(500)  
-      integer,parameter :: ip_nTRWP = 1
-      integer,parameter :: ip_nIM = 2
-      integer,parameter :: ip_Tau = 3
-      integer,parameter :: ip_Depth = 4
-      integer,parameter :: ip_Delt = 5
-      integer,parameter :: ip_SafeFactor = 6
-      integer,parameter :: ip_lastsingle = 6
-      integer :: ntrwp, itrwp, nspm, ispm, nitem, offset
+      integer(kind=int_wp) ::ipnt(500)
+      integer(kind=int_wp),parameter  ::ip_nTRWP = 1
+      integer(kind=int_wp),parameter  ::ip_nIM = 2
+      integer(kind=int_wp),parameter  ::ip_Tau = 3
+      integer(kind=int_wp),parameter  ::ip_Depth = 4
+      integer(kind=int_wp),parameter  ::ip_Delt = 5
+      integer(kind=int_wp),parameter  ::ip_SafeFactor = 6
+      integer(kind=int_wp),parameter  ::ip_lastsingle = 6
+      integer(kind=int_wp) ::ntrwp, itrwp, nspm, ispm, nitem, offset
       
 
       ntrwp = pmsa(ipoint(ip_ntrwp))

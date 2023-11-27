@@ -364,15 +364,10 @@ module part14fm_mod
 
 !           give the particles a z-value within the layer
             if ( modtyp .eq. model_two_layer_temp ) then     ! .. two layer model use a pointe discharge (as in v3.00)
-               if ( zwaste(ie) .gt. pblay ) then
-                  hpart(i) = ( zwaste(ie) - pblay ) / ( 1.0 - pblay )
-               else
-                  hpart(i) =  zwaste(ie)/pblay
-               endif
+               write(*,*) 'Stratified two layer model not supported for unstructured grids'
+               error stop
             elseif ( modtyp .eq. model_oil .and. laypart(i) .eq. 1 ) then   !   for one layer models (2dh),
-                  hpart(i) = zwaste(ie)           !      the release will be in the user-defined location
-            elseif ( nolay .eq. 1 ) then
-               hpart(i) = zwaste(ie)/100.0
+               hpart(i) = 0.0_dp               !      the release will be in the user-defined location
             else                               !      release randomly distributed over the vertical
                hpart(i) = rnd(rseed)
             endif

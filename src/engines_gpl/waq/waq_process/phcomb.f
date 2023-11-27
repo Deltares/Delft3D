@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_phcomb
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,56 +41,56 @@
 
       ! declaration of the arguments
 
-      real    pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real    fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint(*)   ! I  Array of pointers in PMSA to get and store the data
-      integer increm(*)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the FL array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-      integer noq2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      real(kind=real_wp) ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) ::ipoint(*)   ! I  Array of pointers in PMSA to get and store the data
+      integer(kind=int_wp) ::increm(*)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) ::noflux      ! I  Number of fluxes, increment in the FL array
+      integer(kind=int_wp) ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp) ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) ::noq1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+      integer(kind=int_wp) ::noq2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
+      integer(kind=int_wp) ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
       ! variables from the pmsa array
 
-      integer ntype       ! I  number of algae types                          (-)
-      real    depth       ! I  depth of computational cell                    (m)
-      real    biomas      ! I  concentration of algae type                (gC/m3)
-      integer ispec       ! I  number of the group for algae type             (-)
-      real    ncrat       ! I  N:C ratio algae type                       (gN/gC)
-      real    pcrat       ! I  P:C ratio algae type                       (gP/gC)
-      real    sicrat      ! I  Si:C ratio algae type                     (gSi/gC)
-      real    dmcf        ! I  DM:C ratio algae type 01                  (gDM/gC)
-      real    catocl      ! I  Chlorophyll-a:C ratio per algae type    (gChla/gC)
-      real    xncralg     ! I  N:C for heterotrophic algae types          (gN/gC)
-      real    xpcralg     ! I  P:C for heterotrophic algae types          (gP/gC)
-      real    fncralg     ! I  N/C for nitrogen fixing algae types        (gN/gC)
-      integer fixalg      ! I  benthic:<0, resuspended:>0, plankton:=0        (-)
-      real    phyt        ! O  total carbon in phytoplankton              (gC/m3)
-      real    algn        ! O  total nitrogen in algae                    (gN/m3)
-      real    algp        ! O  total phosphorus in algae                  (gP/m3)
-      real    algsi       ! O  total silica in algae                     (gSi/m3)
-      real    algdm       ! O  total DM in algae                         (gDM/m3)
-      real    chlfa       ! O  Chlorophyll-a concentration                (mg/m3)
-      real    cgroup      ! O  algae group concentration                  (gC/m3)
+      integer(kind=int_wp) ::ntype       ! I  number of algae types                          (-)
+      real(kind=real_wp) ::depth       ! I  depth of computational cell                    (m)
+      real(kind=real_wp) ::biomas      ! I  concentration of algae type                (gC/m3)
+      integer(kind=int_wp) ::ispec       ! I  number of the group for algae type             (-)
+      real(kind=real_wp) ::ncrat       ! I  N:C ratio algae type                       (gN/gC)
+      real(kind=real_wp) ::pcrat       ! I  P:C ratio algae type                       (gP/gC)
+      real(kind=real_wp) ::sicrat      ! I  Si:C ratio algae type                     (gSi/gC)
+      real(kind=real_wp) ::dmcf        ! I  DM:C ratio algae type 01                  (gDM/gC)
+      real(kind=real_wp) ::catocl      ! I  Chlorophyll-a:C ratio per algae type    (gChla/gC)
+      real(kind=real_wp) ::xncralg     ! I  N:C for heterotrophic algae types          (gN/gC)
+      real(kind=real_wp) ::xpcralg     ! I  P:C for heterotrophic algae types          (gP/gC)
+      real(kind=real_wp) ::fncralg     ! I  N/C for nitrogen fixing algae types        (gN/gC)
+      integer(kind=int_wp) ::fixalg      ! I  benthic:<0, resuspended:>0, plankton:=0        (-)
+      real(kind=real_wp) ::phyt        ! O  total carbon in phytoplankton              (gC/m3)
+      real(kind=real_wp) ::algn        ! O  total nitrogen in algae                    (gN/m3)
+      real(kind=real_wp) ::algp        ! O  total phosphorus in algae                  (gP/m3)
+      real(kind=real_wp) ::algsi       ! O  total silica in algae                     (gSi/m3)
+      real(kind=real_wp) ::algdm       ! O  total DM in algae                         (gDM/m3)
+      real(kind=real_wp) ::chlfa       ! O  Chlorophyll-a concentration                (mg/m3)
+      real(kind=real_wp) ::cgroup      ! O  algae group concentration                  (gC/m3)
 
       ! number of variables in pmsa
 
-      integer, parameter :: nipfix =  2 !    number of fixed inputs (not per type)
-      integer, parameter :: nipvar = 11 !    number of variable inputs (per type)
-      integer, parameter :: nopfix =  6 !    number of fixed outputs (not per type)
-      integer, parameter :: nopvar =  1 !    number of variable outputs (per group)
+      integer(kind=int_wp), parameter  ::nipfix =  2 !    number of fixed inputs (not per type)
+      integer(kind=int_wp), parameter  ::nipvar = 11 !    number of variable inputs (per type)
+      integer(kind=int_wp), parameter  ::nopfix =  6 !    number of fixed outputs (not per type)
+      integer(kind=int_wp), parameter  ::nopvar =  1 !    number of variable outputs (per group)
 
       ! other local declarations
 
-      integer iseg        !    loop counter for computational element loop
-      integer itel        !    index in pmsa array
-      integer itype       !    loop counter types
-      integer igrp        !    index algae groups
-      integer ispec_prev  !    previous algae group
+      integer(kind=int_wp) ::iseg        !    loop counter for computational element loop
+      integer(kind=int_wp) ::itel        !    index in pmsa array
+      integer(kind=int_wp) ::itype       !    loop counter types
+      integer(kind=int_wp) ::igrp        !    index algae groups
+      integer(kind=int_wp) ::ispec_prev  !    previous algae group
 
       ntype   = pmsa(ipoint(1))
 

@@ -21,57 +21,56 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1
-use m_delwaq1_write_messages
-use m_delwaq1_startup_screen
-use m_delwaq1_read_input_data
-use m_delwaq1_init
-use m_delwaq1_close_lunfiles
+   use m_waq_precision
+   use m_delwaq1_write_messages
+   use m_delwaq1_startup_screen
+   use m_delwaq1_read_input_data
+   use m_delwaq1_init
+   use m_delwaq1_close_lunfiles
 
-
-implicit none
+   implicit none
 
 contains
 
+   subroutine delwaq1(argc, argv, errorcode)
+      use m_delwaq1_allocate_workspace
 
-subroutine delwaq1(argc, argv, errorcode)
-use m_delwaq1_allocate_workspace
+      !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
+      !>\file
+      !>                    DELWAQ - INPUT PROGRAMME
+      !>
+      !>                    Reads the DELWAQ inputfiles and generates
+      !>                    a consistent set of binairy intermediate files.
+      !
+      !     SUBROUTINES CALLED :
+      !                         delwaq1_init, initializes timer and values
+      !                         delwaq1_startup_screen
+      !                         delwaq1_allocate_workspace
+      !                         delwaq1_read_user_data
+      !                         delwaq1_write_messages
+      !                         delwaq1_close_lunfiles
 
-!DEC$ ATTRIBUTES DLLEXPORT::delwaq1
+      implicit none
 
-!>\file
-!>                    DELWAQ - INPUT PROGRAMME
-!>
-!>                    Reads the DELWAQ inputfiles and generates
-!>                    a consistent set of binairy intermediate files.
-!
-!     SUBROUTINES CALLED :
-!                         delwaq1_init, initializes timer and values
-!                         delwaq1_startup_screen
-!                         delwaq1_allocate_workspace
-!                         delwaq1_read_user_data
-!                         delwaq1_write_messages
-!                         delwaq1_close_lunfiles
+      integer(kind=int_wp), intent(in) ::  argc
+      character(len=*), dimension(argc), intent(in) :: argv
+      integer(kind=int_wp), intent(out) ::  errorcode
 
-    implicit none
+      errorcode = 0
 
-    integer, intent(in)                           :: argc
-    character(len=*), dimension(argc), intent(in) :: argv
-    integer, intent(out)                          :: errorcode
+      ! create the lst, delwaq04.wrk, harmonic.wrk, pointers.wrk, and filenaam.wrk files
+      call delwaq1_init(argc, argv)
+      call delwaq1_startup_screen()
+      call delwaq1_allocate_workspace(argc, argv, errorcode)
+      if (errorcode == 0) then
+         call delwaq1_read_input_data()
+         call delwaq1_write_messages(errorcode)
+      end if
+      call delwaq1_close_lunfiles()
 
-    errorcode = 0
-
-    call delwaq1_init(argc, argv)
-    call delwaq1_startup_screen()
-    call delwaq1_allocate_workspace(argc, argv, errorcode)
-    if (errorcode==0) then
-       call delwaq1_read_input_data()
-       call delwaq1_write_messages(errorcode)
-    endif
-    call delwaq1_close_lunfiles()
-
-    ! Delwaq1_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
-    return
-end subroutine delwaq1
+      ! Delwaq1_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
+      return
+   end subroutine delwaq1
 
 end module m_delwaq1

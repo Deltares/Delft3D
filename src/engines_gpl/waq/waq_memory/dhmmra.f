@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module dhmmra_mod
+      use m_waq_precision
       use m_srstop
       use m_getcom
 
@@ -61,50 +62,50 @@
 
 !     kind     function         name        description
 
-      integer      , intent(in   ) :: lunrep    ! logical unitnumber output file
+      integer(kind=int_wp), intent(in   )  ::lunrep    ! logical unitnumber output file
       logical      , intent(in   ) :: l_decl    ! Declare memory y/n
-      integer      , intent(inout) :: arrpoi(:) ! Pointer in workarray/FMM reference pointer
-      integer      , intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
-      integer      , intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
-      integer      , intent(inout) :: arrlen(:) ! Length off array
-      integer      , intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
-      integer      , intent(inout) :: arrdm1(:) ! dimension 1
-      integer      , intent(inout) :: arrdm2(:) ! dimension 2
-      integer      , intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
+      integer(kind=int_wp), intent(inout)  ::arrpoi(:) ! Pointer in workarray/FMM reference pointer
+      integer(kind=int_wp), intent(inout)  ::arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
+      integer(kind=int_wp), intent(inout)  ::arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
+      integer(kind=int_wp), intent(inout)  ::arrlen(:) ! Length off array
+      integer(kind=int_wp), intent(inout)  ::arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+      integer(kind=int_wp), intent(inout)  ::arrdm1(:) ! dimension 1
+      integer(kind=int_wp), intent(inout)  ::arrdm2(:) ! dimension 2
+      integer(kind=int_wp), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
-      integer      , intent(inout) :: itota     ! Required array space
+      integer(kind=int_wp), intent(inout)  ::itota     ! Required array space
       type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
 
 
 
 !     Local declarations
 
-      integer         i_rar                             ! loop counter
-      integer         nr_rar                            ! number of real arrays
-      integer         nohor                             ! number of computational volumes in 1 layer
-      integer         nsubs                             ! nr of substances for array space declaration
+      integer(kind=int_wp) ::i_rar                             ! loop counter
+      integer(kind=int_wp) ::nr_rar                            ! number of real ::arrays
+      integer(kind=int_wp) ::nohor                             ! number of computational volumes in 1 layer
+      integer(kind=int_wp) ::nsubs                             ! nr of substances for array space declaration
       logical         fluxco                            ! if .true. then flux correction
       logical         steady                            ! if .true. then steady state computation
       logical         delmat                            ! if .true. then direct Gauss solver
       logical         f_solv                            ! if .true. then GMRES Krilov solver
       logical         balans                            ! if .true. then balances to be computed
       character*20    namarr                            ! help variable for array name
-      integer         iartyp                            ! help variable for array type
-      integer         iarlen                            ! help variable for array length
-      integer         ip                                ! help variable for array pointer
+      integer(kind=int_wp) ::iartyp                            ! help variable for array type
+      integer(kind=int_wp) ::iarlen                            ! help variable for array length
+      integer(kind=int_wp) ::ip                                ! help variable for array pointer
 
-      integer         noth                              ! number of available thread for parallel processing
-      integer         ierr                              ! error indicator
-      integer         jstart                            ! lower limit Flow arrays method 19 and 20
-      integer         nmmaxj                            ! upper limit Flow arrays method 19 and 20
+      integer(kind=int_wp) ::noth                              ! number of available thread for parallel processing
+      integer(kind=int_wp) ::ierr                              ! error indicator
+      integer(kind=int_wp) ::jstart                            ! lower limit Flow arrays method 19 and 20
+      integer(kind=int_wp) ::nmmaxj                            ! upper limit Flow arrays method 19 and 20
 
-      logical            :: lfound                      ! argument was found
-      character(len=256) :: adummy                      ! dummy string
-      integer            :: nothreadsarg                ! optional number of threads from delwaq2 commandline arguments
-      real               :: rdummy                      ! dummy real
-      integer            :: ierr2                       ! error code
+      logical              :: lfound                      ! argument was found
+      character(len=256)   :: adummy                      ! dummy string
+      integer(kind=int_wp) ::nothreadsarg                ! optional number of threads from delwaq2 commandline arguments
+      real(kind=real_wp)        ::rdummy                      ! dummy
+      integer(kind=int_wp) :: ierr2                       ! error code
 
-      integer            :: ith, j                      ! iteration variables (NUMA initialisation)
+      integer(kind=int_wp) ::ith, j                      ! iteration variables (NUMA initialisation)
 
       integer   iivol  / 1/, iiarea / 2/, iiflow / 3/, iileng / 4/, iidisp / 5/,
      &          iiconc / 6/, iimass / 7/, iiderv / 8/, iiboun / 9/, iibset /10/,

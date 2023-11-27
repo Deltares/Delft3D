@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_print6
+      use m_waq_precision
+
 
       implicit none
 
@@ -44,11 +46,11 @@
 
       implicit none
 
-      integer    :: jt(mt),nonuni(*),nonun(*),irs(*),lib(*)
-      real(8)    :: x(*),xdef(*),bio(*), xopt, biomax, dbio
-      integer    :: npause=0
-      integer    :: ii, ii1, ii2, ii2max, inow, int, jjj, jnow
-      integer    :: k, klx, linf, nin, numun, numuni
+      integer(kind=int_wp) ::jt(mt),nonuni(*),nonun(*),irs(*),lib(*)
+      real(kind=dp) ::x(*),xdef(*),bio(*), xopt, biomax, dbio
+      integer(kind=int_wp) ::npause=0
+      integer(kind=int_wp) ::ii, ii1, ii2, ii2max, inow, int, jjj, jnow
+      integer(kind=int_wp) ::k, klx, linf, nin, numun, numuni
       
       save
 

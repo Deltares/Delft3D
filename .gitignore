@@ -31,6 +31,9 @@ src/engines_gpl/waq/resources/csvFiles/*
 src/**/config.h
 src/**/FortranCInterface.h
 
-.pre-commit-config.yaml
-src/cmake/cmake-build-*
+# ignore CLION IDE build directory
+src/cmake/cmake-build-**
+# ignore WSL builld script
 install.sh
+# ignore pre-commit configuration file
+.pre-commit-config.yaml

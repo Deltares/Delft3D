@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rd_tabp5
+      use m_waq_precision
+
 
       implicit none
 
@@ -63,9 +65,9 @@
 !
 !     declaration of arguments
 !
-      INTEGER       NO_CONF_MAX , NO_CONF     ,
+      INTEGER(kind=int_wp) ::NO_CONF_MAX , NO_CONF     ,
      +              LUNREP      , IERROR
-      INTEGER       DEFFDS
+      INTEGER(kind=int_wp) ::DEFFDS
       CHARACTER*10  CONF_ID     (NO_CONF)
       CHARACTER*50  CONF_NAME   (NO_CONF)
 !
@@ -78,12 +80,12 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER       NELEMS
+      INTEGER(kind=int_wp) ::NELEMS
       PARAMETER   ( NELEMS = 3 )
 !
-      INTEGER       I               , IELM          ,
+      INTEGER(kind=int_wp) ::I               , IELM          ,
      +              BUFLEN
-      INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS),
+      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS),
      +              UINDEX(3)
       CHARACTER*16  GRPNAM
       CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
@@ -91,7 +93,7 @@
 !
 !     External NEFIS Functions
 !
-      INTEGER   GETELS
+      INTEGER(kind=int_wp) ::GETELS
      +         ,GETELT
       EXTERNAL  GETELS
      +         ,GETELT

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_wrwrko
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,22 +45,22 @@
 
       implicit none
 
-      integer             , intent(in   ) :: lunwro                 !< output work file
-      integer             , intent(in   ) :: noutp                  !< total number of output files
-      integer             , intent(in   ) :: nbufmx                 !< maximum buffer length
-      integer             , intent(in   ) :: ioutps(7,*)            !< (old) output structure
+      integer(kind=int_wp), intent(in   )  ::lunwro                 !< output work file
+      integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
+      integer(kind=int_wp), intent(in   )  ::nbufmx                 !< maximum buffer length
+      integer(kind=int_wp), intent(in   )  ::ioutps(7,*)            !< (old) output structure
       type(outputcoll)    , intent(in   ) :: outputs                !< output structure
-      integer             , intent(in   ) :: notot                  !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::notot                  !< total number of substances
       character*100       , intent(in   ) :: substdname(notot)      !< substance standard name
       character*40        , intent(in   ) :: subunit(notot)         !< substance unit
       character*60        , intent(in   ) :: subdescr(notot)        !< substance description
 
       ! local
 
-      real                                :: versio                 !  version number output system
-      integer                             :: k                      !  loop counter
-      integer                             :: nrvart                 !  total number of variables in output
-      integer(4)                          :: ithndl = 0             ! handle for performance timer
+      real(kind=real_wp) ::versio                 !  version number output system
+      integer(kind=int_wp) ::k                      !  loop counter
+      integer(kind=int_wp) ::nrvart                 !  total number of variables in output
+      integer(kind=int_wp) ::ithndl = 0             ! handle for performance timer
       if (timon) call timstrt( "wrwrko", ithndl )
 
       versio = 0.2

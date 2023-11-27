@@ -321,7 +321,7 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
     type(c_ptr), value, intent(in)     :: var_ptr
     !
     ! Locals
-    integer                            :: slen
+    integer                            :: slen, i
     real(c_double)        , pointer    :: var_1d_double_ptr(:)
     real(c_double)        , pointer    :: var_2d_double_ptr(:,:)
     integer(c_int)        , pointer    :: var_0d_int_ptr
@@ -421,10 +421,18 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
         call c_f_pointer(var_ptr, var_0d_int_ptr)
         fm_itemp => var_0d_int_ptr
     case ("runid_shape")
-        call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-        slen = var_1d_int_ptr(2)
+        ! Nothing to do: the length of the string is obtained from the string
+        ! itself
     case ("runid")
         runid = valuestr(1:slen)
+        ! For some reason, sometimes runid contains an additional ichar(6).
+        ! May be only during debugging.
+        ! Just to be safe: replace it by a space.
+        do i = 1, slen
+            if (ichar(runid(i:i)) == 6) then
+                runid(i:i) = ' '
+            endif
+        enddo
     case ("skipuniqueid")
         select case (str_tolower(valuestr(1:slen)))
         case ("1", "yes", "true")

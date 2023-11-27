@@ -22,12 +22,14 @@
 !!  rights reserved.
 
 module m_waq_data_buffer
+use m_waq_precision
+
 
     implicit none
 
     type, public :: waq_data_buffer
-        integer, dimension(:),allocatable              :: ibuf
-        real, dimension(:),allocatable                 :: rbuf
+        integer(kind=int_wp), dimension(:),allocatable ::ibuf
+        real(kind=real_wp), dimension(:),allocatable ::rbuf
         character(len=1), dimension(:),allocatable     :: chbuf
 
       contains

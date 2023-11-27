@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rd_tabr1
+      use m_waq_precision
+
 
       implicit none
 
@@ -63,11 +65,11 @@
 !
 !     declaration of arguments
 !
-      INTEGER       NO_C_P_MAX  , NO_CONF     ,
+      INTEGER(kind=int_wp) ::NO_C_P_MAX  , NO_CONF     ,
      +              NO_PROC     , LUNREP      ,
      +              IERROR
-      INTEGER       DEFFDS
-      INTEGER       CON_PRO(NO_C_P_MAX)
+      INTEGER(kind=int_wp) ::DEFFDS
+      INTEGER(kind=int_wp) ::CON_PRO(NO_C_P_MAX)
 !
 !     Local variables
 !
@@ -78,13 +80,13 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER       NELEMS
+      INTEGER(kind=int_wp) ::NELEMS
       PARAMETER   ( NELEMS = 3 )
 !
-      INTEGER       I               , IELM          ,
+      INTEGER(kind=int_wp) ::I               , IELM          ,
      +              BUFLEN          , NO_CONF_R1    ,
      +              NO_PROC_R1
-      INTEGER       ELMDMS(3,NELEMS), NBYTSG(NELEMS),
+      INTEGER(kind=int_wp) ::ELMDMS(3,NELEMS), NBYTSG(NELEMS),
      +              UINDEX(3)
       CHARACTER*16  GRPNAM
       CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
@@ -92,7 +94,7 @@
 !
 !     External NEFIS Functions
 !
-      INTEGER   GETELS
+      INTEGER(kind=int_wp) ::GETELS
      +         ,GETELT
       EXTERNAL  GETELS
      +         ,GETELT

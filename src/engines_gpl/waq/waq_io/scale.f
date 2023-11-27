@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_scale
+      use m_waq_precision
+
 
       implicit none
 
@@ -49,16 +51,16 @@
 
 !     kind           function         name                        Descriptipon
 
-      integer  ( 4), intent(in   ) :: nvals                     !< number of values
-      integer  ( 4), intent(in   ) :: nitem                     !< number of items
-      real     ( 4), intent(inout) :: arrin (nvals,nitem)       !< number of items
-      real     ( 4), intent(in   ) :: factor(nvals)             !< scale factors
+      integer(kind=int_wp), intent(in   ) ::  nvals                      !< number of values
+      integer(kind=int_wp), intent(in   ) ::  nitem                      !< number of items
+      real(kind=real_wp), intent(inout) ::  arrin (nvals,nitem)        !< number of items
+      real(kind=real_wp), intent(in   ) ::  factor(nvals)              !< scale factors
 
 !     local decalations
 
-      integer        i1, i2       ! loop counters
-      real     ( 4)  fact         ! factor
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: i1, i2        ! loop counters
+      real(kind=real_wp) :: fact          ! factor
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "scale", ithndl )
 
       do i1 = 1, nvals

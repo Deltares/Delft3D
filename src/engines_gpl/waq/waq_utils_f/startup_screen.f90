@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_startup_screen
+use m_waq_precision
+
 
 implicit none
 
@@ -40,7 +42,7 @@ contains
 
       implicit none
 
-      integer      , intent(in   ) :: lunrep   !< Unit number report file
+      integer(kind=int_wp)      , intent(in   ) ::lunrep   !< Unit number report file
 
       ! local declarations
 
@@ -49,7 +51,7 @@ contains
       character*20  run_date_time
       character*120 version_string
       logical       first
-      integer (4)   i, j
+      integer(kind=int_wp)  ::   i, j
       save          first
       character*75  startup_screen_text(8)
 
@@ -64,7 +66,7 @@ contains
       '| Version xx.xxxx  xx-xx-xxxx                                           |', &
       '+-----------------------------------------------------------------------+'/
 
-      integer(4) ithndl /0/
+      integer(kind=int_wp)  ::ithndl = 0
       if ( timon ) call timstrt( "startup_screen", ithndl )
 
       ! set version_string

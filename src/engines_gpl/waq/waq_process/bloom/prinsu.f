@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_prinsu
+      use m_waq_precision
+
 
       implicit none
 
@@ -42,11 +44,11 @@
 
       implicit none
 
-      integer  :: i, j, k, k1, k2
-      integer  :: itnum, ntape, ntstot, numlim, ncon
-      real (8) :: bio2, xbio, total, tot2
+      integer(kind=int_wp) ::i, j, k, k1, k2
+      integer(kind=int_wp) ::itnum, ntape, ntstot, numlim, ncon
+      real(kind=dp) ::bio2, xbio, total, tot2
       
-      real*8 x(*),xeco(*)
+      real(kind=dp) ::x(*),xeco(*)
       character*8 words(14)
       logical lcon
 

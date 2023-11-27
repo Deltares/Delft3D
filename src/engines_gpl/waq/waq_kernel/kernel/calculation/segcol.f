@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_segcol
+      use m_waq_precision
+
 
       implicit none
 
@@ -36,22 +38,22 @@
       use timers
       implicit none
 
-      integer, intent(in   ) :: nosss          ! total number of segments
-      integer, intent(in   ) :: noq1           ! number of exchange pointers in first direction
-      integer, intent(in   ) :: noq2           ! number of exchange pointers in first direction
-      integer, intent(in   ) :: noq3           ! number of exchange pointers in first direction
-      integer, intent(in   ) :: noq4           ! number of exchange pointers in first direction
-      integer, intent(in   ) :: ipoint(4,*)    ! exchange pointers
-      integer, intent(in   ) :: iknmrk(*)      ! segment attributes
-      integer, intent(  out) :: isegcol(*)     ! pointer from segment to top of column
+      integer(kind=int_wp), intent(in   )  ::nosss          ! total number of segments
+      integer(kind=int_wp), intent(in   )  ::noq1           ! number of exchange pointers in first direction
+      integer(kind=int_wp), intent(in   )  ::noq2           ! number of exchange pointers in first direction
+      integer(kind=int_wp), intent(in   )  ::noq3           ! number of exchange pointers in first direction
+      integer(kind=int_wp), intent(in   )  ::noq4           ! number of exchange pointers in first direction
+      integer(kind=int_wp), intent(in   )  ::ipoint(4,*)    ! exchange pointers
+      integer(kind=int_wp), intent(in   )  ::iknmrk(*)      ! segment attributes
+      integer(kind=int_wp), intent(  out)  ::isegcol(*)     ! pointer from segment to top of column
 
       ! local declarations
 
-      integer                :: iseg           ! segment index
-      integer                :: iq             ! exchange index
-      integer                :: ifrom          ! from segment in pointer
-      integer                :: ito            ! to segment in pointer
-      integer                :: ikmrkv         ! first attribute from segment
+      integer(kind=int_wp) ::iseg           ! segment index
+      integer(kind=int_wp) ::iq             ! exchange index
+      integer(kind=int_wp) ::ifrom          ! from segment in pointer
+      integer(kind=int_wp) ::ito            ! to segment in pointer
+      integer(kind=int_wp) ::ikmrkv         ! first attribute from segment
 
       do iseg = 1, nosss
          isegcol(iseg) = iseg

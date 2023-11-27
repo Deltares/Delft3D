@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhisys
+      use m_waq_precision
+
 
       implicit none
 
@@ -51,7 +53,7 @@
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
 !
-      INTEGER       ISYSI(:), ISYSN(:)
+      INTEGER(kind=int_wp) ::ISYSI(:), ISYSN(:)
 
 !     Fill the array's
 !

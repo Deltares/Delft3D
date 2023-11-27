@@ -15,7 +15,7 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
-    add_definitions(-DHAVE_LSEEK64) # Define a preprocessor macro
+    add_definitions(-D_FILE_OFFSET_BITS=64)
 endif(UNIX)
 
 
@@ -37,7 +37,7 @@ target_include_directories(${library_name}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}
 
 # Set preprocessor definitions
 if (UNIX)
-    target_compile_definitions(${library_name} PRIVATE "PTR8;linux;LINUX64;HAVE_LSEEK64;_IA64_;_LIB;_CRT_SECURE_NO_WARNINGS")    
+    target_compile_definitions(${library_name} PRIVATE "PTR8;linux;LINUX64;_IA64_;_LIB;_CRT_SECURE_NO_WARNINGS")    
 endif(UNIX)
 if (WIN32)
     target_compile_definitions(${library_name} PRIVATE "W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS")

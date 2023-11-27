@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outbo2
+      use m_waq_precision
+
 
       implicit none
 
@@ -63,21 +65,21 @@
       use timers       !   performance timers
       use output
 
-      INTEGER     NOUTP , NOSEG , NODUMP, NX    , NY    ,
+      INTEGER(kind=int_wp) ::NOUTP , NOSEG , NODUMP, NX    , NY    ,
      +            NRVART, NBUFMX, NDMPAR, NOTOT , NCBUFM,
      +            NORAAI
-      INTEGER     IOUTPS(7,NOUTP)
+      INTEGER(kind=int_wp) ::IOUTPS(7,NOUTP)
 !
 !     Local
 !
-      integer, PARAMETER :: IGSEG = 1
-      integer, PARAMETER :: IGMON = 2 
-      integer, PARAMETER :: IGGRD = 3
-      integer, PARAMETER :: IGSUB = 4 
+      integer(kind=int_wp), PARAMETER  ::IGSEG = 1
+      integer(kind=int_wp), PARAMETER  ::IGMON = 2
+      integer(kind=int_wp), PARAMETER  ::IGGRD = 3
+      integer(kind=int_wp), PARAMETER  ::IGSUB = 4
       
-      INTEGER     IGRID , NOCEL , NBUFOU, ISRTO
-      integer(4) :: ithndl = 0
-      integer iout, nrvar, ncbufo
+      INTEGER(kind=int_wp) ::IGRID , NOCEL , NBUFOU, ISRTO
+      integer(kind=int_wp) ::ithndl = 0
+      integer(kind=int_wp) ::iout, nrvar, ncbufo
       
       if (timon) call timstrt( "outbo2", ithndl )
 !

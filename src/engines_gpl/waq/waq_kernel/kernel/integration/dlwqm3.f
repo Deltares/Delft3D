@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqm3
+      use m_waq_precision
+
 
       implicit none
 
@@ -48,38 +50,38 @@
 
 !     Kind        Function         Name                    Description
 
-      integer(4), intent(in   ) :: idt                   ! time step in scu's
-      integer(4), intent(in   ) :: isys                  ! current active substance
-      integer(4), intent(in   ) :: nosys                 ! number of active substances
-      integer(4), intent(in   ) :: notot                 ! total number of substances
+      integer(kind=int_wp), intent(in   )  ::idt                   ! time step in scu's
+      integer(kind=int_wp), intent(in   )  ::isys                  ! current active substance
+      integer(kind=int_wp), intent(in   )  ::nosys                 ! number of active substances
+      integer(kind=int_wp), intent(in   )  ::notot                 ! total number of substances
 
-      integer(4), intent(in   ) :: noseg                 ! number of segments
-      real   (4), intent(in   ) :: conc   (notot, noseg) ! concentrations
-      real   (4), intent(in   ) :: deriv  (notot, noseg) ! processes and discharges (divided by the time step idt)
-      real   (4), intent(in   ) :: volold (noseg)        ! segment volumes at the previous time
-      integer(4), intent(in   ) :: nobnd                 ! number of boundary segments
-      real   (4), intent(in   ) :: bound  (nosys, nobnd) ! boundary concentrions
+      integer(kind=int_wp), intent(in   )  ::noseg                 ! number of segments
+      real(kind=real_wp), intent(in   )  ::conc   (notot, noseg) ! concentrations
+      real(kind=real_wp), intent(in   )  ::deriv  (notot, noseg) ! processes and discharges (divided by the time step idt)
+      real(kind=real_wp), intent(in   )  ::volold (noseg)        ! segment volumes at the previous time
+      integer(kind=int_wp), intent(in   )  ::nobnd                 ! number of boundary segments
+      real(kind=real_wp), intent(in   )  ::bound  (nosys, nobnd) ! boundary concentrions
 
-      integer(4), intent(in   ) :: noq                   ! number of exchanges
-      integer(4), intent(in   ) :: ipoint (4,noq)        ! exchange pointers (dim: 4 x noq)
-      real   (4), intent(in   ) :: flowtot(noq)          ! flows plus additional velos. (dim: noq)
-      real   (4), intent(in   ) :: disptot(noq)          ! dispersion plus additional dipers. (dim: noq)
-      real   (4), intent(in   ) :: theta  (noq)          ! variable theta coefficients
+      integer(kind=int_wp), intent(in   )  ::noq                   ! number of exchanges
+      integer(kind=int_wp), intent(in   )  ::ipoint (4,noq)        ! exchange pointers (dim: 4 x noq)
+      real(kind=real_wp), intent(in   )  ::flowtot(noq)          ! flows plus additional velos. (dim: noq)
+      real(kind=real_wp), intent(in   )  ::disptot(noq)          ! dispersion plus additional dipers. (dim: noq)
+      real(kind=real_wp), intent(in   )  ::theta  (noq)          ! variable theta coefficients
 
-      real   (8), intent(in   ) :: diag   (noseg+nobnd)  ! diagonal of the matrix (lhs)
-      integer(4), intent(in   ) :: iscale                ! 0: no diagonal scaling
+      real(kind=dp), intent(in   )  ::diag   (noseg+nobnd)  ! diagonal of the matrix (lhs)
+      integer(kind=int_wp), intent(in   )  ::iscale                ! 0: no diagonal scaling
                                                          ! 1: diagonal scaling
-      real   (8), intent(  out) :: rhs(noseg+nobnd)      ! righthandside
-      real   (8), intent(  out) :: sol(noseg+nobnd)      ! initial guess
+      real(kind=dp), intent(  out)  ::rhs(noseg+nobnd)      ! righthandside
+      real(kind=dp), intent(  out)  ::sol(noseg+nobnd)      ! initial guess
 
-      integer(4)                :: ifrom,ito             ! from- and to segments
-      real   (4)                :: ci,cj                 ! from- and to concentrations
-      real   (4)                :: fluxij                ! flux from segment i to segment j
-      integer(4)                :: iseg                  ! current segment
-      integer(4)                :: ibnd                  ! current boundary segment
-      integer(4)                :: iq                    ! current edge
+      integer(kind=int_wp) ::ifrom,ito             ! from- and to segments
+      real(kind=real_wp) ::ci,cj                 ! from- and to concentrations
+      real(kind=real_wp) ::fluxij                ! flux from segment i to segment j
+      integer(kind=int_wp) ::iseg                  ! current segment
+      integer(kind=int_wp) ::ibnd                  ! current boundary segment
+      integer(kind=int_wp) ::iq                    ! current edge
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqm3", ithandl )
 
 ! volumes, processes, and discharges

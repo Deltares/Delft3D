@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqe1
+      use m_waq_precision
+
 
       implicit none
 
@@ -75,69 +77,69 @@
 
 !     kind           function         name                   description
 
-      integer  ( 4), intent(in   ) :: nosys                !< number of transported substances
-      integer  ( 4), intent(in   ) :: notot                !< total number of substances
-      integer  ( 4), intent(in   ) :: noseg                !< number of computational volumes
-      integer  ( 4), intent(in   ) :: noqw                 !< number of interfaces waterphase
-      integer  ( 4), intent(in   ) :: noq                  !< total number of interfaces
-      integer  ( 4), intent(in   ) :: nodisp               !< number additional dispersions
-      integer  ( 4), intent(in   ) :: novelo               !< number additional velocities
-      real     ( 4), intent(in   ) :: disp  (3)            !< fixed dispersions in the 3 directions
-      real     ( 4), intent(in   ) :: disper(nodisp,noq)   !< array with additional dispersions
-      real     ( 4), intent(in   ) :: velo  (novelo,noq)   !< array with additional velocities
-      real     ( 4), intent(in   ) :: area  (noq)          !< exchange areas in m2
-      real     ( 4), intent(in   ) :: flow  (noq)          !< flows through the exchange areas in m3/s
-      real     ( 4), intent(in   ) :: aleng (  2   ,noq)   !< mixing length to and from the exchange area
-      integer  ( 4), intent(in   ) :: ipoint(  4   ,noq)   !< from, to, from-1, to+1 volume numbers
-      integer  ( 4), intent(in   ) :: iknmrk(noseg)        !< feature array
-      integer  ( 4), intent(in   ) :: idpnt (nosys)        !< additional dispersion number per substance
-      integer  ( 4), intent(in   ) :: ivpnt (nosys)        !< additional velocity number per substance
-      real     ( 4), intent(inout) :: conc  (notot,noseg)  !< m asses after horizontal transport step
-      real     ( 4), intent(in   ) :: bound (nosys,  *  )  !< open boundary concentrations
-      integer  ( 4), intent(in   ) :: iopt                 !< bit 0: 1 if no dispersion at zero flow
+      integer(kind=int_wp), intent(in   )  ::nosys                !< number of transported substances
+      integer(kind=int_wp), intent(in   )  ::notot                !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::noseg                !< number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::noqw                 !< number of interfaces waterphase
+      integer(kind=int_wp), intent(in   )  ::noq                  !< total number of interfaces
+      integer(kind=int_wp), intent(in   )  ::nodisp               !< number additional dispersions
+      integer(kind=int_wp), intent(in   )  ::novelo               !< number additional velocities
+      real(kind=real_wp), intent(in   )  ::disp  (3)            !< fixed dispersions in the 3 directions
+      real(kind=real_wp), intent(in   )  ::disper(nodisp,noq)   !< array with additional dispersions
+      real(kind=real_wp), intent(in   )  ::velo  (novelo,noq)   !< array with additional velocities
+      real(kind=real_wp), intent(in   )  ::area  (noq)          !< exchange areas in m2
+      real(kind=real_wp), intent(in   )  ::flow  (noq)          !< flows through the exchange areas in m3/s
+      real(kind=real_wp), intent(in   )  ::aleng (  2   ,noq)   !< mixing length to and from the exchange area
+      integer(kind=int_wp), intent(in   )  ::ipoint(  4   ,noq)   !< from, to, from-1, to+1 volume numbers
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)        !< feature array
+      integer(kind=int_wp), intent(in   )  ::idpnt (nosys)        !< additional dispersion number per substance
+      integer(kind=int_wp), intent(in   )  ::ivpnt (nosys)        !< additional velocity number per substance
+      real(kind=real_wp), intent(inout)  ::conc  (notot,noseg)  !< m asses after horizontal transport step
+      real(kind=real_wp), intent(in   )  ::bound (nosys,  *  )  !< open boundary concentrations
+      integer(kind=int_wp), intent(in   )  ::iopt                 !< bit 0: 1 if no dispersion at zero flow
                                                            !< bit 1: 1 if no dispersion across boundaries
                                                            !< bit 2: 1 if lower order across boundaries
                                                            !< bit 3: 1 if mass balance output
-      integer  ( 4), intent(in   ) :: ilflag               !< if 0 then only 3 constant lenght values
-      integer  ( 4), intent(in   ) :: idt                  !< time step in seconds
-      real     ( 4), intent(inout) :: deriv (notot,noseg)  !< workspace containing the diagonal
-      integer  ( 4), intent(in   ) :: iaflag               !< if 1 then accumulate mass in report array
-      real     ( 4), intent(inout) :: amass2(notot, 5   )  !< report array for monitoring file
-      integer  ( 4), intent(in   ) :: lun                  !< unit number of monitoring file
-      integer  ( 4), intent(in   ) :: ndmpq                !< number of dumped exchanges
-      integer  ( 4), intent(in   ) :: iqdmp ( noq )        !< pointers dumped exchages
-      real     ( 4), intent(inout) :: dmpq  (nosys,ndmpq,2)!< dmpq(*,*,1) incoming transport
+      integer(kind=int_wp), intent(in   )  ::ilflag               !< if 0 then only 3 constant lenght values
+      integer(kind=int_wp), intent(in   )  ::idt                  !< time step in seconds
+      real(kind=real_wp), intent(inout)  ::deriv (notot,noseg)  !< workspace containing the diagonal
+      integer(kind=int_wp), intent(in   )  ::iaflag               !< if 1 then accumulate mass in report array
+      real(kind=real_wp), intent(inout)  ::amass2(notot, 5   )  !< report array for monitoring file
+      integer(kind=int_wp), intent(in   )  ::lun                  !< unit number of monitoring file
+      integer(kind=int_wp), intent(in   )  ::ndmpq                !< number of dumped exchanges
+      integer(kind=int_wp), intent(in   )  ::iqdmp ( noq )        !< pointers dumped exchages
+      real(kind=real_wp), intent(inout)  ::dmpq  (nosys,ndmpq,2)!< dmpq(*,*,1) incoming transport
                                                            !< dmpq(*,*,2) outgoing transport
-      real     ( 8), intent(inout) :: rhs   (notot,noseg)  !< local right hand side
-      real     ( 8), intent(inout) :: diag  (notot,noseg)  !< local diagonal filled with volumes
-      real     ( 8), intent(inout) :: acodia(notot,noq)    !< local workarray under codiagonal
-      real     ( 8), intent(inout) :: bcodia(notot,noq)    !< local workarray upper codiagonal
+      real(kind=dp), intent(inout)  ::rhs   (notot,noseg)  !< local right hand side
+      real(kind=dp), intent(inout)  ::diag  (notot,noseg)  !< local diagonal filled with volumes
+      real(kind=dp), intent(inout)  ::acodia(notot,noq)    !< local workarray under codiagonal
+      real(kind=dp), intent(inout)  ::bcodia(notot,noq)    !< local workarray upper codiagonal
 
 !         local variables
 
-      integer  ( 4) iq                    ! loop counter exchanges
-      integer  ( 4) isys                  ! loop counter substance
-      integer  ( 4) iseg                  ! loop counter computational volumes
-      integer  ( 4) ifrom, ito            ! from and to volume numbers
-      integer  ( 4) iq2, iq3              ! help variables to identify first or second pointers
-      integer  ( 4) iqd                   ! help variable for dump pointers
-      real     ( 8) a                     ! this area
-      real     ( 8) q                     ! flow for this exchange
-      real     ( 8) e                     ! dispersion for this exchange
-      real     ( 8) al                    ! this length
-      real     ( 8) dl                    ! area / length
-      real     ( 8) d                     ! dispersion for this substance
-      real     ( 8) v                     ! flow for this substance
-      real     ( 8) v1, v2                ! factors for 'upwind'
-      real     ( 8) q3, q4                ! flux help variables
-      real     ( 8) dq                    ! total flux from and to
-      real     ( 8) pivot                 ! help variable matrix inversion
+      integer(kind=int_wp) ::iq                    ! loop counter exchanges
+      integer(kind=int_wp) ::isys                  ! loop counter substance
+      integer(kind=int_wp) ::iseg                  ! loop counter computational volumes
+      integer(kind=int_wp) ::ifrom, ito            ! from and to volume numbers
+      integer(kind=int_wp) ::iq2, iq3              ! help variables to identify first or second pointers
+      integer(kind=int_wp) ::iqd                   ! help variable for dump pointers
+      real(kind=dp) ::a                     ! this area
+      real(kind=dp) ::q                     ! flow for this exchange
+      real(kind=dp) ::e                     ! dispersion for this exchange
+      real(kind=dp) ::al                    ! this length
+      real(kind=dp) ::dl                    ! area / length
+      real(kind=dp) ::d                     ! dispersion for this substance
+      real(kind=dp) ::v                     ! flow for this substance
+      real(kind=dp) ::v1, v2                ! factors for 'upwind'
+      real(kind=dp) ::q3, q4                ! flux help variables
+      real(kind=dp) ::dq                    ! total flux from and to
+      real(kind=dp) ::pivot                 ! help variable matrix inversion
       logical       disp0q0               ! bit zero no disp if q is zero
       logical       disp0bnd              ! bit one  no disp accross bounds
       logical       abound                ! is it a boundary?
 
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqe1", ithandl )
 
 !         Initialisation

@@ -1,4 +1,6 @@
       module m_set_stat_output
+      use m_waq_precision
+
 
       implicit none
 
@@ -50,31 +52,31 @@
       ! arguments
 
       type(procespropcoll), intent(in   ) :: statprocesdef          !< the statistical proces definition
-      integer             , intent(in   ) :: noutp                  !< total number of output files
-      integer             , intent(inout) :: ioutps(7,*)            !< (old) output structure
-      integer             , intent(inout) :: nrvart                 !< total number of output parameters
+      integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
+      integer(kind=int_wp), intent(inout)  ::ioutps(7,*)            !< (old) output structure
+      integer(kind=int_wp), intent(inout)  ::nrvart                 !< total number of output parameters
       type(outputcoll)    , intent(inout) :: outputs                !< output structure
 
       ! local
 
-      integer             , allocatable   :: iopoi3(:)              !  pointer in the delwaq arrays
+      integer(kind=int_wp), allocatable    ::iopoi3(:)              !  pointer in the delwaq arrays
       character(len=20)   , allocatable   :: ounam3(:)              !  name of the output variables
       type(arraypropcoll)                 :: normal_output          !  normal output list
       type(arraypropcoll)                 :: stat_output            !  statistical output list
       type(arrayprop)                     :: aarrayprop             !  one array property  to add into collection
-      integer                             :: ioutp                  !  index variable
-      integer                             :: iout                   !  index variable
-      integer                             :: iout1                  !  index variable
-      integer                             :: iout3                  !  index variable
-      integer                             :: nrvarx                 !  number of extra variables
-      integer                             :: nrvar1                 !  number of variables
-      integer                             :: nrvar2                 !  number of variables
-      integer                             :: istat                  !  loop counter statistical processes
-      integer                             :: iioitem                !  loop counter io items
-      integer                             :: iret                   !  function return code
-      integer                             :: ierr                   !  allocate error code
+      integer(kind=int_wp) ::ioutp                  !  index variable
+      integer(kind=int_wp) ::iout                   !  index variable
+      integer(kind=int_wp) ::iout1                  !  index variable
+      integer(kind=int_wp) ::iout3                  !  index variable
+      integer(kind=int_wp) ::nrvarx                 !  number of extra variables
+      integer(kind=int_wp) ::nrvar1                 !  number of variables
+      integer(kind=int_wp) ::nrvar2                 !  number of variables
+      integer(kind=int_wp) ::istat                  !  loop counter statistical processes
+      integer(kind=int_wp) ::iioitem                !  loop counter io items
+      integer(kind=int_wp) ::iret                   !  function return code
+      integer(kind=int_wp) ::ierr                   !  allocate error code
       
-      integer(4)                          :: ithndl = 0             !  handle for performance timer
+      integer(kind=int_wp) ::ithndl = 0             !  handle for performance timer
       if (timon) call timstrt( "set_stat_output", ithndl )
 
       ! merge the statistical output with the normal output

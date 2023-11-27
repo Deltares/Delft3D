@@ -147,7 +147,7 @@ contains
          if ( ipnt(i,1) .gt. 0 ) result2(ipnt(i,1)) = result2(ipnt(i,1)) + array2(i)
          if ( ipnt(i,2) .gt. 0 ) result2(ipnt(i,2)) = result2(ipnt(i,2)) + array2(i)
       enddo
-
+         
       goto 100
 
 !         normal rewind.

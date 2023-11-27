@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_cnvper
+      use m_waq_precision
+
 
       implicit none
 
@@ -69,15 +71,15 @@
       IMPLICIT NONE
 
       CHARACTER*(*) CHULP
-      REAL*8        OTIM2  , OTIM3  , AFACT
-      LOGICAL       DTFLG1 , DTFLG3
-      CHARACTER*20  KEY
-      INTEGER       IERR, IYEAR, IMONTH, IDAY, IHOUR, IMINUT, ISECND, ISEC, IHULP
+      REAL(kind=dp) :: OTIM2  , OTIM3  , AFACT
+      LOGICAL       :: DTFLG1 , DTFLG3
+      CHARACTER*20  :: KEY
+      INTEGER(kind=int_wp) :: IERR, IYEAR, IMONTH, IDAY, IHOUR, IMINUT, ISECND, ISEC, IHULP
 
       IERR = 1
-      IF ( CHULP( 5: 5) .NE. '/' .OR. CHULP( 8: 8) .NE. '/' .OR.
-     *     CHULP(11:11) .NE. '-' .OR. CHULP(14:14) .NE. ':' .OR.
-     *     CHULP(17:17) .NE. ':' ) RETURN
+      IF ( CHULP( 5: 5) /= '/' .OR. CHULP( 8: 8) /= '/' .OR.
+     *     CHULP(11:11) /= '-' .OR. CHULP(14:14) /= ':' .OR.
+     *     CHULP(17:17) /= ':' ) RETURN
       READ ( CHULP( 1: 4) , '(I4)' ) IYEAR
       READ ( CHULP( 6: 7) , '(I2)' ) IMONTH
       READ ( CHULP( 9:10) , '(I2)' ) IDAY
@@ -87,7 +89,7 @@
 !
       ISEC   = IYEAR*31536000 + IMONTH*2592000+IDAY*86400+
      +         IHOUR*3600+IMINUT*60+ISECND
-      IF ( DLWQ0T_ISFACT .LT. 0 ) THEN
+      IF ( DLWQ0T_ISFACT < 0 ) THEN
          IHULP = -ISEC*DLWQ0T_ISFACT
       ELSE
          IHULP = ISEC/DLWQ0T_ISFACT

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_mpbnlm
+      use m_waq_precision
+
 
       implicit none
 
@@ -46,52 +48,52 @@ C***********************************************************************
 
 C     arguments
 
-      REAL               :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-      REAL               :: FL(*)              ! in/out flux array
-      INTEGER            :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER            :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER            :: NOSEG              ! in     number of segments
-      INTEGER            :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-      INTEGER            :: IEXPNT(4,*)        ! in     exchange pointer table
-      INTEGER            :: IKNMRK(*)          ! in     segment features array
-      INTEGER            :: NOQ1               ! in     number of exchanges in first direction
-      INTEGER            :: NOQ2               ! in     number of exchanges in second direction
-      INTEGER            :: NOQ3               ! in     number of exchanges in third direction
-      INTEGER            :: NOQ4               ! in     number of exchanges in fourth direction
+      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::FL(*)              ! in/out flux array
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
+      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
+      INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
+      INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
+      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
 
 C     from PMSA array
 
-      REAL               :: CAM                !  1 in  Ammonium (NH4)                             (gN/m3)
-      REAL               :: CNI                !  2 in  Nitrate (NO3)                              (gN/m3)
-      REAL               :: CPHO               !  3 in  Ortho-Phosphate (PO4)                      (gP/m3)
-      REAL               :: CSI                !  4 in  dissolved Silica (Si)                     (gSi/m3)
-      REAL               :: KDIN               !  5 in  MPB1 half saturation constant N            (gN/m3)
-      REAL               :: KPHO               !  6 in  MPB1 half saturation constant P            (gP/m3)
-      REAL               :: KSI                !  7 in  MPB1 half saturation constant Si          (gSi/m3)
+      REAL(kind=real_wp) ::CAM                !  1 in  Ammonium (NH4)                             (gN/m3)
+      REAL(kind=real_wp) ::CNI                !  2 in  Nitrate (NO3)                              (gN/m3)
+      REAL(kind=real_wp) ::CPHO               !  3 in  Ortho-Phosphate (PO4)                      (gP/m3)
+      REAL(kind=real_wp) ::CSI                !  4 in  dissolved Silica (Si)                     (gSi/m3)
+      REAL(kind=real_wp) ::KDIN               !  5 in  MPB1 half saturation constant N            (gN/m3)
+      REAL(kind=real_wp) ::KPHO               !  6 in  MPB1 half saturation constant P            (gP/m3)
+      REAL(kind=real_wp) ::KSI                !  7 in  MPB1 half saturation constant Si          (gSi/m3)
       LOGICAL            :: S1_BOTTOM          !  8 in  switch for MPB model (0=segment,1=S1)          (-)
-      REAL               :: CAMS1              !  9 in  Ammonium concentration in the bottom       (gN/m3)
-      REAL               :: CNIS1              ! 10 in  Nitrate concentration in layer S1          (gN/m3)
-      REAL               :: CPHOS1             ! 11 in  Phosphate concentration in the bottom      (gP/m3)
-      REAL               :: CSIS1              ! 12 in  Silicium concentration in layer S1        (gSi/m3)
-      REAL               :: FN                 ! 13 out MPB nitrogen limitation                        (-)
-      REAL               :: FPHO               ! 14 out MPB phosphate limitation                       (-)
-      REAL               :: FSI                ! 15 out MPB silicate limitation                        (-)
-      REAL               :: FNUT               ! 16 out MPB nutrient limitation                        (-)
-      REAL               :: FNS1               ! 17 out MPB nitrogen limitation S1                     (-)
-      REAL               :: FPHOS1             ! 18 out MPB phosphate limitation S1                    (-)
-      REAL               :: FSIS1              ! 19 out MPB silicate limitation S1                     (-)
-      REAL               :: FNUTS1             ! 20 out MPB nutrient limitation S1                     (-)
-      REAL               :: AMOPRF             ! Preference factor ammomium over nitrate (DYNAMO)      (-)
+      REAL(kind=real_wp) ::CAMS1              !  9 in  Ammonium concentration in the bottom       (gN/m3)
+      REAL(kind=real_wp) ::CNIS1              ! 10 in  Nitrate concentration in layer S1          (gN/m3)
+      REAL(kind=real_wp) ::CPHOS1             ! 11 in  Phosphate concentration in the bottom      (gP/m3)
+      REAL(kind=real_wp) ::CSIS1              ! 12 in  Silicium concentration in layer S1        (gSi/m3)
+      REAL(kind=real_wp) ::FN                 ! 13 out MPB nitrogen limitation                        (-)
+      REAL(kind=real_wp) ::FPHO               ! 14 out MPB phosphate limitation                       (-)
+      REAL(kind=real_wp) ::FSI                ! 15 out MPB silicate limitation                        (-)
+      REAL(kind=real_wp) ::FNUT               ! 16 out MPB nutrient limitation                        (-)
+      REAL(kind=real_wp) ::FNS1               ! 17 out MPB nitrogen limitation S1                     (-)
+      REAL(kind=real_wp) ::FPHOS1             ! 18 out MPB phosphate limitation S1                    (-)
+      REAL(kind=real_wp) ::FSIS1              ! 19 out MPB silicate limitation S1                     (-)
+      REAL(kind=real_wp) ::FNUTS1             ! 20 out MPB nutrient limitation S1                     (-)
+      REAL(kind=real_wp) ::AMOPRF             ! Preference factor ammomium over nitrate (DYNAMO)      (-)
 
 C     local declarations
 
-      INTEGER            :: ISEG               ! loop counter segment loop
-      INTEGER            :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
-      INTEGER            :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-      INTEGER, parameter :: NO_POINTER = 21    ! number of input output variables in PMSA array
-      INTEGER            :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
-      REAL               :: CNN                ! Weigthed nitrogen concentration (a la DYNAMO)     (gN/m3)
-      REAL               :: CNNS1              ! Weigthed nitrogen concentration, bottom           (gN/m3)
+      INTEGER(kind=int_wp) ::ISEG               ! loop counter segment loop
+      INTEGER(kind=int_wp) ::IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
+      INTEGER(kind=int_wp) ::IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
+      INTEGER(kind=int_wp), parameter  ::NO_POINTER = 21    ! number of input output variables in PMSA array
+      INTEGER(kind=int_wp) ::IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+      REAL(kind=real_wp) ::CNN                ! Weigthed nitrogen concentration (a la DYNAMO)     (gN/m3)
+      REAL(kind=real_wp) ::CNNS1              ! Weigthed nitrogen concentration, bottom           (gN/m3)
 
 C     initialise pointers for PMSA and FL array
 
