@@ -83,7 +83,7 @@ subroutine unc_write_his(tim)            ! wrihis
     integer, save :: id_laydim , id_laydimw, &
                      id_statdim, id_strlendim, id_crsdim, id_crslendim, id_crsptsdim, id_timedim, &
                      id_statx, id_staty, id_stat_id, id_statname, id_time, id_timestep, &
-                     id_statlon, id_statlat, id_crsname, &
+                     id_statlon, id_statlat, id_crs_id, id_crsname, &
                      id_vars, id_varucx, id_varucy, id_varucz, id_varsal, id_vartem, id_varsed, id_varrhop, id_varrho, id_bruv,  &
                      id_varQ, id_varQint, id_varb, id_varumag, id_varqmag,&
                      id_varAu,  &
@@ -159,11 +159,11 @@ subroutine unc_write_his(tim)            ! wrihis
     integer                      :: IP, num, ngenstru_, n, nlyrs
 
     double precision, save       :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
-    integer                      :: ntot, k, i, j, jj, ierr, mnp, kk, idims(3),L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
-    character(len=255)           :: station_geom_container_name, crs_geom_container_name, weir_geom_container_name, orif_geom_container_name, &
-                                    genstru_geom_container_name, uniweir_geom_container_name, culvert_geom_container_name, longculvert_geom_container_name, &
-                                    gategen_geom_container_name, pump_geom_container_name, bridge_geom_container_name, src_geom_container_name, &
-                                    lat_geom_container_name
+    integer                      :: ntot, k, i, j, jj, ierr, kk, idims(3),L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
+    !character(len=255)           :: weir_geom_container_name, orif_geom_container_name, &
+    !                                genstru_geom_container_name, uniweir_geom_container_name, culvert_geom_container_name, longculvert_geom_container_name, &
+    !                                gategen_geom_container_name, pump_geom_container_name, bridge_geom_container_name, src_geom_container_name, &
+    !                                lat_geom_container_name
     double precision             :: cof0
 
     integer                      :: strlen_netcdf  ! string length definition for (station) names on history file
@@ -192,9 +192,11 @@ subroutine unc_write_his(tim)            ! wrihis
     integer, save :: id_timebds
     double precision, save :: time_his_prev
 
-    character(len=4)  :: stat_name_postfix      
-    character(len=16) :: stat_long_name_postfix 
-    character(len=16) :: stat_cell_methods      
+    character(len=4)  :: stat_name_postfix
+    character(len=11) :: stat_name_filter_postfix
+    character(len=16) :: stat_long_name_postfix
+    character(len=16) :: stat_cell_methods
+    character(len=43) :: stat_cell_methods_filter_postfix
 
     if (jahiszcor > 0) then
        jawrizc = 1
@@ -311,10 +313,11 @@ subroutine unc_write_his(tim)            ! wrihis
         if (numobs+nummovobs > 0) then
             ierr = unc_addcoordmapping(ihisfile, jsferic)
             
-            ierr = unc_def_his_structure_static_vars(ihisfile, 'station', 'station', 1, numobs+nummovobs, 'point', nNodeTot, id_strlendim, &
+            nNodeTot = numobs+nummovobs
+            ierr = unc_def_his_structure_static_vars(ihisfile, 'station', 'observation station', 1, numobs+nummovobs, 'point', nNodeTot, id_strlendim, &
                                                      id_statdim, id_stat_id, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy)
             ierr = nf90_def_var(ihisfile, 'station_name',         nf90_char,   (/ id_strlendim, id_statdim /), id_statname)
-            ierr = nf90_put_att(ihisfile, id_statname,  'cf_role', 'timeseries_id')
+            ! ierr = nf90_put_att(ihisfile, id_statname,  'cf_role', 'timeseries_id') ! UNST-6901: only one cf_role var allowed, is now "station_id". Backwards incompatible for some postprocessors?
             ierr = nf90_put_att(ihisfile, id_statname,  'long_name'    , 'observation station name') ! REF
 
             if (nummovobs > 0) then
@@ -337,32 +340,17 @@ subroutine unc_write_his(tim)            ! wrihis
 
                statcoordstring = trim(statcoordstring) // ' station_lon station_lat'
             end if
+
         end if
 
         if (ncrs > 0) then
-            mnp = 0
-            do i=1,ncrs
-                mnp = max(mnp, crs(i)%path%np)
-            end do
-            ierr = nf90_def_dim(ihisfile, 'cross_section', ncrs, id_crsdim)
-            ierr = nf90_def_dim(ihisfile, 'cross_section_name_len', strlen_netcdf, id_crslendim)
-            ierr = nf90_def_dim(ihisfile, 'cross_section_pts', mnp+1, id_crsptsdim)
+            ierr = unc_def_his_structure_static_vars(ihisfile, 'cross_section', 'observation cross section', 1, ncrs, 'line', nNodesCrs, id_strlendim, &
+                                                     id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy)
 
-            !ierr = nf90_def_var(ihisfile, 'cross_section_x_coordinate', nf90_double, (/ id_crsptsdim, id_crsdim /), id_crsx)
-            !ierr = nf90_def_var(ihisfile, 'cross_section_y_coordinate', nf90_double, (/ id_crsptsdim, id_crsdim /), id_crsy)
-            ierr = nf90_def_var(ihisfile, 'cross_section_name',         nf90_char,   (/ id_crslendim, id_crsdim /), id_crsname)
+            ierr = nf90_def_var(ihisfile, 'cross_section_name',         nf90_char,   (/ id_strlendim, id_crsdim /), id_crsname)
             ierr = nf90_put_att(ihisfile, id_crsname,  'cf_role', 'timeseries_id')
             ierr = nf90_put_att(ihisfile, id_crsname,  'long_name', 'cross section name'    )
-            !ierr = unc_addcoordatts(ihisfile, id_crsx, id_crsy, jsferic)
-
-            ! Define geometry related variables
-            crs_geom_container_name = 'cross_section_geom'
-            nNodeTot = nNodesCrs
-
-            ierr = sgeom_def_geometry_variables(ihisfile, crs_geom_container_name, 'cross section', 'line', nNodeTot, id_crsdim, &
-               id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy)
-
-            endif
+        endif
         
 
         ! Runup gauges
@@ -649,7 +637,14 @@ subroutine unc_write_his(tim)            ! wrihis
                stat_long_name_postfix = ' (minimum)'
                stat_cell_methods      = 'time: minimum'
             end select
-            var_name          = trim(config%name) // trim(stat_name_postfix)
+            stat_name_filter_postfix = ''
+            stat_cell_methods_filter_postfix = ''
+            if (out_variable_set_his%statout(ivar)%moving_average_window > 1) then
+               write(stat_name_filter_postfix, '(a,i0)') '_filter', out_variable_set_his%statout(ivar)%moving_average_window
+               write(stat_cell_methods_filter_postfix, '(a,i0,a)') ' (moving average filter using ', out_variable_set_his%statout(ivar)%moving_average_window, ' samples)'
+            end if
+
+            var_name          = trim(config%name) // trim(stat_name_postfix) // trim(stat_name_filter_postfix)
             var_standard_name = config%standard_name ! Intentionally no pre/postfix for standard_name
             if (len_trim(config%long_name) > 0) then
                var_long_name = trim(config%long_name) // trim(stat_long_name_postfix)
@@ -702,7 +697,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_var, 'standard_name', trim(var_standard_name))
             end if
             if (len_trim(stat_cell_methods) > 0) then
-               ierr = nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods))
+               ierr = nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods) // trim(stat_cell_methods_filter_postfix))
             end if
          end do
 
