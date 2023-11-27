@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dissi
+      use m_waq_precision
+
 
       implicit none
 
@@ -63,13 +65,13 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
       
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      REAL     KSOL  , FSOL  , TEMP  , TEMPC , TC , CSID , OPAL ,
+      REAL(kind=real_wp) ::KSOL  , FSOL  , TEMP  , TEMPC , TC , CSID , OPAL ,
      +         CSIDE , POROS , SWDISSI
-      INTEGER  LUNREP, NOWARN
+      INTEGER(kind=int_wp) ::LUNREP, NOWARN
       DATA     NOWARN / 0 /
       SAVE     NOWARN
 !

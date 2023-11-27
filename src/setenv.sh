@@ -62,8 +62,8 @@ if [ "$1" == "intel21" ]; then
      export CC=mpiicc
 else
      export FC=mpiifort
-     export CXX=mpicxx
-     export CC=mpiicc
+     export CXX=mpiicpx
+     export CC=mpiicx
 fi
 echo "FC=$FC"
 echo "CXX=$CXX"

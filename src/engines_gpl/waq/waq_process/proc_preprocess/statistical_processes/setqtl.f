@@ -20,14 +20,16 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_setprc
+      module m_setqtl
+      use m_waq_precision
+
 
       implicit none
 
       contains
 
 
-      SUBROUTINE SETPRC ( LUNREP     , NOKEY      ,
+      SUBROUTINE SETQTL ( LUNREP     , NOKEY      ,
      +                    KEYNAM     , KEYVAL     ,
      +                    PERNAM     , PERSFX     ,
      +                    PSTART     , PSTOP      ,
@@ -39,7 +41,7 @@
 !
 !     CREATED:            : februari 2002 by Jan van Beek
 !
-!     FUNCTION            : Sets io list for statistical routine STAPRC
+!     FUNCTION            : Sets io list for statistical routine STAQTL
 !
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
 !                           ZOEK  , finds string in character array
@@ -49,31 +51,30 @@
 !
 !     NAME    KIND      LENGTH  FUNCT.  DESCRIPTION
 !     ----    -----     ------  ------- -----------
-!     LUNREP  INTEGER        1  INPUT   unit number report file
-!     NOKEY   INTEGER        1  INPUT   number of keywords for this process
+!     LUNREP  INTEGER(kind=int_wp) ::1  INPUT   unit number report file
+!     NOKEY   INTEGER(kind=int_wp) ::1  INPUT   number of keywords for this process
 !     KEYNAM  CHAR*20    NOKEY  INPUT   keyword name
 !     KEYVAL  CHAR*20    NOKEY  INPUT   keyword value
 !     PERNAM  CHAR*20        1  INPUT   period name
 !     PERSFX  CHAR*20        1  INPUT   period suffix
-!     PSTART  INTEGER        1  INPUT   period start
-!     PSTOP   INTEGER        1  INPUT   period stop
-!     IPROC   INTEGER        1  INPUT   index number proces
+!     PSTART  INTEGER(kind=int_wp) ::1  INPUT   period start
+!     PSTOP   INTEGER(kind=int_wp) ::1  INPUT   period stop
 !     aProcesProp               OUTPUT  properties for this proces
 !     AllItems                  INPUT   all items known to the proces system
-!     IERR    INTEGER        1  IN/OUT  cummulative error count
-!     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
+!     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
+!     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
 !
       use m_zoek
       use m_srstop
       use m_dhslen
-      use timers       !   performance timers
       USE ProcesSet
+      use timers       !   performance timers
 !
       IMPLICIT NONE
 !
 !     Declaration of arguments
 !
-      INTEGER       LUNREP, NOKEY , PSTART, PSTOP , IPROC ,
+      INTEGER(kind=int_wp) ::LUNREP, NOKEY , PSTART, PSTOP , IPROC ,
      +              IERR  , NOWARN
       CHARACTER*20  PERNAM, PERSFX
       CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
@@ -82,21 +83,23 @@
 !
 !     Local declarations
 !
-      INTEGER       IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
+      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
      +              IERR2     , IRET
-      INTEGER,      ALLOCATABLE :: ISUSED(:)
+      INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
       CHARACTER*20  KEY       , SUFFIX
-      REAL          CCRIT     , ABOVE
+      CHARACTER*10  STANAM
+      REAL(kind=real_wp) ::CLOBND    , CUPBND , CQLEV
+      INTEGER(kind=int_wp) ::NOBUCK    , IBUCK
       type(ItemProp)        :: aItemProp            ! one item
-      integer(4) :: ithndl = 0
-      if (timon) call timstrt( "setprc", ithndl )
+      integer(kind=int_wp) ::ithndl = 0
+      if (timon) call timstrt( "setqtl", ithndl )
 !
 !     init
 !
       ALLOCATE(ISUSED(NOKEY),STAT=IERR_ALLOC)
       IF ( IERR_ALLOC .NE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
-         WRITE(LUNREP,*) 'in routine SETPRC_3, buffer length:',NOKEY
+         WRITE(LUNREP,*) 'in routine SETQTL_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
          CALL SRSTOP(1)
       ENDIF
@@ -109,14 +112,34 @@
 !
 !     Fill the Propces Properties
 !
-      aProcesProp%name       = 'STAPRC'
+      aProcesProp%name       = 'STAQTL'
       WRITE(aProcesProp%name(7:10),'(I4.4)') IPROC
-      aProcesProp%routine    = 'STAPRC'
-      aProcesProp%text       = 'time percentage'
+      STANAM=aProcesProp%name(1:10)
+      aProcesProp%routine    = 'STAQTL'
+      aProcesProp%text       = 'quantiles (concentration percentiles)'
       aProcesProp%swtransp   = 123
       aProcesProp%type       = PROCESTYPE_STAT
-      aProcesProp%no_input      = 8
-      aProcesProp%no_output     = 3
+!
+!     get the number of buckets to determine the amount of IO items
+!     actual number of buckets is one larger, bucket00 the rest bucket for values below CLOBND
+!
+      KEY = 'NOBUCK'
+      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IF ( IKEY .LE. 0 ) THEN
+         NOBUCK = 10
+      ELSE
+         ISUSED(IKEY) = 1
+         READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) NOBUCK
+         IF ( IERR2 .NE. 0 ) THEN
+            WRITE(LUNREP,*)'ERROR interpreting number of buckets:',
+     +         KEYVAL(IKEY)
+            IERR = IERR + 1
+            NOBUCK = 10
+         ENDIF
+      ENDIF
+!
+      aProcesProp%no_input      = 10 + nobuck + 1
+      aProcesProp%no_output     = 2 + nobuck + 1
       aProcesProp%no_FluxOutput = 0
       aProcesProp%no_FluxStochi = 0
       aProcesProp%no_DispStochi = 0
@@ -210,76 +233,111 @@
       aProcesProp%input_item(5)%indx  = 5
       aProcesProp%input_item(5)%ip_val  = 0
 !
-      KEY = 'CCRIT'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
-      IF ( IKEY .LE. 0 ) THEN
-         WRITE(LUNREP,*)
-     +             'ERROR no critical level specified for percentage'
-         IERR = IERR + 1
-         CCRIT = -999.
-      ELSE
-         ISUSED(IKEY) = 1
-         READ(KEYVAL(IKEY),'(E20.0)',IOSTAT=IERR2) CCRIT
-         IF ( IERR2 .NE. 0 ) THEN
-            WRITE(LUNREP,*)'ERROR interpreting critical level:',
-     +         KEYVAL(IKEY)
-            IERR = IERR + 1
-         ENDIF
-      ENDIF
-      aItemProp%name    = 'CCRIT     '//aProcesProp%name(1:10)
-      aItemProp%default = CCRIT
-      aItemProp%text    = 'critical level'
+      aItemProp%name    = 'NOBUCK    '//aProcesProp%name(1:10)
+      aItemProp%default = NOBUCK
+      aItemProp%text    = 'number of bucktes'
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%input_item(6)%name=aItemProp%name
       aProcesProp%input_item(6)%type=IOTYPE_SEGMENT_INPUT
       aProcesProp%input_item(6)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(6)%actdef=CCRIT
+      aProcesProp%input_item(6)%actdef=NOBUCK
       aProcesProp%input_item(6)%indx  = 6
       aProcesProp%input_item(6)%ip_val  = 0
 !
-      KEY = 'ABOVE'
+      KEY = 'CLOBND'
       CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
       IF ( IKEY .LE. 0 ) THEN
-         aItemProp%default = 1.0
+         CLOBND = 0.0
       ELSE
          ISUSED(IKEY) = 1
-         IF ( KEYVAL(IKEY)(1:1) .EQ. 'Y' .OR.
-     +        KEYVAL(IKEY)(1:1) .EQ. 'y'      ) THEN
-            ABOVE = 1.0
-         ELSE
-            ABOVE = 0.0
+         READ(KEYVAL(IKEY),'(F20.0)',IOSTAT=IERR2) CLOBND
+         IF ( IERR2 .NE. 0 ) THEN
+            WRITE(LUNREP,*)'ERROR lower boundary:',
+     +         KEYVAL(IKEY)
+            IERR = IERR + 1
          ENDIF
       ENDIF
-      aItemProp%default = ABOVE
-      aItemProp%name    = 'ABOVE     '//aProcesProp%name(1:10)
-      aItemProp%text    = 'Switch: register above or below'
+      aItemProp%name    = 'CLOBND    '//aProcesProp%name(1:10)
+      aItemProp%default = CLOBND
+      aItemProp%text    = 'lower boundary'
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%input_item(7)%name=aItemProp%name
       aProcesProp%input_item(7)%type=IOTYPE_SEGMENT_INPUT
       aProcesProp%input_item(7)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(7)%actdef=ABOVE
+      aProcesProp%input_item(7)%actdef=CLOBND
       aProcesProp%input_item(7)%indx  = 7
       aProcesProp%input_item(7)%ip_val  = 0
 !
-      aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
-      aItemProp%default = 0.0
-      aItemProp%text    = 'time step counter'
+      KEY = 'CUPBND'
+      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IF ( IKEY .LE. 0 ) THEN
+         CUPBND = 0.0
+      ELSE
+         ISUSED(IKEY) = 1
+         READ(KEYVAL(IKEY),'(F20.0)',IOSTAT=IERR2) CUPBND
+         IF ( IERR2 .NE. 0 ) THEN
+            WRITE(LUNREP,*)'ERROR upper boundary:',
+     +         KEYVAL(IKEY)
+            IERR = IERR + 1
+         ENDIF
+      ENDIF
+      aItemProp%name    = 'CUPBND    '//aProcesProp%name(1:10)
+      aItemProp%default = CUPBND
+      aItemProp%text    = 'upper boundary'
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%input_item(8)%name=aItemProp%name
-      aProcesProp%input_item(8)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%input_item(8)%type=IOTYPE_SEGMENT_INPUT
       aProcesProp%input_item(8)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%input_item(8)%actdef=0.0
+      aProcesProp%input_item(8)%actdef=CUPBND
       aProcesProp%input_item(8)%indx  = 8
       aProcesProp%input_item(8)%ip_val  = 0
 !
-!     output
+      KEY = 'CQLEV'
+      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IF ( IKEY .LE. 0 ) THEN
+         WRITE(LUNREP,*) 'ERROR quantile not specified'
+         IERR = IERR + 1
+         CQLEV = 0.0
+      ELSE
+         ISUSED(IKEY) = 1
+         READ(KEYVAL(IKEY),'(F20.0)',IOSTAT=IERR2) CQLEV
+         IF ( IERR2 .NE. 0 ) THEN
+            WRITE(LUNREP,*)'ERROR quantile:',
+     +         KEYVAL(IKEY)
+            IERR = IERR + 1
+         ENDIF
+      ENDIF
+      aItemProp%name    = 'CQLEV     '//aProcesProp%name(1:10)
+      aItemProp%default = CQLEV
+      aItemProp%text    = 'quantile'
+      aItemProp%waqtype = WAQTYPE_NONE
+      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aProcesProp%input_item(9)%name=aItemProp%name
+      aProcesProp%input_item(9)%type=IOTYPE_SEGMENT_INPUT
+      aProcesProp%input_item(9)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%input_item(9)%actdef=CQLEV
+      aProcesProp%input_item(9)%indx  = 9
+      aProcesProp%input_item(9)%ip_val  = 0
+!
+      aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
+      aItemProp%default = -999.
+      aItemProp%text    = 'time step counter (work array)'
+      aItemProp%waqtype = WAQTYPE_NONE
+      iret = ItemPropCollAdd( AllItems, aItemProp )
+      aProcesProp%input_item(10)%name=aItemProp%name
+      aProcesProp%input_item(10)%type=IOTYPE_SEGMENT_WORK
+      aProcesProp%input_item(10)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%input_item(10)%actdef=0.0
+      aProcesProp%input_item(10)%indx  = 10
+      aProcesProp%input_item(10)%ip_val  = 0
 !
       KEY = 'SUFFIX'
       CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
       IF ( IKEY .LE. 0 ) THEN
+!        something involving pcount ??
          SUFFIX = ' '
       ELSE
          SUFFIX = KEYVAL(IKEY)
@@ -289,13 +347,13 @@
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          SUFFIX =SUFFIX(1:ISLEN)//'_'//PERSFX
       ELSE
-         SUFFIX ='PERC_'//PERSFX
+         SUFFIX ='QUANT_'//PERSFX
       ENDIF
       CALL DHSLEN(SUFFIX,ISLEN)
 !
       aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       aItemProp%default = -999.
-      aItemProp%text    = 'Fraction of time the level is exceeded '//aProcesProp%input_item(1)%name
+      aItemProp%text    = 'Quantile '//aProcesProp%input_item(1)%name
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
       aProcesProp%output_item(1)%name=aItemProp%name
@@ -304,20 +362,7 @@
       aProcesProp%output_item(1)%indx= 1
       aProcesProp%output_item(1)%ip_val= 0
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                   '] created with percentage from [',aProcesProp%input_item(1)%name,']'
-!
-      aItemProp%name    = 'CMN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
-      aItemProp%default = -999.
-      aItemProp%text    = 'Average value during that time '//aProcesProp%input_item(1)%name
-      aItemProp%waqtype = WAQTYPE_NONE
-      iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(2)%name=aItemProp%name
-      aProcesProp%output_item(2)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(2)%indx= 2
-      aProcesProp%output_item(2)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name,
-     +                   '] created with average value during that time from [',aProcesProp%input_item(1)%name,']'
+     +                   '] created with quantile average from [',aProcesProp%input_item(1)%name,']'
 
       ! Add the companion for the TCOUNT input item
       aItemProp%name    = 'TCOUNT    '//aProcesProp%name(1:10)
@@ -325,12 +370,33 @@
       aItemProp%text    = 'time step counter (work array)'
       aItemProp%waqtype = WAQTYPE_NONE
       iret = ItemPropCollAdd( AllItems, aItemProp )
-      aProcesProp%output_item(3)%name=aItemProp%name
-      aProcesProp%output_item(3)%type=IOTYPE_SEGMENT_OUTPUT
-      aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
-      aProcesProp%output_item(3)%indx= 3
-      aProcesProp%output_item(3)%ip_val= 0
-
+      aProcesProp%output_item(2)%name=aItemProp%name
+      aProcesProp%output_item(2)%type=IOTYPE_SEGMENT_OUTPUT
+      aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
+      aProcesProp%output_item(2)%indx= 2
+      aProcesProp%output_item(2)%ip_val= 0
+!
+!     buckets input and output
+!
+      DO IBUCK = 1 , NOBUCK + 1
+         aItemProp%name    = 'BUCKET    '//STANAM
+         WRITE(aItemProp%name(7:10),'(I4.4)') IBUCK-1
+         aItemProp%default = -999.
+         aItemProp%text    = 'work array for quantile'
+         aItemProp%waqtype = WAQTYPE_NONE
+         iret = ItemPropCollAdd( AllItems, aItemProp )
+         aProcesProp%input_item(10+ibuck)%name=aItemProp%name
+         aProcesProp%input_item(10+ibuck)%type=IOTYPE_SEGMENT_WORK
+         aProcesProp%input_item(10+ibuck)%item=>AllItems%ItemPropPnts(iret)%pnt
+         aProcesProp%input_item(10+ibuck)%actdef=-999.
+         aProcesProp%input_item(10+ibuck)%indx  = 10+ibuck
+         aProcesProp%input_item(10+ibuck)%ip_val= 0
+         aProcesProp%output_item(2+ibuck)%name=aItemProp%name
+         aProcesProp%output_item(2+ibuck)%type=IOTYPE_SEGMENT_WORK
+         aProcesProp%output_item(2+ibuck)%item=>AllItems%ItemPropPnts(iret)%pnt
+         aProcesProp%output_item(2+ibuck)%indx=2+ibuck
+         aProcesProp%output_item(2+ibuck)%ip_val=0
+      ENDDO
 !
 !     check the use of the key words
 !
@@ -350,4 +416,4 @@
  2000 FORMAT(5A)
       END
 
-      end module m_setprc
+      end module m_setqtl

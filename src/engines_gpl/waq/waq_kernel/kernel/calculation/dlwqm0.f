@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqm0
+      use m_waq_precision
+
 
       implicit none
 
@@ -55,30 +57,30 @@
       use timers
       implicit none
 
-      integer(4), intent(in   )  :: isys                !< current active substance
-      integer(4), intent(in   )  :: nosys               !< number of active substances
-      integer(4), intent(in   )  :: noq                 !< number of exchanges
-      integer(4), intent(in   )  :: noq1                !< number of exchanges in first direction
-      integer(4), intent(in   )  :: noq2                !< number of exchanges in second direction
-      real   (4), intent(in   )  :: area   (noq)        !< exchange surface areas (dim: noq)
-      real   (4), intent(in   )  :: flow   (noq)        !< flows accross exchange surfs (dim: noq)
-      real   (4), intent(  out)  :: flowtot(noq)        !< flows plus additional velos. (dim: noq)
-      integer(4), intent(in   )  :: novelo              !< number  of additional velos.
-      integer(4), intent(in   )  :: ivpnt  (nosys)      !< pointer systems to velocities (dim: nosys)
-      real   (4), intent(in   )  :: velo   (novelo,noq) !< additional velocity array (dim: novelo*noq)
-      real   (4), intent(in   )  :: disp   ( 3 )        !< dispersion in 3 directions
-      real   (4), intent(  out)  :: disptot(noq)        !< dispersion plus additional dipers. (dim: noq)
-      integer(4), intent(in   )  :: nodisp              !< number  of additional dispers.
-      integer(4), intent(in   )  :: idpnt  (nosys)      !< pointer systems to dispersions (dim: nosys)
-      real   (4), intent(in   )  :: disper (nodisp,noq) !< additional dispersion array (dim: nodisp*noq)
-      real   (4), intent(in   )  :: mixlen (noq)        !< area / length
+      integer(kind=int_wp), intent(in   )   ::isys                !< current active substance
+      integer(kind=int_wp), intent(in   )   ::nosys               !< number of active substances
+      integer(kind=int_wp), intent(in   )   ::noq                 !< number of exchanges
+      integer(kind=int_wp), intent(in   )   ::noq1                !< number of exchanges in first direction
+      integer(kind=int_wp), intent(in   )   ::noq2                !< number of exchanges in second direction
+      real(kind=real_wp), intent(in   )   ::area   (noq)        !< exchange surface areas (dim: noq)
+      real(kind=real_wp), intent(in   )   ::flow   (noq)        !< flows accross exchange surfs (dim: noq)
+      real(kind=real_wp), intent(  out)   ::flowtot(noq)        !< flows plus additional velos. (dim: noq)
+      integer(kind=int_wp), intent(in   )   ::novelo              !< number  of additional velos.
+      integer(kind=int_wp), intent(in   )   ::ivpnt  (nosys)      !< pointer systems to velocities (dim: nosys)
+      real(kind=real_wp), intent(in   )   ::velo   (novelo,noq) !< additional velocity array (dim: novelo*noq)
+      real(kind=real_wp), intent(in   )   ::disp   ( 3 )        !< dispersion in 3 directions
+      real(kind=real_wp), intent(  out)   ::disptot(noq)        !< dispersion plus additional dipers. (dim: noq)
+      integer(kind=int_wp), intent(in   )   ::nodisp              !< number  of additional dispers.
+      integer(kind=int_wp), intent(in   )   ::idpnt  (nosys)      !< pointer systems to dispersions (dim: nosys)
+      real(kind=real_wp), intent(in   )   ::disper (nodisp,noq) !< additional dispersion array (dim: nodisp*noq)
+      real(kind=real_wp), intent(in   )   ::mixlen (noq)        !< area / length
 
 !     Local declarations
 
-      integer                    :: iq                  ! current edge
-      integer                    :: iv , id             ! additional volume and dispersion pointer
+      integer(kind=int_wp) ::iq                  ! current edge
+      integer(kind=int_wp) ::iv , id             ! additional volume and dispersion pointer
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqm0", ithandl )
 
       iv = ivpnt(isys)

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq67
+      use m_waq_precision
+
 
       implicit none
 
@@ -49,10 +51,10 @@
 !
       use timers
 
-      real    AMAT(*)
-      integer noseg, jtrack
-      integer ISEG, ISTEP, ISET
-      integer(4) ithandl /0/
+      real(kind=real_wp) ::AMAT(*)
+      integer(kind=int_wp) ::noseg, jtrack
+      integer(kind=int_wp) ::ISEG, ISTEP, ISET
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq67", ithandl )
 !
 !         set the diagonal

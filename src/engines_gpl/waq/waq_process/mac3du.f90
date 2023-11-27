@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_mac3du
+use m_waq_precision
+
 
 implicit none
 
@@ -39,77 +41,77 @@ contains
 !
 !     type    name         i/o description
 !
-      real(4) pmsa(*)     !i/o process manager system array, window of routine to process library
-      real(4) fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-      integer ipoint( 29) ! i  array of pointers in pmsa to get and store the data
-      integer increm( 29) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! i  number of computational elements in the whole model schematisation
-      integer noflux      ! i  number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-      integer noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 29)   !    local work array for the pointering
-      integer iseg        !    local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !i/o process manager system array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! o  array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 29) ! i  array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 29) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! i  number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! i  number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 29)   !    local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 
 !     type    name         i/o description                                        unit
 !
-      real(4) depth       ! i  depth of segment                                   (m)
-      real(4) totaldepth  ! i  total depth water column                           (m)
-      real(4) nh4s12      ! i  concentration of NH4 in S12 bottom (pores)         (g/m3)
-      real(4) locseddept  ! i  sediment layer depth to bottom of segment          (m)
-      integer ibotseg     ! i  bottom segment number                              (-)
-      real(4) FrBmLay     ! i  actual height sm                                   (m)
-      real(4) rootdesm01  ! i  rooting depth sm01                                 (m)
-      real(4) poros       ! i  volumetric porosity                                (-)
-      real(4) po4s12      ! i  concentration of PO4 in S12 bottom (pores)         (g/m3)
-      real(4) nh4         ! i  ammonium (nh4)                                     (gn/m3)
-      real(4) no3         ! i  nitrate (no3)                                      (gn/m3)
-      real(4) po4         ! i  ortho-phosphate (po4)                              (gp/m3)
-      real(4) disco2      ! i  concentration of dissolved carbon dioxide          (g/m3)
-      real(4) dish2co3    ! i  concentration of dissolved true h2co3              (gc/m3)
-      real(4) dishco3     ! i  concentration of dissolved hco3(-)                 (gc/m3)
-      real(4) prfnh4sm01  ! i  ammonium preferency over nitrate sm01              (-)
-      real(4) nh4crsm01   ! i  critical nh4 concentration for uptake sm01         (gn/m3)
-      real(4) frootnsm01  ! i  fraction root uptake nitrogen sm01                 (-)
-      real(4) frootpsm01  ! i  fraction root uptake phosphorus sm01               (-)
-      real(4) cdinsm01w   ! i  average water concentration din for sm01           (m)
-      real(4) cpo4sm01w   ! i  average water concentration po4 for sm01           (m)
-      real(4) cco2sm01    ! i  average concentration co2+h2co3 for sm01           (m)
-      real(4) chco3sm01   ! i  average concentration hco3 for sm01                (m)
-      real(4) cdinsm01b   ! i  average sediment concentration din for sm01        (m)
-      real(4) cpo4sm01b   ! i  average sediment concentration po4 for sm01        (m)
-      real(4) dnupsm01    ! i  uptake flux nitrogen sm01                          (gn/m3/d)
-      real(4) dpupsm01    ! i  uptake flux phosphorus sm01                        (gp/m3/d)
-      real(4) dsm01oxy    ! i  oxygen production sm01                             (go/m3/d)
-      real(4) dsm01co2    ! i  co2 uptake sm01                                    (go/m3/d)
-      real(4) dnh4upsm01  ! f  nh4 uptake by sm01                                 (gn/m3/d)
-      real(4) dno3upsm01  ! f  no3 uptake by sm01                                 (gn/m3/d)
-      real(4) dpo4upsm01  ! f  po4 uptake by sm01                                 (gp/m3/d)
-      real(4) dco2upsm01  ! f  co2 uptake by sm01                                 (gc/m3/d)
-      real(4) doxyprsm01  ! f  oxy production by sm01                             (go/m3/d)
-      integer idnh4upsm01 !    pointer to the nh4 uptake by sm01
-      integer idno3upsm01 !    pointer to the no3 uptake by sm01
-      integer idpo4upsm01 !    pointer to the po4 uptake by sm01
-      integer idco2upsm01 !    pointer to the co2 uptake by sm01
-      integer idoxyprsm01 !    pointer to the oxy production by sm01
+      real(kind=real_wp)  ::depth       ! i  depth of segment                                   (m)
+      real(kind=real_wp)  ::totaldepth  ! i  total depth water column                           (m)
+      real(kind=real_wp)  ::nh4s12      ! i  concentration of NH4 in S12 bottom (pores)         (g/m3)
+      real(kind=real_wp)  ::locseddept  ! i  sediment layer depth to bottom of segment          (m)
+      integer(kind=int_wp)  ::ibotseg     ! i  bottom segment number                              (-)
+      real(kind=real_wp)  ::FrBmLay     ! i  actual height sm                                   (m)
+      real(kind=real_wp)  ::rootdesm01  ! i  rooting depth sm01                                 (m)
+      real(kind=real_wp)  ::poros       ! i  volumetric porosity                                (-)
+      real(kind=real_wp)  ::po4s12      ! i  concentration of PO4 in S12 bottom (pores)         (g/m3)
+      real(kind=real_wp)  ::nh4         ! i  ammonium (nh4)                                     (gn/m3)
+      real(kind=real_wp)  ::no3         ! i  nitrate (no3)                                      (gn/m3)
+      real(kind=real_wp)  ::po4         ! i  ortho-phosphate (po4)                              (gp/m3)
+      real(kind=real_wp)  ::disco2      ! i  concentration of dissolved carbon dioxide          (g/m3)
+      real(kind=real_wp)  ::dish2co3    ! i  concentration of dissolved true h2co3              (gc/m3)
+      real(kind=real_wp)  ::dishco3     ! i  concentration of dissolved hco3(-)                 (gc/m3)
+      real(kind=real_wp)  ::prfnh4sm01  ! i  ammonium preferency over nitrate sm01              (-)
+      real(kind=real_wp)  ::nh4crsm01   ! i  critical nh4 concentration for uptake sm01         (gn/m3)
+      real(kind=real_wp)  ::frootnsm01  ! i  fraction root uptake nitrogen sm01                 (-)
+      real(kind=real_wp)  ::frootpsm01  ! i  fraction root uptake phosphorus sm01               (-)
+      real(kind=real_wp)  ::cdinsm01w   ! i  average water concentration din for sm01           (m)
+      real(kind=real_wp)  ::cpo4sm01w   ! i  average water concentration po4 for sm01           (m)
+      real(kind=real_wp)  ::cco2sm01    ! i  average concentration co2+h2co3 for sm01           (m)
+      real(kind=real_wp)  ::chco3sm01   ! i  average concentration hco3 for sm01                (m)
+      real(kind=real_wp)  ::cdinsm01b   ! i  average sediment concentration din for sm01        (m)
+      real(kind=real_wp)  ::cpo4sm01b   ! i  average sediment concentration po4 for sm01        (m)
+      real(kind=real_wp)  ::dnupsm01    ! i  uptake flux nitrogen sm01                          (gn/m3/d)
+      real(kind=real_wp)  ::dpupsm01    ! i  uptake flux phosphorus sm01                        (gp/m3/d)
+      real(kind=real_wp)  ::dsm01oxy    ! i  oxygen production sm01                             (go/m3/d)
+      real(kind=real_wp)  ::dsm01co2    ! i  co2 uptake sm01                                    (go/m3/d)
+      real(kind=real_wp)  ::dnh4upsm01  ! f  nh4 uptake by sm01                                 (gn/m3/d)
+      real(kind=real_wp)  ::dno3upsm01  ! f  no3 uptake by sm01                                 (gn/m3/d)
+      real(kind=real_wp)  ::dpo4upsm01  ! f  po4 uptake by sm01                                 (gp/m3/d)
+      real(kind=real_wp)  ::dco2upsm01  ! f  co2 uptake by sm01                                 (gc/m3/d)
+      real(kind=real_wp)  ::doxyprsm01  ! f  oxy production by sm01                             (go/m3/d)
+      integer(kind=int_wp)  ::idnh4upsm01 !    pointer to the nh4 uptake by sm01
+      integer(kind=int_wp)  ::idno3upsm01 !    pointer to the no3 uptake by sm01
+      integer(kind=int_wp)  ::idpo4upsm01 !    pointer to the po4 uptake by sm01
+      integer(kind=int_wp)  ::idco2upsm01 !    pointer to the co2 uptake by sm01
+      integer(kind=int_wp)  ::idoxyprsm01 !    pointer to the oxy production by sm01
 
       ! local
 
-      integer ikmrk1      !    first attribute
-      integer ikmrk2      !    second attribute
-      real(4) din         ! l  dissolved inorganic nitrogen, corrected for preference
-      real(4) z1          ! l  z1
-      real(4) fr_avg      ! l  fr_avg
-      real(4) fr_nh4      ! l  fr_nh4
-      real(4) fr_no3      ! l  fr_no3
-      real(4) hroot       ! l  hroot
-      real(4) bdepth      ! l  depth of bottom segment
+      integer(kind=int_wp)  ::ikmrk1      !    first attribute
+      integer(kind=int_wp)  ::ikmrk2      !    second attribute
+      real(kind=real_wp)  ::din         ! l  dissolved inorganic nitrogen, corrected for preference
+      real(kind=real_wp)  ::z1          ! l  z1
+      real(kind=real_wp)  ::fr_avg      ! l  fr_avg
+      real(kind=real_wp)  ::fr_nh4      ! l  fr_nh4
+      real(kind=real_wp)  ::fr_no3      ! l  fr_no3
+      real(kind=real_wp)  ::hroot       ! l  hroot
+      real(kind=real_wp)  ::bdepth      ! l  depth of bottom segment
 
       ipnt        = ipoint
       idnh4upsm01 = 1

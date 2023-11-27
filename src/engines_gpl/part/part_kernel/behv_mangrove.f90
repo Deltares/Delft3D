@@ -50,9 +50,9 @@ contains
                              ztop2    , zbot1   , zbot2  , vzact1 , vzact2      ,   &
                              vswim1   , vswim2  , iseg   , lunrep , angle  )
 
-        ! function  : Mangrove (Avicennia officinalis) specific behaviour collected
-        !
-
+        ! function  : Mangrove (Avicennia officinalis) specific behaviour collected 
+        !              
+        
 
         ! arguments :
 
@@ -121,21 +121,21 @@ contains
         real   (sp)                 :: zbot                ! zbot
         integer                     :: m                   ! m
         integer                     :: n                   ! n
-
+        
         real   (sp)                 :: zdepth              ! z relative to water surface
         real   (sp)                 :: zlevel              ! z relative to bottom
         logical, pointer            :: ebb_flow( : )       ! true if flow is ebb
-
+        
         integer                     :: behaviour_type      ! actual behaviour type
 
         integer, parameter          :: behaviour_none     = 0 ! behaviour type none
         integer, parameter          :: behaviour_passive  = 1 ! behaviour type passive
 		integer, parameter          :: behaviour_rooted   = 2 ! behaviour type rooted
-
+       
 
         real                        :: vswim                  ! swimming velocity
         real                        :: local_angle            ! angle towards lowest salinity in grid
-
+        
         real                        :: lb_sal                 ! lower boundary of temperature
         real                        :: ub_sal                 ! upper boundary of temperature
 
@@ -150,7 +150,7 @@ contains
         real                        :: sal_n41
 
         real                        :: lb_temp                ! lower boundary of salinity
-        real                        :: ub_temp                ! upper boundary of salinity
+        real                        :: ub_temp                ! upper boundary of salinity       
 
         real                        :: temp_n0
         real                        :: temp_n1

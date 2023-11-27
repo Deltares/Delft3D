@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_expand_frc
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,7 +41,7 @@
 
       ! declaration of arguments
 
-      integer                   :: lunrep          ! report file
+      integer(kind=int_wp) ::lunrep          ! report file
       type(procespropcoll)      :: procesdef       ! the process definition
       type(itempropcoll)        :: allitems        ! all items of the proces system
       type(sfracsprop)          :: sfracs          ! substance fraction properties
@@ -50,36 +52,36 @@
       type(ioitemprop), pointer :: new_item(:)     ! expanded list of items
       type(stochiprop), pointer :: new_stochi(:)   ! expanded list of items
       type(itemprop)            :: item            ! one item
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! loop counter processes
-      integer                   :: isfrac          ! index substance fractions
-      integer                   :: isfrac2         ! index substance fractions
-      integer                   :: nfrac           ! number fractions in substance fraction
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! loop counter processes
+      integer(kind=int_wp) ::isfrac          ! index substance fractions
+      integer(kind=int_wp) ::isfrac2         ! index substance fractions
+      integer(kind=int_wp) ::nfrac           ! number fractions in substance fraction
       character(len=20)         :: basnam          ! base name substance fractions
       character(len=20)         :: fracnam         ! name of substance fraction
-      integer                   :: i_item          ! index input item
-      integer                   :: i_flux          ! index flux item
-      integer                   :: i_stochi        ! index stochi
-      integer                   :: indx            ! index in list
-      integer                   :: iret            ! index in collection
-      integer                   :: ifrac           ! fraction number
+      integer(kind=int_wp) ::i_item          ! index input item
+      integer(kind=int_wp) ::i_flux          ! index flux item
+      integer(kind=int_wp) ::i_stochi        ! index stochi
+      integer(kind=int_wp) ::indx            ! index in list
+      integer(kind=int_wp) ::iret            ! index in collection
+      integer(kind=int_wp) ::ifrac           ! fraction number
       character(len=3)          :: suffix          ! suffix
-      integer                   :: ierr_alloc      ! error indication
+      integer(kind=int_wp) ::ierr_alloc      ! error indication
 
       logical                   :: l_expand              ! expand item list
       logical                   :: l_frac(sfracs%nsfrac) ! fraction involved in process
 
-      integer                   :: no_input_new          ! new number of items
-      integer                   :: no_output_new         ! new number of items
-      integer                   :: no_fluxoutput_new     ! new number of items
-      integer                   :: no_fluxstochi_new     ! new number of items
-      integer                   :: no_velostochi_new     ! new number of items
-      integer                   :: no_dispstochi_new     ! new number of items
-      integer                   :: i_new                 ! index in new items
-      integer                   :: isfrac_found          ! index substance fractions
-      integer                   :: i_star                ! index of * in name
-      integer                   :: nzoek                 ! nzoek
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::no_input_new          ! new number of items
+      integer(kind=int_wp) ::no_output_new         ! new number of items
+      integer(kind=int_wp) ::no_fluxoutput_new     ! new number of items
+      integer(kind=int_wp) ::no_fluxstochi_new     ! new number of items
+      integer(kind=int_wp) ::no_velostochi_new     ! new number of items
+      integer(kind=int_wp) ::no_dispstochi_new     ! new number of items
+      integer(kind=int_wp) ::i_new                 ! index in new items
+      integer(kind=int_wp) ::isfrac_found          ! index substance fractions
+      integer(kind=int_wp) ::i_star                ! index of * in name
+      integer(kind=int_wp) ::nzoek                 ! nzoek
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "expand_frc", ithndl )
 
       ! loop over the processes

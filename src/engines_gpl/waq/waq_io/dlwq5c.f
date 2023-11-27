@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq5c
+      use m_waq_precision
+
 
       implicit none
 
@@ -117,30 +119,30 @@
       use time_module
 
 
-      integer       icmax  , iimax  , irmax
+      integer(kind=int_wp) :: icmax  , iimax  , irmax
       character*(*) car(*) , fname
-      integer       iar(*)
-      real          rar(*)
+      integer(kind=int_wp) :: iar(*)
+      real(kind=real_wp) :: rar(*)
       logical       scale
-      real*8        drar(*)
+      real(kind=dp) :: drar(*) 
       character     cfile(3)*256
-      real amiss
-!
+      real(kind=real_wp) :: amiss
+ !
 !     local declarations
       dimension     loc(3)
-      real*8        afact    , a1    , a2    , d_beg    , d_end , dummy
+      real(kind=dp) :: afact    , a1    , a2    , d_beg    , d_end , dummy 
       character*3   cdummy
-      integer :: nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
-      integer :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
-      integer :: ierr, noloc, noit2, noitv, j
-      integer :: nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot
-      integer :: noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
-      integer :: iy1, im1, id1, ih1, in1, is1
-      integer :: iy2, im2, id2, ih2, in12 is2
-      integer :: i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
-      integer :: kl, ig2
-!
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
+      integer(kind=int_wp) ::  k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
+      integer(kind=int_wp) ::  ierr, noloc, noit2, noitv, j
+      integer(kind=int_wp) ::  nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot
+      integer(kind=int_wp) ::  noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
+      integer(kind=int_wp) ::  iy1, im1, id1, ih1, in1, is1
+      integer(kind=int_wp) ::  iy2, im2, id2, ih2, in12 is2
+      integer(kind=int_wp) ::  i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
+      integer(kind=int_wp) ::  kl, ig2
+ !
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq5c", ithndl )
 !
 !     array offsets

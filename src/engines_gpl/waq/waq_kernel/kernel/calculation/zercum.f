@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_zercum
+      use m_waq_precision
+
 
       implicit none
 
@@ -49,29 +51,29 @@
 
 !     kind           function         name                      description
 
-      integer  ( 4), intent(in   ) :: notot                   !< Total number of substances
-      integer  ( 4), intent(in   ) :: nosys                   !< Number of transported substances
-      integer  ( 4), intent(in   ) :: noflux                  !< Number of fluxes
-      integer  ( 4), intent(in   ) :: ndmpar                  !< Number of dump areas
-      integer  ( 4), intent(in   ) :: ndmpq                   !< Number of dump exchanges
-      integer  ( 4), intent(in   ) :: ndmps                   !< Number of dump segments
-      real     ( 4), intent(  out) :: asmass(notot ,ndmpar,6) !< Mass balance terms
-      real     ( 4), intent(  out) :: flxint(noflux,ndmpar)   !< Integrated fluxes
-      real     ( 4), intent(  out) :: amass2(notot ,5     )   !< Mass balance whole system
-      real     ( 4), intent(  out) :: flxdmp(noflux,ndmps )   !< Integrated fluxes
-      real     ( 4), intent(  out) :: dmpq  (nosys ,ndmpq ,2) !< Integrated fluxes
-      real     ( 4), intent(  out) :: dmps  (notot ,ndmps ,3) !< Integrated fluxes
-      integer  ( 4), intent(in   ) :: noraai                  !< Number of transects
+      integer(kind=int_wp), intent(in   )  ::notot                   !< Total number of substances
+      integer(kind=int_wp), intent(in   )  ::nosys                   !< Number of transported substances
+      integer(kind=int_wp), intent(in   )  ::noflux                  !< Number of fluxes
+      integer(kind=int_wp), intent(in   )  ::ndmpar                  !< Number of dump areas
+      integer(kind=int_wp), intent(in   )  ::ndmpq                   !< Number of dump exchanges
+      integer(kind=int_wp), intent(in   )  ::ndmps                   !< Number of dump segments
+      real(kind=real_wp), intent(  out)  ::asmass(notot ,ndmpar,6) !< Mass balance terms
+      real(kind=real_wp), intent(  out)  ::flxint(noflux,ndmpar)   !< Integrated fluxes
+      real(kind=real_wp), intent(  out)  ::amass2(notot ,5     )   !< Mass balance whole system
+      real(kind=real_wp), intent(  out)  ::flxdmp(noflux,ndmps )   !< Integrated fluxes
+      real(kind=real_wp), intent(  out)  ::dmpq  (nosys ,ndmpq ,2) !< Integrated fluxes
+      real(kind=real_wp), intent(  out)  ::dmps  (notot ,ndmps ,3) !< Integrated fluxes
+      integer(kind=int_wp), intent(in   )  ::noraai                  !< Number of transects
       logical      , intent(in   ) :: imflag                  !< True if monitoring step
       logical      , intent(in   ) :: ihflag                  !< True if history step
-      real     ( 4), intent(  out) :: trraai(nosys ,noraai)   !< Cummulative transport over transects
-      integer  ( 4), intent(in   ) :: ibflag                  !< zero or one
-      integer  ( 4), intent(in   ) :: nowst                   !< number of wasteloads
-      real     ( 4), intent(  out) :: wstdmp(notot ,nowst ,2) !< accumulated wasteloads 1/2 in and out
+      real(kind=real_wp), intent(  out)  ::trraai(nosys ,noraai)   !< Cummulative transport over transects
+      integer(kind=int_wp), intent(in   )  ::ibflag                  !< zero or one
+      integer(kind=int_wp), intent(in   )  ::nowst                   !< number of wasteloads
+      real(kind=real_wp), intent(  out)  ::wstdmp(notot ,nowst ,2) !< accumulated wasteloads 1/2 in and out
 
 !     Local declarations
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "zercum", ithandl )
 
 !     Zero all monitor ( and balance ) realted cummulative array's

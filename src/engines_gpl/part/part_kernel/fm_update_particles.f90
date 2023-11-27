@@ -166,7 +166,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
 
    dt = 0.0
 
-!$OMP PARALLEL DO PRIVATE (i, k, k1, k2, L, ja, Lexit, d, un, t, tex, dt,          &
+!$OMP PARALLEL DO PRIVATE (i, k, kl, k1, k2, L, ja, Lexit, d, un, t, tex, dt,      &
 !$OMP                      ux0, uy0, uz0, cs, sn, xn, yn, zn, rl, dvar, dis, dn,   &
 !$OMP                      ddn, isboundary, alpha, beta, uw0low, uw0up, time_low, time_up, &
 !$OMP                      beta1, beta2, new_layer),                               &
@@ -234,14 +234,23 @@ subroutine update_particles_in_cells(numremaining, ierror)
       ! required to pass through either the interface aobve or below,
       ! then adjust the exit time.
       !
+      ! Make sure the particles do not move beyond the first layer
+      ! or the last.
+      !
+      ! TODO: Take care of z-layers
+      !
       if ( tex > time_low .and. time_low > 0.0_wp ) then
           tex = time_low
-          new_layer = -1
+          if ( laypart(ipart) > 1 ) then
+              new_layer = -1
+          endif
       endif
 
       if ( tex > time_up .and. time_up > 0.0_wp ) then
           tex = time_up
-          new_layer = +1
+          if ( laypart(ipart) < hyd%nolay ) then
+              new_layer = +1
+          endif
       endif
 
       !

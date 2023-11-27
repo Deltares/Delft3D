@@ -22,11 +22,13 @@
 !!  rights reserved.
 
       MODULE UITZICHT_DATA
+      use m_waq_precision
+
 !***********************************************************************
 !     SPECTRALE GEGEVENS VAN 400 TOT 700 NM MET STAPPEN VAN 5 NM
 !***********************************************************************
 !
-      REAL(8), DIMENSION(61) :: AWATER, BWATER, CHLSPE, PLANCK
+      REAL(kind=dp), DIMENSION(61)  ::AWATER, BWATER, CHLSPE, PLANCK
 !
 !     SPECIFIEKE ABSORPTIE ALGEN
 !
@@ -184,7 +186,7 @@
 !     include '..\inc\ioblck.inc'
       USE UITZICHT_DATA
 !
-      REAL(8) A     , A_CHL , A_DET , A_HUM , AH_380,
+      REAL(kind=dp) ::A     , A_CHL , A_DET , A_HUM , AH_380,
      1        ANGLE , B     , B_CHL , B_GL  ,
      2        C_CHL , C_DET , C_GL  , C_GL1 , C_GL2 ,
      3        C_MU  , CHLORO, CORCHL, D_1   , D_2   ,
@@ -192,7 +194,7 @@
      5        EXTPAR, GLOEIR, HELHUM, S_D1  , S_D2  ,
      6        SECCHI, SOM_C , SOM_D1, SOM_D2, SOM_H ,
      7        TAU   , ZW_STF
-      INTEGER I_550 , LAMBDA, TELLER
+      INTEGER(kind=int_wp) ::I_550 , LAMBDA, TELLER
       LOGICAL DOSECC
 !
       IF ( CHLORO .GE. 0.0 .OR. DETRIT .GE. 0.0 .OR.
@@ -323,12 +325,12 @@
 
       USE UITZICHT_DATA
 !
-      REAL(8) A     , A_CHL , A_DET , A_HUM , AH_380,
+      REAL(kind=dp) ::A     , A_CHL , A_DET , A_HUM , AH_380,
      1        B     , B_CHL , B_GL  , C_CHL , C_DET ,
      2        C_GL  , C_GL1 , C_GL2 , C_MU  , CHLORO,
      3        CORCHL, D_1   , D_2   , DETRIT, EXT_KI,
      4        GLOEIR, HELHUM, ZW_STF
-      INTEGER I_550 , LAMBDA, TELLER
+      INTEGER(kind=int_wp) ::I_550 , LAMBDA, TELLER
 !
       I_550 = ((550-400)/5)+1
 !

@@ -22,7 +22,6 @@
 !!  rights reserved.
 
 module m_caltau
-
     implicit none
     private
 
@@ -132,7 +131,9 @@ module m_caltau
     subroutine validate_switches(switch_tau, switch_tau_velocity)
         !< Evaluates, based on switches, whether the proces calculation must be carried out or not. If not, it immediately stops entire calculation.
         use m_write_error_message, only : write_error_message
+
         integer, intent(in) :: switch_tau, switch_tau_velocity
+
         if (.not. (ANY( (/ 1, 2, 3 /) == switch_tau ))) then
             call write_error_message('invalid switch for tau (iswtau) in caltau')
         end if
@@ -197,6 +198,7 @@ module m_caltau
         integer, intent(in) :: iparray(*)
         real, intent(in) :: tau, tauflo, tauwin, tauvel
         real, intent(out) :: pmsa(*)
+
         pmsa(iparray(14)) = tau
         pmsa(iparray(15)) = tauflo
         pmsa(iparray(16)) = tauwin
@@ -205,11 +207,13 @@ module m_caltau
 
     subroutine update_loop_vars(iflux, noflux, count_params, iparray, increm)
         !< Update all variables for the next cell (segment) iteration.
+
         integer, intent(in) :: noflux, count_params
         integer, intent(inout) :: iflux, iparray(*)
         integer, intent(in) :: increm(*)
   
         integer :: idx
+
         iflux = iflux + noflux
              do idx = 1, count_params
                 iparray(idx) = iparray(idx) + increm(idx)
@@ -220,10 +224,12 @@ module m_caltau
         !< Boolean indicating whether the calculation for current cell (segement) should be carries out or not. If false, then the cell is skipped.
         use m_evaluate_waq_attribute   
 
+
         integer, intent(in) :: segment_attribute
         integer :: ikmrk2
 
         call evaluate_waq_attribute(2, segment_attribute, ikmrk2)
+
         must_calculate_segment = ((btest(segment_attribute, 0)) .and. (ikmrk2 .eq. 0 .or. ikmrk2 .eq. 3))
     end function must_calculate_segment
 

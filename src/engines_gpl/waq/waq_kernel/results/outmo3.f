@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_outmo3
+      use m_waq_precision
+
 
       implicit none
 
@@ -72,10 +74,10 @@
       use m_reptim
       use timers
 
-      INTEGER      IOUT  , ITIME , NOTOT , ISFLAG, IBFLAG,
+      INTEGER(kind=int_wp) ::IOUT  , ITIME , NOTOT , ISFLAG, IBFLAG,
      +             NOTOT2, ITSTRT, ITSTOP, NDMPAR
-      INTEGER      IP(4)
-      REAL         AMASS2(NOTOT,5), ASMASS(NOTOT,NDMPAR,*) ,
+      INTEGER(kind=int_wp) ::IP(4)
+      REAL(kind=real_wp) ::AMASS2(NOTOT,5), ASMASS(NOTOT,NDMPAR,*) ,
      +             CONC2(*)
       CHARACTER*20 SNAME(*) , SYNAM2(*) , DANAM(*)
       CHARACTER*40 MNAME(*)
@@ -83,10 +85,10 @@
 !     Local declaration
 !
       CHARACTER*40 VNAME
-      integer idmp, k, id, id2, nend, nend2
-      real    percit
+      integer(kind=int_wp) ::idmp, k, id, id2, nend, nend2
+      real(kind=real_wp) ::percit
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmo3", ithandl )
 !
 !         initialise the paging, accumulation arrays and acumul flag
@@ -104,7 +106,7 @@
       ENDIF
       IP(4) = IP(4) + 1
 !
-      IF ( ITSTOP - ITIME .GT. 0 ) THEN
+      IF ( ITSTOP - ITSTRT .GT. 0 ) THEN
          PERCIT = 100.*(ITIME-ITSTRT)/(ITSTOP-ITSTRT)
       ELSE
          PERCIT = 100.

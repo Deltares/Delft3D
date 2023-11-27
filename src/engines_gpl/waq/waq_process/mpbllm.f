@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_mpbllm
+      use m_waq_precision
+
 
       implicit none
 
@@ -65,72 +67,72 @@ C***********************************************************************
 
 C     arguments
 
-      REAL               :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-      REAL               :: FL(*)              ! in/out flux array
-      INTEGER            :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER            :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER            :: NOSEG              ! in     number of segments
-      INTEGER            :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-      INTEGER            :: IEXPNT(4,*)        ! in     exchange pointer table
-      INTEGER            :: IKNMRK(*)          ! in     segment features array
-      INTEGER            :: NOQ1               ! in     number of exchanges in first direction
-      INTEGER            :: NOQ2               ! in     number of exchanges in second direction
-      INTEGER            :: NOQ3               ! in     number of exchanges in third direction
-      INTEGER            :: NOQ4               ! in     number of exchanges in fourth direction
+      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::FL(*)              ! in/out flux array
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
+      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
+      INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
+      INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
+      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
 
 C     from PMSA array
 
-      REAL               :: RADSURF            !  1 in  , irradiation at the water surface            (W/m2)
-      REAL               :: RADTOP             !  2 in  , irradiation at the segment upper-boundary   (W/m2)
-      REAL               :: EXTVL              !  3 in  , VL extinction coefficient                    (1/m)
-      REAL               :: A_ENH              !  4 in  , enhancement factor in radiation calculation    (-)
-      REAL               :: FPAR               !  5 in  , fraction Photosynthetic Active Radiance        (-)
-      REAL               :: PM                 !  6 in  , MPB maximum photosynthesis           (gC/(gChl)/d)
-      REAL               :: RADSAT             !  7 in  , MPB saturation radiation                    (W/m2)
-      INTEGER            :: SWEMERSION         !  8 in  , switch indicating submersion(0) or emersion(1) (-)
-      REAL               :: MIGRDEPTH1         !  9 in  , MPB migration depth 1                          (m)
-      REAL               :: MIGRDEPTH2         ! 10 in  , MPB migration depth 2                          (m)
-      REAL               :: DEPTH              ! 11 in  , depth of segment                               (m)
-      REAL               :: LOCSEDDEPT         ! 12 in  , Sediment layer depth to bottom of segment      (m)
-      INTEGER            :: I_NRDZ             ! 13 in  , Nr. of integration intervals over depth        (-)
-      INTEGER            :: ITIME              ! 14 in  , DELWAQ time                                  (scu)
-      INTEGER            :: IDT                ! 15 in  , DELWAQ timestep                              (scu)
-      INTEGER            :: ITSTRT             ! 16 in  , DELWAQ start time                            (scu)
-      INTEGER            :: AUXSYS             ! 17 in  , ratio between days and system clock        (scu/d)
+      REAL(kind=real_wp) ::RADSURF            !  1 in  , irradiation at the water surface            (W/m2)
+      REAL(kind=real_wp) ::RADTOP             !  2 in  , irradiation at the segment upper-boundary   (W/m2)
+      REAL(kind=real_wp) ::EXTVL              !  3 in  , VL extinction coefficient                    (1/m)
+      REAL(kind=real_wp) ::A_ENH              !  4 in  , enhancement factor in radiation calculation    (-)
+      REAL(kind=real_wp) ::FPAR               !  5 in  , fraction Photosynthetic Active Radiance        (-)
+      REAL(kind=real_wp) ::PM                 !  6 in  , MPB maximum photosynthesis           (gC/(gChl)/d)
+      REAL(kind=real_wp) ::RADSAT             !  7 in  , MPB saturation radiation                    (W/m2)
+      INTEGER(kind=int_wp) ::SWEMERSION         !  8 in  , switch indicating submersion(0) or emersion(1) (-)
+      REAL(kind=real_wp) ::MIGRDEPTH1         !  9 in  , MPB migration depth 1                          (m)
+      REAL(kind=real_wp) ::MIGRDEPTH2         ! 10 in  , MPB migration depth 2                          (m)
+      REAL(kind=real_wp) ::DEPTH              ! 11 in  , depth of segment                               (m)
+      REAL(kind=real_wp) ::LOCSEDDEPT         ! 12 in  , Sediment layer depth to bottom of segment      (m)
+      INTEGER(kind=int_wp) ::I_NRDZ             ! 13 in  , Nr. of integration intervals over depth        (-)
+      INTEGER(kind=int_wp) ::ITIME              ! 14 in  , DELWAQ time                                  (scu)
+      INTEGER(kind=int_wp) ::IDT                ! 15 in  , DELWAQ timestep                              (scu)
+      INTEGER(kind=int_wp) ::ITSTRT             ! 16 in  , DELWAQ start time                            (scu)
+      INTEGER(kind=int_wp) ::AUXSYS             ! 17 in  , ratio between days and system clock        (scu/d)
       LOGICAL            :: S1_BOTTOM          ! 18 in  , switch for S1 bottom approach (.true.) or DELWAQ-G approach (.false.)
-      REAL               :: RADBOT             ! 19 in  , irradiation at the segment lower-boundary   (W/m2)
-      REAL               :: EXTVLS1            ! 20 in  , VL extinction coefficient in the sediment    (1/m)
-      REAL               :: ZSED               ! 21 in  , Depth of microfytobenthos layer                (m)
-      REAL               :: WS1                ! 22 i/o , Workspace array 1                              (-)
-      REAL               :: WS2                ! 23 i/o , Workspace array 2                              (-)
-      REAL               :: WS3                ! 24 i/o , Workspace array 3                              (-)
-      REAL               :: WS4                ! 25 i/o , Workspace array 4                              (-)
-      REAL               :: FLT                ! 26 out , MPB light limitation                           (-)
-      REAL               :: FLTS1              ! 27 out , MPB light limitation in sediment layer 1       (-)
+      REAL(kind=real_wp) ::RADBOT             ! 19 in  , irradiation at the segment lower-boundary   (W/m2)
+      REAL(kind=real_wp) ::EXTVLS1            ! 20 in  , VL extinction coefficient in the sediment    (1/m)
+      REAL(kind=real_wp) ::ZSED               ! 21 in  , Depth of microfytobenthos layer                (m)
+      REAL(kind=real_wp) ::WS1                ! 22 i/o , Workspace array 1                              (-)
+      REAL(kind=real_wp) ::WS2                ! 23 i/o , Workspace array 2                              (-)
+      REAL(kind=real_wp) ::WS3                ! 24 i/o , Workspace array 3                              (-)
+      REAL(kind=real_wp) ::WS4                ! 25 i/o , Workspace array 4                              (-)
+      REAL(kind=real_wp) ::FLT                ! 26 out , MPB light limitation                           (-)
+      REAL(kind=real_wp) ::FLTS1              ! 27 out , MPB light limitation in sediment layer 1       (-)
 
 C     local
 
-      REAL, PARAMETER    :: PI     = 3.1415927 ! pi
-      INTEGER            :: ISEG               ! loop counter segment loop
-      INTEGER            :: IZ                 ! loop counter integration layers
-      INTEGER            :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
-      INTEGER            :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-      INTEGER, parameter :: NO_POINTER = 30    ! number of input output variables in PMSA array
-      INTEGER            :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
-      REAL               :: ACTDEP             ! actual depth
-      REAL               :: ACTLIM             ! limitation at actual radiance
-      REAL               :: ACTRAD             ! radiance at actual depth
-      REAL               :: CUMLIM             ! cummulative limitation
-      REAL               :: DZ                 ! depth of integration layers
-      REAL               :: FRACSURF           ! fraction of migrating MPB to reach surface
-      REAL               :: LIMSURF            ! limitation with RADSURF
-      REAL               :: RELZ               ! relative Z in migration dpeth
-      REAL               :: Z                  ! Z in total sediment layer
+      REAL(kind=real_wp), PARAMETER     ::PI     = 3.1415927 ! pi
+      INTEGER(kind=int_wp) ::ISEG               ! loop counter segment loop
+      INTEGER(kind=int_wp) ::IZ                 ! loop counter integration layers
+      INTEGER(kind=int_wp) ::IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
+      INTEGER(kind=int_wp) ::IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
+      INTEGER(kind=int_wp), parameter  ::NO_POINTER = 30    ! number of input output variables in PMSA array
+      INTEGER(kind=int_wp) ::IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+      REAL(kind=real_wp) ::ACTDEP             ! actual depth
+      REAL(kind=real_wp) ::ACTLIM             ! limitation at actual radiance
+      REAL(kind=real_wp) ::ACTRAD             ! radiance at actual depth
+      REAL(kind=real_wp) ::CUMLIM             ! cummulative limitation
+      REAL(kind=real_wp) ::DZ                 ! depth of integration layers
+      REAL(kind=real_wp) ::FRACSURF           ! fraction of migrating MPB to reach surface
+      REAL(kind=real_wp) ::LIMSURF            ! limitation with RADSURF
+      REAL(kind=real_wp) ::RELZ               ! relative Z in migration dpeth
+      REAL(kind=real_wp) ::Z                  ! Z in total sediment layer
 
-      INTEGER            :: ISTEP
-      REAL               :: RTIME
-      REAL               :: RDT
-      REAL               :: RTSTRT
+      INTEGER(kind=int_wp) ::ISTEP
+      REAL(kind=real_wp) ::RTIME
+      REAL(kind=real_wp) ::RDT
+      REAL(kind=real_wp) ::RTSTRT
 
 C     initialise pointers for PMSA and FL array
 

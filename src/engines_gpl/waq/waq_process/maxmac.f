@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_maxmac
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,60 +41,60 @@
 !
 !     Type    Name         I/O Description
 !
-      REAL(4) PMSA(*)     !I/O Process Manager System Array, window of routine to process library
-      REAL(4) FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      INTEGER IPOINT( 31) ! I  Array of pointers in PMSA to get and store the data
-      INTEGER INCREM( 31) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-      INTEGER NOSEG       ! I  Number of computational elements in the whole model schematisation
-      INTEGER NOFLUX      ! I  Number of fluxes, increment in the FL array
-      INTEGER IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      INTEGER IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      INTEGER NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-      INTEGER NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-      INTEGER NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      INTEGER NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      INTEGER IPNT( 31)   !    Local work array for the pointering
-      INTEGER ISEG        !    Local loop counter for computational element loop
+      REAL(kind=real_wp) ::PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+      REAL(kind=real_wp) ::FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      INTEGER(kind=int_wp) ::IPOINT( 31) ! I  Array of pointers in PMSA to get and store the data
+      INTEGER(kind=int_wp) ::INCREM( 31) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
+      INTEGER(kind=int_wp) ::NOSEG       ! I  Number of computational elements in the whole model schematisation
+      INTEGER(kind=int_wp) ::NOFLUX      ! I  Number of fluxes, increment in the FL array
+      INTEGER(kind=int_wp) ::IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      INTEGER(kind=int_wp) ::IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      INTEGER(kind=int_wp) ::NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+      INTEGER(kind=int_wp) ::NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
+      INTEGER(kind=int_wp) ::NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      INTEGER(kind=int_wp) ::NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      INTEGER(kind=int_wp) ::IPNT( 31)   !    Local work array for the pointering
+      INTEGER(kind=int_wp) ::ISEG        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      REAL(4) nMacrophyt  ! I  number of macrophyte species                       (-)
-      REAL(4) HSIEM01     ! I  Habitat Suitability Index for EM01                 (-)
-      REAL(4) PotEM01     ! I  potential biomass for EM01                         (gC/M2)
-      REAL(4) HSISM01     ! I  Habitat Suitability Index for SM01                 (-)
-      REAL(4) PotSM01     ! I  potential biomass for SM01                         (gC/M2)
-      REAL(4) HSIEM02     ! I  Habitat Suitability Index for EM02                 (-)
-      REAL(4) PotEM02     ! I  potential biomass for EM02                         (gC/M2)
-      REAL(4) HSISM02     ! I  Habitat Suitability Index for SM02                 (-)
-      REAL(4) PotSM02     ! I  potential biomass for SM02                         (gC/M2)
-      REAL(4) HSIEM03     ! I  Habitat Suitability Index for EM03                 (-)
-      REAL(4) PotEM03     ! I  potential biomass for EM03                         (gC/M2)
-      REAL(4) HSISM03     ! I  Habitat Suitability Index for SM03                 (-)
-      REAL(4) PotSM03     ! I  potential biomass for SM03                         (gC/M2)
-      REAL(4) HSIEM04     ! I  Habitat Suitability Index for EM04                 (-)
-      REAL(4) PotEM04     ! I  potential biomass for EM04                         (gC/M2)
-      REAL(4) HSISM04     ! I  Habitat Suitability Index for SM04                 (-)
-      REAL(4) PotSM04     ! I  potential biomass for SM04                         (gC/M2)
-      REAL(4) HSIEM05     ! I  Habitat Suitability Index for EM05                 (-)
-      REAL(4) PotEM05     ! I  potential biomass for EM05                         (gC/M2)
-      REAL(4) HSISM05     ! I  Habitat Suitability Index for SM05                 (-)
-      REAL(4) PotSM05     ! I  potential biomass for SM05                         (gC/M2)
-      REAL(4) MaxEM01     ! O  maximum biomass for macrophyt emerged 01           (gC)
-      REAL(4) MaxSM01     ! O  maximum biomass for macrophyt submerged 01         (gC)
-      REAL(4) MaxEM02     ! O  maximum biomass for EM02                           (gC/M2)
-      REAL(4) MaxSM02     ! O  maximum biomass for SM02                           (gC/M2)
-      REAL(4) MaxEM03     ! O  maximum biomass for EM03                           (gC/M2)
-      REAL(4) MaxSM03     ! O  maximum biomass for SM03                           (gC/M2)
-      REAL(4) MaxEM04     ! O  maximum biomass for EM04                           (gC/M2)
-      REAL(4) MaxSM04     ! O  maximum biomass for SM04                           (gC/M2)
-      REAL(4) MaxEM05     ! O  maximum biomass for EM05                           (gC/M2)
-      REAL(4) MaxSM05     ! O  maximum biomass for SM05                           (gC/M2)
+      REAL(kind=real_wp) ::nMacrophyt  ! I  number of macrophyte species                       (-)
+      REAL(kind=real_wp) ::HSIEM01     ! I  Habitat Suitability Index for EM01                 (-)
+      REAL(kind=real_wp) ::PotEM01     ! I  potential biomass for EM01                         (gC/M2)
+      REAL(kind=real_wp) ::HSISM01     ! I  Habitat Suitability Index for SM01                 (-)
+      REAL(kind=real_wp) ::PotSM01     ! I  potential biomass for SM01                         (gC/M2)
+      REAL(kind=real_wp) ::HSIEM02     ! I  Habitat Suitability Index for EM02                 (-)
+      REAL(kind=real_wp) ::PotEM02     ! I  potential biomass for EM02                         (gC/M2)
+      REAL(kind=real_wp) ::HSISM02     ! I  Habitat Suitability Index for SM02                 (-)
+      REAL(kind=real_wp) ::PotSM02     ! I  potential biomass for SM02                         (gC/M2)
+      REAL(kind=real_wp) ::HSIEM03     ! I  Habitat Suitability Index for EM03                 (-)
+      REAL(kind=real_wp) ::PotEM03     ! I  potential biomass for EM03                         (gC/M2)
+      REAL(kind=real_wp) ::HSISM03     ! I  Habitat Suitability Index for SM03                 (-)
+      REAL(kind=real_wp) ::PotSM03     ! I  potential biomass for SM03                         (gC/M2)
+      REAL(kind=real_wp) ::HSIEM04     ! I  Habitat Suitability Index for EM04                 (-)
+      REAL(kind=real_wp) ::PotEM04     ! I  potential biomass for EM04                         (gC/M2)
+      REAL(kind=real_wp) ::HSISM04     ! I  Habitat Suitability Index for SM04                 (-)
+      REAL(kind=real_wp) ::PotSM04     ! I  potential biomass for SM04                         (gC/M2)
+      REAL(kind=real_wp) ::HSIEM05     ! I  Habitat Suitability Index for EM05                 (-)
+      REAL(kind=real_wp) ::PotEM05     ! I  potential biomass for EM05                         (gC/M2)
+      REAL(kind=real_wp) ::HSISM05     ! I  Habitat Suitability Index for SM05                 (-)
+      REAL(kind=real_wp) ::PotSM05     ! I  potential biomass for SM05                         (gC/M2)
+      REAL(kind=real_wp) ::MaxEM01     ! O  maximum biomass for macrophyt emerged 01           (gC)
+      REAL(kind=real_wp) ::MaxSM01     ! O  maximum biomass for macrophyt submerged 01         (gC)
+      REAL(kind=real_wp) ::MaxEM02     ! O  maximum biomass for EM02                           (gC/M2)
+      REAL(kind=real_wp) ::MaxSM02     ! O  maximum biomass for SM02                           (gC/M2)
+      REAL(kind=real_wp) ::MaxEM03     ! O  maximum biomass for EM03                           (gC/M2)
+      REAL(kind=real_wp) ::MaxSM03     ! O  maximum biomass for SM03                           (gC/M2)
+      REAL(kind=real_wp) ::MaxEM04     ! O  maximum biomass for EM04                           (gC/M2)
+      REAL(kind=real_wp) ::MaxSM04     ! O  maximum biomass for SM04                           (gC/M2)
+      REAL(kind=real_wp) ::MaxEM05     ! O  maximum biomass for EM05                           (gC/M2)
+      REAL(kind=real_wp) ::MaxSM05     ! O  maximum biomass for SM05                           (gC/M2)
 
-      REAL    SumHSIEM
-      REAL    SumHSISM
-      INTEGER IKMRK1
+      REAL(kind=real_wp) ::SumHSIEM
+      REAL(kind=real_wp) ::SumHSISM
+      INTEGER(kind=int_wp) ::IKMRK1
 !
 !*******************************************************************************
 !

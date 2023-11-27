@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq63
+      use m_waq_precision
+
 
       implicit none
 
@@ -60,12 +62,12 @@
 !
       use timers
 
-      INTEGER     ISDMP(*)
-      real        CONC(NOTOT,*) , DERIV(*) , AMASS2(NOTOT,*) ,
+      INTEGER(kind=int_wp) ::ISDMP(*)
+      real(kind=real_wp) ::CONC(NOTOT,*) , DERIV(*) , AMASS2(NOTOT,*) ,
      *            DMPS(*)
-      integer    notot, nsys, noseg
-      integer    i, ip, i4, i5, i6, ntot, iset, intopt, iseg, isys
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::notot, nsys, noseg
+      integer(kind=int_wp) ::i, ip, i4, i5, i6, ntot, iset, intopt, iseg, isys
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq63", ithandl )
 !
 !         gets concentrations

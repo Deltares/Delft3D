@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_getopo
+      use m_waq_precision
       use m_varpoi
 
 
@@ -50,31 +51,31 @@
 
 !     kind           function         name                    Descriptipon
 
-      integer  ( 4), intent(in   ) :: noutp                 !< Number of output files
-      integer  ( 4), intent(in   ) :: nrvar (noutp )        !< No of output vars per file
-      integer  ( 4), intent(in   ) :: nrvarm                !< Maximum of output variables p.p.
-      integer  ( 4), intent(  out) :: nmis                  !< Number of missing input vars
+      integer(kind=int_wp), intent(in   ) ::  noutp                  !< Number of output files
+      integer(kind=int_wp), intent(in   ) ::  nrvar (noutp )         !< No of output vars per file
+      integer(kind=int_wp), intent(in   ) ::  nrvarm                 !< Maximum of output variables p.p.
+      integer(kind=int_wp), intent(  out) ::  nmis                   !< Number of missing input vars
       character*(*), intent(in   ) :: dlwnam(nrvarm,noutp)  !< Name of input variables
-      integer  ( 4), intent(  out) :: iopoin(nrvarm,noutp)  !< Number of missing input vars
-      integer  ( 4), intent(in   ) :: notot                 !< Total number of substances
-      integer  ( 4), intent(in   ) :: nopa                  !< Number of parameters
-      integer  ( 4), intent(in   ) :: nosfun                !< Number of segment functions
+      integer(kind=int_wp), intent(  out) ::  iopoin(nrvarm,noutp)   !< Number of missing input vars
+      integer(kind=int_wp), intent(in   ) ::  notot                  !< Total number of substances
+      integer(kind=int_wp), intent(in   ) ::  nopa                   !< Number of parameters
+      integer(kind=int_wp), intent(in   ) ::  nosfun                 !< Number of segment functions
       character(20), intent(in   ) :: syname(notot)         !< Names of systems
-      integer  ( 4), intent(in   ) :: nocons                !< Number of constants used
-      integer  ( 4), intent(in   ) :: nofun                 !< Number of functions ( user )
+      integer(kind=int_wp), intent(in   ) ::  nocons                 !< Number of constants used
+      integer(kind=int_wp), intent(in   ) ::  nofun                  !< Number of functions ( user )
       character(20), intent(in   ) :: coname(nocons)        !< Constant names
       character(20), intent(in   ) :: paname(nopa  )        !< Parameter names
       character(20), intent(in   ) :: funame(nofun )        !< Function names
       character(20), intent(in   ) :: sfname(nosfun)        !< Segment function names
-      integer  ( 4), intent(in   ) :: lurep                 !< Unit nr. report file
+      integer(kind=int_wp), intent(in   ) ::  lurep                  !< Unit nr. report file
 
 !     Local
 
       character(20) varnam            ! Name of variable to be identified
-      integer  ( 4) ivarip            ! Pointer in the SSA
-      integer  ( 4) iout              ! loop variable of outputs
-      integer  ( 4) inrv              ! loop variable output number
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: ivarip             ! Pointer in the SSA
+      integer(kind=int_wp) :: iout               ! loop variable of outputs
+      integer(kind=int_wp) :: inrv               ! loop variable output number
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "getopo", ithndl )
 
       write( lurep,* )

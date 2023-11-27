@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq64
+      use m_waq_precision
+
 
       implicit none
 
@@ -80,21 +82,21 @@
 !
       use timers
 
-      INTEGER    NDMPQ
-      INTEGER    IQDMP   (*)
-      real       DISP  (  3) , DISPER(*) , AREA (*) , FLOW  (*) ,
+      INTEGER(kind=int_wp) ::NDMPQ
+      INTEGER(kind=int_wp) ::IQDMP   (*)
+      real(kind=real_wp) ::DISP  (  3) , DISPER(*) , AREA (*) , FLOW  (*) ,
      *           ALENG (  *) , VELO  (*) , CONC (*) , BOUND (*) ,
      *           AMASS2(*) , DMPQ(*)
 
-      integer    IPOINT(4,*) , IDPNT(*), IVPNT(*)
-      integer    notot, nosys, noq, noq1, noq2, noq3, ilflag
-      integer    nodisp, novelo
-      integer    i, j, iq, is, i3, i4, i5, i6, ibflag
-      integer    iopt, ioptm, ipb, ipq, k1, k2
+      integer(kind=int_wp) ::IPOINT(4,*) , IDPNT(*), IVPNT(*)
+      integer(kind=int_wp) ::notot, nosys, noq, noq1, noq2, noq3, ilflag
+      integer(kind=int_wp) ::nodisp, novelo
+      integer(kind=int_wp) ::i, j, iq, is, i3, i4, i5, i6, ibflag
+      integer(kind=int_wp) ::iopt, ioptm, ipb, ipq, k1, k2
 
-      real       q, a, al, e, dl, d, v, dq
+      real(kind=real_wp) ::q, a, al, e, dl, d, v, dq
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq64", ithandl )
 !
 !         loop accross the number of exchanges

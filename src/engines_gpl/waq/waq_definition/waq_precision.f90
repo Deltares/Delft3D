@@ -24,9 +24,10 @@
 module m_waq_precision
 
    use, intrinsic :: iso_fortran_env
+   use, intrinsic :: iso_c_binding
    implicit none
    private
-   public ::  INT16, INT64, int_wp, sp, dp, qp, real_wp
+   public ::  INT16, INT64, int_wp, sp, dp, qp, real_wp, C_INTPTR_T
 
    integer, parameter :: int_wp = INT32
 

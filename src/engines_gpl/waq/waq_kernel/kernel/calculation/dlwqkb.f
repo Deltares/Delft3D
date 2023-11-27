@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqkb
+      use m_waq_precision
+
 
       implicit none
 
@@ -65,9 +67,9 @@
       use m_srstop
       use m_dhimov
       use timers
-      INTEGER       LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 ,
+      INTEGER(kind=int_wp) ::LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 ,
      +              ITIME2 , NFTOT  , ISFLAG , IFFLAG
-      INTEGER       IARRA1(*), IARRA2(*)
+      INTEGER(kind=int_wp) ::IARRA1(*), IARRA2(*)
       CHARACTER*(*) LUNTXT
 !
 !     Local
@@ -77,10 +79,10 @@
       CHARACTER*16  MSGTXT(3)
       DATA          MSGTXT / ' REWIND ON      ' , ' WARNING READING' ,
      +                       ' REWIND ERROR   ' /
-      integer    messge, k, ierr
+      integer(kind=int_wp) ::messge, k, ierr
 
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqkb", ithandl )
 !
       MESSGE = 0

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_valpoi
+      use m_waq_precision
+
 
       implicit none
 
@@ -64,7 +66,7 @@
 !
       use timers       !   performance timers
 
-      INTEGER       NOTOT , NOPA  , NOSFUN, NOCONS, NOFUN ,
+      INTEGER(kind=int_wp) ::NOTOT , NOPA  , NOSFUN, NOCONS, NOFUN ,
      +              IVALIP
       CHARACTER*(*) VALNAM, LINE
       CHARACTER*(*) SYNAME(*),
@@ -74,11 +76,11 @@
 !
 !     Local
 !
-      INTEGER       NZOEK, ISYS, ISFUN, IPA, IFUN, ICO
+      INTEGER(kind=int_wp) ::NZOEK, ISYS, ISFUN, IPA, IFUN, ICO
       PARAMETER   ( NZOEK = 20 )
-      integer, PARAMETER  :: NOPRED = 6
+      integer(kind=int_wp), PARAMETER   ::NOPRED = 6
       CHARACTER(NZOEK) PREDEF(NOPRED)
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "valpoi", ithndl )
 !
       PREDEF(1) = 'VOLUME'

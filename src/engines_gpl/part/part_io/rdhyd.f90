@@ -94,7 +94,7 @@ use m_stop_exit
 
       ndoms = 0
       nbnds = 0
-
+      
 !     open the .hyd file and read the required information
 
       ipath = scan(fnam(18),"\",.true.)

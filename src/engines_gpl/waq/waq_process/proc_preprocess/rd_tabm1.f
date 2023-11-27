@@ -25,6 +25,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
       module m_rd_tabm1
+      use m_waq_precision
+
 
       implicit none
 
@@ -57,17 +59,17 @@
 !
 !     declaration of arguments
 !
-      integer            :: deffds                                       ! nefis file descriptor
-      integer            :: n_old_items_max                              ! maximum number of old items
-      integer            :: n_old_items                                  ! number of old items
+      integer(kind=int_wp) ::deffds                                       ! nefis file descriptor
+      integer(kind=int_wp) ::n_old_items_max                              ! maximum number of old items
+      integer(kind=int_wp) ::n_old_items                                  ! number of old items
       character*10       :: old_items_old_name(n_old_items_max)          ! old name (if equal to new name then use old_default if target serial is less then
       character*10       :: old_items_new_name(n_old_items_max)          ! new name
-      real               :: old_items_old_default(n_old_items_max)       ! old default value
+      real(kind=real_wp) ::old_items_old_default(n_old_items_max)       ! old default value
       character*10       :: old_items_configuration(n_old_items_max)     ! (only use this new name if a specific configuration is used?)
-      integer            :: old_items_serial(n_old_items_max)            ! the proces definition serial number up to where this old name, old default was used
-      integer            :: old_items_action_type(n_old_items_max)       ! process rename, process parameter rename, default value change
-      integer            :: lunrep                                       ! report file
-      integer            :: ierror                                       ! error
+      integer(kind=int_wp) ::old_items_serial(n_old_items_max)            ! the proces definition serial number up to where this old name, old default was used
+      integer(kind=int_wp) ::old_items_action_type(n_old_items_max)       ! process rename, process parameter rename, default value change
+      integer(kind=int_wp) ::lunrep                                       ! report file
+      integer(kind=int_wp) ::ierror                                       ! error
 !
 !     Local variables
 !
@@ -78,12 +80,12 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER       NELEMS
+      INTEGER(kind=int_wp) ::NELEMS
       PARAMETER   ( NELEMS = 7 )
 !
-      INTEGER       I               , IELM          ,
+      INTEGER(kind=int_wp) ::I               , IELM          ,
      +              BUFLEN
-      INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS),
+      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS),
      +              UINDEX(3)
       CHARACTER*16  GRPNAM
       CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
@@ -91,7 +93,7 @@
 !
 !     External NEFIS Functions
 !
-      INTEGER   GETELS
+      INTEGER(kind=int_wp) ::GETELS
      +         ,GETELT
       EXTERNAL  GETELS
      +         ,GETELT

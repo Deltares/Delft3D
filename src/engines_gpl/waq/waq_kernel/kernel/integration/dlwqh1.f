@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqh1
+      use m_waq_precision
+
 
       implicit none
 
@@ -52,19 +54,19 @@
 
 !     Kind        Function         Name                   Description
 
-      integer(4), intent(in   ) :: noseg                ! Number of computational volumes
-      integer(4), intent(in   ) :: notot                ! Total number of substances
-      integer(4), intent(in   ) :: nobnd                ! Number of open boundaries
-      integer(4), intent(in   ) :: isys                 ! This substance number
-      real   (8), intent(  out) :: diag  (noseg+nobnd)  ! Diagonal vector (1st order term)
-      real   (4), intent(in   ) :: delvol(noseg)        ! Closure error correction
-      real   (4), intent(in   ) :: conc  (notot,noseg)  ! First order term
+      integer(kind=int_wp), intent(in   )  ::noseg                ! Number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::notot                ! Total number of substances
+      integer(kind=int_wp), intent(in   )  ::nobnd                ! Number of open boundaries
+      integer(kind=int_wp), intent(in   )  ::isys                 ! This substance number
+      real(kind=dp), intent(  out)  ::diag  (noseg+nobnd)  ! Diagonal vector (1st order term)
+      real(kind=real_wp), intent(in   )  ::delvol(noseg)        ! Closure error correction
+      real(kind=real_wp), intent(in   )  ::conc  (notot,noseg)  ! First order term
 
 !     local variables
 
-      integer(4)  iseg               ! loop counter for computational volumes
+      integer(kind=int_wp) ::iseg               ! loop counter for computational volumes
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqh1", ithandl )
 
 !         set the right hand side and

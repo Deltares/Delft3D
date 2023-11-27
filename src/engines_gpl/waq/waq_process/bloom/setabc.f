@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_setabc
+      use m_waq_precision
+
 
       implicit none
 
@@ -45,9 +47,9 @@
 
       save
 
-      real(8)  :: xinit(*),pmax20(mt),tcorr(mt),sdmixn(mt)
-      real(8)  :: csol, dsol, dep, extb, exttot, t
-      integer  :: k, j, nset, idrem, idprev,  imprev
+      real(kind=dp) ::xinit(*),pmax20(mt),tcorr(mt),sdmixn(mt)
+      real(kind=dp) ::csol, dsol, dep, extb, exttot, t
+      integer(kind=int_wp) ::k, j, nset, idrem, idprev,  imprev
       
 !
 !  If this is the first time through the subroutine,

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq50
+      use m_waq_precision
+
 
       implicit none
 
@@ -57,34 +59,34 @@
 
 !     kind           function         name                   description
 
-      integer  ( 4), intent(in   ) :: nosys                !< number of transported substances
-      integer  ( 4), intent(in   ) :: notot                !< total number of substances
-      integer  ( 4), intent(in   ) :: noseg                !< number of computational volumes
-      integer  ( 4), intent(in   ) :: noq                  !< total number of interfaces
-      integer  ( 4), intent(in   ) :: novelo               !< number additional velocities
-      real     ( 4), intent(in   ) :: velo  (novelo,noq)   !< array with additional velocities
-      real     ( 4), intent(in   ) :: area  (noq)          !< exchange areas in m2
-      real     ( 4), intent(in   ) :: flow  (noq)          !< flows through the exchange areas in m3/s
-      integer  ( 4), intent(in   ) :: ipoint(  4   ,noq)   !< from, to, from-1, to+1 volume numbers
-      integer  ( 4), intent(in   ) :: ivpnt (nosys)        !< additional velocity number per substance
-      real     ( 4), intent(in   ) :: conc  (notot,noseg)  !< concentrations at previous time level
-      real     ( 4), intent(in   ) :: bound (nosys,  *  )  !< open boundary concentrations
-      integer  ( 4), intent(in   ) :: idt                  !< time step in seconds
-      real     ( 4), intent(inout) :: deriv (notot,noseg)  !< derivatives of the concentraions
-      integer  ( 4), intent(in   ) :: iaflag               !< if 1 then accumulate mass in report array
-      real     ( 4), intent(inout) :: amass2(notot, 5   )  !< report array for monitoring file
+      integer(kind=int_wp), intent(in   )  ::nosys                !< number of transported substances
+      integer(kind=int_wp), intent(in   )  ::notot                !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::noseg                !< number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::noq                  !< total number of interfaces
+      integer(kind=int_wp), intent(in   )  ::novelo               !< number additional velocities
+      real(kind=real_wp), intent(in   )  ::velo  (novelo,noq)   !< array with additional velocities
+      real(kind=real_wp), intent(in   )  ::area  (noq)          !< exchange areas in m2
+      real(kind=real_wp), intent(in   )  ::flow  (noq)          !< flows through the exchange areas in m3/s
+      integer(kind=int_wp), intent(in   )  ::ipoint(  4   ,noq)   !< from, to, from-1, to+1 volume numbers
+      integer(kind=int_wp), intent(in   )  ::ivpnt (nosys)        !< additional velocity number per substance
+      real(kind=real_wp), intent(in   )  ::conc  (notot,noseg)  !< concentrations at previous time level
+      real(kind=real_wp), intent(in   )  ::bound (nosys,  *  )  !< open boundary concentrations
+      integer(kind=int_wp), intent(in   )  ::idt                  !< time step in seconds
+      real(kind=real_wp), intent(inout)  ::deriv (notot,noseg)  !< derivatives of the concentraions
+      integer(kind=int_wp), intent(in   )  ::iaflag               !< if 1 then accumulate mass in report array
+      real(kind=real_wp), intent(inout)  ::amass2(notot, 5   )  !< report array for monitoring file
       
 !     Local variables     :
 
-      integer  ( 4) iq              ! loop counter exchanges
-      integer  ( 4) isys            ! loop counter substance
-      integer  ( 4) ifrom  , ito    ! from and to volume numbers
-      real     ( 4) a               ! this area
-      real     ( 4) q               ! flow for this exchange
-      real     ( 4) v               ! flow for this substance
-      real     ( 4) dq              ! total flux from and to
+      integer(kind=int_wp) ::iq              ! loop counter exchanges
+      integer(kind=int_wp) ::isys            ! loop counter substance
+      integer(kind=int_wp) ::ifrom  , ito    ! from and to volume numbers
+      real(kind=real_wp) ::a               ! this area
+      real(kind=real_wp) ::q               ! flow for this exchange
+      real(kind=real_wp) ::v               ! flow for this substance
+      real(kind=real_wp) ::dq              ! total flux from and to
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq50", ithandl )
 
 !         loop accross the number of exchanges

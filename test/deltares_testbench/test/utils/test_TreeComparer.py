@@ -180,7 +180,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c
+            join(self.testdata, "Unit_test.xml"), "", c, ""
         )
         file = settings.configs
         # Define parameters
@@ -227,7 +227,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c
+            join(self.testdata, "Unit_test.xml"), "", c, ""
         )
         file = settings.configs
 
@@ -262,7 +262,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c
+            join(self.testdata, "Unit_test.xml"), "", c, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -290,7 +290,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_wrong_name.xml"), "", c
+            join(self.testdata, "Unit_test_wrong_name.xml"), "", c, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -333,7 +333,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_wrong_name.xml"), "", c
+            join(self.testdata, "Unit_test_wrong_name.xml"), "", c, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -367,7 +367,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_NOK_values.xml"), "", c
+            join(self.testdata, "Unit_test_NOK_values.xml"), "", c, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -391,7 +391,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c
+            join(self.testdata, "Unit_test.xml"), "", c, ""
         )
         file = settings.configs
         parameters = file[0].checks[0].parameters["parameters"]
@@ -410,7 +410,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_Ignored.xml"), "", c
+            join(self.testdata, "Unit_test_Ignored.xml"), "", c, ""
         )
         file = settings.configs
         parameters = file[0].checks[0].parameters["parameters"]
@@ -433,7 +433,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -493,7 +493,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -553,7 +553,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node_1.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node_1.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -707,7 +707,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -771,7 +771,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -799,7 +799,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -837,7 +837,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -875,7 +875,7 @@ class TestTreeComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
         )
         file = settings.configs
         parameter: Parameter = file[0].checks[0].parameters["parameters"][0]

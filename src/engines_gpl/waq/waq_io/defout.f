@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_defout
+      use m_waq_precision
+
 
       implicit none
 
@@ -52,21 +54,21 @@
 
 !     kind           function         name            Descriptipon
 
-      integer  ( 4), intent(in   ) :: noutp         !< Number of output files
-      integer  ( 4), intent(  out) :: nrvar (noutp) !< Number of extra output vars
-      integer  ( 4), intent(  out) :: iostrt(noutp) !< Output start time (scu)
-      integer  ( 4), intent(  out) :: iostop(noutp) !< Output stop time (scu)
-      integer  ( 4), intent(  out) :: iostep(noutp) !< Output step time (scu)
-      integer  ( 4), intent(  out) :: isrtou(noutp) !< Sort output indication
-      integer  ( 4), intent(  out) :: igrdou(noutp) !< Output grid indication
+      integer(kind=int_wp), intent(in   ) ::  noutp          !< Number of output files
+      integer(kind=int_wp), intent(  out) ::  nrvar (noutp)  !< Number of extra output vars
+      integer(kind=int_wp), intent(  out) ::  iostrt(noutp)  !< Output start time (scu)
+      integer(kind=int_wp), intent(  out) ::  iostop(noutp)  !< Output stop time (scu)
+      integer(kind=int_wp), intent(  out) ::  iostep(noutp)  !< Output step time (scu)
+      integer(kind=int_wp), intent(  out) ::  isrtou(noutp)  !< Sort output indication
+      integer(kind=int_wp), intent(  out) ::  igrdou(noutp)  !< Output grid indication
 
 !     Common declarations
 
 
 !     Local declarations
 
-      integer, parameter :: igseg= 1 , igmon= 2 , iggrd= 3 , igsub = 4
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp), parameter ::  igseg= 1 , igmon= 2 , iggrd= 3 , igsub = 4
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "defout", ithndl )
 
 !     set output system default action

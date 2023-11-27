@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dlwqf8
+use m_waq_precision
+
 
 implicit none
 
@@ -56,24 +58,24 @@ contains
 
 !     Kind        Function         Name                  Description
 
-      integer(4), intent(in   ) :: noseg               !< Number of computational volumes
-      integer(4), intent(in   ) :: noq                 !< Number of exchanges
-      integer(4), intent(in   ) :: ipnt  (4,noq)       !< From-to pointer table
-      integer(4), intent(in   ) :: idt                 !< Time step size
-      integer(4), intent(in   ) :: iknmkv(noseg)       !< Dry indicator 1 is wet
-      real   (4), intent(in   ) :: volume(noseg)       !< Volume at start of time step
-      real   (4), intent(in   ) :: flow  (noq  )       !< Flows accross the noq links
-      real   (4), intent(in   ) :: voll  (noseg)       !< New volume from file
-      real   (4), intent(  out) :: vol2  (noseg)       !< Volume at end of time step
+      integer(kind=int_wp), intent(in   )  ::noseg               !< Number of computational volumes
+      integer(kind=int_wp), intent(in   )  ::noq                 !< Number of exchanges
+      integer(kind=int_wp), intent(in   )  ::ipnt  (4,noq)       !< From-to pointer table
+      integer(kind=int_wp), intent(in   )  ::idt                 !< Time step size
+      integer(kind=int_wp), intent(in   )  ::iknmkv(noseg)       !< Dry indicator 1 is wet
+      real(kind=real_wp), intent(in   )  ::volume(noseg)       !< Volume at start of time step
+      real(kind=real_wp), intent(in   )  ::flow  (noq  )       !< Flows accross the noq links
+      real(kind=real_wp), intent(in   )  ::voll  (noseg)       !< New volume from file
+      real(kind=real_wp), intent(  out)  ::vol2  (noseg)       !< Volume at end of time step
 
 !     Locals
 
-      integer(4)  iq       ! loop counter for the flows
-      integer(4)  ifrom    ! cell number where the flux leaves
-      integer(4)  ito      ! cell number where the flux arrives
-      real   (4)  flux     ! flux to be applied
+      integer(kind=int_wp) ::iq       ! loop counter for the flows
+      integer(kind=int_wp) ::ifrom    ! cell number where the flux leaves
+      integer(kind=int_wp) ::ito      ! cell number where the flux arrives
+      real(kind=real_wp) ::flux     ! flux to be applied
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqf8", ithandl )
 
       vol2 = volume               !     Initialize the new volume

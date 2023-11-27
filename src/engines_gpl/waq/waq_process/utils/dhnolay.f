@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhnolay
+      use m_waq_precision
+
 
       implicit none
 
@@ -48,7 +50,7 @@
 !     declarations
 !
       use m_sysn          ! System characteristics
-      integer       pnolay
+      integer(kind=int_wp) ::pnolay
 !
 !     common  /  sysn   /   system characteristics
 !

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_gkwini
+      use m_waq_precision
       use m_zoek
 
       implicit none
@@ -31,14 +32,14 @@
       subroutine gkwini ( lu , group , keywrd , value )
 !
       use timers
-      integer       lu
+      integer(kind=int_wp) ::lu
       character*(*) group, keywrd, value
 
       logical       gropen, grclos
       character*256 lline , groupl, keywrl, valuel
-      integer       lgrpin, lkeyin, lvalin,
+      integer(kind=int_wp) ::lgrpin, lkeyin, lvalin,
      j              il    , ierr  , lcomp , index
-      integer(4) ithndl /0/
+      integer(kind=int_wp) ::ithndl = 0
       if ( timon ) call timstrt( "gkwini", ithndl )
 
       rewind (lu)
@@ -135,10 +136,10 @@
       CHARACTER*(*) TOKEN
       CHARACTER*1   CL,CT
       CHARACTER*10  CFORMA
-      INTEGER IN,IL,IERR
-      INTEGER I1,I2
+      INTEGER(kind=int_wp) ::IN,IL,IERR
+      INTEGER(kind=int_wp) ::I1,I2
 
-      integer(4) ithndl /0/
+      integer(kind=int_wp) ::ithndl = 0
       if ( timon ) call timstrt( "gettko", ithndl )
 
       TOKEN = ' '
@@ -207,16 +208,16 @@
 
       SUBROUTINE CHARFO ( CFORMA , IL )
       CHARACTER*(*) CFORMA
-      INTEGER IL
+      INTEGER(kind=int_wp) ::IL
       CFORMA = ' '
       WRITE ( CFORMA , '(''(A'',I3.3,'')'')' ) IL
       RETURN
       END
       subroutine gi_ini ( lu , group , keywrd , ivalue , found)
-      integer       lu
+      integer(kind=int_wp) ::lu
       character*(*) group, keywrd
       logical, optional :: found
-      integer       ivalue, ierr
+      integer(kind=int_wp) ::ivalue, ierr
 
       ! local decalarations
 
@@ -237,10 +238,10 @@
       return
       end
       subroutine gr_ini ( lu , group , keywrd , rvalue, found )
-      integer       lu , ierr
+      integer(kind=int_wp) ::lu , ierr
       character*(*) group, keywrd
       logical, optional :: found
-      real          rvalue
+      real(kind=real_wp) ::rvalue
 
       ! local decalarations
 
@@ -261,7 +262,7 @@
       return
       end
       subroutine gl_ini ( lu , group , keywrd , lvalue, found )
-      integer       lu
+      integer(kind=int_wp) ::lu
       character*(*) group, keywrd
       logical, optional :: found
       logical       lvalue
@@ -269,7 +270,7 @@
       ! local decalarations
 
       character*256 value
-      integer       ifound
+      integer(kind=int_wp) ::ifound
 
       call gkwini ( lu , group , keywrd , value )
 

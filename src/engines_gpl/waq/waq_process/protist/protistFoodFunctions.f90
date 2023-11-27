@@ -31,6 +31,7 @@
 
 module protist_food_functions
 
+    use m_waq_precision
     use protist_types
     use protist_cell_functions
     use protist_constants
@@ -40,8 +41,8 @@ module protist_food_functions
     !! FOOD QUANTITY -------------------------------------------------------------------------------
     subroutine protistFoodQuantity(prot_array, r, wTurb, Ccell, optCR, mot, sumCP, ingNC, ingPC)
         type(protist_array), intent(inout)  :: prot_array
-        real, intent(in)                    :: r, wTurb, Ccell, optCR, mot
-        real, intent(out)                   :: sumCP, ingNC, ingPC
+        real(kind=real_wp), intent(in) :: r, wTurb, Ccell, optCR, mot
+        real(kind=real_wp), intent(out) :: sumCP, ingNC, ingPC
 
         ! encounter Rate
         ! Units: prey predator-1 d-1
@@ -77,8 +78,8 @@ module protist_food_functions
 
     !! FOOD QUALITY -------------------------------------------------------------------------------
     subroutine protistFoodQuality(ingNC, ingPC, NCopt, PCopt, kAE, AEm, AEo, ppNC, ppPC, stoichP, opAE)
-        real, intent(in)                     :: ingNC, ingPC, NCopt, PCopt, kAE, AEm, AEo
-        real, intent(out)                    :: ppNC, ppPC, stoichP, opAE
+        real(kind=real_wp), intent(in) :: ingNC, ingPC, NCopt, PCopt, kAE, AEm, AEo
+        real(kind=real_wp), intent(out) :: ppNC, ppPC, stoichP, opAE
 
         ! quota of captured prey in relation to predator
         ! Units: (-)
@@ -97,8 +98,8 @@ module protist_food_functions
 
     ! INGESTION  -------------------------------------------------------------------------------
     subroutine protistIngestion(maxIng, sumCP, ingNC, ingPC, KI, ingSat, ingC, ingN, ingP)
-        real, intent(in)                     :: maxIng, sumCP, ingNC, ingPC
-        real, intent(out)                    :: KI, ingSat, ingC, ingN, ingP
+        real(kind=real_wp), intent(in) :: maxIng, sumCP, ingNC, ingPC
+        real(kind=real_wp), intent(out) :: KI, ingSat, ingC, ingN, ingP
 
         ! half saturation constant for satiation feedback (see paper by Flynn and Mitra 2016)
         ! Units: gC gC-1 d-1
@@ -121,8 +122,8 @@ module protist_food_functions
 
     ! MORTALITY -------------------------------------------------------------------------------
     subroutine protistMortality(protC, MrtRT, Q10, Temp, RT, FrAut, FrDet, mrt, mrtFrAut,mrtFrDet)
-        real, intent(in)                     :: protC, MrtRT, Q10, Temp, RT, FrAut, FrDet
-        real, intent(out)                    :: mrt, mrtFrAut, mrtFrDet
+        real(kind=real_wp), intent(in) :: protC, MrtRT, Q10, Temp, RT, FrAut, FrDet
+        real(kind=real_wp), intent(out) :: mrt, mrtFrAut, mrtFrDet
 
         ! Calculate mortality  ---------------------------------------
         ! Units: gC gC-1 d-1

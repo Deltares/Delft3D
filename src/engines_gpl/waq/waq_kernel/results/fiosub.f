@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fiosub
+      use m_waq_precision
+
 
       implicit none
 
@@ -84,11 +86,11 @@
 !
 !     Declaration of arguments
 !
-      integer    nrvar , nocons, nopa  , nofun , nosfun,
+      integer(kind=int_wp) ::nrvar , nocons, nopa  , nofun , nosfun,
      +           notot , idt   , itime , noseg , nosys ,
      +           ndmpar, noloc , nodef , ncout , ntdmpq
-      integer    iopoin(*)      , ipdmp(*)
-      real       outval(*)      , conc(notot,*),
+      integer(kind=int_wp) ::iopoin(*)      , ipdmp(*)
+      real(kind=real_wp) ::outval(*)      , conc(notot,*),
      +           segfun(noseg,nosfun), func(*) ,
      +           param (nopa ,noseg ), cons(*) ,
      +           volume(*)      , bound(*)     ,
@@ -99,17 +101,17 @@
 !
 !     Local
 !
-      real, parameter    :: rmiss = -999.
-      integer, parameter :: nopred= 6     
-      integer     iopa  , iofunc, iosfun, ioconc, ioloc ,
+      real(kind=real_wp), parameter     ::rmiss = -999.
+      integer(kind=int_wp), parameter  ::nopred= 6
+      integer(kind=int_wp) ::iopa  , iofunc, iosfun, ioconc, ioloc ,
      +            iodef , ip    , ip1   , ip2   , itel2 ,
      +            isys  , ivar  , idump , isc   , iseg  ,
      +            nsc   , iofdmp, iocons, iip   , iidump,
      +            indx 
-      integer  :: ifun   ! index in function arrays
-      real        hlpvar, hlpcum, valcum, valvar, srf, cumsrf
+      integer(kind=int_wp) ::ifun   ! index in function arrays
+      real(kind=real_wp) ::hlpvar, hlpcum, valcum, valvar, srf, cumsrf
       logical     parm
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "fiosub", ithandl )
 !
 !     Pointer offsets

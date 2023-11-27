@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_proint
+      use m_waq_precision
+
 
       implicit none
 
@@ -51,23 +53,23 @@
 
 !     kind           function         name                    description
 
-      integer  ( 4), intent(in   ) :: noflux                !< Number of fluxes
-      integer  ( 4), intent(in   ) :: ndmpar                !< Number of dump areas
-      integer  ( 4), intent(in   ) :: idt                   !< Time step system clock units
-      integer  ( 4), intent(in   ) :: iturat                !< System clock/proces clock ratio
-      real     ( 4), intent(in   ) :: flxdmp(noflux,*)      !< Fluxes at dump segments
-      real     ( 4), intent(inout) :: flxint(noflux,ndmpar) !< Integrated fluxes at dump segments
-      integer  ( 4), intent(in   ) :: isdmp ( * )           !< Segment to dumped segment pointer
-      integer  ( 4), intent(in   ) :: ipdmp ( * )           !< Pointer structure dump area's
-      integer  ( 4), intent(in   ) :: ntdmpq                !< Total number exchanges in dump area
+      integer(kind=int_wp), intent(in   )  ::noflux                !< Number of fluxes
+      integer(kind=int_wp), intent(in   )  ::ndmpar                !< Number of dump areas
+      integer(kind=int_wp), intent(in   )  ::idt                   !< Time step system clock units
+      integer(kind=int_wp), intent(in   )  ::iturat                !< System clock/proces clock ratio
+      real(kind=real_wp), intent(in   )  ::flxdmp(noflux,*)      !< Fluxes at dump segments
+      real(kind=real_wp), intent(inout)  ::flxint(noflux,ndmpar) !< Integrated fluxes at dump segments
+      integer(kind=int_wp), intent(in   )  ::isdmp ( * )           !< Segment to dumped segment pointer
+      integer(kind=int_wp), intent(in   )  ::ipdmp ( * )           !< Pointer structure dump area's
+      integer(kind=int_wp), intent(in   )  ::ntdmpq                !< Total number exchanges in dump area
 
 !     Local declaration
 
-      integer       itel2 , idump , nsc   , isc   , iseg  ,
+      integer(kind=int_wp) ::itel2 , idump , nsc   , isc   , iseg  ,
      &              ips   , iflx  , ip1
-      real          fscale
+      real(kind=real_wp) ::fscale
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "proint", ithandl )
 
 !     Loop over the dump area's

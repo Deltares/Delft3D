@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_add_prcfrc
+      use m_waq_precision
+
 
       implicit none
 
@@ -41,45 +43,45 @@
 
       ! declaration of arguments
 
-      integer                   :: lunrep          ! report file
+      integer(kind=int_wp) ::lunrep          ! report file
       type(procespropcoll)      :: procesdef       ! the process definition
       type(itempropcoll)        :: allitems        ! all items of the proces system
       type(sfracsprop)          :: sfracs          ! substance fraction properties
-      integer                   :: no_act          ! number of active processes
+      integer(kind=int_wp) ::no_act          ! number of active processes
       character(len=*)          :: actlst(*)       ! active processes names
-      integer                   :: nbpr            ! number of processes
+      integer(kind=int_wp) ::nbpr            ! number of processes
 
       ! local declarations
 
       type(procesprop), pointer :: proc            ! single process
       type(procesprop)          :: procn           ! process to be added
       type(itemprop)            :: item            ! one item
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! loop counter processes
-      integer                   :: iproc_new       ! index inserted process
-      integer                   :: isfrac          ! index substance fractions
-      integer                   :: isfrac_2        ! index substance fractions
-      integer                   :: nfrac           ! number fractions in substance fraction
-      integer                   :: nlink           ! number of linked substance fractions
-      integer                   :: ilink           ! index of linked substance fractions
-      integer                   :: linklst(sfracs%nsfrac) ! index linked substance fractions
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! loop counter processes
+      integer(kind=int_wp) ::iproc_new       ! index inserted process
+      integer(kind=int_wp) ::isfrac          ! index substance fractions
+      integer(kind=int_wp) ::isfrac_2        ! index substance fractions
+      integer(kind=int_wp) ::nfrac           ! number fractions in substance fraction
+      integer(kind=int_wp) ::nlink           ! number of linked substance fractions
+      integer(kind=int_wp) ::ilink           ! index of linked substance fractions
+      integer(kind=int_wp) ::linklst(sfracs%nsfrac) ! index linked substance fractions
       character(len=20)         :: basnam          ! base name substance fractions
       character(len=20)         :: fracnam         ! name of substance fraction
       character(len=20)         :: lnknam          ! base name of linked substance fractions
-      integer                   :: i_input         ! index input item
-      integer                   :: i_output        ! index output item
-      integer                   :: i_flux          ! index flux item
-      integer                   :: i_star          ! index of * in name
-      integer                   :: nzoek           ! nzoek
-      integer                   :: istochi         ! index stochi
-      integer                   :: istochi2        ! index stochi
-      integer                   :: indx            ! index in list
-      integer                   :: iret            ! index in collection
-      integer                   :: ifrac           ! fraction number
+      integer(kind=int_wp) ::i_input         ! index input item
+      integer(kind=int_wp) ::i_output        ! index output item
+      integer(kind=int_wp) ::i_flux          ! index flux item
+      integer(kind=int_wp) ::i_star          ! index of * in name
+      integer(kind=int_wp) ::nzoek           ! nzoek
+      integer(kind=int_wp) ::istochi         ! index stochi
+      integer(kind=int_wp) ::istochi2        ! index stochi
+      integer(kind=int_wp) ::indx            ! index in list
+      integer(kind=int_wp) ::iret            ! index in collection
+      integer(kind=int_wp) ::ifrac           ! fraction number
       character(len=3)          :: suffix          ! suffix
-      integer                   :: ierr_alloc      ! error indication
+      integer(kind=int_wp) ::ierr_alloc      ! error indication
       logical                   :: l_copied        ! if process is copied
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "add_prcfrc", ithndl )
 
       ! loop over the processes

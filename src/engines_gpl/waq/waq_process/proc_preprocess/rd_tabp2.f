@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rd_tabp2
+      use m_waq_precision
+
 
       implicit none
 
@@ -75,13 +77,13 @@
 !
 !     declaration of arguments
 !
-      INTEGER       NO_ITEM_MAX , NO_ITEM     ,
+      INTEGER(kind=int_wp) ::NO_ITEM_MAX , NO_ITEM     ,
      +              LUNREP      , IERROR
-      INTEGER       DEFFDS
+      INTEGER(kind=int_wp) ::DEFFDS
       CHARACTER*10  ITEM_ID     (NO_ITEM_MAX)
       CHARACTER*50  ITEM_NAME   (NO_ITEM_MAX)
       CHARACTER*20  ITEM_UNIT   (NO_ITEM_MAX)
-      REAL          ITEM_DEFAULT(NO_ITEM_MAX)
+      REAL(kind=real_wp) ::ITEM_DEFAULT(NO_ITEM_MAX)
       CHARACTER*10  ITEM_AGGREGA(NO_ITEM_MAX)
       CHARACTER*10  ITEM_DISAGGR(NO_ITEM_MAX)
       CHARACTER*30  ITEM_GROUPID(NO_ITEM_MAX)
@@ -99,12 +101,12 @@
 !     ELMDMS  INTEGER  6,NELEMS   LOCAL   dimension of elements
 !     NBYTSG  INTEGER  NELEMS     LOCAL   length of elements (bytes)
 !
-      INTEGER       NELEMS, INQNELEMS
+      INTEGER(kind=int_wp) ::NELEMS, INQNELEMS
       PARAMETER   ( NELEMS = 12 )
 !
-      INTEGER       I               , IELM          ,
+      INTEGER(kind=int_wp) ::I               , IELM          ,
      +              BUFLEN
-      INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS),
+      INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS),
      +              UINDEX(3)
       CHARACTER*16  GRPNAM
       CHARACTER*16  ELMNMS(NELEMS)  , INQELMNMS(NELEMS),  ELMTPS(NELEMS)
@@ -113,7 +115,7 @@
 !
 !     External NEFIS Functions
 !
-      INTEGER   INQCEL
+      INTEGER(kind=int_wp) ::INQCEL
      +         ,GETELS
      +         ,GETELT
       EXTERNAL  GETELS

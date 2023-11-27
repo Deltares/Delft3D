@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_get_sfrac
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,23 +41,23 @@
 
       ! declaration of arguments
 
-      integer                      :: lunrep          !< report file
-      integer                      :: notot           !< number of substances
+      integer(kind=int_wp) ::lunrep          !< report file
+      integer(kind=int_wp) ::notot           !< number of substances
       character(len=20)            :: syname(notot)   !< substance name
-      integer  ( 4), intent(in   ) :: nomult          !< number of multiple substances
-      integer  ( 4), intent(in   ) :: imultp(2,nomult)!< multiple substance administration
+      integer(kind=int_wp), intent(in   )  ::nomult          !< number of multiple substances
+      integer(kind=int_wp), intent(in   )  ::imultp(2,nomult)!< multiple substance administration
       type(sfracsprop)             :: sfracs          !< substance fraction properties
 
       ! local decalarations
 
-      integer                   :: isys            ! loop counter substances
-      integer                   :: isys2           ! loop counter substances
-      integer                   :: ilen            ! length substance name
-      integer                   :: ifound          ! ifound
-      integer                   :: isfrac          ! substance fraction number
-      integer                   :: isfrac2         ! substance fraction number
-      integer                   :: io_error        ! read error indication
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::isys            ! loop counter substances
+      integer(kind=int_wp) ::isys2           ! loop counter substances
+      integer(kind=int_wp) ::ilen            ! length substance name
+      integer(kind=int_wp) ::ifound          ! ifound
+      integer(kind=int_wp) ::isfrac          ! substance fraction number
+      integer(kind=int_wp) ::isfrac2         ! substance fraction number
+      integer(kind=int_wp) ::io_error        ! read error indication
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "get_sfrac", ithndl )
 
       ! allocate sfracs

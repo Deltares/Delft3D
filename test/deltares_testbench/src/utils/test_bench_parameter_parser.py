@@ -48,6 +48,9 @@ class TestBenchParameterParser:
 
         credentials = cls.__get_credentials(args)
 
+        # Additionally, extra TeamCity messages will be produced.
+        server_base_url = cls.__get_argument_value("server_base_url", args) or ""
+
         # Parse the xml file.
         xml_config_parser = XmlConfigParser()
 
@@ -56,7 +59,9 @@ class TestBenchParameterParser:
             new_settings.local_paths,
             new_settings.programs,
             new_settings.configs,
-        ) = xml_config_parser.load(config_file, args.__dict__["or_paths"], credentials)
+        ) = xml_config_parser.load(
+            config_file, args.__dict__["or_paths"], credentials, server_base_url
+        )
 
         new_settings.config_file = config_file
 
@@ -314,15 +319,22 @@ class TestBenchParameterParser:
             dest="teamcity",
         )
         parser.add_argument(
+            "--server-base-url",
+            help="e.g. SVN, S3, Git LFS",
+            default="https://repos.deltares.nl/repos/DSCTestbench/trunk",
+            required=False,
+            dest="server_base_url",
+        )
+        parser.add_argument(
             "--username",
-            help="Subversion username.",
+            help="Server username (e.g. git, SVN, MinIO).",
             default=None,
             # required=True,
             dest="username",
         )
         parser.add_argument(
             "--password",
-            help="Subversion password.",
+            help="Server password (e.g. git, SVN, MinIO).",
             default=None,
             # required=True,
             dest="password",

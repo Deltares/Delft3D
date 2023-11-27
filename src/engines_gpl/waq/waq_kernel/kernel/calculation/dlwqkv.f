@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqkv
+      use m_waq_precision
+
 
       implicit none
 
@@ -58,9 +60,9 @@
 !
       use m_srstop
       use timers
-      INTEGER       LUNIN , LUNOUT, ITIME , NTOTAL, ISFLAG,
+      INTEGER(kind=int_wp) ::LUNIN , LUNOUT, ITIME , NTOTAL, ISFLAG,
      +              IFFLAG
-      INTEGER       IARRAY(NTOTAL)
+      INTEGER(kind=int_wp) ::IARRAY(NTOTAL)
       CHARACTER*(*) LUNTXT
 !
 !     Local
@@ -70,9 +72,9 @@
       CHARACTER*10  MSGTXT(3)
       DATA          MSGTXT /' REWIND   ' , ' CONSTANT ' , ' ERROR    '/
 
-      integer   messge, itime1, ierr
+      integer(kind=int_wp) ::messge, itime1, ierr
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqkv", ithandl )
 !
 !         is this the first time?

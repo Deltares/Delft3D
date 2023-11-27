@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dectra
+      use m_waq_precision
+
 
       implicit none
 
@@ -45,12 +47,12 @@
 
       implicit none
 
-      real     pmsa  ( * ) , fl    (*)
-      integer  ipoint( 2 ) , increm(2) , noseg , noflux,
+      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint( 2 ) , increm(2) , noseg , noflux,
      +         iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 
-      integer  ipnt(2), iflux, iseg
-      real     conctr, decayr, fdecay
+      integer(kind=int_wp) ::ipnt(2), iflux, iseg
+      real(kind=real_wp) ::conctr, decayr, fdecay
 
       ipnt = ipoint
       iflux = 0

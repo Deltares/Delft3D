@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhkmst
+      use m_waq_precision
+
 
       implicit none
 
@@ -47,14 +49,14 @@
 
 !     kind           function         name           description
 
-      integer  ( 4), intent(in   ) :: iknmrk       !< Index of the feature to be set
-      integer  ( 4), intent(inout) :: kenmrk       !< Feature value to be modified
-      integer  ( 4), intent(in   ) :: knmrki       !< Value to update the feature with
+      integer(kind=int_wp), intent(in   )  ::iknmrk       !< Index of the feature to be set
+      integer(kind=int_wp), intent(inout)  ::kenmrk       !< Feature value to be modified
+      integer(kind=int_wp), intent(in   )  ::knmrki       !< Value to update the feature with
 
 !     Local               :
 
-      integer  ( 4)  ikhlp           ! to store lower order part
-      integer  ( 4)  ipower          ! to store higher powers of 10
+      integer(kind=int_wp) ::ikhlp           ! to store lower order part
+      integer(kind=int_wp) ::ipower          ! to store higher powers of 10
 
       if     ( iknmrk .eq. 1 ) then
          kenmrk = (kenmrk/  10)*  10 + knmrki

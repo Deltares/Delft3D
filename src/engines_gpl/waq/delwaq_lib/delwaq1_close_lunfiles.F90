@@ -22,34 +22,27 @@
 !!  rights reserved.
 module m_delwaq1_close_lunfiles
 
-implicit none
+   implicit none
 
 contains
 
+   subroutine delwaq1_close_lunfiles()
+      use m_delwaq1_data
 
+      implicit none
 
-!>\file
-!>                    delwaq1_close_lunfiles
+      ! Close all open LUN files
+      do i = 1, nlun
+         inquire (unit=lun(i), opened=unitop)
+         if (unitop) then
+            close (unit=lun(i))
+         end if
+      end do
 
-subroutine delwaq1_close_lunfiles()
-    use m_delwaq1_data
-      
-    implicit none
-    
-    !
-    ! Close all open LUN files
-    !
-    do i = 1, nlun
-        inquire (unit=lun(i), opened=unitop)
-        if (unitop) then
-            close (unit = lun(i))
-        endif
-    end do
+      if (timon) then
+         call timstop(ithndl)
+         call timdump(TRIM(RUNID)//'-delwaq1-timers.out')
+      end if
 
-    if ( timon ) then
-      call timstop ( ithndl )
-      call timdump ( TRIM(RUNID)//'-delwaq1-timers.out' )
-    endif
-
-end subroutine delwaq1_close_lunfiles
+   end subroutine delwaq1_close_lunfiles
 end module m_delwaq1_close_lunfiles

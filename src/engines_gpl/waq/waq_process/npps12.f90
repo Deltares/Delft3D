@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_npps12
+use m_waq_precision
+
 
 implicit none
 
@@ -39,49 +41,49 @@ contains
 !
 !     type    name         i/o description
 !
-      real(4) pmsa(*)     !i/o process manager system array, window of routine to process library
-      real(4) fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-      integer ipoint( 15) ! i  array of pointers in pmsa to get and store the data
-      integer increm( 15) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! i  number of computational elements in the whole model schematisation
-      integer noflux      ! i  number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-      integer noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 15)   !    local work array for the pointering
-      integer iseg        !    local loop counter for computational element loop
+      real(kind=real_wp)  ::pmsa(*)     !i/o process manager system array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! o  array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 15) ! i  array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 15) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! i  number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! i  number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 15)   !    local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !
 !     type    name         i/o description                                        unit
 !
-      real(4) nh4         ! i  depth of segment                                   (g/m3)
-      real(4) po4         ! i  total depth water column                           (g/m3)
-      real(4) dmn1s1      ! i  first mineralisation flux N in layer 1             (g/m3/d)
-      real(4) dmn2s1      ! i  secnd mineralisation flux N in layer 1             (g/m3/d)
-      real(4) dmn1s2      ! i  first mineralisation flux N in layer 2             (g/m3/d)
-      real(4) dmn2s2      ! i  secnd mineralisation flux N in layer 2             (g/m3/d)
-      real(4) dmp1s1      ! i  first mineralisation flux P in layer 1             (g/m3/d)
-      real(4) dmp2s1      ! i  secnd mineralisation flux P in layer 1             (g/m3/d)
-      real(4) dmp1s2      ! i  first mineralisation flux P in layer 2             (g/m3/d)
-      real(4) dmp2s2      ! i  secnd mineralisation flux P in layer 2             (g/m3/d)
-      real(4) dlen        ! i  diffusion length                                   (m)
-      real(4) dcoef       ! i  diffusion coefficient                              (m2/d)
-      real(4) depth       ! i  depth                                              (m)
+      real(kind=real_wp)  ::nh4         ! i  depth of segment                                   (g/m3)
+      real(kind=real_wp)  ::po4         ! i  total depth water column                           (g/m3)
+      real(kind=real_wp)  ::dmn1s1      ! i  first mineralisation flux N in layer 1             (g/m3/d)
+      real(kind=real_wp)  ::dmn2s1      ! i  secnd mineralisation flux N in layer 1             (g/m3/d)
+      real(kind=real_wp)  ::dmn1s2      ! i  first mineralisation flux N in layer 2             (g/m3/d)
+      real(kind=real_wp)  ::dmn2s2      ! i  secnd mineralisation flux N in layer 2             (g/m3/d)
+      real(kind=real_wp)  ::dmp1s1      ! i  first mineralisation flux P in layer 1             (g/m3/d)
+      real(kind=real_wp)  ::dmp2s1      ! i  secnd mineralisation flux P in layer 1             (g/m3/d)
+      real(kind=real_wp)  ::dmp1s2      ! i  first mineralisation flux P in layer 2             (g/m3/d)
+      real(kind=real_wp)  ::dmp2s2      ! i  secnd mineralisation flux P in layer 2             (g/m3/d)
+      real(kind=real_wp)  ::dlen        ! i  diffusion length                                   (m)
+      real(kind=real_wp)  ::dcoef       ! i  diffusion coefficient                              (m2/d)
+      real(kind=real_wp)  ::depth       ! i  depth                                              (m)
 
-      real(4) nh4s12      ! o  estimated NH4 in pore water                        (m)
-      real(4) po4s12      ! o  estimated PO4 in pore water                        (m)
+      real(kind=real_wp)  ::nh4s12      ! o  estimated NH4 in pore water                        (m)
+      real(kind=real_wp)  ::po4s12      ! o  estimated PO4 in pore water                        (m)
 
       ! local
 
-      integer ikmrk1      !    first attribute
-      integer ikmrk2      !    second attribute
-      real(4) nflux       !    total flux
-      real(4) pflux       !    total flux
+      integer(kind=int_wp)  ::ikmrk1      !    first attribute
+      integer(kind=int_wp)  ::ikmrk2      !    second attribute
+      real(kind=real_wp)  ::nflux       !    total flux
+      real(kind=real_wp)  ::pflux       !    total flux
 
       ipnt        = ipoint
 

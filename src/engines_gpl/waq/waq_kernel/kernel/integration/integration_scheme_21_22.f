@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_21_22
+      use m_waq_precision
       use m_zlayer
       use m_zercum
       use m_sgmres
@@ -135,9 +136,9 @@
 !     Declaration of arguments
 
       type(waq_data_buffer), target :: buffer      !< System total array space
-      integer                     :: lun   (*)  !< file unit numbers
+      integer(kind=int_wp) ::lun   (*)  !< file unit numbers
       character(*)                :: lchar (*)  !< file names
-      integer                     :: action     !< handle to stepwise call
+      integer(kind=int_wp) ::action     !< handle to stepwise call
       type(delwaq_data), target   :: dlwqd      !< data structure stepwize call
       type(GridPointerColl)       :: GridPs     !< collection of all grid definitions
 
@@ -145,30 +146,30 @@
 
 ! local declarations
 
-      real            rdummy(1)
+      real(kind=real_wp) ::rdummy(1)
       logical         imflag , idflag , ihflag
       logical         update , lrewin
       logical         timon_old
-      integer         laatst
+      integer(kind=int_wp) ::laatst
 
       logical         antidiffusion
-      INTEGER         sindex
+      INTEGER(kind=int_wp) ::sindex
 
-      integer, save :: ithand1 = 0 ! Leave local
+      integer(kind=int_wp), save  ::ithand1 = 0 ! Leave local
 
-      integer         isys
-      integer         nstep
+      integer(kind=int_wp) ::isys
+      integer(kind=int_wp) ::nstep
 
-      integer         noth
-      integer         ith
+      integer(kind=int_wp) ::noth
+      integer(kind=int_wp) ::ith
 
-      integer         ibnd
+      integer(kind=int_wp) ::ibnd
 
 !       Variables specific to this method: leave them SAVEd
 
-      integer, save          :: ioptpc
-      integer, save          :: iter
-      integer, save          :: iscale
+      integer(kind=int_wp), save           ::ioptpc
+      integer(kind=int_wp), save           ::iter
+      integer(kind=int_wp), save           ::iscale
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       module dhmmja_mod
+      use m_waq_precision
       use m_srstop
 
       contains
@@ -67,20 +68,20 @@
 
 !     kind     function         name        description
 
-      integer      , intent(in   ) :: lunrep    ! logical unitnumber output file
+      integer(kind=int_wp), intent(in   )  ::lunrep    ! logical unitnumber output file
       logical      , intent(in   ) :: l_decl    ! Declare memory y/n
-      integer      , intent(inout) :: arrpoi(:) ! Pointer in workarray/FMM reference pointer
-      integer      , intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
-      integer      , intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
-      integer      , intent(inout) :: arrlen(:) ! Length off array
-      integer      , intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
-      integer      , intent(inout) :: arrdm1(:) ! dimension 1
-      integer      , intent(inout) :: arrdm2(:) ! dimension 2
-      integer      , intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
+      integer(kind=int_wp), intent(inout)  ::arrpoi(:) ! Pointer in workarray/FMM reference pointer
+      integer(kind=int_wp), intent(inout)  ::arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
+      integer(kind=int_wp), intent(inout)  ::arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
+      integer(kind=int_wp), intent(inout)  ::arrlen(:) ! Length off array
+      integer(kind=int_wp), intent(inout)  ::arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+      integer(kind=int_wp), intent(inout)  ::arrdm1(:) ! dimension 1
+      integer(kind=int_wp), intent(inout)  ::arrdm2(:) ! dimension 2
+      integer(kind=int_wp), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
       type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
 
-      integer      , intent(inout) :: itoti     ! Required array space
+      integer(kind=int_wp), intent(inout)  ::itoti     ! Required array space
 
 
 !     Local declarations
@@ -92,11 +93,11 @@
       logical         f_solv                            ! if .true. then GMRES Krilov solver
       logical         balans                            ! if .true. then balances to be computed
       character*20    namarr                            ! help variable for array name
-      integer         noth                              ! number of available thread for parallel processing
-      integer         ierr                              ! error indicator
-      integer         jstart                            ! lower limit Flow arrays method 19 and 20
-      integer         nmmaxj                            ! upper limit Flow arrays method 19 and 20
-      integer         nr_jar_new                        ! counter for newly allocated arrays
+      integer(kind=int_wp) ::noth                              ! number of available thread for parallel processing
+      integer(kind=int_wp) ::ierr                              ! error indicator
+      integer(kind=int_wp) ::jstart                            ! lower limit Flow arrays method 19 and 20
+      integer(kind=int_wp) ::nmmaxj                            ! upper limit Flow arrays method 19 and 20
+      integer(kind=int_wp) ::nr_jar_new                        ! counter for newly allocated arrays
 !
       IIAPOI = IASIZE +  1
       IIATYP = IASIZE +  2

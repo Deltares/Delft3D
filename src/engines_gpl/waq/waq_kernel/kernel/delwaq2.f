@@ -26,6 +26,7 @@
 !       A, J and C are now pointers to arrays
 !
       MODULE DELWAQ2
+      use m_waq_precision
       use m_integration_scheme_25
       use m_integration_scheme_24
       use m_integration_scheme_23
@@ -115,10 +116,10 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target             :: buffer
-      INTEGER       IMAXA , IMAXI , IMAXC
+      INTEGER(kind=int_wp) ::IMAXA , IMAXI , IMAXC
       LOGICAL                                 :: INIT
       LOGICAL                                 :: exists
-      INTEGER                                 :: ACTION
+      INTEGER(kind=int_wp) ::ACTION
       TYPE(DELWAQ_DATA), TARGET               :: DLWQD
       type(GridPointerColl), pointer, save    :: GridPs               ! collection of all grid definitions
 
@@ -136,38 +137,38 @@
 !
 !     Local declarations
 !
-      INTEGER            ::   LUNIN
-      INTEGER, PARAMETER ::   IPAGE  =    64
-      INTEGER, PARAMETER ::   NLUN   =    50
-      INTEGER, PARAMETER ::   LCHMAX =   255
+      INTEGER(kind=int_wp) ::LUNIN
+      INTEGER(kind=int_wp), PARAMETER  ::IPAGE  =    64
+      INTEGER(kind=int_wp), PARAMETER  ::NLUN   =    50
+      INTEGER(kind=int_wp), PARAMETER  ::LCHMAX =   255
 !
 !           input structure for boot-file
 !
 !
-      INTEGER, SAVE            :: LUN(NLUN)
+      INTEGER(kind=int_wp), SAVE             ::LUN(NLUN)
       CHARACTER*(LCHMAX), SAVE :: LCHAR(NLUN)
-      integer, save            :: filtype(nlun)
+      integer(kind=int_wp), save             ::filtype(nlun)
       CHARACTER*(LCHMAX), SAVE :: RUNID
       LOGICAL, SAVE            :: INIT2        = .TRUE. ! To suppress the start-up screen
 
       logical                  :: lfound
-      integer                  :: idummy, ierr2
-      real                     :: rdummy
+      integer(kind=int_wp) ::idummy, ierr2
+      real(kind=real_wp) ::rdummy
       CHARACTER                :: cdummy
       CHARACTER*2              :: C2
 !
-      integer(4), save         :: ithndl = 0
+      integer(kind=int_wp), save          ::ithndl = 0
 !
 !     Local variables
 !
-      INTEGER, SAVE            :: INDX
-      INTEGER                  :: IERR
-      INTEGER                  :: IMR
-      INTEGER                  :: IMI
-      INTEGER                  :: IMC
-      INTEGER                  :: ILUN
-      INTEGER                  :: IERRD
-      INTEGER                  :: K
+      INTEGER(kind=int_wp), SAVE             ::INDX
+      INTEGER(kind=int_wp) ::IERR
+      INTEGER(kind=int_wp) ::IMR
+      INTEGER(kind=int_wp) ::IMI
+      INTEGER(kind=int_wp) ::IMC
+      INTEGER(kind=int_wp) ::ILUN
+      INTEGER(kind=int_wp) ::IERRD
+      INTEGER(kind=int_wp) ::K
 
 !
       IF ( INIT ) THEN

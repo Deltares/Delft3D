@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_qslp
+      use m_waq_precision
+
 
       implicit none
 
@@ -37,12 +39,12 @@
 
       implicit none
 
-      real(8)   :: a(1:ia,1:mt),b(*),c(*),d(*),x(*),p(*)
-      real(8)   :: xopt, bpivot, bmin, cpivot, apivot, aipj, cj, aijp, bi, ap, cjpap
-      integer   :: lib(*),ier,lsc(*),iopt(*),irs(*), nqslp
-      integer   :: i, j, k, l, ia, mt, ip, jp, jpneg
-      integer   :: ineg, iter, itflag, ihelp1, ihelp2
-      integer   :: nr, nc, method
+      real(kind=dp) ::a(1:ia,1:mt),b(*),c(*),d(*),x(*),p(*)
+      real(kind=dp) ::xopt, bpivot, bmin, cpivot, apivot, aipj, cj, aijp, bi, ap, cjpap
+      integer(kind=int_wp) ::lib(*),ier,lsc(*),iopt(*),irs(*), nqslp
+      integer(kind=int_wp) ::i, j, k, l, ia, mt, ip, jp, jpneg
+      integer(kind=int_wp) ::ineg, iter, itflag, ihelp1, ihelp2
+      integer(kind=int_wp) ::nr, nc, method
 
       data nqslp /0/
 

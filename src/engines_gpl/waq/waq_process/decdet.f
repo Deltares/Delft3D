@@ -1,4 +1,6 @@
       module m_decdet
+      use m_waq_precision
+
 
       implicit none
 
@@ -124,11 +126,11 @@
       IMPLICIT REAL    (A-H,J-Z)
       IMPLICIT INTEGER (I)
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
-      REAL     POC     , PON     , POP     , POS     , RC20LOC ,
+      REAL(kind=real_wp) ::POC     , PON     , POP     , POS     , RC20LOC ,
      +         RC20UPC , RC20LON , RC20UPN , RC20LOP , RC20UPP ,
      +         RC20C   , RC20N   , RC20P   , RC20S   , TEMP    ,
      +         TC      , TEMPC   , ANR     , APR     , ASR     ,

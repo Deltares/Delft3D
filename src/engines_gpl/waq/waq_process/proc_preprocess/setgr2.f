@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_setgr2
+      use m_waq_precision
+
 
       implicit none
 
@@ -56,15 +58,15 @@
 !
       use timers       !   performance timers
 
-      INTEGER             NOGRID, NOTOTG, IPGRID
-      INTEGER             GRDREF(NOGRID), PROSYS(NOTOTG),
+      INTEGER(kind=int_wp) ::NOGRID, NOTOTG, IPGRID
+      INTEGER(kind=int_wp) ::GRDREF(NOGRID), PROSYS(NOTOTG),
      +                    GRPATH(NOGRID)
 !
 !     Local declarations
 !
-      INTEGER             NPATH , IPATH , IGRID , IGSYS , NCHECK
+      INTEGER(kind=int_wp) ::NPATH , IPATH , IGRID , IGSYS , NCHECK
       
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "setgr2", ithndl )
 !
 !     Check number of substances for this grid

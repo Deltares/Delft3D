@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq52
+      use m_waq_precision
+
 
       implicit none
 
@@ -49,21 +51,21 @@
 
 !     type     kind  function         name                      description
 
-      integer   (4), intent(in   ) :: nosys                   !< number of transported substances
-      integer   (4), intent(in   ) :: notot                   !< total number of substances
-      integer   (4), intent(in   ) :: noseg                   !< number of computational volumes
-      real      (4), intent(inout) :: volume(noseg )          !< volumes of the segments
-      real      (4), intent(inout) :: amass (notot ,noseg)    !< masses per substance per volume
-      real      (4), intent(in   ) :: conc2 (notot ,noseg)    !< concentrations per substance per volume
-      real      (4), intent(  out) :: conc  (notot ,noseg)    !< concentrations per substance per volume
+      integer(kind=int_wp), intent(in   )  ::nosys                   !< number of transported substances
+      integer(kind=int_wp), intent(in   )  ::notot                   !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::noseg                   !< number of computational volumes
+      real(kind=real_wp), intent(inout)  ::volume(noseg )          !< volumes of the segments
+      real(kind=real_wp), intent(inout)  ::amass (notot ,noseg)    !< masses per substance per volume
+      real(kind=real_wp), intent(in   )  ::conc2 (notot ,noseg)    !< concentrations per substance per volume
+      real(kind=real_wp), intent(  out)  ::conc  (notot ,noseg)    !< concentrations per substance per volume
 
 !     local variables
 
-      integer(4)          isys            ! loopcounter substances
-      integer(4)          iseg            ! loopcounter computational volumes
-      real   (4)          vol             ! helpvariable for this volume
-      integer(4), save :: ithandl         ! timer handle
-      data       ithandl /0/
+      integer(kind=int_wp) ::isys            ! loopcounter substances
+      integer(kind=int_wp) ::iseg            ! loopcounter computational volumes
+      real(kind=real_wp) ::vol             ! helpvariable for this volume
+      integer(kind=int_wp), save  ::ithandl         ! timer handle
+      data       ithandl  /0/
       if ( timon ) call timstrt ( "dlwq52", ithandl )
 
 !         loop accross the number of computational elements

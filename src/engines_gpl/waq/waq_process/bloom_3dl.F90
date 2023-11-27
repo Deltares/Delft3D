@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_bloom_3dl
+use m_waq_precision
+
 
 implicit none
 
@@ -43,16 +45,16 @@ contains
 !     SRSTOP, stops execution
 
 !     arguments
-      integer  noseg      ! input, total number of segments
-      integer  nosegw     ! input, number of segments in the water phase
-      integer  nosegl     ! input, number of segments per layer
-      integer  nolay      ! input, number of layers
-      integer  ngro       ! input, number of BLOOM algae groups
-      integer  ntyp       ! input, number of BLOOM algae types
+      integer(kind=int_wp)   ::noseg      ! input, total number of segments
+      integer(kind=int_wp)   ::nosegw     ! input, number of segments in the water phase
+      integer(kind=int_wp)   ::nosegl     ! input, number of segments per layer
+      integer(kind=int_wp)   ::nolay      ! input, number of layers
+      integer(kind=int_wp)   ::ngro       ! input, number of BLOOM algae groups
+      integer(kind=int_wp)   ::ntyp       ! input, number of BLOOM algae types
 
 !     local decalarations
-      integer  ierr_alloc ! error number memory allocation
-      integer  lunrep     ! unit number report file
+      integer(kind=int_wp)   ::ierr_alloc ! error number memory allocation
+      integer(kind=int_wp)   ::lunrep     ! unit number report file
 
       noseg_3dl  = noseg
       nosegl_3dl = nosegl
@@ -88,14 +90,14 @@ contains
       implicit none
 
 !     arguments
-      real*8   effi       ! output, average effieciency
-      integer  itype      ! input , index number of BLOOM algae type
+      real(kind=dp)    ::effi       ! output, average effieciency
+      integer(kind=int_wp)   ::itype      ! input , index number of BLOOM algae type
 
 !     local decalarations
-      integer  ilay       ! layer counter
-      integer  iseg       ! segment number
-      real*8   flay       ! time factor in a specific layer
-      real*8   elay       ! efficiency in a specific layer
+      integer(kind=int_wp)   ::ilay       ! layer counter
+      integer(kind=int_wp)   ::iseg       ! segment number
+      real(kind=dp)    ::flay       ! time factor in a specific layer
+      real(kind=dp)    ::elay       ! efficiency in a specific layer
 
 !     check if active
       if ( .not. active_3dl ) then
@@ -134,20 +136,20 @@ contains
 !     FUNCTION : calculate and store efficiency for this layer
 
 !     arguments
-      real*8   surf       ! input , corrected irradiation
-      real*8   exttot     ! input , total extinction
-      real*8   dep        ! input , depth of the layer
-      integer  igroup     ! input , index number of BLOOM algae group
-      integer  itype      ! input , index number of BLOOM algae type
+      real(kind=dp)    ::surf       ! input , corrected irradiation
+      real(kind=dp)    ::exttot     ! input , total extinction
+      real(kind=dp)    ::dep        ! input , depth of the layer
+      integer(kind=int_wp)   ::igroup     ! input , index number of BLOOM algae group
+      integer(kind=int_wp)   ::itype      ! input , index number of BLOOM algae type
 
 !     local decalarations
-      real*8   phi_s      ! x value tabulated function at surface
-      real*8   fun_s      ! function at surface
-      real*8   der_s      ! derivative at sutface
-      real*8   phi_d      ! x value tabulated function at dep
-      real*8   fun_d      ! function at surface at dep
-      real*8   der_d      ! derivative at sutface at dep
-      real*8   effi       ! calculated efficiency
+      real(kind=dp)    ::phi_s      ! x value tabulated function at surface
+      real(kind=dp)    ::fun_s      ! function at surface
+      real(kind=dp)    ::der_s      ! derivative at sutface
+      real(kind=dp)    ::phi_d      ! x value tabulated function at dep
+      real(kind=dp)    ::fun_d      ! function at surface at dep
+      real(kind=dp)    ::der_d      ! derivative at sutface at dep
+      real(kind=dp)    ::effi       ! calculated efficiency
 
       if ( surf .gt. 1.0 .and. exttot*dep .gt. 1.0d-10) then
          phi_s = - dlog(surf)

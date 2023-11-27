@@ -46,11 +46,11 @@ if [%2] EQU [-d] (
         set argfile=dimr_config.xml
         goto readyreading
     ) else (
-        set argfile=%4
+        set argfile=%~4
         goto readyreading
     )
 ) else (
-    set argfile=%2
+    set argfile=%~2
 )
 if [%3] EQU [-d] (
     set debuglevel=%4
@@ -61,7 +61,7 @@ if [%3] EQU [-d] (
 
     rem Check configfile
 echo Configfile:%argfile%
-if not exist %argfile% (
+if not exist "%argfile%" (
     echo ERROR: configfile "%argfile%" does not exist
     goto usage
 )
@@ -127,8 +127,8 @@ if exist %sharedir%\vars.bat (
     echo "WARNING: File not found: %sharedir%\vars.bat"
     echo "         Problems may occur when using IntelMPI"
 )
-echo executing: "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% %argfile%
-                "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% %argfile%
+echo executing: "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% "%argfile%"
+                "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% "%argfile%"
 
 goto end
 

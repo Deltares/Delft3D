@@ -411,7 +411,7 @@ contains
 70                  continue
 ! also count number of particles
                     amap(nosubs + 1, ilay, iy, ix) = amap(nosubs + 1, ilay, iy, ix) + 1
-
+                    
                   endif
                 endif
               endif

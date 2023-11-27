@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_protistdiat
+use m_waq_precision
+
 
 implicit none
 
@@ -49,79 +51,79 @@ use ieee_arithmetic
 !
 !     Type    Name         I/O Description
 !
-    real(4) pmsa(*)      ! I/O Process Manager System Array, window of routine to process library
-    real(4) fl(*)        ! O  Array of fluxes made by this process in mass/volume/time
-    integer ipoint(*)    ! I  Array of pointers in pmsa to get and store the data
-    integer increm(*)    ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-    integer noseg        ! I  Number of computational elements in the whole model schematisation
-    integer noflux       ! I  Number of fluxes, increment in the fl array
-    integer iexpnt(4,*)  ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-    integer iknmrk(*)    ! I  Active-Inactive, Surface-water-bottom, see manual for use
-    integer noq1         ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-    integer noq2         ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-    integer noq3         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-    integer noq4         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+    real(kind=real_wp)  ::pmsa(*)      ! I/O Process Manager System Array, window of routine to process library
+    real(kind=real_wp)  ::fl(*)        ! O  Array of fluxes made by this process in mass/volume/time
+    integer(kind=int_wp)  ::ipoint(*)    ! I  Array of pointers in pmsa to get and store the data
+    integer(kind=int_wp)  ::increm(*)    ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+    integer(kind=int_wp)  ::noseg        ! I  Number of computational elements in the whole model schematisation
+    integer(kind=int_wp)  ::noflux       ! I  Number of fluxes, increment in the fl array
+    integer(kind=int_wp)  ::iexpnt(4,*)  ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+    integer(kind=int_wp)  ::iknmrk(*)    ! I  Active-Inactive, Surface-water-bottom, see manual for use
+    integer(kind=int_wp)  ::noq1         ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+    integer(kind=int_wp)  ::noq2         ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+    integer(kind=int_wp)  ::noq3         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+    integer(kind=int_wp)  ::noq4         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
 !     support variables
-    integer, parameter    :: nrIndInp = 8     !   nr of species independent input items
-    integer, parameter    :: nrSpecInp = 37   !   nr of inputs per species
-    integer, parameter    :: nrSpecOut = 25   !   nr of outputs per species
-    integer, parameter    :: nrSpecFlux = 22  !   nr of fluxes per species
-    integer               :: nrInputItems     !   nr of input items need for output PMSA
-    integer               :: nrOutputItems    !   nr of output items need for output PMSA
-    integer               :: ipointLength     !   total length of the PMSA input and output pointer array
-    integer, allocatable  :: ipnt(:)          !   Local work array for the pointering
+    integer(kind=int_wp), parameter     ::nrIndInp = 8     !   nr of species independent input items
+    integer(kind=int_wp), parameter     ::nrSpecInp = 37   !   nr of inputs per species
+    integer(kind=int_wp), parameter     ::nrSpecOut = 25   !   nr of outputs per species
+    integer(kind=int_wp), parameter     ::nrSpecFlux = 22  !   nr of fluxes per species
+    integer(kind=int_wp)                ::nrInputItems     !   nr of input items need for output PMSA
+    integer(kind=int_wp)                ::nrOutputItems    !   nr of output items need for output PMSA
+    integer(kind=int_wp)                ::ipointLength     !   total length of the PMSA input and output pointer array
+    integer(kind=int_wp), allocatable ::ipnt(:)          !   Local work array for the pointering
 
-    integer iseg          ! Local loop counter for computational element loop
-    integer ioq
-    integer iflux
-    integer ikmrk1        ! first segment attribute
+    integer(kind=int_wp)  ::iseg          ! Local loop counter for computational element loop
+    integer(kind=int_wp)  ::ioq
+    integer(kind=int_wp)  ::iflux
+    integer(kind=int_wp)  ::ikmrk1        ! first segment attribute
 
-    integer iSpec         ! local species number counter
-    integer spInc         ! local species PSMA/FL number increment
+    integer(kind=int_wp)  ::iSpec         ! local species number counter
+    integer(kind=int_wp)  ::spInc         ! local species PSMA/FL number increment
 
      ! input parameters
-    integer nrSpec       ! total nr species implemented in process (from proc_def)
-    real    UmRT, Q10, RT, CR                           ! growth and respiration rate calculation
-    real    NCm, NO3Cm, PCm, SiCm, ChlCm                ! maximum NC, PC, ChlC quotas
-    real    NCo, PCo, SiCo, ChlCo                       ! minimum NC and PC quotas
-    real    NCopt, NO3Copt, PCopt, SiCopt               ! optimal NC and PC quotas
-    real    KtSi, KtP, KtNH4, KtNO3                     ! half saturation constants
-    real    PCoNCopt, PCoNCm                            ! P status influence on optimum NC
-    real    ReUmNH4, ReUmNO3, redco, PSDOC, relPS       ! relative growth rates with specific nutrients
-    real    MrtRT, FrAut, FrDet                         ! reference mortality and fractions
-    real    alpha                                       ! inital slope
+    integer(kind=int_wp)  ::nrSpec       ! total nr species implemented in process (from proc_def)
+    real(kind=real_wp)     ::UmRT, Q10, RT, CR                           ! growth and respiration rate calculation
+    real(kind=real_wp)     ::NCm, NO3Cm, PCm, SiCm, ChlCm                ! maximum NC, PC, ChlC quotas
+    real(kind=real_wp)     ::NCo, PCo, SiCo, ChlCo                       ! minimum NC and PC quotas
+    real(kind=real_wp)     ::NCopt, NO3Copt, PCopt, SiCopt               ! optimal NC and PC quotas
+    real(kind=real_wp)     ::KtSi, KtP, KtNH4, KtNO3                     ! half saturation constants
+    real(kind=real_wp)     ::PCoNCopt, PCoNCm                            ! P status influence on optimum NC
+    real(kind=real_wp)     ::ReUmNH4, ReUmNO3, redco, PSDOC, relPS       ! relative growth rates with specific nutrients
+    real(kind=real_wp)     ::MrtRT, FrAut, FrDet                         ! reference mortality and fractions
+    real(kind=real_wp)     ::alpha                                       ! inital slope
 
     ! input state variables
-    real    protC, protChl, protN, protP, protSi        ! protist state variables
-    real    PO4, NH4, NO3, Si                           ! nutrient state variables
-    real    Temp                                        ! physical abiotic variables
-    real    PFD, atten, exat                            ! available light and extinction
+    real(kind=real_wp)     ::protC, protChl, protN, protP, protSi        ! protist state variables
+    real(kind=real_wp)     ::PO4, NH4, NO3, Si                           ! nutrient state variables
+    real(kind=real_wp)     ::Temp                                        ! physical abiotic variables
+    real(kind=real_wp)     ::PFD, atten, exat                            ! available light and extinction
 
 
     ! auxiliaries
-    real    NC, PC, SC, ChlC                            ! cell nutrient quotas
-    real    UmT, BR                                     ! growth and repsiration rates
-    real    NCu, PCu, SCu, NPSiCu                       ! nutrient status within the cell
-    real    upP, upNH4, upNO3, upSi                     ! nutrient uptake
-    real    PSqm, Cfix, synChl, degChl                  ! plateau and Cifx through photosynthesis
-    real    maxPSreq, PS                                ! req for C to come from PS (==1 for diatoms)
-    real    totR, Cu, NPP                               ! respiration, C-growth and nett primary production
-    real    mrt, mrtFrAut, mrtFrDet                     ! mortality to detritus and autolysis
+    real(kind=real_wp)     ::NC, PC, SC, ChlC                            ! cell nutrient quotas
+    real(kind=real_wp)     ::UmT, BR                                     ! growth and repsiration rates
+    real(kind=real_wp)     ::NCu, PCu, SCu, NPSiCu                       ! nutrient status within the cell
+    real(kind=real_wp)     ::upP, upNH4, upNO3, upSi                     ! nutrient uptake
+    real(kind=real_wp)     ::PSqm, Cfix, synChl, degChl                  ! plateau and Cifx through photosynthesis
+    real(kind=real_wp)     ::maxPSreq, PS                                ! req for C to come from PS (==1 for diatoms)
+    real(kind=real_wp)     ::totR, Cu, NPP                               ! respiration, C-growth and nett primary production
+    real(kind=real_wp)     ::mrt, mrtFrAut, mrtFrDet                     ! mortality to detritus and autolysis
 
     ! Fluxes
-    real    dNH4up, dNO3up, dPup, dSiup                 ! uptake fluxes
-    real    dCfix                                       ! photosynthesis flux
-    real    dChlsyn, dChldeg                            ! Chl synthesis  and degradation flux
-    real    dCresp                                      ! respiration flux
-    real    dDOCleak                                    ! C leak through photosynthesis
-    real    dDOCvoid, dNH4out, dPout                    ! voiding fluxes
-    real    dAutC, dAutN, dAutP, dAutSi, dAutChl        ! autolysis fluxes
-    real    dDetC, dDetN, dDetP, dDetSi, dDetChl        ! voiding fluxes
+    real(kind=real_wp)     ::dNH4up, dNO3up, dPup, dSiup                 ! uptake fluxes
+    real(kind=real_wp)     ::dCfix                                       ! photosynthesis flux
+    real(kind=real_wp)     ::dChlsyn, dChldeg                            ! Chl synthesis  and degradation flux
+    real(kind=real_wp)     ::dCresp                                      ! respiration flux
+    real(kind=real_wp)     ::dDOCleak                                    ! C leak through photosynthesis
+    real(kind=real_wp)     ::dDOCvoid, dNH4out, dPout                    ! voiding fluxes
+    real(kind=real_wp)     ::dAutC, dAutN, dAutP, dAutSi, dAutChl        ! autolysis fluxes
+    real(kind=real_wp)     ::dDetC, dDetN, dDetP, dDetSi, dDetChl        ! voiding fluxes
 
 !
 !*******************************************************************************

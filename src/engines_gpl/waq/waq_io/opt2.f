@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_opt2
+      use m_waq_precision
       use m_scale
 
 
@@ -70,30 +71,30 @@
 
 !     kind           function         name         Descriptipon
 
-      integer  ( 4), intent(in   ) :: iopt2      !< input option
-      real      (4), intent(  out) :: array(nvals,nitem) !< array for the values
-      integer  ( 4), intent(in   ) :: nitem      !< number of items to read
-      integer  ( 4), intent(in   ) :: nvals      !< number of values per item
-      integer  ( 4), intent(in   ) :: nscale     !< number of scale values
-      integer  ( 4), intent(in   ) :: iwidth     !< width of the output file
-      integer  ( 4), intent(in   ) :: lun1       !< output unit number
-      integer  ( 4), intent(in   ) :: ioutpt     !< how extensive the output ?
-      integer  ( 4), intent(inout) :: ierr       !< cumulative rror counter
+      integer(kind=int_wp), intent(in   ) ::  iopt2       !< input option
+      real(kind=real_wp), intent(  out) ::  array(nvals,nitem)  !< array for the values
+      integer(kind=int_wp), intent(in   ) ::  nitem       !< number of items to read
+      integer(kind=int_wp), intent(in   ) ::  nvals       !< number of values per item
+      integer(kind=int_wp), intent(in   ) ::  nscale      !< number of scale values
+      integer(kind=int_wp), intent(in   ) ::  iwidth      !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  lun1        !< output unit number
+      integer(kind=int_wp), intent(in   ) ::  ioutpt      !< how extensive the output ?
+      integer(kind=int_wp), intent(inout) ::  ierr        !< cumulative rror counter
 
 !     local decalations
 
-      real   (4), allocatable :: factor( : )       !  array for scale factors
-      real   (4)                 value             !  help variable values
-      integer(4)                 nover             !  number of overridings
-      integer(4)                 iscal             !  loop counter scale values
-      integer(4)                 item              !  loop counter items
-      integer(4)                 ival              !  loop counter values
-      integer(4)                 iw                !  loop counter print blocks
-      integer(4)                 iover             !  loop counter overridings
-      integer(4)                 ie1, ie2          !  limits of print blocks
-      integer(4)                 ierr2             !  local error variable
-      integer(4) :: ithndl = 0
-
+      real(kind=real_wp), allocatable ::  factor( : )        !  array for scale factors
+      real(kind=real_wp) :: value              !  help variable values
+      integer(kind=int_wp) :: nover              !  number of overridings
+      integer(kind=int_wp) :: iscal              !  loop counter scale values
+      integer(kind=int_wp) :: item               !  loop counter items
+      integer(kind=int_wp) :: ival               !  loop counter values
+      integer(kind=int_wp) :: iw                 !  loop counter print blocks
+      integer(kind=int_wp) :: iover              !  loop counter overridings
+      integer(kind=int_wp) :: ie1, ie2           !  limits of print blocks
+      integer(kind=int_wp) :: ierr2              !  local error variable
+      integer(kind=int_wp) ::  ithndl = 0
+ 
       if ( nitem .eq. 0 ) return                   !  no items specified
 
 

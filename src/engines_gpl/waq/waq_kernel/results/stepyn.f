@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_stepyn
+      use m_waq_precision
+
 
       implicit none
 
@@ -59,9 +61,9 @@
 !
       use timers
 
-      INTEGER       ITIME , IDT   , ISTRT , ISTOP , ISTEP
+      INTEGER(kind=int_wp) ::ITIME , IDT   , ISTRT , ISTOP , ISTEP
       LOGICAL       LFLAG , LFIRST
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "stepyn", ithandl )
 !
 !     Evaluate timer

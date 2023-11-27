@@ -57,7 +57,7 @@ def branch(xml_tree: etree._ElementTree, prefix: str) -> Dict[str, Any]:
 # Parse the xml configuration file
 class XmlConfigParser(object):
     def load(
-        self, path: str, rstr: str, cred: Credentials
+        self, path: str, rstr: str, cred: Credentials, server_base_url: str
     ) -> Tuple[LocalPaths, List[ProgramConfig], List[TestCaseConfig]]:
         """load the config file
 
@@ -65,6 +65,7 @@ class XmlConfigParser(object):
             path (str): (relative or absolute), overwritten roots (if any)
             rstr (str): ??
             cred (Credentials): credential from the command line
+            server_base_url (sr): the base URL of the server (SVN, Git, MinIO etc.)
 
         Returns:
             tuple[LocalPaths, List[ProgramConfig], list]: local paths, program configs and test case configs
@@ -74,6 +75,7 @@ class XmlConfigParser(object):
         self.__validate__()
         self.__initialize__()
         self.__credentials.append(cred)
+        self.__server_base_url: str = server_base_url
 
         return self.__parse__()
 
@@ -116,9 +118,7 @@ class XmlConfigParser(object):
         for config_tag in config_tags:
             #
             # The following for-loop should be deleted (when preparations are finished)
-            self.__credentials = self.__credentials + list(
-                self.__parse_credentials(config_tag)
-            )
+            self.__credentials = self.__credentials + list(self.__parse_credentials(config_tag))
             local_paths = self.__parse_local_paths(config_tag)
             self.__locations = list(self.__parse_locations(config_tag))
 
@@ -187,22 +187,29 @@ class XmlConfigParser(object):
             if "credential" in element:
                 c = self.__getCredentials__(str(element["credential"][0]["ref"][0]))
                 if not c:
-                    raise XmlError(
-                        "invalid credential reference value in " + new_location.name
-                    )
+                    raise XmlError("invalid credential reference value in " + new_location.name)
                 new_location.credentials = c
             # overwrite roots if specified
             newroot = self.__getOverwritePaths__(self.__rstr, new_location.name, "root")
             if newroot:
                 new_location.root = newroot
+            elif str(element["root"][0]["txt"].strip()).startswith("{server_base_url}"):
+                directory_with_handlebar = str(element["root"][0]["txt"].strip())
+                if self.__server_base_url.endswith("/") and directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}/", self.__server_base_url)
+                    new_location.root = new_location.root.replace("{server_base_url}", self.__server_base_url)
+                elif self.__server_base_url.endswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", self.__server_base_url)
+                elif directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", self.__server_base_url)
+                else:
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", self.__server_base_url + "/")
             else:
                 new_location.root = str(element["root"][0]["txt"].strip())
         else:
             new_location = copy.deepcopy(self.__getLocations__(element["ref"][0]))
             if not new_location:
-                raise XmlError(
-                    "invalid network path reference value in " + element["ref"][0]
-                )
+                raise XmlError("invalid network path reference value in " + element["ref"][0])
         if "type" in element:
             if str(element["type"][0]).lower() == "input":
                 new_location.type = PathType.INPUT
@@ -246,40 +253,20 @@ class XmlConfigParser(object):
                 return None
         if "name" in element:
             p.name = str(element["name"][0])
-        if (
-            "programStringRemoveQuotes" in element
-            and str(element["programStringRemoveQuotes"][0]).lower() == "true"
-        ):
+        if "programStringRemoveQuotes" in element and str(element["programStringRemoveQuotes"][0]).lower() == "true":
             p.program_remove_quotes = True
-        if (
-            "shellStringRemoveQuotes" in element
-            and str(element["shellStringRemoveQuotes"][0]).lower() == "true"
-        ):
+        if "shellStringRemoveQuotes" in element and str(element["shellStringRemoveQuotes"][0]).lower() == "true":
             p.shell_remove_quotes = True
-        if (
-            "ignoreStandardError" in element
-            and str(element["ignoreStandardError"][0]).lower() == "true"
-        ):
+        if "ignoreStandardError" in element and str(element["ignoreStandardError"][0]).lower() == "true":
             p.ignore_standard_error = True
-        if (
-            "ignoreReturnValue" in element
-            and str(element["ignoreReturnValue"][0]).lower() == "true"
-        ):
+        if "ignoreReturnValue" in element and str(element["ignoreReturnValue"][0]).lower() == "true":
             p.ignore_return_value = True
-        if (
-            "logOutputToFile" in element
-            and str(element["logOutputToFile"][0]).lower() == "true"
-        ):
+        if "logOutputToFile" in element and str(element["logOutputToFile"][0]).lower() == "true":
             p.log_output_to_file = True
-        if (
-            "addSearchPaths" in element
-            and str(element["addSearchPaths"][0]).lower() == "true"
-        ):
+        if "addSearchPaths" in element and str(element["addSearchPaths"][0]).lower() == "true":
             p.add_search_paths = True
         if "excludeSearchPathsContaining" in element:
-            p.exclude_search_paths_containing = str(
-                element["excludeSearchPathsContaining"][0]
-            )
+            p.exclude_search_paths_containing = str(element["excludeSearchPathsContaining"][0])
 
         if "ref" in element:
             p.name = str(element["ref"][0])
@@ -475,10 +462,7 @@ class XmlConfigParser(object):
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
             for el in element["maxRunTime"]:
-                if (
-                    "OverruleRefMaxRunTime" in el
-                    and str(el["OverruleRefMaxRunTime"][0]).lower() == "true"
-                ):
+                if "OverruleRefMaxRunTime" in el and str(el["OverruleRefMaxRunTime"][0]).lower() == "true":
                     test_case.overrule_ref_max_run_time = True
         for el in loop(element, "programs"):
             for program in loop(el, "program"):

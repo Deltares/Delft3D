@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq0f
+      use m_waq_precision
+
 
       implicit none
 
@@ -55,18 +57,18 @@
 
 !     kind         function         name                Descriptipon
 
-      integer( 4), intent(in   ) :: noq1              !< nr of exchanges first direction
-      integer( 4), intent(in   ) :: noq2              !< nr of exchanges second direction
-      integer( 4), intent(in   ) :: noq3              !< nr of exchanges third direction
-      integer( 4), intent(in   ) :: noseg             !< nr of computational volumes
-      integer( 4), intent(in   ) :: ipoint(4,noq1+noq2+noq3)  !< exchange pointer
-      integer( 4), intent(  out) :: nomat             !< size of the fast solver matrix
+      integer(kind=int_wp), intent(in   ) ::  noq1               !< nr of exchanges first direction
+      integer(kind=int_wp), intent(in   ) ::  noq2               !< nr of exchanges second direction
+      integer(kind=int_wp), intent(in   ) ::  noq3               !< nr of exchanges third direction
+      integer(kind=int_wp), intent(in   ) ::  noseg              !< nr of computational volumes
+      integer(kind=int_wp), intent(in   ) ::  ipoint(4,noq1+noq2+noq3)   !< exchange pointer
+      integer(kind=int_wp), intent(  out) ::  nomat              !< size of the fast solver matrix
 
 !     Local
 
-      integer( 4) iq           ! loop counter exchanges
-      integer( 4) ifrom, ito   ! help variables exchanges
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) :: iq            ! loop counter exchanges
+      integer(kind=int_wp) :: ifrom, ito    ! help variables exchanges
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq0f", ithndl )
 
 

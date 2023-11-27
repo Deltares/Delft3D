@@ -35,7 +35,7 @@ class TestDSeriesBenchmarkComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c
+            join(self.testdata, "Unit_test.xml"), "", c, ""
         )
         file = settings.configs
 
@@ -499,7 +499,7 @@ class TestDSeriesBenchmarkComparer:
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_empty_file.xml"), "", c
+            join(self.testdata, "Unit_test_empty_file.xml"), "", c, ""
         )
         file = settings.configs
         # The file to be checked

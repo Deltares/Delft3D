@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqtk
+      use m_waq_precision
+
 
       implicit none
 
@@ -66,15 +68,15 @@
       use m_evaluate_waq_attribute
       use m_dhimov
       use timers
-      INTEGER       ITIME , NOSEG , IS    , ISFLAG, IFFLAG,
+      INTEGER(kind=int_wp) ::ITIME , NOSEG , IS    , ISFLAG, IFFLAG,
      +              IFIOPK, IKMRK1
-      INTEGER       LUN(*)   , IKNMRK(NOSEG,*),
+      INTEGER(kind=int_wp) ::LUN(*)   , IKNMRK(NOSEG,*),
      +              IKTIM(*)
 
       CHARACTER*(*) LUNTXT(*)
 
-      integer  ierr, iseg, lunout, ikmrk4
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ierr, iseg, lunout, ikmrk4
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqtk", ithandl )
 
 !

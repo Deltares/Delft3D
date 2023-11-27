@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_blinit
+      use m_waq_precision
+
 
       implicit none
 
@@ -38,7 +40,7 @@
       implicit none
 
 !     Local variables
-      integer i, j                ! indexes
+      integer(kind=int_wp) ::i, j                ! indexes
 
 !     Convert BLOOM II specific units to DLWQWQ specific units
 !

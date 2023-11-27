@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_fioraa
+      use m_waq_precision
+
 
       implicit none
 
@@ -53,14 +55,14 @@
 !
       use timers
 
-      INTEGER    NRVAR , NORAAI, NOSYS
-      REAL       OUTVAL(NRVAR,*), TRRAAI(NOSYS,*)
+      INTEGER(kind=int_wp) ::NRVAR , NORAAI, NOSYS
+      REAL(kind=real_wp) ::OUTVAL(NRVAR,*), TRRAAI(NOSYS,*)
 !
 !     Local
 !
-      integer   iraai, isys
-      real, PARAMETER  :: RMISS = -999.
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::iraai, isys
+      real(kind=real_wp), PARAMETER   ::RMISS = -999.
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "fioraa", ithandl )
 !
 !     Copy values into output buffer

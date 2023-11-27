@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq03
+      use m_waq_precision
       use m_read_hydfile
       use m_opt1
       use m_opt0
@@ -83,65 +84,65 @@
 
 !     kind           function         name                Descriptipon
 
-      integer  ( 4), intent(inout) :: lun    (*)        !< array with unit numbers
+      integer(kind=int_wp), intent(inout) ::  lun    (*)         !< array with unit numbers
       character( *), intent(inout) :: lchar  (*)        !< array with file names of the files
-      integer  ( 4), intent(inout) :: filtype(*)        !< type of binary file
-      integer  ( 4), intent(inout) :: nrftot (*)        !< number of function items
-      integer  ( 4), intent(inout) :: nrharm (*)        !< number of harmonic items
-      integer  ( 4), intent(  out) :: ivflag            !< computed volumes ?
+      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
+      integer(kind=int_wp), intent(inout) ::  nrftot (*)         !< number of function items
+      integer(kind=int_wp), intent(inout) ::  nrharm (*)         !< number of harmonic items
+      integer(kind=int_wp), intent(  out) ::  ivflag             !< computed volumes ?
       logical      , intent(in   ) :: dtflg1            !< 'date'-format 1st timescale
-      integer  ( 4), intent(in   ) :: iwidth            !< width of the output file
+      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer  ( 4), intent(in   ) :: ioutpt            !< flag for more or less output
+      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
       character(20), intent(in   ) :: syname (*)        !< array with substance names
-      integer  ( 4), intent(inout) :: ierr              !< cumulative error   count
-      integer  ( 4), intent(inout) :: iwar              !< cumulative warning count
+      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
       logical      , intent(out)   :: has_hydfile       !< if true, much information comes from the hyd-file
-      integer  ( 4), dimension(3), intent(out) :: nexch !< number of exchanges as read via hyd-file
+      integer(kind=int_wp), dimension(3), intent(out)  ::  nexch  !< number of exchanges as read via hyd-file
       type(GridPointerColl)           GridPs            !< Collection of grid pointers
 
 !     local decalations
 
       character*255           cdummy            !  workspace to read a string
-      integer                 idummy            !  location to read an integer
+      integer(kind=int_wp) :: idummy             !  location to read an integer
       logical                 disper            !  is opt0 called for dispersions ?
-      integer  ( 4)           volume            !  is 1 if opt0 is called for volumes ?
-      integer                 ifact             !  needed for call to opt0
-      integer                 itype             !  type of token that is returned
-      integer                 ierr2             !  local error indicator
-      integer                 iwar2             !  local warning indicator
-      integer, allocatable :: ikmerge(:)        !  array with indicators whether attributes are already set
-      integer, allocatable :: iamerge(:)        !  composite attribute array
-      integer, allocatable :: ikenm  (:)        !  array with attributes of an input block
-      integer, allocatable :: iread  (:)        !  array to read attributes
-      integer, allocatable :: pgrid  (:,:)      !  workspace for matrix with printed grids
-      integer                 imopt1            !  first option for grid layout
-      integer                 i, j, k           !  loop counters
-      integer                 ikerr             !  error indicator attributes
-      integer                 nkopt             !  number of attribute blocks
-      integer                 nopt              !  that many attributes in this block
-      integer                 ikopt1            !  first (file) option attributes
-      integer                 ikopt2            !  second (default/nondefault) option attributes
-      integer                 ikdef             !  default value attributes
-      integer                 nover             !  number of overridings
-      integer                 iover             !  overriding cell number
-      integer                 iseg              !  loop counter computational volumes
-      integer                 iknm1, iknm2      !  help variables for attributes
-      integer                 iknmrk            !  help variables merged attributes
-      integer                 ivalk             !  return value dhknmrk
+      integer(kind=int_wp) :: volume             !  is 1 if opt0 is called for volumes ?
+      integer(kind=int_wp) :: ifact              !  needed for call to opt0
+      integer(kind=int_wp) :: itype              !  type of token that is returned
+      integer(kind=int_wp) :: ierr2              !  local error indicator
+      integer(kind=int_wp) :: iwar2              !  local warning indicator
+      integer(kind=int_wp), allocatable ::  ikmerge(:)         !  array with indicators whether attributes are already set
+      integer(kind=int_wp), allocatable ::  iamerge(:)         !  composite attribute array
+      integer(kind=int_wp), allocatable ::  ikenm  (:)         !  array with attributes of an input block
+      integer(kind=int_wp), allocatable ::  iread  (:)         !  array to read attributes
+      integer(kind=int_wp), allocatable ::  pgrid  (:,:)       !  workspace for matrix with printed grids
+      integer(kind=int_wp) :: imopt1             !  first option for grid layout
+      integer(kind=int_wp) :: i, j, k            !  loop counters
+      integer(kind=int_wp) :: ikerr              !  error indicator attributes
+      integer(kind=int_wp) :: nkopt              !  number of attribute blocks
+      integer(kind=int_wp) :: nopt               !  that many attributes in this block
+      integer(kind=int_wp) :: ikopt1             !  first (file) option attributes
+      integer(kind=int_wp) :: ikopt2             !  second (default/nondefault) option attributes
+      integer(kind=int_wp) :: ikdef              !  default value attributes
+      integer(kind=int_wp) :: nover              !  number of overridings
+      integer(kind=int_wp) :: iover              !  overriding cell number
+      integer(kind=int_wp) :: iseg               !  loop counter computational volumes
+      integer(kind=int_wp) :: iknm1, iknm2       !  help variables for attributes
+      integer(kind=int_wp) :: iknmrk             !  help variables merged attributes
+      integer(kind=int_wp) :: ivalk              !  return value dhknmrk
 
       logical                 exist             !  whether a file exists or not
       character*255           ugridfile         !  name of the ugrid-file
       character*255           hydfile           !  name of the hyd-file
-      integer :: ncid, ncidout
-      integer :: varid, varidout, meshid, timeid, bndtimeid, ntimeid, wqid
-      integer :: meshid2d, type_ugrid, meshid1d, networkid, network_geometryid
-      integer :: inc_error
-
+      integer(kind=int_wp) ::  ncid, ncidout
+      integer(kind=int_wp) ::  varid, varidout, meshid, timeid, bndtimeid, ntimeid, wqid
+      integer(kind=int_wp) ::  meshid2d, type_ugrid, meshid1d, networkid, network_geometryid
+      integer(kind=int_wp) ::  inc_error
+ 
       character(len=nf90_max_name) :: mesh_name
       character(len=nf90_max_name) :: dimname
 
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq03", ithndl )
 
       disper = .false.
@@ -684,15 +685,15 @@
       use m_sysi          ! Timer characteristics
 
 
-      integer, intent(in)          :: lunut      !< LU-number of the report file
+      integer(kind=int_wp), intent(in) ::  lunut       !< LU-number of the report file
       character(len=*), intent(in) :: filvol     !< Name of the volumes file to be checked
-      integer, intent(in)          :: noseg      !< Number of segments
-      integer, intent(out)         :: ierr2      !< Whether an error was found or not
+      integer(kind=int_wp), intent(in) ::  noseg       !< Number of segments
+      integer(kind=int_wp), intent(out) ::  ierr2       !< Whether an error was found or not
 
-      integer                      :: i, ierr
-      integer                      :: luvol
-      integer                      :: time1, time2, time3
-      real                         :: dummy
+      integer(kind=int_wp) ::  i, ierr
+      integer(kind=int_wp) ::  luvol
+      integer(kind=int_wp) ::  time1, time2, time3
+      real(kind=real_wp) ::  dummy
       character(len=14)            :: string
 
       open( newunit = luvol, file = filvol, access = 'stream',

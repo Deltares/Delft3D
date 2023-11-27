@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_rfpart
+      use m_waq_precision
+
 
       implicit none
 
@@ -73,28 +75,28 @@
 !
 !     declaration of arguments
 !
-      INTEGER  NOSEG , NOFLUX, NOQ1  , NOQ2  , NOQ3  ,  NOQ4
-      INTEGER  IPOINT(*)       , INCREM(*),
+      INTEGER(kind=int_wp) ::NOSEG , NOFLUX, NOQ1  , NOQ2  , NOQ3  ,  NOQ4
+      INTEGER(kind=int_wp) ::IPOINT(*)       , INCREM(*),
      +         IEXPNT(4,*)     , IKNMRK(*)
-      REAL     PMSA(*)         , FL(*)
+      REAL(kind=real_wp) ::PMSA(*)         , FL(*)
 !
 !     local declarations
 !
-      INTEGER  IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10,
      +         IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18 ,
      +         IP19, IP20
-      INTEGER  IFLUX, ISEG
+      INTEGER(kind=int_wp) ::IFLUX, ISEG
 !
-      INTEGER  IVERSN
-      INTEGER  LUNREP
+      INTEGER(kind=int_wp) ::IVERSN
+      INTEGER(kind=int_wp) ::LUNREP
 !
-      REAL     PH     , ALK    , CCL    , DOC   ,
+      REAL(kind=real_wp) ::PH     , ALK    , CCL    , DOC   ,
      +         CECIM1 , CECIM2 , CECIM3 ,
      +         AC     , BC     , CC     , DC    , LC     , GC     ,
      +         MC     , NC     , OC     ,
      +         LOGALK , LOGCCL , LOGDOC , LOGKP0
 !
-      REAL     KPIM1  , KPIM2  , KPIM3  , KP0
+      REAL(kind=real_wp) ::KPIM1  , KPIM2  , KPIM3  , KP0
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqtd
+      use m_waq_precision
       use m_values
 
 
@@ -84,26 +85,26 @@
       use dlwqgrid_mod
       use timers
 
-      INTEGER              LUN(*), IGREF(NOGRID), IGSEG(NOSEG,NOGRID),
+      INTEGER(kind=int_wp) ::LUN(*), IGREF(NOGRID), IGSEG(NOSEG,NOGRID),
      *                     IPOINT(  4   ,NOQ+NOQ4)
-      REAL                 CONST (NOCONS), PARAM (NOPA ,NOSEG ),
+      REAL(kind=real_wp) ::CONST (NOCONS), PARAM (NOPA ,NOSEG ),
      *                     FUNCS (NOFUN ), SFUNCS(NOSEG,NOSFUN),
      *                     VOLUME(NOSEG+NSEG2), AREA(NOQ+NOQ4) ,
      *                     ALENG (2,NOQ+NOQ4 ), FLOW(NOQ+NOQ4)
       CHARACTER*20         CONAME(NOCONS), PANAME(NOPA  ),
      *                     FUNAME(NOFUN ), SFNAME(NOSFUN)
-      integer              NOSEG, NSEG2, NOLAY, NOGRID, NOQ, NOQ4, NOCONS
-      integer              NOFUN, NOSFUN, NOPA
+      integer(kind=int_wp) ::NOSEG, NSEG2, NOLAY, NOGRID, NOQ, NOQ4, NOCONS
+      integer(kind=int_wp) ::NOFUN, NOSFUN, NOPA
 
 !     local
       LOGICAL              LGET
       logical           :: first_q_column
-      REAL, Allocatable :: Horsurf(:), Thickn(:)
+      REAL(kind=real_wp), Allocatable  ::Horsurf(:), Thickn(:)
       CHARACTER*20         CTAG
-      integer              ierr, iq, iseg, nosss
+      integer(kind=int_wp) ::ierr, iq, iseg, nosss
 
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqtd", ithandl )
 !
       NOSSS = NOSEG + NSEG2

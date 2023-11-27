@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqt0
+      use m_waq_precision
       use m_dlwqtk
       use m_dlwqta
 
@@ -76,60 +77,60 @@
 
 !     type     kind  function         name                         description
 
-      integer  ( 4), intent(inout) :: lun   (*)                  !< Array with unit numbers
-      integer  ( 4), intent(in   ) :: itime                      !< Model timer
-      integer  ( 4), intent(inout) :: itimel                     !< Model timer one step ago
-      real     ( 4), intent(inout) :: harmat(nharms)             !< Matrices harmonic components
-      real     ( 4)                :: array (nlines)             !< Set of double file buffers
-      integer  ( 4), intent(in   ) :: iharm (niharm)             !< Harmonics time space
-      integer  ( 4), intent(inout) :: nrharm(noitem)             !< set of nrs of harmonic records
-      integer  ( 4), intent(in   ) :: nrftot(noitem)             !< set of record lengthes
-      integer  ( 4), intent(  out) :: idt                        !< Integration time step size
-      real     ( 4), intent(  out) :: volume(noseg+nseg2)        !< Array of segment volumes
-      real     ( 4), intent(  out) :: disper(nodisp,noq+noq4)    !< Array of dispersions
-      real     ( 4), intent(  out) :: area  (noq+noq4)           !< Array of exchange surfaces
-      real     ( 4), intent(  out) :: flow  (noq+noq4)           !< Array of flows
-      real     ( 4), intent(  out) :: velo  (novelo,noq+noq4)    !< Array of velocities
-      real     ( 4), intent(  out) :: aleng (  2   ,noq+noq4)    !< Array of from and to lengthes
-      real     ( 4), intent(  out) :: wastes(notot+2,nowst)      !< Array of wasteloads
-      real     ( 4), intent(  out) :: bounds(nosys , nobnd)      !< Array of boundary conditions
-      real     ( 4), intent(  out) :: consts(nocons)             !< Array of constant values
-      real     ( 4), intent(  out) :: param (nopa,noseg+nseg2)   !< Array of parameter values
-      real     ( 4), intent(  out) :: funcs (nofun )             !< Array of function values
-      real     ( 4), intent(  out) :: sfuncs(noseg+nseg2,nosfun) !< Array of segment functions
-      integer  ( 4), intent(in   ) :: ipoint(npoins)             !< Set of pointers to destination
+      integer(kind=int_wp), intent(inout)  ::lun   (*)                  !< Array with unit numbers
+      integer(kind=int_wp), intent(in   )  ::itime                      !< Model timer
+      integer(kind=int_wp), intent(inout)  ::itimel                     !< Model timer one step ago
+      real(kind=real_wp), intent(inout)  ::harmat(nharms)             !< Matrices harmonic components
+      real(kind=real_wp) ::array (nlines)             !< Set of double file buffers
+      integer(kind=int_wp), intent(in   )  ::iharm (niharm)             !< Harmonics time space
+      integer(kind=int_wp), intent(inout)  ::nrharm(noitem)             !< set of nrs of harmonic records
+      integer(kind=int_wp), intent(in   )  ::nrftot(noitem)             !< set of record lengthes
+      integer(kind=int_wp), intent(  out)  ::idt                        !< Integration time step size
+      real(kind=real_wp), intent(  out)  ::volume(noseg+nseg2)        !< Array of segment volumes
+      real(kind=real_wp), intent(  out)  ::disper(nodisp,noq+noq4)    !< Array of dispersions
+      real(kind=real_wp), intent(  out)  ::area  (noq+noq4)           !< Array of exchange surfaces
+      real(kind=real_wp), intent(  out)  ::flow  (noq+noq4)           !< Array of flows
+      real(kind=real_wp), intent(  out)  ::velo  (novelo,noq+noq4)    !< Array of velocities
+      real(kind=real_wp), intent(  out)  ::aleng (  2   ,noq+noq4)    !< Array of from and to lengthes
+      real(kind=real_wp), intent(  out)  ::wastes(notot+2,nowst)      !< Array of wasteloads
+      real(kind=real_wp), intent(  out)  ::bounds(nosys , nobnd)      !< Array of boundary conditions
+      real(kind=real_wp), intent(  out)  ::consts(nocons)             !< Array of constant values
+      real(kind=real_wp), intent(  out)  ::param (nopa,noseg+nseg2)   !< Array of parameter values
+      real(kind=real_wp), intent(  out)  ::funcs (nofun )             !< Array of function values
+      real(kind=real_wp), intent(  out)  ::sfuncs(noseg+nseg2,nosfun) !< Array of segment functions
+      integer(kind=int_wp), intent(in   )  ::ipoint(npoins)             !< Set of pointers to destination
       character*(*), intent(in   ) :: luntxt(*)                  !< text with the unit numbers
       character*200, intent(in   ) :: luntx2(*)                  !< text with the binary files
-      integer  ( 4), intent(in   ) :: ftype (*)                  !< type of files to be opened
-      integer  ( 4), intent(in   ) :: intsrt                     !< integration option
-      integer  ( 4), intent(in   ) :: isflag                     !< = 1 then 'ddhhmmss' format
-      integer  ( 4), intent(inout) :: ifflag                     !< = 1 then first invocation
-      integer  ( 4), intent(in   ) :: ivflag                     !< = 1 then computed volumes
-      integer  ( 4), intent(in   ) :: ilflag                     !< = 0 then constant lengthes
+      integer(kind=int_wp), intent(in   )  ::ftype (*)                  !< type of files to be opened
+      integer(kind=int_wp), intent(in   )  ::intsrt                     !< integration option
+      integer(kind=int_wp), intent(in   )  ::isflag                     !< = 1 then 'ddhhmmss' format
+      integer(kind=int_wp), intent(inout)  ::ifflag                     !< = 1 then first invocation
+      integer(kind=int_wp), intent(in   )  ::ivflag                     !< = 1 then computed volumes
+      integer(kind=int_wp), intent(in   )  ::ilflag                     !< = 0 then constant lengthes
       logical      , intent(inout) :: update                     !< TRUE if update took place
-      integer  ( 4), intent(inout) :: iktim (3)                  !< Timers in file
-      integer  ( 4), intent(inout) :: iknmrk(noseg+nseg2)        !< Kenmerk array
-      integer  ( 4), intent(inout) :: inwspc(newisp)             !< Integer space new time funs
-      real     ( 4), intent(inout) :: anwspc(newrsp)             !< Real space new time functions
-      integer  ( 4), intent(in   ) :: inwtyp(nobnd+nowst)        !< Types of items
-      integer  ( 4)                :: iwork (*)                  !< Integer workspace
+      integer(kind=int_wp), intent(inout)  ::iktim (3)                  !< Timers in file
+      integer(kind=int_wp), intent(inout)  ::iknmrk(noseg+nseg2)        !< Kenmerk array
+      integer(kind=int_wp), intent(inout)  ::inwspc(newisp)             !< Integer(kind=int_wp) ::space new time funs
+      real(kind=real_wp), intent(inout)  ::anwspc(newrsp)             !< Real(kind=real_wp) ::space new time functions
+      integer(kind=int_wp), intent(in   )  ::inwtyp(nobnd+nowst)        !< Types of items
+      integer(kind=int_wp) ::iwork (*)                  !< Integer(kind=int_wp) ::workspace
       logical      , intent(in   ) :: lstrec                     !< TRUE: last record on rewind wanted
       logical      , intent(  out) :: lrewin                     !< TRUE: rewind took place
-      real     ( 4), intent(inout) :: vollst(*)                  !< Last volume record before rewind
+      real(kind=real_wp), intent(inout)  ::vollst(*)                  !< Last volume record before rewind
       logical      , intent(in   ) :: rdvolu                     !< TRUE: also read volumes
       type(GridPointerColl)        :: GridPs                     !< collection of all grid definitions
       type(delwaq_data)            :: dlwqd                      !< derived type for persistent storage
 
 !     Local declarations
 
-      real         rdummy(1) , adummy(1) , adt   (1)
+      real(kind=real_wp) ::rdummy(1) , adummy(1) , adt   (1)
       logical      lstdum    , lredum    , ldum  (3)
-      integer      iph, ipf, ipa, ipi, ipni, ipna           !  incremental pointers
-      integer      isnul, isnul2, idummy                    !  dummy variables
-      integer      nosss, it, nosubs, is                    !  helpvariables
-      integer      ierr                                     !  error flag (not tested)
+      integer(kind=int_wp) ::iph, ipf, ipa, ipi, ipni, ipna           !  incremental pointers
+      integer(kind=int_wp) ::isnul, isnul2, idummy                    !  dummy variables
+      integer(kind=int_wp) ::nosss, it, nosubs, is                    !  helpvariables
+      integer(kind=int_wp) ::ierr                                     !  error flag (not tested)
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqt0", ithandl )
 
 !         open the harmonics and pointer files

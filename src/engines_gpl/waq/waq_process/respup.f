@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_respup
+      use m_waq_precision
+
 
       implicit none
 
@@ -65,63 +67,63 @@
 
       implicit none
 
-      real(4) pmsa(*)     !i/o process manager system array, window of routine to process library
-      real(4) fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-      integer ipoint( 26) ! i  array of pointers in pmsa to get and store the data
-      integer increm( 26) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! i  number of computational elements in the whole model schematisation
-      integer noflux      ! i  number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-      integer noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 26)   !    local work array for the pointering
-      integer iseg        !    local loop counter for computational element loop
+      real(kind=real_wp) ::pmsa(*)     !i/o process manager system array, window of routine to process library
+      real(kind=real_wp) ::fl(*)       ! o  array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) ::ipoint( 26) ! i  array of pointers in pmsa to get and store the data
+      integer(kind=int_wp) ::increm( 26) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) ::noseg       ! i  number of computational elements in the whole model schematisation
+      integer(kind=int_wp) ::noflux      ! i  number of fluxes, increment in the fl array
+      integer(kind=int_wp) ::iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp) ::iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
+      integer(kind=int_wp) ::noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp) ::noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp) ::noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) ::noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) ::ipnt( 26)   !    local work array for the pointering
+      integer(kind=int_wp) ::iseg        !    local loop counter for computational element loop
 
-      real     im1s2, im2s2, im3s2
+      real(kind=real_wp) ::im1s2, im2s2, im3s2
 
-      integer iflux
-      integer ikmrk2
-      real(4) tau
-      real(4) tcrrs2
-      real(4) grain50
-      real(4) grav
-      real(4) kinviscos
-      real(4) powns2pup
-      real(4) rhosand
-      real(4) rhowater
-      real(4) pors2
-      real(4) thicks2
-      real(4) surf
-      real(4) depth
-      real(4) delt
-      real(4) mindep
-      real(4) maxrespup
-      real(4) factrespup
-      integer swfrims2
-      real(4) press2
-      real(4) frim1s2pup
-      real(4) frim2s2pup
-      real(4) frim3s2pup
-      real(4) tims2
-      real(4) frtims2pup
-      real(4) flrim1s2
-      real(4) flrim2s2
-      real(4) flrim3s2
-      real(4) flres2
-      real(4) rhosandkg
-      real(4) s
-      real(4) dster
-      real(4) rest
-      real(4) rfdms2
-      real(4) rfim1s2
-      real(4) rfim2s2
-      real(4) rfim3s2
-      real(4) mrim1s2
-      real(4) mrim2s2
-      real(4) mrim3s2
+      integer(kind=int_wp) ::iflux
+      integer(kind=int_wp) ::ikmrk2
+      real(kind=real_wp) ::tau
+      real(kind=real_wp) ::tcrrs2
+      real(kind=real_wp) ::grain50
+      real(kind=real_wp) ::grav
+      real(kind=real_wp) ::kinviscos
+      real(kind=real_wp) ::powns2pup
+      real(kind=real_wp) ::rhosand
+      real(kind=real_wp) ::rhowater
+      real(kind=real_wp) ::pors2
+      real(kind=real_wp) ::thicks2
+      real(kind=real_wp) ::surf
+      real(kind=real_wp) ::depth
+      real(kind=real_wp) ::delt
+      real(kind=real_wp) ::mindep
+      real(kind=real_wp) ::maxrespup
+      real(kind=real_wp) ::factrespup
+      integer(kind=int_wp) ::swfrims2
+      real(kind=real_wp) ::press2
+      real(kind=real_wp) ::frim1s2pup
+      real(kind=real_wp) ::frim2s2pup
+      real(kind=real_wp) ::frim3s2pup
+      real(kind=real_wp) ::tims2
+      real(kind=real_wp) ::frtims2pup
+      real(kind=real_wp) ::flrim1s2
+      real(kind=real_wp) ::flrim2s2
+      real(kind=real_wp) ::flrim3s2
+      real(kind=real_wp) ::flres2
+      real(kind=real_wp) ::rhosandkg
+      real(kind=real_wp) ::s
+      real(kind=real_wp) ::dster
+      real(kind=real_wp) ::rest
+      real(kind=real_wp) ::rfdms2
+      real(kind=real_wp) ::rfim1s2
+      real(kind=real_wp) ::rfim2s2
+      real(kind=real_wp) ::rfim3s2
+      real(kind=real_wp) ::mrim1s2
+      real(kind=real_wp) ::mrim2s2
+      real(kind=real_wp) ::mrim3s2
 
       ipnt        = ipoint
 

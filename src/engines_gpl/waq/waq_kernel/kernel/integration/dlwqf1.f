@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqf1
+      use m_waq_precision
+
 
       implicit none
 
@@ -42,29 +44,29 @@
       use timers
       implicit none
 
-      integer(4), intent(in   ) :: noseg                 ! number of volumes
-      integer(4), intent(in   ) :: nobnd               ! number of volumes
-      integer(4), intent(in   ) :: noq                   ! number of exchanges
-      integer(4), intent(in   ) :: noq1                  ! number of exchanges in first direction
-      integer(4), intent(in   ) :: noq2                  ! number of exchanges in second direction
-      integer(4), intent(in   ) :: nomat                 ! dimension of sparse matrix
-      integer(4), intent(in   ) :: ipoint(  4,noq)       ! exchange pointers (dim: 4 x noq)
-      integer(4), intent(inout) :: iwrk  (  noseg+nobnd) ! workspace
-      integer(4), intent(  out) :: imat  (  nomat)       ! collumn pointers per row of sparse matrix
-      integer(4), intent(  out) :: rowpnt(0:noseg+nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
-      integer(4), intent(  out) :: fmat  (  noq)         ! location from(iq) in matrix
-      integer(4), intent(  out) :: tmat  (  noq)         ! location to  (iq) in matrix
+      integer(kind=int_wp), intent(in   )  ::noseg                 ! number of volumes
+      integer(kind=int_wp), intent(in   )  ::nobnd               ! number of volumes
+      integer(kind=int_wp), intent(in   )  ::noq                   ! number of exchanges
+      integer(kind=int_wp), intent(in   )  ::noq1                  ! number of exchanges in first direction
+      integer(kind=int_wp), intent(in   )  ::noq2                  ! number of exchanges in second direction
+      integer(kind=int_wp), intent(in   )  ::nomat                 ! dimension of sparse matrix
+      integer(kind=int_wp), intent(in   )  ::ipoint(  4,noq)       ! exchange pointers (dim: 4 x noq)
+      integer(kind=int_wp), intent(inout)  ::iwrk  (  noseg+nobnd) ! workspace
+      integer(kind=int_wp), intent(  out)  ::imat  (  nomat)       ! collumn pointers per row of sparse matrix
+      integer(kind=int_wp), intent(  out)  ::rowpnt(0:noseg+nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
+      integer(kind=int_wp), intent(  out)  ::fmat  (  noq)         ! location from(iq) in matrix
+      integer(kind=int_wp), intent(  out)  ::tmat  (  noq)         ! location to  (iq) in matrix
 
 !     Local declarations
 
-      integer(4)                :: i , j                 ! from- and to segments
-      integer(4)                :: i2, j2                ! from- and to segments
-      integer(4)                :: ip, jp                ! from- and to segment pointers
-      integer(4)                :: iseg                  ! current volume
-      integer(4)                :: iq                    ! current edge
-      integer(4)                :: iadd                  ! help variable
+      integer(kind=int_wp) ::i , j                 ! from- and to segments
+      integer(kind=int_wp) ::i2, j2                ! from- and to segments
+      integer(kind=int_wp) ::ip, jp                ! from- and to segment pointers
+      integer(kind=int_wp) ::iseg                  ! current volume
+      integer(kind=int_wp) ::iq                    ! current edge
+      integer(kind=int_wp) ::iadd                  ! help variable
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqf1", ithandl )
 
       rowpnt = 0

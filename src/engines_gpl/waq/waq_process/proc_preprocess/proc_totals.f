@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_proc_totals
+      use m_waq_precision
+
 
       implicit none
 
@@ -39,24 +41,24 @@
 
       ! declaration of arguments
 
-      integer                   :: lunrep          ! report file
+      integer(kind=int_wp) ::lunrep          ! report file
       type(procespropcoll)      :: procesdef       ! the process definition
-      integer                   :: no_ins          ! number of output items
-      integer                   :: no_ine          ! number of output items
-      integer                   :: no_ous          ! number of output items
-      integer                   :: no_oue          ! number of output items
-      integer                   :: no_flu          ! number of output items
-      integer                   :: no_sto          ! number of output items
-      integer                   :: no_dis          ! number of output items
-      integer                   :: no_vel          ! number of output items
+      integer(kind=int_wp) ::no_ins          ! number of output items
+      integer(kind=int_wp) ::no_ine          ! number of output items
+      integer(kind=int_wp) ::no_ous          ! number of output items
+      integer(kind=int_wp) ::no_oue          ! number of output items
+      integer(kind=int_wp) ::no_flu          ! number of output items
+      integer(kind=int_wp) ::no_sto          ! number of output items
+      integer(kind=int_wp) ::no_dis          ! number of output items
+      integer(kind=int_wp) ::no_vel          ! number of output items
 
       ! local decalarations
 
       type(procesprop), pointer :: proc            ! single process
-      integer                   :: nproc           ! number of processes
-      integer                   :: iproc           ! index processes
-      integer                   :: i_item          ! index io_items
-      integer(4) :: ithndl = 0
+      integer(kind=int_wp) ::nproc           ! number of processes
+      integer(kind=int_wp) ::iproc           ! index processes
+      integer(kind=int_wp) ::i_item          ! index io_items
+      integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "proc_totals", ithndl )
 
 

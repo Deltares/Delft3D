@@ -68,8 +68,8 @@ Replace "..." by the actual path on your system to the checkout directory.
 
 \<kernel\>/\<type\>/\<ISSUENR\>_short_description
 with:
-- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave    
-  -> Use all/none to trigger all/none tests
+- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave, tc
+  -> Use all/none/<specific> to trigger all/none/specific tests
 - \<type\>    : one of: bugfix, doc, feature, poc, release, research, task    
   -> Use research for branches that will not be merged into trunk directly
 - \<ISSUENR\> : JIRA issue number    

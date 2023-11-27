@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_read_hydfile
+use m_waq_precision
+
 
 implicit none
 
@@ -42,12 +44,12 @@ use m_get_filepath_and_pathlen
 
 !   declaration of arguments
 
-    integer               , intent(in)       :: lunout       !< unit number for reporting
+    integer(kind=int_wp)               , intent(in) ::lunout       !< unit number for reporting
     character(len=*)      , intent(in)       :: hydfile      !< name of the hyd-file to read
     character(len=*)      , intent(inout)    :: lchar(*)     !< filenames
-    integer  ( 4)         , intent(out)      :: noseg        !< number of segments
-    integer  ( 4), dimension(*), intent(out) :: nexch        !< number of exchanges
-    integer               , intent(out)      :: ierr         !< error code
+    integer(kind=int_wp)            , intent(out)      :: noseg        !< number of segments
+    integer(kind=int_wp)   , dimension(*), intent(out) :: nexch        !< number of exchanges
+    integer(kind=int_wp)               , intent(out) ::ierr         !< error code
 
 !   local variables
 
@@ -55,10 +57,10 @@ use m_get_filepath_and_pathlen
     character(len=400)                    :: path
     character(len=20)                     :: cdummy
     character(len=20), dimension(10)      :: keyword
-    integer,           dimension(10)      :: fileno
-    integer                               :: i, ierr2, lunin, idxlga, idxgeom, pathlen
+    integer(kind=int_wp),           dimension(10) ::fileno
+    integer(kind=int_wp)                                ::i, ierr2, lunin, idxlga, idxgeom, pathlen
 
-    integer                               :: nx, ny, nosegl, nolay, noq1, noq2, noq3
+    integer(kind=int_wp)                                ::nx, ny, nosegl, nolay, noq1, noq2, noq3
     character(len=4)                      :: identifier
     character(len=len(lchar))             :: grid_file
 

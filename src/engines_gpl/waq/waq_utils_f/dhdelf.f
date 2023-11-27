@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dhdelf
+      use m_waq_precision
+
 
       implicit none
 
@@ -43,11 +45,11 @@
 !     IERROR  INTEGER       1     OUTPUT  Error indication
 !
       CHARACTER*(*) FILNAM
-      INTEGER       IERROR
+      INTEGER(kind=int_wp) ::IERROR
 !
 !     Local
 !
-      INTEGER IOLUN, ILUN
+      INTEGER(kind=int_wp) ::IOLUN, ILUN
       LOGICAL LOPEN, LEXIST
 !
 !     Init

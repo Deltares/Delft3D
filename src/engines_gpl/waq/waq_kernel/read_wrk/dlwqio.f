@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqio
+      use m_waq_precision
+
 
       implicit none
 
@@ -81,9 +83,9 @@
       use timers
       use output
 
-      INTEGER       LUNWRO, LUREP , NOUTP , NRVART, NBUFMX, NOSYS,
+      INTEGER(kind=int_wp) ::LUNWRO, LUREP , NOUTP , NRVART, NBUFMX, NOSYS,
      +              IERR, NOTOT
-      INTEGER       IOUTPS(7,*)   , IOPOIN(*)     , LUN(*)
+      INTEGER(kind=int_wp) ::IOUTPS(7,*)   , IOPOIN(*)     , LUN(*)
       CHARACTER*(*) LCH           , LCHAR(*)
       CHARACTER*20  OUNAM(*)
       CHARACTER*100 OUSNM(*)      , SYSNM(*)
@@ -92,14 +94,14 @@
 !
 !     Local declarations
 !
-      integer, PARAMETER :: LUOFF = 18
-      integer, PARAMETER :: LUOFF2= 36
-      INTEGER       NOUTPD, NRVARD, NBUFMD
-      REAL          VERSIO
+      integer(kind=int_wp), PARAMETER  ::LUOFF = 18
+      integer(kind=int_wp), PARAMETER  ::LUOFF2= 36
+      INTEGER(kind=int_wp) ::NOUTPD, NRVARD, NBUFMD
+      REAL(kind=real_wp) ::VERSIO
 
-      integer  k, isrtou, ifi, idum
+      integer(kind=int_wp) ::k, isrtou, ifi, idum
 
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqio", ithandl )
 !
 !     read and check version number

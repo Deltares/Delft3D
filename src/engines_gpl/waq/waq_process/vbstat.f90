@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_vbstat
+use m_waq_precision
+
 
 implicit none
 
@@ -40,49 +42,49 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 16) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 16) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 16)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
-      real(4) DELT        ! I  timestep for processes                             (d)
+      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp)  ::ipoint( 16) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::increm( 16) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::ipnt( 16)   !    Local work array for the pointering
+      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
+      real(kind=real_wp)  ::DELT        ! I  timestep for processes                             (d)
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(4) SwEmersion  ! I  switch indicating submersion(0) or emersion(1)     (-)
-      real(4) SwWV        ! I  use wetland vegetation model (0=no,1=yes)          (-)
-      integer VBType      ! I  code of vegetation type for error and warnings     (-)
-      real(4) nsfVB       ! I  nr successive emersion(flood) VB01                 (d)
-      real(4) CrnsfVB01   ! I  critical number successive flood days VB01         (d)
-      real(4) SwNutVB01   ! I  switch indicating nutrient limitation (0=no,1=yes) (-)
-      real(4) Initnsf     ! I  initial nr of flood days at start of simulation    (d)
-      real(4) CrdepVB01   ! I  critical depth for inundation mortality VB01       (m)
-      real(4) Initnscd    ! I  initial critical depth exceedence days at start    (d)
-      real(4) TotalDepth  ! I  total depth water column                           (m)
-      real(4) SwVB01Gro   ! O  vegetation biomass growth allowed (0=no,1=yes)     (-)
-      real(4) SwVB01Mrt   ! O  vegetation biomass dead (0=no,1=yes)               (-)
-      real(4) nscdVB01    ! O  nr successive critical depth exceedence VB01       (d)
-      integer, save       :: ifirst(1:18) = 0     !    for initialisation
-      integer             :: ikmrk1         ! first feature
-      integer             :: ikmrk2         ! second feature
-      integer             :: ip             ! base output location for bottom segement pointer output
-      integer             :: inc            ! increment in output location for bottom segement pointer output
-      integer             :: iq             ! counter for pointer loop
-      integer             :: ifrom          ! from location
-      integer             :: ito            ! to location
-      integer             :: ibotseg        ! bottom segement for current segement
-      integer ilumon
+      real(kind=real_wp)  ::SwEmersion  ! I  switch indicating submersion(0) or emersion(1)     (-)
+      real(kind=real_wp)  ::SwWV        ! I  use wetland vegetation model (0=no,1=yes)          (-)
+      integer(kind=int_wp)  ::VBType      ! I  code of vegetation type for error and warnings     (-)
+      real(kind=real_wp)  ::nsfVB       ! I  nr successive emersion(flood) VB01                 (d)
+      real(kind=real_wp)  ::CrnsfVB01   ! I  critical number successive flood days VB01         (d)
+      real(kind=real_wp)  ::SwNutVB01   ! I  switch indicating nutrient limitation (0=no,1=yes) (-)
+      real(kind=real_wp)  ::Initnsf     ! I  initial nr of flood days at start of simulation    (d)
+      real(kind=real_wp)  ::CrdepVB01   ! I  critical depth for inundation mortality VB01       (m)
+      real(kind=real_wp)  ::Initnscd    ! I  initial critical depth exceedence days at start    (d)
+      real(kind=real_wp)  ::TotalDepth  ! I  total depth water column                           (m)
+      real(kind=real_wp)  ::SwVB01Gro   ! O  vegetation biomass growth allowed (0=no,1=yes)     (-)
+      real(kind=real_wp)  ::SwVB01Mrt   ! O  vegetation biomass dead (0=no,1=yes)               (-)
+      real(kind=real_wp)  ::nscdVB01    ! O  nr successive critical depth exceedence VB01       (d)
+      integer(kind=int_wp), save        ::ifirst(1:18) = 0     !    for initialisation
+      integer(kind=int_wp)              ::ikmrk1         ! first feature
+      integer(kind=int_wp)              ::ikmrk2         ! second feature
+      integer(kind=int_wp)              ::ip             ! base output location for bottom segement pointer output
+      integer(kind=int_wp)              ::inc            ! increment in output location for bottom segement pointer output
+      integer(kind=int_wp)              ::iq             ! counter for pointer loop
+      integer(kind=int_wp)              ::ifrom          ! from location
+      integer(kind=int_wp)              ::ito            ! to location
+      integer(kind=int_wp)              ::ibotseg        ! bottom segement for current segement
+      integer(kind=int_wp)  ::ilumon
 !
 !*******************************************************************************
 !

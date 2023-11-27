@@ -24,7 +24,8 @@ set_source_files_properties(${fortran_version_file}
 
 
 # Set dependencies
-set(oss_dependencies deltares_common
+set(oss_dependencies waq_definition
+                     deltares_common
                      deltares_common_c
                      waq_process
                      waq_hyd_data

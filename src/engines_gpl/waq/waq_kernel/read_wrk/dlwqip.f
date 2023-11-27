@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqip
+      use m_waq_precision
+
 
       implicit none
 
@@ -93,33 +95,33 @@
       use timers
       use process_registration
 
-      INTEGER       LUNWRP, LUREP , NOTOT , NIPMSA, NPROC ,
+      INTEGER(kind=int_wp) ::LUNWRP, LUREP , NOTOT , NIPMSA, NPROC ,
      +              NOLOC , NFLUX , NODEF , IPBLOO, 
      +              IOFFBL, NOSYS , NDSPX , NVELX ,
      +              NDSPN , NVELN , NOVAR , nrref
-      INTEGER       PRVNIO(*)     , IFLUX(*)      , PRVVAR(*)    ,
+      INTEGER(kind=int_wp) ::PRVNIO(*)     , IFLUX(*)      , PRVVAR(*)    ,
      +              PRVTYP(*)     , IMODU(*)      , IDPNW(*)     ,
      +              IVPNW(*)      , PROGRD(*)     , PRONDT(*)    ,
      +              VARARR(*)     , VARIDX(*)     , VARTDA(*)    ,
      +              VARDAG(*)     , VARTAG(*)     , VARAGG(*)    ,
      &              proref(*)     , prvpnt(*)
-      REAL          DEFAUL(*)     , STOCHI(*)     , DSTO(*)      ,
+      REAL(kind=real_wp) ::DEFAUL(*)     , STOCHI(*)     , DSTO(*)      ,
      +              VSTO(*)
       CHARACTER*(*) LCH
       CHARACTER*10  PRONAM(*)
 !
 !     Local declarations
-      INTEGER       NIPMSD, NPROCD, NOLOCD, NFLUXD, NODEFD,
+      INTEGER(kind=int_wp) ::NIPMSD, NPROCD, NOLOCD, NFLUXD, NODEFD,
      +              NOTOTD, IOFF, NOSYSD, NDSPXD, NVELXD,
      +              NLOCXD, NDSPND, NVELND, NOVARD, nrrefD
-      REAL          VERSIO
+      REAL(kind=real_wp) ::VERSIO
 
-      integer       k, ierr, nlocx, iproc, ifracs, ipdgrd
+      integer(kind=int_wp) ::k, ierr, nlocx, iproc, ifracs, ipdgrd
 !
 !jvb  Store fractional step flag in common CFRACS
 !
       COMMON /CFRACS/ IFRACS
-      integer(4) ithandl /0/
+      integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqip", ithandl )
 !jvb
 !

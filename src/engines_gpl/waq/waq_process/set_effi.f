@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_set_effi
+      use m_waq_precision
+
 
       implicit none
 
@@ -49,28 +51,28 @@
 
 !     arguments
 
-      real     temper     ! input , temperature
-      real     radiat     ! input , radiation
-      real     ext        ! input , total extinction
-      real     depthw     ! input , depth of the layer
-      real     daylen     ! input , daylength in hours
-      integer  id         ! input , weeknumber
+      real(kind=real_wp) ::temper     ! input , temperature
+      real(kind=real_wp) ::radiat     ! input , radiation
+      real(kind=real_wp) ::ext        ! input , total extinction
+      real(kind=real_wp) ::depthw     ! input , depth of the layer
+      real(kind=real_wp) ::daylen     ! input , daylength in hours
+      integer(kind=int_wp) ::id         ! input , weeknumber
 
 !     local decalarations
 
-      real*8   alpha      ! reflection factor
-      real*8   temp       ! temperature
-      real*8   csol       ! radiation
-      real*8   dsol       ! radiation
-      real*8   dep        ! depth
-      real*8   exttot     ! total extinction
-      real*8   day        ! daylength in hours
-      real*8   deat       ! DEAT
-      real*8   tcorr      ! TCORR
-      real*8   surf_typ   ! scaled, converted and corrected radiation for a type
-      integer  igroup     ! index number of BLOOM algae group
-      integer  itype      ! index number of BLOOM algae type
-      real*8   pmax20(mt),sdmixn(mt)
+      real(kind=dp) ::alpha      ! reflection factor
+      real(kind=dp) ::temp       ! temperature
+      real(kind=dp) ::csol       ! radiation
+      real(kind=dp) ::dsol       ! radiation
+      real(kind=dp) ::dep        ! depth
+      real(kind=dp) ::exttot     ! total extinction
+      real(kind=dp) ::day        ! daylength in hours
+      real(kind=dp) ::deat       ! DEAT
+      real(kind=dp) ::tcorr      ! TCORR
+      real(kind=dp) ::surf_typ   ! scaled, converted and corrected radiation for a type
+      integer(kind=int_wp) ::igroup     ! index number of BLOOM algae group
+      integer(kind=int_wp) ::itype      ! index number of BLOOM algae type
+      real(kind=dp) ::pmax20(mt),sdmixn(mt)
 
 
       dep    = depthw

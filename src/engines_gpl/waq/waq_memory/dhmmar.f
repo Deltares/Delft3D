@@ -22,6 +22,7 @@
 !!  rights reserved.
 
       MODULE DHMMAR_MOD
+      use m_waq_precision
       use m_srstop
 
       CONTAINS
@@ -56,8 +57,8 @@
 !
 !     Declaration of arguments
 !
-      INTEGER       LUNREP
-      INTEGER       J(:)
+      INTEGER(kind=int_wp) ::LUNREP
+      INTEGER(kind=int_wp) ::J(:)
       CHARACTER*(*) C(:)
       type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
 

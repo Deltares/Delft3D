@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_satch4
+      use m_waq_precision
+
 
       implicit none
 
@@ -52,15 +54,15 @@
 !
       IMPLICIT NONE
 !
-      REAL     PMSA  ( * ) , FL    (*)
-      INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
+      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 !
-      INTEGER  IP1, IP2, IP3, IN1, IN2, IN3
-      INTEGER  ISEG   , IFLUX
+      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IN1, IN2, IN3
+      INTEGER(kind=int_wp) ::ISEG   , IFLUX
 !
-      REAL     PCH4   , CCH4S
-      REAL     TEMP   , TEMP20
+      REAL(kind=real_wp) ::PCH4   , CCH4S
+      REAL(kind=real_wp) ::TEMP   , TEMP20
 !
       IN1  = INCREM( 1)
       IN2  = INCREM( 2)
