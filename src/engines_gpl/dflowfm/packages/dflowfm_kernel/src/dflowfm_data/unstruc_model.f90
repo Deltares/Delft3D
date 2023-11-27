@@ -1566,6 +1566,9 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'waves', 'jahissigwav'         , jahissigwav)     ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
     call prop_get_integer(md_ptr, 'waves', 'jamapsigwav'         , jamapsigwav)     ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
     call prop_get_integer(md_ptr, 'waves', 'jauorbfromswan'      , jauorbfromswan)  ! 1: use orbital velocities from com file; 0=internal uorb calculation. Default=0
+    if (jawave>0 .and. jawave<3 .and. jauorbfromswan == 1) then
+       call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: [waves] jauorbfromswan=1 can only be used in combination with [waves] Wavemodelnr>2.')
+    endif
     call prop_get_double (md_ptr, 'waves', 'fwfac'               , fwfac)           ! factor for adjusting wave boundary layer streaming, default 1.0
     call prop_get_double (md_ptr, 'waves', 'ftauw'               , ftauw)           ! factor for adjusting wave related bottom shear stress
     call prop_get_double (md_ptr, 'waves', 'fbreak'              , fbreak)          ! factor for adjusting wave breaking contribution to tke
