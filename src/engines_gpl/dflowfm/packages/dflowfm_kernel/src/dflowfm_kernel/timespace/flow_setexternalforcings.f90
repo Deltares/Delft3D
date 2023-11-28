@@ -699,6 +699,9 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
          else
             call get_timespace_value_by_name('airpressure_windx_windy')
          end if
+      ! Retrieve wind's charnock-component for ext-file quantity 'charnock'.
+      else if (ec_item_id == item_charnock) then
+         call get_timespace_value_by_item(item_charnock)
       ! Retrieve wind's x-component for ext-file quantity 'windx'.
       else if (ec_item_id == item_windx) then
          call get_timespace_value_by_item(item_windx)
@@ -738,6 +741,11 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
             wcharnock(link) = wcharnock(link) + 0.5d0*( ec_pwxwy_c(ln(1,link)) + ec_pwxwy_c(ln(2,link)) )
          end do
       end if
+   end if
+   if (allocated(ec_charnock)) then
+      do link  = 1, lnx
+         wcharnock(link) = wcharnock(link) + 0.5d0*( ec_charnock(ln(1,link)) + ec_charnock(ln(2,link)) )
+      end do
    end if
 
    if (jawindspeedfac > 0) then
