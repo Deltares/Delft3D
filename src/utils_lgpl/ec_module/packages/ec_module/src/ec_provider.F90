@@ -2636,6 +2636,9 @@ module m_ec_provider
          case ('whitecappingdissipation')
              ncvarnames(1) = 'swcap'
              ncstdnames(1) = 'swcap'
+         case ('totalwaveenergydissipation')
+             ncvarnames(1) = varname
+             ncstdnames(1) = varname    
              case default                                        ! experiment: gather miscellaneous variables from an NC-file,
              if (index(quantityName,'waqsegmentfunction')==1) then
                  ncvarnames(1) = quantityName

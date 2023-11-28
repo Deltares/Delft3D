@@ -1984,18 +1984,19 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', jamapIntTidesDiss, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_waves',jamapwav, success)
-    jamapwav_hwav   = 0
-    jamapwav_twav   = 0
-    jamapwav_phiwav = 0
-    jamapwav_sxwav  = 0
-    jamapwav_sywav  = 0
-    jamapwav_sxbwav = 0
-    jamapwav_sybwav = 0
-    jamapwav_mxwav  = 0
-    jamapwav_mywav  = 0
-    jamapwav_dsurf  = 0
-    jamapwav_dwcap  = 0
-    jamapwav_uorb   = 0
+    jamapwav_hwav    = 0
+    jamapwav_twav    = 0
+    jamapwav_phiwav  = 0
+    jamapwav_sxwav   = 0
+    jamapwav_sywav   = 0
+    jamapwav_sxbwav  = 0
+    jamapwav_sybwav  = 0
+    jamapwav_mxwav   = 0
+    jamapwav_mywav   = 0
+    jamapwav_dsurf   = 0
+    jamapwav_dwcap   = 0
+    jamapwav_distot  = 0
+    jamapwav_uorb    = 0
 
     call prop_get_integer(md_ptr, 'output', 'Wrimap_DTcell',jamapdtcell, success)
     epswetout = epshs ! the same as numerical threshold to counts as 'wet'.

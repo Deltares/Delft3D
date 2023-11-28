@@ -528,18 +528,19 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jamapIntTidesDiss         !< internal tides dissipation to map file, 0: no, 1: yes
  integer                           :: jamapNudge                !< output nudging to map file, 0: no, 1: yes
  integer                           :: jamapwav                  !< output waves to map file, 0: no, 1: yes
- integer                           :: jamapwav_hwav             !< output waves to map file for variable hwav, 0: no, 1: yes
- integer                           :: jamapwav_twav             !< output waves to map file for variable twav, 0: no, 1: yes
+ integer                           :: jamapwav_hwav             !< output waves to map file for variable hwav,   0: no, 1: yes
+ integer                           :: jamapwav_twav             !< output waves to map file for variable twav,   0: no, 1: yes
  integer                           :: jamapwav_phiwav           !< output waves to map file for variable phiwav, 0: no, 1: yes
- integer                           :: jamapwav_sxwav            !< output waves to map file for variable sxwav, 0: no, 1: yes
- integer                           :: jamapwav_sywav            !< output waves to map file for variable sywav, 0: no, 1: yes
+ integer                           :: jamapwav_sxwav            !< output waves to map file for variable sxwav,  0: no, 1: yes
+ integer                           :: jamapwav_sywav            !< output waves to map file for variable sywav,  0: no, 1: yes
  integer                           :: jamapwav_sxbwav           !< output waves to map file for variable sxbwav, 0: no, 1: yes
  integer                           :: jamapwav_sybwav           !< output waves to map file for variable sybwav, 0: no, 1: yes
- integer                           :: jamapwav_mxwav            !< output waves to map file for variable mxwav, 0: no, 1: yes
- integer                           :: jamapwav_mywav            !< output waves to map file for variable mywav, 0: no, 1: yes
- integer                           :: jamapwav_dsurf            !< output waves to map file for variable dsurf, 0: no, 1: yes
- integer                           :: jamapwav_dwcap            !< output waves to map file for variable dwcap, 0: no, 1: yes
- integer                           :: jamapwav_uorb             !< output waves to map file for variable uorb, 0: no, 1: yes
+ integer                           :: jamapwav_mxwav            !< output waves to map file for variable mxwav,  0: no, 1: yes
+ integer                           :: jamapwav_mywav            !< output waves to map file for variable mywav,  0: no, 1: yes
+ integer                           :: jamapwav_dsurf            !< output waves to map file for variable dsurf,  0: no, 1: yes
+ integer                           :: jamapwav_dwcap            !< output waves to map file for variable dwcap,  0: no, 1: yes
+ integer                           :: jamapwav_distot           !< output waves to map file for variable distot, 0: no, 1: yes
+ integer                           :: jamapwav_uorb             !< output waves to map file for variable uorb,   0: no, 1: yes
 
  integer                           :: jamapdtcell               !< output time steps per cell based on CFL
  integer                           :: jamapTimeWetOnGround      !< output to map file the cumulative time when water is above ground level, 0: no, 1: yes

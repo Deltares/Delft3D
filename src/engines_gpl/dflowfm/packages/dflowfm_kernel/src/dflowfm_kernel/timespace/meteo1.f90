@@ -6686,6 +6686,7 @@ module m_meteo
    integer, target :: item_my                                                !< Unique Item id of the ext-file's 'item_my' quantity
    integer, target :: item_dissurf                                           !< Unique Item id of the ext-file's 'item_dissurf' quantity
    integer, target :: item_diswcap                                           !< Unique Item id of the ext-file's 'item_diswcap' quantity
+   integer, target :: item_distot                                            !< Unique Item id of the ext-file's 'item_distot'  quantity
    integer, target :: item_ubot                                              !< Unique Item id of the ext-file's 'item_ubot' quantity
 
    integer, target :: item_nudge_tem                                         !< 3D temperature for nudging
@@ -6799,6 +6800,7 @@ module m_meteo
       item_my                                    = ec_undef_int
       item_dissurf                               = ec_undef_int
       item_diswcap                               = ec_undef_int
+      item_distot                                = ec_undef_int
       item_ubot                                  = ec_undef_int
       item_dambreakLevelsAndWidthsFromTable      = ec_undef_int 
       item_subsiduplift                          = ec_undef_int
@@ -7242,6 +7244,10 @@ module m_meteo
             itemPtr1 => item_diswcap
             dataPtr1 => dwcap
             jamapwav_dwcap = 1
+         case ('totalwaveenergydissipation')
+            itemPtr1 => item_distot
+            dataPtr1 => distot
+            jamapwav_distot = 1
          case ('ubot')
             itemPtr1 => item_ubot
             dataPtr1 => uorbwav            

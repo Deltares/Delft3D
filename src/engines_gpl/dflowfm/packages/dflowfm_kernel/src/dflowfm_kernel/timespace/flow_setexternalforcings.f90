@@ -497,9 +497,10 @@ end subroutine set_parameters_for_radiation_stress_driven_forces
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via averaged dissipation) 
 subroutine set_parameters_for_dissipation_driven_forces()
 
-    success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_tp  , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_dir , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_hrms  , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_tp    , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_dir   , ecTime)
+    success = success .and. ecGetValues(ecInstancePtr, item_distot, ecTime)
     sxwav  (:) = 0d0
     sywav  (:) = 0d0
     mxwav  (:) = 0d0
@@ -913,6 +914,7 @@ end subroutine fill_open_boundary_cells_with_inner_values_all
 !> fill_open_boundary_cells_with_inner_values_fewer
 subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
     use m_waves
+    use m_flowparameters, only : jawave, waveforcing
 
     integer, intent(in) :: number_of_links      !< number of links
     integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
@@ -921,6 +923,14 @@ subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, lin
     integer             :: kb   !< cell index of boundary cell
     integer             :: ki   !< cell index of internal cell
 
+    
+    if (jawave == 7 .and. waveforcing == 2 ) then
+        do link = 1,number_of_links
+            kb   = link2cell(1,link)
+            ki   = link2cell(2,link)
+            distot(kb) = distot(ki)
+        end do
+    endif
     do link = 1, number_of_links
         kb   = link2cell(1,link)
         ki   = link2cell(2,link)
