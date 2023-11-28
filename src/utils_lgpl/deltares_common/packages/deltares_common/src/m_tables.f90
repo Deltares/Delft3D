@@ -54,6 +54,7 @@ module m_tables
    public integrate
    public dealloc
    public realloc
+   public hasTableData
    public printData
 
    interface interpolate
@@ -206,6 +207,7 @@ contains
       
    end subroutine reallocTable
 
+
    subroutine deallocTable(table)
       ! Modules
 
@@ -285,13 +287,31 @@ contains
       
    end subroutine deallocTableSet
 
+   !> Checks whether a table contains any data.
+   !! Combines the pointer and length > 0 check for convenience at call site.
+   logical function hasTableData(table)
+      implicit none
+
+      type(t_table), pointer, intent(in) :: table !< Table to test, may be unassociated.
+
+      if (associated(table)) then
+         hasTableData = table%length > 0
+      else
+         hasTableData = .false.
+      end if
+   end function hasTableData
+
+
+   !> Interpolate/look up a value in a table.
+   !! Result value is determined by the input value and the table's interpolation type.
+
    double precision function InterpolateTable(table, xs)
        implicit none
    !
    ! Global variables
    !
-       type(t_table)                  :: table
-       double precision, intent(in)   :: xs
+       type(t_table),    intent(inout) :: table !< Table containing two-column data. When empty, the result value is undefined.
+       double precision, intent(in   ) :: xs    !< Value to look up
    !
    !
    ! Local variables
@@ -318,6 +338,11 @@ contains
    !
        !     Period defined ?
        len = table%length
+       if (len <= 0) then
+          ! No table contents, return with undefined result value.
+          return
+       end if
+       
        period = table%interpoltype/10==1
        interpoltype = mod(table%interpoltype, 10)
        si = table%stCount

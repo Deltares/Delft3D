@@ -92,11 +92,10 @@ module m_Storage
       double precision        :: x                       !< (optional) x-coordinate
       double precision        :: y                       !< (optional) y-coordinate
       logical                 :: use_table               !< flag indicating whether table is to be used
-      type(t_table), pointer  :: angle_loss              !< lookup table that connects an angle to an energy loss coefficient
-      double precision        :: entrance_loss           !< entrance loss coefficient
-      double precision        :: exit_loss               !< exit loss coefficient
-      double precision        :: expansion_loss          !< loss coefficient for expansion or contraction
-      double precision        :: bend_loss               !< bend loss coefficient for the upstream pipe(s)
+      type(t_table), pointer  :: angle_loss     => null()!< lookup table that connects an angle to an energy loss coefficient
+      double precision        :: entrance_loss  = 0d0    !< entrance loss coefficient
+      double precision        :: exit_loss      = 0d0    !< exit loss coefficient
+      double precision        :: expansion_loss = 0d0    !< loss coefficient for expansion or contraction
    end type
    
    type, public :: t_storage_set

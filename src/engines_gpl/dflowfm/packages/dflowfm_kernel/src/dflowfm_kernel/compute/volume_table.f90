@@ -529,7 +529,7 @@ module m_VolumeTables
             nod = stors(i)%grid_Point 
             n = nod-ndx2d
             if (n > 0) then
-               vltb(n)%topHeight = max(vltb(n)%topHeight, get_Top_Level(stors(i))) - bl(nod)
+               vltb(n)%topheight = max(vltb(n)%topheight, get_top_level(stors(i))) - bl(nod)
             endif
          enddo
       endif
@@ -553,16 +553,16 @@ module m_VolumeTables
       nstor = network%stors%count
       ! Compute the contribution of all the storage nodes to the volume table of the corresponding node
       do i = 1, nstor
-         nod = stors(i)%grid_Point 
+         nod = stors(i)%grid_point 
          n = nod-ndx2d
          if (n > 0) then
 
             do j = 1, vltb(n)%count
                level = bl(nod) + (j-1)*tableIncrement
-               vltb(n)%vol(j) = vltb(n)%vol(j) + get_Volume(stors(i), level)
+               vltb(n)%vol(j) = vltb(n)%vol(j) + get_volume(stors(i), level)
                ! NOTE: %sur follows at the end as an average for each level
             enddo
-            vltb(n)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) + Get_Surface(stors(i), level)
+            vltb(n)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) + get_surface(stors(i), level)
          endif
       enddo
    end subroutine addStorageToVltb

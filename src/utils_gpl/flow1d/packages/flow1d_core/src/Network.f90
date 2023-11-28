@@ -90,7 +90,7 @@ module m_network
       type(t_CompoundSet)                       :: cmps                    !< Administration compound structures
       type(t_RoughnessSet)                      :: rgs                     !< set containing roughness sections
       type(t_ObservationPointSet)               :: obs                     !< set of observation points
-      type(t_storage_set)                        :: storS                   !< set containing storage in gridpoints
+      type(t_storage_set)                       :: storS                   !< set containing storage in gridpoints
       type(t_CSDefinitionSet)                   :: CSDefinitions
       type(t_spatial_dataSet)                   :: spData
       type(t_ObservCrossSectionSet)             :: observcrs               !< set of observation Cross-Sections 

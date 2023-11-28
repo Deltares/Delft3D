@@ -76,10 +76,10 @@
    if (japerim == 0 .and. nstor > 0 .and. .not. useVolumeTables) then
       stors => network%stors%stor
       do i = 1, nstor
-         k1 = stors(i)%grid_Point
+         k1 = stors(i)%grid_point
          if (k1 > 0) then
-            vol1(k1) = vol1(k1) + get_Volume(stors(i), s1(k1))
-            a1(k1)   = a1(k1)   + get_Surface(stors(i), s1(k1))
+            vol1(k1) = vol1(k1) + get_volume(stors(i), s1(k1))
+            a1(k1)   = a1(k1)   + get_surface(stors(i), s1(k1))
          end if
       enddo
    endif

@@ -125,11 +125,6 @@ module m_readStorageNodes
       end if
 
       ! check optional [Global] values for junction loss parameters
-      allocate(angle_loss_global)
-      angle_loss_global%length = 0
-      entrance_loss_global  = 0d0        
-      exit_loss_global      = 0d0     
-      expansion_loss_global = 0d0           
       call read_all_loss_values(md_ptr, 'Global', 'section [Global]', angle_loss_global, &
          entrance_loss_global, exit_loss_global, expansion_loss_global, success)
 
@@ -192,7 +187,7 @@ module m_readStorageNodes
             success = success .and. check_input(success1, storgNodeId, 'name')
 
             ! read optional node type
-            node_type = 'compartment'
+            node_type = ''
             call prop_get(node_ptr, '', 'nodeType', node_type, success1)
 
             ! read location
@@ -417,6 +412,7 @@ module m_readStorageNodes
       !> Helper subroutine to read all loss coefficients (angle loss table +
       !! scalar coefficients), either from [Global] data, or for a specific StorageNode.
       subroutine read_all_loss_values(tree_ptr, chapter_name, section_string, angle_loss, entrance_loss, exit_loss, expansion_loss, success)
+         use m_tables, only : t_table, realloc
          type(tree_data), pointer     , intent(in   ) :: tree_ptr       !< The input tree to read from.
          character(len=*),              intent(in   ) :: chapter_name   !< Which chapter to read from (use 'Global' for global reading, or '' when tree_ptr already contains a single specific storage node).
          character(len=*),              intent(in   ) :: section_string !< Character string used only in error messages, describing in which input section faulty input was read.
@@ -437,7 +433,6 @@ module m_readStorageNodes
          entrance_loss  = 0d0
          exit_loss      = 0d0
          expansion_loss = 0d0
-
          call prop_get(tree_ptr, chapter_name, 'angleCount', num_angles)
          if (num_angles > 0) then
             nullify(new_angle_loss)
