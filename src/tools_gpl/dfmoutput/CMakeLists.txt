@@ -23,6 +23,7 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
 
     set(oss_dependencies deltares_common
+                         gridgeom
                          io_netcdf
                          io_netcdf_data
                          FLAP
@@ -37,6 +38,7 @@ endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies deltares_common
+                         gridgeom
                          io_netcdf
                          io_netcdf_data
                          FLAP
