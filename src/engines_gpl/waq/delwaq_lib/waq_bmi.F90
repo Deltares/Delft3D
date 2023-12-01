@@ -596,6 +596,10 @@ module bmi
         ! * item-name-or-number: name of the waste load and the like or segment number, could also be "*"
         ! * substance-or-parameter-name: name or "*"
         !
+        if ( .not. allocated(connection) ) then
+            allocate( connection(0) )
+        endif
+
         idx = key_index(key_given, connection)
 
         if (idx <= 0) then
@@ -670,7 +674,7 @@ module bmi
             character(len=*), intent(in)                                    :: key_name     !< Connection key to find
             type(connection_data), dimension(:), allocatable, intent(inout) :: connection   !< Array storing the connection information
             integer(kind=int_wp), intent(out)                               :: newidx
-            
+
             type(connection_data)                                           :: new_connection
             character(len=len(key_name))                                    :: copy_key, component, item_name, subst_param
             integer(kind=int_wp)                                            :: i, k
@@ -722,28 +726,30 @@ module bmi
             !
             k = index(copy_key, '|')
             component = copy_key(1:k - 1)
-            copy_key = copy_key(k + 1:)
+            copy_key  = copy_key(k + 1:)
             !
             ! The item name or index
             !
             k = index(copy_key, '|')
             item_name = copy_key(1:k - 1)
-            copy_key = copy_key(k + 1:)
+            copy_key  = copy_key(k + 1:)
             !
-            ! The item name or index (this may be the last part of the connection string)
+            ! The substance name or parameter name
+            ! (for constants this is the previous part of the connection string)
             !
-            k         = index( copy_key, '|' )
-            if ( k == 0 ) then
+            if ( copy_key == ' ' ) then
                 if ( index( key_name, '|CONST|' ) /= 0 ) then
-                    item_name = copy_key
+                    subst_param = item_name
                 else
-                    item_name =  ' '
+                    return
                 endif
             else
-                item_name = copy_key(1:k-1)
+                subst_param = copy_key
             endif
-            copy_key  = copy_key(k+1:)
 
+            !
+            ! Create the connection
+            !
             selection: &
                 block
             select case (component)
@@ -848,12 +854,15 @@ module bmi
                     new_connection%buffer_idx = iconc-1 + isys + (iseg-1)*notot  ! a(iconc:)
 
                 case( 'CONST' )
+
+                    ! NOTE: parameters/segment functions not supported yet
+
                     new_connection%category = category_procparam
                     ! Constant (timeseries) or parameter (segment function)
                     ! Index would be index in the list, name is also allowed
                     !
 
-                    call zoekns( item_name, size(procparam_const), procparam_const, len(procparam_const), conidx )   ! procparam_const is the name of constants.
+                    call zoekns( subst_param, size(procparam_const), procparam_const, len(procparam_const), conidx )   ! procparam_const is the name of constants.
 
                     if ( conidx < 1 ) then
                         newidx = 0
@@ -865,6 +874,12 @@ module bmi
                     new_connection%category = category_hydrodynamics
                     ! TODO - get arrays like volume etc.
             end select
+
+            !
+            ! Fill in the details
+            !
+            connection = [connection, new_connection]
+            newidx     = size(connection)
 
             end block &
                 selection
