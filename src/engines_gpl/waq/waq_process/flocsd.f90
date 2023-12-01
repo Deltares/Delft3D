@@ -42,7 +42,7 @@ contains
 !
 !     type    name         i/o description
 !
-      integer(kind=int_wp),  parameter :: nopmsa = 17
+      integer(kind=int_wp),  parameter :: nopmsa = 18
 
       real(kind=real_wp)  ::pmsa(*)        !i/o process manager system array, window of routine to process library
       real(kind=real_wp)  ::fl(*)          ! o  array of fluxes made by this process in mass/volume/time
@@ -66,7 +66,7 @@ contains
       integer(kind=int_wp)  ::idflocim1
       integer(kind=int_wp)  ::idflocim2
 
-      integer(kind=int_wp)  ::ip14, in14, ip15, in15, ipwmac, inwmac, ipwmic, inwmic, iq, noq, ivan
+      integer(kind=int_wp)  ::ip15, in15, ip16, in16, ipwmac, inwmac, ipwmic, inwmic, iq, noq, ivan
 
       real(kind=real_wp)  ::cmacro      ! i  inorganic matter (im1; macro flocs)                (gdm/m3)
       real(kind=real_wp)  ::cmicro      ! i  inorganic matter (im2; micro flocs)                (gdm/m3)
@@ -112,7 +112,8 @@ contains
          viscosity   = pmsa( ipnt(  9) )
          delt        = pmsa( ipnt( 10) )
          total_depth = pmsa( ipnt( 11) )
-         local_depth = pmsa( ipnt( 12) )
+         local_depth = pmsa( ipnt( 12) ) 0.5 * pmsa( ipnt( 13) )  ! The "average" depth of the segment,
+                                                                  ! not the bottom level
 
          ! only for active water segments
 
@@ -146,9 +147,9 @@ contains
 
          fl  ( idflocim1   ) =  dfloc
          fl  ( idflocim2   ) = -dfloc
-         pmsa( ipnt( 13)   ) =  spmratioem
-         pmsa( ipnt( 14)   ) =  ws_macro
-         pmsa( ipnt( 15)   ) =  ws_micro
+         pmsa( ipnt( 14)   ) =  spmratioem
+         pmsa( ipnt( 15)   ) =  ws_macro
+         pmsa( ipnt( 16)   ) =  ws_micro
 
          idflocim1   = idflocim1   + noflux
          idflocim2   = idflocim2   + noflux
@@ -161,10 +162,10 @@ contains
       !
       noq = noq1 + noq2 + noq3
 
-      ipwmac = ipoint(16)
-      inwmac = increm(16)
-      ipwmic = ipoint(17)
-      inwmic = increm(17)
+      ipwmac = ipoint(17)
+      inwmac = increm(17)
+      ipwmic = ipoint(18)
+      inwmic = increm(18)
 
       !
       ! Horizontal exchanges - set to zero
@@ -186,10 +187,10 @@ contains
 !        sedimentation velocity from segment to exchange-area
 !
          if ( ivan > 0 ) then
-            ip14 = ipoint(14) + (ivan-1) * in14
             ip15 = ipoint(15) + (ivan-1) * in15
-            pmsa(ipwmac) = pmsa( ip14 )
-            pmsa(ipwmic) = pmsa( ip15 )
+            ip16 = ipoint(16) + (ivan-1) * in16
+            pmsa(ipwmac) = pmsa( ip15 )
+            pmsa(ipwmic) = pmsa( ip16 )
          endif
 
          ipwmac = ipwmac + inwmac
