@@ -1276,6 +1276,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'physics', 'Dalton'            , Dalton)
     call prop_get_double (md_ptr, 'physics', 'Tempmax'           , Tempmax)
     call prop_get_double (md_ptr, 'physics', 'Tempmin'           , Tempmin)
+    call prop_get_integer(md_ptr, 'physics', 'Allowcoolingbelowzero'  , Jaallowcoolingbelowzero)
     call prop_get_double (md_ptr, 'physics', 'Salimax'           , Salimax)
     call prop_get_double (md_ptr, 'physics', 'Salimin'           , Salimin)
     call prop_get_double (md_ptr, 'physics', 'Surftempsmofac'    , Surftempsmofac)
@@ -3087,6 +3088,9 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
        if (writeall .or. (tempmax .ne. dmiss .or. tempmin .ne. 0d0)) then
           call prop_set(prop_ptr, 'physics', 'Tempmax',  Tempmax , 'Limit the temperature')
           call prop_set(prop_ptr, 'physics', 'Tempmin',  Tempmin , 'Limit the temperature')
+       endif
+       if (writeall .or. Jaallowcoolingbelowzero .ne. 0) then
+          call prop_set(prop_ptr, 'physics', 'Allowcoolingbelowzero',  Jaallowcoolingbelowzero , '0 = no, 1 = yes')
        endif
        if (writeall .or. surftempsmofac > 0d0) then
           call prop_set(prop_ptr, 'physics', 'Surftempsmofac',  Surftempsmofac , 'Hor . Smoothing factor for surface water in heatflx comp. (0.0-1.0), 0=no')

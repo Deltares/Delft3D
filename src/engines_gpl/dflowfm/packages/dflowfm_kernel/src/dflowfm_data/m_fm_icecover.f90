@@ -302,7 +302,7 @@ end subroutine fm_ice_update_press
 
 !> preprocessing for ice cover, because in subroutine HEATUN some ice cover quantities have to be computed
 !! this subroutine is comparable with subroutine HEA_ICE.F90 of the Delft3D-FLOW ice module
-subroutine preprocess_icecover(n, Qlong_ice, tempwat, wind, timhr)
+subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind, timhr)
 !!--declarations----------------------------------------------------------------
     use MessageHandling
     use m_flow                         ! test om tair(.) te gebruiken
@@ -316,7 +316,8 @@ subroutine preprocess_icecover(n, Qlong_ice, tempwat, wind, timhr)
     !
     integer                                    , intent(in)    :: n             !> node number
     real(fp)                                   , intent(in)    :: Qlong_ice     !> part of Qlong computed in HEATUN
-    real(fp)                                   , intent(in)    :: tempwat       !> temperature of water [degC]
+    real(fp)                                   , intent(in)    :: tempwat       !> temperature of water at top layer [degC]
+    real(fp)                                   , intent(in)    :: saltcon       !> salinity of water at top layer [degC]
     real(fp)                                   , intent(in)    :: wind          !> wind speed [m/s]
     real(fp)                                   , intent(in)    :: timhr         !> time [h]
     !
@@ -356,13 +357,15 @@ subroutine preprocess_icecover(n, Qlong_ice, tempwat, wind, timhr)
     p_r      = 13.0_fp
     p_rt     = 0.85_fp
     kin_vis  = 0.0000018_fp
-    t_freeze = 0.0_fp
     rhow     = 1000.0_fp
     z00      = 2e-4_fp
     ustar    = 0.025_fp * wind ! See Eq. (12.5) in D-Flow FM User Manual: ustar = sqrt(C_D) * U_10
     hdz      = 0.0_fp  
     converged = .false.
     
+    ! Compute freezing point
+    t_freeze = ( -0.0575d0 - 2.154996d-4*saltcon ) * saltcon
+
     select case (ja_icecover)
     case (ICECOVER_KNMI)
         ! follow De Bruin & Wessels (1975)
@@ -462,7 +465,7 @@ subroutine preprocess_icecover(n, Qlong_ice, tempwat, wind, timhr)
         !
         ! Calculate heat flux out of the ocean
         !
-        qh_ice2wat(n) = rhow * cpw * c_tz * ( t_freeze - max(0.01_fp,tempwat) ) 
+        qh_ice2wat(n) = rhow * cpw * c_tz * min(-0.01, tempwat - t_freeze ) 
         !
         ! extra output for ice testbasin
         !if (n==25) then

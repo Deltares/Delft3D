@@ -5044,8 +5044,8 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       if (jamapheatflux > 0 .and. jatem > 1) then ! here less verbose
 
          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_tair   , nf90_double, UNC_LOC_S, 'Tair' , 'surface_temperature'      , 'Air temperature near surface'     , 'degC', jabndnd=jabndnd_)
-         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_tair   , nf90_double, UNC_LOC_S, 'Rhum' , 'surface_specific_humidity', 'Relative humidity near surface'    , '', jabndnd=jabndnd_)
-         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_tair   , nf90_double, UNC_LOC_S, 'Clou' , 'cloud_area_fraction'      , 'Cloudiness'                       , '1', jabndnd=jabndnd_)
+         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_rhum   , nf90_double, UNC_LOC_S, 'Rhum' , 'surface_specific_humidity', 'Relative humidity near surface'    , '', jabndnd=jabndnd_)
+         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_clou   , nf90_double, UNC_LOC_S, 'Clou' , 'cloud_area_fraction'      , 'Cloudiness'                       , '1', jabndnd=jabndnd_)
 
          if (jatem == 5) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun  , nf90_double, UNC_LOC_S, 'Qsun'  , 'surface_net_downward_shortwave_flux'                     , 'Solar influx'                         , 'W m-2', jabndnd=jabndnd_)

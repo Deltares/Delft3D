@@ -140,12 +140,6 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
 !  sources
    do kk=1,Ndx
 
-      if (jamba > 0) then
-         imba = mbadefdomain(kk)
-      else
-         imba = 0
-      endif
-
 !     nudging
       Trefi = 0d0
       if ( janudge.eq.1 .and. jas.eq.1 ) then
@@ -159,17 +153,16 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
 
 !        temperature
          if (jatem > 1) then
-            if (heatsrc(k) > 0d0) then
-               const_sour(ITEMP,k) =  heatsrc(k)*dvoli
-               if (imba > 0) then
-                   mbafluxheat(1,imba) = mbafluxheat(1,imba) +  heatsrc(k)*dts
+            if (Jaallowcoolingbelowzero == 0) then  ! default behaviour since 2017
+                                                    ! no cooling below 0 degrees  
+               if (heatsrc(k) > 0d0) then
+                  const_sour(ITEMP,k) = heatsrc(k)*dvoli
+               else if (heatsrc(k) < 0d0) then
+                  const_sink(ITEMP,k) = -heatsrc(k)*dvoli / max(constituents(itemp, k),0.001)
                endif
-            else if (heatsrc(k) < 0d0) then
-               const_sink(ITEMP,k) = -heatsrc(k)*dvoli / max(constituents(itemp, k),0.001)
-               if (imba > 0) then
-                   mbafluxheat(2,imba) = mbafluxheat(2,imba) - heatsrc(k)*dts
-               endif
-            endif
+            else                                    ! allowing cooling below 0 degrees 
+               const_sour(ITEMP,k) = heatsrc(k)*dvoli
+            endif 
          endif
 
 !        nudging
@@ -238,6 +231,25 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
          end if
       end if
    end do
+   
+   if (jamba > 0 .and. jatem > 0) then   ! Positive and negative sums for jamba, checking just once   
+                                         
+      do kk=1,Ndx
+         imba = mbadefdomain(kk)
+         if (imba > 0) then 
+            call getkbotktop(kk,kb,kt)
+            do k=kb,kt
+               if (heatsrc(k) > 0d0) then
+                   mbafluxheat(1,imba) = mbafluxheat(1,imba) + heatsrc(k)*dts
+               else if (heatsrc(k) < 0d0) then
+                   mbafluxheat(2,imba) = mbafluxheat(2,imba) - heatsrc(k)*dts
+               endif
+            enddo       
+         endif
+      enddo
+
+   endif
+
 
    ! NOTE: apply_tracer_bc has been moved earlier to transport() routine,
    !       but apply_sediment_bc must still be done here, since above the boundary

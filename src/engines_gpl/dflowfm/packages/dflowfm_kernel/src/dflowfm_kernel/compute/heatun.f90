@@ -38,7 +38,7 @@ use m_itdate
 use unstruc_model
 use m_flowtimes
 use m_heatfluxes
-use m_transport, only: constituents, itemp
+use m_transport, only: constituents, itemp, isalt
 use m_fm_icecover
 ! use m_fm_icecover, only: ja_icecover, ice_af, ice_h, snow_h, ice_t, snow_t, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER
 
@@ -62,7 +62,7 @@ double precision :: hlc, arn, wxL, wyL, uL, vL, uxL, uyL, bak2, twatb
 
 double precision :: qsunsoil, qwatsoil, watsoiltransfer, rdtsdz, soiltemprev, pvtamxB, pvtwmxB
 
-double precision :: afrac, Qlong_ice, tsurf
+double precision :: afrac, Qlong_ice, tsurf, saltcon
 
 if (ja_icecover /= ICECOVER_NONE) then
     afrac = 1d0 - ice_af(n)
@@ -315,15 +315,27 @@ else if (jatem == 5) then
           !
           qh_air2ice(n) = qsu + qheat
           !
-          call preprocess_icecover(n, Qlong_ice, twatn, windn, timhr)
+          if (ISALT .gt. 0) then
+             if (kmx .eq. 0 ) then
+                saltcon = constituents(isalt,n)
+             else    
+               saltcon = constituents(isalt,kt)
+             endif    
+          else  
+             saltcon = 0.0d0
+          endif    
+          call preprocess_icecover(n, Qlong_ice, twatn, saltcon, windn, timhr)
        endif
        !
        if (ice_h(n) > 0.001_fp) then
            !
            ! recompute heatsrc0 because of presence of ice
            !
-           heatsrc0(n) = heatsrc0(n) - qsn*afrac - qheat*rcpiba*afrac   !  reset all contriobutions so far
-           heatsrc0(n) = heatsrc0(n) + qh_ice2wat(n)*afrac 
+           if (kmx > 0 ) then
+              heatsrc0(kt) = qh_ice2wat(n)*afrac 
+           else
+              heatsrc0(n) = qh_ice2wat(n)*afrac 
+           endif
        endif    
    endif 
   

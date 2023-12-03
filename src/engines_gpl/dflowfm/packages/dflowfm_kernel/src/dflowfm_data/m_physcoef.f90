@@ -122,6 +122,7 @@
  double precision                  :: Dalton                     !< coeff for evaporative heat flux, if negative , take wind Cd
  double precision                  :: Tempmax = -999d0           !< limit
  double precision                  :: Tempmin = 0d0              !< limit
+ integer                           :: Jaallowcoolingbelowzero =0 !< Allow cooling below 0 degrees C (0=default since 2017) 
  double precision                  :: Salimax = -999d0           !< limit
  double precision                  :: Salimin = 0d0              !< limit
  double precision                  :: epshstem = 0.001d0         !< only compute heatflx + evap if depth > trsh
