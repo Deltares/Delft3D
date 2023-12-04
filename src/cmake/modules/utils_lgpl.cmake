@@ -53,5 +53,5 @@ set(d_hydro_lib_module ${utils_lgpl_path}/d_hydro_lib/packages/d_hydro_lib)
 # Tests
 set(test_deltares_common_module test/utils_lgpl/deltares_common/packages/test_deltares_common)
 set(test_ec_module              test/utils_lgpl/ec_module/packages/ec_module_test)
-set(test_waq_utils_f            test/engines_gpl/waq/packages/waq_utils_f)
+set(test_waq_utils_f            test/engines_gpl/waq/waq_utils_f)
 set(test_dflowfm_kernel         test/engines_gpl/dflowfm/packages/dflowfm_kernel)

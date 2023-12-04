@@ -1,7 +1,7 @@
 set(library_name trachytopes_io)
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
 
-# Add dependencies                                    
+# Add dependencies
 set(oss_dependencies deltares_common deltares_common_mpi trachytopes_kernel)
 oss_include_libraries(${library_name} oss_dependencies)
 

@@ -77,3 +77,14 @@ with:
 
 Example:    
 fm/feature/UNST-1234_improve_partition_file
+
+# Unit tests
+## Running Unit tests
+- After building the source code, execute "ctest" in the build directory
+- Then run ctest followed by the config  
+
+```
+  cd build_all
+  ctest -C debug
+```
+- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](unit-testing.md).

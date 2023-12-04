@@ -1,53 +1,47 @@
-# Set directory which contains all source files
-set(src_path .)
+set(executable_name delwaq2)
 
-# Set version file variables
-set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../) # Trace back to the WAQ path
-
-# Set version file variables
+set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(waq_version_path ${waq_root_path}/resources/version)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(rc_version_file ${waq_version_path}/version_number_delwaq2.rc)
-
-# Gather source files
-get_fortran_source_files(${src_path} source)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 # Set icon file
 set(icon_file ${waq_version_path}/waq_icon.rc)
 
-# Define executable
-set(executable_name delwaq2)
-add_executable(${executable_name} ${source}
-                                  ${icon_file}
-                                  ${rc_version_file})
+
+create_target(
+        ${executable_name} ${CMAKE_CURRENT_SOURCE_DIR}
+        src_dir .
+        resource_files ${icon_file} ${rc_version_file}
+        target_type "executable"
+)
 
 # Add dependencies
 set(oss_dependencies delwaq_lib)
 
 if(UNIX)
     target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         uuid)
+                            ${oss_dependencies}
+                            uuid)
 endif(UNIX)
 
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 
 # Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if(UNIX)
-    target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
+    target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
-    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 if (WIN32)
-    target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir} ${mpi_include_path})
+    target_include_directories(${executable_name} PRIVATE  ${version_include_dir} ${mpi_include_path})
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
@@ -76,10 +70,6 @@ if (WIN32)
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
-# Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-source_group(Resources FILES    ${icon_file}
-                                ${rc_version_file})
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/waq)
 if (WIN32)

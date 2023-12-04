@@ -1,6 +1,6 @@
 set(library_name morphology_data)
 
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
 
 # Set dependencies
 set(oss_dependencies    deltares_common)

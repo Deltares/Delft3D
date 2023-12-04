@@ -1,9 +1,7 @@
-# Define library
 set(library_name polypack)
 
 # Set the directory of where the source code is located.
-set(src_directory "${CMAKE_CURRENT_SOURCE_DIR}/../src")
-create_library(${library_name} ${src_directory} ${src_directory})
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${real_size_64_flag}")
