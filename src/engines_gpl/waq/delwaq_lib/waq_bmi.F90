@@ -878,6 +878,7 @@ module bmi
             !
             ! Fill in the details
             !
+            new_connection%exchange_name = key_name
             connection = [connection, new_connection]
             newidx     = size(connection)
 
