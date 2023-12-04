@@ -827,6 +827,7 @@ module bmi
 
                 case( 'OBSRV' )
                     new_connection%category = category_monitorpoint
+                    !
                     ! Observation points
                     ! Index would be index in the list, name is also allowed
                     !
@@ -851,13 +852,14 @@ module bmi
                         newidx = 0
                         exit selection
                     endif
-                    new_connection%buffer_idx = iconc-1 + isys + (iseg-1)*notot  ! a(iconc:)
+                    new_connection%buffer_idx = iconc-1 + isys + (iseg-1)*notot  
 
                 case( 'CONST' )
 
                     ! NOTE: parameters/segment functions not supported yet
 
                     new_connection%category = category_procparam
+                    !
                     ! Constant (timeseries) or parameter (segment function)
                     ! Index would be index in the list, name is also allowed
                     !
