@@ -100,6 +100,7 @@
       use dlwq_hyd_data
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
+      use m_string_utils, only: index_in_array
 
 
       implicit none
@@ -109,7 +110,7 @@
       integer(kind=int_wp), intent(in   ) :: iu            !< index in LUN array of workfile
       integer(kind=int_wp), intent(in   ) :: iwidth        !< width of the output file
       integer(kind=int_wp), intent(in   ) :: icmax         !< maximum size of character workspace
-      character( *),        intent(inout) :: car  (icmax)  !< character workspace
+      character( *),        intent(inout) :: car(:)  !< character workspace !icmax
       integer(kind=int_wp), intent(in   ) :: iimax         !< maximum size of integer workspace
       integer(kind=int_wp), intent(inout) :: iar  (iimax)  !< integer workspace
       integer(kind=int_wp), intent(in   ) :: irmax         !< maximum size of real workspace
@@ -132,18 +133,19 @@
 
       character     calit*10, caldit*10, strng1*10, strng2*10,
      *              strng3*10
-      integer(kind=int_wp) :: iorder   , noitm , nodim , iflag  , itype ,
-     +              ittim    , chkflg, ident , nottc  , lunwr2,
+      integer(kind=int_wp) :: iorder   , count_items_in_use_rule , nodim , iflag  , itype ,
+     +              chkflg, ident , nottc  , lunwr2,
      +              file_size_1   , file_size_2, ipro  , itfacw , iopt  ,
      +              nobrk    , itel  , ioerr , iblock , k     ,
      +              i        , ihulp , ioff  , icm    , iim   ,
-     +              noits    , nconst, itmnr, iitm   , nocol ,
+     +              noits    , nconst, itmnr, idx_item_in_use_rule   , nocol ,
      +              idmnr    , nodis , nitm , nti    , nti2  ,
      +              ntr      , irm   , nottt, ierr3  , nr2   ,
      +              nts      , ntc   , ntd
       real(kind=real_wp) :: amiss    , rhulp
       character     chulp*255
       logical       newrec   , scale , ods   , binfil , tdelay
+      logical :: time_dependent !< Is the BC / Waste load definition time dependent (true)? Or constant (false)?
       integer(kind=int_wp) ::  ithndl = 0
  
       type(t_dlwq_data_items)          :: dlwq_data_items
@@ -152,7 +154,7 @@
       integer(kind=int_wp) ::  idata_item
       integer(kind=int_wp) ::  ndata_items
       integer(kind=int_wp) ::  iitem
-      integer(kind=int_wp) ::  nitems
+      integer(kind=int_wp) ::  count_unique_items_in_use_rule
 
 
       if (timon) call timstrt( "dlwq5a", ithndl )
@@ -178,8 +180,6 @@
 !     IFLAG  is the ASCII input flag,
 !                    0 = not set, 1 = items , 2 = concentr.  3 = data
 !                    4 = scales
-!     ITTIM  is the Time function flag
-!                    0 = constant, 1 = time function
 !     NOBRK  is the number of breakpoints
 !     SCALE  is the Scale values flag .TRUE. is present
 !     USEFOR is the Alias flag, .TRUE. is alias string expected
@@ -194,13 +194,13 @@
       iorder = 0
       iflag  = 0
       iopt   = 1
-      ittim  = 0
       nobrk  = 0
       itel   = 0
       scale  = .false.
       ods    = .false.
       binfil = .false.
       newrec = .false.
+      time_dependent = .false.
 !
 !     Open the binary work file and provide a zero overall default
 !
@@ -320,7 +320,7 @@
          iim    = iimax - ioff
          call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
      *                 iar(ioff:), icm   , iim   , aname , atype    ,
-     *                 bc_wl_count    , nttype, noitm , noits , chkflg   ,
+     *                 bc_wl_count    , nttype, count_items_in_use_rule , noits , chkflg   ,
      *                 calit    , ilun  , lch   , lstack,
      *                 itype    , rar   , nconst, itmnr , chulp    ,
      *                                    ioutpt, ierr2 , iwar     )
@@ -331,7 +331,7 @@
          else
             idata_item = 0
          end if
-         if (idata_item.le.0) then
+         if (idata_item.le.0) then ! first data_item (0) or not found (<0)
             ndata_items = dlwq_data_itemsAdd(dlwq_data_items, data_item_name, dlwq_foritem)
             idata_item = ndata_items
          endif
@@ -339,21 +339,22 @@
             write( lunut, 1016)
             iwar = iwar + 1
          end if
-         do iitm = 1, noitm
+         do idx_item_in_use_rule = 1, count_items_in_use_rule !count_items_in_use_rule
 !          Already on the list?
-            nitems = dlwq_data_items%dlwq_foritem(idata_item)%no_item
-            if (nitems .gt. 0) then
-               call zoek ( car(ioff+iitm-1),nitems,dlwq_data_items%dlwq_foritem(idata_item)%name(1:nitems),20,iitem)
+            count_unique_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item
+            if (count_unique_items_in_use_rule>0) then
+               iitem = index_in_array(car(ioff+idx_item_in_use_rule-1),
+     *         dlwq_data_items%dlwq_foritem(idata_item)%name(1:count_unique_items_in_use_rule))
             else
                iitem = -1
             end if
-            if (iitem.le.0 .and. iar(ioff + iitm - 1).ne.-1300000000) then
-               nitems = nitems + 1
-               ierr2 = dlwq_resize_item( dlwq_data_items%dlwq_foritem(idata_item), nitems )
-               dlwq_data_items%dlwq_foritem(idata_item)%name(nitems) = car(ioff + iitm - 1)
-               dlwq_data_items%dlwq_foritem(idata_item)%ipnt(nitems) = iar(ioff + iitm - 1)
-               dlwq_data_items%dlwq_foritem(idata_item)%sequence(nitems) = nitems
-               dlwq_data_items%dlwq_foritem(idata_item)%no_item = nitems
+            if (iitem.le.0 .and. iar(ioff + idx_item_in_use_rule - 1).ne.-1300000000) then ! ! if the item has not been added to dlwq_data_items and it shouldn't be ignored
+               count_unique_items_in_use_rule = count_unique_items_in_use_rule + 1
+               ierr2 = dlwq_resize_item( dlwq_data_items%dlwq_foritem(idata_item), count_unique_items_in_use_rule )
+               dlwq_data_items%dlwq_foritem(idata_item)%name(count_unique_items_in_use_rule) = car(ioff + idx_item_in_use_rule - 1)
+               dlwq_data_items%dlwq_foritem(idata_item)%ipnt(count_unique_items_in_use_rule) = iar(ioff + idx_item_in_use_rule - 1)
+               dlwq_data_items%dlwq_foritem(idata_item)%sequence(count_unique_items_in_use_rule) = count_unique_items_in_use_rule
+               dlwq_data_items%dlwq_foritem(idata_item)%no_item = count_unique_items_in_use_rule
             end if
          end do
          if ( ierr2 .ne. 0 ) goto 510
@@ -364,15 +365,15 @@
 !
       if ( iabs(itype) .eq. 1 .and. (chulp .eq. 'ITEM' .or. chulp .eq. 'IDENTICALITEM' .or.
      &                               chulp .eq. 'DATA_ITEM') ) then
-         if ( iorder .eq. 0 ) then
-            iorder = 1
+         if ( iorder .eq. 0 ) then !Items
+            iorder = 1 !concentr.
             ioff   = 1
             if ( chulp .eq. 'IDENTICALITEM') then
                if ( ioutpt .ge. 3 ) write ( lunut , 1021 )
                ident = 1
             else if (chulp .eq. 'DATA_ITEM') then
                if ( ioutpt .ge. 3 ) write ( lunut , 1022 )
-               ident = 2
+               ident = 2 ! DATA_ITEM
             else
                if ( ioutpt .ge. 3 ) write ( lunut , 1020 )
                ident = 0
@@ -392,7 +393,7 @@
          if ( ident .le. 1) then ! ITEM, IDENTICALITEM
             call dlwq5b ( lunut     , iposr , npos , cchar , car(ioff:),
      *                    iar(ioff:), icm   , iim  , aname , atype     ,
-     *                    bc_wl_count     , nttype, noitm, noits , chkflg    ,
+     *                    bc_wl_count     , nttype, count_items_in_use_rule, noits , chkflg    ,
      *                    calit     , ilun  , lch  , lstack, itype     ,
      *                    rar       , nconst, itmnr, chulp , ioutpt    ,
      *                    ierr2     , iwar)
@@ -400,11 +401,11 @@
             call dlwq5b ( lunut      , iposr      , npos , cchar , car(ioff:),
      *                    iar(ioff:) , icm        , iim  , dlwq_data_items%name(1:ndata_items),
      *                                                     dlwq_data_items%name(1:ndata_items),
-     *                    ndata_items, ndata_items, noitm, noits , chkflg,
+     *                    ndata_items, ndata_items, count_items_in_use_rule, noits , chkflg,
      *                    caldit     , ilun       , lch  , lstack, itype,
      *                    rar        , nconst     , itmnr, chulp , ioutpt,
      *                    ierr2 , iwar     )
-            if (noitm.ne.1) then
+            if (count_items_in_use_rule.ne.1) then
                write ( lunut , 1045 )
                ierr2 = 1
                goto 510
@@ -413,27 +414,29 @@
             if (idata_item .gt. 0) then
 !          Replace result of dlwq5b with usedata_item list
                dlwq_data_items%used(idata_item) = .true.
-               noitm = dlwq_data_items%dlwq_foritem(idata_item)%no_item
-               if (noitm .ne. 0) then
-                  itmnr = noitm
-                  noits = noitm
-                  do iitem = 1, noitm
-                     car(ioff+iitem-1) = dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
-                     car(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
-                     iar(ioff+iitem-1) = dlwq_data_items%dlwq_foritem(idata_item)%ipnt(iitem)
-                     iar(ioff+iitem-1+noitm) = dlwq_data_items%dlwq_foritem(idata_item)%sequence(iitem)
-                     if (iar(ioff+iitem-1) .gt. 0) then
-                        write ( lunut, 1023) car(ioff), idata_item, calit, iar(ioff+iitem-1),
-     &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
+               count_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item !for how many items is applicable this usedata_item?
+               if (count_items_in_use_rule .ne. 0) then
+                  itmnr = count_items_in_use_rule
+                  noits = count_items_in_use_rule
+                  do idx_item_in_use_rule = 1, count_items_in_use_rule
+                     car(ioff+idx_item_in_use_rule-1) = dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                     car(ioff+idx_item_in_use_rule-1+count_items_in_use_rule) = 
+     &                               dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                     iar(ioff+idx_item_in_use_rule-1) = dlwq_data_items%dlwq_foritem(idata_item)%ipnt(idx_item_in_use_rule)
+                     iar(ioff+idx_item_in_use_rule-1+count_items_in_use_rule) =
+     &                                       dlwq_data_items%dlwq_foritem(idata_item)%sequence(idx_item_in_use_rule)
+                     if (iar(ioff+idx_item_in_use_rule-1) .gt. 0) then ! I think the log statements below are wrong, not the type but the DATA_ITEM should be printed as 1st argument
+                        write ( lunut, 1023) car(ioff), idata_item, calit, iar(ioff+idx_item_in_use_rule-1),
+     &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
                      else
-                        write ( lunut, 1024) car(ioff), idata_item, calit, iar(ioff+iitem-1),
-     &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(iitem)
+                        write ( lunut, 1024) car(ioff), idata_item, calit, iar(ioff+idx_item_in_use_rule-1),
+     &                                       dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
                      end if
                   end do
                else
                   write ( lunut , 1046 )
                   !data ignored
-                  noitm = 1
+                  count_items_in_use_rule = 1
                   itmnr = 1
                   noits = 1
                   iar(ioff) = -1300000000
@@ -442,7 +445,7 @@
             else
                write ( lunut , 1047 )
                !data ignored
-               noitm = 1
+               count_items_in_use_rule = 1
                itmnr = 1
                noits = 1
                iar(ioff) = -1300000000
@@ -465,7 +468,7 @@
             ioff   = 1
          elseif ( iorder .eq. 1 ) then
             if ( ioutpt .ge. 3 ) write ( lunut , 1060 )
-            ioff  = noitm + itmnr + 1
+            ioff  = count_items_in_use_rule + itmnr + 1
          else
             write ( lunut , 1070 )
             ierr2 = 1
@@ -488,13 +491,13 @@
 !          Data
 !
       if ( iabs(itype) .eq. 1 .and. chulp(1:6) .eq. 'DATA' ) then
-         if ( noitm*nodim .eq. 0 ) then
-            write ( lunut , 1080 ) noitm, nodim
+         if ( count_items_in_use_rule*nodim .eq. 0 ) then ! nodim = count_subs
+            write ( lunut , 1080 ) count_items_in_use_rule, nodim
             ierr2 = 1
             goto 510
          endif
 !          Checks if an inner loop column header exists for the data matrix
-         call dlwq5g ( lunut  , iar    , itmnr  , noitm  , idmnr  ,
+         call dlwq5g ( lunut  , iar    , itmnr  , count_items_in_use_rule  , idmnr  ,
      *                 nodim  , iorder , iimax  , car    , iposr  ,
      *                 npos   , ilun   , lch    , lstack , cchar  ,
      *                 chulp  , nocol  , dtflg1 , dtflg3 , itfacw ,
@@ -502,36 +505,36 @@
          if ( ierr2 .gt. 1 ) goto 510
 !          Reads blocks of data
          if ( iorder .eq. 2 ) then
-            nitm  = noitm
+            nitm  = count_items_in_use_rule
          else
             nitm  = nodim
          endif
-         nti   = noitm + nodim + itmnr + idmnr + 1
+         nti   = count_items_in_use_rule + nodim + itmnr + idmnr + 1
          nti2  = nti + nitm
          iim   = iimax - nti2
          ntr   = nconst + itel + 1
          iim   = iimax - nti2
          irm   = irmax - ntr
-         if ( iorder .eq. 2 ) then
+         if ( iorder .eq. 2 ) then !concentrations first
             nottt = nodim*nocol
             nottc = nottt
-         else
-            nottt = noitm*nocol
-            if (ident.ge.1) then
+         else ! not set (iorder==0) or items first (iorder==1)
+            nottt = count_items_in_use_rule*nocol
+            if (ident.ge.1) then  ! IDENTICALITEM (ident==1) or DATA_ITEM (ident==2)
                nottc = nocol
-            else
+            else ! ITEM (ident==0)
                nottc = nottt
             endif
          endif
-         if ( iopt .eq. 3 .or. iopt .eq. 4 ) nottt = nottt + 1
-         call dlwq5d ( lunut  , iar(nti2:), rar(ntr:), iim   , irm    ,
+         if ( iopt .eq. 3 .or. iopt .eq. 4 ) nottt = nottt + 1  ! harmonics or fourier
+         call dlwq5d ( lunut  , iar(nti2:), rar(ntr:), iim   , irm    , ! read time series table
      *                 iposr  , npos     , ilun    , lch   , lstack ,
-     *                 cchar  , chulp    , nottt   , nottc , ittim , nobrk  ,
+     *                 cchar  , chulp    , nottt   , nottc , time_dependent , nobrk  ,
      *                 iopt   , dtflg1   , dtflg3  , itfacw, itype  ,
      *                          ihulp    , rhulp   , ierr2 , ierr3  )
          ierr = ierr + ierr3
          if ( ierr2 .eq. 1 .or. ierr2 .eq. 4 ) goto 510
-         if ( nobrk .eq. 0 .and. ittim .eq. 0 ) then
+         if ( nobrk .eq. 0 .and. (.not. time_dependent)) then
             write(lunut,1360)
             ierr = ierr + 1
          endif
@@ -541,7 +544,7 @@
          else
 !          Assigns according to computational rules
             nr2 = ntr + nottt*nobrk
-            call dlwq5e ( lunut, iar   , noitm, itmnr   , nodim   ,
+            call dlwq5e ( lunut, iar   , count_items_in_use_rule, itmnr   , nodim   , ! process parsed values in table  (process operations if any) and store results in rar(nr2:)
      *                    idmnr, iorder, rar  , iopt    , rar(ntr:),
      *                    nocol, nobrk , amiss, iar(nti:), rar(nr2:))
             strng3 = 'breakpoint'
@@ -549,7 +552,7 @@
             nts   = nconst + 1
             ntc   = nti
             icm   = icmax - ntc
-            call dlwqj3 ( lunwr2 , lunut   , iwidth , nobrk  , iar    ,
+            call dlwqj3 ( lunwr2 , lunut   , iwidth , nobrk  , iar    , ! writes data_item to wrk and/or lst files
      *                    rar(nts:),rar(nr2:), itmnr  , idmnr  , iorder ,
      *                    scale  , .true.  , binfil , iopt   , ipro   ,
      *                    itfacw , dtflg1  , dtflg3 , file_size_1 , file_size_2 ,
@@ -561,13 +564,13 @@
          iflag  = 0
          iopt   = 1
          amiss  = -999.0
-         ittim  = 0
          nobrk  = 0
          itel   = 0
          scale  = .false.
          ods    = .false.
          binfil = .false.
          newrec = .false.
+         time_dependent = .false.
          if ( itype .eq. 1 ) goto  30
          goto 10
       endif
@@ -575,8 +578,8 @@
 !          ODS-file option selected
 !
       if ( iabs(itype) .eq. 1 .and. chulp(1:8) .eq. 'ODS_FILE' ) then
-         if ( noitm*nodim .eq. 0 ) then
-            write ( lunut , 1080 ) noitm, nodim
+         if ( count_items_in_use_rule*nodim .eq. 0 ) then
+            write ( lunut , 1080 ) count_items_in_use_rule, nodim
             ierr2 = 1
             goto 510
          endif
@@ -588,19 +591,19 @@
 !          ODS-file-data retrieval
 !
       if ( iabs(itype) .eq. 1 .and. ods ) then
-         nti  = noitm + nodim + itmnr + idmnr + 1
+         nti  = count_items_in_use_rule + nodim + itmnr + idmnr + 1
          ntr  = itel  + nconst + 1
          ntd  = (ntr+1)/2 + 1
          nts  = nconst + 1
          iim  = iimax - nti
          irm  = irmax - ntr
          call dlwq5c ( chulp , lunut  , car   , iar      , rar(ntr:),
-     *                 icmax , iimax  , irmax , drar     , noitm   ,
+     *                 icmax , iimax  , irmax , drar     , count_items_in_use_rule   ,
      *                 nodim , iorder , scale , itmnr    , idmnr   ,
      *                         amiss  , nobrk , ierr2    , iwar    )
          if ( ierr2 .ne. 0 ) goto 510
-         nr2 = ntr + noitm*nodim*nobrk
-         call dlwq5e ( lunut , iar    , noitm , itmnr    , nodim   ,
+         nr2 = ntr + count_items_in_use_rule*nodim*nobrk
+         call dlwq5e ( lunut , iar    , count_items_in_use_rule , itmnr    , nodim   ,
      *                 idmnr , iorder , rar   , iopt     , rar(ntr:),
      *                 nodim , nobrk  , amiss , iar(nti:) , rar(nr2:))
          strng3 = 'breakpoint'
@@ -619,13 +622,13 @@
          ioff   = 0
          iopt   = 1
          amiss  = -999.0
-         ittim  = 0
          nobrk  = 0
          itel   = 0
          scale  = .false.
          ods    = .false.
          binfil = .false.
          newrec = .false.
+         time_dependent = .false.
          goto  10
       endif
 !
@@ -639,7 +642,7 @@
 !          Say it is a time function
 !
       if ( iabs(itype) .eq. 1 .and. chulp(1:4) .eq. 'TIME' ) then
-         ittim = 1
+         time_dependent = .true.
          iopt  = 1
          goto 10
       endif
@@ -701,7 +704,7 @@
      *                 ' before ITEM or CONCENTRATION !' )
  1012 format ( /' ERROR: Expected a DATA_ITEM name' )
  1013 format ( /' ERROR: Expected USEDATA_ITEM keyword after USEDATA_ITEM <data_item>!' )
- 1015 format ( /' When the DATA_ITEM ',A,' nr: ',I5,' is met, data is applied to the flowing items:'   )
+ 1015 format ( /' When the DATA_ITEM ',A,' is met, data is applied to the following items:'   ) ! ( /' When the DATA_ITEM ',A,' nr: ',I5,' is met, data is applied to the flowing items:'   )
  1016 format ( /' WARNING: DATA_ITEM has already been used, and is now redefined!' )
  1020 format ( /' BLOCKED per ITEM:'   )
  1021 format ( /' IDENTICAL DATA for all items ITEMS:'   )

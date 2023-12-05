@@ -69,13 +69,13 @@
 !
       use timers       !   performance timers
 
-      character*(*) cnames(*)
-      dimension     iar(*)
+      character*(*) cnames(:)
+      integer(kind=int_wp), intent(inout) :: iar(:)
       character*20  chulp,  message_type
       integer(kind=int_wp) ::  ithndl = 0
       integer(kind=int_wp) ::  i1, i3, i4, i5
       integer(kind=int_wp) ::  lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
-      integer(kind=int_wp) ::  itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
+      integer(kind=int_wp) ::  itmnr, noitm, i2, ioffd, ishft, ioffi, iods
        
       integer(kind=int_wp) ::  ierr, iwar
       
@@ -88,11 +88,11 @@
       write ( lunut ,   *  )
 
       if ( iorder == 1 ) then ! items first
-          ntt  = idmnr
-          nitm = nodim
+          ntt  = idmnr !nr of subst for assignment
+          nitm = nodim !nr of subst in computational rule
       else ! subst first
-          ntt  = itmnr
-          nitm = noitm
+          ntt  = itmnr ! nr of items for assignment
+          nitm = noitm ! nr of items in computational rule
       endif
 !
 !       look backwards

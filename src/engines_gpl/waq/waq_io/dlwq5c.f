@@ -120,9 +120,9 @@
 
 
       integer(kind=int_wp) :: icmax  , iimax  , irmax
-      character*(*) car(*) , fname
-      integer(kind=int_wp) :: iar(*)
-      real(kind=real_wp) :: rar(*)
+      character*(*) car(:) , fname
+      integer(kind=int_wp) :: iar(:)
+      real(kind=real_wp) :: rar(:)
       logical       scale
       real(kind=dp) :: drar(*) 
       character     cfile(3)*256
@@ -169,7 +169,7 @@
       cfile(3) = ' '
       k1   = nottt + 1
       call getdim ( cfile  , 0      , cdummy , 0      , 0       ,
-     *                       0      , iar(k1), ierror , cfile(3))
+     *                       0      , iar(k1:k1), ierror , cfile(3))
       nsubs = iar(k1)
       nlocs = iar(k1+1)
       ntims = iar(k1+2)
@@ -193,7 +193,7 @@
 !    get the available locations
       car(j1)  = '*'
       call getloc ( cfile  , 0  , car(j1), 1      , 0       ,
-     *              0      , k3 , car(j2), iar(k1), iar(k2) ,
+     *              0      , k3 , car(j2), iar(k1:k1), iar(k2:k2) ,
      *                            noloc  , ierror , cfile(3))
 !
 !    fill an array with wanted locations
@@ -277,7 +277,7 @@
 !    get the available substances
       call getpar ( cfile  , 0      , car(j1), 1      , 0       ,
      *              0      , k3     , 0      , car(j2), car(j3) ,
-     *              iar(k1), iar(k2), nopar  , ierror , cfile(3))
+     *              iar(k1:k1), iar(k2:k2), nopar  , ierror , cfile(3))
 !
 !     fill an array with wanted substances
       icnt = 0
@@ -323,7 +323,7 @@
 !     get the available time values
       drar(k2  ) = 0
       call gettme ( cfile  , 0      , drar(k2), 1      , 0       ,
-     *              0      , k4     , drar(k5), iar(k1), nobrk   ,
+     *              0      , k4     , drar(k5), iar(k1:k1), nobrk   ,
      *                                          ierror , cfile(3))
 !
 !     see if the found time values are within the range
@@ -417,7 +417,7 @@ CJVB
                 loc(1) = kl
                 loc(2) = kl
                 call getmat ( cfile, 0, kp, loc, drar(is2),
-     *                        amiss, maxd, rar(is), ierror,
+     *                        amiss, maxd, rar(is:is), ierror,
      *                                         cfile(3) )
             end if
             ig2 = ig

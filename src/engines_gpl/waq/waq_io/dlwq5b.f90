@@ -35,7 +35,7 @@ module m_dlwq5b
 
 
     subroutine dlwq5b(lunut, iposr , npos , cchar , car    ,&
-                      iar  , icmax , iimax, bc_wl_names , bc_wl_types  ,&
+                      iar  , icmax , iimax, all_names , all_types  ,&
                       bc_wl_count, bc_wl_types_count, parsed_items_count, noits , chkflg ,&
                       caller, ilun  , lch  , lstack, itype  ,&
                       rar  , nconst, itmnr, parsed_str , ioutpt, &
@@ -70,8 +70,8 @@ module m_dlwq5b
 
     character(1),  intent(in   ) :: cchar        !< Comment character
     character(*),  intent(  out) :: car(:)       !< Character workspace
-    character(*),  intent(inout) :: bc_wl_names(:)     !< Id's of the boundaries/wastes
-    character(*),  intent(in   ) :: bc_wl_types(:)     !< Types of the boundaries/wastes
+    character(*),  intent(inout) :: all_names(:)     !< Id's of the boundaries/wastes
+    character(*),  intent(in   ) :: all_types(:)     !< Types of the boundaries/wastes
     character(10), intent(in   ) :: caller       !< Calling subject
     character(*),  intent(inout) :: lch(lstack)  !< File name stack, 4 deep
     character(*),  intent(  out) :: parsed_str   !< Input string at end of routine
@@ -226,7 +226,7 @@ module m_dlwq5b
             if (usefor_on .and. substitution_on) then
                 name_index = iar(itmnr)
                 if (logging_on) then
-                    call log_name_substitution(name_index, lunut, bc_wl_names, caller, itmnr, bc_wl_types, parsed_real, parsed_str, .false.)
+                    call log_name_substitution(name_index, lunut, all_names, caller, itmnr, all_types, parsed_real, parsed_str, .false.)
                 end if
                 iar(itmnr + parsed_items_count + parsed_items_count) = noits
                 car(itmnr + parsed_items_count + ioff) = parsed_str
@@ -263,7 +263,7 @@ module m_dlwq5b
             end if
         
             ! parsed_str == item-NAME
-            ifound = index_in_array(parsed_str(1:len(bc_wl_names(1))), bc_wl_names(1:bc_wl_count))
+            ifound = index_in_array(parsed_str(1:len(all_names(1))), all_names(1:bc_wl_count))
             if (ifound >= 1) then
                 call update_counters(parsed_items_count, noits, itmnr)
                 icm = itmnr + parsed_items_count + ioff
@@ -277,13 +277,13 @@ module m_dlwq5b
                 car(itmnr + parsed_items_count + ioff) = parsed_str
                 if (usefor_on) substitution_on = .true.
                 if (logging_on .and. .not. usefor_on) then
-                    write (lunut , 1020) caller, itmnr, caller, ifound, bc_wl_names(ifound)
+                    write (lunut , 1020) caller, itmnr, caller, ifound, all_names(ifound)
                 end if
                 cycle read_and_process
             end if
         
             ! parsed_str == item-TYPE. IAR now is negative.
-            ifound = index_in_array(parsed_str(1:len(bc_wl_types(1))),bc_wl_types(1:bc_wl_types_count))
+            ifound = index_in_array(parsed_str(1:len(all_types(1))),all_types(1:bc_wl_types_count))
             if (ifound >= 1) then
                 call update_counters(parsed_items_count, noits, itmnr)
                 icm = itmnr + parsed_items_count + ioff
@@ -297,7 +297,7 @@ module m_dlwq5b
                 car(itmnr + parsed_items_count + ioff) = parsed_str
                 if (usefor_on) substitution_on = .true.
                 if (logging_on .and. .not. usefor_on) then
-                    write (lunut , 1030) caller, itmnr, caller, ifound, bc_wl_types(ifound)
+                    write (lunut , 1030) caller, itmnr, caller, ifound, all_types(ifound)
                 end if
                 cycle read_and_process
             end if
@@ -315,8 +315,8 @@ module m_dlwq5b
                 !call movint(iar, itmnr + noitm, itmnr + noitm*2)
                 call shift_subarray(car(:icm+1), itmnr+ioff , icm) 
                 !call movchr(car, itmnr+ioff , icm)
-                iar (itmnr) = -1300000000
-                iar (itmnr + parsed_items_count) = 1300000000
+                iar (itmnr) = -1300000000 ! pointer should be ignored
+                iar (itmnr + parsed_items_count) = 1300000000 ! item number should be ignored
                 iar (itmnr + parsed_items_count + parsed_items_count) = noits
                 car (itmnr + ioff) = parsed_str
                 car (itmnr + parsed_items_count + ioff) = parsed_str
@@ -329,8 +329,8 @@ module m_dlwq5b
                 bc_wl_count = bc_wl_count + 1
                 ioff  = ioff  + 1
                 icm   = icmax + bc_wl_count
-                call movchr(bc_wl_names, bc_wl_count, icm)
-                bc_wl_names(bc_wl_count) = parsed_str
+                call movchr(all_names, bc_wl_count, icm)
+                all_names(bc_wl_count) = parsed_str
                 ! plus normal procedure
                 parsed_items_count = parsed_items_count + 1
                 noits = noits + 1
@@ -346,7 +346,7 @@ module m_dlwq5b
                 car(itmnr + parsed_items_count + ioff) = parsed_str
                 if (usefor_on) substitution_on = .true.
                 if (logging_on .and. .not. usefor_on) then
-                    write (lunut , 1020) caller, itmnr, caller, bc_wl_count, bc_wl_names(bc_wl_count)
+                    write (lunut , 1020) caller, itmnr, caller, bc_wl_count, all_names(bc_wl_count)
                 end if
             end if
             cycle read_and_process
@@ -370,7 +370,7 @@ module m_dlwq5b
                 if (substitution_on) then
                     name_index = iar(itmnr)
                     if (logging_on) then
-                        call log_name_substitution(name_index, lunut, bc_wl_names, caller, itmnr, bc_wl_types, parsed_real, parsed_str, .true.)
+                        call log_name_substitution(name_index, lunut, all_names, caller, itmnr, all_types, parsed_real, parsed_str, .true.)
                     end if
                     iar(itmnr + parsed_items_count) =  -nconst
                     iar(itmnr + parsed_items_count + parsed_items_count) = 0
@@ -410,9 +410,9 @@ module m_dlwq5b
                     else if (parsed_int > 0) then
                         if (logging_on .and. .not. usefor_on) then
                             write (lunut , 1020) caller, itmnr, caller,  parsed_int,&
-                                                                 bc_wl_names(parsed_int)
+                                                                 all_names(parsed_int)
                         end if
-                        parsed_str = bc_wl_names(parsed_int)
+                        parsed_str = all_names(parsed_int)
                     else if (parsed_int == 0 .and. caller == 'CONCENTR. ') then
                         if (logging_on .and. .not. usefor_on) then
                             write (lunut , 1020) caller, itmnr, caller, parsed_int,&
@@ -422,9 +422,9 @@ module m_dlwq5b
                     else
                         if (logging_on .and. .not. usefor_on) then
                             write (lunut , 1030) caller, itmnr, caller, -parsed_int,&
-                                             bc_wl_types(-parsed_int)
+                                             all_types(-parsed_int)
                         end if
-                        parsed_str = bc_wl_types(-parsed_int)
+                        parsed_str = all_types(-parsed_int)
                     end if
                     car (itmnr + ioff) = parsed_str
                     car (itmnr + parsed_items_count + ioff) = parsed_str
