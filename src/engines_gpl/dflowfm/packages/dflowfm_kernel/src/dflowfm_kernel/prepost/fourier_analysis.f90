@@ -2092,7 +2092,12 @@ module m_fourier_analysis
    character(len=10)             :: string10
    character(len=:), allocatable :: string
    
-   write(string10,'(i0)') ifourier
+   if ( ifourier < 1000 ) then
+      write(string10,'(i3.3)') ifourier
+   else
+      write(string10,'(i0)') ifourier
+   endif
+
    string = trim(string10)
    
    end function fouref2string
