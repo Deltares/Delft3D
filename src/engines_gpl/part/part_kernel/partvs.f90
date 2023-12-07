@@ -70,6 +70,8 @@ contains
       use spec_feat_par
       use timers
       use m_part_modeltypes
+      use partmem, only: fmmodel
+      use m_part_mesh, only: cell2nod
       implicit none    ! explicit typing
 
 !     Arguments
@@ -106,6 +108,7 @@ contains
 
       integer(int_wp )     id   , isub    ! loop variables time and substances
       integer(int_wp )     ipart          ! loop variable for particles
+      integer(int_wp)      layer          ! help variable for layernumber
       real   (real_wp)     fac1 , fac2    ! interpolation factors
       real   (real_wp)     twopi          ! 2*pi
       real   (real_wp)     g              ! gravitational acceleration (m/s2)
@@ -117,8 +120,8 @@ contains
       real   (dp)     waver          ! accumulator of the settling velocities
       integer(int_wp )     ic, iseg       ! 2D and 3D segmentnumber of particle
 
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
+      integer(4), save :: ithndl = 0 ! handle to time this subroutine
+
       if ( ivtset .le. 0 ) return
       if ( timon ) call timstrt( "partvs", ithndl )
 
@@ -164,18 +167,28 @@ contains
          vs6 = 0.0
          vst = 0.0
          do isub = 1, nosubs
+            vsfact1 = 0.0
+            layer = kpart(ipart)
             if (modtyp .eq. model_prob_dens_settling) then
                ! density dependent settling velocity
-               ic = lgrid3(npart(ipart), mpart(ipart))
-!              active cell's only
-               if (ic  >  0) then
-                  if(kpart(ipart) <= 0.or.kpart(ipart) > nolay) then
-                     write(*,*) ' ipart = ',ipart,' k = ',kpart(ipart)
-                     write (*,*) ' K is out of range in partwr '
-                     write( lun2,*) ' K is out of range in partwr '
+               if (.not.fmmodel) then
+                  ic = lgrid3(npart(ipart), mpart(ipart))
+               else
+                  ic    = mpart(ipart)
+                  if (ic > 0) then
+                     ic = iabs(cell2nod(ic))
+                  endif
+               endif
+
+!              active cells only
+               if ( ic > 0 ) then
+                  if( layer <= 0 .or. layer > nolay ) then
+                     write(*,*) ' ipart = ',ipart,' layer = ', layer
+                     write (*,*) ' Layer is out of range in partvs '
+                     write( lun2,*) ' Layer is out of range in partvs '
                      call stop_exit(1)
                   endif
-                  iseg = (kpart(ipart) - 1)*noseglp + ic
+                  iseg = (layer - 1)*noseglp + ic
                   vsfact1 = plshapefactor(isub) * 2.0e0 / 9.0e0 * (rhopart(isub,ipart) - rhowatc(iseg)) / &
                             viscosity_water * g * spart(isub,ipart)**2 / (2 ** ((iptime(ipart) / 86400.0e0) * plfragrate(isub)))
                endif

@@ -24,14 +24,14 @@ set scriptDir=%~dp0
 
 
 :HANDLEARGUMENTS
-    if "%1"=="" goto HANDLEARGUMENTSFINISHED
+    if "%~1"=="" goto HANDLEARGUMENTSFINISHED
     if [%1]         EQU [--help]      ( set goToUsage=1                      & goto CONTINUEWITHNEXTARGUMENT )
     if [%1]         EQU [-d]          ( set minDFound=1                      & goto CONTINUEWITHNEXTARGUMENT )
     if  %minDFound% EQU 1             ( set debugLevel=%1 & set minDFound=0  & goto CONTINUEWITHNEXTARGUMENT )
     if [%1]         EQU [--forceExit] ( set forceExit=1                      & goto CONTINUEWITHNEXTARGUMENT )
     rem When reaching this point, the current argument is not a recognized option.
     rem Assumption: this argument is the name of the dimr config file
-    set dimrConfigFile=%1
+    set dimrConfigFile=%~1
     :CONTINUEWITHNEXTARGUMENT
     shift
 goto HANDLEARGUMENTS
@@ -52,7 +52,7 @@ if  %debugLevel% EQU 0 (
 
     rem Check configfile
 echo Configfile:%dimrConfigFile%
-if not exist %dimrConfigFile% (
+if not exist "%dimrConfigFile%" (
     echo ERROR: configfile "%dimrConfigFile%" does not exist
     goto USAGE
 )
@@ -111,8 +111,8 @@ set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
 
     rem Run
 set PATH=%cosumobmidir%;%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
-echo executing: "%dimrexedir%\dimr.exe" %debugarg% %dimrConfigFile%
-"%dimrexedir%\dimr.exe" %debugarg% %dimrConfigFile%
+echo executing: "%dimrexedir%\dimr.exe" %debugarg% "%dimrConfigFile%"
+"%dimrexedir%\dimr.exe" %debugarg% "%dimrConfigFile%"
 
 goto END
 

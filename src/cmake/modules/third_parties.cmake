@@ -36,7 +36,7 @@ set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
 set(netcdf_version "netCDF 4.6.1")
 
 # polypack
-set(polypack_module ${third_party_open_path}/polypack/${cmake_directory})
+set(polypack_module ${third_party_open_path}/polypack)
 
 # interacter_stub
 set(interacter_stub_module ${third_party_path}/interacter_stub)
@@ -50,4 +50,4 @@ set(swan_mpi_module ${third_party_open_path}/swan/swan_mpi)
 set(swan_omp_module ${third_party_open_path}/swan/swan_omp)
 
 # solvesaphe
-set(solvesaphe_module ${third_party_open_path}/solveSAPHE/${cmake_directory})
+set(solvesaphe_module ${third_party_open_path}/solveSAPHE/cmake_deltares)

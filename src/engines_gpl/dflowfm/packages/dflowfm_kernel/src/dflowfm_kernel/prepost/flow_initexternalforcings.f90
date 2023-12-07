@@ -71,21 +71,22 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use Timers
    use m_subsidence
 
- implicit none
- character(len=256)            :: filename, sourcemask
- integer                       :: L, Lf, mout, kb, LL, Lb, Lt, ierr, k, k1, k2, ja, method, n1, n2, kbi, Le, n, j, mx, n4, kk, kt, ktmax, layer, lenqidnam
- character (len=256)           :: fnam, rec, filename0
- character (len=64)            :: varname
- character (len=NAMTRACLEN)    :: tracnam, qidnam
- character (len=NAMWAQLEN)     :: wqbotnam
- character (len=NAMSFLEN)      :: sfnam, qidsfnam
- integer                       :: minp0, npli, inside, filetype0, iad
- integer, allocatable          :: ihu(:)             ! temp
- double precision, allocatable :: viuh(:)            ! temp
- double precision, allocatable :: tt(:)
- logical :: exist
- integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
- integer                       :: numnos, numnot, numnon ! < Nr. of unassociated flow links (not opened due to missing z- or u-boundary)
+   implicit none
+   character(len=256)            :: filename, sourcemask
+   integer                       :: L, Lf, mout, kb, LL, Lb, Lt, ierr, k, k1, k2, ja, method, n1, n2, kbi, Le, n, j, mx, n4, kk, kt, ktmax, layer, lenqidnam
+   character (len=256)           :: fnam, rec, filename0
+   character (len=64)            :: varname
+   character (len=NAMTRACLEN)    :: tracnam, qidnam
+   character (len=NAMWAQLEN)     :: wqbotnam
+   character (len=NAMSFLEN)      :: sfnam, qidsfnam
+   integer                       :: minp0, npli, inside, filetype0, iad
+   integer, allocatable          :: ihu(:)             ! temp
+   double precision, allocatable :: viuh(:)            ! temp
+   double precision, allocatable :: tt(:)
+   logical                       :: exist
+   logical                       :: patm_available, tair_available, dewpoint_available
+   integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
+   integer                       :: numnos, numnot, numnon ! < Nr. of unassociated flow links (not opened due to missing z- or u-boundary)
 
    double precision, allocatable :: xdum(:), ydum(:), xy2dum(:,:)
    integer, allocatable          :: kdum(:)
@@ -125,7 +126,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    iresult = DFM_NOERR
 
    success = .true.    ! default if no valid providers are present in *.ext file (m_flowexternalforcings::success)
-
+   patm_available = .false.
+   tair_available = .false.
+   dewpoint_available = .false.
+   
    if ( .not. allocated(const_names) ) then
       allocate( const_names(0) )
    endif
@@ -1469,6 +1473,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                if (success) then
                   jawind = 1
                   japatm = 1
+                  patm_available = .true.
                endif
 
             else if (qid == 'charnock') then
@@ -1506,6 +1511,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                kcw = 1
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
+               if (success) then
+                  dewpoint_available = .true.
+                  tair_available = .true.
+               endif
 
             else if (qid == 'humidity_airtemperature_cloudiness_solarradiation') then
 
@@ -1516,6 +1525,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                kcw = 1
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
+               if (success) then
+                  tair_available = .true.
+               endif
 
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
 
@@ -1526,6 +1538,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                kcw = 1
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
+               if (success) then
+                  dewpoint_available = .true.
+                  tair_available = .true.
+               endif
 
             else if (qid == 'nudge_salinity_temperature') then
                kx = 2
@@ -1561,6 +1577,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   japatm = 1
+                  patm_available = .true.
                endif
 
             else if (qid == 'air_temperature') then
@@ -1576,7 +1593,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jatair = 1 ; btempforcingtypA = .true.
+                  jatair = 1
+                  btempforcingtypA = .true.
+                  tair_available = .true.
                endif
 
             else if (qid == 'airdensity') then
@@ -1615,7 +1634,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                itempforcingtyp = 5
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jarhum = 1  ;
+                  jarhum = 1
+                  dewpoint_available = .true.
                endif
 
             else if (qid == 'cloudiness') then
@@ -1974,6 +1994,14 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
                   success = .false.
                endif
+           else if (trim(qid) == "totalwaveenergydissipation") then
+               if (jawave == 7 .and. waveforcing == 2) then
+                  success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               else
+                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  success = .false.
+               endif    
            else
               call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown QUANTITY '//trim(qid) )
               call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'getting unknown QUANTITY ', trim(qid) )
@@ -2451,12 +2479,14 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       endif
    endif
 
-   if (ja_varying_airdensity == 1) then
-      if (japatm == 0 .or. jatair == 0 .or. jarhum ==0) then
-         call mess(LEVEL_ERROR, 'Quantities airpressure and airtemperature and dewpoint in ext-file expected in combination keyword computedAirdensity in MDU ')
+   if (ja_computed_airdensity == 1) then
+      if (.not. (patm_available .and. tair_available .and. dewpoint_available)) then
+         call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
       else
          if (ja_airdensity == 1) then
-            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity in MDU ')
+            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')
+         elseif (jaroro > 1) then
+            call mess(LEVEL_ERROR, 'Keyword RhoairRhowater > 1 is not allowed in combination with keyword computedAirdensity = 1 in mdu-file.')            
          else
             allocate ( airdensity(ndx) , stat=ierr)
             call aerr('airdensity(ndx)', ierr, ndx)

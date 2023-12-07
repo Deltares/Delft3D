@@ -28,7 +28,7 @@ get_module_include_path(${checkout_src_root}/${path_to_module_to_retrieve_includ
 message(STATUS "Configuring '${current_component_name}' with the following <name of module> include path: '${public_include_path}'")
 
 #---------------------------------------------------------------------------------------------------------------------------
-# Set the directory of where the source code is located. This can be removed if create_library() is used to define the library artifact.
+# Set the directory of where the source code is located. This can be removed if create_target() is used to define the library artifact.
 set(src_path src) 
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ set(svn_version_file ${fortran_version_file}.svn)
 
 # Note that this step is not necessary if:
 # - All the source files that need to be included in the library are included in the src folder
-# - AND the command create_library(${library_name} ${visual_studio_source_group_name}) is used to define the library
+# - And the command create_target(${library_name} ${visual_studio_source_group_name}) is used to define the library
 # Source files can be retrieved by a file(GLOB <filetypes>) operation. The file filter is case-insensitive.
 file(GLOB globbed_source    ${src_path}/*.f90
                             ${src_path}/*.f)
@@ -80,7 +80,7 @@ add_library(${library_name} ${globbed_source}
 # This function can only be used when:
 # - All the files in src need to be included as part of the library (also keep in mind that there is no need to define the source path location as that is contained within the function)
 # - No version files need to be included in the library. (Additional files cannot be added to the library afterwards) 
-create_library(${library_name} ${visual_studio_source_group_name}) # The visual_studio_source_group_name is the name of the folder where the source files are grouped in Visual Studio.
+create_target(${library_name} ${visual_studio_source_group_name}) # The visual_studio_source_group_name is the name of the folder where the source files are grouped in Visual Studio.
 
 # The following command defines an executable and all the source files that are required
 add_executable(${library_name} ${globbed_source} 
@@ -159,7 +159,7 @@ endif()
 
 # This example only focuses on the structures within Visual Studio. The folder structure can be created by the following examples.
 # One explicit prerequisite is that the files contained in the source_group MUST be included as part of the library or executable by the:
-# - create_library
+# - create_target
 # - add_library
 # - add_executable
 # commands. Files that are not included in an artifact will NOT be visible within the IDE. 

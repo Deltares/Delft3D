@@ -305,6 +305,7 @@ type t_unc_mapids
    integer :: id_mywav(MAX_ID_VAR)       = -1 !< Variable ID for
    integer :: id_dsurf(MAX_ID_VAR)       = -1 !< Variable ID for
    integer :: id_dwcap(MAX_ID_VAR)       = -1 !< Variable ID for
+   integer :: id_distot(MAX_ID_VAR)      = -1 !< Variable ID for
    integer :: id_D(MAX_ID_VAR)           = -1 !< Variable ID for
    integer :: id_DR(MAX_ID_VAR)          = -1 !< Variable ID for
    integer :: id_Df(MAX_ID_VAR)          = -1 !< Variable ID for
@@ -5452,7 +5453,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
          endif
       endif
 
-      if (ja_airdensity + ja_varying_airdensity > 0 .and. jamap_airdensity > 0) then
+      if (ja_airdensity + ja_computed_airdensity > 0 .and. jamap_airdensity > 0) then
          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp   , mapids%id_airdensity   , nc_precision, UNC_LOC_S, 'rhoair' , 'air_density'      , 'Air density'     , 'kg m-3', jabndnd=jabndnd_)
       endif
 
@@ -5847,6 +5848,9 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             endif
             if (jamapwav_dwcap > 0  .and. allocated(dwcap)) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dwcap       , nc_precision, UNC_LOC_S, 'diswcap' , '', 'Wave energy dissipation rate due to white capping'   , 'w m-2', jabndnd=jabndnd_) ! not CF
+            endif
+            if (jamapwav_distot > 0  .and. allocated(distot)) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_distot      , nc_precision, UNC_LOC_S, 'distot' , '', 'Total wave energy dissipation'                       , 'w m-2', jabndnd=jabndnd_) ! not CF
             endif
             if (jamapwav_uorb > 0   .and. allocated(uorbwav)) then
                 ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb       , nc_precision, UNC_LOC_S, 'uorb'            , 'sea_surface_wave_orbital_velocity'    , 'Wave orbital velocity'    , 'm s-1', jabndnd=jabndnd_) ! not CF
@@ -7086,7 +7090,7 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
 
    endif
 
-   if (ja_airdensity + ja_varying_airdensity > 0 .and. jamap_airdensity > 0) then
+   if (ja_airdensity + ja_computed_airdensity > 0 .and. jamap_airdensity > 0) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_airdensity  , UNC_LOC_S, airdensity, jabndnd=jabndnd_)
    endif
 
@@ -7172,6 +7176,9 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
          endif
          if (jamapwav_dwcap > 0  .and. allocated(dwcap)) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dwcap       , UNC_LOC_S, dwcap, jabndnd=jabndnd_)
+         endif
+         if (jamapwav_distot > 0  .and. allocated(distot)) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_distot      , UNC_LOC_S, distot, jabndnd=jabndnd_)
          endif
          if (jamapwav_uorb > 0   .and. allocated(uorbwav)) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb        , UNC_LOC_S, uorbwav, jabndnd=jabndnd_)

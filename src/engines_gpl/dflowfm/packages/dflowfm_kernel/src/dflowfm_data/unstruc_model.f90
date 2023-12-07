@@ -1533,7 +1533,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'wind' , 'PavBnd'                   , PavBnd )
     call prop_get_integer(md_ptr, 'wind' , 'Stresstowind'             , jastresstowind )
     call prop_get_integer(md_ptr, 'wind' , 'Wind_eachstep'            , update_wind_stress_each_time_step )
-    call prop_get_integer(md_ptr, 'wind' , 'computedAirdensity'       , ja_varying_airdensity)
+    call prop_get_integer(md_ptr, 'wind' , 'computedAirdensity'       , ja_computed_airdensity)
 
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
@@ -1985,18 +1985,19 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_pure1d_debug', jamapPure1D_debug, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_waves',jamapwav, success)
-    jamapwav_hwav   = 0
-    jamapwav_twav   = 0
-    jamapwav_phiwav = 0
-    jamapwav_sxwav  = 0
-    jamapwav_sywav  = 0
-    jamapwav_sxbwav = 0
-    jamapwav_sybwav = 0
-    jamapwav_mxwav  = 0
-    jamapwav_mywav  = 0
-    jamapwav_dsurf  = 0
-    jamapwav_dwcap  = 0
-    jamapwav_uorb   = 0
+    jamapwav_hwav    = 0
+    jamapwav_twav    = 0
+    jamapwav_phiwav  = 0
+    jamapwav_sxwav   = 0
+    jamapwav_sywav   = 0
+    jamapwav_sxbwav  = 0
+    jamapwav_sybwav  = 0
+    jamapwav_mxwav   = 0
+    jamapwav_mywav   = 0
+    jamapwav_dsurf   = 0
+    jamapwav_dwcap   = 0
+    jamapwav_distot  = 0
+    jamapwav_uorb    = 0
 
     call prop_get_integer(md_ptr, 'output', 'Wrimap_DTcell',jamapdtcell, success)
     epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
@@ -3623,8 +3624,9 @@ endif
     if (writeall .or. update_wind_stress_each_time_step > 0) then
        call prop_set(prop_ptr, 'wind', 'Wind_eachstep',     update_wind_stress_each_time_step, '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
     endif
-    if (writeall .or. ja_varying_airdensity == 1) then
-       call prop_set(prop_ptr, 'wind', 'computedAirdensity', ja_varying_airdensity, 'Compute air density yes/no (),  1/0, default 0')
+    if (writeall .or. ja_computed_airdensity == 1) then
+       call prop_set(prop_ptr, 'wind', 'computedAirdensity', ja_computed_airdensity, & 
+                    & 'Compute air density (0: no (default), 1: yes (requires quantities airpressure, airtemperature and dewpoint in .ext-file)')
     endif
    
     if (writeall .or. jagrw > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT) then

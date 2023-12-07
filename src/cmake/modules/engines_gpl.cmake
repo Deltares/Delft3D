@@ -23,7 +23,6 @@ set(waq_data_module ${waq_module_path}/waq_data)
 set(delwaq_lib_module ${waq_module_path}/delwaq_lib)
 set(delwaq1_module ${waq_module_path}/delwaq1)
 set(delwaq2_module ${waq_module_path}/delwaq2)
-set(delwaq_lib_tests_module ${waq_module_path}/delwaq_lib_tests)
 
 # Waves
 set(wave_module_path "${engines_gpl_path}/wave/packages")
@@ -62,14 +61,15 @@ set(dimr_module "${dimr_module_path}/dimr")
 set(d_hydro_module_path "${engines_gpl_path}/d_hydro/packages")
 set(d_hydro_module "${d_hydro_module_path}/d_hydro")
 
-# Agrhyd
-set(agrhyd_module "tools_gpl/agrhyd/packages/agrhyd")
-
-# Maptonetcdf
-set(maptonetcdf_module "tools_gpl/maptonetcdf/packages/maptonetcdf")
-
 # Tests
-set(dflowfm_kernel_test_module test/engines_gpl/dflowfm/packages/dflowfm_kernel)
+set(tests_directory src/test/engines_gpl)
+set(dflowfm_kernel_test_module ${tests_directory}/dflowfm/packages/dflowfm_kernel)
+
+
+# Unit tests
+# WAQ
+set(delwaq_tests_module ${unit_tests_dir}/engines_gpl/waq)
+
 
 # Install
 set(install_dflowfm_module cmake/install_fm)

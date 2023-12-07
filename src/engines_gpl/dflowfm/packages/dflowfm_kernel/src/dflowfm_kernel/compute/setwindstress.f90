@@ -106,16 +106,15 @@
           if (jatem == 5) then
              cdwcof(L) = cdw
           endif
-          if (jaroro > 0) then
+          if (jaroro > 0 ) then
              k = ln(2,L)
              row = rho(ktop(k))
              if (jaroro > 1) then
                 roa  = roair(k)
              endif
           endif
-          if (ja_airdensity + ja_varying_airdensity > 0) then
+          if (ja_airdensity + ja_computed_airdensity > 0) then
              k = ln(2,L)
-             row = rho(ktop(k))
              roa = airdensity(k)
           endif
           tuwi    = roa*cdw*uwi

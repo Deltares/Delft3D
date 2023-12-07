@@ -1,5 +1,5 @@
 set(library_name trachytopes_kernel)
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
 
 # Add dependencies
 target_link_libraries(${library_name} deltares_common)

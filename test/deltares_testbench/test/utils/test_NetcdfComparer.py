@@ -38,12 +38,13 @@ class TestNetcdfComparer:
         fc.parameters = {"par1": [pm]}
         comparer = nccmp.NetcdfComparer()
         logger = TestLogger()
-        results = comparer.compare(self.lp, self.rp, fc, "test", logger)
+        path = os.path.join('test')
+        results = comparer.compare(self.lp, self.rp, fc, path, logger)
         resultstruc = results[0][3]
 
         # perform a set of asserts on the result structure
         assert not resultstruc.passed
-        assert resultstruc.error
+        assert not resultstruc.error
         assert resultstruc.result == "NOK"
         assert pytest.approx(resultstruc.maxAbsDiff) == 0.01983249918399
         assert resultstruc.maxAbsDiffCoordinates == (1, 0)
@@ -60,7 +61,8 @@ class TestNetcdfComparer:
         fc.parameters = {"par1": [pm]}
         comparer = nccmp.NetcdfComparer()
         logger = TestLogger()
-        results = comparer.compare(self.lp, self.rp, fc, "test", logger)
+        path = os.path.join('test')
+        results = comparer.compare(self.lp, self.rp, fc, path, logger)
         resultstruc = results[0][3]
         print(resultstruc.result)
 

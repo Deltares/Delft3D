@@ -1,4 +1,6 @@
-# Set version file variables
+set(library_name io_netcdf)
+
+
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/io_netcdf_version.F90)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
@@ -14,17 +16,13 @@ if(UNIX)
 endif()
 
 
-set(src_path src)
-get_fortran_source_files(${src_path} sources)
-
 ###########
 # IO_NETCDF
 ###########
-set(library_name io_netcdf)
-add_library(${library_name} ${sources} ${fortran_version_file})
+
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src resource_files ${fortran_version_file})
 
 # Create the folder structure in vfproj
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${sources} ${fortran_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/io_netcdf)
 
 target_include_directories(${library_name}  PRIVATE ${version_include_dir} ${rc_dir})
@@ -72,6 +70,7 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointe
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 
+set(src_path src)
 # Set additional compilation properties
 set_source_files_properties(${fortran_version_file}
                             ${src_path}/coordinate_reference_system.F90

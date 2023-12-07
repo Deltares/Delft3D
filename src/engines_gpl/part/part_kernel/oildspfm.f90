@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module oildspfm_mod
+module fm_oildsp_mod
 use m_stop_exit
 
 

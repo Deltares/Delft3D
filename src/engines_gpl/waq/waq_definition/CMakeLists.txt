@@ -1,7 +1,7 @@
 # Define the library
 set(library_name waq_definition)
 
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")

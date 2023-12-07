@@ -2,7 +2,7 @@ include_directories(${mpi_include_path})
 
 set(library_name deltares_common_mpi)
 
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
 # Set dependencies
 set(oss_dependencies deltares_common)
 oss_include_libraries(deltares_common_mpi oss_dependencies)

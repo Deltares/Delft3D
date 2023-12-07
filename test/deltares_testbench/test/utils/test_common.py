@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch, call
 from src.utils.logging.log_level import LogLevel
 from src.utils.common import log_header, log_separator, log_table
 
+
 class TestCommon:
     @patch('src.utils.logging.console_logger.ConsoleLogger')
     def test_log_header(self, mock_logger):

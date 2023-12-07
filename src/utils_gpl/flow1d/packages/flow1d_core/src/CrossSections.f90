@@ -957,7 +957,8 @@ end subroutine interpolateWidths
 subroutine useBranchOrdersCrs(crs, brs)
    ! modules
    use messageHandling
-   use sorting_algorithms, only: dpquicksort
+   use stdlib_kinds, only: int64
+   use stdlib_sorting, only: sort_index
    implicit none
    ! variables
    type(t_CrossSectionSet), intent(inout)          :: crs       !< Current cross-section set
@@ -969,7 +970,7 @@ subroutine useBranchOrdersCrs(crs, brs)
    integer  crsCount
    integer, allocatable, dimension(:,:)         :: orderNumber       !< first index contains orderNumber, second contains start position for this ordernumber
    double precision, allocatable, dimension(:)  :: crsData
-   integer, allocatable, dimension(:)           :: crsIndices
+   integer(int64), allocatable, dimension(:)    :: crsIndices
    type(t_CrossSection)                         :: cross
    type(t_CrossSectionSet)                      :: tempset
    integer                                      :: maxBranchId, maxBranchOrder
@@ -983,11 +984,11 @@ subroutine useBranchOrdersCrs(crs, brs)
    maxBranchId    = max(1,maxval(crs%cross(:)%branchId))
    maxBranchOrder = max(1,maxval(brs%branch(:)%ordernumber)+1)
    maxChainage    = maxval(crs%cross(:)%chainage)
-   
+
    ! Multiplication factors for sorting 
    F2 = maxChainage+1
    F1 = (maxBranchId+1)*F2
-   
+
    allocate(crsData(crsCount),crs%crossSectionIndex(crscount),crsIndices(crsCount),tempset%cross(crsCount),orderNumber(maxBranchOrder+2,2))
    ! We want to sort the array by branch order and chainage, but in groups:
    ! first cross sections that are not on any branch (order by crs index),
@@ -996,7 +997,6 @@ subroutine useBranchOrdersCrs(crs, brs)
    ! To this end we multiply branch id by F1 and branch order by F2 to be able to sort them all at once.
    ! See: UNST-3680
    do ics = 1, crsCount
-      crsIndices(ics) = ics
       ibr = crs%cross(ics)%branchid
       if (ibr <= 0) then ! crs without branch first
          crsData(ics) = crs%cross(ics)%chainage
@@ -1006,9 +1006,9 @@ subroutine useBranchOrdersCrs(crs, brs)
          crsData(ics) = (getOrderNumber(brs, ibr)+1)*F1 + crs%cross(ics)%branchid*F2 + crs%cross(ics)%chainage
       endif
    enddo
-   
-   call dpquicksort(crsData,crsIndices)
-   
+
+   call sort_index(crsData,crsIndices)
+
    do ics = 1, crsCount !copy data to temp array
       tempset%cross(ics) = crs%cross(crsIndices(ics))
       crs%crossSectionIndex(crsIndices(ics)) = ics 

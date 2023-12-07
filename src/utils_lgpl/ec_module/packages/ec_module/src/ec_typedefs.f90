@@ -68,6 +68,10 @@ module m_ec_typedefs
    
    !===========================================================================
 
+    type :: str
+        character(len=:), allocatable :: s
+    end type str 
+
     ! TODO : fill in default invalid values for some of the fields to detect reading failure or missing header fields  
     ! A bc-object has a SINGLE quantity-object, which corresponds to a SINGLE vertical level, possibly associated with MULTIPLE columns in the data  
     type :: tEcBCQuantity
@@ -119,12 +123,13 @@ module m_ec_typedefs
         type (tEcBCQuantity), allocatable          ::  quantities(:)       !< Array of quantity objects for each quantity with the same name  
         type (tEcNetCDF), pointer                  ::  ncptr => null()     !< pointer to a NetCDF instance, responsible for a connected NetCDF file 
         type (tEcBCFile), pointer                  ::  bcFilePtr => null() !< pointer to a BCFile instance, responsible for a connected BC file 
-        integer                                    ::  ncvarndx = -1       !< varid in the associated netcdf for the requested quantity 
+        integer, dimension(:), allocatable         ::  ncvarndx            !< varid(s) in the associated netcdf for the requested quantity 
         integer                                    ::  nclocndx = -1       !< index in the timeseries_id dimension for the requested location 
         integer                                    ::  nctimndx =  1       !< record number to be read 
         integer, dimension(:), allocatable         ::  ncdimvector         !< List of dimensions in NetCDF describing the chosen variable
         integer, allocatable, dimension(:)         ::  dimvector           !< dimension ID's indexing the variable of interest
         logical                                    ::  feof = .False.      !< End-Of-File signal
+        real(hp), dimension (:), allocatable       ::  buffer              !< buffer for temporary storage in readers
         !
         integer                 ::  astro_component_column = -1  !< number of the column, containing astronomic components
         integer                 ::  astro_amplitude_column = -1  !< number of the column, containing astronomic amplitudes
@@ -175,6 +180,7 @@ module m_ec_typedefs
         integer                                      ::  ncid            !< unique NetCDF ncid 
         character(len=maxFileNameLen)                ::  ncfilename      !< netCDF filename
         integer, allocatable, dimension(:)           ::  dimlen          !< lengths of dimensions 
+        type(str), allocatable, dimension(:)         ::  vector_definitions            !< list of vector names
         character(len=maxFileNameLen), allocatable, dimension(:)  ::  standard_names   !< list of standard names
         character(len=maxFileNameLen), allocatable, dimension(:)  ::  long_names       !< list of long names
         character(len=maxFileNameLen), allocatable, dimension(:)  ::  variable_names   !< list of variable names

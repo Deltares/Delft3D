@@ -110,6 +110,10 @@
           call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
           call aerr('dwcap(ndx)', ierr, ndx)
       endif
+      if(jawave == 7 .and. waveforcing == 2) then
+          call realloc(distot, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('distot(ndx)', ierr, ndx)
+      endif
    endif
    !
    if  (jawave > 0) then

@@ -1,22 +1,17 @@
-# Set directory which contains all source files
-set(src_path .)
+set(library_name delwaq_lib)
 
 # Set version file variables
-set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../) # Trace back to the WAQ path
-
-# Set version file variables
+set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(rc_version_file ${waq_root_path}/resources/version/version_number.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# Gather source files
-get_fortran_source_files(${src_path} source_files)
-
-file(GLOB preprocessor_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/waq_bmi.F90)
-
-# Define library
-set(library_name delwaq_lib)
-add_library(${library_name} SHARED ${source_files}
-                                   ${rc_version_file})
+# file(GLOB preprocessor_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/waq_bmi.F90)
+create_target(
+    ${library_name} ${CMAKE_CURRENT_SOURCE_DIR} 
+    src_dir . 
+    resource_files ${rc_version_file} 
+    shared
+)
 
 # Set dependencies
 set(oss_dependencies waq_hyd_data
@@ -65,23 +60,15 @@ endif(WIN32)
 if (UNIX)
     target_link_libraries(${library_name} ${oss_dependencies}
                                           uuid)
+    target_link_options(${library_name} PRIVATE ${openmp_flag})
+    set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
-
-# Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-source_group(Resources FILES    ${rc_version_file})
 
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 
 target_include_directories(${library_name} PRIVATE ${version_include_dir})
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)
-
-if(UNIX)
-    target_link_options(${library_name} PRIVATE ${openmp_flag})
-    set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
-endif(UNIX)
-
 
 # Change the name of the target library to delwaq.dll
 set_target_properties (${library_name} PROPERTIES OUTPUT_NAME delwaq)

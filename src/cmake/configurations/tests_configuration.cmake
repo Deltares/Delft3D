@@ -171,9 +171,9 @@ endif()
 
 # Test binaries
 add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
-add_subdirectory(${checkout_src_root}/${test_ec_module}              test_ec_module)
-add_subdirectory(${checkout_src_root}/${test_waq_utils_f}            test_waq_utils_f)
-add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel}         test_dflowfm_kernel)
+add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
+add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
+add_subdirectory(${delwaq_tests_module} tests_delwaq)
 
 if(UNIX)
     # install

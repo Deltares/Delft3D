@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import os
 import pytest
 
 from unittest.mock import ANY, Mock, patch
@@ -48,7 +49,7 @@ class TestMinioRewinder:
 
     @staticmethod
     def test_rewind_download_delete_marker():
-        # Create a Mock for the Minio client
+        # Arrange
         mock_minio_client = Mock()
 
         object1 = TestMinioRewinder.create_mock_object(
@@ -73,11 +74,14 @@ class TestMinioRewinder:
         with patch(
             "src.utils.handlers.minio_handler.Minio", return_value=mock_minio_client
         ):
+            # Act
             rewinder_instance = Rewinder(mock_minio_client, "2023.10.20T12:00")
             rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
+            # Assert
+            expected_path = os.path.join('.', 'object1_name')
             mock_minio_client.fget_object.assert_called_once_with(
-                "my_bucket", "object1_name", ".\\object1_name", version_id=ANY
+                "my_bucket", "object1_name", expected_path, version_id=ANY
             )
 
     @staticmethod
@@ -114,7 +118,7 @@ class TestMinioRewinder:
 
     @staticmethod
     def test_rewind_download_after_rewind():
-        # Create a Mock for the Minio client
+        # Arrange
         mock_minio_client = Mock()
 
         object1 = TestMinioRewinder.create_mock_object(
@@ -135,24 +139,26 @@ class TestMinioRewinder:
 
         mock_minio_client.list_objects.return_value = object_list
 
-        # Mock Minio and Rewinder
+        # Act
         with patch(
             "src.utils.handlers.minio_handler.Minio", return_value=mock_minio_client
         ):
             rewinder_instance = Rewinder(mock_minio_client, "2024.10.20T12:00")
             rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
-            # Check if the fget_object method was called with the expected arguments
+            # Assert
+            expected_path1 = os.path.join('.', 'object1_name')
             mock_minio_client.fget_object.assert_any_call(
                 "my_bucket",
                 "object1_name",
-                ".\\object1_name",
+                expected_path1,
                 version_id=ANY
             )
+            expected_path2 = os.path.join('.', 'object2_name')
             mock_minio_client.fget_object.assert_any_call(
                 "my_bucket",
                 "object2_name",
-                ".\\object2_name",
+                expected_path2,
                 version_id=ANY
             )
 

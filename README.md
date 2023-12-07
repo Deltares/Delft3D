@@ -68,8 +68,8 @@ Replace "..." by the actual path on your system to the checkout directory.
 
 \<kernel\>/\<type\>/\<ISSUENR\>_short_description
 with:
-- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave    
-  -> Use all/none to trigger all/none tests
+- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave, tc
+  -> Use all/none/<specific> to trigger all/none/specific tests
 - \<type\>    : one of: bugfix, doc, feature, poc, release, research, task    
   -> Use research for branches that will not be merged into trunk directly
 - \<ISSUENR\> : JIRA issue number    
@@ -77,3 +77,14 @@ with:
 
 Example:    
 fm/feature/UNST-1234_improve_partition_file
+
+# Unit tests
+## Running Unit tests
+- After building the source code, execute "ctest" in the build directory
+- Then run ctest followed by the config  
+
+```
+  cd build_all
+  ctest -C debug
+```
+- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](unit-testing.md).

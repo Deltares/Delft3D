@@ -1,3 +1,5 @@
+set(executable_name waqpb_export)
+
 # Define include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
@@ -6,16 +8,7 @@ set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq) # Trace back to the WA
 set(rc_version_file ${waq_root_path}/resources/version/version_number_waqpb_export.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# Set source directory
-set(src_path .)
-
-# Gather source files
-get_fortran_source_files(${src_path} source)
-
-# Define executable
-set(executable_name waqpb_export)
-add_executable(${executable_name} ${source}
-                                  ${rc_version_file})
+create_target(${executable_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . resource_files ${rc_version_file} target_type "executable")
 
 # Set dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
@@ -24,18 +17,10 @@ set(oss_dependencies    deltares_common
                         nefis
                         waq_utils_f
                         waqpb_lib)
-
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 # Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
-
-if(UNIX)
-    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
-endif(UNIX)
-
-# Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/waqpb)
 
 # Set post-build step

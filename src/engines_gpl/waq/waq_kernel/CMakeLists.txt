@@ -1,11 +1,11 @@
-# Set path for include files
+set(library_name waq_kernel)
+
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(waq_kernel_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 include_directories(${waq_kernel_include_path})
 
-# Define library
-set(library_name waq_kernel)
-create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
+
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . recursive)
 
 # Set dependencies
 set(oss_dependencies deltares_common

@@ -391,11 +391,12 @@ end function ncu_clone_vardef
 
 
 !> Compatibility function: returns the fill settings for a variable in a netCDF-3 file.
-function ncu_inq_var_fill_int4( ncid, varid, no_fill, fill_value) result(ierr)
-   integer,                   intent(in)  :: ncid        !< ID of the NetCDF dataset
-   integer,                   intent(in)  :: varid       !< ID of the variable in the data set
-   integer,                   intent(out) :: no_fill     !< An integer that will always get 1 (for forward compatibility).
-   integer(kind=FourByteInt), intent(out) :: fill_value  !< This will get the fill value for this variable.
+function ncu_inq_var_fill_int4( ncid, varid, no_fill, fill_value, fill_value_customed) result(ierr)
+   integer,                   intent(in   ) :: ncid                !< ID of the NetCDF dataset
+   integer,                   intent(in   ) :: varid               !< ID of the variable in the data set
+   integer, optional,         intent(in   ) :: fill_value_customed !< User customed fill value
+   integer,                   intent(  out) :: no_fill             !< An integer that will always get 1 (for forward compatibility).
+   integer(kind=FourByteInt), intent(  out) :: fill_value          !< This will get the fill value for this variable.
 
    integer :: ierr ! Error status, nf90_noerr = if successful.
 
@@ -403,18 +404,23 @@ function ncu_inq_var_fill_int4( ncid, varid, no_fill, fill_value) result(ierr)
 
    ierr = nf90_get_att(ncid, varid, '_FillValue', fill_value)
    if (ierr /= nf90_noerr) then
-      fill_value = nf90_fill_int
+      if (present(fill_value_customed)) then
+         fill_value = fill_value_customed
+      else
+         fill_value = nf90_fill_int
+      end if
       ierr = nf90_noerr
    end if
 end function ncu_inq_var_fill_int4
 
 
 !> Compatibility function: returns the fill settings for a variable in a netCDF-3 file.
-function ncu_inq_var_fill_real8( ncid, varid, no_fill, fill_value) result(ierr)
-   integer,                   intent(in)  :: ncid        !< ID of the NetCDF dataset
-   integer,                   intent(in)  :: varid       !< ID of the variable in the data set
-   integer,                   intent(out) :: no_fill     !< An integer that will always get 1 (for forward compatibility).
-   real(kind=EightByteReal),  intent(out) :: fill_value  !< This will get the fill value for this variable.
+function ncu_inq_var_fill_real8( ncid, varid, no_fill, fill_value, fill_value_customed) result(ierr)
+   integer,                            intent(in   ) :: ncid                !< ID of the NetCDF dataset
+   integer,                            intent(in   ) :: varid               !< ID of the variable in the data set
+   real(kind=EightByteReal), optional, intent(in   ) :: fill_value_customed !< User customed fill value
+   integer,                            intent(  out) :: no_fill             !< An integer that will always get 1 (for forward compatibility).
+   real(kind=EightByteReal),           intent(  out) :: fill_value          !< This will get the fill value for this variable.
 
    integer :: ierr ! Error status, nf90_noerr = if successful.
 
@@ -422,7 +428,11 @@ function ncu_inq_var_fill_real8( ncid, varid, no_fill, fill_value) result(ierr)
 
    ierr = nf90_get_att(ncid, varid, '_FillValue', fill_value)
    if (ierr /= nf90_noerr) then
-      fill_value =  nf90_fill_double
+      if (present(fill_value_customed)) then
+         fill_value = fill_value_customed
+      else
+         fill_value =  nf90_fill_double
+      end if
       ierr = nf90_noerr
    end if
 end function ncu_inq_var_fill_real8
