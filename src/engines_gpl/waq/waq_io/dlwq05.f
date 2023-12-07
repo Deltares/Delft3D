@@ -76,8 +76,8 @@
       integer(kind=int_wp), intent(inout) :: lun(*)             !< array with unit numbers
       character( *),        intent(inout) :: lchar(*)           !< array with file names of the files
       integer(kind=int_wp), intent(inout) :: filtype(*)         !< type of binary file
-      character(len=20),        intent(inout) :: car(:)             !< character workspace
-      integer(kind=int_wp), intent(inout) :: iar(*)             !< integer workspace ( dump locations at entrance )
+      character( *),        intent(inout) :: car(:)             !< character workspace
+      integer(kind=int_wp), intent(inout) :: iar(:)             !< integer workspace ( dump locations at entrance )
       real(kind=real_wp),   intent(inout) :: rar(irmax)         !< real    workspace
       integer(kind=int_wp), intent(inout) :: nrftot(*)          !< number of function items
       integer(kind=int_wp), intent(inout) :: nrharm(*)          !< number of harmonic items
