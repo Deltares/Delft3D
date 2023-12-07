@@ -48,16 +48,9 @@ module unstruc_caching
 
     logical, private :: cache_success
 
-    character(len=20), dimension(10), private :: section = ['OBSERVATIONS        ', &
-                                                            'FIXED WEIRS         ', &
-                                                            'CROSS_SECTIONS      ', &
-                                                            '12345678901234567890', &
-                                                            '12345678901234567890', &
-                                                            '12345678901234567890', &
-                                                            '12345678901234567890', &
-                                                            '12345678901234567890', &
-                                                            '12345678901234567890', &
-                                                            '12345678901234567890']
+    character(len=20), dimension(3), private :: section = ['OBSERVATIONS        ', &
+                                                           'FIXED WEIRS         ', &
+                                                           'CROSS_SECTIONS      ']
     integer, parameter, private :: key_obs = 1
     integer, parameter, private :: key_fixed_weirs = 2
     integer, parameter, private :: key_cross_sections = 3
