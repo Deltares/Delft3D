@@ -73,10 +73,11 @@ module bmi
    integer(kind=int_wp), parameter ::  category_procparam = 6
 
    type :: connection_data
-      logical                :: incoming       ! Identifies the direction: if true, data from outside
+      logical              :: incoming       ! Identifies the direction: if true, data from outside
       integer(kind=int_wp) ::  category        ! Which category of data: concentrations, process parameters ...
       integer(kind=int_wp) ::  buffer_idx      ! Index into the RBUF array
-      real(kind=dp) :: p_value        ! Copy of the value received/sent by DELWAQ
+      integer(kind=int_wp) :: system_idx     ! Index of the substance or quantity in general
+      real(kind=dp), pointer :: p_value        ! Copy of the value received/sent by DELWAQ - must be a pointer!
       character(len=40)      :: exchange_name  ! Name used by get_var to identify the item
    end type
 
@@ -305,7 +306,7 @@ contains
       use iso_c_binding, only: c_double
 
       real(c_double), value, intent(in) :: dt        !< Interval over which the calculation is to be done.
-                                                    !! May involve one or more internal timesteps
+      !! May involve one or more internal timesteps
 
       real(c_double)                    :: tupdate
 
@@ -329,7 +330,7 @@ contains
       use m_sysi
 
       real(c_double), value, intent(in) :: tupdate   !< Time until which the calculation is to be run.
-                                                    !! May involve one or more internal timesteps
+      !! May involve one or more internal timesteps
 
       integer(kind=int_wp) ::  update_steps, step
       character(len=20), dimension(0)   :: argv_dummy
@@ -389,8 +390,8 @@ contains
 
    ! get_start_time --
    !>    Return the start time of the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    !     Note 1: BMI 2.0 defines this as a function. As the name is defined by DIMR
    !             we cannot easily wrap it.
@@ -409,8 +410,8 @@ contains
 
    ! get_end_time --
    !>    Return the end time of the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    !     Note: See get_start_time
    !
@@ -426,8 +427,8 @@ contains
 
    ! get_time_step --
    !>    Return the end time of the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    !     Note: See get_start_time
    !
@@ -443,8 +444,8 @@ contains
 
    ! get_current_time --
    !>    Return the current time in the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    !     Note: See get_start_time
    !
@@ -461,8 +462,8 @@ contains
 
    ! BMI2_get_start_time --
    !>    Return the start time of the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    integer function BMI2_get_start_time(t) bind(C, name="BMI2_get_start_time")
       !DEC$ ATTRIBUTES DLLEXPORT :: BMI2_get_start_time
@@ -481,8 +482,8 @@ contains
 
    ! BMI2_get_end_time --
    !>    Return the end time of the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    integer function BMI2_get_end_time(t) bind(C, name="BMI2_get_end_time")
       !DEC$ ATTRIBUTES DLLEXPORT :: BMI2_get_end_time
@@ -500,8 +501,8 @@ contains
 
    ! BMI2_get_time_step --
    !>    Return the end time of the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    integer function BMI2_get_time_step(dt) bind(C, name="BMI2_get_time_step")
       !DEC$ ATTRIBUTES DLLEXPORT ::BMI2_get_time_step
@@ -519,8 +520,8 @@ contains
 
    ! BMI2_get_current_time --
    !>    Return the current time in the calculation
-    !!
-    !!    Always returns 0
+   !!
+   !!    Always returns 0
    !
    integer function BMI2_get_current_time(t) bind(C, name="BMI2_get_current_time")
       !DEC$ ATTRIBUTES DLLEXPORT :: BMI2_get_current_time
@@ -555,11 +556,11 @@ contains
 
    ! get_value_ptr --
    !>    The get_value_ptr function returns a pointer to the actual variable in the model component,
-    !!    so that the caller can read the current or set a new value.
-    !!    The consequence is that we do not know whether a new value has been set or not.
-    !!    Also noteworthy: DIMR only accepts double-precision numbers.
-    !!
-    !!    Returns 0 on success, 1 if the key was not recognised or an index was out of scope.
+   !!    so that the caller can read the current or set a new value.
+   !!    The consequence is that we do not know whether a new value has been set or not.
+   !!    Also noteworthy: DIMR only accepts double-precision numbers.
+   !!
+   !!    Returns 0 on success, 1 if the key was not recognised or an index was out of scope.
    !
    !     Note: defined by BMI 2.0
    !
@@ -671,19 +672,18 @@ contains
          type(connection_data), dimension(:), allocatable, intent(inout) :: connection   !< Array storing the connection information
 
          integer(kind=int_wp), intent(out) ::  newidx        !< Index into the connection array to be used
-                                                                                        !! for the new connection
+         !! for the new connection
 
-         type(connection_data)                                           :: new_connection
-         character(len=len(key_name))                                    :: copy_key, component, item_name, subst_param
+         type(connection_data) :: new_connection
+         character(len=len(key_name)) :: copy_key, component, item_name, subst_param
          integer(kind=int_wp) ::  i, k
          integer(kind=int_wp) ::  iseg, isys
          integer(kind=int_wp) ::  ierr
-         logical                                                         :: error
+         logical :: error
 
-         !
          ! Analyse the connection string
-         !
          newidx = 0
+         isys     = -999 ! Just to be safe
 
          if (key_name(1:10) /= 'TO_DELWAQ|' .and. key_name(1:12) /= 'FROM_DELWAQ|') then
             return
@@ -744,7 +744,7 @@ contains
          subst_param = copy_key
 
          selection: &
-            block
+                 block
             select case (component)
             case ('BOUND')
                new_connection%category = category_boundary
@@ -829,14 +829,21 @@ contains
                ! TODO - get arrays like volume etc.
             end select
 
-            !
             ! Fill in the details
+            ! Implementation note:
+            ! The component p_value must be a pointer, as otherwise the automatic reallocation
+            ! below would result in new memory locations that we cannot correct.
+            ! Alternative implementations are possible, but short of a fixed size, they all
+            ! involve pointers as far as I (AM) can tell. This seems the simplest one.
             !
+            new_connection%system_idx = isys
+            allocate( new_connection%p_value )
+
             connection = [connection, new_connection]
             newidx = size(connection)
 
          end block &
-            selection
+                 selection
 
       end subroutine split_key
 
@@ -850,20 +857,25 @@ contains
    !
    subroutine update_from_incoming_data(connection)
       type(connection_data), dimension(:), intent(in) :: connection !< Information about the connections to
-                                                                    !! external components
+      !! external components
 
-      integer(kind=int_wp) ::  idx
+      integer :: idx, isys, iwaste
 
-      !
       ! For now: only waste loads - set by D-RTC
-      !
-      if (allocated(wasteloads)) then
-         do idx = 1, size(connection)
-            if (connection(idx)%category == category_wasteload .and. connection(idx)%incoming) then
-               wasteloads(connection(idx)%buffer_idx)%set_factor = merge(1.0, 0.0, connection(idx)%p_value /= 0.0)
-            end if
-         end do
-      end if
+      if ( allocated(wasteloads) ) then
+         do idx = 1,size(connection)
+            if ( connection(idx)%category == category_wasteload .and. connection(idx)%incoming ) then
+               iwaste = connection(idx)%buffer_idx
+               if ( .not. allocated(wasteloads(iwaste)%set_factor) ) then
+                  allocate( wasteloads(iwaste)%set_factor(1:size(substance_name)+1) )
+                  wasteloads(iwaste)%set_factor = 1.0
+               endif
+
+               isys = connection(idx)%system_idx
+               wasteloads(iwaste)%set_factor(isys) = connection(idx)%p_value
+            endif
+         enddo
+      endif
    end subroutine update_from_incoming_data
 
 end module bmi
