@@ -31,7 +31,7 @@
 
       subroutine compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  ,
      *                    nodim  , iorder , car , ioffi  , ioffc  ,
-     *                             iods   , ioffd, idx_missing , icnt, ierr, iwar)
+     *                             iods   , ioffd, idx_missing , count_missing, ierr, iwar)
 !
 !
 !     Deltares        Sector Waterresources And Environment
@@ -63,8 +63,8 @@
 !     ioffc   integer    1         in/out  offset in character array
 !     ioffd   integer    1         in/out  base offset in both arrays
 !     iods    integer    1         input   shift counter ods files
-!     idx_missing       integer    1         input   loop counter (index of missing table header, from usefor's)
-!     icnt    integer    1         in/out  counter (of missing columns)
+!     idx_missing       integer    1         input   loop counter (index of missing table header, in list USEFOR's)
+!     count_missing    integer    1         in/out  counter of missing column headers (wrt USEFOR's)
 !
 !
       use timers       !   performance timers
@@ -74,7 +74,7 @@
       character*20  chulp,  message_type
       integer(kind=int_wp) ::  ithndl = 0
       integer(kind=int_wp) ::  i1, i3, i4, i5
-      integer(kind=int_wp) ::  lunut, idx_missing, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
+      integer(kind=int_wp) ::  lunut, idx_missing, count_missing, ioffc, iorder, ntt, idmnr, nitm, nodim
       integer(kind=int_wp) ::  itmnr, noitm, i2, ioffd, ishft, ioffi, iods
        
       integer(kind=int_wp) ::  ierr, iwar
@@ -112,7 +112,7 @@
             if ( i5 > 0 )                      i4 = iar(ioffc + i3)
          end do
          chulp = car(ioffd + i4)
-         if ( car(ioffc + idx_missing) /= chulp ) then
+         if ( car(ioffc + idx_missing) /= chulp ) then ! log not resolved
             if ( iorder == 2 ) then
                write (lunut,1030) i4,chulp
             else
@@ -122,13 +122,13 @@
       else if ( i2 > 0 .and. i2 <  100000 ) then
          i4 = i2
          chulp = car(ioffd + i2)
-         if ( car(ioffc + idx_missing) == chulp ) then
+         if ( car(ioffc + idx_missing) == chulp ) then !warning
             iwar = iwar + 1
             message_type = "WARNING"
-            write ( lunut , 1010 ) message_type, idx_missing + icnt, car(ioffc + idx_missing)
-         else
+            write ( lunut , 1010 ) message_type, idx_missing + count_missing, car(ioffc + idx_missing)
+         else ! pseudo-error
             message_type = "ERROR"
-            write ( lunut , 1010 ) message_type, idx_missing + icnt, car(ioffc + idx_missing)
+            write ( lunut , 1010 ) message_type, idx_missing + count_missing, car(ioffc + idx_missing)
             ierr = 1
             if ( iorder == 2 ) then
                write (lunut,1030)  message_type, i2, chulp
@@ -161,7 +161,7 @@
       ioffi = ioffi - ishft
       ioffc = ioffc - 1
       ioffi = ioffi - 1
-      icnt  = icnt  + ishft
+      count_missing  = count_missing  + ishft
 !
 !     shift the base array heap
       do i5 = ioffd + i2, ioffd + ntt + nitm*2 + iods
