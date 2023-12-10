@@ -285,8 +285,12 @@ end
 
 if isfield(Ops,'thresholds')
     set(findobj(OH,'tag','thresholds'),'enable','on')
-    c = Ops.thresholds;
-    set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active,'string',vec2str(c,'noones','nobrackets'),'userdata',c)
+    thresholds = Ops.thresholds;
+    if isnumeric(thresholds)
+        set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active,'string',vec2str(thresholds,'noones','nobrackets'),'userdata',thresholds)
+    elseif isstruct(thresholds)
+        set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active,'string',sprintf(':%g:',thresholds.step),'userdata',thresholds)
+    end
 end
 
 if isfield(Ops,'thresholddistribution')
