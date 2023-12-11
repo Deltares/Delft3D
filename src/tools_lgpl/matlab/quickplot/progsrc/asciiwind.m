@@ -159,7 +159,7 @@ for i = 1:length(t)
                 sz = size(Structure.Header.grid_file.X)+1;
             end
     end
-    sz(3) = nQuant;
+    sz(3) = max(Quant);
     
     fseek(fid,Structure.Data(t(i)).offset,-1);
     if isfield(Structure.Data,'use_fortran_read') && ...
@@ -172,7 +172,7 @@ for i = 1:length(t)
             end
         end
     else
-        OneTime = fscanf(fid,'%f',[Structure.NVal Structure.Header.n_quantity]);
+        OneTime = fscanf(fid,'%f',[Structure.NVal sz(3)]);
         OneTime = reshape(OneTime,sz);
     end
     OneTime = OneTime(:,:,Quant);

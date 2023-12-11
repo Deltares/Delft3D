@@ -1210,6 +1210,7 @@ switch selection.Type
                         ip    = Range{1};
                         ledge = all(ismember(GRID.EdgeNodeConnect,Range{1}),2);
                         ip    = ip(~ismember(ip,GRID.EdgeNodeConnect(ledge,:)));
+                        ledge = find(ledge);
                     case 'EDGE'
                         ledge = Range{1};
                     case 'FACE'
@@ -1826,8 +1827,12 @@ switch NewLoc
                 else
                     % find node numbers associated with the selected edges
                     iEdge = OldRange.Range{1};
+                    find_point = length(iEdge)==1;
                     iNode = GRID.EdgeNodeConnect(iEdge,:);
                     iNode = unique(iNode(:));
+                    if find_point
+                        iNode = iNode(1);
+                    end
                     NewRange.Type = 'range';
                     NewRange.Range = {iNode};
                 end
@@ -1882,8 +1887,12 @@ switch NewLoc
                         case 'range'
                             iFace = OldRange.Range{1};
                     end
+                    find_point = length(iFace) == 1;
                     iNode = GRID.FaceNodeConnect(iFace,:);
                     iNode = unique(iNode(~isnan(iNode)));
+                    if find_point
+                        iNode = iNode(1);
+                    end
                     NewRange.Type = 'range';
                     NewRange.Range = {iNode};
                 end
@@ -1926,8 +1935,13 @@ switch NewLoc
                         end
                         find_point = length(iNode)==1;
                     end
-                    % find edges for which all nodes are selected
-                    lEdge = all(ismember(GRID.EdgeNodeConnect,iNode),2);
+                    if find_point
+                        % find any edge connected to this node
+                        lEdge = any(ismember(GRID.EdgeNodeConnect,iNode),2);
+                    else
+                        % find edges for which all nodes are selected
+                        lEdge = all(ismember(GRID.EdgeNodeConnect,iNode),2);
+                    end
                     iEdge = find(lEdge);
                     if find_point
                         iEdge = iEdge(1);
