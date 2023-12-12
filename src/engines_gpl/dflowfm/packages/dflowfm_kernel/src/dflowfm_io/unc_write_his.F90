@@ -331,7 +331,7 @@ subroutine unc_write_his(tim)            ! wrihis
             ierr = nf90_put_att(ihisfile, id_statx, 'long_name', 'original x-coordinate of station (non-snapped)')
             ierr = nf90_put_att(ihisfile, id_staty, 'long_name', 'original y-coordinate of station (non-snapped)')
 
-            statcoordstring = 'station_x_coordinate station_y_coordinate station_name'
+            statcoordstring = 'station_x_coordinate station_y_coordinate station_id'
             if (add_latlon) then
                ierr = ncu_clone_vardef(ihisfile, ihisfile, id_statx, 'station_lon', id_statlon, &
                              'longitude', 'original lon-coordinate of station (non-snapped)', 'degrees_east')
