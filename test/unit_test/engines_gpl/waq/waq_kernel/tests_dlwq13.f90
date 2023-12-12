@@ -89,18 +89,22 @@ program test_dlwq13
 
       integer, parameter                :: notot = 10
       integer, parameter                :: noseg = 23
-      real, dimension(notot, noseg)   :: conc
+      real, dimension(notot, noseg)     :: conc
       integer                           :: itime
       integer, dimension(30)            :: lun
+      character(len=200)                :: dataPath
       character(len=255), dimension(30) :: lchar
       character(len=40), dimension(4)   :: mname
       character(len=20), dimension(10)  :: sname
 
       conc = 1.0
 
-      lchar(18) = 'test_dlwq13_no_nans.ref' ! Not used in DLWQ13
-      lchar(19) = 'test_dlwq13_no_nans.mon'
-      lchar(23) = 'test_dlwq13_no_nans.res'
+      ! Get the DATA_PATH environment variable
+      call get_environment_variable("DATA_PATH", dataPath)
+
+      lchar(18) = trim(dataPath)//'/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
+      lchar(19) = trim(dataPath)//'/test_dlwq13_no_nans.mon'
+      lchar(23) = trim(dataPath)//'/test_dlwq13_no_nans.res'
 
       open (newunit=lun(19), file=lchar(19))
 
@@ -124,7 +128,7 @@ program test_dlwq13
 
       integer, parameter                :: notot = 10
       integer, parameter                :: noseg = 23
-      real, dimension(notot, noseg)   :: conc
+      real, dimension(notot, noseg)     :: conc
       integer                           :: itime
       integer, dimension(30)            :: lun
       character(len=200)                :: dataPath
@@ -134,10 +138,10 @@ program test_dlwq13
 
       conc = 1.0
       conc(1, 1) = log10(-1.0)
-      
+
       ! Get the DATA_PATH environment variable
       call get_environment_variable("DATA_PATH", dataPath)
-      
+
       lchar(18) = trim(dataPath)//'/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
       lchar(19) = trim(dataPath)//'/test_dlwq13_with_nans.mon'
       lchar(23) = trim(dataPath)//'/test_dlwq13_with_nans.res'
