@@ -40,13 +40,13 @@ subroutine setup_structures_and_weirs_list()
    use unstruc_channel_flow
    use m_1d_structures
    use m_compound
-   use sorting_algorithms, only: INDEXXI
+   use stdlib_sorting, only: radix_sort
    implicit none
    type(t_structure), pointer :: pstru
    integer :: L0
    integer          :: ng, L, n, istru, i
    integer          :: count, Llast, k
-   integer, allocatable :: indx(:), listtmp(:)
+   integer, allocatable :: listtmp(:)
    if (.not. ChangeVelocityAtStructures) then
       return
    endif
@@ -111,20 +111,20 @@ subroutine setup_structures_and_weirs_list()
    count = numberOfStructuresAndWeirs
    if (count > 0) then 
       numberOfStructuresAndWeirs = 0
-      allocate(indx(count), listtmp(count))
+      allocate(listtmp(count))
       listtmp = structuresAndWeirsList(1:count)
-      call indexxi(count, listtmp, indx)
+      call radix_sort(listtmp)
       Llast = 0
       do i = 1, count
-         L = listtmp(indx(i))
-         if (l /= Llast) then
+         L = listtmp(i)
+         if (L /= Llast) then
             numberOfStructuresAndWeirs = numberOfStructuresAndWeirs + 1
             structuresAndWeirsList(numberOfStructuresAndWeirs) = L
             Llast = L
          endif
       enddo
       
-      deallocate(indx,listtmp)
-   endif 
+      deallocate(listtmp)
+   endif
    return
   end subroutine setup_structures_and_weirs_list

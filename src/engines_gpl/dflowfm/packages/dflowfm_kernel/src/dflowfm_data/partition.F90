@@ -958,7 +958,7 @@ implicit none
       use network_data, only: nump, nump1d2d, numL, lnn, lne, numl1d, netcell, xzw, yzw
       use m_flowgeom, only: xz, yz
       use unstruc_channel_flow, only: network
-      use sorting_algorithms, only : indexxi
+      use stdlib_sorting, only: sort_index
       implicit none
       
       integer,  intent(in   ) :: L2Lorg(:)     !< Mapping table current (new) to original net link numbers
@@ -967,7 +967,7 @@ implicit none
 
       integer, dimension(:,:),      allocatable :: icandidate  ! two original cell number candidates, dim(nump1d2d)
       integer, dimension(:,:),      allocatable :: tmp_lne
-      integer, dimension(:)  ,      allocatable :: indx, indxinv, cellnrs, tmpNetcellNod
+      integer, dimension(:)  ,      allocatable :: indx, indxinv, tmpNetcellNod
       real(kind=hp), dimension(:),  allocatable :: tmpCoord
       integer                                   :: i, k, kother, LL, L, L_org, nc
       integer                                   :: ic1, ic2, ic3, ic4
@@ -1058,13 +1058,14 @@ implicit none
          ! * calculation points (flow nodes) are order such that branch indices are always increasing,
          ! * and calculation points (flow nodes) within a branch are always ordered by increasing offset/chainage.
 
-         allocate(indx(nump1d2d), indxinv(nump1d2d), cellnrs(nump1d2d), tmpCoord(nump1d2d), tmpNetcellNod(nump+1:nump1d2d))
-         cellnrs = iorg
-         call indexxi(size(iorg), cellnrs, indx)
+         allocate(indx(nump+1:nump1d2d), indxinv(nump+1:nump1d2d), tmpCoord(nump+1:nump1d2d), tmpNetcellNod(nump+1:nump1d2d))
+         call sort_index(iorg(nump+1:nump1d2d), indx(nump+1:nump1d2d))
+         do i = nump+1,nump1d2d
+            indx(i) = indx(i) + nump
+         end do
 
          do i = nump+1,nump1d2d
             indxinv(indx(i)) = i       ! Construct helper table with inverse of sorting permutation indx.
-            iorg(i) = cellnrs(indx(i)) ! Global cell numbers, after the 1D netcell sorting
          end do
 
          do i = nump+1,nump1d2d

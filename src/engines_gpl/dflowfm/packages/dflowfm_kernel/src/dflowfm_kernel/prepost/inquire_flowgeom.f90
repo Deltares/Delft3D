@@ -69,7 +69,7 @@ module m_inquire_flowgeom
    !> Find flow link number(s) intersected by a given polyline.
    function findlink_by_pli(npl, xpl, ypl, Larr , numlinks, lftopol, sortlinks, linktype) result(ierr)
       use m_flowgeom, only : xz, yz, ln, lnx, lnx1D
-      use sorting_algorithms
+      use stdlib_sorting, only: sort_index
       use dfm_error
 
       integer                           :: ierr         !< Result status, DFM_NOERR in case of success.
@@ -88,8 +88,7 @@ module m_inquire_flowgeom
       double precision :: crpm
       double precision :: dist
       double precision, allocatable :: distsStartPoly(:)
-      double precision, allocatable :: sortedDistsStartPoly(:)
-      integer, allocatable          :: sortedIndexses(:)
+      integer, allocatable          :: sortedIndices(:)
       integer, allocatable          :: tempLinkArray(:)
       integer :: found
       integer :: size_arr
@@ -159,22 +158,17 @@ module m_inquire_flowgeom
       ! if required, sort the links by distance along the polyline
       if (present(sortLinks) .and. numlinks > 0) then
          if (sortLinks==1) then
-            allocate(sortedDistsStartPoly(numlinks))
-            allocate(sortedIndexses(numlinks))
+            allocate(sortedIndices(numlinks))
             allocate(tempLinkArray(numlinks))
   
-            call sort(numlinks, distsStartPoly(1:numlinks), sortedDistsStartPoly, sortedIndexses)
+            call sort_index(distsStartPoly(1:numlinks), sortedIndices)
             do L=1,numlinks
-               tempLinkArray(L) = Larr(sortedIndexses(L))
+               tempLinkArray(L) = Larr(sortedIndices(L))
             end do
             Larr(1:numlinks) = tempLinkArray
-
-            deallocate(sortedDistsStartPoly)
-            deallocate(sortedIndexses)
-            deallocate(tempLinkArray)
          endif
       endif
-      if (allocated(distsStartPoly)) deallocate(distsStartPoly)
+      ! Rely on automatic de-allocation of modern Fortran
    end function findlink_by_pli
 
 

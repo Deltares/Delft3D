@@ -38,7 +38,7 @@
  use m_sferic
  use m_alloc
  use geometry_module, only: getdx, getdy, dbdistance, spher2locvec
- use sorting_algorithms, only: indexx
+ use stdlib_sorting, only: sort_index
  use m_missing, only: dmiss
  use m_flowexternalforcings
 
@@ -140,11 +140,13 @@
 
        if (n > 0) then
           nri(1) = 1
-          if (n > 1) call indexx(n,rn,nri)           ! sorted in closeness to linkline
+          if (n > 1) then
+             call sort_index(rn(1:n), nri(1:n)) ! sorted in closeness to linkline
+          end if
 
           nn  = 1
           ku  = kun(nri(nn))
-          rfr =  rn(nri(nn)) * dxi(L)
+          rfr =  rn(nn) * dxi(L)
 !         if (n == 1 .or. rfr < 0.1d0) then          ! if only 1 link attached or upwind point sufficiently close
           if (            rfr < 0.1d0) then          ! if only 1 link attached or upwind point sufficiently close
 

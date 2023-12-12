@@ -55,7 +55,6 @@ module m_1d_networkreader
    use gridgeom
    use meshdata
    use m_hash_search
-   use odugrid
    use precision_basics
    use m_alloc
 

@@ -71,7 +71,6 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_structures
     use m_GlobalParameters
     use m_longculverts
-    use odugrid
 
     implicit none
 

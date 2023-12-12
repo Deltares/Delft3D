@@ -116,7 +116,7 @@ module stdlib_sorting
     implicit none
     private
 
-    integer, parameter, public :: int_size = int64 !! Integer kind for indexing
+    integer, parameter, public :: int_size = int32 !! Integer kind for indexing
 
 ! Constants for use by tim_sort
     integer, parameter :: &

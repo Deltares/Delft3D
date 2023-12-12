@@ -43,7 +43,7 @@ implicit none
      use m_alloc
      use m_flowgeom
      use network_data, only: xk, yk, kn
-     use sorting_algorithms, only: indexxi
+     use stdlib_sorting, only: sort_index
      implicit none
 
      integer,                                     intent(in)  :: Nin          !< thin-dyke polyline size
@@ -63,7 +63,7 @@ implicit none
      integer,          dimension(:), allocatable              :: iLink, ipol
      integer,          dimension(:), allocatable              :: ipolnr, indx
 
-     integer                                                  :: i, ii, iL, ipL, ipolsec, k1, k2, L, numpols
+     integer                                                  :: i, ii, ipL, ipolsec, k1, k2, L, numpols
 
      ierror = 1
 
@@ -135,7 +135,7 @@ implicit none
 
 !    sort crossed flowlinks in increasing polyline order
      allocate (indx(numLinks))
-     call indexxi(numLinks,iPol,indx)
+     call sort_index(iPol(1:numLinks), indx)
 
 !    increase polygon array
      call increasepol(3*NumLinks,0)
@@ -147,7 +147,7 @@ implicit none
         i = 0
 
 !       advance pointer
-        do while ( ipolnr(iPol(indx(ii))).lt.ipL )
+        do while ( ipolnr(iPol(ii)).lt.ipL )
            ii=ii+1
         end do
 
@@ -155,13 +155,10 @@ implicit none
            exit
         end if
 
-        do while ( ipolnr(iPol(indx(ii))).eq.ipL )
-        !do iL=1,NumLinks
-           iL = indx(ii)
-
-           L = iLink(iL)
+        do while ( ipolnr(iPol(ii)).eq.ipL )
+           L = iLink(indx(ii))
 !          check for matching polygon section
-           ipolsec = iPol(iL)
+           ipolsec = iPol(ii)
            if ( ipolsec.lt.1 .or. ipolsec.ge.Nin ) then  ! should not happen
               continue
               exit

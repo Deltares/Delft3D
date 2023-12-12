@@ -957,7 +957,7 @@ end subroutine interpolateWidths
 subroutine useBranchOrdersCrs(crs, brs)
    ! modules
    use messageHandling
-   use stdlib_kinds, only: int64
+   use stdlib_kinds, only: int32
    use stdlib_sorting, only: sort_index
    implicit none
    ! variables
@@ -970,7 +970,7 @@ subroutine useBranchOrdersCrs(crs, brs)
    integer  crsCount
    integer, allocatable, dimension(:,:)         :: orderNumber       !< first index contains orderNumber, second contains start position for this ordernumber
    double precision, allocatable, dimension(:)  :: crsData
-   integer(int64), allocatable, dimension(:)    :: crsIndices
+   integer(int32), allocatable, dimension(:)    :: crsIndices
    type(t_CrossSection)                         :: cross
    type(t_CrossSectionSet)                      :: tempset
    integer                                      :: maxBranchId, maxBranchOrder

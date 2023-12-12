@@ -31,17 +31,17 @@
 ! 
 
       SUBROUTINE TIDYSAMPLES(XS,YS,ZS,IPSAM,NS,MXSAM,MYSAM)
-      use sorting_algorithms, only: indexx
+      use stdlib_sorting, only: sort_index
       implicit none
       integer :: ns
       double precision :: XS(NS), YS(NS), ZS(NS)   !< sample coordinates
       integer, dimension(NS), intent(out) :: IPSAM !< permutation array (increasing x-coordinate)
       integer,                intent(in)  :: MXSAM, MYSAM   !< structured sample data dimensions (>0) or unstructured (0)
+      double precision, allocatable :: xs_copy(:)
 !      IF (NS .GT. 1) CALL RSORT3(XS,YS,ZS,NS)
 
-      if ( NS.gt.1 ) then
-         call indexx(Ns,xs,IPSAM)
-      end if
+      xs_copy = xs
+      call sort_index(xs_copy, IPSAM)
 
 !     remove double/missing samples (non-structured sample data only)
       if ( MXSAM*MYSAM.ne.NS ) then

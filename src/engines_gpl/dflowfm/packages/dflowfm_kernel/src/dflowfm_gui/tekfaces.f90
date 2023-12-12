@@ -34,7 +34,7 @@
 
       use unstruc_colors
       use m_netw
-      use sorting_algorithms, only: indexx
+      use stdlib_sorting, only: sort_index
       use gridoperations
 
       implicit none
@@ -46,9 +46,10 @@
       integer :: ni
 
       DOUBLE PRECISION   XX,YY,ZZ, XH(10), YH(10), ZH(10)
-      INTEGER, ALLOCATABLE, SAVE        :: NP(:)
+      INTEGER, ALLOCATABLE, SAVE             :: NP(:)
       double precision :: XP, YP
-      double precision, ALLOCATABLE, SAVE        :: ZP(:)
+      double precision, ALLOCATABLE, SAVE    :: ZP(:)
+      double precision, allocatable          :: zp_copy(:)
 
       IF (SIZE(NP) .LT. NUMP) THEN
          IF ( ALLOCATED(NP) ) DEALLOCATE(NP,ZP)
@@ -70,7 +71,8 @@
             ZZ = ZZ/netcell(N)%N
             CALL DRIETWEE(XX,YY,ZZ,XP,YP,ZP(N))
          ENDDO
-         call indexx(NUMP,ZP,NP)
+         zp_copy = zp(1:nump)
+         call sort_index(zp_copy, NP(1:nump))
 
          DO L  = NUMP, 1, -1
             N  = NP(L)
