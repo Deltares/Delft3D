@@ -312,31 +312,7 @@ if FI.NumDomains>1
             else
                 zLoc = valLoc;
             end
-            switch zLoc
-                case 'NODE'
-                    nloc = FI.MergedPartitions.nNodes;
-                    domainMask = FI.MergedPartitions.nodeDMask;
-                    globalIndex = FI.MergedPartitions.nodeGIndex;
-                case 'EDGE'
-                    nloc = FI.MergedPartitions.nEdges;
-                    domainMask = FI.MergedPartitions.edgeDMask;
-                    globalIndex = FI.MergedPartitions.edgeGIndex;
-                case 'FACE'
-                    nloc = FI.MergedPartitions.nFaces;
-                    domainMask = FI.MergedPartitions.faceDMask;
-                    globalIndex = FI.MergedPartitions.faceGIndex;
-            end
-            Data.ZLocation = zLoc;
-            if isfield(partData, 'ZUnits')
-                Data.ZUnits = partData(1).ZUnits;
-            end
-            sz = size(partData(1).Z);
-            sz(hasTimeDim+1) = nloc;
-            Data.Z = NaN(sz);
-            for p = 1:length(partData)
-                masked = domainMask{p};
-                Data.Z(tDim{:},globalIndex{p}(masked),:) = partData(p).Z(tDim{:},masked,:);
-            end
+            Data = mergePartData(Data, partData, FI, zLoc,{'Z'}, hasTimeDim, tDim);
         end
         
         % data values 
@@ -348,32 +324,8 @@ if FI.NumDomains>1
             Data.Classes = partData(1).Classes;
             Data.ClassVal = partData(1).ClassVal;
         end
-        switch valLoc
-            case 'NODE'
-                nloc = FI.MergedPartitions.nNodes;
-                domainMask = FI.MergedPartitions.nodeDMask;
-                globalIndex = FI.MergedPartitions.nodeGIndex;
-            case 'EDGE'
-                nloc = FI.MergedPartitions.nEdges;
-                domainMask = FI.MergedPartitions.edgeDMask;
-                globalIndex = FI.MergedPartitions.edgeGIndex;
-            case 'FACE'
-                nloc = FI.MergedPartitions.nFaces;
-                domainMask = FI.MergedPartitions.faceDMask;
-                globalIndex = FI.MergedPartitions.faceGIndex;
-        end
-        for v = {'Val','XComp','YComp','NormalComp','TangentialComp'}
-            fld = v{1};
-            if isfield(partData,fld)
-                sz = size(partData(1).(fld));
-                sz(hasTimeDim+1) = nloc;
-                Data.(fld) = NaN(sz);
-                for p = 1:length(partData)
-                    masked = domainMask{p};
-                    Data.(fld)(tDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(tDim{:},masked,:);
-                end
-            end
-        end
+        valFields = {'Val','XComp','YComp','NormalComp','TangentialComp'};
+        Data = mergePartData(Data, partData, FI, valLoc, valFields, hasTimeDim, tDim);
         %
         if iscell(field.varid)
             if strcmp(field.varid{1},'stream_function') % note field is the original copy of Props
@@ -3332,6 +3284,35 @@ if ~isempty(connect)
             dFNC = max(dFNC,0);
             Mask = [zeros(size(dFNC(:,1))), cumsum(dFNC,2)];
             Ans.FaceNodeConnect(Mask==1) = NaN;
+        end
+    end
+end
+
+
+function Data = mergePartData(Data,partData,FI,valLoc,valFields,hasTimeDim,tDim)
+switch valLoc
+    case 'NODE'
+        nloc = FI.MergedPartitions.nNodes;
+        domainMask = FI.MergedPartitions.nodeDMask;
+        globalIndex = FI.MergedPartitions.nodeGIndex;
+    case 'EDGE'
+        nloc = FI.MergedPartitions.nEdges;
+        domainMask = FI.MergedPartitions.edgeDMask;
+        globalIndex = FI.MergedPartitions.edgeGIndex;
+    case 'FACE'
+        nloc = FI.MergedPartitions.nFaces;
+        domainMask = FI.MergedPartitions.faceDMask;
+        globalIndex = FI.MergedPartitions.faceGIndex;
+end
+for v = valFields
+    fld = v{1};
+    if isfield(partData,fld)
+        sz = size(partData(1).(fld));
+        sz(hasTimeDim+1) = nloc;
+        Data.(fld) = NaN(sz);
+        for p = 1:length(partData)
+            masked = domainMask{p};
+            Data.(fld)(tDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(tDim{:},masked,:);
         end
     end
 end
