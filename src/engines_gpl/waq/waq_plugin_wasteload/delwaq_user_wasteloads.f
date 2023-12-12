@@ -75,16 +75,6 @@
          call getfullversionstring_waq_plugin_wasteload(idstr)
          write ( lunrep , * ) idstr
       endif
-
-      ! control by D-RTC
-      ! Note:
-      ! We need to call this routine first to ensure that the control by D-RTC
-      ! (turning a waste load on or off works properly even in the case of
-      ! inlet/outlet pairs.)
-
-      call delwaq_user_drtc_control ( nowst , wasteloads, notot , nosys , noseg ,
-     &                                itime , conc      , syname, lunrep)
-
       ! inlet/outlet pairs - match waste loads by name
 
       call delwaq_user_inlet_outlet ( nowst , wasteloads, notot , nosys , noseg ,
@@ -98,6 +88,16 @@
       ! report on wasteloads
 
       call delwaq_user_bubble_bath  ( nowst , wasteloads, notot , nosys , noseg ,
+     &                                itime , conc      , syname, lunrep)
+
+      ! control by D-RTC
+      ! Note:
+      ! We need to call this routine last (!) to ensure that the control by D-RTC
+      ! to turn a waste load partially on or off works also works for outlets.
+      ! (General manipulation of inlet/outlet pairs requires further consideration though
+      ! as we have a chicken-and-egg problem.)
+
+      call delwaq_user_drtc_control ( nowst , wasteloads, notot , nosys , noseg ,
      &                                itime , conc      , syname, lunrep)
 
       return
@@ -725,27 +725,37 @@
 
 !       arguments declarations
 
-      integer, intent(in)                  :: nowst             ! number of wasteloads
-      type(wasteload), intent(inout)       :: wls(:)            ! array of all wasteloads (structure)
-      integer, intent(in)                  :: notot             ! total number of substances
-      integer, intent(in)                  :: nosys             ! number of active substances
-      integer, intent(in)                  :: noseg             ! number of segments
-      integer, intent(in)                  :: itime             ! system time
-      real, intent(in)                     :: conc(:,:)         ! concentration array
-      character(len=*), intent(in)         :: syname(:)         ! substance names
-      integer, intent(in)                  :: lunrep            ! logical unit of report file
+      integer, intent(in)            :: nowst             ! number of wasteloads
+      type(wasteload), intent(inout) :: wls(:)            ! array of all wasteloads (structure)
+      integer, intent(in)            :: notot             ! total number of substances
+      integer, intent(in)            :: nosys             ! number of active substances
+      integer, intent(in)            :: noseg             ! number of segments
+      integer, intent(in)            :: itime             ! system time
+      real, intent(in)               :: conc(:,:)         ! concentration array
+      character(len=*), intent(in)   :: syname(:)         ! substance names
+      integer, intent(in)            :: lunrep            ! logical unit of report file
 
 !       local declarations
 
-      integer                  :: i
+      integer                        :: i, n
+
 
       do i = 1,nowst
-          if ( wls(i)%set_factor /= 0.0 ) then
-              wls(i)%flow = wls(i)%flow * wls(i)%set_factor
-          else
-              wls(i)%flow     = 1.0e-20   ! Avoid zero, because then the waste load magic kicks in
-              wls(i)%loads(:) = 0.0       ! Set the concentrations in the waste load to zero, so
-                                          ! definitely nothing is released or taken up.
+          !
+          ! Set the flow or a specific substance
+          ! (Note that index 1 is for the extra quantity "flow")
+          !
+          n = size(wls(i)%loads) - 1 ! Compensate error in wascal
+
+          if ( allocated(wls(i)%set_factor) ) then
+              write(88,*) 'Waste: ', i, wls(i)%set_factor
+              if ( wls(i)%set_factor(1) /= 0.0 ) then
+                  wls(i)%flow       = wls(i)%flow       * wls(i)%set_factor(1)
+                  wls(i)%loads(1:n) = wls(i)%loads(1:n) * wls(i)%set_factor(2:n+1)
+              else
+                  wls(i)%flow     = 1.0e-20   ! Avoid zero, because then the waste load magic kicks in
+                  wls(i)%loads(:) = 0.0       ! Set the concentrations in the waste load to zero, so
+              endif
           endif
       enddo
 

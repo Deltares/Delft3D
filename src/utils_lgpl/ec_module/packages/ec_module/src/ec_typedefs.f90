@@ -349,6 +349,7 @@ module m_ec_typedefs
       type(tEcItemPtr),             dimension(:), pointer :: items => null()         !< items to be updated by this fileReader, stored in tEcInstance%ecItemsPtr
       integer                                             :: nItems                  !< Number of items <= size(items)
       type(tEcTimeFrame),                         pointer :: tframe => null()        !< TimeFrame at which data is available
+      type(tEcHarmonicsFrame),                    pointer :: hframe => null()        !< Harmonics frame
       real(hp)                                            :: lastReadTime
       type(tEcBCBlock),                           pointer :: bc => null()            !< BC-fileheader information
       integer                                             :: vectormax = 1           !< number of vector elements (from the demand side) 
@@ -386,6 +387,7 @@ module m_ec_typedefs
       type(tEcTimeseries),              allocatable :: timeseries                   !< Information supporting rewinding of a read timeseries 
       type(tEcConnectionPtr), dimension(:), pointer :: connectionsPtr     => null() !< Connections in which this Item is a target Item
       type(tEcTimeFrame),                   pointer :: tframe => null()             !< TimeFrame at which data is available
+      type(tEcHarmonicsFrame),              pointer :: hframe => null()             !< Harmonics frame
       integer                                       :: nConnections                 !< Number of Connections <= size(connectionsPtr)
       
       
@@ -452,6 +454,13 @@ module m_ec_typedefs
       real(hp), dimension(:), allocatable :: times            !< The timesteps [ec_timestep_unit] at which data is available.
       real(hp)                            :: dtnodal          !< Nodal factors update interval
    end type tEcTimeFrame
+
+   !>
+   type tEcHarmonicsFrame
+      integer                               :: ec_period        !< Period in seconds.
+      real(hp), dimension(:,:), allocatable :: phases           !< Phase data in degrees.
+      integer, dimension(2)                 :: phase_dims       !< Number of phase points in each dimension.
+   end type 
 
    !> needed to make an array of allocatable strings
    type VLSType

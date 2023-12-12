@@ -3315,6 +3315,18 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f011_c059_curvi_spacevar_charnock" ref="dflowfm_default">
+      <path>e02_dflowfm/f011_wind/c059_curvi_spacevar_charnock</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/windcase_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f011_c060_trivial_pp" ref="dflowfm_default">
       <path>e02_dflowfm/f011_wind/c060_trivial_pp</path>
       <maxRunTime>15000.0000000</maxRunTime>

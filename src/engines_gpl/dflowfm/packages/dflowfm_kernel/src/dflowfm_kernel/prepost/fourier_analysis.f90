@@ -356,7 +356,7 @@ module m_fourier_analysis
       character(len=300)                    :: message
       character(len=132)                    :: line               ! Used for format free reading
       character(len=30), allocatable        :: columns(:)          ! each line is split into separate fields (columns)
-      character(len=3)                      :: cref                ! ref. number converted into a string
+      character(len=:), allocatable         :: cref                ! ref. number converted into a string
       character(len=1)                      :: foutyp_new          ! new (Fourier) analysis flag
       integer                               :: iostat              ! error code file io
       integer                               :: ierr                ! error code allocate
@@ -758,7 +758,7 @@ module m_fourier_analysis
       ivar = 0
       do ifou = 1, nofou
          fouref(ifou,2)   = ivar + 1
-         write(cref,'(i3.3)') fouref(ifou,1)
+         cref = fouref2string(fouref(ifou,1))
          select case (foutyp(ifou))
          case ('x', 'r', 'R')
             ivar = ivar + 1
@@ -1652,7 +1652,6 @@ module m_fourier_analysis
       real(kind=fp)                 :: tfastr       ! Start time in minutes
       character(len=:), allocatable :: namfun       ! Local name for fourier function
       character(len=:), allocatable :: namfunlong   ! Local name for fourier function, including reference to the line in the fourier input file
-      character(len=3)              :: cnumber      ! temp string for int2str conversion
       integer, parameter            :: imissval = -1
       integer                       :: unc_loc
       integer, allocatable          :: all_unc_loc(:)
@@ -1795,8 +1794,7 @@ module m_fourier_analysis
          end select
 
          all_unc_loc(ifou) = unc_loc
-         write(cnumber,'(i3.3)') fouref(ifou,1)
-         namfunlong = cnumber // ": " // namfun
+         namfunlong = fouref2string(fouref(ifou,1)) // ": " // namfun
          !
          idvar(:,ivar) = imissval
          if (index(founam(ifou),'fb') > 0 .or. index(founam(ifou),'wdog') > 0 .or. index(founam(ifou),'vog') > 0) then
@@ -2085,5 +2083,23 @@ module m_fourier_analysis
          end if
       enddo
    end subroutine fourier_final
+   
+   !> convert a fourier variable reference number into a string
+   function fouref2string(ifourier) result(string)
+   
+   integer, intent(in)           :: ifourier !< reference number of fourier variable
+   
+   character(len=10)             :: string10
+   character(len=:), allocatable :: string
+   
+   if ( ifourier < 1000 ) then
+      write(string10,'(i3.3)') ifourier
+   else
+      write(string10,'(i0)') ifourier
+   endif
+
+   string = trim(string10)
+   
+   end function fouref2string
 
 end module m_fourier_analysis

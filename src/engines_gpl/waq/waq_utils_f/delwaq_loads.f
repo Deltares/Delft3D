@@ -40,7 +40,7 @@
          type(identifier)                 :: id                ! id and name etc.
          type(location)                   :: loc               ! location
          real                             :: flow              ! the actual value discharge flow
-         real                             :: set_factor = 1.0  ! the factor by which to multiply the flow rate (D-RTC)
+         real, allocatable                :: set_factor(:)     ! the factors by which to multiply the flow rate and concentrations (D-RTC)
          real , pointer                   :: loads(:)          ! the actual value of the load for the substances
       end type wasteload
 
