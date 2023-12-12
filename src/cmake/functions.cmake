@@ -8,6 +8,10 @@
 #                     given  otherwise an error will be raised. If both parameters (src_dir/src_files) are given they
 #                     will be considered.
 # target_type: [Optional] library/executable if not given a library will be created
+# language: [Optional] language name, use this parameter when you need to ensure the linkage of the files to a
+#           certain language. On Windows this is often not needed since the compiler will detect the language
+#           from the file extensions, but on Linux sometimes the language has to be defined explicitly.
+#           possible values are : C, CXX, Fortran
 # shared : [Optional] True if the library is SHARED library, False if not.
 # recursive: [Optional]  TRUE/FALSE to search for source file recursively or not, Default is False.
 # src_files: [Optional]  List of source files to be added to the target.
@@ -22,7 +26,7 @@
 function(create_target target_name source_group_name)
     # Set default values for optional parameters
     set(options shared recursive) # For options without values
-    set(one_value_args src_dir target_type) # For options with one value
+    set(one_value_args src_dir target_type language) # For options with one value
     set(multi_value_args resource_files src_files) # For options with multiple values
 
     # Parse the arguments
@@ -60,12 +64,18 @@ function(create_target target_name source_group_name)
     else()
         # executable
         add_executable(${target_name} ${all_source})
-
-        if (UNIX)
-            set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
-        endif(UNIX)
-
     endif()
+    # Set the language of the target.
+    if(UNIX)
+        if(op_language STREQUAL "C")
+            set_property(TARGET ${target_name} PROPERTY LINKER_LANGUAGE C)
+        elseif(op_language STREQUAL "CXX")
+            set_property(TARGET ${target_name} PROPERTY LINKER_LANGUAGE CXX)
+        else()
+            # if the language is not defined, set it to Fortran
+            set_property(TARGET ${target_name} PROPERTY LINKER_LANGUAGE Fortran)
+        endif()
+    endif(UNIX)
 
     # Create the folder structure in visual studio IDE
     if (DEFINED op_resource_files)

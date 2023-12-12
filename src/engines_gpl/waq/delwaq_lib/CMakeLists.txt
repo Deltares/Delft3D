@@ -61,7 +61,6 @@ if (UNIX)
     target_link_libraries(${library_name} ${oss_dependencies}
                                           uuid)
     target_link_options(${library_name} PRIVATE ${openmp_flag})
-    set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
