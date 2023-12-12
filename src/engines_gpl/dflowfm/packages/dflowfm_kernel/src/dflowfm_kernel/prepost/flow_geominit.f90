@@ -56,7 +56,7 @@
  use string_module
  use m_plotdots
  use geometry_module, only: getdx, getdy, dbdistance, normalin, normalout, half, duitpl, dlinedis
- use sorting_algorithms, only: indexx
+ use stdlib_sorting, only: sort_index
  use m_flowtimes, only: ti_waq
  use gridoperations
  use m_flow, only : numlimdt, numlimdt_baorg
@@ -1416,7 +1416,7 @@
      enddo
    enddo
 
-   CALL INDEXX(mxban,rr,nr)
+   call sort_index(rr, nr)
    do k = 1, mxban
       ka = nr(k)
       nban(1,k) = nbanh(1,ka)

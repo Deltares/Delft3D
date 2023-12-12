@@ -5833,7 +5833,6 @@ contains
      use dfm_error
      use messageHandling
      use m_polygon
-     use sorting_algorithms, only: sort
      
      implicit none
      

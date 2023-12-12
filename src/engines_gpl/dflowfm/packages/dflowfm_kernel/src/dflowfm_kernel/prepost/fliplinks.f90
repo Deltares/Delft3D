@@ -75,8 +75,6 @@ subroutine fliplinks()
    integer                              :: jalandbound       ! take land boundaries into account or not
 
    integer                              :: maxlin
-   double precision, allocatable        :: arglin(:)         ! dummy array
-   integer, allocatable                 :: linnrs(:), inn(:) ! dummy arrays
 
    double precision                     :: sl, sm, xcr, ycr, crp ! used in cross check
 
@@ -133,7 +131,6 @@ subroutine fliplinks()
 !  allocate
    allocate(inodemask(numk))
    maxlin = maxval(nmk(1:numk)) + 10   ! safety
-   allocate(linnrs(maxlin),arglin(maxlin),inn(maxlin))
 
 !   open(newunit=lunfil, file='test.m')
 !   write(lunfil, "('data=[')")
@@ -248,12 +245,12 @@ it:do iter=1,MAXITER
        !    add link to nod(kL)
             call realloc(nod(kL)%lin,nmk(kL))
             nod(kL)%lin = (/ nod(kL)%lin(1:nmk(kL)-1), L /)
-            call sort_links_ccw(kL,maxlin,linnrs,arglin,inn)
+            call sort_links_ccw(kL,maxlin)
 
        !    add link to nod(kR)
             call realloc(nod(kR)%lin,nmk(kR))
             nod(kR)%lin = (/ nod(kR)%lin(1:nmk(kR)-1), L /)
-            call sort_links_ccw(kR,maxlin,linnrs,arglin,inn)
+            call sort_links_ccw(kR,maxlin)
 
         !   highlight new link
             call teklink(L, ncolhl)
@@ -296,7 +293,6 @@ it:do iter=1,MAXITER
 
 !  deallocate
    if ( allocated(inodemask) ) deallocate(inodemask)
-   if ( allocated(linnrs) )    deallocate(linnrs,arglin,inn)
 !   write(lunfil, "('];')")
 !   close(lunfil)
 

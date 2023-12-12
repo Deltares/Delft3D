@@ -202,6 +202,7 @@ SUBROUTINE REASAM(MSAM, JADOORLADEN)
    use m_alloc
    use MessageHandling
    use m_meteo1temphelpers
+   use stdlib_sorting, only: sort_index
    implicit none
    integer, intent(inout) :: msam        !< already opened file pointer to sample file
    integer, intent(in)    :: jadoorladen !< whether to append to global set (1) or start empty (0)
@@ -219,6 +220,7 @@ SUBROUTINE REASAM(MSAM, JADOORLADEN)
    integer :: K, K0
    double precision :: x, y, z
    double precision :: XX, YY, ZZ, ZZ2
+   double precision, allocatable :: xs_copy(:)
 
 
    COMMON /PHAROSFLOW/  JFLOW
@@ -329,7 +331,8 @@ SUBROUTINE REASAM(MSAM, JADOORLADEN)
    ENDIF
    WRITE(TEX,'(I10)') NS
    IF (NS .GT. 1) THEN
-      CALL TIDYSAMPLES(XS,YS,ZS,IPSAM,NS,MXSAM,MYSAM)
+      xs_copy = XS(1:NS)
+      call sort_index(xs_copy, IPSAM(1:NS))
       call get_samples_boundingbox()
       IPSTAT = IPSTAT_OK
    END IF
@@ -454,20 +457,5 @@ function thisisanumber(rec)
       endif
    endif
 end function thisisanumber
-
-
-SUBROUTINE TIDYSAMPLES(XS,YS,ZS,IPSAM,NS,MXSAM,MYSAM)
-   use sorting_algorithms, only: indexx
-   implicit none
-   integer :: ns
-   double precision :: XS(NS), YS(NS), ZS(NS)   !< sample coordinates
-   integer, dimension(NS), intent(out) :: IPSAM !< permutation array (increasing x-coordinate)
-   integer,                intent(in)  :: MXSAM, MYSAM   !< structured sample data dimensions (>0) or unstructured (0)
-
-   if ( NS.gt.1 ) then
-      call indexx(Ns,xs,IPSAM)
-   end if
-
-END subroutine tidysamples
 
 end module m_fm_aux_routines

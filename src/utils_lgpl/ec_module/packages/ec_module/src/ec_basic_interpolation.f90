@@ -117,7 +117,6 @@
    use mathconsts,  only: degrad_hp
    use kdtree2Factory
    use m_alloc, only : aerr, realloc
-   use sorting_algorithms, only: indexx
    !use gridgeom
  
    interface triinterp2
@@ -1578,6 +1577,7 @@
 
     subroutine averaging2(ndim,ns,xs,ys,zss,ipsam,xc,yc,zc,nx,xx,yy,n6,nnn,jakdtree, &
                           dmiss, jsferic, jasfer3D, jins, npl, xpl, ypl, zpl, errorInfo, kcc) ! Werkt alleen voor cell regions, die zitten in xx en yy
+    use stdlib_sorting, only: radix_sort
     implicit none
     integer,                                  intent(in   ) :: ndim                 !< sample vector dimension
     integer,                                  intent(in   ) :: ns                   !< number of samples
@@ -1827,12 +1827,12 @@
              do nn = 1,nin
                 zz(nn) = zss( 1,kkin(nn) )
              enddo
-             call indexx(nin,zz,kkin)
+             call radix_sort(zz(1:nin))
 
              if (iav == AVGTP_MEDIAN) then
                 n1 = floor(nin/2d0)
                 n2 = ceiling(nin/2d0)
-                rhp(1) = (zz(kkin(n1)) + zz(kkin(n2)))/2d0
+                rhp(1) = (zz(n1) + zz(n2))/2d0
 
              else if (iav == AVGTP_MAX .or. iav == AVGTP_MIN) then
                 rnn   = 0
@@ -1849,7 +1849,7 @@
                 endif
                 do nn = n1, n2, n12
                    rnn = rnn + 1d0
-                   rhp(1) = rhp(1) + zz(kkin(nn))
+                   rhp(1) = rhp(1) + zz(nn)
                 enddo
                 if (rnn > 0) then
                    rhp(1) = rhp(1) / rnn

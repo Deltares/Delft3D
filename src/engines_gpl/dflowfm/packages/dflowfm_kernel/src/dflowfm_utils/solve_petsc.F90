@@ -135,7 +135,7 @@ end module m_petsc
       use m_petsc
       use MessageHandling
       use m_flowgeom, only: xz, yz, wu, nd
-      use sorting_algorithms, only: indexxi
+      use stdlib_sorting, only: sort_index
 
       implicit none
 
@@ -377,9 +377,7 @@ end module m_petsc
          iend   = idia(n+1)-1
          num    = iend-istart+1
          if ( num.gt.0 ) then
-            idum(1:num) = jdia(istart:iend)
-            call indexxi(num,idum,idx)
-            jdia(istart:iend) = idum(idx(1:num))
+            call sort_index(jdia(istart:iend), idx(1:num))
 
             idum(1:num)  = guusidxdia(istart:iend)
             guusidxdia(istart:iend) = idum(idx(1:num))
@@ -391,9 +389,7 @@ end module m_petsc
          iend   = ioff(n+1)-1
          num    = iend-istart+1
          if ( num.gt.0 ) then
-            idum(1:num) = joff(istart:iend)
-            call indexxi(num,idum,idx)
-            joff(istart:iend) = idum(idx(1:num))
+            call sort_index(joff(istart:iend), idx(1:num))
 
             idum(1:num)  = guusidxoff(istart:iend)
             guusidxoff(istart:iend) = idum(idx(1:num))

@@ -229,7 +229,7 @@ subroutine equatorial(t)
 
 use m_flowgeom
 use m_flow
-use sorting_algorithms, only:indexx
+use stdlib_sorting, only: sort_index
 use geometry_module, only: dbdistance
 use m_missing, only: dmiss
 use m_sferic, only: jsferic, jasfer3D
@@ -239,12 +239,14 @@ implicit none
 double precision                    :: t, deltax
 double precision, allocatable, save :: uexa(:),zexa(:), xexa(:)
 integer         , allocatable, save :: iexa(:)
+double precision, allocatable       :: xz_copy(:)
 integer                             :: L, k1, k2, n, i, lunfil
 
 if (t == 0d0) then
    if (allocated (uexa) ) deallocate (uexa, zexa, xexa,iexa)
    allocate( uexa(ndx), zexa(ndx), xexa(ndx), iexa(ndx) )
-   call indexx(ndx,xz,iexa)
+   xz_copy = xz(1:ndx)
+   call sort_index(xz_copy, iexa)
    open (newunit=lunfil, file = 'eqa.txt')
 endif
 
@@ -683,7 +685,7 @@ subroutine poiseuille(init)
  use m_alloc
  use unstruc_colors, only: ncolana 
  use m_statistics, only: avedif 
- use sorting_algorithms, only: indexx
+ use stdlib_sorting, only: sort_index
  use geometry_module, only: dbdistance
  use m_missing, only: dmiss
  use m_sferic, only: jsferic, jasfer3D
@@ -883,7 +885,7 @@ else
           do i=1,nl
             dcrs(i) = dble(crs(icrs)%path%indexp(i)) + (1d0-crs(icrs)%path%wfp(i))
           end do
-          call indexx(nl,dcrs,perm)
+          call sort_index(dcrs(1:nl), perm(1:nl))
        else
           cycle
        end if

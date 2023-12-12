@@ -36,7 +36,7 @@ subroutine sort_flowlinks_ccw()
    use m_sferic
    use m_alloc
    use geometry_module, only: getdxdy, dcosphi, getdx, getdy
-   use sorting_algorithms, only: indexx
+   use stdlib_sorting, only: sort_index
 
    implicit none
 
@@ -96,7 +96,7 @@ subroutine sort_flowlinks_ccw()
          if ( arglin(L).lt.0d0 ) arglin(L) = arglin(L) + 2d0*pi
       end do
 
-      call indexx(lnxx, arglin(1:lnxx), inn(1:lnxx))
+      call sort_index(arglin(1:lnxx), inn(1:lnxx))
 
       linnrs(1:lnxx) = nd(k)%ln(1:lnxx)
       do L=1,lnxx

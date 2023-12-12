@@ -35,7 +35,7 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    use m_splines
    use m_spline2curvi
    use m_alloc
-   use sorting_algorithms, only: indexx
+   use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
 
    implicit none
@@ -55,7 +55,6 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    integer,          dimension(mcs)              :: perm          ! for sorting the cross splines
    integer,          dimension(mcs)              :: ics1
    logical,          dimension(mcs)              :: Lorient1
-   double precision, dimension(mcs)              :: t1
 
    integer                                       :: idum, idx, js, numj, numcro, numnew
 
@@ -106,17 +105,15 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    end do   ! do js=1,mcs
 
 !  sort cross splines, such that they are in increasing center spline coordinate order
-   call indexx(mcs,t,perm)
+   call sort_index(t, perm)
 
    ics1      = ics
    Lorient1 = Lorient
-   t1       = t
 
    do js=1,mcs
       idx = perm(js)
       ics(js)     = ics1(idx)
       Lorient(js) = Lorient1(idx)
-      t(js)       = t1(idx)
    end do
 
 !  deallocate
