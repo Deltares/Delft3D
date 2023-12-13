@@ -97,7 +97,7 @@ Module fm_manhole_losses
    ! Manhole Losses
    integer                  :: iL, nstor, nod, L, i
    double precision         :: reference_angle, total_m2p_area, total_p2m_area, k_exp, q_temp, q_manhole_to_pipe, angle
-   double precision         :: energy_total, v2_m2p, v2_p2m, k_correction
+   double precision         :: energy_loss_total, v2_m2p, v2_p2m, k_correction
    type(t_storage), pointer :: pstor
    integer                  :: count
       
@@ -184,25 +184,25 @@ Module fm_manhole_losses
       if ( k_exp /= 0 .or. hasTableData(pstor%angle_loss) .or.  &
            pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0 ) then
          ! compute the total energy loss
-         energy_total = 0d0
+         energy_loss_total = 0d0
          v2_m2p = 0d0
          v2_p2m = 0d0
          count = 0
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
-               energy_total = energy_total + 0.5*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
+               energy_loss_total = energy_loss_total + 0.5*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
                v2_m2p = max(v2_m2p, u1(L)**2)
             else
                count = count+1
-               energy_total = energy_total + 0.5*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
+               energy_loss_total = energy_loss_total + 0.5*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
                v2_p2m = max(v2_p2m, u1(L)**2)
             endif
          enddo
-         if (energy_total < 0.05*v2_m2p/(2d0*ag)) then
-            k_correction = (0.05*v2_m2p/(2d0*ag) - energy_total)*2*ag/v2_p2m
-         else if (energy_total > (v2_p2m+0.5*v2_m2p)/(2d0*ag) ) then
-            k_correction = ((v2_p2m+0.5*v2_m2p)/(2d0*ag) - energy_total)*2*ag/v2_p2m
+         if (energy_loss_total < 0.05*v2_m2p/(2d0*ag)) then
+            k_correction = (0.05*v2_m2p/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
+         else if (energy_loss_total > (v2_p2m+0.5*v2_m2p)/(2d0*ag) ) then
+            k_correction = ((v2_p2m+0.5*v2_m2p)/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
          else
             k_correction = 0d0
          endif
