@@ -1,7 +1,7 @@
 #! /bin/bash  
 # Specify Slurm SBATCH directives 
-#SBATCH --nodes=1              # Number of nodes.
-#SBATCH --ntasks-per-node=4     # The number of tasks to be invoked on each node.
+#SBATCH --nodes=1               # Number of nodes.
+#SBATCH --ntasks-per-node=1     # The number of tasks to be invoked on each node.
                                 # For sequential runs, the number of tasks should be '1'.
                                 # Note: SLURM_NTASKS is equal to "--nodes" multiplied by "--ntasks-per-node".
 #SBATCH --job-name=test_model   # Specify a name for the job allocation.
@@ -13,8 +13,10 @@
 ##SBATCH --contiguous           # The allocated nodes must form a contiguous set, i.e. next to each other.
                                 # In many cases this option can be omitted.
 
+set -eo pipefail
+
 function print_usage_info {
-    echo "Usage: ${0##*/} [OPTION]..."
+    echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
     echo "Run a dimr model on H7."
     echo
     echo "Options:"
@@ -26,6 +28,12 @@ function print_usage_info {
     echo "       dimr configuration filename, default dimr_config.xml"
 }
 
+if [[ ! -n $SLURM_JOB_ID ]]; then
+    echo "This script must be submitted using 'sbatch'."
+    print_usage_info
+    exit 1
+fi
+
 # Set MPI/OpenMP options. Uncomment to override default settings.
 # Reference on intel MPI environment variables: 
 # https://www.intel.com/content/www/us/en/docs/mpi-library/developer-reference-linux/2021-8/environment-variable-reference.html
@@ -36,10 +44,9 @@ function print_usage_info {
 # export I_MPI_OFI_PROVIDER=tcp
 # export OMP_NUM_THREADS=1
 
-# You shouldn't need to modify the script below this line.
-# Set the maximum stacksize to 'unlimited'. 
-# In some cases the process simulating the model will run out of stack memory and crash.
-SCRIPT_PATH=$(readlink -f $0)
+# Get the path to the script submitted using `sbatch`. `sbatch` copies the script to
+# a temporary directory before executing it, so we need `scontrol` to look up the original command.
+SCRIPT_PATH=$(scontrol show job $SLURM_JOB_ID | awk '/Command=/{split($1,a,"="); print(a[2])}')
 D3D_HOME="$(readlink -f $(dirname $SCRIPT_PATH)/..)"
 BIN_DIR=${D3D_HOME}/bin
 LIB_DIR=${D3D_HOME}/lib
@@ -111,4 +118,4 @@ if [[ $DEBUG_LEVEL = 0 ]]; then
     echo =========================================================
 fi
 
-srun ${BIN_DIR}/dimr $CONFIG_PATH $DEBUG_ARG
+srun ${BIN_DIR}/dimr $CONFIG_FILE $DEBUG_ARG
