@@ -30,24 +30,26 @@ Module fm_manhole_losses
    implicit none
    public calculate_manhole_losses
    private
-   
+      
+   double precision, allocatable, dimension(:) :: k_bend
+
    contains
 
-   pure subroutine calc_q_outflow(nod,iL,L,q_outflow)
+   pure subroutine calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
 
    use m_flowgeom, only: nd
    use m_flow, only: q1
    
    integer,          intent(in ) :: iL, nod
    integer,          intent(out) :: L
-   double precision, intent(out) :: q_outflow
+   double precision, intent(out) :: q_manhole_to_pipe
 
    L = nd(nod)%ln(iL)
-   q_outflow = -sign(1,L)
+   q_manhole_to_pipe = -sign(1,L)
    L = abs(L)
-   q_outflow = q_outflow*q1(L)
+   q_manhole_to_pipe = q_manhole_to_pipe*q1(L)
 
-   end subroutine calc_q_outflow
+   end subroutine calc_q_manhole_to_pipe
 
 !>    gives link angle between 0 and Pi
       double precision function dLinkangle(L)
@@ -81,8 +83,9 @@ Module fm_manhole_losses
    !> calculate Manhole losses entrance, expansion and bend losses for all manholes and apply losses to advi(L)
    subroutine calculate_manhole_losses(storS, advi)
 
+   use m_alloc
    use m_flowgeom, only: nd, dxi
-   use m_flow, only: u1, au, q1
+   use m_flow, only: u1, au
    use m_storage, only: t_storage_set, t_storage
    use m_tables, only: hasTableData, interpolate
    use precision, only: comparereal
@@ -93,70 +96,83 @@ Module fm_manhole_losses
 
    ! Manhole Losses
    integer                  :: iL, nstor, nod, L, i
-   double precision         :: reference_angle, sum_1, sum_2, k_avg, total_outflow_area, total_inflow_area, k_exp, q_temp, q_outflow, angle
-   double precision         :: energy_total, v2_out, v2_in
+   double precision         :: reference_angle, total_m2p_area, total_p2m_area, k_exp, q_temp, q_manhole_to_pipe, angle
+   double precision         :: energy_total, v2_m2p, v2_p2m, k_correction
    type(t_storage), pointer :: pstor
+   integer                  :: count
       
    nstor = storS%count
 
-   !$OMP PARALLEL DO                       &
-   !$OMP PRIVATE(i,iL,sum_1,sum_2,L,k_avg)
+ !  !$OMP PARALLEL DO                       &
+ !  !$OMP PRIVATE(i,iL,sum_1,sum_2,L,k_bend)
    do i = 1,nstor
       pstor => storS%stor(i)
       nod = pstor%node_index
-         
+
+      ! Use nd(nod)%lnx, in that case the reallocs stop after time step 1
+      if (.not. allocated(k_bend) ) then
+         allocate(k_bend(nd(nod)%lnx))
+      else if (nd(nod)%lnx > size(k_bend)) then
+         call realloc(k_bend, nd(nod)%lnx, keepexisting = .false.)
+      endif
+      
       if (hasTableData(pstor%angle_loss)) then
          q_temp = 0 
          do iL = 1, nd(nod)%lnx
-            call calc_q_outflow(nod,iL,L,q_outflow)
+            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
             reference_angle = 0d0
-            if (q_outflow > 0 .and. q_outflow > q_temp) then !we want the link with the biggest discharge as reference_angle
-               q_temp = q_outflow
+            if (q_manhole_to_pipe > 0 .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
+               q_temp = q_manhole_to_pipe
                reference_angle = dlinkangle(nd(nod)%ln(iL))
             endif
          enddo
 
-         !calculate average bend loss K value
-         sum_1 = 0
-         sum_2 = 0
+         
+         !Calculate bend loss K value
+         count = 0
+
          do iL = 1, nd(nod)%lnx
-            call calc_q_outflow(nod,iL,L,q_outflow)
-            if (q_outflow < 0) then
-               sum_1 = sum_1 + q1(L)
+            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            if (q_manhole_to_pipe < 0) then
                angle = abs(dlinkangle(nd(nod)%ln(iL))-reference_angle)*180/pi
                if (angle> 180d0) then
                   angle = 360d0-angle
                endif
-               sum_2 = sum_2 + q1(L)*interpolate(pstor%angle_loss,angle) ! angle table is in degrees, dlinkangle is in radians
+               ! By definition: the angle to be used in the angle loss table is 0 when the two pipes are inline with each other. 
+               ! In the previous part of the calculation, the inner angle between the two pipes are calculated.
+               ! This requires the following correction:
+               angle = 180d0 - angle
+               
+               count = count +1
+               k_bend(count) = interpolate(pstor%angle_loss,angle) ! angle table is in degrees, dlinkangle is in radians
             endif
          enddo
-         k_avg = sum_2/sum_1
       else 
-         k_avg = 0d0
+         k_bend(count) = 0d0
       endif
 
       if (pstor%expansion_loss /= 0) then 
          !calculate average output area
-         total_outflow_area = 0d0
-         total_inflow_area = 0d0
+         total_m2p_area = 0d0
+         total_p2m_area = 0d0
          do iL = 1, nd(nod)%lnx
-            call calc_q_outflow(nod,iL,L,q_outflow)
-            if (q_outflow > 0d0) then
-               total_outflow_area = total_outflow_area + au(L)
+            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            if (q_manhole_to_pipe > 0d0) then
+               total_m2p_area = total_m2p_area + au(L)
             else
-               total_inflow_area = total_inflow_area + au(L)
+               total_p2m_area = total_p2m_area + au(L)
             endif
          enddo
          
-         select case (comparereal(total_inflow_area, total_outflow_area)) 
+         select case (comparereal(total_p2m_area, total_m2p_area)) 
          case (0)
             ! then no expansion or contraction losses
             k_exp = 0
          case(-1)
-            ! expansion loss -> outflow side gets negative contribution
+            ! expansion loss -> manhole to pipe flow side gets negative contribution
             k_exp = -pstor%expansion_loss ! Negative Kexp to be consistent with formulation in "Delft3D Urban Modification"
          case(1)
-            ! contraction loss -> outflow side gets positive contribution
+            ! contraction loss -> manhole to pipe flow side gets positive contribution
             k_exp = pstor%expansion_loss ! Negative Kexp to be consistent with formulation in "Delft3D Urban Modification"
          end select
 
@@ -165,40 +181,44 @@ Module fm_manhole_losses
       endif
 
       !apply losses to advi
-      if ( k_exp /= 0 .or. k_avg /= 0d0 .or.  &
+      if ( k_exp /= 0 .or. hasTableData(pstor%angle_loss) .or.  &
            pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0 ) then
          ! compute the total energy loss
          energy_total = 0d0
-         v2_out = 0d0
-         v2_in = 0d0
+         v2_m2p = 0d0
+         v2_p2m = 0d0
+         count = 0
          do iL = 1, nd(nod)%lnx
-            call calc_q_outflow(nod,iL,L,q_outflow)
-            if (q_outflow > 0) then
-               energy_total = energy_total + 0.5*(k_avg+k_exp + pstor%entrance_loss)*u1(L)**2/ag
-               v2_out = max(v2_out, u1(L)**2)
+            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            if (q_manhole_to_pipe > 0) then
+               energy_total = energy_total + 0.5*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
+               v2_m2p = max(v2_m2p, u1(L)**2)
             else
-               energy_total = energy_total + 0.5*(-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
-               v2_in = max(v2_in, u1(L)**2)
+               count = count+1
+               energy_total = energy_total + 0.5*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
+               v2_p2m = max(v2_p2m, u1(L)**2)
             endif
          enddo
-         if (energy_total < 0.05*v2_out/(2d0*ag)) then
-            k_avg = k_avg + (0.05*v2_out/(2d0*ag) - energy_total)*2*ag/v2_out
-         else if (energy_total > (v2_in+0.5*v2_out)/(2d0*ag) ) then
-            k_avg = k_avg + ((v2_in+0.5*v2_out)/(2d0*ag) - energy_total)*2*ag/v2_out
+         if (energy_total < 0.05*v2_m2p/(2d0*ag)) then
+            k_correction = (0.05*v2_m2p/(2d0*ag) - energy_total)*2*ag/v2_p2m
+         else if (energy_total > (v2_p2m+0.5*v2_m2p)/(2d0*ag) ) then
+            k_correction = ((v2_p2m+0.5*v2_m2p)/(2d0*ag) - energy_total)*2*ag/v2_p2m
+         else
+            k_correction = 0d0
          endif
             
          !Apply losses to ADVI
          do iL = 1, nd(nod)%lnx
-            call calc_q_outflow(nod,iL,L,q_outflow)
-            if (q_outflow > 0) then
-               advi(L) = advi(L) + 0.5*(k_avg+k_exp + pstor%entrance_loss)*u1(L)*dxi(L)
+            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            if (q_manhole_to_pipe > 0) then
+               advi(L) = advi(L) + 0.5*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
             else
-               advi(L) = advi(L) + 0.5*(-k_exp+ pstor%exit_loss)*u1(L)  *dxi(L)
+               advi(L) = advi(L) + 0.5*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)  *dxi(L)
             endif
          enddo
       endif
    enddo
-   !$OMP END PARALLEL DO
+ !  !$OMP END PARALLEL DO
    end subroutine
 end module
    
