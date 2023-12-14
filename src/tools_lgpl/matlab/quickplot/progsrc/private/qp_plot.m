@@ -358,7 +358,7 @@ if isfield(Ops,'plotcoordinate')
                         Y(end+1) = 0;
                         FNC = data.FaceNodeConnect;
                         nNodes = sum(~isnan(FNC),2);
-                        FNC(isnan(FNC)) = length(X);
+                        FNC(isnan(FNC)) = length(X)+1;
                         data.X = sum(X(FNC),2)./nNodes;
                         data.Y = sum(Y(FNC),2)./nNodes;
                     case 'EDGE'
