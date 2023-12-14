@@ -121,7 +121,7 @@ Module fm_manhole_losses
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             reference_angle = 0d0
-            if (q_manhole_to_pipe > 0 .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
+            if (q_manhole_to_pipe > 0d0 .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
                q_temp = q_manhole_to_pipe
                reference_angle = dlinkangle(nd(nod)%ln(iL))
             endif
