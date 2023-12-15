@@ -50,35 +50,6 @@ Module fm_manhole_losses
    q_manhole_to_pipe = q_manhole_to_pipe*q1(L)
 
    end subroutine calc_q_manhole_to_pipe
-
-!>    gives link angle between 0 and Pi
-      double precision function dLinkangle(L)
-         use m_sferic, only: jsferic
-         use geometry_module, only: getdxdy 
-         use network_data, only: kn, xk, yk
-         
-         implicit none
-         
-         integer,          intent(in) :: L  !< link number
-         double precision              :: dx, dy
-         integer                       :: k1, k2
-         
-
-
-         if ( L.gt.0 ) then
-            k1 = kn(1,L)
-            k2 = kn(2,L)
-         else
-            k1 = kn(2,-L)
-            k2 = kn(1,-L)
-         end if
-         
-         call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
-         
-         dLinkangle = atan2(dy,dx)
-         
-         return
-   end function dLinkangle
    
    !> calculate Manhole losses entrance, expansion and bend losses for all manholes and apply losses to advi(L)
    subroutine calculate_manhole_losses(storS, advi)
@@ -91,6 +62,8 @@ Module fm_manhole_losses
    use precision, only: comparereal
    use m_sferic, only : pi
    use m_physcoef, only : ag
+   use gridoperations, only: dlinkangle
+   
    type(t_storage_set),           intent(in   ) :: storS     !<  set of storage nodes that contain manhole parameters
    double precision, allocatable, intent(inout) :: advi  (:) !<  advection implicit part (1/s), energy losses are applied here.
 

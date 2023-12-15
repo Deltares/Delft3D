@@ -71,6 +71,7 @@ module m_partitioninfo
 use m_tpoly
 use precision_basics, only : hp
 use meshdata, only : ug_idsLen, ug_idsLongNamesLen
+use gridoperations, only: dlinkangle
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
@@ -4403,37 +4404,6 @@ end subroutine partition_make_globalnumbers
          
          return
       end subroutine connect_branches
-      
-!>    gives link angle, changes sign when link has negative number      
-      double precision function dLinkangle(L)
-         use m_sferic, only: jsferic
-         use geometry_module, only: getdxdy 
-         
-         implicit none
-         
-         integer,          intent(in) :: L  !< link number
-         double precision              :: dx, dy       
-         integer                       :: k1, k2
-         
-         
-         if ( L.gt.0 ) then
-            k1 = kn(1,L)
-            k2 = kn(2,L)
-         else
-            k1 = kn(2,-L)
-            k2 = kn(1,-L)
-         end if
-         
-         call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
-         !dx = getdx(xk(k1), yk(k1), xk(k2), yk(k2))
-         !dy = getdy(xk(k1), yk(k1), xk(k2), yk(k2))
-         
-         dLinkangle = atan2(dy,dx)
-         
-         return
-      end function dLinkangle
-      
-
       
 !> find the global branch connectivity
 !>    sets ibr_glob_left, ibr_glob_right, Lother_left, Lother_right

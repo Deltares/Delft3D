@@ -53,6 +53,7 @@
    public :: sort_links_ccw
    public :: get_cellpolygon
    public :: make_dual_cell
+   public :: dlinkangle
  
    
    ! unstruct.F90
@@ -4614,6 +4615,27 @@
    msgbuf = ' ' ; call msg_flush()
 
    end subroutine network_dimensions_message
+   
+   !> Get link angle for a (signed) net link between -pi and pi
+   double precision function dLinkangle(L_signed)
+      use m_sferic, only: jsferic
+      use geometry_module, only: getdxdy 
+      use network_data, only: kn, xk, yk
+      implicit none
+      integer,          intent(in) :: L_signed  !< Signed net link number. May be negative to indicate that this link's orientation is flipped w.r.t. the parent item that it's part of.
+      double precision              :: dx, dy
+      integer                       :: k1, k2
 
-
+      if (L_signed > 0) then
+         k1 = kn(1,L_signed)
+         k2 = kn(2,L_signed)
+      else
+         k1 = kn(2,-L_signed)
+         k2 = kn(1,-L_signed)
+      end if
+      call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
+      dLinkangle = atan2(dy,dx)
+      return
+   end function dLinkangle
+   
    end module gridoperations
