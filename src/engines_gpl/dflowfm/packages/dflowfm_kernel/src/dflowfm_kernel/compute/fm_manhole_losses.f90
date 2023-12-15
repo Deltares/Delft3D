@@ -31,8 +31,8 @@ Module fm_manhole_losses
    public calculate_manhole_losses
    private
       
-   double precision, allocatable, dimension(:) :: k_bend
-
+   double precision, allocatable, dimension(:,:) :: k_bend
+   double precision, allocatable, dimension(:)   :: reference_angle
    contains
 
    pure subroutine calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
@@ -69,59 +69,60 @@ Module fm_manhole_losses
 
    ! Manhole Losses
    integer                  :: iL, nstor, nod, L, i
-   double precision         :: reference_angle, total_m2p_area, total_p2m_area, k_exp, q_temp, q_manhole_to_pipe, angle
+   double precision         :: ref_angle_local, total_m2p_area, total_p2m_area, k_exp, q_temp, q_manhole_to_pipe, angle
    double precision         :: energy_loss_total, v2_m2p, v2_p2m, k_correction
    type(t_storage), pointer :: pstor
    integer                  :: count
-      
+   
    nstor = storS%count
-
- !  !$OMP PARALLEL DO                       &
- !  !$OMP PRIVATE(i,iL,sum_1,sum_2,L,k_bend)
+   count = 0
    do i = 1,nstor
       pstor => storS%stor(i)
       nod = pstor%node_index
+     count = max(count,nd(nod)%lnx)
+   enddo
+   
+   allocate(k_bend(count,nstor), reference_angle(nstor))
+   
+   !$OMP PARALLEL DO                       &
+   !$OMP PRIVATE(i,iL,sum_1,sum_2,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_m2p_area,total_p2m_area,v2_m2p,v2_p2m,energy_loss_total)
+   do i = 1,nstor                                                                                                                
+      pstor => storS%stor(i)
+      nod = pstor%node_index
 
-      ! Use nd(nod)%lnx, in that case the reallocs stop after time step 1
-      if (.not. allocated(k_bend) ) then
-         allocate(k_bend(nd(nod)%lnx))
-      else if (nd(nod)%lnx > size(k_bend)) then
-         call realloc(k_bend, nd(nod)%lnx, keepexisting = .false.)
-      endif
-      
       if (hasTableData(pstor%angle_loss)) then
-         q_temp = 0 
+         q_temp = 0
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
-            reference_angle = 0d0
+            ref_angle_local = 0d0
             if (q_manhole_to_pipe > 0 .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
                q_temp = q_manhole_to_pipe
-               reference_angle = dlinkangle(nd(nod)%ln(iL))
+               ref_angle_local = dlinkangle(nd(nod)%ln(iL))
             endif
          enddo
+         if (ref_angle_local /= reference_angle(i)) then ! only recalculate k_bend if refangle has changed
+            reference_angle(i) = ref_angle_local
+            !Calculate bend loss K value
+            count = 0
+            do iL = 1, nd(nod)%lnx
+               call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+               if (q_manhole_to_pipe < 0) then
+                  angle = abs(dlinkangle(nd(nod)%ln(iL))-reference_angle(i))*180/pi
+                  if (angle> 180d0) then
+                     angle = 360d0-angle
+                  endif
+                  ! By definition: the angle to be used in the angle loss table is 0 when the two pipes are inline with each other.
+                  ! In the previous part of the calculation, the inner angle between the two pipes are calculated.
+                  ! This requires the following correction:
+                  angle = 180d0 - angle
 
-         
-         !Calculate bend loss K value
-         count = 0
-
-         do iL = 1, nd(nod)%lnx
-            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
-            if (q_manhole_to_pipe < 0) then
-               angle = abs(dlinkangle(nd(nod)%ln(iL))-reference_angle)*180/pi
-               if (angle> 180d0) then
-                  angle = 360d0-angle
+                  count = count +1
+                  k_bend(count,i) = interpolate(pstor%angle_loss,angle) ! angle table is in degrees, dlinkangle is in radians
                endif
-               ! By definition: the angle to be used in the angle loss table is 0 when the two pipes are inline with each other. 
-               ! In the previous part of the calculation, the inner angle between the two pipes are calculated.
-               ! This requires the following correction:
-               angle = 180d0 - angle
-               
-               count = count +1
-               k_bend(count) = interpolate(pstor%angle_loss,angle) ! angle table is in degrees, dlinkangle is in radians
-            endif
-         enddo
-      else 
-         k_bend(count) = 0d0
+            enddo
+         endif
+      else
+         k_bend(count,i) = 0d0
       endif
 
       if (pstor%expansion_loss /= 0) then 
@@ -168,7 +169,7 @@ Module fm_manhole_losses
                v2_m2p = max(v2_m2p, u1(L)**2)
             else
                count = count+1
-               energy_loss_total = energy_loss_total + 0.5*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
+               energy_loss_total = energy_loss_total + 0.5*(k_bend(count,i)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
                v2_p2m = max(v2_p2m, u1(L)**2)
             endif
          enddo
@@ -186,12 +187,12 @@ Module fm_manhole_losses
             if (q_manhole_to_pipe > 0) then
                advi(L) = advi(L) + 0.5*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
             else
-               advi(L) = advi(L) + 0.5*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)  *dxi(L)
+               advi(L) = advi(L) + 0.5*(k_correction + k_bend(count,i)-k_exp+ pstor%entrance_loss)*u1(L)  *dxi(L)
             endif
          enddo
       endif
    enddo
- !  !$OMP END PARALLEL DO
+   !$OMP END PARALLEL DO
    end subroutine
 end module
    
