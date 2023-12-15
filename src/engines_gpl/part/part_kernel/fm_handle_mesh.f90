@@ -92,10 +92,10 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
       if (hyd%edge_type(L) == 1 .or. hyd%edge_type(L) == 2 .or. hyd%edge_type(L) == 21 .or. hyd%edge_type(L) == 22) then
          Lnx = Lnx + 1
          lne2ln(L) = Lnx
-         lnn = 2
+         lnn(L) = 2
       else
          lne2ln(L) = 0
-         lnn = 1
+         lnn(L) = 1
       endif
       lne(1, L) = max(waqgeom%edge_faces(1,L),0)
       lne(2, L) = max(waqgeom%edge_faces(2,L),0)
