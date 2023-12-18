@@ -1,19 +1,10 @@
-function varargout=ui_type(varargin)
-%UI_TYPE Simple selection dialog.
-%   [SelectedType,SelectedNr]=UI_TYPE(Types)
-%   creates a dialog in which the user can select one of the type
-%   strings specified in the cell string array Types. The selected type
-%   string is returned as SelectedType, its number in the list is
-%   returned as SelectedNr.
+function [DomainNr,Props,subf] = qpfield
+%QPFIELD Get information about the active quantity/field in QuickPlot.
+%   [DOMAIN,PROP,SUBFIELD] = QPFIELD returns the domain number, the field
+%   property structure and a cell array containing the optional subfield
+%   index.
 %
-%   Default type can be specified as an additional input arguments:
-%   ...=UI_TYPE(Types,DefaultType)
-%
-%   The dialog name/title is by default empty. It can be set by
-%   specifying the keyword WINDOWTITLE and the title:
-%   ...=UI_TYPE(...,'windowtitle',Title)
-%
-%   See also UI_TYPEANDNAME
+%   See also: QPFILE.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
@@ -45,4 +36,27 @@ function varargout=ui_type(varargin)
 %   $HeadURL$
 %   $Id$
 
-[varargout{1:max(1,nargout)}]=ui_typeandname(varargin{:},'specifyname','off');
+if isempty(gcbf) || ~strcmp(get(gcbf,'tag'),'Delft3D-QUICKPLOT')
+    mfig = findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
+else
+    mfig = gcbf;
+end
+
+Handle_Domain = findobj(mfig,'tag','selectdomain');
+DomainNr = get(Handle_Domain,'value');
+
+datafields = findobj(mfig,'tag','selectfield');
+Props = get(datafields,'userdata');
+subf = {};
+if isempty(Props)
+    return
+end
+
+fld = get(datafields,'value');
+Props = Props(fld);
+
+UD = getappdata(mfig,'QPHandles');
+MW = UD.MainWin;
+if strcmp(get(MW.SubFld,'enable'),'on')
+    subf = {get(MW.SubFld,'value')};
+end

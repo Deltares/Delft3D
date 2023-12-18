@@ -93,6 +93,7 @@ m1=qp_uimenu(mfig,'&File', ...
     {'openfile','&Open File...',1,1,0
     'openurl','&Open URL...',1,1,0
     'difffiles','&Diff Files...',1,1,0
+    'analytical','&Analytical Solution...',1,1,0
     'fileinfo','File &Info',1,0,0
     'closefile','&Close File',1,0,0
     'closeallfiles','Close &All Files',1,0,0

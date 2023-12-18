@@ -1,4 +1,4 @@
-function T=readtim(FI,Props,t)
+function T=readtim(FI,varargin)
 %READTIM Default implementation for times.
 
 %----- LGPL --------------------------------------------------------------------

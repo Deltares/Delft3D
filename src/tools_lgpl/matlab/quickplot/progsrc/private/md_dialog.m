@@ -9,17 +9,19 @@ function FinalAnswer=md_dialog(cmd,varargin)
 %   of equal length.
 %
 %   UI Type List and options:
-%   edit        edit field, option: number of edit lines
-%               (at most 5)
-%   popupmenu   popup menu, option: cell array of choices
-%   radiolist   list of mutual exclusive radio button choices
-%               option: cell array of radio button strings
-%   checkbox    checkbox item, no options
-%   editint     edit field for integer, option: [min max]
-%   editreal    edit field for floating point value, option:
-%               [min max]
-%   defedit     single line edit field with standard answers,
-%               option: list of standard answers.
+%   edit         edit field, option: number of edit lines
+%                (at most 5)
+%   popupmenu    popup menu, option: cell array of choices
+%   radiolist    list of mutual exclusive radio button choices
+%                option: cell array of radio button strings
+%   checkbox     checkbox item, no options
+%   editint      edit field for integer, option: [min max]
+%   editreal     edit field for floating point value, option:
+%                [min max]
+%   editdatetime edit field for floating point value, option:
+%                'date', 'time', or 'datetime'
+%   defedit      single line edit field with standard answers,
+%                option: list of standard answers.
 %
 %   Example
 %      md_dialog('Title', ...
@@ -71,15 +73,16 @@ if nargin>1
     return
 end
 F=gcbf;
+
 switch cmd
     case 'cancel'
         if strcmp(get(F,'windowstyle'),'normal'), delete(F); return; end
         UD=get(F,'userdata');
         UD{3}={};
         set(F,'userdata',UD,'visible','off');
+        
     case 'ok'
         if strcmp(get(F,'windowstyle'),'normal'), delete(F); return; end
-        UD=get(F,'userdata');
         set(F,'visible','off');
 
     case 'entry'
@@ -95,11 +98,20 @@ switch cmd
         switch Type{i}
             case 'edit'
                 Answer{i}=get(O,'string');
+            case 'editdatetime'
+                Str=get(O,'string');
+                try
+                    DateTime = datenum(Str);
+                    Answer{i} = datestr(DateTime,0);
+                catch
+                end
+                Str = Answer{i};
+                set(O,'string',Str)
             case 'editint'
                 Str=get(O,'string');
                 Range=Options{i};
                 Num=str2num(Str);
-                if isequal(size(Num),[1 1]) & Num==round(Num) & Num>=Range(1) & Num<=Range(2)
+                if isequal(size(Num),[1 1]) && Num==round(Num) && Num>=Range(1) && Num<=Range(2)
                     Answer{i}=Num;
                 else
                     Num=Answer{i};
@@ -109,7 +121,7 @@ switch cmd
                 Str=get(O,'string');
                 Range=Options{i};
                 Num=str2num(Str);
-                if isequal(size(Num),[1 1]) & Num>=Range(1) & Num<=Range(2)
+                if isequal(size(Num),[1 1]) && Num>=Range(1) && Num<=Range(2)
                     Answer{i}=Num;
                 else
                     Num=Answer{i};
@@ -165,7 +177,7 @@ end
 if ~iscellstr(Prompt)
     Err='Dialog item strings should be combined in a cell array (2nd argument).'; return
 end
-if nargin<3 | isempty(Type)
+if nargin<3 || isempty(Type)
     Type=repmat({'edit'},size(Prompt));
 elseif ~isequal(size(Type),size(Prompt))
     Err='Invalid size of type array (3rd argument).'; return
@@ -173,13 +185,13 @@ elseif ~iscellstr(Type)
     Err='Type array should be a cell array (3rd argument).'; return
 else
     Type=lower(Type);
-    T=ismember(Type,{'edit','checkbox','editint','editreal','popupmenu','radiolist','defedit'});
+    T=ismember(Type,{'edit','checkbox','editint','editreal','popupmenu','radiolist','defedit','editdatetime'});
     if any(~T)
         i=find(~T);
         Err=sprintf('Invalid type: %s.',Type{i(1)}); return
     end
 end
-if nargin<4 | isempty(Options)
+if nargin<4 || isempty(Options)
     Options=repmat({[]},size(Prompt));
 elseif ~iscell(Options)
     Err='Options array (4th argument) should be a cell array.'; return
@@ -187,7 +199,7 @@ elseif ~isequal(size(Options),size(Prompt))
     Err='Invalid size of options array (4th argument).'; return
 end
 AutoDefault=0;
-if nargin<5 | isempty(Default)
+if nargin<5 || isempty(Default)
     Default=repmat({''},size(Prompt));
     AutoDefault=1;
 elseif ~iscell(Default)
@@ -198,7 +210,7 @@ end
 %
 % check combinations of type, options and defaults.
 %
-nItem=prod(size(Prompt));
+nItem=numel(Prompt);
 for i=1:nItem
     switch Type{i}
         case {'popupmenu','radiolist'}
@@ -211,7 +223,7 @@ for i=1:nItem
             end
             if ~ischar(Default{i})
                 Err=sprintf('Invalid default value for item %i.',i); return
-            elseif isempty(strmatch(Default{i},Options{i},'exact'))
+            elseif ~any(strcmp(Default{i},Options{i}))
                 Err=sprintf('Default value not in string list for item %i.',i); return
             end
         case {'defedit'}
@@ -219,7 +231,7 @@ for i=1:nItem
                 Err=sprintf('String list expected as option for item %i.',i); return
             else
                 if ~iscellstr(Options{i})
-                    Err=sprintf('Invalid option  for item %i.',i); return
+                    Err=sprintf('Invalid option for item %i.',i); return
                 end
             end
             if ~ischar(Default{i})
@@ -230,7 +242,7 @@ for i=1:nItem
                 Options{i}=1;
             else
                 ii=Options{i};
-                if ~isnumeric(ii) | ~isequal(size(ii),[1 1]) | ii~=round(ii) | ii<0
+                if ~isnumeric(ii) || ~isequal(size(ii),[1 1]) || ii~=round(ii) || ii<0
                     Err=sprintf('Invalid option  for item %i.',i); return
                 end
             end
@@ -245,12 +257,47 @@ for i=1:nItem
                     Err=sprintf('Invalid default value for item %i.',i); return
                 end
             end
+        case 'editdatetime'
+            if isempty(Options{i})
+                Options{i}='datetime';
+            else
+                ii = Options{i};
+                if ~ischar(ii)
+                    Err=sprintf('Invalid option for item %i.',i); return
+                end
+                ii = lower(ii);
+                Options{i} = ii;
+                if  ~ismember(ii,{'date','time','datetime'})
+                    Err=sprintf('Invalid option "%s" for item %i.',ii,i); return
+                end
+            end
+            try
+                DateTime = datenum(Default{i});
+            catch
+                DateTime = [];
+            end
+            if isempty(DateTime)
+                Err=sprintf('Invalid date/time string for item %i.',i); return
+            else
+                switch ii
+                    case 'date'
+                        if ~isequal(DateTime,round(DateTime))
+                            Err = sprintf('Invalid date "%s" for item %i.',Default{i},i); return
+                        end
+                    case 'time'
+                        if 0 <= DateTime && DateTime < 1
+                            Err = sprintf('Invalid time "%s" for item %i.',Default{i},i); return
+                        end
+                    case 'datetime'
+                        % always OK
+                end
+            end
         case {'editint','editreal'}
             if isempty(Options{i})
                 Options{i}=[-inf inf];
             else
                 ii=Options{i};
-                if ~isnumeric(ii) | ~isequal(size(ii),[1 2]) | ii(1)>ii(2)
+                if ~isnumeric(ii) || ~isequal(size(ii),[1 2]) || ii(1)>ii(2)
                     Err=sprintf('Invalid option  for item %i.',i); return
                 end
             end
@@ -262,20 +309,20 @@ for i=1:nItem
                 else
                     Default{i}=0;
                 end
-            elseif ~isnumeric(Default{i}) | ~isequal(size(Default{i}),[1 1])
+            elseif ~isnumeric(Default{i}) || ~isequal(size(Default{i}),[1 1])
                 Err=sprintf('Invalid default value for item %i.',i); return
             else
                 ii=Default{i};
-                if ii<Options{i}(1) | ii>Options{i}(2)
+                if ii<Options{i}(1) || ii>Options{i}(2)
                     Err=sprintf('Default value out of range for item %i.',i); return
-                elseif ii~=round(ii) & isequal(Type{i},'editint')
+                elseif ii~=round(ii) && isequal(Type{i},'editint')
                     Err=sprintf('Default value for item %i should be integer.',i); return
                 end
             end
         case 'checkbox'
             if AutoDefault
                 Default{i}=0;
-            elseif ~isequal(Default{i},0) & ~isequal(Default{i},1) & ~AutoDefault
+            elseif ~isequal(Default{i},0) && ~isequal(Default{i},1) && ~AutoDefault
                 Err=sprintf('Invalid default value for item %i.\nExpected 0 or 1.',i); return
             end
     end
@@ -290,50 +337,39 @@ catch
 end
 width=320;
 margin=10;
+bwidth = (width - 3*margin)/2;
 
-h0 = figure('Visible','off', ...
-    'Units','pixels', ...
-    'Color',Inactive, ...
-    'IntegerHandle','off', ...
-    'MenuBar','none', ...
-    'Name',Title, ...
-    'Doublebuffer','on', ...
-    'CloseRequestFcn','', ...
-    'NumberTitle','off', ...
-    'Resize','off', ...
-    'Handlevisibility','callback', ...
-    'Tag','md_dialog');
-set(h0,'DefaultUicontrolFontUnits','pixels', ...
-    'DefaultUicontrolFontSize',12);
+rect = [0 0 width 400];
+h0 = qp_uifigure(Title,'','md_dialog',rect);
 
 %======
 
 voffset=margin+1;
-h1 = uicontrol('Parent',h0, ...
+uicontrol('Parent',h0, ...
     'BackgroundColor',Inactive, ...
     'Callback','md_dialog ok', ...
-    'Position',[width-60-margin voffset 60 20], ...
-    'String','OK', ...
+    'Position',[width-bwidth-margin voffset bwidth 20], ...
+    'String','Continue', ...
     'Enable','on');
-h1 = uicontrol('Parent',h0, ...
+uicontrol('Parent',h0, ...
     'BackgroundColor',Inactive, ...
     'Callback','md_dialog cancel', ...
-    'Position',[width-130-margin voffset 60 20], ...
-    'String','cancel', ...
+    'Position',[margin voffset bwidth 20], ...
+    'String','Cancel', ...
     'Enable','on');
 
 %======
 
 for i=length(Prompt):-1:1
     switch Type{i}
-        case {'edit','editint','editreal'}
+        case {'edit','editdatetime','editint','editreal'}
             voffset=voffset+25;
             Max=1;
             if isequal(Type{i},'edit')
                 Max=Options{i};
             end
             Max5=min(Max,5);
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Active, ...
                 'Callback','md_dialog entry', ...
                 'Position',[10 voffset width-2*margin 20*Max5], ...
@@ -344,7 +380,7 @@ for i=length(Prompt):-1:1
                 'Max',Max, ...
                 'Enable','on');
             voffset=voffset+20*Max5;
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Inactive, ...
                 'horizontalalignment','left', ...
                 'Position',[10 voffset width-2*margin 16], ...
@@ -353,7 +389,7 @@ for i=length(Prompt):-1:1
                 'Enable','on');
         case {'defedit'}
             voffset=voffset+25;
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Active, ...
                 'Callback','md_dialog entry', ...
                 'Position',[10 voffset width-2*margin-20 20], ...
@@ -380,7 +416,7 @@ for i=length(Prompt):-1:1
                     'callback','md_dialog entry', ...
                     'userdata',i)
             end
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Inactive, ...
                 'Callback','md_dialog entry', ...
                 'Position',[width-2*margin-10 voffset 20 20], ...
@@ -391,7 +427,7 @@ for i=length(Prompt):-1:1
                 'Userdata',i, ...
                 'Enable','on');
             voffset=voffset+20;
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Inactive, ...
                 'horizontalalignment','left', ...
                 'Position',[10 voffset width-2*margin 16], ...
@@ -400,8 +436,8 @@ for i=length(Prompt):-1:1
                 'Enable','on');
         case {'popupmenu'}
             voffset=voffset+25;
-            ii=strmatch(Default{i},Options{i},'exact');
-            h1 = uicontrol('Parent',h0, ...
+            ii = find(strcmp(Default{i},Options{i}));
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Active, ...
                 'Callback','md_dialog entry', ...
                 'Position',[10 voffset width-2*margin 20], ...
@@ -412,7 +448,7 @@ for i=length(Prompt):-1:1
                 'Userdata',i, ...
                 'Enable','on');
             voffset=voffset+20;
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Inactive, ...
                 'horizontalalignment','left', ...
                 'Position',[10 voffset width-2*margin 16], ...
@@ -421,22 +457,22 @@ for i=length(Prompt):-1:1
                 'Enable','on');
         case {'radiolist'}
             voffset=voffset+25;
-            ii=strmatch(Default{i},Options{i},'exact');
+            match = strcmp(Default{i},Options{i});
             nRB=length(Options{i});
             for rbi=nRB:-1:1
-                h1 = uicontrol('Parent',h0, ...
+                uicontrol('Parent',h0, ...
                     'BackgroundColor',Inactive, ...
                     'Callback','md_dialog entry', ...
                     'Position',[10 voffset width-2*margin 20], ...
                     'horizontalalignment','left', ...
                     'Style','radiobutton', ...
                     'String',Options{i}{rbi}, ...
-                    'Value',rbi==ii, ...
+                    'Value',match(rbi), ...
                     'Userdata',i, ...
                     'Enable','on');
                 voffset=voffset+20;
             end
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Inactive, ...
                 'horizontalalignment','left', ...
                 'Position',[10 voffset width-2*margin 16], ...
@@ -445,7 +481,7 @@ for i=length(Prompt):-1:1
                 'Enable','on');
         case 'checkbox'
             voffset=voffset+25;
-            h1 = uicontrol('Parent',h0, ...
+            uicontrol('Parent',h0, ...
                 'BackgroundColor',Inactive, ...
                 'Callback','md_dialog entry', ...
                 'Position',[10 voffset width-2*margin 20], ...
@@ -457,8 +493,8 @@ for i=length(Prompt):-1:1
                 'Enable','on');
     end
 end
-
 %======
+set(h0,'children',flipud(allchild(h0)));
 
 voffset=voffset+25;
 dims=[width voffset+5];
