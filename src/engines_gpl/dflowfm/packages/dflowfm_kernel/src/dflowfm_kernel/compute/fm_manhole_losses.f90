@@ -77,7 +77,7 @@ Module fm_manhole_losses
    integer                  :: count
    
    nstor = storS%count
-   if(nstor > 0) then
+   if(nstor > 0 .and. .not. allocated(k_bend)) then
       count = 0
       do i = 1,nstor
          pstor => storS%stor(i)
@@ -124,7 +124,7 @@ Module fm_manhole_losses
             enddo
          endif
       else
-         k_bend(count,i) = 0d0
+         k_bend(:,i) = 0d0
       endif
 
       if (pstor%expansion_loss /= 0d0) then 
