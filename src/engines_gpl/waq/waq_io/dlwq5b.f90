@@ -84,7 +84,7 @@ module m_dlwq5b
     integer(kind=int_wp) :: itmnr, ioff, ioffc, ioffi
     real(kind=real_wp)       :: parsed_real
     character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
-    character(*), parameter :: keywords(24) = ['BLOCK'        ,&
+    character(*), parameter :: keywords(25) = ['BLOCK'        ,&
                                               'BINARY_FILE'   ,&
                                               'CONCENTRATIONS',&
                                               'CONCENTRATION' ,&
