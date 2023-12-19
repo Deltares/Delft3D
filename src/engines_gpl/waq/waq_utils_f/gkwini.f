@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_gkwini
       use m_waq_precision
-      use m_zoek
+      use m_string_utils
 
       implicit none
 
@@ -64,8 +64,7 @@
 !         Group separator found
 
           lcomp = min ( il , lgrpin )
-          call zoek (groupl(1:lcomp), 1, group(1:lcomp), lcomp, index)
-          if ( index .eq. 1 ) then
+          if (string_equals(groupl(1:lcomp), group(1:lcomp))) then
 
 !             Group name equals requested group
 
@@ -91,9 +90,7 @@
 !                 Keyword found
 
                   lcomp = min ( il , lkeyin )
-                  call zoek
-     j            (keywrl(1:lcomp),1,keywrd(1:lcomp),lcomp,index)
-                  if ( index .eq. 1 ) then
+                  if (string_equals(keywrl(1:lcomp), keywrd(1:lcomp))) then
 
 !                     Keyword equals requested keyword
 
@@ -261,37 +258,34 @@
 
       return
       end
+
       subroutine gl_ini ( lu , group , keywrd , lvalue, found )
-      integer(kind=int_wp) ::lu
-      character*(*) group, keywrd
-      logical, optional :: found
-      logical       lvalue
+         integer(kind=int_wp) ::lu
+         character*(*) group, keywrd
+         logical, optional :: found
+         logical       lvalue
 
-      ! local decalarations
+         ! local decalarations
 
-      character*256 value
-      integer(kind=int_wp) ::ifound
+         character*256 value
+         integer(kind=int_wp) ::ifound
 
-      call gkwini ( lu , group , keywrd , value )
+         call gkwini ( lu , group , keywrd , value )
 
-      lvalue = .false.
+         lvalue = .false.
 
-      if ( value .ne. ' ' ) then
+         if ( value == ' ' ) then
+               found = .false.
+               return
+         endif
 
          found = .true.
-         if (.not. lvalue) call zoek('true ',1,value,5,ifound)
-         if ( ifound .eq. 1 ) lvalue = .true.
 
-         if (.not. lvalue) call zoek('yes  ',1,value,5,ifound)
-         if ( ifound .eq. 1 ) lvalue = .true.
-
-         if (.not. lvalue) call zoek('1    ',1,value,5,ifound)
-         if ( ifound .eq. 1 ) lvalue = .true.
-
-      else
-         found = .false.
-      endif
-
-      return
+         if (     string_equals('true ',value)
+     *       .or. string_equals('yes  ',value)
+     *       .or. string_equals('1    ',value)) then
+                 lvalue = .true.
+         endif
       end
+
       end module m_gkwini

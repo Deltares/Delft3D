@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_proc_time
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -46,7 +46,6 @@
 
 !     global declarations
 
-      use m_zoek
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
 
@@ -90,7 +89,7 @@
                   write ( lunut , 2030 )
 
                case default
-                  call zoek( ctoken, notot, syname, 20, isys )
+                  isys = index_in_array(ctoken(1:20), syname(:notot))
                   if ( isys .gt. 0 ) then                      ! use this substance
                      sysused(isys) = 1
                      write ( lunut , 2040 ) syname(isys)

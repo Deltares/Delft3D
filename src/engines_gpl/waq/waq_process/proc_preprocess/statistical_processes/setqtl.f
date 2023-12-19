@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setqtl
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -64,7 +64,6 @@
 !     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
 !
-      use m_zoek
       use m_srstop
       use m_dhslen
       USE ProcesSet
@@ -86,7 +85,7 @@
       INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
      +              IERR2     , IRET
       INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  KEY       , SUFFIX
+      CHARACTER*20  SUFFIX
       CHARACTER*10  STANAM
       REAL(kind=real_wp) ::CLOBND    , CUPBND , CQLEV
       INTEGER(kind=int_wp) ::NOBUCK    , IBUCK
@@ -104,8 +103,7 @@
          CALL SRSTOP(1)
       ENDIF
       ISUSED = 0
-      KEY='OUTPUT-OPERATION'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
       IF ( IKEY .GT. 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
@@ -123,8 +121,7 @@
 !     get the number of buckets to determine the amount of IO items
 !     actual number of buckets is one larger, bucket00 the rest bucket for values below CLOBND
 !
-      KEY = 'NOBUCK'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('NOBUCK',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          NOBUCK = 10
       ELSE
@@ -156,8 +153,7 @@
 !
 !     input on segments
 !
-      KEY='SUBSTANCE'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          IERR = IERR + 1
@@ -245,8 +241,7 @@
       aProcesProp%input_item(6)%indx  = 6
       aProcesProp%input_item(6)%ip_val  = 0
 !
-      KEY = 'CLOBND'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('CLOBND',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          CLOBND = 0.0
       ELSE
@@ -270,8 +265,7 @@
       aProcesProp%input_item(7)%indx  = 7
       aProcesProp%input_item(7)%ip_val  = 0
 !
-      KEY = 'CUPBND'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('CUPBND',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          CUPBND = 0.0
       ELSE
@@ -295,8 +289,7 @@
       aProcesProp%input_item(8)%indx  = 8
       aProcesProp%input_item(8)%ip_val  = 0
 !
-      KEY = 'CQLEV'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('CQLEV',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR quantile not specified'
          IERR = IERR + 1
@@ -334,8 +327,7 @@
       aProcesProp%input_item(10)%indx  = 10
       aProcesProp%input_item(10)%ip_val  = 0
 !
-      KEY = 'SUFFIX'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUFFIX',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
 !        something involving pcount ??
          SUFFIX = ' '

@@ -1,6 +1,6 @@
       module m_set_active
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -44,7 +44,6 @@
 
 !     Created   : Aug   2012 by Jan van Beek
 
-      use m_zoek
       use m_srstop
       use m_monsys
       use timers         !< performance timers
@@ -76,13 +75,12 @@
 
       nocons = constants%no_item
       do ico = 1 , nocons
-         call zoek('active', 1, constants%name(ico), 6, ix_act )
-         if ( ix_act .gt. 0 ) then
+         if (string_equals('active', constants%name(ico))) then
 
             ! check if double in the list
 
             name10 = constants%name(ico)(8:17)
-            call zoek(name10, no_act, actlst, 10, ix_dbl )
+            ix_dbl = index_in_array(name10, actlst(:no_act))
             if ( ix_dbl .le. 0 ) then
                no_act = no_act + 1
                if ( no_act .gt. no_act_max ) then
@@ -100,10 +98,10 @@
       ! if bloom then also phy_blo
 
       name10 = 'bloom'
-      call zoek(name10, no_act, actlst, 10, ix_dbl )
+      ix_dbl = index_in_array(name10, actlst(:no_act))
       if ( ix_dbl .gt. 0 ) then
          name10 = 'phy_blo'
-         call zoek(name10, no_act, actlst, 10, ix_dbl )
+         ix_dbl = index_in_array(name10, actlst(:no_act))
          if ( ix_dbl .le. 0 ) then
             write(line,2140)
             call monsys(line,1)

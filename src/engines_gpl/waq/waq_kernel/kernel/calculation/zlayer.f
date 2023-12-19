@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_zlayer
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -67,12 +67,11 @@
 
 !     Files               : none
 
-!     Routines            : zoek20  - to search the DRY_TRESH constant
+!     Routines            : zoek  - to search the DRY_TRESH constant
 !                                     and SURF parameter/segfunction
 !                           dhkmst  - to set features
 !                           evaluate_waq_attribute  - to get features
 
-      use m_zoek
       use m_dhkmst
       use m_evaluate_waq_attribute
       use timers
@@ -123,12 +122,12 @@
 
       integer(kind=int_wp) ::ithandl = 0
 
-      call zoek20 ( 'Z_THRESH  ', nocons, coname, 10, idryfld )
+      idryfld = index_in_array( 'Z_THRESH  ', coname)
       if ( idryfld .le. 0 ) then                                       ! constant not found
          iknmkv = iknmrk                                               ! set variable property to
 
          minarea = 1.00E-04                                            ! default value of 1.00E-04 m2 = 1 cm2
-         call zoek20 ( 'MIN_AREA', nocons, coname, 8, idryfld )
+         idryfld = index_in_array( 'MIN_AREA', coname)
          if ( idryfld .gt. 0 ) minarea = cons(idryfld)                 ! or the given value
          area = max( area, minarea )                                   ! set minimum area
          return                                                        ! and return
@@ -137,7 +136,7 @@
                                                                        ! and proceed with z-layer
       if ( timon ) call timstrt ( "zlayer", ithandl )                  ! correction
       nosegl = nosegw / nolay
-      call zoek20 ( 'SURF      ', nopa  , paname, 10, isurf   )
+      isurf = index_in_array( 'SURF      ', paname)
 
 !        SURF is a parameter
 
@@ -170,7 +169,7 @@
             enddo
          enddo
       else
-         call zoek20 ( 'SURF      ', nosfun, sfname, 10, isurf )
+         isurf = index_in_array( 'SURF      ', sfname)
 
 !        SURF is a spatial time function (often with 1D models)
 
@@ -239,7 +238,7 @@
       iknmkv = iknmrk
 
       minarea = 1.00E-04                                            ! default value of 1.00E-04 m2 = 1 cm2
-      call zoek20 ( 'MIN_AREA', nocons, coname, 8, idryfld )
+      idryfld = index_in_array( 'MIN_AREA', coname)
       if ( idryfld .gt. 0 ) minarea = cons(idryfld)                 ! or the given value
       area = max( area, minarea )                                   ! set minimum area
 
@@ -281,9 +280,8 @@
 
 !     Files               : none
 
-!     Routines            : zoek20  - to search the DRY_TRESH constant
+!     Routines            : zoek  - to search the DRY_TRESH constant
 
-      use m_zoek
       use timers
       implicit none
 
@@ -308,7 +306,7 @@
 
       integer(kind=int_wp) ::ithandl = 0
 
-      call zoek20 ( 'Z_THRESH  ', nocons, coname, 10, iq )
+      iq = index_in_array( 'Z_THRESH  ', coname)
       if ( iq .le. 0 ) return
 
       if ( timon ) call timstrt ( "zflows", ithandl )

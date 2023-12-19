@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_prsort
       use m_waq_precision
+      use m_string_utils
       use m_valpoi
 
 
@@ -36,7 +37,6 @@
 
       ! sort processes according to input - output relation, simpel linear sort at the moment
 
-      use m_zoek
       use dlwq_hyd_data
       use ProcesSet
       use timers       !   performance timers
@@ -100,10 +100,8 @@
 
                do i_out = 1 , ProcesDef%ProcesProps(iproc)%no_output
                   do i_in = 1 , ProcesDef%ProcesProps(iproc2)%no_input
-                     call zoek( ProcesDef%ProcesProps(iproc)%output_item(i_out)%name, 1,
-     +                          ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name , 20, ifound)
-                     if ( ifound .gt. 0 ) then
-
+                     if (string_equals(ProcesDef%ProcesProps(iproc)%output_item(i_out)%name,
+     +                                 ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name)) then
                         ! see if it not specified in the input, then the process needs to be moved
 
                         valnam = ProcesDef%ProcesProps(iproc)%output_item(i_out)%name
@@ -124,9 +122,8 @@
 
                do i_flx = 1 , ProcesDef%ProcesProps(iproc)%no_fluxoutput
                   do i_in = 1 , ProcesDef%ProcesProps(iproc2)%no_input
-                     call zoek( ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name, 1,
-     +                          ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name , 20, ifound)
-                     if ( ifound .gt. 0 ) then
+                     if (string_equals(ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name,
+     +                                 ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name )) then
 
                         ! see if it not specified in the input, then the process needs to be moved
 

@@ -22,15 +22,16 @@
 !!  rights reserved.
 
       module dlwq0t_data
-      use m_zoek
       use time_module
+      use m_string_utils
 
-      
+
+
       integer :: dlwq0t_itstrt   ! Simulation start time ( scu )
       integer :: dlwq0t_itstop   ! Simulation stop time ( scu )
       integer :: dlwq0t_isfact   ! System timer in seconds
       real*8  :: dlwq0t_otime    ! Time base in Julian time
-      
+
       end module dlwq0t_data
 
       subroutine dlwq0t ( chulp  , ihulp  , dtflg1 , dtflg3 , ierr   )
@@ -71,7 +72,6 @@
 
 !     Local
 
-      character*(20) key      !  used to test content of chulp
       integer   ( 4) ikey     !  return value of 'zoek'
       integer   ( 4) iyear    !  workspace year value
       integer   ( 4) imonth   !  workspace month value
@@ -81,7 +81,7 @@
       integer   ( 4) isecnd   !  workspace second value
       integer   ( 4) idate    !  workspace date value
       integer   ( 4) itime    !  workspace time value
-      real      ( 8) otim2    !  to compute distance from otime   
+      real      ( 8) otim2    !  to compute distance from otime
       real      ( 8) afact    !  system clock in days
       real      ( 8) rhulp    !  help variable
 
@@ -90,19 +90,16 @@
 
       ierr = 0
       ihulp = 0
-      
+
 !     search for presence of special keywords start and stop
 
-      key = 'START'
-      call zoek( key, 1, chulp, 20, ikey )
-      if ( ikey .gt. 0 ) then                       !  'start' string found
+      if (string_equals('START', chulp)) then
          ihulp = dlwq0t_itstrt
          goto 9999
       endif
 
-      key = 'STOP'
-      call zoek( key, 1, chulp, 20, ikey )
-      if ( ikey .gt. 0 ) then                       !  'stop' string found
+      if (string_equals('STOP', chulp)) then
+
          ihulp = dlwq0t_itstop
          goto 9999
       endif

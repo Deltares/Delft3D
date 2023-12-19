@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_delwaq_statistical_process
 use m_waq_precision, only: int_wp, real_wp
+use m_string_utils, only: string_equals, index_in_array
 use m_setqtl
 use m_setprc
 use m_setgeo
@@ -48,7 +49,6 @@ contains
       !! This routine deals with the set up of statistical processes
 
 
-      use m_zoek
       use timers
       use dhralloc
       use ProcesSet
@@ -119,49 +119,43 @@ contains
                    DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  ,&
                    KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX ,&
                    PSTART , PSTOP  )
-      
+
       ! set number of statistical processes (some once , some per period )
-      
+
       IKSTAT = 1
       NSPROC = 0
       DO ISTAT = 1 , NOSTAT
          KEY = 'OUTPUT-OPERATION'
-         CALL ZOEK(KEY,NOKEY(ISTAT),KEYNAM(IKSTAT:),20,IKEY)
+         IKEY = index_in_array(KEY,KEYNAM(IKSTAT:IKSTAT + NOKEY(ISTAT)))
          IF ( IKEY > 0 ) THEN
             IKEY = IKSTAT + IKEY - 1
             KEY = 'STADAY'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                NSPROC = NSPROC + 1
                GOTO 10
             ENDIF
             KEY = 'STADPT'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                NSPROC = NSPROC + 1
                GOTO 10
             ENDIF
             KEY = 'STADSC'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                NSPROC = NSPROC + NPERIOD
                GOTO 10
             ENDIF
             KEY = 'STAGEO'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                NSPROC = NSPROC + NPERIOD
                GOTO 10
             ENDIF
             KEY = 'STAPRC'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                NSPROC = NSPROC + NPERIOD
                GOTO 10
             ENDIF
             KEY = 'STAQTL'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                NSPROC = NSPROC + NPERIOD
                GOTO 10
             ENDIF
@@ -174,14 +168,14 @@ contains
       ALLOCATE(STA_NO_OUT(NSPROC))
       ALLOCATE(STA_SWITR(NSPROC))
       ALLOCATE(STA_MODNAM(NSPROC))
-      
+
       ! emergency solution
       ALLOCATE(KEYNAM2(NKEY),KEYVAL2(NKEY))
       KEYNAM2 = KEYNAM
       KEYVAL2 = KEYVAL
 
       ! report on periods
-      
+
       WRITE(LUNREP,'(A,I6)') 'Number of periods defined:',NPERIOD
       WRITE(LUNREP,*)
       DO IPERIOD = 1 , NPERIOD
@@ -200,7 +194,7 @@ contains
             WRITE(LUNREP, 2030) PSTART(IPERIOD),PSTOP(IPERIOD)
          ENDIF
       ENDDO
-      
+
       ! loop over the output operations, setup administration and report
       IKSTAT = 1
       ISPROC = 0
@@ -211,12 +205,11 @@ contains
                                     KEYVAL(IKSTAT+IKEY-1)
          ENDDO
          KEY = 'OUTPUT-OPERATION'
-         CALL ZOEK(KEY,NOKEY(ISTAT),KEYNAM(IKSTAT:),20,IKEY)
+         IKEY = index_in_array(KEY,KEYNAM(IKSTAT:IKSTAT + NOKEY(ISTAT)))
          IF ( IKEY > 0 ) THEN
             IKEY = IKSTAT + IKEY - 1
             KEY = 'STADAY'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                ISPROC = ISPROC + 1
                CALL SETDAY ( LUNREP         , NOKEY(ISTAT)   , &
                             KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
@@ -229,8 +222,7 @@ contains
                GOTO 100
             ENDIF
             KEY = 'STADPT'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                ISPROC = ISPROC + 1
                CALL SETDPT ( LUNREP         , NOKEY(ISTAT)   , &
                             KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
@@ -241,8 +233,7 @@ contains
                GOTO 100
             ENDIF
             KEY = 'STADSC'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                DO IPERIOD = 1 , NPERIOD
                   WRITE(LUNREP,'(3A)') 'For period [',PERNAM(IPERIOD),']:'
                   ISPROC = ISPROC + 1
@@ -258,8 +249,7 @@ contains
                GOTO 100
             ENDIF
             KEY = 'STAGEO'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                DO IPERIOD = 1 , NPERIOD
                   ISPROC = ISPROC + 1
                   WRITE(LUNREP,'(3A)') 'For period [',PERNAM(IPERIOD),']:'
@@ -275,8 +265,7 @@ contains
                GOTO 100
             ENDIF
             KEY = 'STAPRC'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                DO IPERIOD = 1 , NPERIOD
                   ISPROC = ISPROC + 1
                   WRITE(LUNREP,'(3A)') 'For period [',PERNAM(IPERIOD),']:'
@@ -292,8 +281,7 @@ contains
                GOTO 100
             ENDIF
             KEY = 'STAQTL'
-            CALL ZOEK(KEY,1,KEYVAL(IKEY:),20,IFOUND)
-            IF ( IFOUND > 0 ) THEN
+            if (string_equals(KEY, KEYVAL(IKEY))) then
                DO IPERIOD = 1 , NPERIOD
                   ISPROC = ISPROC + 1
                   WRITE(LUNREP,'(3A)') 'For period [',PERNAM(IPERIOD),']:'

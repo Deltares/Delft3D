@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq_output_theta
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -41,7 +41,6 @@
 
 !     Modified  :
 
-      use m_zoek
       use timers
       implicit none
 
@@ -101,7 +100,7 @@
 !        look for parameter theta in output
 
          parnam = 'theta'
-         call zoek(parnam,nrvart,ounam,20,parindx)
+         parindx = index_in_array(parnam,ounam)
          if ( parindx .gt. 0 ) then
             ip_theta  = ipoint(parindx)
             if ( ip_theta .ge. ioloc .and. ip_theta .lt. iodef ) then

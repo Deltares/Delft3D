@@ -1,34 +1,34 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine sortst ( c10a , c10b , val , nr )
-      use m_zoek
+      use m_string_utils
 
 c     Subroutine to sort (part of) tables R6-R7-R8
       integer      nr, ir, jndex
@@ -40,8 +40,8 @@ c     Subroutine to sort (part of) tables R6-R7-R8
 c     Set index
 
       nrarr = 0
-      do 50 ir = 1,nr 
-          call zoek ( c10a(ir), nrarr, sortar, 10, jndex )
+      do 50 ir = 1,nr
+          jndex = index_in_array( c10a(ir), sortar(:nrarr))
           if ( jndex .le. 0 ) then
               nrarr = nrarr + 1
               sortar(nrarr) = c10a(ir)
@@ -49,7 +49,7 @@ c     Set index
           endif
           sortnr(ir) = jndex
    50 continue
- 
+
 c     Perform sort
 
   100 continue
@@ -80,8 +80,8 @@ c     back for next sweep
 
       subroutine sorts2 ( pr    , it    , nm    , de    , do    ,
      j                    sx    , nr    , do_de , do_sx )
-      use m_zoek
 
+      use m_string_utils
 
 c     Subroutine to sort tables R3-R4-R5
 
@@ -97,7 +97,7 @@ c     Set index for process
 c      write (*,*) ' SORTS2 '
       nrarr = 0
       do ir = 1,nr
-          call zoek ( pr(ir), nrarr, sortar, 10, jndex )
+          jndex = index_in_array( pr(ir), sortar(:nrarr))
           if ( jndex .le. 0 ) then
               nrarr = nrarr + 1
               sortar(nrarr) = pr(ir)
@@ -222,4 +222,3 @@ c      write (*,*) ' Items sorted '
       if ( noffse .ne. nr ) stop 'BUG SortNR'
       return
       end
-

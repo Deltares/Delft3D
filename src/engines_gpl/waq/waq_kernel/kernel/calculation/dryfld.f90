@@ -23,7 +23,7 @@
 
       module dryfld_mod
        use m_waq_precision
-       use m_zoek
+       use m_string_utils
        use m_dhkmst
 
           implicit none
@@ -53,7 +53,7 @@
 
 !     Files               : none
 
-!     Routines            : zoek20  - to search the DRY_THRESH constant
+!     Routines            : zoek  - to search the DRY_THRESH constant
 !                           dhkmst  - to set features
 
       use timers
@@ -111,11 +111,11 @@
       endif
 
       threshold = 0.001                                        ! default value of 1 mm
-      call zoek20 ( 'DRY_THRESH', nocons, coname, 10, idryfld )
+      idryfld = index_in_array( 'DRY_THRESH', coname)
       if ( idryfld .gt. 0 ) threshold = cons(idryfld)          ! or the given value
 
       minvolume = 0.001                                        ! default value of 0.001 m3 = 1 L
-      call zoek20 ( 'MIN_VOLUME', nocons, coname, 10, idryfld )
+      idryfld = index_in_array( 'MIN_VOLUME', coname)
       if ( idryfld .gt. 0 ) minvolume = cons(idryfld)          ! or the given value
 
       ivol   = 0
@@ -148,7 +148,7 @@
       enddo
 
       minarea = 1.00E-04                                      ! default value of 1.00E-04 m2 = 1 cm2
-      call zoek20 ( 'MIN_AREA', nocons, coname, 8, idryfld )
+      idryfld = index_in_array( 'MIN_AREA', coname)
       if ( idryfld .gt. 0 ) minarea = cons(idryfld)           ! or the given value
       area = max( area, minarea )                             ! set minimum area
 
@@ -228,11 +228,11 @@
       endif
 
       threshold = 0.001                                         ! default value of 1 mm
-      call zoek20 ( 'DRY_THRESH', nocons, coname, 10, idryfld )
+      idryfld = index_in_array( 'DRY_THRESH', coname)
       if ( idryfld .gt. 0 ) threshold = cons(idryfld)           ! or the given value
 
       minvolume = 0.001                                        ! default value of 0.001 m3 = 1 L
-      call zoek20 ( 'MIN_VOLUME', nocons, coname, 10, idryfld )
+      idryfld = index_in_array( 'MIN_VOLUME', coname)
       if ( idryfld .gt. 0 ) minvolume = cons(idryfld)          ! or the given value
 
       sumvol = 0.0

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setvat
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -54,7 +54,6 @@
 !
 !     Declaration of arguments
 !
-      use m_zoek
       use m_srstop
       use m_monsys
       use timers       !   performance timers
@@ -500,7 +499,7 @@
 !     Check if there are overrulings
 !
       DO IVAR = 1 , NOVAR
-         CALL ZOEK ( VARNAM(IVAR), NOVAT , VATNAM, 20    , IVAT  )
+         IVAT = index_in_array( VARNAM(IVAR), VATNAM(:NOVAT))
          IF ( IVAT   .GT. 0 ) THEN
 !
 !           aggregation
@@ -530,7 +529,7 @@
 !
 !              Weight average
 !
-               CALL ZOEK ( VATNAG(IVAT), NOVAR , VARNAM, 20    , IV_AG )
+               IV_AG = index_in_array( VATNAG(IVAT), VARNAM)
                IF ( IV_AG .GT. 0 ) THEN
                   VARTAG(IVAR) = VATTAG(IVAT)
                   VARAGG(IVAR) = IV_AG
@@ -573,7 +572,7 @@
 !
 !              distribute with weight
 !
-               CALL ZOEK ( VATNDA(IVAT), NOVAR , VARNAM, 20    , IV_DA )
+               IV_DA = index_in_array(VATNDA(IVAT), VARNAM)
                IF ( IV_DA .GT. 0 ) THEN
                   VARTDA(IVAR) = VATTDA(IVAT)
                   VARDAG(IVAR) = IV_DA

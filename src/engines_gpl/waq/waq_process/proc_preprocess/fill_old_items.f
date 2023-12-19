@@ -43,15 +43,13 @@
 
       use timers         !< performance timers
       use processet      !< use processet definitions
+      use m_process_lib_data !< tables read from proces definition file
+      
       implicit none
 
       ! decalaration of arguments
 
       type(old_item_coll)                :: old_items         !< the old_items table to be filled
-
-      ! common declarations
-
-      include 'data.inc'                           ! tables read from proces definition file
 
       ! local declaration
 

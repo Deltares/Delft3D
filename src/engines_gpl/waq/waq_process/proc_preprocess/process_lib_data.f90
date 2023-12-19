@@ -6,7 +6,7 @@
 !!
 !!  This program is distributed in the hope that it will be useful,
 !!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+!!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !!  GNU General Public License for more details.
 !!
 !!  You should have received a copy of the GNU General Public License
@@ -17,51 +17,53 @@
 !!  P.O. Box 177
 !!  2600 MH Delft, The Netherlands
 !!
-!!  All indications and logos of, and references to registered trademarks 
-!!  of Stichting Deltares remain the property of Stichting Deltares. All 
+!!  All indications and logos of, and references to registered trademarks
+!!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-c
-c     DATA STRUCTURE FOR PROCESSES LIBRARY MANAGEMENT
-c
-c     Reference: bespreekverslag van Gils 3-9-1998 R3252
+!
+!     DATA STRUCTURE FOR PROCESSES LIBRARY MANAGEMENT
+!
+!     Reference: bespreekverslag van Gils 3-9-1998 R3252
+module m_process_lib_data
 
-      integer      nsubsm, nitemm, nfortm, nprocm, nfluxm,
-     j             nconfm, ninpum, noutpm, noutfm, nmodvm,
-     j             nstocm, nvelom, ndispm, nsgrpm, ncnsbm
-      parameter   (nsubsm=3000, nitemm=30000, nfortm=800, nmodvm=4000,
-     j             nprocm=3000, nfluxm=   1, nconfm=20, ninpum=30000,
-     j             noutpm=15000, noutfm=6000, nstocm=6000, nvelom=3000,
-     j             ndispm=3000, nsgrpm=20  , ncnsbm=4000)
-      integer      nsubs , nitem , nfort , nproc , nflux ,
-     j             nconf , ninpu , noutp , noutf , nstoc ,
-     j             nvelo , ndisp , nsgrp , ncnsb , nmodv ,
-     j             ncnpr
-      common /dims/
-     j             nsubs , nitem , nfort , nproc , nflux ,
-     j             nconf , ninpu , noutp , noutf , nstoc ,
-     j             nvelo , ndisp , nsgrp , ncnsb , nmodv ,
-     j             ncnpr
+      integer     nsubsm, nitemm, nfortm, nprocm, nfluxm,&
+                  nconfm, ninpum, noutpm, noutfm, nmodvm,&
+                  nstocm, nvelom, ndispm, nsgrpm, ncnsbm 
 
-c     Substances groups table P1
+      parameter   (nsubsm=3000, nitemm=30000, nfortm=800, nmodvm=4000,&
+                  nprocm=3000, nfluxm=   1, nconfm=20, ninpum=30000,  &
+                  noutpm=15000, noutfm=6000, nstocm=6000, nvelom=3000,&
+                  ndispm=3000, nsgrpm=20  , ncnsbm=4000)
+
+      integer      nsubs , nitem , nfort , nproc , nflux ,&
+                  nconf , ninpu , noutp , noutf , nstoc , &
+                  nvelo , ndisp , nsgrp , ncnsb , nmodv , &
+                  ncnpr
+      common /dims/ nsubs , nitem , nfort , nproc , nflux ,&
+                  nconf , ninpu , noutp , noutf , nstoc ,&
+                  nvelo , ndisp , nsgrp , ncnsb , nmodv ,&
+                  ncnpr
+
+!     Substances groups table P1
 
       character*30 sgrpid(nsgrpm)
       character*50 sgrpnm(nsgrpm)
 
       common /sgrp/ sgrpid, sgrpnm
 
-c     Substances table obsolete, included in P2
+!     Substances table obsolete, included in P2
 
       character*10 subsid(nsubsm)
-c     character*2  subswk(nsubsm)
-c     character*10 subsgr(nsubsm)
-c     character*20 subsun(nsubsm)
-c     character*50 subsnm(nsubsm)
+!     character*2  subswk(nsubsm)
+!     character*10 subsgr(nsubsm)
+!     character*20 subsun(nsubsm)
+!     character*50 subsnm(nsubsm)
 
       common /subs/ subsid
-c     common /subs/ subswk, subsid, subsgr, subsun, subsnm
+!     common /subs/ subswk, subsid, subsgr, subsun, subsnm
 
-c     Items table P2
+!     Items table P2
 
       character*1  itemse(nitemm), itemex(nitemm)
       character*10 itemid(nitemm)
@@ -71,23 +73,22 @@ c     Items table P2
       character*40  itemsu(nitemm)
       real         itemde(nitemm)
       character*1  itemwk(nitemm)
-      character*10 itemag(nitemm),
-     +             itemda(nitemm)
+      character*10 itemag(nitemm), itemda(nitemm)
       character*30 itemgr(nitemm)
       integer      item_i(nitemm)
 
-      common /item/ itemse, itemex, itemid, itemun, itemnm,
-     +              itemsn, itemsu, itemde, itemwk, itemag,
-     j              itemda, itemgr, item_i
+      common /item/ itemse, itemex, itemid, itemun, itemnm,&
+                    itemsn, itemsu, itemde, itemwk, itemag,&
+                    itemda, itemgr, item_i
 
-c     FORTRAN subroutines table P3
+!     FORTRAN subroutines table P3
 
       character*10 fortid(nfortm)
       integer      fort_i(nfortm)
 
       common /fort/ fortid, fort_i
 
-c     Processes table P4
+!     Processes table P4
 
       character*10 procid(nprocm), procfo(nprocm)
       character*50 procnm(nprocm)
@@ -95,28 +96,28 @@ c     Processes table P4
 
       common /proc/ procid, procfo, procnm, procco, proc_i
 
-c     Fluxes table obsolete, included in P2
+!     Fluxes table obsolete, included in P2
 
-c     character*10 fluxid(nfluxm)
-c     character*20 fluxun(nfluxm)
-c     character*50 fluxnm(nfluxm)
-c
-c     common /flux/ fluxid, fluxun, fluxnm
+!     character*10 fluxid(nfluxm)
+!     character*20 fluxun(nfluxm)
+!     character*50 fluxnm(nfluxm)
 
-c     Configurations table P5
+!     common /flux/ fluxid, fluxun, fluxnm
+
+!     Configurations table P5
 
       character*10 confid(nconfm)
       character*50 confnm(nconfm)
 
       common /conf/ confid, confnm
 
-c     internal license on conf
+!     internal license on conf
 
       integer      liconf(nconfm)
 
       common /lconf/ liconf
 
-c     Configurations and processes matrix R1
+!     Configurations and processes matrix R1
 
       logical      conpro(nconfm,nprocm)
       integer      icnpro(nconfm*nprocm)
@@ -125,7 +126,7 @@ c     Configurations and processes matrix R1
 
       common /copr/ conpro,icnpro, r1_cid, r1_pid
 
-c     Configurations and substances table R2
+!     Configurations and substances table R2
 
       character*10 r2_cid(ncnsbm)
       character*10 r2_sid(ncnsbm)
@@ -133,29 +134,27 @@ c     Configurations and substances table R2
 
       common /tabr2/ r2_cid,r2_sid,r2_iin
 
-c     Input items table R3
+!     Input items table R3
 
       character*10 inpupr(ninpum), inpuit(ninpum)
       character*1  inpude(ninpum), inpudo(ninpum)
-      integer      inpunm(ninpum), inpusx(ninpum),
-     j             inpu_i(ninpum)
+      integer      inpunm(ninpum), inpusx(ninpum), inpu_i(ninpum)
       integer      inpuii(ninpum), inpupi(ninpum)
 
-      common /inpu/ inpupr, inpuit, inpude, inpudo, inpunm,
-     +              inpusx, inpu_i, inpuii, inpupi
+      common /inpu/ inpupr, inpuit, inpude, inpudo, inpunm, &
+                    inpusx, inpu_i, inpuii, inpupi 
 
-c     Output items table R4
+!     Output items table R4
 
       character*10 outppr(noutpm), outpit(noutpm)
       character*1  outpdo(noutpm)
-      integer      outpnm(noutpm), outpsx(noutpm),
-     j             outp_i(noutpm)
+      integer      outpnm(noutpm), outpsx(noutpm), outp_i(noutpm)
       integer      outpii(noutpm), outppi(noutpm)
 
-      common /outp/ outppr, outpit, outpdo, outpnm, outpsx, outp_i,
-     j              outpii, outppi
+      common /outp/ outppr, outpit, outpdo, outpnm, outpsx, outp_i, &
+                    outpii, outppi
 
-c     Output fluxes table R5
+!     Output fluxes table R5
 
       character*10 outfpr(noutfm), outffl(noutfm)
       character*1  outfdo(noutfm)
@@ -163,7 +162,7 @@ c     Output fluxes table R5
 
       common /outf/ outfpr, outffl, outfdo, outfnm, outf_i
 
-c     Stochi lines table R6
+!     Stochi lines table R6
 
       character*10 stocfl(nstocm), stocsu(nstocm)
       real         stocsc(nstocm)
@@ -171,7 +170,7 @@ c     Stochi lines table R6
 
       common /stoc/ stocfl, stocsu, stocsc, stoc_i
 
-c     Velocity lines table R7
+!     Velocity lines table R7
 
       character*10 veloit(nvelom), velosu(nvelom)
       real         velosc(nvelom)
@@ -179,7 +178,7 @@ c     Velocity lines table R7
 
       common /velo/ veloit, velosu, velosc, velo_i
 
-c     Dispersion lines table R8
+!     Dispersion lines table R8
 
       character*10 dispit(ndispm), dispsu(ndispm)
       real         dispsc(ndispm)
@@ -187,13 +186,13 @@ c     Dispersion lines table R8
 
       common /disp/ dispit, dispsu, dispsc, disp_i
 
-c     Modelled variables table R9
+!     Modelled variables table R9
 
       character*10 modvci(nmodvm), modvit(nmodvm)
 
       common /modv/ modvit, modvci
 
-c     old_items
+!     old_items
 
       integer, parameter :: n_old_items_max = 1000                       ! maximum number of old items
       integer            :: n_old_items                                  ! number of old items
@@ -204,10 +203,12 @@ c     old_items
       integer            :: old_items_serial(n_old_items_max)            ! the proces definition serial number up to where this old name, old default was used
       integer            :: old_items_action_type(n_old_items_max)       ! process rename, process parameter rename, default value change
 
-      common /old_items/ n_old_items,
-     j                   old_items_old_name,
-     j                   old_items_new_name,
-     j                   old_items_old_default,
-     j                   old_items_configuration,
-     j                   old_items_serial,
-     j                   old_items_action_type
+      common /old_items/ n_old_items, &            
+                         old_items_old_name, & 
+                         old_items_new_name, & 
+                         old_items_old_default, &
+                         old_items_configuration, &
+                         old_items_serial, &
+                         old_items_action_type 
+
+end module m_process_lib_data

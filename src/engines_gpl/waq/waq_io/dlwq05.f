@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq05
       use m_waq_precision
+      use m_string_utils
       use m_opt0
       use m_dlwq5a
 
@@ -63,7 +64,6 @@
 
       use m_conver
       use m_check
-      use m_zoek
       use m_srstop
       use m_getcom
       use rd_token     !   for the reading of tokens
@@ -166,7 +166,7 @@
       ENDIF
       IERR2  =  0
 
-      DO 30  I = 1 , NOBND
+      DO I = 1 , NOBND
          IBNDTYPE(I)     =  0
          BNDID_LONG(I)   = ' '
          BNDNAME(I)      = ' '
@@ -214,9 +214,9 @@
 
          call getcom ( '-no_id_check' , 0    , no_id_check, idummy, rdummy, cdummy, ierr2)
          if ( .not. no_id_check ) then
-            CALL ZOEK(BNDID(I),I-1,BNDID,20,IFOUND)
-            IF ( IFOUND .GT. 0 ) THEN
-               CALL ZOEK(BNDID_LONG(I),I-1,BNDID_LONG,256,IFOUND2)
+            IFOUND = index_in_array(BNDID(I),BNDID(:I-1))
+            IF ( IFOUND >= 0 ) THEN
+               IFOUND2 = index_in_array(BNDID_LONG(I),BNDID_LONG(:I-1))
                IF ( IFOUND .EQ. IFOUND2 ) THEN
                   WRITE(LUNUT,2270) BNDID(I)
                   iwar = iwar + 1
@@ -229,8 +229,8 @@
 
          ! check if truncated type and non truncated type give the same number
 
-         CALL ZOEK(BNDTYPE(I)     ,NOBTYP,BNDTYPE     ,20 ,ITYPE)
-         CALL ZOEK(BNDTYPE_LONG(I),NOBTYP,BNDTYPE_LONG,256,ITYP2)
+         ITYPE = index_in_array(BNDTYPE(I),BNDTYPE(:nobtyp))
+         ITYP2 = index_in_array(BNDTYPE_LONG(I),BNDTYPE_LONG(:nobtyp))
          IF ( ITYPE .NE. ITYP2 ) THEN
             WRITE(LUNUT,2290) TRIM(BNDTYPE_LONG(I))
             IERR = IERR + 1
@@ -251,7 +251,7 @@
 
          WRITE ( LUNWR )  BNDID(I), BNDNAME(I)
 
-   30 CONTINUE
+      end do
 
       WRITE ( LUNUT ,   *  )
       WRITE ( LUNUT , 2060 ) NOBTYP

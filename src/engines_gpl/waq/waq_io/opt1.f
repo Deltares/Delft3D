@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_opt1
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -54,7 +54,6 @@
 
 !     LOGICAL UNITS      : LUN(33) = working unit for opening binary files
 
-      use m_zoek
       use m_fffind
       use m_open_waq_files
       use timers       !   performance timers
@@ -95,7 +94,6 @@
       integer(kind=int_wp) :: it1 , it2 , it3    ! timer variables
       integer(kind=int_wp) :: it1a, it2a, it3a   ! timer variables
       integer(kind=int_wp) :: itype     ! returned type of input from gettoken
-      integer(kind=int_wp) :: ihyd      ! location of 'hyd' in the file name string
       integer(kind=int_wp) :: k         ! implicit loop counter
       real(kind=real_wp) :: adummy    ! dummy to read data from file
       integer(kind=int_wp) ::  ithndl = 0
@@ -151,7 +149,7 @@
             lchar(is) = cdummy
             write ( lunut , 2040 ) cdummy
 !                   Check if file exists
-            call open_waq_files  ( lun(33) , cdummy    , 33     , 2     , ierr2 )
+            call open_waq_files  ( lun(33), cdummy, 33, 2, ierr2 )
             if ( ierr2 .gt. 0 ) then
                ierr2 = -2
             else
@@ -249,14 +247,13 @@
                   goto 30
                endif
                call dhfext(sfile,filext,extpos,extlen)
-               call zoek ( 'hyd ', 1, filext, 4, ihyd )
-               if ( ihyd .eq. 1 ) then                            !     hyd file processing
+               if ( string_equals('hyd ', filext)) then                            !     hyd file processing
                   call fffind ( lunut, sstring, sfile , cdummy, it3   ,
      &                          it1a   , it2a  , it3a , nitem , ierr  )
                else                                               !     other file processing
                   cdummy = sfile
                   it2a   = 0
-                  call open_waq_files  ( lun(33), cdummy   , 33    , 2    , ierr2 )
+                  call open_waq_files  ( lun(33), cdummy, 33, 2, ierr2 )
                   if ( ierr2 .gt. 0 ) then
                      ierr2 = -2
                      goto 30

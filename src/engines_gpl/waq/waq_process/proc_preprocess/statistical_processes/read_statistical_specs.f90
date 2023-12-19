@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_rdstat
 use m_waq_precision
+use m_string_utils, only : index_in_array, string_equals
 
 
 implicit none
@@ -67,8 +68,7 @@ contains
       !     PSTART  INTEGER(kind=int_wp) ::NPERIOD     OUTPUT  period start
       !     PSTOP   INTEGER(kind=int_wp) ::NPERIOD     OUTPUT  period stop
       !
-      use m_zoek
-      use timers 
+      use timers
       USE DHRALLOC
       use m_cnvtim
 
@@ -153,7 +153,7 @@ contains
             GOTO 500
          ENDIF
 
-         CALL ZOEK (KNAM,NPKEY,KEYS,20,IKEY)
+         IKEY = index_in_array(KNAM,KEYS)
          IF ( IKEY .LE. 0 ) THEN
             WRITE(LUNREP,*) 'ERROR : unexpected keyword found'
             WRITE(LUNREP,*) 'found    :',KNAM
@@ -212,12 +212,12 @@ contains
                          IPOSR  , NPOS   , KNAM   , IDUMMY , ADUMMY , &
                                                     ITYPE  , IERR2  )
             IF ( IERR2 /= 0 ) GOTO 900
-   
+
             KEYPER(1) = 'SUFFIX'
             KEYPER(2) = 'START-TIME'
             KEYPER(3) = 'STOP-TIME'
             KEYPER(4) = 'END-PERIOD'
-            CALL ZOEK (KNAM,NKEYPER,KEYPER,20,IKEY2)
+            IKEY2 = index_in_array(KNAM,KEYPER)
             IF ( IKEY2 .LE. 0 ) THEN
                WRITE(LUNREP,*) 'ERROR : unexpected keyword found'
                WRITE(LUNREP,*) 'found    :',KNAM
@@ -301,7 +301,7 @@ contains
 
             ! check if it a parameter with extra key word real-parameter, time-parameter, logical-parameter, ?integer-parameter
 
-            CALL ZOEK (KNAM,3,KEYPAR,20,IPAR)
+            IPAR = index_in_array(KNAM,KEYPAR)
             IF ( IPAR .GT. 0 ) THEN
 
             ! get real KNAM
@@ -330,7 +330,7 @@ contains
             ENDIF
             KEYNAM(NKEY) = KNAM
             KEYVAL(NKEY) = KVAL
-      
+
             ITYPE = 0
             CALL RDTOK1 ( LUNREP , ILUN   , LCH    , LSTACK , CCHAR  , &
                          IPOSR  , NPOS   , KNAM   , IDUMMY , ADUMMY , &
@@ -338,8 +338,7 @@ contains
             IF ( IERR2 /= 0 ) GOTO 900
 
             KEY = 'END-OUTPUT-OPERATION'
-            CALL ZOEK (KNAM,1,KEY,20,IKEY)
-            IF ( IKEY .LE. 0 ) THEN
+            if (.not. string_equals(KNAM, KEY)) then
                GOTO 300
             ENDIF
          ENDIF

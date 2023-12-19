@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_makbar
       use m_waq_precision
+      use m_string_utils
       use m_vxlpoi
       use m_valpoi
 
@@ -39,7 +40,6 @@
 
       ! Checks which processes can be activated
 
-      use m_zoek
       use m_monsys
       use m_dhswtr
       use m_dhrmis
@@ -300,7 +300,7 @@
 
   550    continue
          if ( laswi ) then
-            call zoek ( proc1%name, no_act, actlst, 20    , iact  )
+            iact = index_in_array( proc1%name, actlst(:no_act))
             if ( iact .gt. 0 ) then
                if ( proc1%linvok ) then
                   proc1%active = .true.

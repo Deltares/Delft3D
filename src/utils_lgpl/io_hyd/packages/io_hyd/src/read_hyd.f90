@@ -33,13 +33,13 @@
 
       ! global declarations
 
-      use m_zoek
       use m_monsys
       use time_module
       use m_get_filepath_and_pathlen
       use hydmod
       use m_write_error_message
       use rd_token       ! tokenized reading
+      use m_string_utils, only: index_in_array
 
       implicit none
 
@@ -245,12 +245,12 @@
              goto 900
          end if
 
-         call zoek ( ctoken, nokey , key , 30 , ikey )
+         ikey = index_in_array( ctoken(1:30), key )
          if ( ikey .eq. 1 ) then
 
             ! task
             if ( gettoken( ctoken, ierr) .ne. 0 ) goto 900
-            call zoek ( ctoken, nokey , key , 30 , ikey2 )
+            ikey2 = index_in_array( ctoken(1:30), key )
             if ( ikey2 .eq. 61 ) then
                hyd%task = HYD_TASK_FULL
             elseif ( ikey2 .eq. 62 ) then
@@ -264,7 +264,7 @@
          elseif ( ikey .eq. 2 ) then
             ! geometry
             if ( gettoken( ctoken, ierr) .ne. 0 ) goto 900
-            call zoek ( ctoken, nokey , key , 30 , ikey2 )
+            ikey2 = index_in_array( ctoken(1:30), key )
             if ( ikey2 .eq. 65 ) then
                hyd%geometry = HYD_GEOM_CURVI
             elseif ( ikey2 .eq. 69 ) then
@@ -278,7 +278,7 @@
             ! layer type
             hyd%layer_type = HYD_LAYERS_SIGMA ! Always assume sigma layers, unless otherwise stated
             if ( gettoken( ctoken, ierr) .eq. 0 ) then
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 82 ) then
                   hyd%layer_type = HYD_LAYERS_Z
                else
@@ -293,7 +293,7 @@
             do
                ! look for end-description token
                if ( gettoken ( ctoken, ierr) .ne. 0 ) goto 900
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 7 ) exit
                ! it is a description line, store up to three
                i_desc = i_desc + 1
@@ -542,7 +542,7 @@
                if ( token_used ) then
                   if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
                endif
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 53 ) exit
 
                ! a new wasteload
@@ -555,7 +555,7 @@
                if ( gettoken(wasteload%k, ierr) .ne. 0 ) goto 900
                if ( gettoken(wasteload%name, ierr) .ne. 0 ) goto 900
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 58 .or. ikey2 .eq. 59 .or. ikey2 .eq. 60 .or. ikey2 .eq. 77 ) then
                   token_used = .true.
                   if ( ikey2 .eq. 58 ) then
@@ -583,7 +583,7 @@
             do
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
                ! look for end-domains keyword
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 55 ) exit
 
                ! key is domain name , read mmax nmax and dido file do not store dido file
@@ -602,7 +602,7 @@
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
                ! look for end-dd-boundaries keyword
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 57 ) exit
 
                ! ctokenis domain name 1 , read m_begin1, n_begin1, m_end1, n_end1, domain name 2, m_begin2, n_begin2, m_end2, n_end2
@@ -663,7 +663,7 @@
                if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
                   if(itype==1) then
                      ! look for end-domains keyword
-                     call zoek ( ctoken, nokey , key , 30 , ikey2 )
+                     ikey2 = index_in_array( ctoken(1:30), key )
                      if ( ikey2 .eq. 81 ) exit
                   endif
 !               ! key is domain name , read mmax nmax and dido file do not store dido file

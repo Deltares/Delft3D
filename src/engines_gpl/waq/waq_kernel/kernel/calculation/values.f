@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_values
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -33,7 +33,6 @@
      *                    NOFUN  , NOSFUN , CONST  , CONAME , PARAM  ,
      *                    PANAME , FUNCS  , FUNAME , SFUNCS , SFNAME ,
      *                    LGET   , IERR   )
-      use m_zoek
       use timers
 
 !
@@ -49,7 +48,7 @@
       if ( timon ) call timstrt ( "values", ithandl )
 !
       IERR = 1
-      CALL ZOEK20 ( NAME, NOSFUN, SFNAME, 10, INDX )
+      INDX = index_in_array( NAME, SFNAME(:NOSFUN))
       IF ( INDX .GT. 0 ) THEN
          if ( lget ) then
             value(1:nosss) = sfuncs(1:nosss,INDX)
@@ -59,7 +58,7 @@
          ierr = 0
          goto 100
       endif
-      CALL ZOEK20 ( NAME, NOPA  , PANAME , 10, INDX )
+      INDX = index_in_array( NAME, PANAME (:NOPA))
       IF ( INDX .GT. 0 ) THEN
          if ( lget ) then
             value(1:nosss) = param(INDX,1:nosss)
@@ -69,7 +68,7 @@
          ierr = 0
          goto 100
       endif
-      CALL ZOEK20 ( NAME, NOFUN , FUNAME , 10, INDX )
+      INDX = index_in_array( NAME, FUNAME (:NOFUN))
       IF ( INDX .GT. 0 ) THEN
          if ( lget ) then
             value(1:nosss) = funcs(INDX)
@@ -77,7 +76,7 @@
          endif
          goto 100
       endif
-      CALL ZOEK20 ( NAME, NOCONS, CONAME , 10, INDX )
+      INDX = index_in_array( NAME, CONAME (:NOCONS))
       IF ( INDX .GT. 0 ) THEN
          if ( lget ) then
             value(1:nosss) = const(INDX)

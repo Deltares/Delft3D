@@ -22,39 +22,60 @@
 !!  rights reserved.
 
 module m_waq_data_buffer
-use m_waq_precision
-
+    use m_waq_precision
 
     implicit none
 
     type, public :: waq_data_buffer
-        integer(kind=int_wp), dimension(:),allocatable ::ibuf
-        real(kind=real_wp), dimension(:),allocatable ::rbuf
-        character(len=1), dimension(:),allocatable     :: chbuf
+        integer(kind=int_wp), dimension(:), allocatable :: ibuf
+        real(kind=real_wp)  , dimension(:), allocatable :: rbuf
+        character           , dimension(:), allocatable :: chbuf
 
-      contains
+    contains
         procedure :: intialize => intialize_buffer
+        procedure :: create_strings_20_array
         final :: destruct_buffer
 
     end type waq_data_buffer
 
-    contains
+contains
     subroutine intialize_buffer(this)
+        !< Initialization of buffer
         class(waq_data_buffer), intent(out) :: this
 
-        allocate( this%rbuf(0) )
-        allocate( this%ibuf(0) )
-        allocate( this%chbuf(0) )
+        allocate (this%rbuf(0))
+        allocate (this%ibuf(0))
+        allocate (this%chbuf(0))
 
     end subroutine intialize_buffer
 
     subroutine destruct_buffer(this)
+        !< destructor of buffer, free allocated memory
         type(waq_data_buffer) :: this
-        
-        if (allocated(this%ibuf)) deallocate(this%ibuf)
-        if (allocated(this%rbuf)) deallocate(this%rbuf)
-        if (allocated(this%chbuf)) deallocate(this%chbuf)
+
+        if (allocated(this%ibuf)) deallocate (this%ibuf)
+        if (allocated(this%rbuf)) deallocate (this%rbuf)
+        if (allocated(this%chbuf)) deallocate (this%chbuf)
 
     end subroutine destruct_buffer
 
+    function create_strings_20_array(this, start_index, number_of_strings) result(result_val)
+        !< convert the chbuf (character array) property to a new string(len=20) array
+        class(waq_data_buffer), intent(in)  :: this
+        integer(kind=int_wp)  , intent(in)  :: start_index       !< start index to start creating strings
+        integer(kind=int_wp)  , intent(in)  :: number_of_strings !< number of strings to create
+        character(len=20) :: result_val(number_of_strings)       !< created string array
+
+        result_val = convert(this%chbuf(start_index), number_of_strings)
+    end function create_strings_20_array
+
+    function convert(item_to_convert, number_of_strings) result(result_val)
+        !< implicitly converts provided item_to_convert to string array
+        integer(kind=int_wp)  , intent(in)  :: number_of_strings !< number of strings to create
+        character(len=20) :: item_to_convert(number_of_strings)  !< character array to convert
+        character(len=20) :: result_val(number_of_strings)       !< created string array
+
+        result_val = item_to_convert
+
+    end function convert
 end module m_waq_data_buffer

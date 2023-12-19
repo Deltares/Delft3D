@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setprg
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -36,7 +36,6 @@
 
       use m_setgrd
       use m_setgr2
-      use m_zoek
       use dhralloc
       use processet
       use timers       !   performance timers
@@ -139,9 +138,9 @@
                endif
             enddo
 
-            call zoek ( proc%routine, nmnoag , monoag, 10    , imnoag)
+            imnoag = index_in_array(proc%routine(:10), monoag(:nmnoag))
             if ( imnoag .le. 0 ) then
-               call zoek ( proc%name, nmnoag , monoag, 10    , imnoag)
+               imnoag = index_in_array(proc%name(:10), monoag(:nmnoag))
             endif
             if ( imnoag .gt. 0 ) then
                proc%grid = 1
@@ -226,9 +225,9 @@ cjvb              afhandelen exception? of error
       do iproc = 1, nproc
          proc => procesdef%procesprops(iproc)
          if ( proc%active ) then
-            call zoek ( proc%routine, nmnoag , monoag, 10    , imnoag)
+            imnoag = index_in_array( proc%routine(:10), monoag(:nmnoag))
             if ( imnoag .le. 0 ) then
-               call zoek ( proc%name, nmnoag , monoag, 10    , imnoag)
+               imnoag = index_in_array( proc%name(:10), monoag(:nmnoag))
             endif
             if ( imnoag .gt. 0 ) then
                proc%ndt = 1

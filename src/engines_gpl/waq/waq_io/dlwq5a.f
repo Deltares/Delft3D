@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq5a
       use m_waq_precision
+      use m_string_utils
       use m_read_time_delay
       use m_dlwqj3
       use m_dlwq5g
@@ -31,7 +32,7 @@
 
 
       implicit none
-      
+
       contains
 
 
@@ -93,7 +94,6 @@
 
       use m_dlwq5b
       use m_check
-      use m_zoek
       use m_open_waq_files
       use rd_token
       use timers       !   performance timers
@@ -147,7 +147,7 @@
       logical       newrec   , scale , ods   , binfil , tdelay
       logical :: time_dependent !< Is the BC / Waste load definition time dependent (true)? Or constant (false)?
       integer(kind=int_wp) ::  ithndl = 0
- 
+
       type(t_dlwq_data_items)          :: dlwq_data_items
       type(t_dlwq_item)                :: dlwq_foritem
       character(20)                    :: data_item_name
@@ -327,7 +327,7 @@
 ! Check if data_item already exists
 
          if (dlwq_data_items%cursize .gt. 0) then
-            call zoek ( data_item_name,dlwq_data_items%cursize,dlwq_data_items%name(1:dlwq_data_items%cursize),20,idata_item)
+            idata_item = index_in_array( data_item_name,dlwq_data_items%name(1:dlwq_data_items%cursize))
          else
             idata_item = 0
          end if

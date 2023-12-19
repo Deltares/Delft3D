@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_header
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -39,7 +39,6 @@
 !     Global declarations
 
       use m_compact_usefor
-      use m_zoek
       use dlwq_hyd_data ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
@@ -68,7 +67,6 @@
       integer(kind=int_wp) ::  k              ! shifted item index
       integer(kind=int_wp) ::  icnt           ! shift in item index
       character(len=8)                      :: strng         ! string to be printed
-      integer(kind=int_wp) ::  ifound         ! index in list if found
       integer(kind=int_wp) ::  nitm          ! number of items in data
       integer(kind=int_wp) ::  ierr2         ! local error indication
       integer(kind=int_wp) ::  ithndl = 0
@@ -108,8 +106,7 @@
                nocol = nocol + 1
                strng = 'not used'
                do i = 1 , data_param%no_item
-                  call zoek(ctoken,1,data_param%name(i),20,ifound)
-                  if ( ifound .ge. 1 ) then
+                  if (string_equals(ctoken(1:20), data_param%name(i))) then
                      strng = 'used'
                      data_param%sequence(i) = nocol
                   endif

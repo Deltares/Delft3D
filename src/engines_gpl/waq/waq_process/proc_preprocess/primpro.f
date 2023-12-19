@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_primpro
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -36,7 +36,6 @@
 !>\file
 !>       detect and activate primary processes (which act directly on substances)
 
-      use m_zoek
       use m_monsys
       use m_write_error_message
       use processet
@@ -118,8 +117,7 @@
 
                if ( abs(proc%fluxstochi(istochi)%scale) .gt. 1e-10 ) then
 
-                  call zoek( gen, 1, proc%fluxstochi(istochi)%substance, 20, indx)
-                  if ( indx .eq. 1 ) then
+                  if (string_equals(gen, proc%fluxstochi(istochi)%substance)) then
 
                      ! find the flux for this stochi
 
@@ -174,16 +172,8 @@
 
                if ( abs(proc%dispstochi(istochi)%scale) .gt. 1e-10 ) then
                   ! If the stochi substance name is ALLACTIVE, apply to all -active- substances
-                  if (trim(proc%dispstochi(istochi)%substance).eq.'ALLACTIVE') then
-                     if (isys.le.nosys) then
-                        indx = 1
-                     else
-                        indx = -1
-                     end if
-                  else
-                     call zoek( gen, 1, proc%dispstochi(istochi)%substance, 20, indx)
-                  endif
-                  if ( indx .eq. 1 ) then
+                  if ((trim(proc%dispstochi(istochi)%substance).eq.'ALLACTIVE' .and. isys.le.nosys)
+     *               .or. string_equals(gen, proc%dispstochi(istochi)%substance)) then
                      idsp = idsp + 1
                      call zoekio ( proc%dispstochi(istochi)%ioitem, proc%no_output, proc%output_item,
      +                             20, ioutput, IOTYPE_EXCHANG_OUTPUT)
@@ -252,16 +242,8 @@
 
                if ( abs(proc%velostochi(istochi)%scale) .gt. 1e-10 ) then
                   ! If the stochi substance name is ALLACTIVE, apply to all -active- substances
-                  if (trim(proc%velostochi(istochi)%substance).eq.'ALLACTIVE') then
-                     if (isys.le.nosys) then
-                        indx = 1
-                     else
-                        indx = 0
-                     end if
-                  else
-                     call zoek( gen, 1, proc%velostochi(istochi)%substance, 20, indx)
-                  endif
-                  if ( indx .eq. 1 ) then
+                  if ((trim(proc%velostochi(istochi)%substance).eq.'ALLACTIVE' .and. isys.le.nosys)
+     *               .or. string_equals(gen, proc%velostochi(istochi)%substance)) then
                      ivel = ivel + 1
                      call zoekio ( proc%velostochi(istochi)%ioitem, proc%no_output, proc%output_item,
      +                             20, ioutput, IOTYPE_EXCHANG_OUTPUT)

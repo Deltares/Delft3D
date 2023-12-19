@@ -45,11 +45,11 @@
 module bmi
 
    use m_waq_precision
+   use m_string_utils
    use m_delwaq2_main
    use delwaq2_global_data
    use delwaq_loads
    use m_delwaq1
-   use m_zoek
    use m_getidentification
    use iso_c_binding
    use iso_c_utils
@@ -780,7 +780,7 @@ contains
                          exit selection
                      end if
                  else
-                     call zoekns(item_name, size(load_name), load_name, len(load_name), iseg)
+                     iseg = index_in_array(item_name(:len(load_name)), load_name)
 
                      if (iseg < 1) then
                          newidx = 0
@@ -794,7 +794,7 @@ contains
                  if (subst_param == 'FLOW') then
                      isys = 1
                  else
-                     call zoekns(subst_param, size(substance_name), substance_name, len(substance_name), isys)
+                     isys = index_in_array(subst_param(:len(substance_name)), substance_name)
                      if (isys <= 0) then
                          newidx = 0
                          exit selection
@@ -829,7 +829,7 @@ contains
                      exit selection
                  end if
 
-                 call zoekns(subst_param, notot, substance_name, 20, isys)
+                 isys = index_in_array(subst_param(:20), substance_name(:notot))
                  if (isys <= 0) then
                      newidx = 0
                      exit selection
@@ -850,7 +850,7 @@ contains
                          exit selection
                      endif
                  else
-                     call zoekns( item_name, size(monitor_name), monitor_name, len(monitor_name), monidx )
+                     monidx = index_in_array(item_name(:len(monitor_name)), monitor_name)
                      if ( monidx < 1 ) then
                          newidx = 0
                          exit selection
@@ -859,7 +859,7 @@ contains
 
                  iseg = monitor_cell(monidx)
 
-                 call zoekns( subst_param, notot, substance_name, 20, isys )
+                 isys = index_in_array(subst_param(:20), substance_name(:notot))
                  if ( isys <= 0 ) then
                      newidx = 0
                      exit selection
@@ -876,8 +876,7 @@ contains
                  ! Index would be index in the list, name is also allowed
                  !
 
-                 call zoekns( subst_param, size(procparam_const), procparam_const, len(procparam_const), conidx )   ! procparam_const is the name of constants.
-
+                 conidx = index_in_array(subst_param(:len(procparam_const)), procparam_const) ! procparam_const is the name of constants.
                  if ( conidx < 1 ) then
                      newidx = 0
                      exit selection

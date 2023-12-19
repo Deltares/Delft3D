@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq19
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -79,7 +79,6 @@
 
 !     Routines            : none
 
-      use m_zoek
       use m_getcom
       use timers
       implicit none
@@ -244,7 +243,7 @@
          endif
          call getcom('-settling_backwards', 0 , sw_settling, idummy, rdummy, cdummy, ierr2)
          if ( sw_settling ) write( lunut, * ) ' option -settling_backwards found'
-         call zoek ( 'Number_of_baskets   ', nocons, coname, 20, i )
+         i = index_in_array( 'Number_of_baskets   ', coname)
          if ( i .gt. 0 ) then
             nob = const(i)
             write ( lunut , '(A,i3)' ) ' Number of baskets         : ',nob
@@ -254,7 +253,7 @@
          endif
          allocate ( its(nob+2), itf(nob+2), iqsep(nob+2), dt(nob+1) )
          report = .false.
-         call zoek ( 'Iteration report    ', nocons, coname, 20, i )
+         i = index_in_array( 'Iteration report    ', coname)
          if ( i .gt. 0 ) then
             report = const(i) > 0
          endif

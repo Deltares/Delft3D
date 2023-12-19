@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_sub_procgrid
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -46,7 +46,6 @@
 
 !     global declarations
 
-      use m_zoek
       use dlwqgrid_mod
       use rd_token         !   for the reading of tokens
       use timers       !   performance timers
@@ -94,7 +93,7 @@
                write ( lunut , 2030 )
 
             case default
-               call zoek( ctoken, notot, syname, 20, isys )       ! use this substance
+               isys = index_in_array(ctoken(:20), syname)       ! use this substance
                if ( isys .gt. 0 ) then
                   sysused(isys) = 1
                   write ( lunut , 2040 ) syname(isys)

@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq15
       use m_waq_precision
+      use m_string_utils
       use m_wascal
 
 
@@ -79,7 +80,6 @@
 
 !     Subroutines called  : wascal : the user specified wasteload dll
 
-      use m_zoek
       use m_srstop
       use m_evaluate_waq_attribute
       use timers
@@ -88,45 +88,47 @@
 !     Parameters          :
 !     type     kind  function         name                      description
 
-      integer(kind=int_wp), intent(in   )  ::nosys                   !< number of transported substances
-      integer(kind=int_wp), intent(in   )  ::notot                   !< total number of substances
-      integer(kind=int_wp), intent(in   )  ::noseg                   !< number of volumes
-      integer(kind=int_wp), intent(in   )  ::noq                     !< number of flows
-      integer(kind=int_wp), intent(in   )  ::nowst                   !< number of wastes
-      integer(kind=int_wp), intent(in   )  ::nowtyp                  !< number of waste types
-      integer(kind=int_wp), intent(in   )  ::ndmps                   !< number of dumped volumes for balances
-      integer(kind=int_wp), intent(in   )  ::intopt                  !< integration suboptions
-      integer(kind=int_wp), intent(in   )  ::idt                     !< integration time step size
-      integer(kind=int_wp), intent(in   )  ::itime                   !< current time
-      integer(kind=int_wp), intent(in   )  ::iaflag                  !< if 1 then accumulation of balances
+      integer(kind=int_wp), intent(in   )  ::nosys            !< number of transported substances
+      integer(kind=int_wp), intent(in   )  ::notot            !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::noseg            !< number of volumes
+      integer(kind=int_wp), intent(in   )  ::noq              !< number of flows
+      integer(kind=int_wp), intent(in   )  ::nowst            !< number of wastes
+      integer(kind=int_wp), intent(in   )  ::nowtyp           !< number of waste types
+      integer(kind=int_wp), intent(in   )  ::ndmps            !< number of dumped volumes for balances
+      integer(kind=int_wp), intent(in   )  ::intopt           !< integration suboptions
+      integer(kind=int_wp), intent(in   )  ::idt              !< integration time step size
+      integer(kind=int_wp), intent(in   )  ::itime            !< current time
+      integer(kind=int_wp), intent(in   )  ::iaflag           !< if 1 then accumulation of balances
+      integer(kind=int_wp), intent(in   )  ::ipoint(4,noq  )  !< from-to pointer
+      integer(kind=int_wp), intent(in   )  ::iwtype(nowst  )  !< type numbers of the wasteloads
+      integer(kind=int_wp), intent(in   )  ::iwaste(nowst  )  !< volume numbers of the waste locations
+      integer(kind=int_wp), intent(in   )  ::iwstkind(nowst)  !< treatment of the flow-conc combination
+      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg  )  !< feature array
+      integer(kind=int_wp), intent(in   )  ::nopa             !< nr of parameters
+      integer(kind=int_wp), intent(in   )  ::nosfun           !< nr of segment functions
+      integer(kind=int_wp), intent(in   )  ::isdmp (noseg  )  !< volume to dump-location pointer
+      integer(kind=int_wp), intent(in   )  ::isys             !< first substance in array
+      integer(kind=int_wp), intent(in   )  ::nsys             !< number of substances  to deal with
+
       character(20), intent(in   ) :: syname(notot  )         !< names of the substances
+      character(20), intent(in   ) :: wastid(nowst  )         !< IDs   of the wasteloads
+      character(40), intent(in   ) :: wstnam(nowst  )         !< names of the wasteloads
+      character(40), intent(in   ) :: wsttyp(nowst  )         !< types of the wasteloads
+      character(20), intent(in   ) :: paname(nopa   )         !< names of the parameters
+      character(20), intent(in   ) :: sfname(nosfun )         !< names of the segment functions
+
       real(kind=real_wp), intent(in   )  ::conc  (notot  ,noseg)   !< concentrations for withdrawals
       real(kind=real_wp), intent(in   )  ::volume(noseg  )         !< volumes at start of time step
       real(kind=real_wp), intent(in   )  ::vol2  (noseg  )         !< volumes at end   of time step
       real(kind=real_wp), intent(in   )  ::flow  (noq    )         !< flows between comp. volumes
-      integer(kind=int_wp), intent(in   )  ::ipoint(4,noq  )         !< from-to pointer
-      character(20), intent(in   ) :: wastid(nowst  )         !< IDs   of the wasteloads
-      character(40), intent(in   ) :: wstnam(nowst  )         !< names of the wasteloads
-      character(40), intent(in   ) :: wsttyp(nowst  )         !< types of the wasteloads
-      integer(kind=int_wp), intent(in   )  ::iwtype(nowst  )         !< type numbers of the wasteloads
-      integer(kind=int_wp), intent(in   )  ::iwaste(nowst  )         !< volume numbers of the waste locations
-      integer(kind=int_wp), intent(in   )  ::iwstkind(nowst)         !< treatment of the flow-conc combination
-      real(kind=real_wp), intent(inout)  ::waste (0:notot,nowst)   !< waste masses/concs per system clock
-                                                              !< zero-th element is 'flow'
-      real(kind=real_wp), intent(inout)  ::deriv (notot  ,noseg)   !< derivatives to be updated
-      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg  )         !< feature array
-      integer(kind=int_wp), intent(in   )  ::nopa                    !< nr of parameters
-      character(20), intent(in   ) :: paname(nopa   )         !< names of the parameters
       real(kind=real_wp), intent(in   )  ::param (nopa   ,noseg)   !< parameter values
-      integer(kind=int_wp), intent(in   )  ::nosfun                  !< nr of segment functions
-      character(20), intent(in   ) :: sfname(nosfun )         !< names of the segment functions
       real(kind=real_wp), intent(in   )  ::segfun(noseg  ,nosfun)  !< segment function values
-      integer(kind=int_wp), intent(in   )  ::isdmp (noseg  )         !< volume to dump-location pointer
+
+      real(kind=real_wp), intent(inout)  ::waste (0:notot,nowst)   !< waste masses/concs per system clock (zero-th element is 'flow')
+      real(kind=real_wp), intent(inout)  ::deriv (notot  ,noseg)   !< derivatives to be updated
       real(kind=real_wp), intent(inout)  ::dmps  (notot  ,ndmps,*) !< dumped segment fluxes if INTOPT > 7
       real(kind=real_wp), intent(inout)  ::amass2(notot  , 5 )     !< mass balance array
       real(kind=real_wp), intent(inout)  ::wstdmp(notot,nowst,2)   !< accumulated wasteloads 1/2 in and out
-      integer(kind=int_wp), intent(in   )  ::isys                    !< first substance in array
-      integer(kind=int_wp), intent(in   )  ::nsys                    !< number of substances  to deal with
 
 !     local simple variables
 
@@ -263,20 +265,20 @@
          if ( surfbed ) then
             surf   = 0.0
             length = 0.0
-            call zoek20 ( 'SURF      ', nopa  , paname, 10, indx )
+            indx = index_in_array( 'SURF      ', paname)
             if ( indx .gt. 0 ) then
                surf = param(indx,:)
             else
-               call zoek20 ( 'SURF      ', nosfun, sfname, 10, indx )
+               indx = index_in_array( 'SURF      ', sfname)
                if ( indx .gt. 0 ) then
                   surf = segfun(:,indx)
                endif
             endif
-            call zoek20 ( 'LENGTH    ', nopa  , paname, 10, indx )
+            indx = index_in_array( 'LENGTH    ', paname)
             if ( indx .gt. 0 ) then
                length = param(indx,:)
             else
-               call zoek20 ( 'LENGTH    ', nosfun, sfname, 10, indx )
+               indx = index_in_array( 'LENGTH    ', sfname)
                if ( indx .gt. 0 ) then
                   length = segfun(:,indx)
                endif

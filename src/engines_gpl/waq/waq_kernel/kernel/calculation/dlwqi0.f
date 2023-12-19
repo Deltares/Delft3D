@@ -23,6 +23,7 @@
 
       module dlwqi0_mod
       use m_waq_precision
+      use m_string_utils
       use m_zlayer
       use m_segcol
       use m_dlwqtd
@@ -33,7 +34,6 @@
       use m_dlwqi2
       use m_delpar00
       use m_chknmr
-      use m_zoek
       use m_zero
       use m_srstop
       use m_move
@@ -180,7 +180,7 @@
 !     initialisation of PROCES subsytem
 !
       IF ( NPROC .GT. 0 ) THEN
-         CALL open_waq_files (LUN(24)  , LCHAR(24), 24       , 2         , IERRD   )
+         CALL open_waq_files (LUN(24)  , LCHAR(24), 24       , 2      , IERRD   )
          CALL DLWQIP (LUN(24)  , LCHAR(24), LUN(19)  , NOTOT     , NIPMSA  ,
      +                NPROC    , NOLOC    , NFLUX    , NODEF     , J(INSVA:),
      +                J(IIFLU:), J(IPVAR:), J(IPTYP:), A(IDEFA:) , A(ISTOC:),
@@ -205,7 +205,7 @@
 !
 
       IF ( NOUTP .GT. 0 ) THEN
-         CALL open_waq_files ( LUN(25) , LCHAR(25), 25       , 2       , IERRD   )
+         CALL open_waq_files ( LUN(25) , LCHAR(25), 25       , 2     , IERRD   )
          CALL DLWQIO ( LUN(25) , LCHAR(25), LUN(19)  , NOUTP   , NRVART  ,
      +                 NBUFMX  , J(IIOUT:), J(IIOPO:), C(IONAM), C(IOSNM),
      +                 C(IOUNI), C(IODSC) , NOTOT    , C(ISSNM), C(ISUNI),
@@ -223,7 +223,7 @@
 !
 !         initialisation of exchange pointers
 !
-      CALL open_waq_files ( LUN(8) , LCHAR(8) , 8    , 2+ftype(8), IERRD  )
+      CALL open_waq_files ( LUN(8) , LCHAR(8) , 8    , 2+ftype(8), IERRD)
 
       if ( nmax*mmax .gt. 0 ) then
 
@@ -396,13 +396,13 @@
 !         initial conditions passive substances
 
       if ( nosys .ne. notot ) then                         ! if there are bed-substances
-         call zoek20 ( 'SURF      ',nopa  ,c(ipnam),10,indx )
+         indx = index_in_array( 'SURF      ',buffer%create_strings_20_array(ipnam, nopa))
          if ( indx .gt. 0 ) then                           ! and if SURF is found
             call inact ( nosss   , nosys   , notot    , a(iconc:)   , a(imass:),
      &                   nopa    , indx    , a(iparm:), c(imnam+113), propor   ,
      &                   .true.  )
          else                                     ! routine inact is at end of this file !
-            call zoek20 ( 'SURF      ', nosfun, c(isfna), 10, indx )
+            indx = index_in_array( 'SURF      ', buffer%create_strings_20_array(isfna, nosfun))
             if ( indx .gt. 0 ) then                        ! and if SURF is found
                call inact ( nosss   , nosys   , notot    , a(iconc:)   , a(imass:),
      &                      nosfun  , indx    , a(isfun:), c(imnam+113), propor   ,
@@ -417,16 +417,16 @@
       endif
 
 !         deal with z-layers (inactive cells at the bottom side of the water column
-      call zlayer ( noseg    , nosss    , nosys    , notot     , nolay    ,
-     &              a(ivol:) , noq1+noq2, noq      , a(iarea:) , nocons   ,
-     &              c(icnam:), a(icons:), nopa     , c(ipnam:) , a(iparm:) ,
-     &              nosfun   , c(isfna:), a(isfun:), a(iconc:) , a(imass:) ,
+      call zlayer ( noseg    , nosss    , nosys    , notot     , nolay ,
+     &              a(ivol:) , noq1+noq2, noq      , a(iarea:) , nocons,
+     &              c(icnam:), a(icons:), nopa     , c(ipnam:) ,a(iparm:) ,
+     &              nosfun   , c(isfna:), a(isfun:), a(iconc:) ,a(imass:) ,
      &              j(iknmr:), iknmkv   , j(ixpnt:) )
 
 
 !     temporary for closure error
 
-   40 CALL ZOEK20 ( 'CLOSE_ERR ',NOCONS,C(ICNAM),10,INDX )
+   40 INDX = index_in_array( 'CLOSE_ERR ', buffer%create_strings_20_array(ICNAM, NOCONS))
       IF ( INDX .GT. 0 ) THEN
          ICFLAG = 1
          WRITE(LUN(19),*) ' Closure error correction enabled'

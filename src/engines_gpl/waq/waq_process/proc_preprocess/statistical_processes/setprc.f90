@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_setprc
 use m_waq_precision
-
+use m_string_utils, only: index_in_array
 
 implicit none
 
@@ -61,7 +61,6 @@ contains
    !     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
    !     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
    !
-   use m_zoek
    use m_srstop
    use m_dhslen
    use timers
@@ -95,7 +94,7 @@ contains
    ENDIF
    ISUSED = 0
    KEY = 'OUTPUT-OPERATION'
-   CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+   IKEY = index_in_array(KEY,KEYNAM)
    IF ( IKEY > 0 ) THEN
       ISUSED(IKEY) = 1
    ENDIF
@@ -126,7 +125,7 @@ contains
    ! input on segments
 
    KEY = 'SUBSTANCE'
-   CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+   IKEY = index_in_array(KEY,KEYNAM)
    IF ( IKEY <= 0 ) THEN
       WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
       IERR = IERR + 1
@@ -159,7 +158,7 @@ contains
    aProcesProp%input_item(2)%actdef=PSTART
    aProcesProp%input_item(2)%indx  = 2
    aProcesProp%input_item(2)%ip_val  = 0
-   
+
    aItemProp%name    = 'STOP      '//aProcesProp%name(1:10)
    aItemProp%default = PSTOP
    aItemProp%text    = 'stop of statistic output period'
@@ -203,7 +202,7 @@ contains
    aProcesProp%input_item(5)%ip_val  = 0
 
    KEY = 'CCRIT'
-   CALL ZOEK(KEY, NOKEY, KEYNAM, 20, IKEY)
+   IKEY = index_in_array(KEY, KEYNAM)
    IF ( IKEY <= 0 ) THEN
       WRITE(LUNREP,*) 'ERROR no critical level specified for percentage'
       IERR = IERR + 1
@@ -229,7 +228,7 @@ contains
    aProcesProp%input_item(6)%ip_val  = 0
 
    KEY = 'ABOVE'
-   CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+   IKEY = index_in_array(KEY,KEYNAM)
    IF ( IKEY <= 0 ) THEN
       aItemProp%default = 1.0
    ELSE
@@ -267,7 +266,7 @@ contains
    ! output
 
    KEY = 'SUFFIX'
-   CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+   IKEY = index_in_array(KEY,KEYNAM)
    IF ( IKEY <= 0 ) THEN
       SUFFIX = ' '
    ELSE

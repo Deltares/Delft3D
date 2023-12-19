@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq0i
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -60,7 +60,6 @@
 
 !     Modified          : April     2011 by Leo Postma
 !                                           Fortran 90 look and feel
-      use m_zoek
       use timers       !   performance timers
 
       implicit none
@@ -114,7 +113,7 @@
 
       ierr2 = 0
       lockey = keynam
-      call zoek ( lockey, nokey , keywords, 40 , ikey )   ! look in the keywords
+      ikey = index_in_array(lockey, keywords)   ! look in the keywords
       if ( ikey .gt. 0 ) then
          write ( lunut , 1000 ) ikey, lockey
          intopt = ibset(intopt,ikey-1)
@@ -130,7 +129,7 @@
                intopt = ibset(intopt,4)
          end select
       else
-         call zoek ( lockey, nokey , defkeys, 40, ikey )  ! look in the defaults
+         ikey = index_in_array(lockey, defkeys)  ! look in the defaults
          if ( ikey .gt. 0 ) then
             write ( lunut , 1000 ) ikey, lockey
             intopt = ibclr(intopt,ikey-1)

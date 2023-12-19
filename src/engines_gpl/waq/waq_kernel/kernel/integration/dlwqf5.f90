@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_dlwqf5
 use m_waq_precision
-
+use m_string_utils
 
 implicit none
 
@@ -45,7 +45,6 @@ contains
 !                                          added iteration report
 !                 July 2009, Leo Postma  : allocation double precission arrays
 
-      use m_zoek
       use timers                         ! WAQ performance timers
 
       implicit none
@@ -107,7 +106,7 @@ contains
 
       write ( lunrep , * )
       defnam = 'swprecond'
-      call zoek ( defnam, nocons, coname, 20    , idef  )
+      idef = index_in_array( defnam, coname)
       if ( idef .gt. 0 ) then
          ioptpc = nint(cons(idef))
          write ( lunrep , 2010 )
@@ -131,7 +130,7 @@ contains
 
       write ( lunrep , * )
       defnam = 'maxiter'
-      call zoek ( defnam, nocons, coname, 20    , idef  )
+      idef = index_in_array( defnam, coname)
       if ( idef .gt. 0 ) then
          iter   = nint(cons(idef))
          write ( lunrep , 2080 )
@@ -155,7 +154,7 @@ contains
 
       write ( lunrep , * )
       defnam = 'tolerance'
-      call zoek ( defnam, nocons, coname, 20    , idef  )
+      idef = index_in_array( defnam, coname)
       if ( idef .gt. 0 ) then
          tol    = cons(idef)
          write ( lunrep , 2120 )
@@ -175,7 +174,7 @@ contains
 
       write ( lunrep , * )
       defnam = 'swscale'
-      call zoek ( defnam, nocons, coname, 20    , idef  )
+      idef = index_in_array( defnam, coname)
       if ( idef .gt. 0 ) then
          iscale = nint(cons(idef))
          write ( lunrep , 2160 )
@@ -197,7 +196,7 @@ contains
 
       write ( lunrep , * )
       defnam = 'iteration report'
-      call zoek ( defnam, nocons, coname, 20    , idef  )
+      idef = index_in_array( defnam, coname)
       if ( idef .gt. 0 ) then
          itrep  = nint(cons(idef))
          write ( lunrep , 2210 )

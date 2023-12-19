@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_add_flxfrc
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -34,7 +34,6 @@
 
       ! add the fluxes to the fractions by adding a distribution process
 
-      use m_zoek
       use m_srstop
       use ProcesSet
       use timers       !   performance timers
@@ -70,7 +69,6 @@
       integer(kind=int_wp) ::istochi_2       ! index stochi
       integer(kind=int_wp) ::isfrac_positive ! fraction to be used if flux is positive
       integer(kind=int_wp) ::isfrac_negative ! fraction to be used if flux is negative
-      integer(kind=int_wp) ::indx            ! index in list
       integer(kind=int_wp) ::iret            ! index in collection
       integer(kind=int_wp) ::ifrac           ! fraction number
       character(len=3)          :: suffix          ! suffix
@@ -109,8 +107,7 @@
 
                if ( abs(proc%fluxstochi(istochi)%scale) .gt. 1e-10 ) then
 
-                  call zoek( basnam, 1, proc%fluxstochi(istochi)%substance, 10, indx)
-                  if ( indx .eq. 1 ) then
+                  if (string_equals( basnam(1:10), proc%fluxstochi(istochi)%substance)) then
 
                      ! flux found, check if flux has to be split
 
@@ -128,8 +125,7 @@
                               if ( istochi_2 .eq. istochi ) cycle
                               if ( proc%fluxstochi(istochi_2)%ioitem .eq.  proc%fluxstochi(istochi)%ioitem ) then
                                  do ilink = 1, nlink
-                                    call zoek( sfracs%name(linklst(ilink)), 1, proc%fluxstochi(istochi_2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
                                        if ( abs(proc%fluxstochi(istochi_2)%scale+proc%fluxstochi(istochi)%scale) .lt. 1e-20 ) then
 
                                           ! same flux same -scale, set fraction and exit link loop
@@ -158,8 +154,7 @@
                               do istochi_2 = 1 , proc%no_fluxstochi
                                  if ( istochi_2 .eq. istochi ) cycle
                                  do ilink = 1, nlink
-                                    call zoek( sfracs%name(linklst(ilink)), 1, proc%fluxstochi(istochi_2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
                                        if ( proc%fluxstochi(istochi_2)%scale .lt. -1e-20 ) then
 
                                           isfrac_positive = linklst(ilink)
@@ -176,7 +171,7 @@
                               isfrac_positive = isfrac
                            endif
 
-                        elseif ( proc%fluxstochi(istochi)%scale .lt. 0.0 ) then
+                        elseif (proc%fluxstochi(istochi)%scale .lt. 0.0 ) then
 
                            ! negative flux, check if the fraction is linked with flux with negative stochi
 
@@ -186,8 +181,7 @@
                               if ( istochi_2 .eq. istochi ) cycle
                               if ( proc%fluxstochi(istochi_2)%ioitem .eq.  proc%fluxstochi(istochi)%ioitem ) then
                                  do ilink = 1, nlink
-                                    call zoek( sfracs%name(linklst(ilink)), 1, proc%fluxstochi(istochi_2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
                                        if ( abs(proc%fluxstochi(istochi_2)%scale+proc%fluxstochi(istochi)%scale) .lt. 1e-20 ) then
 
                                           ! same flux same -scale, set fraction and exit link loop
@@ -216,8 +210,7 @@
                               do istochi_2 = 1 , proc%no_fluxstochi
                                  if ( istochi_2 .eq. istochi ) cycle
                                  do ilink = 1, nlink
-                                    call zoek( sfracs%name(linklst(ilink)), 1, proc%fluxstochi(istochi_2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
                                        if ( proc%fluxstochi(istochi_2)%scale .gt. 1e-20 ) then
 
                                           isfrac_negative = linklst(ilink)
@@ -368,7 +361,7 @@
 
                         ! insert process at the end
 
-                        iproc_new = procespropcolladd( procesdef , procn )
+                        iproc_new = procespropcolladd( procesdef , procn)
                         no_act = no_act + 1
                         actlst(no_act) = procn%name
                         nbpr   = nbpr + 1

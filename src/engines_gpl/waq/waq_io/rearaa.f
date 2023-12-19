@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_rearaa
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -66,7 +66,6 @@
 !                         LUN(29) = unitnumber formatted output file
 
       use m_opt1
-      use m_zoek
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -97,11 +96,10 @@
       integer(kind=int_wp), pointer ::  iexcraai_2(:)     ! Help pointer for array expansion
       integer(kind=int_wp) :: ierr_alloc        ! Error indicator for allocations
       integer(kind=int_wp) :: nq                ! Number of exchanges per monitoring transect
-      logical             ldummy           ! Dummy logical
+      logical             ldummy                ! Dummy logical
       integer(kind=int_wp) :: ir                ! Loop variable over all monitoring transects
       integer(kind=int_wp) :: k                 ! General loop variable
-      integer(kind=int_wp) :: ifound            ! Help variable for string search
-      character(len=256)::option           ! balance option
+      character(len=256)::option                ! balance option
       integer(kind=int_wp) :: itype             ! type of the returned token
       integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "rearaa", ithndl )
@@ -203,8 +201,7 @@
       ! check if name is unique
 
          do k = 1 , ir-1
-            call zoek( raname(ir), 1, raname(k:), 20, ifound )
-            if ( ifound .gt. 0 ) then
+            if (string_equals(raname(ir), raname(k))) then
                write( lunut, 2410 ) raname(ir)
                ierr = ierr + 1
             endif

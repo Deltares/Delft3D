@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_blmeff
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -32,7 +32,6 @@
       subroutine blmeff (lunrep, lunblm, verspe, lunfrm, grname, nuecog, typnam, noalg)
 !
       use m_bleffpro
-      use m_zoek
       use m_srstop
       use timers        !   performance timers
 
@@ -87,7 +86,7 @@
       end if
 
       do i = 1, nuecog
-         call zoekns(grname(i),numtyp,spnam2,8,nfnd)
+         nfnd = index_in_array(grname(i)(:8),spnam2(:numtyp))
          if (nfnd .ge. 1) then
             ifnd (i) = nfnd
          else

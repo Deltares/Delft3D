@@ -22,8 +22,7 @@
 !!  rights reserved.
 module m_rd_sub
 use m_waq_precision
-use m_zoek
-
+use m_string_utils
 
 implicit none
 
@@ -115,7 +114,7 @@ contains
          return
       endif
 
-      call zoekns(ctag,ntag,starttag,20,itag)
+      itag = index_in_array(ctag, starttag)
       select case (itag)
 
       case (1)
@@ -130,7 +129,7 @@ contains
 
          if ( gettoken ( csub, ierr ) .ne. 0 ) exit
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.eq.1) then
             nosys = nosys + 1
             if (allocated) syname(nosys) = csub
@@ -148,7 +147,7 @@ contains
    !  substance attributes
 
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.3) then
             ierr=101
             cerr='Expected attribute ''description'' for substance '//trim(csub)//', but read: '//trim(catt)
@@ -156,7 +155,7 @@ contains
          endif
          if ( gettoken ( cstr, ierr ) .ne. 0 ) exit
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.4) then
             ierr=101
             cerr='Expected attribute ''concentration-unit'' for substance '//trim(csub)//', but read: '//trim(catt)
@@ -169,7 +168,7 @@ contains
             if (allocated) iaunit(notot) = cstr
          endif
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.5) then
             ierr=101
             cerr='Expected attribute ''waste-load-unit'' for substance '//trim(csub)//', but read: '//trim(catt)
@@ -180,7 +179,7 @@ contains
    !  substance end-tag
 
          if ( gettoken ( ctag, ierr ) .ne. 0 ) exit
-         call zoekns(ctag,ntag,endtag,20,itag)
+         itag = index_in_array(ctag, endtag)
          if ( itag .ne. 1 ) then
             ierr=101
             cerr='Expected end-tag ''end-substance'' for substance '//trim(csub)//', but read: '//trim(catt)
@@ -202,7 +201,7 @@ contains
          if (allocated) coname(nocons) = cpar
 
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.3) then
             ierr=101
             cerr='Expected attribute ''description'' for parameter '//trim(cpar)//', but read: '//trim(catt)
@@ -211,7 +210,7 @@ contains
          if ( gettoken ( cstr, ierr ) .ne. 0 ) exit
 
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.6) then
             ierr=101
             cerr='Expected attribute ''unit'' for parameter '//trim(cpar)//', but read: '//trim(catt)
@@ -220,7 +219,7 @@ contains
          if ( gettoken ( cstr, ierr ) .ne. 0 ) exit
 
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.7) then
             ierr=101
             cerr='Expected attribute ''value'' for parameter '//trim(cpar)//', but read: '//trim(catt)
@@ -234,7 +233,7 @@ contains
    !  parameter end-tag
 
          if ( gettoken ( ctag, ierr ) .ne. 0 ) exit
-         call zoekns(ctag,ntag,endtag,20,itag)
+         itag = index_in_array(ctag, endtag)
          if ( itag .ne. 2 ) then
             ierr=101
             cerr='Expected end-tag ''end-parameter'' for parameter '//trim(cpar)//', but read: '//trim(catt)
@@ -254,7 +253,7 @@ contains
          if (allocated) ouname(noout) = cout
 
          if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-         call zoekns(catt,natt,attribute,20,iatt)
+         iatt = index_in_array(catt, attribute)
          if (iatt.ne.3) then
             ierr=101
             cerr='Expected attribute ''description'' for output '//trim(cout)//', but read: '//trim(catt)
@@ -266,7 +265,7 @@ contains
    !  output end-tag
 
          if ( gettoken ( ctag, ierr ) .ne. 0 ) exit
-         call zoekns(ctag,ntag,endtag,20,itag)
+         itag = index_in_array(ctag, endtag)
          if ( itag .ne. 3 ) then
             ierr=101
             cerr='Expected end-tag ''end-output'' for output '//trim(cout)//', but read: '//trim(catt)
@@ -292,10 +291,10 @@ contains
 
          do
             if ( gettoken ( catt, ierr ) .ne. 0 ) exit
-            call zoekns(catt,natt,attribute,20,iatt)
+            iatt = index_in_array(catt, attribute)
             if (iatt.ne.8) then
                ctag=catt
-               call zoekns(ctag,ntag,endtag,20,itag)
+               itag = index_in_array(ctag, endtag)
                if ( itag .ne. 4 ) then
                   ierr=102
                   cerr='Expected keyword ''name'' or end-tag ''end-active-processes'' to close active-processes list, but read: '//trim(catt)

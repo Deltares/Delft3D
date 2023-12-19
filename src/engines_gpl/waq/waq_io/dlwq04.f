@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq04
       use m_waq_precision
+      use m_string_utils, only: string_equals
       use m_scale
       use m_pointi
       use m_opt2
@@ -86,7 +87,6 @@
 
       use m_check
       use m_bound
-      use m_zoek
       use m_srstop
       use m_open_waq_files
       use dlwqgrid_mod        !   for the storage of contraction grids
@@ -283,7 +283,7 @@
          do i = 1, nodisp
             if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
             if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2060 ) i
-            call ZOEK( dispnam(i), i-1, dispnam, 20, ifound )
+            ifound = index_in_array( dispnam(i), dispnam(1:i-1))
             if ( ifound .gt. 0 ) then
                write( lunut, 2070 ) dispnam(i)
                ierr = ierr + 1
@@ -318,7 +318,7 @@
          do i = 1, novelo
             if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
             if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2120 ) i
-            call ZOEK( dispnam(i), i-1, dispnam, 20, ifound )
+            ifound = index_in_array( dispnam(i), dispnam(1:i-1))
             if ( ifound .gt. 0 ) then
                write( lunut, 2130 ) dispnam(i)
                ierr = ierr + 1

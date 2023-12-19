@@ -22,7 +22,7 @@
 !!  rights reserved.
 
       subroutine gkwini ( lu , group , keywrd , value )
-      use m_zoek
+      use m_string_utils
       use m_gkwini
 c=======================================================================
 c            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -87,8 +87,7 @@ c     Check for group separator
 c         Group separator found
 
           lcomp = min ( il , lgrpin )
-          call zoek (groupl(1:lcomp), 1, group(1:lcomp), lcomp, index)
-          if ( index .eq. 1 ) then
+          if (string_equals(groupl(1:lcomp), group(1:lcomp))) then
 
 c             Group name equals requested group
 
@@ -114,10 +113,7 @@ c         Check for keyword if Group is open
 c                 Keyword found
 
                   lcomp = min ( il , lkeyin )
-                  call zoek
-     j            (keywrl(1:lcomp),1,keywrd(1:lcomp),lcomp,index)
-                  if ( index .eq. 1 ) then
-
+                  if (string_equals(keywrl(1:lcomp), keywrd(1:lcomp))) then
 c                     Keyword equals requested keyword
 
                       call gettko
@@ -277,8 +273,8 @@ C     Skip trailing blanks
 
       return
       end
+
       subroutine gl_ini ( lu , group , keywrd , lvalue )
-      use m_zoek
       use m_gkwini
 
       integer       lu
@@ -294,16 +290,9 @@ C     Skip trailing blanks
 
       lvalue = .false.
 
-      if (.not. lvalue) call zoek('true ',1,value,5,ifound)
-      if ( ifound .eq. 1 ) lvalue = .true.
-
-      if (.not. lvalue) call zoek('yes  ',1,value,5,ifound)
-      if ( ifound .eq. 1 ) lvalue = .true.
-
-      if (.not. lvalue) call zoek('1    ',1,value,5,ifound)
-      if ( ifound .eq. 1 ) lvalue = .true.
-
-
-
-      return
+      if (string_equals('true ',value)
+     *    .or. string_equals('yes  ',value)
+     *    .or. string_equals('1    ',value)) then
+        lvalue = .true.
+      endif
       end

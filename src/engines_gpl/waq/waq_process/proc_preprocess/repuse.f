@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_repuse
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -34,7 +34,6 @@
 
       ! report on the use of the delwaq input
 
-      use m_zoek
       use m_monsys
       use processet
       use timers       !   performance timers
@@ -83,9 +82,9 @@
      +       'NOVEC',  'Z_THRESH',  'TOLERANCE', 'ONLY_ACTIVE',
      +       'ACTIVE', 'NOTHREADS', 'ITERATION', 'NUMBER_OF_BUCKETS',
      +       'LENGTH', 'DRY_TRESH', 'SWPRECOND', 'ITERATION REPORT',
-     +       'MAXITER'/) 
+     +       'MAXITER'/)
 
-      
+
       if (timon) call timstrt( "repuse", ithndl )
 
       ! write header report output block
@@ -126,7 +125,7 @@
 
          ! check if special constants are used
 
-         
+
          variable_is_used = ANY(special_constants == str_toupper(coname(icons)))
 
          ! report if not used
@@ -166,8 +165,7 @@
 
          ! report if not used and not an output parameter
 
-         call zoek ( 'output    ', 1 , paname(ipa), 10 , ioutp )
-         if ( .not. variable_is_used .and. ioutp .le. 0 ) then
+         if ( .not. variable_is_used .and. string_equals( 'output    ', paname(ipa))) then
             noinfo = noinfo + 1
             write ( line , '(3a)' ) ' info: parameter [',paname(ipa)(1:10),'] is not used by the process system'
             call monsys( line , 4 )

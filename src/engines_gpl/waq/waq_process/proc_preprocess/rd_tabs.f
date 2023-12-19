@@ -59,6 +59,7 @@
       use m_dhpfil
       use timers         !< performance timers
       use m_dhfext
+      use m_process_lib_data
 
       implicit none
 
@@ -72,9 +73,6 @@
       integer(kind=int_wp), intent(inout)  ::nowarn                 !< cummulative warning count
       integer(kind=int_wp), intent(inout)  ::nerror                 !< cummulative error count
 
-      ! common declarations
-
-      include 'data.inc'
 !
 !     declaration of file identification group
 !

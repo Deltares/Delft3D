@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_sobbal
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -1137,7 +1137,6 @@
 
       subroutine comsum (nosum , tfacto, notot , syname, sfacto, nocons, coname, cons  )
 
-      use m_zoek
       use m_srstop
       use m_monsys
       use timers
@@ -1236,7 +1235,7 @@
       do isys = 1,notot
 
 !         Reserved substance names, FIXED scale factor
-          call zoek   (syname(isys),nres1,resna1,20,ires)
+          ires = index_in_array(syname(isys),resna1)
           if ( ires .gt. 0 ) then
               do isum = 1,nosum
                   tfacto(isum) = tfacto(isum) + facres(isum,ires)
@@ -1245,10 +1244,10 @@
           endif
 
 !         Reserved substance names, scale factors from CONS with default
-          call zoek   (syname(isys),nres2,resna2,20,ires)
+          ires = index_in_array(syname(isys),resna2)
           if ( ires .gt. 0 ) then
               do isum = 1,nosum
-                  call zoek   (ratna2(isum,ires),nocons,coname,10,icons)
+                  icons = index_in_array(ratna2(isum,ires), coname)
                   if ( icons .gt. 0 ) then
                       factor = cons(icons)
                   else

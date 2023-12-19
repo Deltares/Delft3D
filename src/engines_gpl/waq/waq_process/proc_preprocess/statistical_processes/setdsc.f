@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setdsc
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -65,7 +65,6 @@
 !     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
 !
-      use m_zoek
       use m_srstop
       use m_dhslen
       USE ProcesSet
@@ -75,21 +74,20 @@
 !
 !     Declaration of arguments
 !
-      INTEGER(kind=int_wp) ::LUNREP, NOKEY , PSTART, PSTOP , IPROC ,
-     +              IERR  , NOWARN
-      CHARACTER*20  PERNAM, PERSFX
-      CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
-      type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
-      type(ItemPropColl)    :: AllItems            ! all items of the proces system
+      INTEGER(kind=int_wp) ::LUNREP, NOKEY, PSTART, PSTOP, IPROC, IERR, NOWARN
+      CHARACTER*20        ::PERNAM, PERSFX
+      CHARACTER*20        ::KEYNAM(NOKEY), KEYVAL(NOKEY)
+      type(ProcesProp)    :: aProcesProp         ! output statistical proces definition
+      type(ItemPropColl)  :: AllItems            ! all items of the proces system
 !
 !     Local declarations
 !
-      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
-     +              IERR2     , IRET
-      INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  KEY       , SUFFIX
-      type(ItemProp)        :: aItemProp            ! one item
+      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY, ISTART, ISTOP, ISLEN , IERR2, IRET
+      INTEGER(kind=int_wp), ALLOCATABLE  ::ISUSED(:)
+      CHARACTER*20         :: SUFFIX
+      type(ItemProp)       :: aItemProp            ! one item
       integer(kind=int_wp) ::ithndl = 0
+
       if (timon) call timstrt( "setdsc", ithndl )
 !
 !     init
@@ -102,8 +100,7 @@
          CALL SRSTOP(1)
       ENDIF
       ISUSED = 0
-      KEY='OUTPUT-OPERATION'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
       IF ( IKEY .GT. 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
@@ -134,8 +131,7 @@
 !
 !     input on segments
 !
-      KEY='SUBSTANCE'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          IERR = IERR + 1
@@ -222,9 +218,8 @@
       aProcesProp%input_item(6)%actdef=0.0
       aProcesProp%input_item(6)%indx  = 6
       aProcesProp%input_item(6)%ip_val  = 0
-!
-      KEY = 'SUFFIX'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('SUFFIX',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          SUFFIX = ' '
       ELSE

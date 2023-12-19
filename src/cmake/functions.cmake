@@ -282,21 +282,62 @@ endfunction(set_rpath)
 
 # Use the `create_test` cmake function to create a unit test by providing the following arguments.
 # test_name:
-#           The test name
+#    The test name
 # dependencies: [separate multiple values/ list]
-#           The dependencies of the test
+#    The dependencies of the test
 # visual_studio_folder: [one value/optional]
-#           argument defines the folder in which the test will be located in the visual studio solution.
+#    argument defines the folder in which the test will be located in the visual studio solution.
 # test_files: [separate multiple values/ list]
-#            argument defines the source files that will be compiled to create the test.
+#    argument defines the source files that will be compiled to create the test.
 # include_dir: [separate multiple values/ list]
-#           argument defines the directory that contains the files that are needed for the test. 
-#           The `include_dir` argument is optional, if the test does not depend on external data, do not provide the argument. 
+#    argument defines the directory that contains the files that are needed for the test. 
+#    The `include_dir` argument is optional, if the test does not depend on external data, do not provide the argument. 
+# test_list: [separate multiple values/ list]
+#   if you have one fortran file that contains multiple tests, and you want to execute each test separetly, you have to 
+#    implement 
+# 
+#   >>>   if (iargc > 0) then
+#   >>>     call get_command_argument(1, cmd_arg)
+#   >>>
+#   >>>      select case (trim(cmd_arg))
+#   >>>      case('test_1_name')
+#   >>>           write(*,*) "Running test_1_name"
+#   >>>           call runtests(test_1_subroutine)
+#   >>>       case ('test_2_name')
+#   >>>           write(*,*) "Running test_2_subroutine"
+#   >>>           call runtests(test_2_subroutine)
+#   >>>       case ('test_3_name')
+#   >>>            write(*,*) "Running test_3_subroutine"
+#   >>>            call runtests(test_3_subroutine)
+#   >>>        end select
+#   >>>   else
+#   >>>        write(*,*) "No test specified, running all tests"
+#   >>>        call runtests(test_1_subroutine)
+#   >>>        call runtests(test_2_subroutine)
+#   >>>        call runtests(test_3_subroutine)
+#   >>>   end if
+#   >>>   ! then write the test_1_subroutine, test_2_subroutine, test_3_subroutine
+# labels: [separate multiple values/ list]
+#    argument defines the labels that will be added to the test.
+#    >>> labels "test_1:fast" "test_2:medium" "test_3:e2e"
+# Examples:
+# create_test(
+#   test_name 
+#   dependencies ftnunit 
+#   visual_studio_folder "tests" 
+#   test_files test_file_1.f90 test_file_2.f90 
+#   include_dir ${CMAKE_CURRENT_SOURCE_DIR}/test_data
+#   test_list test_1 test_2 test_3
+#   labels "test_1:fast" "test_2:medium" "test_3:e2e"
+#)
 function(create_test test_name)
 
-    set(options) # For options without values
-    set(one_value_args visual_studio_folder) # For options with one value
-    set(multi_value_args dependencies test_files include_dir) # For options with multiple values
+    # For options without values
+    set(options)
+    # For options with one value
+    set(one_value_args visual_studio_folder)
+    # For options with multiple values
+    set(multi_value_args dependencies test_files include_dir test_list labels)
 
     # Parse the arguments
     cmake_parse_arguments("op" "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -313,7 +354,7 @@ function(create_test test_name)
 
     # Link libraries
     target_link_libraries(${test_name} ${op_dependencies})
-    set_property(TARGET ${test_name} PROPERTY LINKER_LANGUAGE Fortran)
+    # set_property(TARGET ${test_name} PROPERTY LINKER_LANGUAGE Fortran)
 
     # Other link libraries
     if (WIN32)
@@ -323,15 +364,89 @@ function(create_test test_name)
                 ${checkout_src_root}/third_party_open/pthreads/bin/x64
         )
     endif(WIN32)
-
     set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})
 
-    add_test(NAME ${test_name} COMMAND ${test_name})
+    if (DEFINED op_test_list)
+        foreach(test_i IN LISTS op_test_list)
+            add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
+        endforeach()
+    else()
+        add_test(NAME ${test_name} COMMAND ${test_name})    
+    endif()
+    
 
     if (DEFINED op_include_dir)
         # Copy an entire directory
         file(COPY ${op_include_dir} DESTINATION ${CMAKE_BINARY_DIR}/test_data/${test_name})
-        set_tests_properties(${test_name} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name}
-        )        
+        
+        if (DEFINED op_test_list)
+            foreach(test_i IN LISTS op_test_list)
+                set_tests_properties(${test_i} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
+            endforeach()
+        else()
+            set_tests_properties(${test_name} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
+        endif()
+
     endif()
+
+    # add labels to tests
+
+    if (DEFINED op_labels)
+        # convert the labels list to a dictionary
+        list(LENGTH op_labels labels_len)
+
+        foreach(pair IN LISTS op_labels)
+            string(REPLACE ":" ";" pair_list ${pair})
+            list(GET pair_list 0 test_i)
+            list(GET pair_list 1 label)
+            set_tests_properties(${test_i} PROPERTIES LABELS ${label})
+        endforeach()
+        
+    endif()
+
+endfunction()
+
+# Function to set a key-value pair
+# Use the `dict` cmake function to create a dictionary-like data structure {key:value} like python
+# dict_name:
+#           The dictionary name
+# "key:value": [string]
+#           a string of the key and value separated by a colon
+# Examples:
+# dict(labels "test_1:fast" "test_2:medium" "test_3:e2e")
+# message(${labels})
+# >>> test_1:fast;test_2:medium;test_3:e2e
+function(dict dict_name)
+    math(EXPR arg_len "${ARGC}-1")
+    foreach(i RANGE 1 ${arg_len})
+        list(GET ARGV ${i} pair)
+        list(APPEND ${dict_name} "${pair}")
+    endforeach()
+    set(${dict_name} "${${dict_name}}" PARENT_SCOPE)
+endfunction()
+
+# Function to get a value for a given key
+# Function to set a key-value pair
+# Use the `get_dict_value` cmake function to retrieve a value coresponding to a certain key from a dictionary created by the `dict` 
+# function
+# dict_name: [string/input]
+#           The dictionary name, do not use the ${} in the dictionary na,e
+# key: [string/input]
+#       key value.
+# value: [string/output]
+#       value coresponding to the key you entered.
+# Examples:
+# dict(labels "test_1:fast" "test_2:medium" "test_3:e2e")
+# get_dict_value(labels test_3 test_label)
+# message(${test_label})
+# >>> e2e
+function(get_dict_value dict_name key value)
+    set(result NOTFOUND)
+    foreach(pair IN LISTS ${dict_name})
+        if(pair MATCHES "^${key}:")
+            string(REPLACE "${key}:" "" result "${pair}")
+            break()
+        endif()
+    endforeach()
+    set(${value} "${result}" PARENT_SCOPE)
 endfunction()

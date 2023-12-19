@@ -22,14 +22,13 @@
 !!  rights reserved.
 
       module dlwq_hyd_data
-      use m_zoek
       use m_srstop
       use m_monsys
       use m_open_waq_files
-
+      use m_string_utils
 !
 !          module contains everything for model data input and storage
-!          created March 2004 by Jan van Beek
+
 !
 !     contains the following derived types:
 !
@@ -737,15 +736,12 @@
 
 !        local
 
-         character(LEN=NAME_SIZE)         :: name_loc
-         character(LEN=NAME_SIZE)         :: name_ucas
          integer                          :: i
          integer                          :: iaindx
 
          iret = 0
          do i = 1 , dlwq_item%no_item
-            call zoekns ( name  , 1 , dlwq_item%name(i), NAME_SIZE , iaindx)
-            if ( iaindx .gt. 0 ) then
+            if (string_equals(name(1:NAME_SIZE), dlwq_item%name(i))) then
                iret = i
                exit
             endif

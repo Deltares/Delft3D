@@ -1,34 +1,36 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine writex
       use m_waqpb_data
+      use m_string_utils
+
       integer lu(15)
 c
 c     Subprogram to write tables for TRM in LaTeX format
@@ -38,7 +40,7 @@ c     _ moet nog worden \_
 c     & moet nog worden \&
 c     < moet nog worden $<$
 c     > moet nog worden $>$
-c     colsep moet nog worden & 
+c     colsep moet nog worden &
 c
 c     Include data structures for tables
 
@@ -62,11 +64,10 @@ c     Table 3.2
 !      write ( lu(2) , 1020 )
       do 100 isubs = 1,nsubs
           do 90 istoc = 1,nstoc
-              call zoek (stocsu(istoc),1,subsid(isubs),10,jndex)
-              if ( jndex .eq. 1 ) then
-                  call zoek (stocfl(istoc),noutf,outffl,10,ioutf)
+              if (string_equals(stocsu(istoc), subsid(isubs))) then
+                  ioutf = index_in_array(stocfl(istoc),outffl(:noutf))
                   if ( ioutf .le. 0 ) goto 999
-                  call zoek (stocfl(istoc),nitem,itemid,10,iitem)
+                  iitem = index_in_array(stocfl(istoc),itemid(:nitem))
                   if ( iitem .le. 0 ) goto 999
                   write ( lu(2) , 1030 ) subsid(isubs),itemnm(iitem),
      j                                itemun(iitem),outfpr(ioutf)
@@ -81,11 +82,10 @@ c     Table 3.3
 !s      write ( lu(3) , 1040 )
       do 120 isubs = 1,nsubs
           do 110 ivelo = 1,nvelo
-              call zoek (velosu(ivelo),1,subsid(isubs),10,jndex)
-              if ( jndex .eq. 1 ) then
-                  call zoek (veloit(ivelo),noutp,outpit,10,ioutp)
+              if (string_equals(velosu(ivelo),subsid(isubs))) then
+                  ioutp = index_in_array(veloit(ivelo),outpit(:noutp))
                   if ( ioutp .le. 0 ) goto 999
-                  call zoek (veloit(ivelo),nitem,itemid,10,iitem)
+                  iitem = index_in_array(veloit(ivelo),itemid(:nitem))
                   if ( iitem .le. 0 ) goto 999
                   write ( lu(3) , 1030 ) subsid(isubs),itemnm(iitem),
      j                                itemun(iitem),outppr(ioutp)
@@ -100,11 +100,10 @@ c     Table 3.4
 !      write ( lu(4) , 1050 )
       do 140 isubs = 1,nsubs
           do 130 idisp = 1,ndisp
-              call zoek (dispsu(idisp),1,subsid(isubs),10,jndex)
-              if ( jndex .eq. 1 ) then
-                  call zoek (dispit(idisp),noutp,outpit,10,ioutp)
+              if (string_equals(dispsu(idisp),subsid(isubs))) then
+                  ioutp = index_in_array(dispit(idisp),outpit(:noutp))
                   if ( ioutp .le. 0 ) goto 999
-                  call zoek (dispit(idisp),nitem,itemid,10,iitem)
+                  iitem = index_in_array(dispit(idisp),itemid(:nitem))
                   if ( iitem .le. 0 ) goto 999
                   write ( lu(4) , 1030 ) subsid(isubs),itemnm(iitem),
      j                                itemun(iitem),outppr(ioutp)
@@ -118,9 +117,9 @@ c     Table 3.5
       open ( newunit = lu(5) , file = 'tabel305.pptex' )
 !      write ( lu(5) , 1060 )
       do 200 istoc = 1,nstoc
-          call zoek (stocfl(istoc),noutf,outffl,10,ioutf)
+          ioutf = index_in_array(stocfl(istoc),outffl(:noutf))
           if ( ioutf .le. 0 ) goto 999
-          call zoek (stocfl(istoc),nitem,itemid,10,iitem)
+          iitem = index_in_array(stocfl(istoc),itemid(:nitem))
           if ( iitem .le. 0 ) goto 999
           write ( lu(5) , 1070 ) stocfl(istoc),itemnm(iitem),
      j                        itemun(iitem),stocsc(istoc),
@@ -133,9 +132,9 @@ c     Table 3.6
       open ( newunit = lu(6) , file = 'tabel306.pptex' )
 !      write ( lu(6) , 1080 )
       do 210 ivelo = 1,nvelo
-          call zoek (veloit(ivelo),noutp,outpit,10,ioutp)
+          ioutp = index_in_array(veloit(ivelo),outpit(:noutp))
           if ( ioutp .le. 0 ) goto 999
-          call zoek (veloit(ivelo),nitem,itemid,10,iitem)
+          iitem = index_in_array(veloit(ivelo),itemid(:nitem))
           if ( iitem .le. 0 ) goto 999
           write ( lu(6) , 1070 ) veloit(ivelo),itemnm(iitem),
      j                        itemun(iitem),velosc(ivelo),
@@ -148,9 +147,9 @@ c     Table 3.7
       open ( newunit = lu(7) , file = 'tabel307.pptex' )
 !      write ( lu(7) , 1090 )
       do 220 idisp = 1,ndisp
-          call zoek (dispit(idisp),noutp,outpit,10,ioutp)
+          ioutp = index_in_array(dispit(idisp),outpit(:noutp))
           if ( ioutp .le. 0 ) goto 999
-          call zoek (dispit(idisp),nitem,itemid,10,iitem)
+          iitem = index_in_array(dispit(idisp),itemid(:nitem))
           if ( iitem .le. 0 ) goto 999
           write ( lu(7) , 1070 ) dispit(idisp),itemnm(iitem),
      j                        itemun(iitem),dispsc(idisp),
@@ -182,7 +181,7 @@ c     Tables 3.14/3.15
       do 240 iitem = 1,nitem
 
 c         Is it an input item?
-          call zoek (itemid(iitem),ninpu,inpuit,10,iinpu)
+          iinpu = index_in_array(itemid(iitem),inpuit(:ninpu))
           if ( iinpu .gt. 0 ) then
 
 c             find segment/exchange
@@ -204,7 +203,7 @@ c                 write in table 3.10/3.11
 
 c             Can it be made by another process?
               makflg = .false.
-              call zoek (itemid(iitem),noutp,outpit,10,ioutp)
+              ioutp = index_in_array(itemid(iitem),outpit(:noutp))
               if ( ioutp .gt. 0 ) then
                   makflg = .true.
 
@@ -215,8 +214,7 @@ c                 write in table 3.8/3.9
                   done = .false.
 c                 scan for other processes!
   230             continue
-                  call zoek (itemid(iitem),noutp-ioutp,
-     j                       outpit(ioutp+1),10,jndex)
+                  jndex = index_in_array(itemid(iitem), outpit(ioutp+1:noutp-ioutp))
                   if ( jndex .le. 0 ) then
                       done = .true.
                   else
@@ -237,10 +235,10 @@ c                 write in table 3.12/3.13
               endif
           else
 c             No input item
-              call zoek (itemid(iitem),noutp,outpit,10,ioutp)
+              ioutp = index_in_array(itemid(iitem),outpit(:noutp))
               if ( ioutp .gt. 0 ) then
-                  call zoek (itemid(iitem),nvelo,veloit,10,ivelo)
-                  call zoek (itemid(iitem),ndisp,dispit,10,idisp)
+                  ivelo = index_in_array(itemid(iitem),veloit(:nvelo))
+                  idisp = index_in_array(itemid(iitem),dispit(:ndisp))
                   if ( ivelo .le. 0 .and. idisp .le. 0 ) then
                       if ( outpsx(ioutp) .eq. 1 ) then
                           iexch = 0
@@ -290,8 +288,8 @@ c                     write in table 3.14/3.15
  1110 format ('%"Process input & Input description & Input unit"',
      j        ',"Default"')
  1120 format ('%"Process input & Input description & Input unit"')
- 1130 format (a10,' colsep ',a50,' colsep ',a20,' colsep ',f15.3, 
-     j        ' \\')       
+ 1130 format (a10,' colsep ',a50,' colsep ',a20,' colsep ',f15.3,
+     j        ' \\')
  1140 format (a10,' colsep ',a50,' colsep ',a20,' colsep ',a10,' \\')
  1150 format ('%"Output item & Output description & Output unit"',
      j        ',"Process"')

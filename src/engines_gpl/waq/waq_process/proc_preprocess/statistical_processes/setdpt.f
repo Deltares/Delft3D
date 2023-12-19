@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setdpt
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -59,7 +59,6 @@
 !     IERR    INTEGER        1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
 !
-      use m_zoek
       use m_srstop
       use m_dhslen
       USE ProcesSet
@@ -76,13 +75,13 @@
 !
 !     Local declarations
 !
-      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
-     +              IERR2     , IRET
-      INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  KEY       , SUFFIX
-      REAL(kind=real_wp) ::PERIOD
-      type(ItemProp)        :: aItemProp            ! one item
+      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY, ISTART, ISTOP, ISLEN, IERR2, IRET
+      INTEGER(kind=int_wp), ALLOCATABLE  ::ISUSED(:)
+      CHARACTER*20         ::SUFFIX
+      REAL(kind=real_wp)   ::PERIOD
+      type(ItemProp)       :: aItemProp            ! one item
       integer(kind=int_wp) ::ithndl = 0
+
       if (timon) call timstrt( "setdpt", ithndl )
 !
 !     init
@@ -95,8 +94,8 @@
          CALL SRSTOP(1)
       ENDIF
       ISUSED = 0
-      KEY='OUTPUT-OPERATION'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
       IF ( IKEY .GT. 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
@@ -127,8 +126,7 @@
 !
 !     input on segments
 !
-      KEY='SUBSTANCE'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          IERR = IERR + 1
@@ -165,8 +163,7 @@
       aProcesProp%input_item(2)%indx  = 2
       aProcesProp%input_item(2)%ip_val  = 0
 !
-      KEY = 'SUFFIX'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUFFIX',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          SUFFIX = ' '
       ELSE

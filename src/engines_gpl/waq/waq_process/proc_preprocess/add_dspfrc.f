@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_add_dspfrc
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -33,7 +33,6 @@
 
       ! add the dispersion and velocity stochi for fractions
 
-      use m_zoek
       use m_srstop
       use ProcesSet
       use timers       !   performance timers
@@ -92,8 +91,7 @@
 
                   if ( abs(proc%dispstochi(istochi)%scale) .gt. 1e-10 ) then
 
-                     call zoek( basnam, 1, proc%dispstochi(istochi)%substance, 10, indx)
-                     if ( indx .eq. 1 ) then
+                     if (string_equals(basnam(1:10), proc%dispstochi(istochi)%substance)) then
 
                         ! dispersion found add the fractions with the same dipersion name and the same factor
 
@@ -144,8 +142,7 @@
 
                   if ( abs(proc%velostochi(istochi)%scale) .gt. 1e-10 ) then
 
-                     call zoek( basnam, 1, proc%velostochi(istochi)%substance, 10, indx)
-                     if ( indx .eq. 1 ) then
+                     if (string_equals( basnam(1: 10), proc%velostochi(istochi)%substance)) then
 
                         ! velocity found add the fractions with the same velocity name and the same factor
 

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq5g
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -87,7 +87,6 @@
 !
 !
       use m_dlwq5h
-      use m_zoek
       use timers       !   performance timers
       use m_cnvtim
 
@@ -110,14 +109,14 @@
 !
 !     Array offsets
 !
-      offset_i_array = count_items_assign + count_items_comp_rule + 
+      offset_i_array = count_items_assign + count_items_comp_rule +
      +                 count_subs_assign  + count_subs_comp_rule
       if ( index_first .eq. 1 ) then ! items first
          offset_names  = count_items_assign + count_items_comp_rule + count_subs_assign
          offset_common = count_items_assign + count_items_comp_rule
          count_names   = count_subs_comp_rule
       else if ( index_first .eq. 2 ) then !substances first
-         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign 
+         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign
          offset_common = count_subs_comp_rule + count_subs_assign
          count_names   = count_items_comp_rule
       endif
@@ -131,12 +130,12 @@
           call rdtok1 ( lunut, ilun, lch, lstack, cchar,
      *              start_in_line, npos, chulp, ihulp, rhulp,
      *              itype  , error_idx)
-         
+
           if ( error_idx  .ne. 0 ) then ! error occurred when reading
               if (timon) call timstop( ithndl )
               return !exit subroutine
           end if
-         
+
 !         no error
           if ( itype .eq. 1 ) then ! a string has arrived
              ! try to get time (ihulp) from string (chulp)
@@ -161,8 +160,7 @@
              nocol = nocol + 1
              strng = 'NOT used'
              do i = 1 , count_names
-                call zoek(chulp,1,names_to_check(offset_names+i),20,ifound)
-                if ( ifound >= 1 ) then
+                if (string_equals(chulp(:20), names_to_check(offset_names+i))) then
                    strng = 'used'
                    i_array(i+offset_i_array) = nocol
                 endif
@@ -184,7 +182,7 @@
 !     is everything resolved ?
       icnt = 0
       iods = 0
-      
+
       do i = 1, count_names
          k = i - icnt
          if ( (names_to_check(offset_names + k) /= '&$&$SYSTEM_NAME&$&$!')

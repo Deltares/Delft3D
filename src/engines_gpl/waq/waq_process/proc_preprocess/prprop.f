@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_prprop
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -41,10 +41,11 @@
 
 !     Modified  : Aug   2012 by Jan van Beek : licence check configurations moved from rd_tabs
 
-      use m_zoek
       use m_srstop
       use timers         !< performance timers
       use processet      !< use processet definitions
+      use m_process_lib_data
+
       implicit none
 
       ! arguments
@@ -60,10 +61,7 @@
       integer(kind=int_wp), intent(inout)  ::nowarn                 !< cummulative warning count
       type(old_item_coll)               :: old_items              !< old_items table
       integer(kind=int_wp), intent(  out)  ::ierror                 !< error indicator
-!
-!     Common declarations
-!
-      INCLUDE 'data.inc'
+
 !
 !     Local declarations
 !
@@ -117,7 +115,7 @@
       laswi = .true.
 
       if ( .not. laswi ) then
-         call zoek   ( config, nconf , confid, 10    , iconf  )
+         iconf = index_in_array(config(:10), confid(:nconf))
          if ( iconf .le. 0 ) then
             write(lunrep,*)
      +       'error: configuration not found in process definition file'
@@ -207,7 +205,7 @@
             IPRCNF = (IPROC-1)*NCONF + ICONF
             IGET   = ICNPRO(IPRCNF)
          ELSE
-            CALL ZOEK ( PROCID(IPROC), NO_ACT, ACTLST, 10    , IACT  )
+            IACT = index_in_array(PROCID(IPROC), ACTLST(:NO_ACT))
             IF ( IACT .GT. 0 ) THEN
                IGET = 1
                ACTUSE(IACT) = 1
@@ -243,8 +241,7 @@
             ! input items on segment level/exchange level
 
             do iinpu = 1 , ninpu
-               call zoek ( procid(iproc), 1, inpupr(iinpu), 10, jndex)
-               if ( jndex .gt.0 ) then
+               if (string_equals(procid(iproc), inpupr(iinpu))) then
 
                   ! get item
 
@@ -259,8 +256,7 @@
 
                   do i = 1, old_items%cursize
                      if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_PPEQUAL2 ) then
-                        call zoek(old_items%old_items(i)%new_name, 1, inpuit(iinpu), 10, ifound)
-                        if ( ifound .ge. 0 ) then
+                        if (string_equals(old_items%old_items(i)%new_name(1:10), inpuit(iinpu))) then
                            inpuit(iinpu) = old_items%old_items(i)%old_name
                            write(lunrep,'(7a)') ' Input item  [',old_items%old_items(i)%new_name,
      +                                          '] replaced by [',old_items%old_items(i)%old_name,
@@ -303,15 +299,14 @@
                      aIOitemProp%type = IOTYPE_EXCHANG_INPUT
                   endif
                   indx = inpunm(iinpu)
-                  iret = IOitemPropCollAddIndx( input_item , aIOitemProp , indx )
+                  iret =IOitemPropCollAddIndx(input_item , aIOitemProp, indx)
                endif
             enddo
 
             ! output items on segment level/exchange level
 
             do ioutp = 1 , noutp
-               call zoek ( procid(iproc), 1, outppr(ioutp),10 , jndex)
-               if ( jndex .gt.0 ) then
+               if (string_equals(procid(iproc), outppr(ioutp))) then
 
                   ! lookup item in items table
 
@@ -331,7 +326,7 @@
                      aIOitemProp%type = IOTYPE_EXCHANG_OUTPUT
                   endif
                   indx = outpnm(ioutp)
-                  iret = IOitemPropCollAddIndx( output_item, aIOitemProp , indx )
+                  iret =IOitemPropCollAddIndx(output_item, aIOitemProp, indx)
 
                   if ( outpsx(ioutp) .ne. 1 ) then
 
@@ -339,8 +334,7 @@
 
                       if ( .not. swit2d ) then
                          do idisp = 1 , ndisp
-                            call zoek ( outpit(ioutp)  , 1, dispit(idisp), 10, jndex)
-                            if ( jndex .gt. 0 ) then
+                            if (string_equals(outpit(ioutp), dispit(idisp))) then
                                aStochiProp%type      = STOCHITYPE_DISPERSION
                                aStochiProp%ioitem    = dispit(idisp)
                                aStochiProp%substance = dispsu(idisp)
@@ -355,8 +349,7 @@
 
                       if ( .not. swit2d ) then
                          do ivelo = 1 , nvelo
-                            call zoek ( outpit(ioutp)  , 1, veloit(ivelo), 10, jndex)
-                            if ( jndex .gt. 0 ) then
+                            if (string_equals(outpit(ioutp), veloit(ivelo))) then
                                aStochiProp%type      = STOCHITYPE_VELOCITY
                                aStochiProp%ioitem    = veloit(ivelo)
                                aStochiProp%substance = velosu(ivelo)
@@ -375,8 +368,7 @@
             ! fluxes
 
             do ioutf = 1 , noutf
-               call zoek ( procid(iproc), 1, outfpr(ioutf), 10, jndex)
-               if ( jndex .gt.0 ) then
+               if (string_equals(procid(iproc), outfpr(ioutf))) then
 
                   ! find and store flux properties
 
@@ -394,13 +386,12 @@
                   aIOitemProp%ip_val = 0
 
                   indx = outfnm(ioutf)
-                  iret = IOitemPropCollAddIndx( FluxOutput , aIOitemProp , indx )
+                  iret =IOitemPropCollAddIndx(FluxOutput , aIOitemProp, indx )
 
                   ! scan stochi table for lines associated with present flux
 
                   do istoc = 1 , nstoc
-                     call zoek ( outffl(ioutf), 1, stocfl(istoc), 10, jndex)
-                     if ( jndex .gt.0 ) then
+                     if (string_equals(outffl(ioutf), stocfl(istoc))) then
                         aStochiProp%type      = STOCHITYPE_FLUX
                         aStochiProp%ioitem    = stocfl(istoc)
                         aStochiProp%substance = stocsu(istoc)

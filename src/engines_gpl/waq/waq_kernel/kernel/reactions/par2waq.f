@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_par2waq
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -56,9 +56,8 @@
 
 !     Files               : none
 
-!     Routines            : zoek20  - to search the delwaq names
+!     Routines            : zoek  - to search the delwaq names
 
-      use m_zoek
       use timers
 !
       implicit none
@@ -122,7 +121,7 @@
          ioff = notot - nosubs
          do isub = 1, nosubs
             partsub = syname( ioff+isub ) ( 1 : len_trim(syname(ioff+isub))-1 ) ! cut the 'p' off
-            call zoek20 ( partsub, ioff, syname, 20, iwaqsub(isub) )
+            iwaqsub(isub) = index_in_array( partsub, syname(:ioff))
             if ( iwaqsub(isub) .lt. 0 ) iwaqsub(isub) = 0 ! not found!
             if ( iwaqsub(isub) .gt. nosys ) iwaqsub(isub) = -iwaqsub(isub)      ! not dissolved
          enddo

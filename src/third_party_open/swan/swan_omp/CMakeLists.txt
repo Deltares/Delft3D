@@ -69,7 +69,7 @@ if(UNIX)
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)
 
     add_definitions(-DHAVE_CONFIG_H=1)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS "${openmp_flag}")
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 

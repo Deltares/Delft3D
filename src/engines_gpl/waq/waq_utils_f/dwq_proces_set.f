@@ -22,7 +22,7 @@
 !!  rights reserved.
 
       module ProcesSet
-      use m_zoek
+      use m_string_utils
       use m_monsys
       use m_srstop
 !
@@ -224,14 +224,6 @@
          integer                          :: cursize          ! filled up to this size
       end type old_item_coll
 
-
-      ! overload the operations
-
-      interface zoekio
-         module procedure zoekio1
-         module procedure zoekio2
-      end interface
-
       contains
 
            ! function to find an item in a collection of item properties
@@ -244,8 +236,7 @@
 
          iret = 0
          do i = 1 , aItemPropColl%cursize         ! search by name, case insesitive
-            call zoek(aItemProp%name,1,aItemPropColl%ItemPropPnts(i)%pnt%name,20,ifound)
-            if ( ifound .eq. 1 ) then
+            if (string_equals(aItemProp%name, aItemPropColl%ItemPropPnts(i)%pnt%name)) then
                iret = i
                return
             endif
@@ -441,7 +432,7 @@
          integer                            :: cursize
 
          if ( aArrayPropColl%cursize .eq. aArrayPropColl%maxsize ) then
-            allocate ( aArrayProps ( aArrayPropColl%maxsize + MAX_NUM ) , stat = ierr_alloc)
+            allocate ( aArrayProps ( aArrayPropColl%maxsize + MAX_NUM ), stat = ierr_alloc)
             if ( ierr_alloc .ne. 0 ) then
                write(*,*) 'ERROR : ALLOCATING WORK ARRAY'
                call srstop(1)
@@ -488,41 +479,30 @@
 
       end function old_item_coll_add
 
-      subroutine zoekio1(name,num,ioitemsprops,lenchk,indx)
-      character(len=20)                :: name            ! name of ioitem to be found
-      integer                          :: num             ! number
-      type(ioitemprop), pointer        :: ioitemsprops(:) ! array with io items
-      integer                          :: lenchk          ! characters to be checked
-      integer                          :: indx            ! return value
+      subroutine zoekio(name,num,ioitemsprops,lenchk,indx,type)
+         character(len=20)         :: name            !< name of ioitem to be found
+         integer                   :: num             !< number
+         type(ioitemprop), pointer :: ioitemsprops(:) !< array with io items
+         integer                   :: lenchk          !< characters to be checked
+         integer                   :: indx            !< return value
+         integer, optional         :: type            !< type
 
-      indx = -1
-      do i = 1 , num
-         call zoek(name,1,ioitemsprops(i)%name,lenchk,indx2)
-         if ( indx2 .gt. 0 ) then
+         indx = -1
+         do i = 1 , num
+
+            if (.not. string_equals(name(1:lenchk),ioitemsprops(i)%name)) then
+               cycle
+            endif
+
+            if (present(type) .and. ioitemsprops(i)%type /= type) then
+               cycle
+            endif
+
             indx = i
             exit
-         endif
-      enddo
-      return
-      end subroutine zoekio1
+         enddo
 
-      subroutine zoekio2(name,num,ioitemsprops,lenchk,indx,type)
-      character(len=20)                :: name            ! name of ioitem to be found
-      integer                          :: num             ! number
-      type(ioitemprop), pointer        :: ioitemsprops(:) ! array with io items
-      integer                          :: lenchk          ! characters to be checked
-      integer                          :: indx            ! return value
-      integer                          :: type            ! type
-
-      indx = -1
-      do i = 1 , num
-         call zoek(name,1,ioitemsprops(i)%name,lenchk,indx2)
-         if ( indx2 .gt. 0 .and. ioitemsprops(i)%type .eq. type ) then
-            indx = i
-            exit
-         endif
-      enddo
-      return
-      end subroutine zoekio2
+         return
+      end subroutine zoekio
 
       end module ProcesSet

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_valpoi
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -32,47 +32,27 @@
       SUBROUTINE VALPOI ( NOTOT  , NOPA     , NOSFUN , SYNAME , NOCONS ,
      +                    NOFUN  , constants, PANAME , FUNAME , SFNAME ,
      +                    VALNAM , IVALIP   , LINE   )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED:    december  1992 by Jan van Beek
-!
 !     FUNCTION            : sets pointers for process parametrs
-!
-!     LOGICAL UNITNUMBERS :
-!
-!     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
-      use m_zoek
       use dlwq_hyd_data
-
-!     PARAMETERS          : 13
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     NOTOT   INTEGER       1     INPUT   Total number of substances
-!     NOPA    INTEGER       1     INPUT   Number of parameters
-!     NOSFUN  INTEGER       1     INPUT   Number of segment functions
-!     SYNAME  CHAR*20    NOTOT    INPUT   names of systems
-!     NOCONS  INTEGER       1     INPUT   Number of constants used
-!     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-!     CONAME  CHAR*20   NOCONS    INPUT   Constant names
-!     PANAME  CHAR*20   NOPA      INPUT   Parameter names
-!     FUNAME  CHAR*20   NOFUN     INPUT   Function names
-!     SFNAME  CHAR*20   NOSFUN    INPUT   Segment function names
-!     VALNAM  CHAR*20       1     INPUT   Name of variable in question
-!     IVALIP  INTEGER       1     OUTPUT  Pointer in SSA.
-!     LINE    CHAR*(*)      1     OUTPUT  Report line
-!
       use timers       !   performance timers
 
-      INTEGER(kind=int_wp) ::NOTOT , NOPA  , NOSFUN, NOCONS, NOFUN ,
-     +              IVALIP
-      CHARACTER*(*) VALNAM, LINE
-      CHARACTER*(*) SYNAME(*),
-     +              PANAME(*), FUNAME(*),
-     +              SFNAME(*)
-      type(t_dlwq_item)   , intent(inout) :: constants       !< delwaq constants list
+      INTEGER(kind=int_wp), intent(in)  :: NOTOT   !< Total number of substances
+      INTEGER(kind=int_wp), intent(in)  :: NOPA    !< Number of parameters
+      INTEGER(kind=int_wp), intent(in)  :: NOSFUN  !< Number of segment functions
+      INTEGER(kind=int_wp), intent(in)  :: NOCONS  !< Number of constants used
+      INTEGER(kind=int_wp), intent(in)  :: NOFUN   !< Number of functions ( user )
+      INTEGER(kind=int_wp), intent(out) :: IVALIP  !< Pointer in SSA.
+
+      CHARACTER(len=*), intent(in)  :: VALNAM  !< Name of variable in question
+      CHARACTER(len=*), intent(out) :: LINE    !< Report line
+
+      CHARACTER(len=*), intent(in) :: SYNAME(NOTOT)  !< Constant names
+      CHARACTER(len=*), intent(in) :: PANAME(NOPA)   !< Parameter names
+      CHARACTER(len=*), intent(in) :: FUNAME(NOFUN)  !< Function names
+      CHARACTER(len=*), intent(in) :: SFNAME(NOSFUN) !< Segment function names
+
+      type(t_dlwq_item), intent(in) :: constants       !< delwaq constants list
 !
 !     Local
 !
@@ -81,6 +61,7 @@
       integer(kind=int_wp), PARAMETER   ::NOPRED = 6
       CHARACTER(NZOEK) PREDEF(NOPRED)
       integer(kind=int_wp) ::ithndl = 0
+
       if (timon) call timstrt( "valpoi", ithndl )
 !
       PREDEF(1) = 'VOLUME'
@@ -95,7 +76,7 @@
 !
 !     Predefined ?
 !
-      CALL ZOEK ( VALNAM , NOPRED , PREDEF , NZOEK , IVALIP )
+      IVALIP = index_in_array(VALNAM(:NZOEK), PREDEF)
       IF ( IVALIP .EQ. 1 ) THEN
          WRITE(LINE,'(A)') '       Using DELWAQ volume'
          GOTO 800
@@ -123,7 +104,7 @@
 !
 !     as model variable ?
 !
-      CALL ZOEK ( VALNAM , NOTOT , SYNAME , NZOEK , ISYS   )
+      ISYS = index_in_array(VALNAM(:NZOEK), SYNAME)
       IF ( ISYS .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using substance nr ',ISYS
          IVALIP = NOPRED + NOCONS + NOPA + NOFUN + NOSFUN + ISYS
@@ -132,7 +113,7 @@
 !
 !     as segment function ?
 !
-      CALL ZOEK ( VALNAM , NOSFUN, SFNAME , NZOEK , ISFUN  )
+      ISFUN = index_in_array(VALNAM (:NZOEK ), SFNAME)
       IF ( ISFUN .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using segment function nr',ISFUN
          IVALIP = NOPRED + NOCONS + NOPA + NOFUN + ISFUN
@@ -141,7 +122,7 @@
 !
 !     as function ?
 !
-      CALL ZOEK ( VALNAM , NOFUN , FUNAME , NZOEK , IFUN   )
+      IFUN = index_in_array(VALNAM (:NZOEK), FUNAME)
       IF ( IFUN .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using function nr',IFUN
          IVALIP = NOPRED + NOCONS + NOPA + IFUN
@@ -150,7 +131,7 @@
 !
 !     as parameter ?
 !
-      CALL ZOEK ( VALNAM , NOPA  , PANAME , NZOEK , IPA    )
+      IPA = index_in_array(VALNAM (:NZOEK), PANAME)
       IF ( IPA .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using parameter nr',IPA
          IVALIP = NOPRED + NOCONS + IPA

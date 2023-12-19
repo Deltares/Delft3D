@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_items
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -39,7 +39,6 @@
 
 !     global declarations
 
-      use m_zoek
       use dlwq_hyd_data
       use rd_token
       use timers       !   performance timers
@@ -73,7 +72,7 @@
       character(len=256)                    :: ctoken       ! character token
       real(kind=real_wp) ::  rtoken        ! real token
       integer(kind=int_wp) :: itmnr, ioffc, ioffi, nconst, ierr2, i, i2, ifound, namset
- 
+
       integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "read_items", ithndl )
 
@@ -181,8 +180,7 @@
 
          do i = 1 , itmnr-1
             if ( waq_item%ipnt(i) .eq. -1300000000 ) cycle
-            call zoek ( ctoken, 1,waq_item%name(i),20,ifound)
-            if ( ifound .eq. 1 ) then
+            if (string_equals(ctoken(1:20), waq_item%name(i))) then
                noits = noits - 1
                i2 = data_item%ipnt(noitm)
                if ( i2 .eq. -1000000 )    write(lunut,1120)i,ctoken
@@ -310,8 +308,8 @@
 !
 !              FLOW is only valid as CONCENTR. and item number is 0
 !
-         call zoek(ctoken,1,'FLOW                ',20,ifound)
-         if ( ifound .eq. 1 .and. callr .eq. 'CONCENTR. ' ) then
+         if (string_equals(ctoken(1:20), 'FLOW                ')
+     *      .and. callr .eq. 'CONCENTR. ' ) then
             itmnr = itmnr + 1
             ierr2 = dlwq_resize(waq_item,itmnr)
             waq_item%no_item = itmnr

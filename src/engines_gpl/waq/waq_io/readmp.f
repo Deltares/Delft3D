@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_readmp
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -63,7 +63,6 @@
 !                         LUN(29) = unitnumber formatted output file
 
       use m_opt1
-      use m_zoek
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
 
@@ -97,7 +96,6 @@
       logical             ldummy           ! Dummy logical
       integer(kind=int_wp) :: id                ! Loop variable over all monitoring areas
       integer(kind=int_wp) :: k                 ! General loop variable
-      integer(kind=int_wp) :: ifound            ! Help variable for string search
       character(len=256)::option           ! balance option
       integer(kind=int_wp) :: itype             ! type of the returned token
       integer(kind=int_wp) ::  ithndl = 0
@@ -203,8 +201,7 @@
       ! check if name is unique
 
          do k = 1 , id-1
-            call ZOEK( duname(id), 1, duname(k:), 20, ifound )
-            if ( ifound .gt. 0 ) then
+            if (string_equals(duname(id), duname(k))) then
                write( lunut, 2410 ) duname(id)
                ierr = ierr + 1
             endif

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_varpoi
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -42,7 +42,6 @@
 
 !     Logical unitnumbers : lurep   - report file
 
-      use m_zoek
       use timers       !   performance timers
 
       implicit none
@@ -77,7 +76,7 @@
 
 !     determine how VAL is modelled
 
-      call zoek ( varnam , 3    , predef , 20   , indx  )
+      indx = index_in_array( varnam , predef)
       if ( indx .eq. 1 ) then
          write(lurep,*) '       ',varnam,'; Using DELWAQ VOLUME'
          ivarip = 1
@@ -96,7 +95,7 @@
 
 !     as model variable ?
 
-      call zoek ( varnam , notot , syname , 20   , indx   )
+      indx = index_in_array( varnam, syname)
       if ( indx .gt. 0 ) then
          write(lurep,*) '       ',varnam,'; Using substance nr',indx
          ivarip = nopred + nocons + nopa + nofun + nosfun + indx
@@ -105,7 +104,7 @@
 
 !     as segment function ?
 
-      call zoek ( varnam , nosfun, sfname , 20   , indx   )
+      indx = index_in_array( varnam, sfname)
       if ( indx .gt. 0 ) then
          write(lurep,*) '       ',varnam,'; Using segment function nr',indx
          ivarip = nopred + nocons + nopa + nofun + indx
@@ -114,7 +113,7 @@
 
 !     as function ?
 
-      call zoek ( varnam , nofun , funame , 20   , indx   )
+      indx = index_in_array( varnam, funame)
       if ( indx .gt. 0 ) then
          write(lurep,*) '       ',varnam,'; Using function nr',indx
          ivarip = nopred + nocons + nopa + indx
@@ -123,7 +122,7 @@
 
 !     as parameter ?
 
-      call zoek ( varnam , nopa  , paname , 20   , indx   )
+      indx = index_in_array( varnam, paname)
       if ( indx .gt. 0 ) then
          write(lurep,*) '       ',varnam,'; Using parameter nr',indx
          ivarip = nopred + nocons + indx
@@ -132,7 +131,7 @@
 
 !     as constant ?
 
-      call zoek ( varnam , nocons, coname , 20   , indx   )
+      indx = index_in_array( varnam, coname)
       if ( indx .gt. 0 ) then
          write(lurep,*) '       ',varnam,'; Using constant nr',indx
          ivarip = nopred + indx

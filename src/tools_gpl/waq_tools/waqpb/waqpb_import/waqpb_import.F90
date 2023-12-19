@@ -1,38 +1,40 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
 
 !     Program to decompose a PROCES.ASC file into tables
 
       use m_validate_input, only: validate_names
+      use m_string_utils
+
       include 'data_ff.inc'
-      
+
       character*1  c1
       character*10 c10, c10b, c10a
       character*20 c20
@@ -53,14 +55,14 @@
       integer      io_mes, io_asc, io_inp, lunfil
       data         grp /'DummyGroup                          '/
       data         initialConfgId /'DummyConfg'/
-      
-      
+
+
       ! Format specifiers
       character(len=*), parameter  :: FMT21 = "(a10,f18.0,a1,1x,a50)"
       character(len=*), parameter  :: FMT22 = "(a10,18x,  a1,1x,a50))"
       character(len=*), parameter  :: FMT31 = "(a10,f18.0,a1,1x,a50,5x,a20)"
       character(len=*), parameter  :: FMT32 = "(a10,18x,  a1,1x,a50,5x,a20)"
-      
+
 !     Command line arguments
 
       newtab = .false.
@@ -104,7 +106,7 @@
       ninpu = 0
       noutp = 0
       noutf = 0
-      nstoc = 0 
+      nstoc = 0
       ndisp = 0
       nvelo = 0
 
@@ -180,7 +182,7 @@
                   read ( io_asc , FMT31) c10,value,c1,c50,c20
               else
                   read ( io_asc , FMT21) c10,value,c1,c50
-                c20 = ' ' 
+                c20 = ' '
               endif
               call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
               ninpu = ninpu + 1
@@ -254,7 +256,7 @@
           ihulp = naanta
           do iaanta = 1,naanta
               if ( newfrm ) then
-                  read ( io_asc , FMT32) c10,c1,c50,c20             
+                  read ( io_asc , FMT32) c10,c1,c50,c20
               else
                   read ( io_asc , FMT22) c10,c1,c50
                 c20 = ' '
@@ -322,7 +324,7 @@
               read ( io_asc , '(a10,2x,a10,2x,f10.0)' ) c10,c10b,value
 
 !             check presence of current flux in fluxes under current process
-              call zoek (c10b,(noutf-noffsf),outffl(noffsf+1),10,ihulp)
+              ihulp = index_in_array(c10b(:10),outffl(noffsf+1:(noutf-noffsf)))
               if ( ihulp .le. 0 ) then
                   write (*,*) ' Illegal flux in stochi line!!'
                   write (*,*) c10b
@@ -423,8 +425,7 @@
       if ( newtab ) then
 
       do i = 1,nitem
-          call zoek (itemid(i)(1:8),1,'bloomalg',8,ihulp)
-          if ( ihulp .gt. 0 ) then
+          if (string_equals(itemid(i)(1:8),'bloomalg')) then
               if ( itemid(i)(9:10) .eq. '01' ) then
                   itemde(i) = -999.
               else
@@ -440,37 +441,28 @@
                   itemde(i) = -999.
               endif
           endif
-          call zoek (itemid(i)(1:5),1,'depth',5,ihulp)
-          if ( ihulp .eq. 1 ) itemde(i) = -999.
-          call zoek (itemid(i)(1:4),1,'delt',4,ihulp)
-          if ( ihulp .eq. 1 ) itemde(i) = -999.
-          call zoek (itemid(i)(1:10),1,'totaldepth',10,ihulp)
-          if ( ihulp .eq. 1 ) itemde(i) = -999.
+          if (string_equals(itemid(i)(1:5),'depth') &
+              .or. string_equals(itemid(i)(1:4),'delt') &
+              .or. string_equals(itemid(i)(1:10),'totaldepth')) then
+
+                itemde(i) = -999.
+          endif
 
           if (duprol) then
 
 !         Remove defaults for DUFLOW hydro parameters, so that conversion process will be activated
-              call zoek (itemid(i)(1:5),1,'Z    ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'Q    ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'As   ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'dt   ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'dx   ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'V    ',5,ihulp)
-
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'Wf   ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'Wd   ',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'Chezy',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
-              call zoek (itemid(i)(1:5),1,'ITIME',5,ihulp)
-              if ( ihulp .eq. 1 ) itemde(i) = -999.
+              if (string_equals(itemid(i)(1:5),'Z    ') &
+                  .or. string_equals(itemid(i)(1:5),'Q    ') &
+                  .or. string_equals(itemid(i)(1:5),'As   ') &
+                  .or. string_equals(itemid(i)(1:5),'dt   ') &
+                  .or. string_equals(itemid(i)(1:5),'dx   ') &
+                  .or. string_equals(itemid(i)(1:5),'V    ') &
+                  .or. string_equals(itemid(i)(1:5),'Wf   ') &
+                  .or. string_equals(itemid(i)(1:5),'Wd   ') &
+                  .or. string_equals(itemid(i)(1:5),'Chezy') &
+                  .or. string_equals(itemid(i)(1:5),'ITIME')) then
+                     itemde(i) = -999.
+              endif
           endif
       enddo
 
@@ -495,7 +487,7 @@
           endif
           pdffil = trim(procesnaam)//'.0'
 	    open (newunit=lunfil,file=pdffil)
-	    write (lunfil,1000) 
+	    write (lunfil,1000)
       	write (lunfil,'(''this file is not available for a DUFLOW model '')')
           close (lunfil)
           pdffil = trim(procesnaam)//'.des'
@@ -508,7 +500,7 @@
 	    close (lunfil)
       endif
 
- 1000 format ('configuration ''DUPROL'' serial 2011010101') 
+ 1000 format ('configuration ''DUPROL'' serial 2011010101')
 
 
       close (io_mes)
@@ -557,8 +549,8 @@
       end
 
       subroutine cratab (grp,newtab,initialConfgId,initialConfgName)
-      use m_zoek
 
+      use m_string_utils
 
       character*30 grp
       character*10 initialConfgId
@@ -609,8 +601,8 @@
           do 15 iconf = 1,nconf
    15     conpro(iconf,iproc) = .false.
           do icnpr = 1,ncnpr
-              call zoek (r1_pid(icnpr),nproc,procid,10,iproc)
-              call zoek (r1_cid(icnpr),nconf,confid,10,iconf)
+              iproc = index_in_array(r1_pid(icnpr)(:10),procid(:nproc))
+              iconf = index_in_array(r1_cid(icnpr)(:10),confid(:nconf))
               if (iconf.le.0) stop 'BUG CRATAB'
               if (iproc.gt.0) conpro(iconf,iproc) = .true.
           enddo
@@ -632,4 +624,3 @@
       endif
       return
       end
-

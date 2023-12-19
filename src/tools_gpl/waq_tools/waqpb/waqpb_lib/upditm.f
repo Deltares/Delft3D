@@ -1,39 +1,39 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine upd_p2 ( c10   , c50   , value , segmnt, newtab,
      j                    grp   , io_mes, iitem , c20   , newfrm,
      j                    bodem )
-      use m_zoek
       use m_validate_input
-
+      use m_string_utils
       use m_waqpb_data
+
       character*10 c10, naam
       character*20 c20
       character*30 grp
@@ -45,14 +45,14 @@
       integer      nitem0
       save         nitem0
       data         nitem0 /-999/
-      
+
       if ( nitem0 .lt. 0 ) nitem0 = nitem
 
 c     segmnt = 1: item defined within segment
 c     segmnt = 2: item defined on exchanges
 c     segmnt = 0: item defined as substance
 
-      call zoek ( c10, nitem, itemid, 10, jndex)
+      jndex = index_in_array(c10, itemid(:nitem))
       if ( jndex .le. 0 ) then
 
 c         NEW ITEM
@@ -166,12 +166,10 @@ c             existing format
               itemgr(jndex) = grp
               ihulp1 = index ( c10 , 'S1' )
               ihulp2 = index ( c10 , 'S2' )
-              naam = 'SOD '
-              call zoek (c10,1,naam,4,ihulp3)
-              naam = 'Zsand '
-              call zoek (c10,1,naam,6,ihulp4)
+
               if ( ihulp1 .gt. 2 .or. ihulp2 .gt. 2 .or.
-     j             ihulp3 .eq. 1 .or. ihulp4 .eq. 1 ) then
+     J             string_equals(c10(1:4),'SOD ') .or.
+     j             string_equals(c10(1:6),'Zsand ')) then
                   itemwk(jndex) = ' '
               else
                   itemwk(jndex) = 'x'
@@ -190,7 +188,7 @@ c     j         abs(value+888.) .gt. 1e-10 ) itemde(jndex) = value
      j          abs(value+11.)  .gt. 1e-10 .and.
      j          abs(value+1.)   .gt. 1e-10      )
      j                    itemde(jndex) = value
-c     
+c
 
       endif
 
@@ -202,14 +200,13 @@ c     Set item number
 
 
       subroutine upd_p3 ( c10 , newtab , io_mes )
-      use m_zoek
-
+      use m_string_utils
       use m_waqpb_data
       character*10 c10
       logical newtab
       integer io_mes, jndex
 
-      call zoek ( c10, nfort, fortid, 10, jndex)
+      jndex = index_in_array(c10, fortid(:nfort))
       if ( jndex .le. 0 ) then
           jndex = nfort + 1
           if (jndex.gt.nfortm) stop 'DIMENSION NFORTM'

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq5c
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -113,7 +113,6 @@
       use m_getmat
       use m_getloc
       use m_getdim
-      use m_zoek
       use timers       !   performance timers
       use m_sysi          ! Timer characteristics
       use time_module
@@ -124,13 +123,13 @@
       integer(kind=int_wp) :: iar(:)
       real(kind=real_wp) :: rar(:)
       logical       scale
-      real(kind=dp) :: drar(*) 
+      real(kind=dp) :: drar(*)
       character     cfile(3)*256
       real(kind=real_wp) :: amiss
  !
 !     local declarations
       dimension     loc(3)
-      real(kind=dp) :: afact    , a1    , a2    , d_beg    , d_end , dummy 
+      real(kind=dp) :: afact    , a1    , a2    , d_beg    , d_end , dummy
       character*3   cdummy
       integer(kind=int_wp) ::  nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
       integer(kind=int_wp) ::  k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
@@ -211,7 +210,7 @@
             if ( scale .and. iorder == 2 ) rar(noit2) = rar(j)
             cycle
          end if
-         call zoek(car(ioffa+j),noloc,car(j1+1),20,i)
+         i = index_in_array(car(ioffa+j)(:20),car(j1+1:noloc))
          if ( i .ge. 1 ) then
             noit2 = noit2 + 1
             car(ioffa+noit2) = car(ioffa+j)
@@ -287,7 +286,7 @@
          k = j - icnt
          iar(k5+k) = 0
          if ( car(ioffb+j) == '&$&$SYSTEM_NAME&$&$!' ) cycle
-         call zoek(car(ioffb+k),nopar,car(j1+1),20,i)
+         i = index_in_array(car(ioffb+k)(1:20),car(j1+1:nopar))
          if ( i >= 1 ) then
             iar(k5+k) = i
             cycle

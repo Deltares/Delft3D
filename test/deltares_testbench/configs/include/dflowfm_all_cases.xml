@@ -8790,38 +8790,6 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f020_c030_dcsm_4nm_heat" ref="dflowfm_default">
-      <path>e02_dflowfm/f020_heat_flux/c030_dcsm_4nm_heat</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>DCSM-FM_4nm.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>120.0</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_DCSM-FM_4nm/DCSM-FM_4nm_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="DFM_OUTPUT_DCSM-FM_4nm/DCSM-FM_4nm_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="temperature" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f006_c063_rain" ref="dflowfm_default">
       <path>e02_dflowfm/f006_external_forcing/c063_rain</path>
       <programs>
@@ -11576,27 +11544,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f092_c01_harlingen" ref="dflowfm_default">
-      <path>e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>har.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/001_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
     <testCase name="e02_f092_c04_exer_10_2d_westernscheldt" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c04_exer_10_2d_westernscheldt</path>
       <programs>

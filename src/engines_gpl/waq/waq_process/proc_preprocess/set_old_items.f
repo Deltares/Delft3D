@@ -1,6 +1,6 @@
       module m_set_old_items
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -44,7 +44,6 @@
 !>/File
 !>      rename items according the old_items table
 
-      use m_zoek
       use m_srstop
       use timers         !< performance timers
       use dlwq_hyd_data      !< data definitions
@@ -147,7 +146,7 @@
             name20 = old_items%old_items(i)%old_name
             range  = old_items%old_items(i)%old_default
 
-            call zoek(name20, notot, syname, 20, ifound)
+            ifound = index_in_array(name20, syname)
             if ( ifound .gt. 0 ) then
                syname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Substance name [',old_items%old_items(i)%old_name,
@@ -167,7 +166,7 @@
                endif
             endif
 
-            call zoek(name20, nopa  , paname, 20, ifound)
+            ifound = index_in_array(name20, paname)
             if ( ifound .gt. 0 ) then
                paname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Parameter name [',old_items%old_items(i)%old_name,
@@ -175,7 +174,7 @@
                write(lurep,'(a,g13.6)') ' WARNING no rangecheck possible for parameter, range >',range
             endif
 
-            call zoek(name20, nofun , funame, 20, ifound)
+            ifound = index_in_array(name20, funame)
             if ( ifound .gt. 0 ) then
                funame(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Function name [',old_items%old_items(i)%old_name,
@@ -183,7 +182,7 @@
                write(lurep,'(a,g13.6)') ' WARNING no rangecheck possible for function, range >',range
             endif
 
-            call zoek(name20, nosfun, sfname, 20, ifound)
+            ifound = index_in_array(name20, sfname)
             if ( ifound .gt. 0 ) then
                sfname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Segment function name [',old_items%old_items(i)%old_name,
@@ -191,7 +190,7 @@
                write(lurep,'(a,g13.6)') ' WARNING no rangecheck possible for segment function, range >',range
             endif
 
-            call zoek(name20, nodisp, diname, 20, ifound)
+            ifound = index_in_array(name20, diname)
             if ( ifound .gt. 0 ) then
                diname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Dispersion name [',old_items%old_items(i)%old_name,
@@ -199,7 +198,7 @@
                write(lurep,'(a,g13.6)') ' WARNING no rangecheck possible for dispersion, range >',range
             endif
 
-            call zoek(name20, novelo, vename, 20, ifound)
+            ifound = index_in_array(name20, vename)
             if ( ifound .gt. 0 ) then
                vename(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Velocity name [',old_items%old_items(i)%old_name,
@@ -218,7 +217,7 @@
 
             name20 = old_items%old_items(i)%old_name
 
-            call zoek(name20, notot, syname, 20, ifound)
+            ifound = index_in_array(name20, syname)
             if ( ifound .gt. 0 ) then
                syname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Substance name [',old_items%old_items(i)%old_name,
@@ -232,35 +231,35 @@
      +                             '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
-            call zoek(name20, nopa  , paname, 20, ifound)
+            ifound = index_in_array(name20, paname)
             if ( ifound .gt. 0 ) then
                paname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Parameter name [',old_items%old_items(i)%old_name,
      +                             '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
-            call zoek(name20, nofun , funame, 20, ifound)
+            ifound = index_in_array(name20, funame)
             if ( ifound .gt. 0 ) then
                funame(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Function name [',old_items%old_items(i)%old_name,
      +                             '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
-            call zoek(name20, nosfun, sfname, 20, ifound)
+            ifound = index_in_array(name20, sfname)
             if ( ifound .gt. 0 ) then
                sfname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Segment function name [',old_items%old_items(i)%old_name,
      +                             '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
-            call zoek(name20, nodisp, diname, 20, ifound)
+            ifound = index_in_array(name20, diname)
             if ( ifound .gt. 0 ) then
                diname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Dispersion name [',old_items%old_items(i)%old_name,
      +                             '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
-            call zoek(name20, novelo, vename, 20, ifound)
+            ifound = index_in_array(name20, vename)
             if ( ifound .gt. 0 ) then
                vename(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Velocity name [',old_items%old_items(i)%old_name,
@@ -278,13 +277,13 @@
 
             name20 = old_items%old_items(i)%new_name
 
-            call zoek(name20, notot, syname, 20, ifound)
+            ifound = index_in_array(name20, syname)
             if ( ifound .le. 0 ) ifound = dlwq_find(constants,name20)
-            if ( ifound .le. 0 ) call zoek(name20, nopa  , paname, 20, ifound)
-            if ( ifound .le. 0 ) call zoek(name20, nofun , funame, 20, ifound)
-            if ( ifound .le. 0 ) call zoek(name20, nosfun, sfname, 20, ifound)
-            if ( ifound .le. 0 ) call zoek(name20, nodisp, diname, 20, ifound)
-            if ( ifound .le. 0 ) call zoek(name20, novelo, vename, 20, ifound)
+            if ( ifound .le. 0 ) ifound = index_in_array(name20, paname)
+            if ( ifound .le. 0 ) ifound = index_in_array(name20, funame)
+            if ( ifound .le. 0 ) ifound = index_in_array(name20, sfname)
+            if ( ifound .le. 0 ) ifound = index_in_array(name20, diname)
+            if ( ifound .le. 0 ) ifound = index_in_array(name20, vename)
 
             if ( ifound .le. 0 ) then
 
@@ -292,13 +291,13 @@
 
                name20 = old_items%old_items(i)%old_name
 
-               call zoek(name20, notot, syname, 20, ifound)
+               ifound = index_in_array(name20, syname)
                if ( ifound .le. 0 ) ifound = dlwq_find(constants,name20)
-               if ( ifound .le. 0 ) call zoek(name20, nopa  , paname, 20, ifound)
-               if ( ifound .le. 0 ) call zoek(name20, nofun , funame, 20, ifound)
-               if ( ifound .le. 0 ) call zoek(name20, nosfun, sfname, 20, ifound)
-               if ( ifound .le. 0 ) call zoek(name20, nodisp, diname, 20, ifound)
-               if ( ifound .le. 0 ) call zoek(name20, novelo, vename, 20, ifound)
+               if ( ifound .le. 0 ) ifound = index_in_array(name20, paname)
+               if ( ifound .le. 0 ) ifound = index_in_array(name20, funame)
+               if ( ifound .le. 0 ) ifound = index_in_array(name20, sfname)
+               if ( ifound .le. 0 ) ifound = index_in_array(name20, diname)
+               if ( ifound .le. 0 ) ifound = index_in_array(name20, vename)
 
                ! set action to ITEM_ACTION_PPEQUAL2, the action itself is handled elsewhere
 
@@ -335,7 +334,7 @@
 
             name20 = old_items%old_items(i)%old_name
 
-            call zoek(name20, notot, syname, 20, ifound)
+            ifound = index_in_array(name20, syname)
             if ( ifound .gt. 0 ) then
                write(lurep,'(3a,i10)') ' Substance name [',old_items%old_items(i)%old_name,
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
@@ -347,31 +346,31 @@
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
-            call zoek(name20, nopa  , paname, 20, ifound)
+            ifound = index_in_array(name20, paname)
             if ( ifound .gt. 0 ) then
                write(lurep,'(5a)') ' Parameter name [',old_items%old_items(i)%old_name,
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
-            call zoek(name20, nofun , funame, 20, ifound)
+            ifound = index_in_array(name20, funame)
             if ( ifound .gt. 0 ) then
                write(lurep,'(5a)') ' Function name [',old_items%old_items(i)%old_name,
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
-            call zoek(name20, nosfun, sfname, 20, ifound)
+            ifound = index_in_array(name20, sfname)
             if ( ifound .gt. 0 ) then
                write(lurep,'(5a)') ' Segment function name [',old_items%old_items(i)%old_name,
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
-            call zoek(name20, nodisp, diname, 20, ifound)
+            ifound = index_in_array(name20, diname)
             if ( ifound .gt. 0 ) then
                write(lurep,'(5a)') ' Dispersion name [',old_items%old_items(i)%old_name,
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
-            call zoek(name20, novelo, vename, 20, ifound)
+            ifound = index_in_array(name20, vename)
             if ( ifound .gt. 0 ) then
                write(lurep,'(5a)') ' Velocity name [',old_items%old_items(i)%old_name,
      +                             '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_data_ods
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -43,7 +43,6 @@
       use m_getmat
       use m_getloc
       use m_getdim
-      use m_zoek
       use dlwq_hyd_data   ! for definition and storage of data
       use timers          !   performance timers
       use m_sysi          ! Timer characteristics
@@ -107,7 +106,7 @@
       real(kind=dp) ::  dummy         ! second in double precision (not used)
       integer(kind=int_wp) ::  maxdim
       integer(kind=int_wp) ::  ierr_alloc
- 
+
       integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "read_data_ods", ithndl )
 
@@ -140,7 +139,7 @@
          if ( data_loc%name(iloc) .EQ. '&$&$SYSTEM_NAME&$&$!' ) then
             iloc_ods(iloc) = -1
          else
-            call zoek(data_loc%name(iloc),noloc,locnam,20,iloc_found)
+            iloc_found = index_in_array(data_loc%name(iloc), locnam(:noloc))
             if ( iloc_found .ge. 1 ) then
                iloc_ods(iloc) = iloc_found
             else
@@ -180,7 +179,7 @@
          if ( data_param%name(ipar) .eq. '&$&$SYSTEM_NAME&$&$!' ) then
             ipar_ods(ipar) = 0
          else
-            call zoek(data_param%name(ipar),nopar,parnam,20,ipar_found)
+            ipar_found = index_in_array(data_param%name(ipar),parnam(:nopar))
             if ( ipar_found .gt. 0 ) then
                ipar_ods(ipar) = ipar_found
             else

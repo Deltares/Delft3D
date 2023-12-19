@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq06
       use m_waq_precision
+      use m_string_utils
       use m_opt1
       use m_opt0
       use m_dlwq5a
@@ -73,7 +74,6 @@
 !                          lun(15) = unit intermediate file (waste load)
 
       use m_check
-      use m_zoek
       use m_srstop
       use rd_token
       use timers       !   performance timers
@@ -254,9 +254,9 @@
 
 !          check for unique ID, error if non-truncated ID is unique otherwise warning
 
-         call ZOEK( wstid(i), i-1, wstid, 20, ifound )
+         ifound = index_in_array( wstid(i), wstid(:i-1))
          if ( ifound .gt. 0 ) then
-            call ZOEK( wstid_long(i), i-1, wstid_long, 256, ifound2 )
+            ifound2 = index_in_array( wstid_long(i), wstid_long(:i-1))
             if ( ifound .eq. ifound2 ) then
                write(lunut,2130) wstid(i)
                iwar = iwar + 1
@@ -268,8 +268,8 @@
 
 !          check if truncated type and non truncated type give the same number
 
-         call ZOEK( wsttype(i)     , nowtyp, wsttype     , 20 , ifound  )
-         call ZOEK( wsttype_long(i), nowtyp, wsttype_long, 256, ifound2 )
+         ifound =  index_in_array( wsttype(i)     , wsttype(:nowtyp))
+         ifound2 = index_in_array( wsttype_long(i), wsttype_long(:nowtyp))
          if ( ifound .ne. ifound2 ) then
             write(lunut,2150) trim(wsttype_long(i))
             ierr = ierr + 1

@@ -1,37 +1,37 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
 subroutine readdb(lu_inp, lu_mes)
-    use m_zoek
     use m_validate_input, only: validate_names, validate_units
     use m_waqpb_data
-    
+    use m_string_utils, only: index_in_array, string_equals
+
     integer  :: lu_inp  !< Logical unit number for input
     integer  :: lu_mes  !< Logical unit number for messages (logging)
 
@@ -123,8 +123,9 @@ subroutine readdb(lu_inp, lu_mes)
     read(lu_inp, *) c10,(chkcnf(iconf),iconf=1,nconf)
     !Check consistency beween Config and Con_pro files
     do 110 iconf = 1,nconf
-        call zoek (chkcnf(iconf),1,confid(iconf),10,jndex)
-        if (jndex.ne.1) STOP 'Inconsistent Config and Con_pro files'
+        if (.not. string_equals(chkcnf(iconf), confid(iconf))) then
+            STOP 'Inconsistent Config and Con_pro files'
+        end if
 110 continue
 120 continue
     do iconf=1,nconf
@@ -148,7 +149,7 @@ subroutine readdb(lu_inp, lu_mes)
             endif
         endif
 105 continue
-    call zoek (c10,nproc,procid,10,iproc)
+    iproc = index_in_array(c10,procid)
     if (iproc.le.0) then
         write(lu_mes,'(''Unknown process '',a10,'' in Con_pro file'')') &
                 c10

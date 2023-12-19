@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_setday
       use m_waq_precision
+      use m_string_utils
       USE ProcesSet
 
       implicit none
@@ -60,10 +61,9 @@
 !     IERR    INTEGER        1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
 !
-      use m_zoek
       use m_srstop
       use m_dhslen
-      
+
       use timers       !   performance timers
       use m_cnvper
       use m_cnvtim
@@ -83,7 +83,7 @@
       INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
       integer(kind=int_wp) ::istart , iperiod
       INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  KEY       , SUFFIX  , NAME, item_name
+      CHARACTER*20  SUFFIX  , NAME, item_name
       CHARACTER*50  item_desc
       REAL(kind=real_wp) ::PERIOD, default_value
       type(ItemProp)        :: aItemProp            ! one item
@@ -100,8 +100,8 @@
          CALL SRSTOP(1)
       ENDIF
       ISUSED = 0
-      KEY='OUTPUT-OPERATION'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
       IF ( IKEY .GT. 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
@@ -130,8 +130,7 @@
          CALL SRSTOP(1)
       ENDIF
 !
-      KEY='SUBSTANCE'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          IERR = IERR + 1
@@ -152,9 +151,8 @@
          endif
          aProcesProp%input_item(1)%item=>AllItems%ItemPropPnts(iret)%pnt
       ENDIF
-!
-      KEY = 'TINIT'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('TINIT',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          istart = 0
       ELSE
@@ -174,12 +172,11 @@
 
       item_desc = 'start time for statistics'
       item_ind = 2
-      item_name = KEY(1:10)//aProcesProp%name(1:10)
-      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, 
+      item_name = 'TINIT'(1:10)//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name,
      + IOTYPE_SEGMENT_INPUT)
 !
-      KEY = 'PERIOD'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('PERIOD',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          iperiod = 86400.
       ELSE
@@ -195,10 +192,10 @@
             CALL CNVTIM ( iperiod, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
-      
+
       item_desc = 'period of time averaged output'
       item_ind = 3
-      item_name = KEY(1:10)//aProcesProp%name(1:10)
+      item_name = 'PERIOD'(1:10)//aProcesProp%name(1:10)
       call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name,
      + IOTYPE_SEGMENT_INPUT)
 !
@@ -242,8 +239,7 @@
       item_name =  'TCOUNT    '//aProcesProp%name(1:10)
       call update_process_properties(AllItems, aProcesProp, aItemProp, 0.0, item_desc, item_ind, item_name, IOTYPE_SEGMENT_WORK)
 !
-      KEY = 'SUFFIX'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUFFIX',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          SUFFIX = ' '
       ELSE
@@ -405,12 +401,12 @@
  2000 FORMAT(5A)
       END
 
-      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, 
+      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name,
      + item_type)
 !
 !     FUNCTION            : Update process properties
 !
-!     SUBROUTINES CALLED  : 
+!     SUBROUTINES CALLED  :
 !
 !
 !     PARAMETERS          :
@@ -425,7 +421,7 @@
 !     item_ind                   INPUT   item index
 !     item_name                  INPUT   item name
 !
-         
+
          TYPE(ItemPropColl), INTENT(IN) :: all_items  ! all items of the proces system
          TYPE(ItemProp), INTENT(OUT) :: item_prop  ! one item
          TYPE(ProcesProp), INTENT(OUT) :: process_prop ! output statistical proces definition

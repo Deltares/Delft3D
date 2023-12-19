@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_vxlpoi
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -43,7 +43,6 @@
 !
 !     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
-      use m_zoek
       use dlwq_hyd_data
 
 !     PARAMETERS          : 13
@@ -90,7 +89,7 @@
 !
 !     Predefined ?
 !
-      CALL ZOEK ( VALNAM , NOPREF, PREDEF , 10   , IVALIP )
+      IVALIP = index_in_array(VALNAM(:10), PREDEF)
       IF ( IVALIP .EQ. 1 ) THEN
          WRITE(LINE,'(A)') '       Using DELWAQ flow'
          GOTO 800
@@ -110,7 +109,7 @@
 !
 !     as dispersion ?
 !
-      CALL ZOEK ( VALNAM , NODISP, DINAME , 10   , IDSP   )
+      IDSP = index_in_array(VALNAM(:10), DINAME(:NODISP))
       IF ( IDSP .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using dispersion nr ',IDSP
          IVALIP = NOPREF + IDSP
@@ -119,7 +118,7 @@
 !
 !     as a velocity ?
 !
-      CALL ZOEK ( VALNAM , NOVELO, VENAME , 10   , IVEL   )
+      IVEL = index_in_array(VALNAM(:10), VENAME(:NOVELO))
       IF ( IVEL  .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using velocity nr',IVEL
          IVALIP = NOPREF + NODISP + IVEL
@@ -128,7 +127,7 @@
 !
 !     as function ?
 !
-      CALL ZOEK ( VALNAM , NOFUN , FUNAME , 10   , IFUN   )
+      IFUN = index_in_array(VALNAM (:10), FUNAME(:NOFUN))
       IF ( IFUN .GT. 0 ) THEN
          WRITE(LINE,'(A,I3)') '       Using function nr',IFUN
          IVALIP = NOPREF + NODISP + NOVELO + IFUN

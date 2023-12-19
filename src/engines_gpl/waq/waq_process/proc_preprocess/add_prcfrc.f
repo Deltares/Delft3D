@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_add_prcfrc
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -34,7 +34,6 @@
 
       ! add processes per fractions
 
-      use m_zoek
       use m_srstop
       use processet
       use timers       !   performance timers
@@ -75,7 +74,6 @@
       integer(kind=int_wp) ::nzoek           ! nzoek
       integer(kind=int_wp) ::istochi         ! index stochi
       integer(kind=int_wp) ::istochi2        ! index stochi
-      integer(kind=int_wp) ::indx            ! index in list
       integer(kind=int_wp) ::iret            ! index in collection
       integer(kind=int_wp) ::ifrac           ! fraction number
       character(len=3)          :: suffix          ! suffix
@@ -118,9 +116,7 @@
 
                   ! include also "dummy" rules (factor equal zero)
 
-                     call zoek( basnam, 1, proc%fluxstochi(istochi)%substance, 10, indx)
-                     if ( indx .eq. 1 ) then
-
+                     if (string_equals( basnam(1:10), proc%fluxstochi(istochi)%substance)) then
                         ! construct copy processes
 
                         do ifrac = 1, nfrac
@@ -170,8 +166,7 @@
 
                               ! check if it is a fraction
 
-                              call zoek( basnam, 1, procn%input_item(i_input)%name, 10, indx)
-                              if ( indx .eq. 1 ) then
+                              if (string_equals( basnam(1:10), procn%input_item(i_input)%name)) then
                                  procn%input_item(i_input)%name = fracnam
                                  item%name                      = procn%input_item(i_input)%name
                                  iret                           = itempropcollfind( allitems, item )
@@ -189,8 +184,7 @@
                                  i_star = index(procn%input_item(i_input)%name,'*')
                                  if ( i_star .gt. 0 ) then
                                     nzoek = 20-i_star
-                                    call zoek( basnam, 1, procn%input_item(i_input)%name(i_star+1:),  nzoek, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(basnam(1:nzoek), procn%input_item(i_input)%name(i_star+1:))) then
                                        procn%input_item(i_input)%name = procn%input_item(i_input)%name(1:i_star)//fracnam
                                        item%name                      = procn%input_item(i_input)%name
                                        iret                           = itempropcollfind( allitems, item )
@@ -223,8 +217,7 @@
                               i_star = index(procn%output_item(i_output)%name,'*')
                               if ( i_star .gt. 0 ) then
                                  nzoek = 20-i_star
-                                 call zoek( basnam, 1, procn%output_item(i_output)%name(i_star+1:),  nzoek, indx)
-                                 if ( indx .eq. 1 ) then
+                                 if (string_equals(basnam(1:nzoek), procn%output_item(i_output)%name(i_star+1:))) then
                                     procn%output_item(i_output)%name = procn%output_item(i_output)%name(1:i_star)//fracnam
                                  else
                                     procn%output_item(i_output)%name = trim(proc%output_item(i_output)%name)//'*'//fracnam
@@ -251,8 +244,7 @@
                               i_star = index(proc%fluxoutput(i_flux)%name,'*')
                               if ( i_star .gt. 0 ) then
                                  nzoek = 20-i_star
-                                 call zoek( basnam, 1, proc%fluxoutput(i_flux)%name(i_star+1:),  nzoek, indx)
-                                 if ( indx .eq. 1 ) then
+                                 if (string_equals(basnam(1:nzoek), proc%fluxoutput(i_flux)%name(i_star+1:))) then
                                     procn%fluxoutput(i_flux)%name = proc%fluxoutput(i_flux)%name(1:i_star)//fracnam
                                  else
                                     procn%fluxoutput(i_flux)%name = trim(proc%fluxoutput(i_flux)%name)//'*'//fracnam
@@ -287,8 +279,7 @@
 
                               ! look for fraction
 
-                              call zoek( basnam, 1, procn%fluxstochi(istochi2)%substance, 10, indx)
-                              if ( indx .eq. 1 ) then
+                              if (string_equals(basnam(1:10), procn%fluxstochi(istochi2)%substance)) then
                                  procn%fluxstochi(istochi2)%substance = fracnam
                               else
 
@@ -296,8 +287,7 @@
 
                                  do ilink = 1, nlink
                                     lnknam = sfracs%name(linklst(ilink))
-                                    call zoek( lnknam, 1, procn%fluxstochi(istochi2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(lnknam(1:10), procn%fluxstochi(istochi2)%substance)) then
                                        procn%fluxstochi(istochi2)%substance = trim(lnknam)//suffix
                                     endif
                                  enddo
@@ -316,8 +306,7 @@
 
                               ! look for fraction
 
-                              call zoek( basnam, 1, procn%dispstochi(istochi2)%substance, 10, indx)
-                              if ( indx .eq. 1 ) then
+                              if (string_equals(basnam(1:10), procn%dispstochi(istochi2)%substance)) then
                                  procn%dispstochi(istochi2)%substance = fracnam
                               else
 
@@ -325,8 +314,7 @@
 
                                  do ilink = 1, nlink
                                     lnknam = sfracs%name(linklst(ilink))
-                                    call zoek( lnknam, 1, procn%dispstochi(istochi2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(lnknam(1:10), procn%dispstochi(istochi2)%substance)) then
                                        procn%dispstochi(istochi2)%substance = trim(lnknam)//suffix
                                     endif
                                  enddo
@@ -345,8 +333,7 @@
 
                               ! look for fraction
 
-                              call zoek( basnam, 1, procn%velostochi(istochi2)%substance, 10, indx)
-                              if ( indx .eq. 1 ) then
+                              if (string_equals(basnam(1:10), procn%velostochi(istochi2)%substance)) then
                                  procn%velostochi(istochi2)%substance = fracnam
                               else
 
@@ -354,8 +341,7 @@
 
                                  do ilink = 1, nlink
                                     lnknam = sfracs%name(linklst(ilink))
-                                    call zoek( lnknam, 1, procn%velostochi(istochi2)%substance, 10, indx)
-                                    if ( indx .eq. 1 ) then
+                                    if (string_equals(lnknam(1:10), procn%velostochi(istochi2)%substance)) then
                                        procn%velostochi(istochi2)%substance = trim(lnknam)//suffix
                                     endif
                                  enddo

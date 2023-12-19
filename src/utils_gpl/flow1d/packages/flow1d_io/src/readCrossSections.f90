@@ -61,11 +61,13 @@ module m_readCrossSections
    !! * if a new format is not backwards compatible (i.e., old files
    !!   need to be converted/updated by user), then the major version number
    !!   is incremented.
-   
+
    ! Cross section definition file current version: 3.00
    integer, parameter :: CrsDefFileMajorVersion      = 3
    integer, parameter :: CrsDefFileMinorVersion      = 0
-   
+
+   double precision, parameter :: position_tolerance = 1e-4
+
    ! History cross section definition file versions:
    
    ! 3.00 (2019-06-18): use strings, instead of integers, for "closed" and "frictionType(s)".
@@ -791,6 +793,36 @@ module m_readCrossSections
       
    end function readTabulatedCS
 
+   !> Snap the edges of the position range to the boundaries of the y_coordinates,
+   !> since this is assumed later on
+   subroutine snap_friction_position_edges(positions, y_coordinates)
+      double precision, intent(inout) :: positions(:)       !< friction y-positions, size > 0, monotonically increasing
+      double precision, intent(in   ) :: y_coordinates(:)   !< y-coordinates of cross-section specification, size > 0, monotonically increasing
+
+      integer                         :: i
+      integer                         :: friction_positions_size
+      integer                         :: num_levels
+
+      friction_positions_size = size(positions)
+      num_levels = size(y_coordinates)
+
+      ! Set the upper boundary, and ensure that positions is still monotonically increasing
+      positions(friction_positions_size) = y_coordinates(num_levels)
+      i = friction_positions_size - 1
+      do while (i >= 1 .and. positions(i) > positions(i + 1))
+         positions(i) = positions(i + 1)
+         i = i - 1
+      end do
+
+      ! Set the lower boundary, and ensure that positions is still monotonically increasing
+      positions(1) = y_coordinates(1)
+      i = 2
+      do while (i <= friction_positions_size .and. positions(i) < positions(i - 1))
+         positions(i) = positions(i - 1)
+         i = i + 1
+      end do
+   end subroutine snap_friction_position_edges
+
    !> read YZ cross section from ini file
    logical function readYZCS(pCS, node_ptr, sferic) 
       use precision
@@ -893,7 +925,7 @@ module m_readCrossSections
             call err_flush()
          endif
          ! Check Consistency of Rougness Positions
-         if (comparereal(positions(1), ycoordinates(1), 1d-6) /= 0 .or. comparereal(positions(frictionCount + 1), ycoordinates(numLevels), 1d-6) /= 0) then
+         if (comparereal(positions(1), ycoordinates(1), position_tolerance) /= 0 .or. comparereal(positions(frictionCount + 1), ycoordinates(numLevels), position_tolerance) /= 0) then
             if (positions(1) == 0.0d0  .and. comparereal(positions(frictionCount+1), ycoordinates(numLevels) - ycoordinates(1), 1d-6) == 0) then
                ! Probably lined out wrong because of import from SOBEK2
                locShift = positions(frictionCount + 1) - ycoordinates(numLevels)
@@ -909,17 +941,17 @@ module m_readCrossSections
                call err_flush()
             endif
          endif
-         
+         call snap_friction_position_edges(positions, ycoordinates(1:numlevels))
+
       elseif (.not.success .and. frictionCount==1) then
          positions(1) = ycoordinates(1)
          positions(2) = ycoordinates(numLevels)
          success = .true.
       endif
-      
-      
+
       pCS%frictionSectionFrom = positions(1:frictionCount)
       pCS%frictionSectionTo = positions(2:frictionCount+1)
-         
+
       allocate(pCS%groundlayer)
       pCS%groundlayer%used      = .false.
       pCS%groundlayer%thickness = 0.0d0

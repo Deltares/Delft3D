@@ -23,9 +23,9 @@
 
       module delwaq_user_wasteloads
 
-      use m_zoek
       use m_srstop
       use m_open_waq_files
+      use m_string_utils
       use delwaq_loads, wsl => wasteloads   ! This will be available via the argument list
       use waq_plugin_wasteload_version_module
 
@@ -414,16 +414,14 @@
          character(len=20)                   :: name                   ! fixed length copy of waste_id
          integer                             :: nowst                  ! length of wasteloads array
          integer                             :: i                      ! loop counter
-         integer                             :: ifound                 ! loop counter
 
-         ! loop over the wasteloads and compare id with delwaq routine zoekns
+         ! loop over the wasteloads and compare id with delwaq routine zoek
 
          nowst = size(wasteloads)
          name  = waste_id
          iwst = 0
          do i = 1 , nowst
-            call zoekns(name,1,wasteloads(i)%id%id,20,ifound)
-            if ( ifound .eq. 1 ) then
+            if (string_equals(name, wasteloads(i)%id%id)) then
                iwst = i
                return
             endif
@@ -439,16 +437,9 @@
          character(len=20)                   :: syname(:)              ! substance names
          integer                             :: isys                   ! on return if found substance number, otherwise zero
 
-         ! local declarations
+         ! call the delwaq routine zoek
 
-         character(len=20)                   :: name                   ! fixed length copy of waste_id
-         integer                             :: notot                  ! length of syname array
-
-         ! call the delwaq routine zoekns
-
-         notot = size(syname)
-         name  = substance_id
-         call zoekns(name,notot,syname,20,isys)
+         isys = index_in_array(substance_id, syname)
 
       end function find_substance
 

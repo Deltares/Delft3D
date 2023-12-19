@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_delpar00
       use m_waq_precision
+      use m_string_utils
       use m_wrttrk
       use m_plotgr
       use m_part08
@@ -46,7 +47,6 @@
       subroutine delpar00 ( mdpfile, noseg  , noq    , dwqvol , dwqflo ,
      &                      nosfun , sfname , segfun )
 
-      use m_zoek
       use m_srstop
       use partmem      !   for PARTicle tracking
       use alloc_mod    !   for PARTicle tracking
@@ -89,7 +89,7 @@
       real   (kind=dp) :: rseed = 0.5d0 ! AM: some strange quirk makes this necessary
       logical update
       integer(kind=int_wp) ::  luini
- 
+
       integer(kind=int_wp) :: ithandl = 0
       if ( timon ) call timstrt ( "delpar00", ithandl )
 
@@ -102,7 +102,7 @@
          lunut = lunitp(2)
          call report_date_time   ( lunut     )
          call rdlgri ( nfilesp   , lunitp    , fnamep    )
-         call rdccol ( nmaxp     , mmaxp     , lunitp(5) , fnamep(5), 
+         call rdccol ( nmaxp     , mmaxp     , lunitp(5) , fnamep(5),
      &                 lgrid2    , xb        , yb        , lunut    )
          call part01 ( lgrid     , lgrid2    , xb        , yb       , dx      ,
      &                 dy        , area      , angle     , nmaxp    , mmaxp   )
@@ -111,7 +111,7 @@
 !           this replaces the call to rdhydr
 
          if ( lsettl .or. layt .gt. 1 ) then
-            call zoek20 ( 'TAU       ', nosfun, sfname, 10, indx )
+            indx = index_in_array( 'TAU       ', sfname)
             if ( indx .gt. 0 ) then
                do i=1, nosegp
                     tau(cellpntp(i)) = segfun(i,indx)
@@ -131,7 +131,7 @@
                caltau = .false.
                if ( lunitp(21) .eq. 0 ) caltau = .true.
             endif
-            call zoek20 ( 'VERTDISP  ', nosfun, sfname, 10, indx )
+            indx = index_in_array( 'VERTDISP  ', sfname)
             if ( indx .gt. 0 ) then
                do i=1, nosegp
                   vdiff(cellpntp(i)) = segfun(i,indx)
@@ -148,7 +148,7 @@
                   lunitp(20) = 0
                endif
             endif
-         call zoek20 ( 'SALINITY  ', nosfun, sfname, 10, indx )
+         indx = index_in_array( 'SALINITY  ', sfname)
          if ( indx .gt. 0 ) then
                do i=1, nosegp
                     salin(cellpntp(i)) = segfun(i,indx)
@@ -166,7 +166,7 @@
 
 !.. temperature
 
-         call zoek20 ( 'TEMP      ', nosfun, sfname, 10, indx )
+         indx = index_in_array( 'TEMP      ', sfname)
          if ( indx .gt. 0 ) then
             do i=1, nosegp
                temper(cellpntp(i)) = segfun(i,indx)

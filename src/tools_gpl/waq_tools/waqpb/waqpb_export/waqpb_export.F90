@@ -1,31 +1,31 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
 !
 !     Program to compose a PROCES.ASC file from tables
@@ -38,9 +38,10 @@
 !       - Dump structure to PROCES.ASC
 
 !     Include data structures for tables and PDF-file
-  
+
       use m_obtain_number_decimals
-      
+      use m_string_utils
+
       include 'data_ff.inc'
       include 'pdf_ff.inc'
       integer      jndex , iproc , iinpu , iitem , ioutp , idisp , &
@@ -55,7 +56,7 @@
       character*255 argument
       real         actdef, version
       integer      lu_inp, lu_mes, status, lunfil, num_decimals_version
-      
+
 !     Defaults for command line arguments
 
       version = 6.00
@@ -94,11 +95,11 @@
 !     Check validity of table R9
 
       do imodv = 1,nmodv
-          call zoek (modvci(imodv),nconf,confid,10,iconf)
+          iconf = index_in_array(modvci(imodv),confid(:nconf))
           if ( iconf .le. 0 ) then
               write ( lu_mes , '(''Unknown config in TABLE5: '',a10,1x, a10)') modvci(imodv),modvit(imodv)
           end if
-          call zoek (modvit(imodv),nitem,itemid,10,iitem)
+          iitem = index_in_array(modvit(imodv),itemid(:nitem))
           if ( iitem .le. 0 ) then
               write ( lu_mes , '(''Unknown item in TABLE5: '',a10,1x, a10)') modvci(imodv),modvit(imodv)
           end if
@@ -111,14 +112,14 @@
           c10 = r2_sid(icnsb)
 
 !         Lookup substance in item array
-          call zoek (c10,nitem,itemid,10,iitem)
+          iitem = index_in_array(c10,itemid(:nitem))
           if ( iitem .le. 0 ) then
               write (*,*) ' ITEM: ',c10
               STOP 'Unknown substance in R2 table'
           endif
 
 !         Add to substances array
-          call zoek (c10,nsubs,subsid,10,isubs)
+          isubs = index_in_array(c10(:10),subsid(:nsubs))
           if ( isubs .le. 0 ) then
               if ( nsubs+1 .gt. nsubsm ) STOP 'Dimension NSUBSM'
               nsubs = nsubs+1
@@ -132,7 +133,7 @@
 !      call writrm
       write (*,'('' Writing TRM tables for LaTeX......'')')
       call writex
-      
+
 !----------------------------------------------------------------------c
 !     SET VERSION, SERIAL AND WRITE NEFIS FILE
 !----------------------------------------------------------------------c
@@ -157,7 +158,7 @@
       ! obtain number of decimals of version number
       num_decimals_version = obtain_num_decimals_version(version)
       write(num_decimals_version_char,'(I10)') num_decimals_version
-      
+
       write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') nproc,version,serial
 
       do 800 iproc=1,nproc
@@ -184,7 +185,7 @@
 !         INPUT ITEMS ON SEGMENT LEVEL/EXCHANGE LEVEL
 
 !         scan input items table for FIRST occurence of proces
-          call zoek ( procid(iproc), ninpu, inpupr, 10, ioffse )
+          ioffse = index_in_array(procid(iproc), inpupr(:ninpu))
           naanta = 0
           if ( ioffse .gt. 0 ) then
 
@@ -197,7 +198,7 @@
 
 !             Lookup item in items table
               iinpu = ioffse + naanta-1
-              call zoek ( inpuit(iinpu), nitem, itemid, 10, iitem)
+              iitem = index_in_array(inpuit(iinpu), itemid(:nitem))
               if ( iitem .le. 0 ) stop 'unknown ITEM'
 
 !             Documented items are marked for COEFEDIT.DAT
@@ -247,15 +248,14 @@
 !             if it still matches current proces
 
               if ( (iinpu+1) .le. ninpu ) then
-                  call zoek ( procid(iproc), 1, inpupr(iinpu+1), 10, jndex )
-                  if ( jndex .gt. 0 ) goto 410
+                  if (string_equals(procid(iproc), inpupr(iinpu+1))) goto 410
               endif
           endif
 
 !         OUTPUT ITEMS ON SEGMENT LEVEL/EXCHANGE LEVEL
 
 !         scan output items table for FIRST occurence of proces
-          call zoek ( procid(iproc), noutp, outppr, 10, ioffse )
+          ioffse = index_in_array(procid(iproc), outppr(:noutp))
           naanta = 0
           if ( ioffse .gt. 0 ) then
 
@@ -268,7 +268,7 @@
 
 !             Lookup item in items table
               ioutp = ioffse + naanta-1
-              call zoek ( outpit(ioutp), nitem, itemid, 10, iitem)
+              iitem = index_in_array(outpit(ioutp), itemid(:nitem))
               if ( iitem .le. 0 ) stop 'unknown ITEM'
 
 !             Find item properties and store in PDF structure
@@ -299,7 +299,7 @@
 !                 CURRENT OUTPUT ITEM ON EXCHANGE LEVEL
 
 !                 scan dispersion lines table for FIRST occurence of item
-                  call zoek ( itemid(iitem), ndisp, dispit, 10, ioffs2)
+                  ioffs2 = index_in_array(itemid(iitem), dispit(:ndisp))
                   naant2 = 0
                   if ( ioffs2 .gt. 0 ) then
 
@@ -321,13 +321,12 @@
 !                     if it still matches current item
 
                       if ( (idisp+1) .le. ndisp ) then
-                          call zoek ( itemid(iitem), 1, dispit(idisp+1), 10, jndex )
-                          if ( jndex .gt. 0 ) goto 450
+                          if (string_equals( itemid(iitem), dispit(idisp+1))) goto 450
                       endif
                   endif
 
 !                 scan velocity lines table for FIRST occurence of item
-                  call zoek ( itemid(iitem), nvelo, veloit, 10, ioffs2)
+                  ioffs2 = index_in_array( itemid(iitem), veloit(: nvelo))
                   naant2 = 0
                   if ( ioffs2 .gt. 0 ) then
 
@@ -349,8 +348,7 @@
 !                     if it still matches current item
 
                       if ( (ivelo+1) .le. nvelo ) then
-                          call zoek ( itemid(iitem), 1, veloit(ivelo+1), 10, jndex )
-                          if ( jndex .gt. 0 ) goto 460
+                          if (string_equals( itemid(iitem), veloit(ivelo+1))) goto 460
                       endif
                   endif
 
@@ -362,15 +360,14 @@
 !             if it still matches current proces
 
               if ( (ioutp+1) .le. noutp ) then
-                  call zoek ( procid(iproc), 1, outppr(ioutp+1), 10, jndex )
-                  if ( jndex .gt. 0 ) goto 440
+                  if (string_equals( procid(iproc), outppr(ioutp+1))) goto 440
               endif
           endif
 
 !         FLUXES
 
 !         scan output fluxes table for FIRST occurence of proces
-          call zoek ( procid(iproc), noutf, outfpr, 10, ioffse )
+          ioffse = index_in_array( procid(iproc), outfpr(: noutf))
           if ( ioffse .gt. 0 ) then
 
 !             loop over all FLUX rows related to this process
@@ -384,7 +381,7 @@
 !             Lookup flux in items table
               ioutf = ioffse + flu-1
 !             write (lu_mes,*) ' flu ',flu,' ioutf ', ioutf
-              call zoek ( outffl(ioutf), nitem, itemid, 10, iitem)
+              iitem = index_in_array(outffl(ioutf), itemid(:nitem))
               if ( iitem .le. 0 ) stop 'unknown FLUX'
 
 !             Find and store flux properties
@@ -400,7 +397,7 @@
 !             SCAN STOCHI TABLE FOR LINES ASSOCIATED WITH PRESENT FLUX
 
 !             scan stochi lines table for FIRST occurence of flux
-              call zoek ( itemid(iitem), nstoc, stocfl, 10, ioffs2)
+              ioffs2 = index_in_array(itemid(iitem), stocfl(:nstoc))
               naant2 = 0
               if ( ioffs2 .gt. 0 ) then
 
@@ -422,9 +419,7 @@
 !                 if it still matches current flux
 
                   if ( (istoc+1) .le. nstoc ) then
-                      call zoek ( itemid(iitem), 1, stocfl(istoc+1), &
-                            10, jndex )
-                      if ( jndex .gt. 0 ) goto 480
+                      if (string_equals( itemid(iitem), stocfl(istoc+1))) goto 480
                   endif
               endif
 
@@ -432,8 +427,7 @@
 !             if it still matches current proces
 
               if ( (ioutf+1) .le. noutf ) then
-                  call zoek ( procid(iproc), 1, outfpr(ioutf+1), 10, jndex )
-                  if ( jndex .gt. 0 ) goto 470
+                  if (string_equals( procid(iproc), outfpr(ioutf+1))) goto 470
               endif
           endif
 

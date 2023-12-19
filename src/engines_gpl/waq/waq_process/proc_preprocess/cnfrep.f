@@ -34,13 +34,13 @@
 
       use m_dhucas
       use m_dhslen
+      use m_process_lib_data
       use timers       !   performance timers
 
       integer(kind=int_wp) ::noalg , noprot , nopralg
       character*(*)  namprot(noprot)  , nampact(noprot),
      +               nampralg(nopralg)
 
-      include 'data.inc'
 
       character*10   namep1
       character*10   namep2
@@ -48,7 +48,7 @@
       logical        found
       integer(kind=int_wp) ::ithndl = 0
       integer(kind=int_wp) ::iproc, ipro, iproc2, ic, iprcnf, iprcnf2, ialg, ilen
-      
+
       if (timon) call timstrt( "cnfrep", ithndl )
 
       ! copy the license from the proto process to the process

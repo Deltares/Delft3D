@@ -42,7 +42,6 @@
 !     Global declarations
 
       use m_check
-      use m_zoek
       use m_srstop
       use m_open_waq_files
       use dlwqgrid_mod   ! for the storage of contraction grids
@@ -142,21 +141,21 @@
      &                        iwidth    , substances, constants , parameters, functions,
      &                        segfuncs  , segments  , gridps    , dlwqdata  , ierr2    ,
      &                        iwar      )
-            
+
             if ( ierr2 .gt. 0 ) goto 30
-            
+
             ! check for special constants, get directly from structure (ignore order, scaling etc this is not clean)
 
             if ( dlwqdata%subject .eq. SUBJECT_CONSTANT ) then
                ch20 = 'NOVEC'
-               call zoek( ch20 , dlwqdata%no_param, dlwqdata%param_name, 20 , inovec)
+               inovec = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
                if ( inovec .gt. 0 ) then
                   novec = nint(dlwqdata%values(inovec,1,1))
                   write(lunut,2240)
                   write(lunut,2250) novec
                endif
                ch20 = 'NOTHREADS'
-               call zoek( ch20 , dlwqdata%no_param, dlwqdata%param_name, 20 , inothr)
+               inothr = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
                if ( inothr .gt. 0 ) then
                   nothrd = nint(dlwqdata%values(inothr,1,1))
                   write(lunut,2310)
@@ -166,10 +165,10 @@
                endif
             endif
             ch20 = 'TAU'
-            call zoek( ch20 , dlwqdata%no_param, dlwqdata%param_name, 20 , inovec)
+            inovec = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
             if ( inovec .gt. 0 ) taupart = .true.
             ch20 = 'VERTDISPER'
-            call zoek( ch20 , dlwqdata%no_param, dlwqdata%param_name, 20 , inovec)
+            inovec = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
             if ( inovec .gt. 0 ) vdfpart = .true.
 
             ! add to the collection
@@ -226,8 +225,8 @@
       if ( parameters%no_item .gt. 0 ) write ( lun(2) ) (parameters%name(i), i=1, parameters%no_item)
       if ( functions%no_item  .gt. 0 ) write ( lun(2) ) (functions%name(i) , i=1, functions%no_item)
       if ( segfuncs%no_item   .gt. 0 ) write ( lun(2) ) (segfuncs%name(i)  , i=1, segfuncs%no_item)
-      
-      
+
+
       call open_waq_files  ( lun(16) , lchar(16) , 16    , 1     , ioerr )
       write(lun(16)) ' 5.000PROCES'
       write(lun(16)) proc_pars%cursize
@@ -249,9 +248,9 @@
 
       if ( chkpar(1) ) then
          ch20 = 'SURF'
-         call zoek( ch20 , parameters%no_item, parameters%name, 20 , special )
+         special = index_in_array( ch20 , parameters%name(: parameters%no_item))
          if ( special <= 0 ) then
-            call zoek( ch20 , segfuncs%no_item, segfuncs%name, 20 , special )
+            special = index_in_array( ch20 , segfuncs%name(: segfuncs%no_item))
             if ( special <= 0 ) then
                ierr = ierr + 1
                write( lunut, 2410 )
@@ -261,9 +260,9 @@
 
       if ( chkpar(2) ) then
          ch20 = 'LENGTH'
-         call zoek( ch20 , parameters%no_item, parameters%name, 20 , special )
+         special = index_in_array( ch20 , parameters%name(: parameters%no_item))
          if ( special <= 0 ) then
-            call zoek( ch20 , segfuncs%no_item, segfuncs%name, 20 , special )
+            special = index_in_array( ch20 , segfuncs%name(: segfuncs%no_item))
             if ( special <= 0 ) then
                ierr = ierr + 1
                write( lunut, 2420 )

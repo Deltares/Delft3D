@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_expand_frc
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -33,7 +33,6 @@
 
       ! expand processes per fractions
 
-      use m_zoek
       use processet
       use timers       !   performance timers
 
@@ -99,8 +98,7 @@
             if ( proc%input_item(i_item)%name(1:1) .eq. '*' ) then
                do isfrac = 1, sfracs%nsfrac
                   basnam = sfracs%name(isfrac)
-                  call zoek( basnam, 1, proc%input_item(i_item)%name(2:), 19, indx)
-                  if ( indx .gt. 0 ) then
+                  if (string_equals( basnam(1:19), proc%input_item(i_item)%name(2:))) then
                      l_expand       = .true.
                      l_frac(isfrac) = .true.
                      exit
@@ -120,8 +118,7 @@
 
                do isfrac = 1, sfracs%nsfrac
                   if ( l_frac(isfrac) ) then
-                     call zoek( sfracs%name(isfrac), 1, proc%input_item(i_item)%name, 20, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(sfracs%name(isfrac), proc%input_item(i_item)%name)) then
                         no_input_new = no_input_new + sfracs%nfrac(isfrac) - 1
                         exit
                      endif
@@ -134,8 +131,7 @@
                if ( i_star .gt. 1 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%input_item(i_item)%name(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%input_item(i_item)%name(i_star+1:))) then
                         no_input_new = no_input_new + sfracs%nfrac(isfrac) - 1
                         exit
                      endif
@@ -150,8 +146,7 @@
                if ( i_star .gt. 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%output_item(i_item)%name(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals( sfracs%name(isfrac)(1:nzoek), proc%output_item(i_item)%name(i_star+1:))) then
                         no_output_new = no_output_new + sfracs%nfrac(isfrac) - 1
                         exit
                      endif
@@ -165,8 +160,7 @@
                if ( i_star .gt. 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%fluxoutput(i_flux)%name(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals( sfracs%name(isfrac)(1:nzoek), proc%fluxoutput(i_flux)%name(i_star+1:))) then
                         no_fluxoutput_new = no_fluxoutput_new + sfracs%nfrac(isfrac) - 1
                         exit
                      endif
@@ -182,8 +176,7 @@
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
                      nzoek = 20-i_star
-                     call zoek( basnam, 1, proc%fluxstochi(i_stochi)%ioitem(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals( basnam(1:nzoek), proc%fluxstochi(i_stochi)%ioitem(i_star+1:))) then
                         no_fluxstochi_new = no_fluxstochi_new + nfrac - 1
                         exit
                      endif
@@ -197,8 +190,7 @@
                if ( i_star .gt. 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%velostochi(i_item)%ioitem(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%velostochi(i_item)%ioitem(i_star+1:))) then
                         no_velostochi_new = no_velostochi_new + sfracs%nfrac(isfrac) - 1
                         exit
                      endif
@@ -212,8 +204,7 @@
                if ( i_star .gt. 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%dispstochi(i_item)%ioitem(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%dispstochi(i_item)%ioitem(i_star+1:))) then
                         no_dispstochi_new = no_dispstochi_new + sfracs%nfrac(isfrac) - 1
                         exit
                      endif
@@ -236,8 +227,7 @@
                do isfrac = 1, sfracs%nsfrac
                   if ( l_frac(isfrac) ) then
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%input_item(i_item)%name(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals( sfracs%name(isfrac)(1:nzoek), proc%input_item(i_item)%name(i_star+1:))) then
                         isfrac_found = isfrac
                         exit
                      endif
@@ -312,8 +302,7 @@
                if ( i_star .gt. 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%output_item(i_item)%name(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%output_item(i_item)%name(i_star+1:))) then
                         isfrac_found = isfrac
                         exit
                      endif
@@ -363,8 +352,7 @@
                if ( i_star .gt. 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
-                     call zoek( sfracs%name(isfrac), 1, proc%fluxoutput(i_item)%name(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%fluxoutput(i_item)%name(i_star+1:))) then
                         isfrac_found = isfrac
                         exit
                      endif
@@ -415,8 +403,7 @@
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
                      nzoek = 20-i_star
-                     call zoek( basnam, 1, proc%fluxstochi(i_stochi)%ioitem(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(basnam(1:nzoek), proc%fluxstochi(i_stochi)%ioitem(i_star+1:))) then
                         isfrac_found = isfrac
                         exit
                      endif
@@ -432,14 +419,13 @@
                         i_new   = i_new + 1
                         new_stochi(i_new) = proc%fluxstochi(i_stochi)
                         new_stochi(i_new)%ioitem = trim(proc%fluxstochi(i_stochi)%ioitem(1:i_star))//fracnam
-                        call zoek (basnam,1,proc%fluxstochi(i_stochi)%substance,20,indx)
-                        if ( indx .gt. 0 ) then
+                        if (string_equals(basnam,proc%fluxstochi(i_stochi)%substance)) then
                            new_stochi(i_new)%substance = fracnam
                         else
                            ! look for linked substance (if not found the substance name stays the same
                            do isfrac2 = 1, nfrac
-                              call zoek (sfracs%name(isfrac2),1,proc%fluxstochi(i_stochi)%substance,20,indx)
-                              if ( indx .gt. 0 .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
+                              if (string_equals(sfracs%name(isfrac2),proc%fluxstochi(i_stochi)%substance)
+     *                           .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
                                  new_stochi(i_new)%substance = trim(sfracs%name(isfrac2))//suffix
                                  exit
                               endif
@@ -471,8 +457,7 @@
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
                      nzoek = 20-i_star
-                     call zoek( basnam, 1, proc%dispstochi(i_stochi)%ioitem(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals(basnam(1:nzoek), proc%dispstochi(i_stochi)%ioitem(i_star+1:))) then
                         isfrac_found = isfrac
                         exit
                      endif
@@ -488,14 +473,13 @@
                         i_new   = i_new + 1
                         new_stochi(i_new) = proc%dispstochi(i_stochi)
                         new_stochi(i_new)%ioitem = trim(proc%dispstochi(i_stochi)%ioitem(1:i_star))//fracnam
-                        call zoek (basnam,1,proc%dispstochi(i_stochi)%substance,20,indx)
-                        if ( indx .gt. 0 ) then
+                        if (string_equals(basnam, proc%dispstochi(i_stochi)%substance)) then
                            new_stochi(i_new)%substance = fracnam
                         else
                            ! look for linked substance (if not found the substance name stays the same
                            do isfrac2 = 1, nfrac
-                              call zoek (sfracs%name(isfrac2),1,proc%dispstochi(i_stochi)%substance,20,indx)
-                              if ( indx .gt. 0 .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
+                              if (string_equals(sfracs%name(isfrac2),proc%dispstochi(i_stochi)%substance)
+     *                           .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
                                  new_stochi(i_new)%substance = trim(sfracs%name(isfrac2))//suffix
                                  exit
                               endif
@@ -527,8 +511,7 @@
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
                      nzoek = 20-i_star
-                     call zoek( basnam, 1, proc%velostochi(i_stochi)%ioitem(i_star+1:),  nzoek, indx)
-                     if ( indx .gt. 0 ) then
+                     if (string_equals( basnam(1:nzoek), proc%velostochi(i_stochi)%ioitem(i_star+1:))) then
                         isfrac_found = isfrac
                         exit
                      endif
@@ -544,14 +527,13 @@
                         i_new   = i_new + 1
                         new_stochi(i_new) = proc%velostochi(i_stochi)
                         new_stochi(i_new)%ioitem = trim(proc%velostochi(i_stochi)%ioitem(1:i_star))//fracnam
-                        call zoek (basnam,1,proc%velostochi(i_stochi)%substance,20,indx)
-                        if ( indx .gt. 0 ) then
+                        if (string_equals(basnam,proc%velostochi(i_stochi)%substance)) then
                            new_stochi(i_new)%substance = fracnam
                         else
                            ! look for linked substance (if not found the substance name stays the same
                            do isfrac2 = 1, nfrac
-                              call zoek (sfracs%name(isfrac2),1,proc%velostochi(i_stochi)%substance,20,indx)
-                              if ( indx .gt. 0 .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
+                              if (string_equals(sfracs%name(isfrac2),proc%velostochi(i_stochi)%substance)
+     *                            .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
                                  new_stochi(i_new)%substance = trim(sfracs%name(isfrac2))//suffix
                                  exit
                               endif

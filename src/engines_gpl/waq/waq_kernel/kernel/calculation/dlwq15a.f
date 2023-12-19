@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq15a
       use m_waq_precision
+      use m_string_utils
       use m_wascal
 
 
@@ -79,7 +80,6 @@
 
 !     Subroutines called  : wascal : the user specified wasteload dll
 
-      use m_zoek
       use m_srstop
       use m_evaluate_waq_attribute
       use timers
@@ -270,20 +270,20 @@
          if ( surfbed ) then
             surf   = 0.0
             length = 0.0
-            call zoek20 ( 'SURF      ', nopa  , paname, 10, indx )
+            indx = index_in_array( 'SURF      ', paname)
             if ( indx .gt. 0 ) then
                surf = param(indx,:)
             else
-               call zoek20 ( 'SURF      ', nosfun, sfname, 10, indx )
+               indx = index_in_array( 'SURF      ', sfname)
                if ( indx .gt. 0 ) then
                   surf = segfun(:,indx)
                endif
             endif
-            call zoek20 ( 'LENGTH    ', nopa  , paname, 10, indx )
+            indx = index_in_array( 'LENGTH    ', paname)
             if ( indx .gt. 0 ) then
                length = param(indx,:)
             else
-               call zoek20 ( 'LENGTH    ', nosfun, sfname, 10, indx )
+               indx = index_in_array( 'LENGTH    ', sfname)
                if ( indx .gt. 0 ) then
                   length = segfun(:,indx)
                endif

@@ -90,7 +90,6 @@
       use m_rdlgri
       use m_rdfnam
       use m_rdccol
-      use m_zoek
       use m_srstop
       use m_open_waq_files
       use rd_token     !   for the reading of tokens
@@ -467,7 +466,7 @@
             ierr = ierr + 1
       end select
 
-      
+
 
 !     Copy timers data to dlwqt0_data
       dlwq0t_itstrt = itstrt
@@ -529,14 +528,14 @@
          if ( ierr2 .gt. 0 ) goto 30
       endif
       ierr2 = 0
-      
-      
+
+
       call validate_time_settings(lunut, ierr,
      &                            itstrt, itstop, idt,
      &                            imstrt, imstop, imstep,
      &                            idstrt, idstop, idstep,
      &                            ihstrt, ihstop, ihstep)
-      
+
 
 !        Check number of data in inputfile
 
@@ -626,6 +625,6 @@
  2470 format (  ' The following ',i3,' DELPAR substances are added as passive substances to DELWAQ.' )
 
       end subroutine dlwq02
- 
+
 
       end module m_dlwq02

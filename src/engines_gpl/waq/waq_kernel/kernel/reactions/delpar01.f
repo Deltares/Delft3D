@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_delpar01
       use m_waq_precision
+      use m_string_utils
       use m_wrttrk
       use m_write_part_restart_file
       use m_partvs
@@ -43,7 +44,6 @@
      &                      iaflag  , intopt  , ndmps   , isdmp   , dmps    ,
      &                      amass2  )
 
-      use m_zoek
       use partmem      !   for PARTicle tracking
       use timers
       use parths_mod                 ! explicit interface
@@ -150,7 +150,7 @@
           ifflag = 0
       endif
       if ( lsettl .or. layt .gt. 1 ) then
-         call zoek20 ( 'TAU       ', nosfun, sfname, 10, indx )
+         indx = index_in_array( 'TAU       ', sfname)
          if ( indx .gt. 0 ) then
             do i=1, noseg
                tau(cellpntp(i)) = segfun(i,indx)
@@ -162,7 +162,7 @@
      &                    updatd    )
          endif
          if ( layt .gt. 1 ) then
-            call zoek20 ( 'VERTDISP  ', nosfun, sfname, 10, indx )
+            indx = index_in_array( 'VERTDISP  ', sfname)
             if ( indx .gt. 0 ) then
                do i=1, noseg
                   vdiff(cellpntp(i)) = segfun(i,indx)
@@ -184,7 +184,7 @@
          ! for salinity and temperature
          !.. salinity
 
-         call zoek20 ( 'SALINITY  ', nosfun, sfname, 10, indx )
+         indx = index_in_array( 'SALINITY  ', sfname)
          if ( indx .gt. 0 ) then
             do i=1, noseg
               salin(cellpntp(i)) = segfun(i,indx)
@@ -199,7 +199,7 @@
 
 !.. temperature
 
-         call zoek20 ( 'TEMP      ', nosfun, sfname, 10, indx )
+         indx = index_in_array( 'TEMP      ', sfname)
          if ( indx .gt. 0 ) then
             do i=1, noseg
               temper(cellpntp(i)) = segfun(i,indx)
@@ -436,7 +436,7 @@
          if (itime.eq.(itstrtp+idelt*itrakc-idelt)) then
             call wrttrk ( lunut   , fout     , fnamep(16), itrakc   , nopart  ,
      &                    npmax    , xa       , ya       , za       , xyztrk  ,
-     &                    nosubs , wpart  , track                    ) 
+     &                    nosubs , wpart  , track                    )
             itrakc = itrakc + itraki
          endif
       endif
