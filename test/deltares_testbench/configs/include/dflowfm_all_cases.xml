@@ -3920,6 +3920,27 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
+    <testCase name="e02_f006_c100_surface_netcdf_periodic_forcing" ref="dflowfm_default">
+      <path>e02_dflowfm/f006_external_forcing/c100_surface_netcdf_periodic_forcing</path>
+      <programs>
+        <program ref="DFlowFM">
+          <arguments>
+            <argument>channel.mdu</argument>
+            <argument>--autostartstop</argument>
+            <argument>--nodisplay</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Patm" toleranceAbsolute="0.1" />
+          </parameters>
+        </file>
+        <file name="channel.dia" ignore="true" />
+      </checks>
+    </testCase>
     <testCase name="e02_f008_c010_ws_bedlevel_asdefault" ref="dflowfm_default">
       <path>e02_dflowfm/f008_network/c010_ws_bedlevel_asdefault</path>
       <programs>
@@ -5244,7 +5265,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5269,7 +5290,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5294,7 +5315,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5319,7 +5340,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5344,7 +5365,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5369,7 +5390,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5394,7 +5415,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5419,7 +5440,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -9827,7 +9848,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f022_c33_graded_sediment_ConcBc" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c33_graded_sediment_ConcBc</path>
       <programs>
@@ -10034,7 +10055,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f022_c56_weir" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c56_morphology_with_weir_Unstr</path>
       <programs>
@@ -11422,7 +11443,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>        
+    </testCase>
     <testCase name="e02_f037_c75_no_summerdike" ref="dflowfm_default">
       <path>e02_dflowfm/f037_mor1d_tabulated_crosssections/c75_no_summerdike</path>
       <programs>
@@ -11462,7 +11483,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>        
+    </testCase>
     <testCase name="e02_f037_c91_bifurcation_pure1d" ref="dflowfm_default">
       <path>e02_dflowfm/f037_mor1d_tabulated_crosssections/c91_bifurcation_pure1d</path>
       <programs>
@@ -11482,7 +11503,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>        
+    </testCase>
     <testCase name="e02_f123_c81_dad_inside_dumping" ref="dflowfm_default">
       <path>e02_dflowfm/f123_dredge-dump/c81_dad_inside_dumping</path>
       <programs>
@@ -11596,7 +11617,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase> 
+    </testCase>
     <testCase name="e02_f092_c04_exer_10_2d_westernscheldt" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c04_exer_10_2d_westernscheldt</path>
       <programs>
@@ -11617,7 +11638,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f092_c08_exer_12_2d_bend_course_model" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
       <programs>
@@ -11638,7 +11659,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f092_c10_exer_13_r01_vlissingen_course_model" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
       <programs>
@@ -11659,7 +11680,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase> 
+    </testCase>
     <testCase name="e02_f092_c11_exer_13_r02_vlissingen_course_model" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
       <programs>
@@ -11680,7 +11701,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase> 
+    </testCase>
     <testCase name="e02_f100_c04_closed_channel_circle" ref="dflowfm_default">
       <path>e02_dflowfm/f100_1D/c04_closed_channel_circle</path>
       <programs>
@@ -11723,5 +11744,5 @@
           </parameters>
         </file>
       </checks>
-    </testCase>	
+    </testCase>
   </testCases>
