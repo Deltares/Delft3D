@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 Module fm_manhole_losses
    implicit none
-   public calculate_manhole_losses
+   public calculate_manhole_losses, init_manhole_losses
    private
       
    double precision, allocatable, dimension(:,:) :: k_bend
@@ -77,17 +77,6 @@ Module fm_manhole_losses
    integer                  :: count
    
    nstor = storS%count
-   if(nstor > 0 .and. .not. allocated(k_bend)) then
-      count = 0
-      do i = 1,nstor
-         pstor => storS%stor(i)
-         nod = pstor%grid_point
-         if (nod > 0) then
-            count = max(count,nd(nod)%lnx)
-         endif
-      enddo
-      allocate(k_bend(count,nstor), reference_angle(nstor))
-   endif
    !$OMP PARALLEL DO                       &
    !$OMP PRIVATE(i,iL,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_m2p_area,total_p2m_area,v2_m2p,v2_p2m,energy_loss_total)
    do i = 1,nstor                                                                                                                
@@ -201,9 +190,29 @@ Module fm_manhole_losses
    enddo
    !$OMP END PARALLEL DO
    end subroutine
+
+   !> Allocate bend loss coefficient and reference angle module arrays during initialization
+   subroutine init_manhole_losses(storS)
+   use m_flowgeom, only: nd
+   use m_storage, only: t_storage_set
+   
+   type(t_storage_set), intent(in   ) :: storS     !<  set of storage nodes that contain manhole parameters
+
+   integer :: nstor, count, i, nod
+
+   nstor = storS%count
+   if(nstor > 0) then
+      count = 0
+      do i = 1,nstor
+         nod = storS%stor(i)%grid_point
+         if (nod > 0) then ! only take nodes on the current partition
+            count = max(count,nd(nod)%lnx)
+         endif
+      enddo
+      allocate(k_bend(count,nstor), reference_angle(nstor))
+   endif
+   end subroutine init_manhole_losses
+   
 end module
-   
-   
-   
 
 
