@@ -112,6 +112,7 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/run_dimr.sh             DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dimr.sh          DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dimr_h7.sh       DESTINATION bin)
 endif(UNIX)
 
 if (WIN32)
