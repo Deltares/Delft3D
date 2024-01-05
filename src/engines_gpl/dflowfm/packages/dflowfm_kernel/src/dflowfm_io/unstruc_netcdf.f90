@@ -13083,6 +13083,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
                                 um%inode_own, um%inode_merge)
        ierr = get_var_and_shift(imapfile, 'sqi', sqi,  tmpvar1, UNC_LOC_W,   kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                 um%inode_own, um%inode_merge)
+       sq = sqi-squ
     endif
     call readyy('Reading map data', 0.80d0)
 
