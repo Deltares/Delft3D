@@ -126,6 +126,9 @@
     !    call toemaar()
     ! endif
 
+    if ( time1 > ti_rst ) then 
+        write(*,*) 'Here'
+    endif 
 !    synchronise all water-levels
     if ( jampi == 1 ) then
        if ( jatimer == 1 ) call starttimer(IUPDSALL)
