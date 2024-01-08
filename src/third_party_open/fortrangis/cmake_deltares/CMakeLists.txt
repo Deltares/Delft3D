@@ -31,7 +31,6 @@ set_target_properties(${fortranc_library_name} PROPERTIES FOLDER third_party_ope
 # Define the fortrangis library
 set(fortrangis_path ${src_path}/libfortrangis)
 set(fortrangis_sources ${fortrangis_path}/proj6.F90
-                        ${fortrangis_path}/proj.F90
                         ${fortrangis_path}/gdal.F90
                         ${fortrangis_path}/shapelib.F90)
 
@@ -68,7 +67,6 @@ if (WIN32)
 
     target_include_directories(${fortrangis_library_name} INTERFACE ${gisinternals_path})
     target_link_directories(${fortrangis_library_name} INTERFACE ${sqlite3_path}/lib ${gisinternals_path})
-    # target_link_directories(${fortrangis_library_name} INTERFACE ${proj_path}/lib ${sqlite3_path}/lib ${gisinternals_path})
 endif(WIN32)
 
 # Propagate preprocessor variable definitions to any other package that uses fortrangis.

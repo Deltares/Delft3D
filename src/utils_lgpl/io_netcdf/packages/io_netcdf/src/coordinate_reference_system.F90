@@ -262,9 +262,6 @@ end function get_proj_string_from_epsg
          call transform(coord_trans, src_x, src_y, dst_x, dst_y)
       end if
 
-      ! `proj_destroy` is a function. Not a subroutine so it can't be invoked with 'call'.
-      ! For some reason a function call by itself is not a valid statement without assigning
-      ! the function's return value as well.
       coord_trans = proj_destroy(coord_trans)
    end subroutine
 
