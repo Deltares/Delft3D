@@ -70,6 +70,7 @@ module m_caltau
                                 !< 1 => calculate, 2 => use value from input
         integer  :: iswtaumax   !< Switch for factor in shear stress formula            [-]
                                 !< 1 => 0.5, any other value => 0.25
+        integer  :: iswhrms     !< Switch for wave height: 1 => Hs, 2 => HRMS           [-]
 
         ! Other local variables
         integer  :: params_count                       !< Number of parameters (input+output variables) in this process
@@ -77,16 +78,17 @@ module m_caltau
         integer  :: isegment                           !< index of current segment
         integer, dimension(:), allocatable  :: iparray !< Array with integer pointers for parameters
 
-        
+
         call initialize_variables(params_count, iparray, ipoint, iflux)
         do isegment = 1, segment_count
             if(must_calculate_segment(iknmrk(isegment))) then
                 call assign_input_params(iparray, pmsa, h, rl, t, tausch, iswtauveloc, tauflo, &
-                                         veloc, chz, totdep, iswtau, depth, iswtaumax, max_nelson)
-                call validate_switches(iswtau, iswtauveloc)
-                call calculate_process_in_segment(h, max_nelson, totdep, chz, depth, iknmrk(isegment), & 
+                                         veloc, chz, totdep, iswtau, depth, iswtaumax, max_nelson, &
+                                         iswhrms)
+                call validate_switches(iswtau, iswtauveloc, iswhrms)
+                call calculate_process_in_segment(h, max_nelson, totdep, chz, depth, iknmrk(isegment), &
                                                   tauflo, veloc, tauwin, rl, t, tauvel, iswtau, &
-                                                  iswtaumax, iswtauveloc, tau, tausch)
+                                                  iswtaumax, iswtauveloc, iswhrms, tau, tausch)
                 call assign_output_params(iparray, pmsa, tau, tauflo, tauwin, tauvel)
             end if
             call update_loop_vars(iflux, noflux, params_count, iparray, increm)
@@ -99,17 +101,18 @@ module m_caltau
         integer, allocatable, intent(out) :: iparray(:)
         integer, intent(in) :: ipoint(*)
 
-        count_params = 17
+        count_params = 18
         allocate(iparray(1:count_params))
         iparray(:) = ipoint(1:count_params)
         iflux = 0
     end subroutine initialize_variables
 
     subroutine assign_input_params(iparray, pmsa, h, rl, t, tausch, iswtauveloc, tauflo, &
-                                  veloc, chz, totdep, iswtau, depth, iswtaumax, max_nelson)
+                                  veloc, chz, totdep, iswtau, depth, iswtaumax, max_nelson, &
+                                  iswhrms)
         !< Transfer values from generic array to process-specific input parameters.
         real, intent(out)    :: h, rl, t, tausch,tauflo, veloc, chz, totdep, depth, max_nelson
-        integer, intent(out) :: iswtauveloc, iswtau, iswtaumax
+        integer, intent(out) :: iswtauveloc, iswtau, iswtaumax, iswhrms
         real, intent(in)     :: pmsa(*)
         integer, intent(in)  :: iparray(*)
 
@@ -126,30 +129,34 @@ module m_caltau
         depth       = pmsa(iparray(11))
         iswtaumax   = nint(pmsa(iparray(12)))
         max_nelson  = pmsa(iparray(13))
+        iswhrms     = pmsa(iparray(14))
     end subroutine assign_input_params
 
-    subroutine validate_switches(switch_tau, switch_tau_velocity)
+    subroutine validate_switches(switch_tau, switch_tau_velocity, switch_hrms)
         !< Evaluates, based on switches, whether the proces calculation must be carried out or not. If not, it immediately stops entire calculation.
         use m_write_error_message, only : write_error_message
 
-        integer, intent(in) :: switch_tau, switch_tau_velocity
+        integer, intent(in) :: switch_tau, switch_tau_velocity, switch_hrms
 
-        if (.not. (ANY( (/ 1, 2, 3 /) == switch_tau ))) then
-            call write_error_message('invalid switch for tau (iswtau) in caltau')
+        if ( ALL( [ 1, 2, 3 ] /= switch_tau ) ) then
+            call write_error_message('invalid switch for tau (SwTau) in caltau')
         end if
-        if (.not. (ANY( (/ 1, 2 /) == switch_tau ))) then
-            call write_error_message('invalid switch for tau (iswtauveloc) in caltau')
+        if ( ALL( [ 1, 2 ] /= switch_tau_velocity ) ) then
+            call write_error_message('invalid switch for tau (SwTauVeloc) in caltau')
+        end if
+        if ( ALL( [ 1, 2 ] /= switch_hrms ) ) then
+            call write_error_message('invalid switch for tau (SwHrms) in caltau')
         end if
     end subroutine validate_switches
 
     subroutine calculate_process_in_segment(h, max_nelson, totdep, chz, depth, segment_attribute, tauflo, &
                                             veloc, tauwin, rl, t, tauvel, iswtau, iswtaumax, iswtauveloc, &
-                                            tau, tausch)
+                                            iswhrms, tau, tausch)
         !< Carry out all process-specific calculations.
         use m_evaluate_waq_attribute, only : evaluate_waq_attribute
 
         real, intent(in)    :: rl, depth, max_nelson, t, tausch, totdep, veloc
-        integer, intent(in) :: segment_attribute, iswtau, iswtaumax, iswtauveloc
+        integer, intent(in) :: segment_attribute, iswtau, iswtaumax, iswtauveloc, iswhrms
         real, intent(inout) :: h, chz, tauflo
         real, intent(out)   :: tau, tauvel, tauwin
 
@@ -162,6 +169,11 @@ module m_caltau
         call evaluate_waq_attribute(2, segment_attribute, ikmrk2)
         karmc1 = sqrt(gravity)/karman
         karmc2 = karman/sqrt(gravity)
+
+        ! Interpretation of wave height: as H-significant or H-RMS
+        if ( iswhrms == 2 ) then
+            h = h / sqrt(2.0)
+        endif
 
         ! Nelson criteria
         h = min(h, max_nelson*totdep)
@@ -199,10 +211,10 @@ module m_caltau
         real, intent(in) :: tau, tauflo, tauwin, tauvel
         real, intent(out) :: pmsa(*)
 
-        pmsa(iparray(14)) = tau
-        pmsa(iparray(15)) = tauflo
-        pmsa(iparray(16)) = tauwin
-        pmsa(iparray(17)) = tauvel
+        pmsa(iparray(15)) = tau
+        pmsa(iparray(16)) = tauflo
+        pmsa(iparray(17)) = tauwin
+        pmsa(iparray(18)) = tauvel
     end subroutine assign_output_params
 
     subroutine update_loop_vars(iflux, noflux, count_params, iparray, increm)
@@ -211,7 +223,7 @@ module m_caltau
         integer, intent(in) :: noflux, count_params
         integer, intent(inout) :: iflux, iparray(*)
         integer, intent(in) :: increm(*)
-  
+
         integer :: idx
 
         iflux = iflux + noflux
@@ -222,7 +234,7 @@ module m_caltau
 
     logical function must_calculate_segment(segment_attribute)
         !< Boolean indicating whether the calculation for current cell (segement) should be carries out or not. If false, then the cell is skipped.
-        use m_evaluate_waq_attribute   
+        use m_evaluate_waq_attribute
 
 
         integer, intent(in) :: segment_attribute
@@ -230,7 +242,7 @@ module m_caltau
 
         call evaluate_waq_attribute(2, segment_attribute, ikmrk2)
 
-        must_calculate_segment = ((btest(segment_attribute, 0)) .and. (ikmrk2 .eq. 0 .or. ikmrk2 .eq. 3))
+        must_calculate_segment = ((btest(segment_attribute, 0)) .and. (ikmrk2 == 0 .or. ikmrk2 == 3))
     end function must_calculate_segment
 
     real function wave_friction_factor(iswtau, rlf)
@@ -255,7 +267,7 @@ module m_caltau
     end function wave_friction_factor
 
     real function chezy_3d(ikmrk2, totdep, karmc1, depth, karmc2, chz)
-        !< Returns the 3D (equivalent) of the Chezy coefficient. 
+        !< Returns the 3D (equivalent) of the Chezy coefficient.
         integer, intent(in) :: ikmrk2
         real, intent(in)    :: totdep, karmc1, depth, karmc2, chz
         if (ikmrk2 == 3) then

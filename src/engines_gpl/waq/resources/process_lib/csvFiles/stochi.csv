@@ -2404,6 +2404,8 @@ stocfl,stocsu,stocsc
 "dM_Rmor   ","Mussel_R  ",  -1.00000
 "dM_Nind   ","Mussel_N  ",   1.00000
 "dM_Mort   ","Mussel_N  ",  -1.00000
+"dM_Pom    ","M_SMOtot  ",   1.00000
+"dM_Pca    ","M_SMItot  ",   1.00000
 "dM_POC1   ","POC1      ",  -1.00000
 "dM_DetC   ","DetC      ",  -1.00000
 "dM_DCS1   ","DetCS1    ",  -1.00000
@@ -2489,6 +2491,8 @@ stocfl,stocsu,stocsc
 "dZ_Rmor   ","Zoopl_R   ",  -1.00000
 "dZ_Nind   ","Zoopl_N   ",   1.00000
 "dZ_Mort   ","Zoopl_N   ",  -1.00000
+"dZ_Pom    ","Z_SMOtot  ",   1.00000
+"dZ_Pca    ","Z_SMItot  ",   1.00000
 "dZ_POC1   ","POC1      ",  -1.00000
 "dZ_DetC   ","DetC      ",  -1.00000
 "dZ_DCS1   ","DetCS1    ",  -1.00000
@@ -2574,6 +2578,8 @@ stocfl,stocsu,stocsc
 "dG3_Rmor  ","Grazer3_R ",  -1.00000
 "dG3_Nind  ","Grazer3_N ",   1.00000
 "dG3_Mort  ","Grazer3_N ",  -1.00000
+"dG3_Pom   ","G3_SMOtot ",   1.00000
+"dG3_Pca   ","G3_SMItot ",   1.00000
 "dG3_POC1  ","POC1      ",  -1.00000
 "dG3_DetC  ","DetC      ",  -1.00000
 "dG3_DCS1  ","DetCS1    ",  -1.00000
@@ -2659,6 +2665,8 @@ stocfl,stocsu,stocsc
 "dG4_Rmor  ","Grazer4_R ",  -1.00000
 "dG4_Nind  ","Grazer4_N ",   1.00000
 "dG4_Mort  ","Grazer4_N ",  -1.00000
+"dG4_Pom   ","G4_SMOtot ",   1.00000
+"dG4_Pca   ","G4_SMItot ",   1.00000
 "dG4_POC1  ","POC1      ",  -1.00000
 "dG4_DetC  ","DetC      ",  -1.00000
 "dG4_DCS1  ","DetCS1    ",  -1.00000
@@ -2744,6 +2752,8 @@ stocfl,stocsu,stocsc
 "dG5_Rmor  ","Grazer5_R ",  -1.00000
 "dG5_Nind  ","Grazer5_N ",   1.00000
 "dG5_Mort  ","Grazer5_N ",  -1.00000
+"dG5_Pom   ","G5_SMOtot ",   1.00000
+"dG5_Pca   ","G5_SMItot ",   1.00000
 "dG5_POC1  ","POC1      ",  -1.00000
 "dG5_DetC  ","DetC      ",  -1.00000
 "dG5_DCS1  ","DetCS1    ",  -1.00000
