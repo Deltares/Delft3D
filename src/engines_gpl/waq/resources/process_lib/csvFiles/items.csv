@@ -13947,3 +13947,4 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "dG5_Pom   ","x"," ",   -999.000    ,"(gC/m3/d)           ","change in organic shell matrix Grazer5            ","volume    ","volume    "," ","                              "
 "dG5_Pca   ","x"," ",   -999.000    ,"(gC/m3/d)           ","calcification of shell matrix Grazer5             ","volume    ","volume    "," ","                              "
 "SwFloForm ","x"," ",    1.00000    ,"(-)                 ","1=Manning/Dyer, 2= Chassagne/Safar                ","volume    ","volume    "," ","                              "
+"SWHrms    ","x"," ",    1.00000    ,"(-)                 ","switch to use HRMS instead of H-significant       ","volume    ","volume    "," ","                              "
