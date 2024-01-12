@@ -39,6 +39,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c020_initial-conditions-water-level_mapmerge" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c020_initial-conditions-water-level</path>
@@ -82,6 +83,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c021_roughness_main_mapmerge" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c021_roughness_main</path>
@@ -121,6 +123,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c030_1Dnetwork_pipes_urban_mapmerge" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c030_1Dnetwork_pipes_urban</path>
@@ -156,6 +159,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c050_laterals_prescribed_Q_mapmerge" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c050_laterals_prescribed_Q_parallel</path>
@@ -192,6 +196,7 @@
             </parameters>
         </file>
       </checks>
+      <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c060_thacker1d_standard_mapmerge" ref="dimr_trunk_4">
       <path>e02_dflowfm/f114_parallel_1D/c060_thacker1d_standard</path>
@@ -230,6 +235,7 @@
         </file>
       </checks>
       <maxRunTime>20.0</maxRunTime>
+      <processCount>4</processCount>
     </testCase>
     <testCase name="e02_f114_c070_Fine1D_Coarse2D_Rural_Embedded_Links_mapmerge" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c070_Fine1D_Coarse2D_Rural_Embedded_Links</path>
@@ -267,6 +273,7 @@
         </file>
       </checks>
       <maxRunTime>20.0</maxRunTime>
+      <processCount>2</processCount>
     </testCase>
     <testCase name="e02_f114_c090_dar-es-salaam_mapmerge" ref="dimr_trunk_2">
       <path>e02_dflowfm/f114_parallel_1D/c090_dar-es-salaam</path>
@@ -304,5 +311,6 @@
         </file>
       </checks>
       <maxRunTime>20.0</maxRunTime>
+      <processCount>2</processCount>
     </testCase>
 </testCases>

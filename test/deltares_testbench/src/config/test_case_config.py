@@ -35,6 +35,7 @@ class TestCaseConfig:
         self.__absolute_test_case_reference_path: str = ""
         self.__run_file = ""
         self.__ignore = False
+        self.__process_count: int = 1
 
     @property
     def name(self) -> str:
@@ -191,3 +192,11 @@ class TestCaseConfig:
     @ignore.setter
     def ignore(self, value: bool):
         self.__ignore = value
+
+    @property
+    def process_count(self) -> int:
+        return self.__process_count
+
+    @process_count.setter
+    def process_count(self, value: int):
+        self.__process_count = value

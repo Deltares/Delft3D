@@ -373,6 +373,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>3</processCount>
     </testCase>
 
     <testCase name="e02_f029_c102_westerschelde_3d_s_three_domains" ref="dflowfm_default">
@@ -457,6 +458,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>3</processCount>
     </testCase>
 
     <testCase name="e02_f029_c103_westerschelde_3d_z_three_domains" ref="dflowfm_default">
@@ -541,6 +543,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>3</processCount>
     </testCase>
 
     <!-- END OF LIST OF TEST CASES -->

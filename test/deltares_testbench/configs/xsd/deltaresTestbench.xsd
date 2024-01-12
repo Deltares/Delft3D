@@ -66,7 +66,7 @@
     </xs:complexType>
     <xs:complexType name="T_Config">
         <xs:all>
-            <xs:element ref="credentials"/>
+            <xs:element ref="credentials" minOccurs="0" maxOccurs="1"/>
             <xs:element ref="localPaths"/>
             <xs:element ref="locations"/>
         </xs:all>
@@ -117,6 +117,16 @@
             <xs:element ref="location" minOccurs="0"/>
             <xs:element ref="maxRunTime" minOccurs="0"/>
             <xs:element ref="checks" minOccurs="0"/>
+            <xs:element name="processCount" type="xs:positiveInteger" default="1" minOccurs="0"/>
+            <xs:element name="dependency" minOccurs="0">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="local_dir" type="xs:string"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
         </xs:choice>
         <xs:attribute name="ref" use="optional">
             <xs:simpleType>
