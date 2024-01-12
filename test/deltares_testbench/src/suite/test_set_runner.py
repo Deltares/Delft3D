@@ -123,21 +123,30 @@ class TestSetRunner(ABC):
         """
         n_testcases = len(self.__settings.configs)
 
-        max_processes = min(len(self.__settings.configs), multiprocessing.cpu_count())
+        config_process_count = sum(config.process_count for config in self.__settings.configs)
+        max_processes = min(config_process_count, multiprocessing.cpu_count())
         self.__logger.info(f"Creating {max_processes} processes to run test cases on.")
+        process_manager = multiprocessing.Manager()
 
         with multiprocessing.Pool(processes=max_processes) as pool:
             self.finished_tests = 0
 
             result_futures: List[AsyncResult] = []
+            in_use = process_manager.Value('i', 0)
+            idle_process = process_manager.Condition()
 
             for i_testcase, config in enumerate(self.__settings.configs):
                 run_data = RunData(i_testcase + 1, n_testcases)
                 logger = self.__logger.create_test_case_logger(config.name)
 
+                with idle_process:
+                    while in_use.value + config.process_count > max_processes:
+                        idle_process.wait()
+                    in_use.value += config.process_count
+
                 config_result_future = pool.apply_async(
                     self.run_test_case,
-                    [config, run_data, logger],
+                    [config, run_data, logger, in_use, idle_process],
                     callback=self.__log_successful_test,
                     error_callback=self.__log_failed_test,
                 )
@@ -153,13 +162,15 @@ class TestSetRunner(ABC):
         return results
 
     def run_test_case(
-        self, config: TestCaseConfig, run_data: RunData, logger: ITestLogger
+        self, config: TestCaseConfig, run_data: RunData, logger: ITestLogger, in_use=None, idle_process=None
     ) -> TestCaseResult:
         """Runs one test configuration (in a separate process)
 
         Args:
             config (TestCaseConfig): configuration to run
             run_data (RunData): Data related to the test run
+            in_use (Integer): Amount of processes that are currently in use with testcases
+            idle_process (Condition): Sends a notification to evaluate available cores for new testcase
         """
         run_data.start_time = datetime.now()
         curr_process = multiprocessing.current_process()
@@ -232,6 +243,11 @@ class TestSetRunner(ABC):
                 logger.test_Result(TestResultType.Exception, str(exception))
 
         logger.test_finished()
+        if in_use is not None:
+            with idle_process:
+                in_use.value -= config.process_count
+                idle_process.notify_all()
+
         return test_result
 
     @abstractmethod

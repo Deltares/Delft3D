@@ -115,6 +115,7 @@
                     </parameters>
                 </file>
             </checks>
+            <processCount>4</processCount>
         </testCase>
         <testCase name="e02_f300_c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1" ref="dimr_trunk_4">
             <path>e02_dflowfm/f300_rws_waq_models/c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1</path>
@@ -229,6 +230,7 @@
                     </parameters>
                 </file>
             </checks>
+            <processCount>4</processCount>
         </testCase>
         <!--MDK 31-10-2022: Noordzee model removed, since it does not fit on teamcity (insufficient virtual memory)-->
         <!--testCase name="e02_f300_c03_dflowfm3d_dwaq-noordzee" ref="dimr_trunk_4">
