@@ -175,7 +175,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
 !$OMP           SCHEDULE  ( DYNAMIC, max(Nopart/100,1)           )
    do ipart=1,Nopart
       ! check if this particle needs to be updated
-      if ( dtremaining(ipart) == 0.0_wp .or. mpart(ipart) < 1 ) cycle
+      if ( dtremaining(ipart) == 0.0_wp .or. mpart(ipart) < 1 .or. laypart(ipart) > hyd%nolay) cycle
       ! get cell (flownode) particle in in
       k = mpart(ipart)
       kl = k + (laypart(ipart) - 1) * numcells

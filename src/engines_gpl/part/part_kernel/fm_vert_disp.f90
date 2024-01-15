@@ -99,7 +99,6 @@ subroutine fm_vert_disp (lunpr, itime)
 !>              Holthuysen and Herbers: J. Phys. Ocean 16,290-7,[1986]
 !>         </ol></ol>
 
-!   System administration : Antoon Koster
     use m_part_flow, only: h0, h1, kmx
     use m_part_times
     use m_part_geom
@@ -110,6 +109,7 @@ subroutine fm_vert_disp (lunpr, itime)
     use m_part_mesh
     use random_generator
     use m_partvs
+    use m_part_recons, only: u0x, u0y   
     implicit none
 
 
@@ -120,6 +120,10 @@ subroutine fm_vert_disp (lunpr, itime)
     real(sp)                     :: dran1
     real(sp)                     :: abuac
     real(sp)                     :: tp
+    real(sp)                     :: c2g, uscrit, uecrit, ubstar_b  ! critical shear stress parameters
+    real(sp)                     :: grav   =  9.81
+ 
+
     double precision             :: thicknessl, depthp, dred
     double precision             :: kpartold, hlayold  ! working variable for depth in a layer
     double precision             :: totdep, reldep
@@ -134,16 +138,18 @@ subroutine fm_vert_disp (lunpr, itime)
     integer(int_wp)              :: itdelt                  ! delta-t of the particle for smooth loading
     integer(int_wp)              :: isub
     integer(int_wp)              :: partcel, partlay
-    double precision, dimension(:), allocatable     :: totdepthlay       ! total depth (below water surface) of bottom of layers
+    integer(int_wp), save        :: nopart_sed, nopart_sed_old         ! number of particles in the sediment layer
+    double precision, dimension(noslay) :: totdepthlay       ! total depth (below water surface) of bottom of layers
     logical                      :: rise, sink, neutral   ! has the particle a rising or setting speed?
 
     logical, save                :: first = .TRUE.
 
-    save ! AM - why a global SAVE?
+    !save ! AM - why a global SAVE?
 
 ! temporary, still need to pick up these values
     if (first) then
-      allocate ( totdepthlay(kmx) )
+      !allocate ( totdepthlay(nolayp) )
+      nopart_sed = 0                      ! number of particles in the bed layer
       first = .FALSE.
     end if
 
@@ -155,12 +161,17 @@ subroutine fm_vert_disp (lunpr, itime)
     dran1  = drand(1)
     ipart = 1
     mpartold = mpart(ipart)
+    nopart_sed_old = nopart_sed
     tp = real(iptime(ipart), kind=kind(int_wp))
     abuac  = abuoy(ipart)
     dran1  = drand(1)
 !    wsettl = hyd%surf(1)
     wsettl = 1.0
     itdelt = idelt
+    ! calculate shearstress parameters for sedimentation and erosion
+    c2g     = grav / chezy / chezy
+    uscrit  = sqrt( taucs / rhow )
+    uecrit  = sqrt( tauce / rhow )
 
     ! calculate settling velocity, check what happens if we change wsettl externally, then we do not need to calculate.
     call partvs( lunpr, itime  , nosubs , nopart , ivtset ,            &
@@ -180,9 +191,15 @@ subroutine fm_vert_disp (lunpr, itime)
 
 
         totdepthlay(1) = h0(partcel)
-
-        do ilay = 2, kmx
-            totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
+        ubstar_b = sqrt(c2g*(u0x(partcel + (partlay-1) * hyd%nosegl)*u0x(partcel + (partlay-1) * hyd%nosegl) + &
+                       u0y(partcel + (partlay-1) * hyd%nosegl)*u0y(partcel + (partlay-1) * hyd%nosegl)))
+        do ilay = 2, noslay
+           if (ilay <= kmx) then
+              totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
+           else
+              totdepthlay(ilay) = 1.0D0  ! unit depth for the bed layer
+           end if
+               
         enddo
 
         hpart_prevt(ipart) = hpart(ipart)
@@ -205,7 +222,10 @@ subroutine fm_vert_disp (lunpr, itime)
             abuac  = abuac * sqrt(ddfac)
         endif
         dvz = (2.0 * sq6 * sqrt( cdisp*itdelt ) *   &
-              random_step  +  vz * itdelt)  ! note that negative value is now sinking (against the direction of the local h coordinate)
+              random_step  +  vz * itdelt)  
+        ! note that negative value is now sinking (against the direction of the local h coordinate)
+        ! for testing use a fixed downward dispersion displacement (>1)
+!        dvz is the total vertical movement (setting plus diffusion)
         depthp = depthp + dvz  ! depth is positive downwards,and dvz is the increase in depth
 
         ! new depth is now calculated and now set the layer and hpart or reached top/bottom
@@ -213,13 +233,34 @@ subroutine fm_vert_disp (lunpr, itime)
         sink = dvz > 0
         neutral = dvz == 0
         if ( depthp <= 0.0 ) then
-            depthp = 0.0d0
-            laypart(ipart) = 1 ! this does not take into accoutn z-layers where surface may not be layer 1
-            hpart(ipart) = 0.0d0
-        elseif ( depthp >= totdepthlay(kmx) ) then
-            depthp = totdepthlay(kmx)
-            laypart(ipart) = kmx
-            hpart(ipart) = 1.0d0
+            call  v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, idelt, tp)
+!            depthp = 0.0d0
+!            laypart(ipart) = 1 ! this does not take into accoutn z-layers where surface may not be layer 1
+!            hpart(ipart) = 0.0d0
+        elseif ( depthp >= totdepthlay(kmx) ) then 
+            ! this is when the particle hits the bed, but here the bouncing comes in, 
+            ! if the particle settles then it should become inactive, we are not introducing erosion in FM (for now)
+            if ( lsettl .and. ubstar_b .lt. uscrit   &
+                .and. wsettl(ipart) .gt. 0.0) then
+                !depthp = totdepthlay(kmx)
+                !laypart(ipart) = noslay          !  at high vert disp everything settles in the extra bedlayer!!!
+                hpart(ipart) = 1.0d0
+                !mpart(ipart) = 0
+                laypart(ipart) = noslay  !problem is the z-coordinate of the particle here and the mass in the correct grid cell
+                nopart_sed = nopart_sed + 1
+!                  if ( lstick .and. lbott ) then   !  dispersed oil (or other subs) may stick to the bottom
+!                    lstick = .false.              !  the particle sticks only once in this algorithm
+!                    do isub = 1, nosubs
+!                      jsub = mstick(isub)
+!                         if ( jsub .gt. 0 ) then    !  phase change from floating or dispersed
+!                            wpart(jsub,ipart) = wpart(isub,ipart)  
+!                            wpart(isub,ipart) = 0.0
+!                         endif
+!                    enddo                         ! ==> also here
+!                  endif
+            else
+               call v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, itdelt, tp)   !particles do not settle, but bounce off the bottom.
+            endif
         else
             ! find layer starting from partlay and look down if sink or up if rise
             ilay = partlay
@@ -228,7 +269,7 @@ subroutine fm_vert_disp (lunpr, itime)
                     ilay =  ilay + 1
                 end do
             elseif ( rise ) then
-                do while ( depthp < totdepthlay(ilay)-h0(laypart(ipart)) )
+                do while ( depthp< totdepthlay(ilay)-h0(laypart(ipart)) )
                    ilay =  ilay - 1
                 end do
             endif
@@ -236,5 +277,64 @@ subroutine fm_vert_disp (lunpr, itime)
             hpart(ipart) = 1.0d0 - ( totdepthlay(ilay) - depthp) / h0(laypart(ipart)) ! new relative height in layer
         end if
     end do
+    write( *,     1010 ) nopart_sed - nopart_sed_old, nopart_sed
+    write( lunpr, 1010 ) nopart_sed - nopart_sed_old, nopart_sed
+1010 format('Settling this timestep:', i6, ', total number of settled particles: ', i6 )    
+end subroutine
+
+subroutine v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, itdelt, tp)
+
+    use m_part_flow, only: h0
+    use m_waq_precision       ! single/double precision
+    use partmem
+    use spec_feat_par
+    use m_particles, laypart => kpart
+    use m_part_flow, only: kmx
+    use random_generator
+!**      vertically bouncing particles - this routine is adapted from the relevant part of part10
+
+!**      boundary conditions, check here also settling and erosion
+!**      of particles with critical velocities at the bed
+!local
+    real                               :: tp
+    double precision                   :: depthp, vz, dvz, dhpart
+    double precision                   :: rseed = 0.5
+    double precision, dimension(kmx)   :: totdepthlay
+    integer(int_wp)                    :: itdelt                  ! delta-t of the particle for smooth loading
+ ! TODO implment the critical shear stresses and velocities at the bed
+    ! calcaulate ubstart_b used for sedimentatino and erosion
+    random_step = rnd(rseed)-0.5d0
+    if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading
+       tp     = 0.0
+       itdelt = dts + iptime(ipart)
+       ddfac  = float(itdelt)/dts
+       dran1  = dran1 * sqrt(ddfac)
+       abuac  = abuac * sqrt(ddfac)
+    endif
+    dhpart = (dvz-vz)/h0(laypart(ipart)) ! relative depth change (relative to thickness of the layer) settling + diffusion
+!    dhpart = dvz/h0(laypart(ipart)) ! relative depth change (relative to thickness of the layer) diffusion only
+    
+    if (  depthp >= totdepthlay(kmx)) then
+      laypart(ipart) = layt ! since it hits the bed, the bouncing assumes the layer above the bed
+      if (vertical_bounce .and. dhpart > 0.0) then
+    ! now it bounces, but only if the diffusion (incl. settling) is directed upward ie dvz<0.
+         hpart(ipart) = 1.0 + dhpart !2.0 - hpart(ipart)             !  now it bounces, but without the settling velocity
+      else
+         hpart(ipart) = 0.9990                 !  now it stays near the bottom (no bounce)
+      endif
+    endif
+    if ( depthp <= 0.0) then  ! need to bounce at the surface if total displacement is pointed down
+       laypart(ipart) = 1 ! since it hits the surface, surf
+       if (vertical_bounce .and. dhpart < 0.0) then
+           hpart(ipart)   = 0.0 - dhpart      !  now it bounces
+       else
+           hpart(ipart)   = 0.0001                     !  now it stays near the surface (no bounce)
+       endif
+        !endif
+    endif
+    
+    if ( hpart(ipart) .eq. 0.0 ) hpart(ipart) = 0.0001
+    if ( hpart(ipart) .eq. 1.0 ) hpart(ipart) = 0.9999
+
 end subroutine
 end module

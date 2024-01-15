@@ -428,7 +428,7 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
    if ( kmx > 0 ) then
       do i = 1,NopartTot
          k     = mpart(i)
-         lay   = laypart(i)
+         lay   = min(hyd%nolay, laypart(i))
 
          zz(i) = 0.0
          if ( k > 0 .and. lay > 0 ) then
@@ -551,7 +551,7 @@ subroutine comp_concentration(h, nconst, iconst, c)
       if ( k.eq.0 ) cycle
 
       k   = abs(cell2nod(k))
-      lay = laypart(i)
+      lay = min(laypart(i), kmx)
 
       c(iconst,k,lay) = c(iconst,k,lay) + wpart(iconst, i)
    end do
