@@ -2314,7 +2314,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          if (allocated (pumponoff)) deallocate( pumponoff)
          allocate ( xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg) , stat=ierr     )
          call aerr('xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg)',ierr, npump*10 )
-         kpump = 0d0; qpump = 0d0; kdp = 1
+         kpump = 0; qpump = 0d0; kdp = 1
 
          if ( allocated( pump_ids ) ) deallocate( pump_ids )
          allocate( pump_ids(npumpsg) ) ! TODO: names are not stored here yet (they are in init_structure_control, but not for old ext file)
