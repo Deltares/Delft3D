@@ -125,8 +125,6 @@ subroutine flow_sedmorinit()
         return
     endif
     
-    r_msed => stmpar%morlyr%STATE%msed
-
     do i = 1, stmpar%lsedtot
        if (stmpar%trapar%iform(i) == 19 .or. stmpar%trapar%iform(i) == 20) then
           if (jawave .ne. 4) then

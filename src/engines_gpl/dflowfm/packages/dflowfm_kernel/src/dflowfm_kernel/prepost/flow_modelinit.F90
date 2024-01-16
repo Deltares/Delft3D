@@ -73,6 +73,7 @@
  use m_flow_flowinit
  use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
  use m_dad, only: dad_included
+ use m_restart_debug
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -484,6 +485,7 @@
 
  iresult = DFM_NOERR
 
+ call ini_m_restart_debug()
 
  return
 1234 continue
