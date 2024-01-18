@@ -28,7 +28,6 @@ if not exist %argfile% (
 )
 
 set workdir=%CD%
-set argfile=%workdir%\%argfile%
 echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries

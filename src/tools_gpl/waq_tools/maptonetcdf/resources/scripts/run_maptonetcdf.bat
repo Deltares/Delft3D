@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
     rem
     rem Set the input arguments
     rem
-set mapfile= 
+set mapfile=
 if [%1] EQU [] (
     goto usage
 ) else (
@@ -19,7 +19,7 @@ if [%1] EQU [] (
         set mapfile=%1
     )
 )
-set ncfile= 
+set ncfile=
 if [%2] EQU [] (
     goto usage
 ) else (
@@ -29,7 +29,7 @@ if [%2] EQU [] (
         set ncfile=%2
     )
 )
-set numLayers= 
+set numLayers=
 if [%3] EQU [] (
     goto usage
 ) else (
@@ -42,8 +42,6 @@ if [%3] EQU [] (
 
 
 set workdir=%CD%
-set mapfile=%workdir%\%mapfile%
-set ncfile=%workdir%\%ncfile%
 
 echo Working directory: %workdir%
     rem

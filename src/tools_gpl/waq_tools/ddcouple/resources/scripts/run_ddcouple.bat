@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
     rem
     rem Set the hyd/ddb file
     rem
-set argfile= 
+set argfile=
 if [%1] EQU [] (
     goto usage
 ) else (
@@ -28,7 +28,6 @@ if not exist %argfile% (
 )
 
 set workdir=%CD%
-set argfile=%workdir%\%argfile%
 echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
