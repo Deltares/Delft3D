@@ -765,7 +765,7 @@ end function ncu_copy_var_atts
 subroutine ncu_add_att_string(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    character(len=*),             intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -778,7 +778,7 @@ end subroutine ncu_add_att_string
 subroutine ncu_add_att_int(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    integer,                      intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -791,7 +791,7 @@ end subroutine ncu_add_att_int
 subroutine ncu_add_att_ints(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    integer, dimension(:),        intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -804,7 +804,7 @@ end subroutine ncu_add_att_ints
 subroutine ncu_add_att_double(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    double precision,             intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -817,7 +817,7 @@ end subroutine ncu_add_att_double
 subroutine ncu_add_att_doubles(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),              intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),              intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),                intent(in   ) :: attname         !< Name of the NETCDF attribute.
    double precision, dimension(:),  intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -830,7 +830,7 @@ end subroutine ncu_add_att_doubles
 subroutine ncu_add_att_real(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    real,                         intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -843,7 +843,7 @@ end subroutine ncu_add_att_real
 subroutine ncu_add_att_reals(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    real, dimension(:),           intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 

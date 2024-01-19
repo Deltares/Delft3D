@@ -65,7 +65,7 @@ private
 
    !> set all possible statistical quantity items
    subroutine default_fm_statistical_output()
-      use coordinate_reference_system, only: nc_attribute
+      use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils
       use m_missing
 

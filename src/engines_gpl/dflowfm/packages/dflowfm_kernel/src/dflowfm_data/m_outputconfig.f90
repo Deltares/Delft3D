@@ -3,7 +3,7 @@
 module m_output_config
    use MessageHandling
    use coordinate_reference_system
-   
+   use m_ug_nc_attribute
 private
    
    public scan_input_tree
@@ -446,7 +446,7 @@ private
       integer                          :: location_specifier !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
                                                              !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
       integer                          :: num_additional_attributes  !< number of additional attributes
-      type(nc_attribute), pointer      :: additional_attributes(:)   !< optional additional attributes for this entity
+      type(ug_nc_attribute), pointer      :: additional_attributes(:)   !< optional additional attributes for this entity
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
