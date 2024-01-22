@@ -248,8 +248,6 @@ private
    
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
-      use netcdf_utils, only: ncu_set_att
-      use m_ug_nc_attribute
       use netcdf, only: nf90_int
       use m_flow
       use m_ug_nc_attribute, only: ug_nc_attribute
@@ -1072,7 +1070,9 @@ private
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
                      '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
-
+      
+      !TEST: all his output default on true
+      out_quan_conf_his%statout(:)%input_value = 'current'
       !
       ! MAP:
       !

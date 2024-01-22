@@ -531,7 +531,7 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    integer,          optional,      intent(in   ) :: nc_type             !< NetCDF variable type, one of: nf90_double, nf90_int, etc. Default: nf90_double.
    type(nc_attribute), optional,    intent(in   ) :: nc_atts(:)          !< (optional) list of additional NetCDF attributes to be stored for this output variable.
    character(len=*), optional,      intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
-
+   
    integer :: numentries
    integer :: nc_type_
    integer :: numatt
@@ -555,7 +555,8 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    config_set%statout(numentries)%standard_name      = standard_name   
    config_set%statout(numentries)%unit               = unit            
    config_set%statout(numentries)%location_specifier = location_specifier
-
+   config_set%statout(numentries)%input_value = ''
+   
    if (present(nc_atts)) then
       numatt = size(nc_atts)
       call realloc(config_set%statout(numentries)%additional_attributes, numatt, keepExisting=.false.)
@@ -585,7 +586,7 @@ subroutine scan_input_tree(tree, paragraph, statout_set)
    statout => statout_set%statout
 
    do i = 1, statout_set%count
-      statout(i)%input_value = ''
+!      statout(i)%input_value = ''
       call prop_get_string(tree, paragraph, statout(i)%key, statout(i)%input_value)
    enddo
 
